@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
@@ -149,7 +150,12 @@ func Get(ctx context.Context, db *sql.DB, domainID int64) (Settings, error) {
 
 // Save persists PHP settings for a domain.
 func Save(ctx context.Context, db *sql.DB, domainID int64, s Settings) error {
-	_, err := db.ExecContext(ctx,
+	sanitized, err := sanitizeSettings(s)
+	if err != nil {
+		return err
+	}
+	s = sanitized
+	_, err = db.ExecContext(ctx,
 		`INSERT INTO php_settings(domain_id, memory_limit, max_execution_time, max_input_time, post_max_size,
 			upload_max_filesize, opcache_enable, disable_functions,
 			display_errors, log_errors, allow_url_fopen, file_uploads, short_open_tag,
@@ -205,6 +211,70 @@ func onoff(b bool) string {
 	return "Off"
 }
 
+var extraDirectivePattern = regexp.MustCompile(`^php_(?:value|flag)\[([a-zA-Z0-9_.]+)\]\s*=`)
+
+var prohibitedExtraDirectives = map[string]bool{
+	"open_basedir": true, "disable_functions": true, "disable_classes": true,
+	"extension": true, "zend_extension": true,
+	"auto_prepend_file": true, "auto_append_file": true,
+	"error_log": true, "sys_temp_dir": true, "upload_tmp_dir": true,
+	"session.save_path": true, "mail.force_extra_parameters": true,
+	"curl.cainfo": true, "openssl.capath": true, "include_path": true,
+}
+
+func sanitizeExtraDirectives(raw string) (string, error) {
+	if strings.ContainsRune(raw, '\x00') {
+		return "", errors.New("extra directives contain a NUL character")
+	}
+	raw = strings.ReplaceAll(raw, "\r\n", "\n")
+	raw = strings.ReplaceAll(raw, "\r", "\n")
+	lines := strings.Split(raw, "\n")
+	cleaned := make([]string, 0, len(lines))
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" || strings.HasPrefix(trimmed, ";") {
+			cleaned = append(cleaned, trimmed)
+			continue
+		}
+		match := extraDirectivePattern.FindStringSubmatch(trimmed)
+		if match == nil {
+			return "", fmt.Errorf("extra directive line %d is not an allowed php_value or php_flag directive", i+1)
+		}
+		key := strings.ToLower(match[1])
+		if prohibitedExtraDirectives[key] {
+			return "", fmt.Errorf("extra directive line %d cannot override %s", i+1, key)
+		}
+		cleaned = append(cleaned, trimmed)
+	}
+	return strings.Join(cleaned, "\n"), nil
+}
+
+func sanitizeSettings(s Settings) (Settings, error) {
+	scalars := map[string]string{
+		"memory_limit":                s.MemoryLimit,
+		"post_max_size":               s.PostMaxSize,
+		"upload_max_filesize":         s.UploadMaxFilesize,
+		"disable_functions":           s.DisableFunctions,
+		"error_reporting":             s.ErrorReporting,
+		"include_path":                s.IncludePath,
+		"open_basedir":                s.OpenBasedir,
+		"session_save_path":           s.SessionSavePath,
+		"mail_force_extra_parameters": s.MailForceExtraParameters,
+		"pm_strategy":                 s.PMStrategy,
+	}
+	for name, value := range scalars {
+		if strings.ContainsAny(value, "\r\n\x00") {
+			return Settings{}, fmt.Errorf("setting %s contains a line break or NUL character", name)
+		}
+	}
+	cleaned, err := sanitizeExtraDirectives(s.ExtraDirectives)
+	if err != nil {
+		return Settings{}, err
+	}
+	s.ExtraDirectives = cleaned
+	return s, nil
+}
+
 // poolTmpl contains the complete PHP-FPM pool configuration.
 var poolTmpl = template.Must(template.New("pool").Funcs(template.FuncMap{"onoff": onoff}).Parse(`[{{.SystemUser}}]
 user = {{.SystemUser}}
@@ -239,7 +309,7 @@ php_admin_flag[file_uploads] = {{onoff .S.FileUploads}}
 php_admin_flag[short_open_tag] = {{onoff .S.ShortOpenTag}}
 php_admin_value[error_reporting] = {{.S.ErrorReporting}}
 php_admin_value[include_path] = {{.S.IncludePath}}
-{{if .S.OpenBasedir}}php_admin_value[open_basedir] = {{.S.OpenBasedir}}{{end}}
+php_admin_value[open_basedir] = {{if .S.OpenBasedir}}{{.S.OpenBasedir}}{{else}}/home/{{.SystemUser}}/:/tmp/{{end}}
 {{if .S.MailForceExtraParameters}}php_admin_value[mail.force_extra_parameters] = {{.S.MailForceExtraParameters}}{{end}}
 php_admin_value[session.save_path] = {{if .S.SessionSavePath}}{{.S.SessionSavePath}}{{else}}/home/{{.SystemUser}}/tmp{{end}}
 php_admin_value[upload_tmp_dir] = /home/{{.SystemUser}}/tmp
@@ -254,8 +324,12 @@ catch_workers_output = yes
 
 // RenderPool generates pool configuration from settings, system user, and socket directory.
 func RenderPool(systemUser string, sockDir string, s Settings) (string, error) {
+	sanitized, err := sanitizeSettings(s)
+	if err != nil {
+		return "", err
+	}
 	var buf bytes.Buffer
-	err := poolTmpl.Execute(&buf, map[string]any{"SystemUser": systemUser, "SockDir": sockDir, "S": s})
+	err = poolTmpl.Execute(&buf, map[string]any{"SystemUser": systemUser, "SockDir": sockDir, "S": sanitized})
 	return buf.String(), err
 }
 
@@ -405,6 +479,12 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 		version = req.PHPVersion
 	}
 
+	sanitized, err := sanitizeSettings(req.Settings)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid PHP settings")
+		return
+	}
+	req.Settings = sanitized
 	if err := Save(r.Context(), h.DB, id, req.Settings); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to save PHP settings")
 		return
