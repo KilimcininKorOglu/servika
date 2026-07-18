@@ -29,11 +29,11 @@ func (h *Handlers) setSuspended(w http.ResponseWriter, r *http.Request, suspende
 		httpx.WriteError(w, http.StatusBadRequest, "invalid domain ID")
 		return
 	}
-	var domainName, previousStatus string
+	var domainName, systemUser, previousStatus string
 	var isDemo, previousSuspended int
 	err = h.DB.QueryRowContext(r.Context(),
-		`SELECT domain_name, is_demo, status, COALESCE(suspended,0) FROM domains WHERE id=?`, id).
-		Scan(&domainName, &isDemo, &previousStatus, &previousSuspended)
+		`SELECT domain_name, system_user, is_demo, status, COALESCE(suspended,0) FROM domains WHERE id=?`, id).
+		Scan(&domainName, &systemUser, &isDemo, &previousStatus, &previousSuspended)
 	if errors.Is(err, sql.ErrNoRows) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -71,6 +71,19 @@ func (h *Handlers) setSuspended(w http.ResponseWriter, r *http.Request, suspende
 		httpx.WriteError(w, http.StatusInternalServerError, "could not update domain vhost")
 		return
 	}
+
+	ftpStatus := "active"
+	if suspended {
+		ftpStatus = "suspended"
+	}
+	if _, err := h.DB.ExecContext(r.Context(),
+		`UPDATE ftp_accounts SET status=? WHERE domain_id=?`, ftpStatus, id); err != nil {
+		log.Printf("update FTP account suspension state for domain %d: %v", id, err)
+	}
+	if systemUser != "" {
+		provisioner.SuspendUserRuntime(systemUser, suspended)
+	}
+
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"ok": true, "id": id, "domain_name": domainName, "suspended": suspended,
 	})

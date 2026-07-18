@@ -73,6 +73,7 @@ func main() {
 	// migrations
 	runMigrations(d)
 	provisioner.Init(d)
+	middleware.Init(d)
 	if err := dns.SeedTemplateIfEmpty(context.Background(), d); err != nil {
 		log.Printf("DNS template seed warn: %v", err)
 	}

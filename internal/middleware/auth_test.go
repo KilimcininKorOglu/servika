@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"servika/internal/auth"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func TestRequireAuthRejectsOversizedTokenBeforeParsing(t *testing.T) {
@@ -26,6 +28,65 @@ func TestRequireAuthRejectsOversizedTokenBeforeParsing(t *testing.T) {
 	}
 	if nextCalled {
 		t.Fatal("RequireAuth() called the protected handler for an oversized token")
+	}
+}
+
+func TestCustomerScopeRejectsSuspendedCustomer(t *testing.T) {
+	originalLookup := suspendedDomainLookup
+	t.Cleanup(func() { suspendedDomainLookup = originalLookup })
+	suspendedDomainLookup = func(context.Context, int64) (bool, error) {
+		return true, nil
+	}
+
+	nextCalled := false
+	handler := CustomerScope(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		nextCalled = true
+	}))
+	routeContext := chi.NewRouteContext()
+	routeContext.URLParams.Add("id", "42")
+	requestContext := context.WithValue(context.Background(), chi.RouteCtxKey, routeContext)
+	requestContext = context.WithValue(requestContext, customerClaimsKey, &auth.CustomerClaims{DomainID: 42})
+	request := httptest.NewRequest(http.MethodGet, "/domains/42", nil).WithContext(requestContext)
+	response := httptest.NewRecorder()
+
+	handler.ServeHTTP(response, request)
+
+	if response.Code != http.StatusForbidden {
+		t.Fatalf("CustomerScope() status = %d, want %d", response.Code, http.StatusForbidden)
+	}
+	if nextCalled {
+		t.Fatal("CustomerScope() allowed a suspended customer")
+	}
+	if !strings.Contains(response.Body.String(), "Account is suspended") {
+		t.Fatalf("CustomerScope() response = %s", response.Body.String())
+	}
+}
+
+func TestCustomerScopeFailsClosedWhenSuspensionCannotBeVerified(t *testing.T) {
+	originalLookup := suspendedDomainLookup
+	t.Cleanup(func() { suspendedDomainLookup = originalLookup })
+	suspendedDomainLookup = func(context.Context, int64) (bool, error) {
+		return false, context.Canceled
+	}
+
+	nextCalled := false
+	handler := CustomerScope(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		nextCalled = true
+	}))
+	routeContext := chi.NewRouteContext()
+	routeContext.URLParams.Add("id", "42")
+	requestContext := context.WithValue(context.Background(), chi.RouteCtxKey, routeContext)
+	requestContext = context.WithValue(requestContext, customerClaimsKey, &auth.CustomerClaims{DomainID: 42})
+	request := httptest.NewRequest(http.MethodGet, "/domains/42", nil).WithContext(requestContext)
+	response := httptest.NewRecorder()
+
+	handler.ServeHTTP(response, request)
+
+	if response.Code != http.StatusInternalServerError {
+		t.Fatalf("CustomerScope() status = %d, want %d", response.Code, http.StatusInternalServerError)
+	}
+	if nextCalled {
+		t.Fatal("CustomerScope() allowed access without verifying suspension state")
 	}
 }
 

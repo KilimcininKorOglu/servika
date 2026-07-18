@@ -2,6 +2,8 @@ package provisioner
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -141,6 +143,46 @@ func TestPHPPoolConfinesTenantAndDisablesProcessExecution(t *testing.T) {
 		if !strings.Contains(config, function) {
 			t.Errorf("PHP pool does not disable %q", function)
 		}
+	}
+}
+
+func TestTenantHomePermissionsBlockOtherUsersAndPermitWebGroup(t *testing.T) {
+	home := t.TempDir()
+	publicHTML := filepath.Join(home, "public_html")
+	if err := os.Mkdir(publicHTML, 0755); err != nil {
+		t.Fatalf("create public_html: %v", err)
+	}
+
+	applyHomePerms(home, os.Getuid(), os.Getgid())
+
+	homeInfo, err := os.Stat(home)
+	if err != nil {
+		t.Fatalf("stat tenant home: %v", err)
+	}
+	if got := homeInfo.Mode().Perm(); got != 0710 {
+		t.Fatalf("tenant home mode = %#o, want 0710", got)
+	}
+	publicInfo, err := os.Stat(publicHTML)
+	if err != nil {
+		t.Fatalf("stat public_html: %v", err)
+	}
+	if got := publicInfo.Mode().Perm(); got != 0750 {
+		t.Fatalf("public_html mode = %#o, want 0750", got)
+	}
+}
+
+func TestTenantCommandUsesExplicitArgumentsAndEnvironment(t *testing.T) {
+	t.Setenv("SERVIKA_JWT_SECRET", "must-not-leak")
+	command := tenantCommand("pkill", "-KILL", "-u", "c_example_com")
+	if got := command.Args; len(got) != 4 || got[1] != "-KILL" || got[2] != "-u" || got[3] != "c_example_com" {
+		t.Fatalf("tenant command argv = %#v", got)
+	}
+	environment := strings.Join(command.Env, "\n")
+	if strings.Contains(environment, "SERVIKA_JWT_SECRET") {
+		t.Fatal("tenant command inherited a panel secret")
+	}
+	if !strings.Contains(environment, "PATH=/usr/sbin:/usr/bin:/sbin:/bin") {
+		t.Fatal("tenant command does not define its executable search path")
 	}
 }
 

@@ -18,6 +18,7 @@ import (
 
 var (
 	domainNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9.-]{1,251}\.[a-z]{2,24}$`)
+	tenantUserPattern = regexp.MustCompile(`^c_[a-z0-9_]+$`)
 	slugSan           = regexp.MustCompile(`[^a-z0-9]+`)
 	packageDB         *sql.DB
 )
@@ -41,6 +42,7 @@ func Init(db *sql.DB) {
 	healCacheZoneOnStartup()
 	healPanelVhostHeadersOnStartup()
 	healVhostsOnStartup()
+	HealHomePerms()
 }
 
 func healCacheZoneOnStartup() {
@@ -636,7 +638,7 @@ func Provision(domainName, phpVersion string) (*Result, error) {
 
 	dirs := []string{"public_html", "logs", "tmp", "ssl", ".cron"}
 	for _, d := range dirs {
-		_ = os.MkdirAll(filepath.Join(home, d), 0755)
+		_ = os.MkdirAll(filepath.Join(home, d), 0750)
 	}
 
 	uid, gid, err := uidGid(systemUser)
@@ -647,18 +649,20 @@ func Provision(domainName, phpVersion string) (*Result, error) {
 		})
 	}
 
-	_ = os.Chmod(home, 0711)
 	_ = filepath.Walk(filepath.Join(home, "public_html"), func(p string, info os.FileInfo, _ error) error {
 		if info == nil {
 			return nil
 		}
 		if info.IsDir() {
-			_ = os.Chmod(p, 0755)
+			_ = os.Chmod(p, 0750)
 		} else {
 			_ = os.Chmod(p, 0644)
 		}
 		return nil
 	})
+	if err == nil {
+		hardenHomePerms(home, uid)
+	}
 
 	indexPath := filepath.Join(home, "public_html", "index.html")
 	_ = os.WriteFile(indexPath, []byte(welcomeHTML(domainName)), 0644)
@@ -883,6 +887,108 @@ func uidGid(username string) (int, int, error) {
 	uid, _ := strconv.Atoi(account.Uid)
 	gid, _ := strconv.Atoi(account.Gid)
 	return uid, gid, nil
+}
+
+func applyHomePerms(home string, uid, nginxGID int) {
+	publicHTML := filepath.Join(home, "public_html")
+	_ = os.Chown(home, uid, nginxGID)
+	_ = os.Chmod(home, 0710)
+	_ = os.Chown(publicHTML, uid, nginxGID)
+	_ = os.Chmod(publicHTML, 0750)
+}
+
+func hardenHomePerms(home string, uid int) {
+	_, nginxGID, err := uidGid("nginx")
+	if err == nil {
+		applyHomePerms(home, uid, nginxGID)
+		return
+	}
+	log.Printf("tenant home permissions: nginx account not found, retaining service-compatible permissions for %s", home)
+	_ = os.Chmod(home, 0711)
+	_ = os.Chmod(filepath.Join(home, "public_html"), 0755)
+}
+
+// HealHomePerms applies tenant-isolating ownership and permissions to existing managed homes.
+func HealHomePerms() {
+	if packageDB == nil {
+		return
+	}
+	rows, err := packageDB.Query(`SELECT DISTINCT system_user FROM domains`)
+	if err != nil {
+		log.Printf("heal tenant home permissions: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	updated := 0
+	for rows.Next() {
+		var systemUser string
+		if err := rows.Scan(&systemUser); err != nil || !tenantUserPattern.MatchString(systemUser) {
+			continue
+		}
+		home := filepath.Join("/home", systemUser)
+		info, err := os.Stat(home)
+		if err != nil || !info.IsDir() {
+			continue
+		}
+		uid, _, err := uidGid(systemUser)
+		if err != nil {
+			continue
+		}
+		hardenHomePerms(home, uid)
+		updated++
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("heal tenant home permissions rows: %v", err)
+	}
+	if updated > 0 {
+		log.Printf("healed permissions for %d tenant homes", updated)
+	}
+}
+
+func tenantCommand(name string, args ...string) *exec.Cmd {
+	command := exec.Command(name, args...)
+	command.Env = []string{
+		"PATH=/usr/sbin:/usr/bin:/sbin:/bin",
+		"LANG=C",
+		"LC_ALL=C",
+	}
+	return command
+}
+
+// SuspendUserRuntime disables or restores cron execution and terminates managed tenant processes.
+func SuspendUserRuntime(systemUser string, suspended bool) {
+	if !tenantUserPattern.MatchString(systemUser) {
+		return
+	}
+	const suspendedCronDir = "/var/lib/servika/cron-suspended"
+	cronSpool := filepath.Join("/var/spool/cron", systemUser)
+	storedCron := filepath.Join(suspendedCronDir, systemUser)
+
+	if suspended {
+		if _, err := os.Stat(cronSpool); err == nil {
+			if err := os.MkdirAll(suspendedCronDir, 0700); err != nil {
+				log.Printf("suspend tenant runtime: create cron store for %s: %v", systemUser, err)
+			} else if err := os.Rename(cronSpool, storedCron); err != nil {
+				log.Printf("suspend tenant runtime: disable crontab for %s: %v", systemUser, err)
+			}
+		}
+		_, _ = tenantCommand("pkill", "-KILL", "-u", systemUser).CombinedOutput()
+		return
+	}
+
+	if _, err := os.Stat(storedCron); err == nil {
+		if err := os.MkdirAll("/var/spool/cron", 0700); err != nil {
+			log.Printf("resume tenant runtime: create cron spool for %s: %v", systemUser, err)
+			return
+		}
+		if err := os.Rename(storedCron, cronSpool); err != nil {
+			log.Printf("resume tenant runtime: restore crontab for %s: %v", systemUser, err)
+			return
+		}
+		_ = os.Chmod(cronSpool, 0600)
+		_, _ = tenantCommand("restorecon", cronSpool).CombinedOutput()
+	}
 }
 
 func welcomeHTML(domain string) string {

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,6 +12,24 @@ import (
 
 	"github.com/go-chi/chi/v5"
 )
+
+var scopeDB *sql.DB
+
+var suspendedDomainLookup = func(ctx context.Context, domainID int64) (bool, error) {
+	if scopeDB == nil {
+		return false, nil
+	}
+	var suspended int
+	err := scopeDB.QueryRowContext(ctx,
+		`SELECT COALESCE(suspended,0) FROM domains WHERE id=?`, domainID).
+		Scan(&suspended)
+	return suspended == 1, err
+}
+
+// Init configures the database used to enforce suspended customer scopes.
+func Init(db *sql.DB) {
+	scopeDB = db
+}
 
 type ctxKey int
 
@@ -103,6 +122,15 @@ func CustomerScopeParam(param string) func(http.Handler) http.Handler {
 			urlID, _ := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
 			if urlID != mc.DomainID {
 				httpx.WriteError(w, http.StatusForbidden, "Access to this domain is forbidden")
+				return
+			}
+			suspended, err := suspendedDomainLookup(r.Context(), mc.DomainID)
+			if err != nil {
+				httpx.WriteError(w, http.StatusInternalServerError, "Could not verify account status")
+				return
+			}
+			if suspended {
+				httpx.WriteError(w, http.StatusForbidden, "Account is suspended")
 				return
 			}
 			next.ServeHTTP(w, r)
