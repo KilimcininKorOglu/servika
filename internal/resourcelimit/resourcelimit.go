@@ -313,31 +313,84 @@ func mysqlLimitSQL(user, host string, l Limits) (string, error) {
 		nonNegative(l.DBMaxUpdatesPerHour)), nil
 }
 
-// ApplyMySQLLimits applies native MariaDB limits to every database account owned by a domain.
+func parseMySQLAccountHosts(output string) map[string][]string {
+	hosts := make(map[string][]string)
+	for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
+		fields := strings.SplitN(line, "\t", 2)
+		if len(fields) != 2 {
+			continue
+		}
+		user := strings.TrimSpace(fields[0])
+		host := strings.TrimSpace(fields[1])
+		if user != "" && host != "" {
+			hosts[user] = append(hosts[user], host)
+		}
+	}
+	return hosts
+}
+
+func mysqlAccountHosts(ctx context.Context) (map[string][]string, error) {
+	command := resourceCommandContext(ctx, "mysql", "-uroot", "-N", "-B", "-e",
+		"SELECT User,Host FROM mysql.user")
+	output, err := command.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("list MariaDB account hosts: %s: %w", strings.TrimSpace(string(output)), err)
+	}
+	return parseMySQLAccountHosts(string(output)), nil
+}
+
+func mysqlLimitStatements(users []string, accountHosts map[string][]string, l Limits) []string {
+	var statements []string
+	for _, user := range users {
+		if !governedMySQLAccount(user) {
+			log.Printf("mysql governor skipped account %q: invalid or protected username", user)
+			continue
+		}
+		hosts := accountHosts[user]
+		if len(hosts) == 0 {
+			log.Printf("mysql governor skipped account %q: no MariaDB host found", user)
+			continue
+		}
+		for _, host := range hosts {
+			statement, err := mysqlLimitSQL(user, host, l)
+			if err != nil {
+				log.Printf("mysql governor skipped account %q at host %q: %v", user, host, err)
+				continue
+			}
+			statements = append(statements, statement)
+		}
+	}
+	return statements
+}
+
+// ApplyMySQLLimits applies native MariaDB limits to every host of each database account owned by a domain.
 func ApplyMySQLLimits(ctx context.Context, db *sql.DB, domainID int64, l Limits) error {
-	rows, err := db.QueryContext(ctx,
-		`SELECT db_user, COALESCE(db_host,'localhost') FROM db_accounts WHERE domain_id=?`, domainID)
+	rows, err := db.QueryContext(ctx, `SELECT db_user FROM db_accounts WHERE domain_id=?`, domainID)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 
-	var statements []string
+	var users []string
 	for rows.Next() {
-		var user, host string
-		if err := rows.Scan(&user, &host); err != nil {
+		var user string
+		if err := rows.Scan(&user); err != nil {
 			return err
 		}
-		statement, err := mysqlLimitSQL(user, host, l)
-		if err != nil {
-			log.Printf("mysql governor skipped account %q: %v", user, err)
-			continue
-		}
-		statements = append(statements, statement)
+		users = append(users, user)
 	}
 	if err := rows.Err(); err != nil {
 		return err
 	}
+	if len(users) == 0 {
+		return nil
+	}
+
+	accountHosts, err := mysqlAccountHosts(ctx)
+	if err != nil {
+		return err
+	}
+	statements := mysqlLimitStatements(users, accountHosts, l)
 	if len(statements) == 0 {
 		return nil
 	}

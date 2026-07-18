@@ -41,6 +41,35 @@ func TestMySQLLimitSQLBuildsAllLimitsAndClampsNegativeValues(t *testing.T) {
 	}
 }
 
+func TestParseMySQLAccountHostsPreservesEveryRegisteredHost(t *testing.T) {
+	hosts := parseMySQLAccountHosts("wpu_deadbeef\tlocalhost\nwpu_deadbeef\t%\nc_tenant_db\t127.0.0.1\nmalformed\n")
+
+	if got := strings.Join(hosts["wpu_deadbeef"], ","); got != "localhost,%" {
+		t.Fatalf("parseMySQLAccountHosts() hosts = %q, want %q", got, "localhost,%")
+	}
+	if got := strings.Join(hosts["c_tenant_db"], ","); got != "127.0.0.1" {
+		t.Fatalf("parseMySQLAccountHosts() hosts = %q, want %q", got, "127.0.0.1")
+	}
+}
+
+func TestMySQLLimitStatementsCoverEveryActualHost(t *testing.T) {
+	statements := mysqlLimitStatements(
+		[]string{"wpu_deadbeef"},
+		map[string][]string{"wpu_deadbeef": {"localhost", "%"}},
+		Limits{MySQLMaxConnections: 12, DBMaxQueriesPerHour: 300},
+	)
+
+	if len(statements) != 2 {
+		t.Fatalf("mysqlLimitStatements() returned %d statements, want 2", len(statements))
+	}
+	for _, host := range []string{"localhost", "%"} {
+		expected := "ALTER USER 'wpu_deadbeef'@'" + host + "'"
+		if !strings.Contains(strings.Join(statements, "\n"), expected) {
+			t.Fatalf("mysqlLimitStatements() omitted %q from %q", expected, statements)
+		}
+	}
+}
+
 func TestQueryExceedsLimitOnlyAfterConfiguredThreshold(t *testing.T) {
 	tests := []struct {
 		seconds int
