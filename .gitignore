@@ -1,0 +1,37 @@
+# --- Frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-error.log*
+
+# --- Go build outputs (local builds at repository root) ---
+/servika-server
+/servika-seed-admin
+/server
+*.exe
+*.test
+*.out
+
+# --- Environment / secrets ---
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# --- Runtime data (must not be committed) ---
+*.log
+*.sqlite
+*.db
+/data/
+/logs/
+/backups/
+
+# --- Editor / OS ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
+__pycache__/

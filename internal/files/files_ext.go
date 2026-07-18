@@ -1,0 +1,631 @@
+package files
+
+// files_ext.go provides Write, Rename, Chmod, and a symlink-aware jail.
+// The original jailJoin is in files.go; this file adds handlers and hardening.
+
+import (
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
+
+	"servika/internal/httpx"
+)
+
+// jailJoinStrict is symlink-aware. It resolves the parent directory with EvalSymlinks,
+// then joins the leaf and prevents escape through symlinks.
+func jailJoinStrict(home, rel string) (string, error) {
+	rel = filepath.Clean("/" + rel)
+	wanted := filepath.Clean(filepath.Join(home, rel))
+
+	// homeResolved
+	homeResolved, err := filepath.EvalSymlinks(home)
+	if err != nil {
+		homeResolved = home
+	}
+
+	// Find the resolvable portion of wanted.
+	test := wanted
+	for {
+		if r, err := filepath.EvalSymlinks(test); err == nil {
+			// The test path exists. Append and validate the remainder.
+			rest := strings.TrimPrefix(wanted, test)
+			full := filepath.Clean(filepath.Join(r, rest))
+			if full == homeResolved || strings.HasPrefix(full, homeResolved+string(filepath.Separator)) {
+				return full, nil
+			}
+			return "", errEscape
+		}
+		// Otherwise, ascend to the parent.
+		parent := filepath.Dir(test)
+		if parent == test {
+			// The root has been reached.
+			break
+		}
+		test = parent
+	}
+	// No ancestor resolved, which is rare. Fall back to a plain check.
+	if wanted == homeResolved || strings.HasPrefix(wanted, homeResolved+string(filepath.Separator)) {
+		return wanted, nil
+	}
+	return "", errEscape
+}
+
+// ----- Write (editor save) -----
+
+type writeRequest struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
+func (h *Handlers) Write(w http.ResponseWriter, r *http.Request) {
+	home, systemUser, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	var req writeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	abs, err := jailJoinStrict(home, req.Path)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	if len(req.Content) > 5*1024*1024 {
+		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "files over 5 MB cannot be saved with the editor")
+		return
+	}
+	// Preserve permissions when the file already exists.
+	mode := os.FileMode(0644)
+	if info, err := os.Stat(abs); err == nil {
+		mode = info.Mode().Perm()
+	}
+	if err := os.WriteFile(abs, []byte(req.Content), mode); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	chown(abs, systemUser)
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"ok":   true,
+		"path": req.Path,
+		"size": len(req.Content),
+	})
+}
+
+// ----- Rename / Move -----
+
+type renameReq struct {
+	Old string `json:"old"`
+	New string `json:"new"`
+}
+
+func (h *Handlers) Rename(w http.ResponseWriter, r *http.Request) {
+	home, systemUser, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	var req renameReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	oldPath, err := jailJoinStrict(home, req.Old)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	newPath, err := jailJoinStrict(home, req.New)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	if oldPath == home || newPath == home {
+		httpx.WriteError(w, http.StatusBadRequest, "the home directory cannot be moved")
+		return
+	}
+	if _, err := os.Stat(oldPath); err != nil {
+		httpx.WriteError(w, http.StatusNotFound, "source missing")
+		return
+	}
+	// Ensure the target directory exists.
+	_ = os.MkdirAll(filepath.Dir(newPath), 0755)
+	chown(filepath.Dir(newPath), systemUser)
+	if err := os.Rename(oldPath, newPath); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	chown(newPath, systemUser)
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "old": req.Old, "new": req.New})
+}
+
+// ----- Chmod -----
+
+type chmodReq struct {
+	Path string `json:"path"`
+	Mode string `json:"mode"` // Octal string such as "0644".
+}
+
+func (h *Handlers) Chmod(w http.ResponseWriter, r *http.Request) {
+	home, systemUser, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	var req chmodReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	abs, err := jailJoinStrict(home, req.Path)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	mod := strings.TrimPrefix(req.Mode, "0")
+	n, err := strconv.ParseUint(mod, 8, 32)
+	if err != nil || n > 0o777 {
+		httpx.WriteError(w, http.StatusBadRequest, "mode must be octal (0000-0777)")
+		return
+	}
+	if err := os.Chmod(abs, os.FileMode(n)); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	chown(abs, systemUser)
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "path": req.Path, "mode": req.Mode})
+}
+
+var _ = errors.New // keep import
+
+// ----- Extract ZIP, TAR, or TAR.GZ -----
+
+type extractReq struct {
+	Path   string `json:"path"`   // Archive path.
+	Target string `json:"target"` // Optional extraction directory. Defaults to the archive directory.
+}
+
+func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
+	home, systemUser, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	var req extractReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	abs, err := jailJoinStrict(home, req.Path)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	info, err := os.Stat(abs)
+	if err != nil || info.IsDir() {
+		httpx.WriteError(w, http.StatusBadRequest, "file not found or path is a directory")
+		return
+	}
+
+	target := req.Target
+	if target == "" {
+		target = filepath.Dir(req.Path)
+	}
+	targetAbs, err := jailJoinStrict(home, target)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	if err := os.MkdirAll(targetAbs, 0755); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+
+	low := strings.ToLower(abs)
+	var cmd *exec.Cmd
+	var gzipOutput *os.File
+	var gzipTarget string
+	switch {
+	case strings.HasSuffix(low, ".zip"):
+		cmd = exec.Command("unzip", "-o", "-q", abs, "-d", targetAbs)
+	case strings.HasSuffix(low, ".tar.gz") || strings.HasSuffix(low, ".tgz"):
+		cmd = exec.Command("tar", "-xzf", abs, "-C", targetAbs)
+	case strings.HasSuffix(low, ".tar.bz2") || strings.HasSuffix(low, ".tbz2"):
+		cmd = exec.Command("tar", "-xjf", abs, "-C", targetAbs)
+	case strings.HasSuffix(low, ".tar.xz") || strings.HasSuffix(low, ".txz"):
+		cmd = exec.Command("tar", "-xJf", abs, "-C", targetAbs)
+	case strings.HasSuffix(low, ".tar"):
+		cmd = exec.Command("tar", "-xf", abs, "-C", targetAbs)
+	case strings.HasSuffix(low, ".gz"):
+		gzipTarget = filepath.Join(targetAbs, strings.TrimSuffix(filepath.Base(abs), ".gz"))
+		gzipOutput, err = os.OpenFile(gzipTarget, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+			return
+		}
+		cmd = exec.Command("gunzip", "-k", "-c", abs)
+		cmd.Stdout = gzipOutput
+	default:
+		httpx.WriteError(w, http.StatusBadRequest, "unsupported format (zip, tar, tar.gz/tgz, tar.bz2, tar.xz, gz)")
+		return
+	}
+
+	if gzipOutput != nil {
+		err = cmd.Run()
+		if closeErr := gzipOutput.Close(); err == nil {
+			err = closeErr
+		}
+		if err != nil {
+			_ = os.Remove(gzipTarget)
+		}
+	} else {
+		_, err = cmd.CombinedOutput()
+	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+
+	// In an isolated environment, assign all extracted files to the domain user.
+	_, _ = exec.Command("chown", "-R", systemUser+":"+systemUser, targetAbs).CombinedOutput()
+	_, _ = exec.Command("restorecon", "-R", targetAbs).CombinedOutput()
+
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"ok":     true,
+		"path":   req.Path,
+		"target": target,
+	})
+}
+
+// ----- Bulk copy and move -----
+
+type bulkMoveCopyReq struct {
+	Sources []string `json:"sources"`
+	Target  string   `json:"target"` // Target folder that receives the sources.
+}
+
+func (h *Handlers) Copy(w http.ResponseWriter, r *http.Request) {
+	h.bulkMoveCopy(w, r, false)
+}
+
+func (h *Handlers) Move(w http.ResponseWriter, r *http.Request) {
+	h.bulkMoveCopy(w, r, true)
+}
+
+func (h *Handlers) bulkMoveCopy(w http.ResponseWriter, r *http.Request, move bool) {
+	home, systemUser, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	var req bulkMoveCopyReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	targetAbs, err := jailJoinStrict(home, req.Target)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	info, err := os.Stat(targetAbs)
+	if err != nil || !info.IsDir() {
+		httpx.WriteError(w, http.StatusBadRequest, "target is not a directory")
+		return
+	}
+
+	successful := 0
+	errorsList := []string{}
+	for _, source := range req.Sources {
+		sourceAbs, err := jailJoinStrict(home, source)
+		if err != nil {
+			errorsList = append(errorsList, source+": invalid source path")
+			continue
+		}
+		destination := filepath.Join(targetAbs, filepath.Base(sourceAbs))
+		if destination == sourceAbs {
+			errorsList = append(errorsList, source+": source and target are identical")
+			continue
+		}
+		var operationErr error
+		if move {
+			operationErr = os.Rename(sourceAbs, destination)
+		} else {
+			operationErr = copyAny(sourceAbs, destination)
+		}
+		if operationErr != nil {
+			errorsList = append(errorsList, source+": operation failed")
+			continue
+		}
+		_, _ = exec.Command("chown", "-R", systemUser+":"+systemUser, destination).CombinedOutput()
+		successful++
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"ok": len(errorsList) == 0, "successful": successful, "errors": errorsList,
+	})
+}
+
+func copyAny(src, dst string) error {
+	info, err := os.Lstat(src)
+	if err != nil {
+		return err
+	}
+	if info.IsDir() {
+		return copyDir(src, dst)
+	}
+	return copyFile(src, dst, info.Mode().Perm())
+}
+
+func copyFile(src, dst string, perm os.FileMode) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, perm)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(out, in)
+	return err
+}
+
+func copyDir(src, dst string) error {
+	si, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dst, si.Mode().Perm()); err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		s := filepath.Join(src, e.Name())
+		d := filepath.Join(dst, e.Name())
+		if err := copyAny(s, d); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ----- Archive selected files -----
+
+type archiveReq struct {
+	Resources  []string `json:"resources"`
+	OutputPath string   `json:"output_path"` // Example: /public_html/backup.zip.
+	Format     string   `json:"format"`      // zip | tar.gz
+}
+
+func (h *Handlers) Archive(w http.ResponseWriter, r *http.Request) {
+	home, systemUser, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	var req archiveReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if len(req.Resources) == 0 {
+		httpx.WriteError(w, http.StatusBadRequest, "source missing")
+		return
+	}
+	if req.Format == "" {
+		req.Format = "zip"
+	}
+	outputAbs, err := jailJoinStrict(home, req.OutputPath)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	_ = os.MkdirAll(filepath.Dir(outputAbs), 0755)
+
+	// Resolve all resources beneath home and archive them with relative names.
+	// Find their common parent and run from there.
+	var args []string
+	if req.Format == "zip" {
+		args = []string{"-r", "-q", outputAbs}
+		for _, k := range req.Resources {
+			kAbs, err := jailJoinStrict(home, k)
+			if err != nil {
+				continue
+			}
+			// Change directory and use a relative name.
+			args = append(args, kAbs)
+		}
+		_, err := exec.Command("zip", args...).CombinedOutput()
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+			return
+		}
+	} else { // tar.gz
+		args = []string{"-czf", outputAbs}
+		for _, k := range req.Resources {
+			kAbs, err := jailJoinStrict(home, k)
+			if err != nil {
+				continue
+			}
+			args = append(args, kAbs)
+		}
+		_, err := exec.Command("tar", args...).CombinedOutput()
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+			return
+		}
+	}
+	_, _ = exec.Command("chown", systemUser+":"+systemUser, outputAbs).CombinedOutput()
+	_, _ = exec.Command("restorecon", outputAbs).CombinedOutput()
+
+	info, _ := os.Stat(outputAbs)
+	var size int64
+	if info != nil {
+		size = info.Size()
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"ok": true, "output_path": req.OutputPath, "size": size,
+	})
+}
+
+// ----- New empty file -----
+
+type newFileRequest struct {
+	Path string `json:"path"`
+}
+
+func (h *Handlers) NewFile(w http.ResponseWriter, r *http.Request) {
+	home, systemUser, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	var req newFileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	abs, err := jailJoinStrict(home, req.Path)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	if _, err := os.Stat(abs); err == nil {
+		httpx.WriteError(w, http.StatusConflict, "file already exists")
+		return
+	}
+	f, err := os.OpenFile(abs, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	f.Close()
+	chown(abs, systemUser)
+	httpx.WriteJSON(w, http.StatusCreated, map[string]any{"ok": true, "path": req.Path})
+}
+
+// ----- Calculate size with du -sb -----
+
+func (h *Handlers) CalculateSize(w http.ResponseWriter, r *http.Request) {
+	home, _, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	rel := r.URL.Query().Get("path")
+	abs, err := jailJoinStrict(home, rel)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	out, err := exec.Command("du", "-sb", abs).CombinedOutput()
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	parts := strings.Fields(string(out))
+	if len(parts) < 1 {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not parse du output")
+		return
+	}
+	var b int64
+	for _, c := range parts[0] {
+		if c < '0' || c > '9' {
+			break
+		}
+		b = b*10 + int64(c-'0')
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"path":   rel,
+		"size_b": b,
+	})
+}
+
+// ----- Recursive search by name pattern -----
+
+func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
+	home, _, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		return
+	}
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	if q == "" {
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{"content": []any{}, "total": 0})
+		return
+	}
+	rel := r.URL.Query().Get("path")
+	if rel == "" {
+		rel = "/"
+	}
+	baseAbs, err := jailJoinStrict(home, rel)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	// Security: q is only a file-name pattern. Use iname without a shell to prevent injection.
+	q = strings.ReplaceAll(q, "*", "")
+	q = strings.ReplaceAll(q, "?", "")
+	pattern := "*" + q + "*"
+
+	out, _ := exec.Command("find", baseAbs, "-iname", pattern, "-printf", "%p\t%s\t%y\t%T@\n").Output()
+	results := []Entry{}
+	for _, ln := range strings.Split(string(out), "\n") {
+		if ln == "" {
+			continue
+		}
+		parts := strings.SplitN(ln, "\t", 4)
+		if len(parts) < 4 {
+			continue
+		}
+		absp := parts[0]
+		size := int64(0)
+		for _, c := range parts[1] {
+			if c < '0' || c > '9' {
+				break
+			}
+			size = size*10 + int64(c-'0')
+		}
+		ftype := "file"
+		if parts[2] == "d" {
+			ftype = "folder"
+		} else if parts[2] == "l" {
+			ftype = "symlink"
+		}
+		// Make the path relative to home.
+		relativePath := strings.TrimPrefix(absp, home)
+		if relativePath == "" {
+			relativePath = "/"
+		}
+		info, _ := os.Stat(absp)
+		mod := "0644"
+		var changedAt string
+		if info != nil {
+			mod = "0" + strconv.FormatInt(int64(info.Mode().Perm()), 8)
+			changedAt = info.ModTime().UTC().Format("2006-01-02T15:04:05Z")
+		}
+		results = append(results, Entry{
+			Name: filepath.Base(absp), Path: filepath.ToSlash(relativePath),
+			Type: ftype, SizeBytes: size, Mode: mod, Changed: changedAt,
+		})
+		if len(results) >= 500 {
+			break
+		}
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"content": results, "total": len(results), "q": q,
+	})
+}

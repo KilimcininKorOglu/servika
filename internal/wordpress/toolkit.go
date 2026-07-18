@@ -1,0 +1,379 @@
+// toolkit.go provides WordPress plugin, theme, and user management, password resets,
+// core repair, maintenance mode, cache operations, and bulk updates.
+// Commands run as the domain user through runWP or wpStdout, with paths restricted to public_html by resolveDirectory.
+package wordpress
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	"servika/internal/httpx"
+)
+
+// reSlug strictly validates plugin and theme slugs to prevent argument injection, including leading hyphens.
+var reSlug = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$`)
+
+// directoryFromQuery converts the GET dir query parameter into a safe absolute path.
+func (h *Handlers) directoryFromQuery(r *http.Request, systemUser string) (string, error) {
+	d := r.URL.Query().Get("dir")
+	if d == "" {
+		d = "/"
+	}
+	return resolveDirectory(systemUser, d)
+}
+
+// writeJSONArray forwards a wp-cli JSON array unchanged, returning [] for errors or empty output.
+func writeJSONArray(w http.ResponseWriter, raw []byte, err error) {
+	bt := strings.TrimSpace(string(raw))
+	if err != nil || bt == "" {
+		httpx.WriteJSON(w, http.StatusOK, []any{})
+		return
+	}
+	var arr []json.RawMessage
+	if json.Unmarshal([]byte(bt), &arr) != nil {
+		httpx.WriteJSON(w, http.StatusOK, []any{})
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, arr)
+}
+
+// GET /domains/{id}/wordpress/status?dir= returns core version and updates, PHP, database size, and maintenance state.
+func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
+	_, systemUser, _, _, _, ok := h.domain(r)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	dir, err := h.directoryFromQuery(r, systemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	defer cancel()
+
+	// Run five wp-cli calls concurrently so latency is bounded by the slowest call, usually check-update.
+	// Each goroutine writes to a distinct map key.
+	out := map[string]any{"version": "", "update_available": false, "target_version": "",
+		"php": "", "db_mb": "", "maintenance": false}
+	var wg sync.WaitGroup
+	wg.Add(5)
+	go func() {
+		defer wg.Done()
+		if b, e := wpStdout(ctx, systemUser, "core", "version", "--path="+dir); e == nil {
+			out["version"] = strings.TrimSpace(string(b))
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if b, e := wpStdout(ctx, systemUser, "core", "check-update", "--path="+dir, "--format=json"); e == nil {
+			bt := strings.TrimSpace(string(b))
+			if bt != "" && bt != "[]" {
+				var ups []struct {
+					Version string `json:"version"`
+				}
+				if json.Unmarshal([]byte(bt), &ups) == nil && len(ups) > 0 {
+					out["update_available"] = true
+					out["target_version"] = ups[0].Version
+				}
+			}
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if b, e := wpStdout(ctx, systemUser, "eval", "echo PHP_VERSION;", "--path="+dir); e == nil {
+			out["php"] = strings.TrimSpace(string(b))
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if b, e := wpStdout(ctx, systemUser, "db", "size", "--size_format=mb", "--path="+dir); e == nil {
+			out["db_mb"] = strings.TrimSpace(string(b))
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		out["maintenance"] = maintenanceEnabled(dir)
+	}()
+	wg.Wait()
+	httpx.WriteJSON(w, http.StatusOK, out)
+}
+
+// GET /domains/{id}/wordpress/plugins?dir= lists plugins.
+func (h *Handlers) Plugins(w http.ResponseWriter, r *http.Request) {
+	_, systemUser, _, _, _, ok := h.domain(r)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	dir, err := h.directoryFromQuery(r, systemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 40*time.Second)
+	defer cancel()
+	b, e := wpStdout(ctx, systemUser, "plugin", "list", "--path="+dir, "--format=json",
+		"--fields=name,status,version,update,update_version")
+	writeJSONArray(w, b, e)
+}
+
+// GET /domains/{id}/wordpress/themes?dir= lists themes.
+func (h *Handlers) Themes(w http.ResponseWriter, r *http.Request) {
+	_, systemUser, _, _, _, ok := h.domain(r)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	dir, err := h.directoryFromQuery(r, systemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 40*time.Second)
+	defer cancel()
+	b, e := wpStdout(ctx, systemUser, "theme", "list", "--path="+dir, "--format=json",
+		"--fields=name,status,version,update,update_version")
+	writeJSONArray(w, b, e)
+}
+
+// GET /domains/{id}/wordpress/users?dir= lists users.
+func (h *Handlers) Users(w http.ResponseWriter, r *http.Request) {
+	_, systemUser, _, _, _, ok := h.domain(r)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	dir, err := h.directoryFromQuery(r, systemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	defer cancel()
+	b, e := wpStdout(ctx, systemUser, "user", "list", "--path="+dir, "--format=json",
+		"--fields=ID,user_login,user_email,display_name,roles")
+	writeJSONArray(w, b, e)
+}
+
+// prepareMutation resolves the domain, demo state, and directory for mutations.
+// A false return means the error response has already been written.
+func (h *Handlers) prepareMutation(w http.ResponseWriter, r *http.Request, directory string) (systemUser, dir string, ok bool) {
+	_, systemUser, _, _, demo, found := h.domain(r)
+	if !found {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return "", "", false
+	}
+	if demo {
+		httpx.WriteError(w, http.StatusForbidden, "not available for demo subscriptions")
+		return "", "", false
+	}
+	d, err := resolveDirectory(systemUser, directory)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return "", "", false
+	}
+	return systemUser, d, true
+}
+
+// POST /domains/{id}/wordpress/plugin applies {dir, action: update|update-all|active|passive, name}.
+func (h *Handlers) PluginAction(w http.ResponseWriter, r *http.Request) {
+	var req struct{ Dir, Action, Name string }
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
+	if !ok {
+		return
+	}
+	h.packageAction(w, systemUser, dir, "plugin", req.Action, req.Name)
+}
+
+// POST /domains/{id}/wordpress/theme applies {dir, action: update|update-all|active, name}.
+func (h *Handlers) ThemeAction(w http.ResponseWriter, r *http.Request) {
+	var req struct{ Dir, Action, Name string }
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
+	if !ok {
+		return
+	}
+	h.packageAction(w, systemUser, dir, "theme", req.Action, req.Name)
+}
+
+// packageAction performs shared update, activation, and deactivation operations for plugins and themes.
+func (h *Handlers) packageAction(w http.ResponseWriter, systemUser, dir, packageType, action, name string) {
+	var args []string
+	switch action {
+	case "update-all":
+		args = []string{packageType, "update", "--all", "--path=" + dir}
+	case "update":
+		if !reSlug.MatchString(name) {
+			httpx.WriteError(w, http.StatusBadRequest, "invalid name")
+			return
+		}
+		args = []string{packageType, "update", name, "--path=" + dir}
+	case "active":
+		if !reSlug.MatchString(name) {
+			httpx.WriteError(w, http.StatusBadRequest, "invalid name")
+			return
+		}
+		args = []string{packageType, "activate", name, "--path=" + dir}
+	case "passive":
+		if packageType != "plugin" || !reSlug.MatchString(name) {
+			httpx.WriteError(w, http.StatusBadRequest, "invalid action")
+			return
+		}
+		args = []string{packageType, "deactivate", name, "--path=" + dir}
+	default:
+		httpx.WriteError(w, http.StatusBadRequest, "unknown action")
+		return
+	}
+	out, err := runWP(systemUser, args...)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "output": truncateOutput(string(out))})
+}
+
+// POST /domains/{id}/wordpress/user-password updates {dir, user_id, password?}.
+// An empty password generates and returns a secure password.
+func (h *Handlers) UserPassword(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Dir      string `json:"dir"`
+		UserID   int    `json:"user_id"`
+		Password string `json:"password"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
+	if !ok {
+		return
+	}
+	if req.UserID <= 0 {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid user")
+		return
+	}
+	password := strings.TrimSpace(req.Password)
+	if password == "" {
+		password = randomPassword()
+	} else if len(password) < 8 || len(password) > 100 {
+		httpx.WriteError(w, http.StatusBadRequest, "password must contain 8 to 100 characters")
+		return
+	}
+	_, err := runWP(systemUser, "user", "update", strconv.Itoa(req.UserID),
+		"--user_pass="+password, "--skip-email", "--path="+dir)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	// Return the username for display in the UI.
+	login := ""
+	if b, e := runWP(systemUser, "user", "get", strconv.Itoa(req.UserID), "--field=user_login", "--path="+dir); e == nil {
+		login = strings.TrimSpace(string(b))
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "password": password, "username": login})
+}
+
+// POST /domains/{id}/wordpress/repair repairs an installation from {dir}.
+// It verifies core checksums, downloads core files without modifying wp-content, updates the database,
+// and verifies checksums again.
+func (h *Handlers) Repair(w http.ResponseWriter, r *http.Request) {
+	var req struct{ Dir string }
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
+	if !ok {
+		return
+	}
+	beforeOutput, beforeErr := runWP(systemUser, "core", "verify-checksums", "--path="+dir)
+	before := "clean"
+	if beforeErr != nil {
+		before = "issues-found"
+	}
+	// Download the installed version to avoid an unintended upgrade.
+	version := ""
+	if b, e := runWP(systemUser, "core", "version", "--path="+dir); e == nil {
+		version = strings.TrimSpace(string(b))
+	}
+	dlArgs := []string{"core", "download", "--force", "--skip-content", "--path=" + dir}
+	if version != "" {
+		dlArgs = append(dlArgs, "--version="+version)
+	}
+	// Reinstall core while preserving content, plugins, and themes, then update the database.
+	_, dlErr := runWP(systemUser, dlArgs...)
+	if dlErr != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not download WordPress core")
+		return
+	}
+	_, _ = runWP(systemUser, "core", "update-db", "--path="+dir)
+	afterOutput, afterErr := runWP(systemUser, "core", "verify-checksums", "--path="+dir)
+	after := "clean"
+	if afterErr != nil {
+		after = "issues-found"
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"ok": true, "before": before, "after": after,
+		"output": truncateOutput(strings.TrimSpace(string(beforeOutput)) + "\n---\n" + strings.TrimSpace(string(afterOutput))),
+	})
+}
+
+// POST /domains/{id}/wordpress/tool applies {dir, action: maintenance-on|maintenance-off|cache-clear|update-all}.
+func (h *Handlers) ToolAction(w http.ResponseWriter, r *http.Request) {
+	var req struct{ Dir, Action string }
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
+	if !ok {
+		return
+	}
+	var out []byte
+	var err error
+	switch req.Action {
+	case "maintenance-on":
+		err = enableMaintenance(systemUser, dir)
+		if err == nil {
+			out = []byte("Maintenance mode enabled.")
+		}
+	case "maintenance-off":
+		err = disableMaintenance(dir)
+		if err == nil {
+			out = []byte("Maintenance mode disabled.")
+		}
+	case "cache-clear":
+		out, err = runWP(systemUser, "cache", "flush", "--path="+dir)
+	case "update-all":
+		var b strings.Builder
+		o1, e1 := runWP(systemUser, "core", "update", "--path="+dir)
+		b.Write(o1)
+		o2, _ := runWP(systemUser, "plugin", "update", "--all", "--path="+dir)
+		b.WriteString("\n")
+		b.Write(o2)
+		o3, _ := runWP(systemUser, "theme", "update", "--all", "--path="+dir)
+		b.WriteString("\n")
+		b.Write(o3)
+		_, _ = runWP(systemUser, "core", "update-db", "--path="+dir)
+		out, err = []byte(b.String()), e1
+	default:
+		httpx.WriteError(w, http.StatusBadRequest, "unknown action")
+		return
+	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "output": truncateOutput(string(out))})
+}
+
+// truncateOutput truncates long wp-cli output to the final 600 characters for error messages.
+func truncateOutput(s string) string {
+	s = strings.TrimSpace(s)
+	if len(s) > 600 {
+		s = "…" + s[len(s)-600:]
+	}
+	return s
+}

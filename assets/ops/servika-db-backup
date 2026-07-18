@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Back up the Servika panel database for the daily timer and pre-update recovery.
+# Authentication uses the root Unix socket. The completed dump path is written to stdout.
+set -euo pipefail
+
+BACKUP_DIR=/var/backups/servika/db
+RETENTION_DAYS=14
+mkdir -p "$BACKUP_DIR"
+chmod 700 "$BACKUP_DIR"
+
+timestamp=$(date +%F-%H%M%S)
+temporary="$BACKUP_DIR/.panel-$timestamp.sql.gz.tmp"
+final="$BACKUP_DIR/panel-$timestamp.sql.gz"
+trap 'rm -f "$temporary"' EXIT
+
+# Create a consistent InnoDB snapshot including stored database objects.
+mysqldump --single-transaction --routines --triggers --events \
+  --databases panel | gzip -c > "$temporary"
+
+# Publish only complete, valid dumps.
+gzip -t "$temporary"
+[ "$(stat -c%s "$temporary")" -gt 1000 ] || {
+  rm -f "$temporary"
+  echo "database dump is suspiciously small" >&2
+  exit 1
+}
+
+mv -f "$temporary" "$final"
+chmod 600 "$final"
+
+# Retain only this tool's panel database dumps and remove abandoned temporary files.
+find "$BACKUP_DIR" -maxdepth 1 -type f -name 'panel-*.sql.gz' \
+  -mtime +"$RETENTION_DAYS" -delete
+find "$BACKUP_DIR" -maxdepth 1 -type f -name '.panel-*.sql.gz.tmp' \
+  -mtime +1 -delete
+
+echo "$final"

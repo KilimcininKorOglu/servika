@@ -1,0 +1,231 @@
+#!/usr/bin/env bash
+# servika-repair repairs directories, ownership, permissions, and SELinux contexts.
+# It is idempotent and non-destructive, and never deletes files or invokes fuser.
+#
+# Usage:
+#   servika-repair [--dry-run] [--deep] [--only <sections>] [--quiet]
+#   sections: phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon (default: all)
+#   --dry-run : Show proposed repairs without applying changes
+#   --deep    : Recursively repair ownership in domain homes, which can be slow
+set -uo pipefail
+
+DRY=0; DEEP=0; QUIET=0; ONLY="phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY=1 ;;
+    --deep)    DEEP=1 ;;
+    --quiet)   QUIET=1 ;;
+    --only)    shift; ONLY="$1" ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; exit 2 ;;
+  esac; shift
+done
+
+CHK=0; FIXN=0; ERRN=0
+c_g="\033[32m"; c_y="\033[33m"; c_r="\033[31m"; c_b="\033[34m"; c_0="\033[0m"
+[ -t 1 ] || { c_g=; c_y=; c_r=; c_b=; c_0=; }
+say()   { [ $QUIET -eq 1 ] || echo -e "$*"; }
+head_() { say "\n${c_b}== $* ==${c_0}"; }
+ok()    { CHK=$((CHK+1)); [ $QUIET -eq 1 ] || echo -e "  ${c_g}✓${c_0} $*"; }
+act()   { CHK=$((CHK+1)); FIXN=$((FIXN+1)); echo -e "  ${c_y}$([ $DRY -eq 1 ] && echo '→ (dry) ' || echo '✔ FIXED ')${c_0}$*"; }
+warn()  { echo -e "  ${c_y}!${c_0} $*"; }
+err()   { ERRN=$((ERRN+1)); echo -e "  ${c_r}✗${c_0} $*"; }
+
+SEL=0; command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ] && SEL=1
+HAVE_SEMANAGE=0; command -v semanage >/dev/null 2>&1 && HAVE_SEMANAGE=1
+
+# ---- Idempotent, dry-run-aware helpers ----
+ensure_owner() { # path  user:group  [recursive]
+  local p=$1 o=$2 r=${3:-}; [ -e "$p" ] || return 0
+  local cur; cur=$(stat -c '%U:%G' "$p" 2>/dev/null) || return 0
+  if [ "$cur" != "$o" ]; then
+    act "chown ${r:+-R }$o  $p  (current: $cur)"
+    [ $DRY -eq 0 ] && chown $r "$o" "$p" 2>/dev/null || true
+  else
+    ok "ownership $o  $p"
+  fi
+}
+ensure_mode() { # path  mode
+  local p=$1 m=$2; [ -e "$p" ] || return 0
+  local cur; cur=$(stat -c '%a' "$p" 2>/dev/null) || return 0
+  # Normalize the leading zero.
+  if [ "$((8#$cur))" != "$((8#$m))" ]; then
+    act "chmod $m  $p  (current: $cur)"
+    [ $DRY -eq 0 ] && chmod "$m" "$p" 2>/dev/null || true
+  else
+    ok "permissions $m  $p"
+  fi
+}
+ensure_dir() { # path  mode  owner
+  local p=$1 m=$2 o=$3
+  if [ ! -d "$p" ]; then
+    act "mkdir -p $p (mode $m, owner $o)"
+    [ $DRY -eq 0 ] && { mkdir -p "$p"; chmod "$m" "$p"; chown "$o" "$p"; }
+  else
+    ensure_mode "$p" "$m"; ensure_owner "$p" "$o"
+  fi
+}
+# Persist and apply SELinux fcontext rules, falling back to chcon without semanage.
+ensure_context() { # path  type  [recursive]
+  [ $SEL -eq 1 ] || return 0
+  local p=$1 t=$2 r=${3:-}
+  [ -e "$p" ] || return 0
+  if [ $HAVE_SEMANAGE -eq 1 ]; then
+    local spec="${p}(/.*)?" _lst
+    _lst=$(semanage fcontext -l 2>/dev/null)          # Capture first to avoid pipefail and grep -q SIGPIPE.
+    if ! grep -qF "${spec}" <<<"$_lst"; then
+      act "semanage fcontext +$t  $spec  (persistent rule)"
+      [ $DRY -eq 0 ] && semanage fcontext -a -t "$t" "$spec" 2>/dev/null || true
+    fi
+    if [ $DRY -eq 0 ]; then
+      local n; n=$(restorecon -R${r:+} -v "$p" 2>/dev/null | wc -l)
+      [ "${n:-0}" -gt 0 ] && act "restorecon $p  ($n contexts fixed)" || ok "SELinux context $t  $p"
+    else
+      say "  → (dry) restorecon -R $p"
+    fi
+  else
+    local cur; cur=$(stat -c '%C' "$p" 2>/dev/null | cut -d: -f3)
+    if [ "$cur" != "$t" ]; then
+      act "chcon -t $t  $p  (semanage absent; temporary)"
+      [ $DRY -eq 0 ] && chcon ${r:+-R} -t "$t" "$p" 2>/dev/null || true
+    else
+      ok "SELinux context $t  $p"
+    fi
+  fi
+}
+want() { echo ",$ONLY," | grep -q ",$1,"; }
+
+# ================= SECTIONS =================
+sec_phpmyadmin() {
+  want phpmyadmin || return 0
+  head_ "phpMyAdmin"
+  local PMA=/opt/phpmyadmin
+  [ -d "$PMA" ] || { warn "$PMA absent, skipping"; return 0; }
+  local PG; PG=$(awk -F= '/^[[:space:]]*group/{gsub(/ /,"",$2);print $2}' /etc/php-fpm.d/phpmyadmin.conf 2>/dev/null); PG=${PG:-apache}
+  ensure_context "$PMA" httpd_sys_content_t -R
+  if [ -f "$PMA/config.inc.php" ]; then
+    # The pool user (apache) must be able to read this secret without making it world-readable.
+    ensure_owner "$PMA/config.inc.php" "root:$PG"
+    ensure_mode  "$PMA/config.inc.php" 640
+    if ! runuser -u "$PG" -- test -r "$PMA/config.inc.php" 2>/dev/null; then
+      err "config.inc.php is STILL unreadable by $PG!"
+    else
+      ok "config.inc.php is readable by $PG"
+    fi
+  else
+    warn "config.inc.php absent"
+  fi
+  # PHP-FPM (apache) needs write access to the temporary and session directories.
+  ensure_dir "/var/lib/phpmyadmin"          755 "$PG:$PG"
+  ensure_dir "/var/lib/phpmyadmin/tmp"      755 "$PG:$PG"
+  ensure_dir "/var/lib/phpmyadmin/sessions" 700 "$PG:$PG"
+  ensure_context "/var/lib/phpmyadmin" httpd_sys_rw_content_t -R
+}
+
+sec_signon() {
+  want signon || return 0
+  head_ "pma-signon"
+  local S=/opt/servika/pma-signon
+  [ -d "$S" ] || { warn "$S absent"; return 0; }
+  ensure_context "$S" httpd_sys_content_t -R
+}
+
+sec_frontend() {
+  want frontend || return 0
+  head_ "frontend-dist"
+  local F=/opt/servika/frontend-dist
+  [ -d "$F" ] || { warn "$F absent"; return 0; }
+  ensure_owner "$F" "root:root"
+  ensure_context "$F" httpd_sys_content_t -R
+}
+
+sec_binary() {
+  want binary || return 0
+  head_ "server binary"
+  local B=/opt/servika/bin/servika-server
+  [ -f "$B" ] || { warn "$B absent"; return 0; }
+  ensure_mode "$B" 755
+  # Restore the default systemd execution context to prevent 203/EXEC failures.
+  if [ $SEL -eq 1 ] && [ $DRY -eq 0 ]; then
+    local n; n=$(restorecon -v "$B" 2>/dev/null | wc -l)
+    [ "${n:-0}" -gt 0 ] && act "restorecon $B (execution context fixed)" || ok "SELinux execution context OK  $B"
+  fi
+}
+
+sec_htpasswd() {
+  want htpasswd || return 0
+  head_ "nginx htpasswd (password-protected directories)"
+  local D=/etc/nginx/htpasswd
+  [ -d "$D" ] || { ok "htpasswd directory absent (no protection configured)"; return 0; }
+  ensure_mode "$D" 755
+  local f
+  for f in "$D"/*; do
+    [ -f "$f" ] || continue
+    ensure_mode "$f" 644
+  done
+  ensure_context "$D" httpd_config_t -R   # The /etc/nginx file context allows nginx to read it.
+}
+
+sec_clamav() {
+  want clamav || return 0
+  head_ "ClamAV signature database"
+  local C=/var/lib/clamav
+  [ -d "$C" ] || { ok "ClamAV absent"; return 0; }
+  local OWN; OWN=$(getent passwd 992 | cut -d: -f1); OWN=${OWN:-clamupdate}
+  # Signature updates fail when freshclam cannot write to this directory.
+  ensure_owner "$C" "$OWN:$OWN" -R
+  ensure_mode  "$C" 755
+}
+
+sec_domains() {
+  want domains || return 0
+  head_ "domain home directories (/home/c_*)"
+  local home system_user
+  for home in /home/c_*; do
+    [ -d "$home" ] || continue
+    system_user=$(basename "$home")
+    if ! getent passwd "$system_user" >/dev/null; then warn "$system_user: system user absent, skipping"; continue; fi
+    ensure_owner "$home" "$system_user:$system_user"
+    ensure_mode  "$home" 711
+    # Keep .quarantined owned by root so tenants cannot access quarantined malware.
+    local child bn
+    while IFS= read -r child; do
+      [ -z "$child" ] && continue
+      bn=$(basename "$child")
+      [ "$bn" = ".quarantined" ] && continue
+      ensure_owner "$child" "$system_user:$system_user" -R
+    done < <(find "$home" -maxdepth 1 -mindepth 1 ! -user "$system_user" 2>/dev/null)
+    [ -d "$home/public_html" ] && ensure_mode "$home/public_html" 755
+    [ -d "$home/.ssh" ]        && ensure_mode "$home/.ssh" 700
+    # Keep the quarantine directory locked and owned by root.
+    if [ -d "$home/.quarantined" ]; then ensure_owner "$home/.quarantined" "root:root"; ensure_mode "$home/.quarantined" 700; fi
+    if [ $DEEP -eq 1 ]; then
+      local n; n=$(find "$home" -path "$home/.quarantined" -prune -o ! -user "$system_user" -print 2>/dev/null | wc -l)
+      if [ "${n:-0}" -gt 0 ]; then
+        act "DEEP chown -R $system_user:$system_user $home ($n incorrectly owned files, excluding .quarantined)"
+        [ $DRY -eq 0 ] && find "$home" -path "$home/.quarantined" -prune -o ! -user "$system_user" -exec chown "$system_user:$system_user" {} + 2>/dev/null
+      fi
+    fi
+    [ $SEL -eq 1 ] && [ $DRY -eq 0 ] && restorecon -R "$home" >/dev/null 2>&1
+  done
+}
+
+# ================= RUN =================
+say "${c_b}Servika Repair${c_0}  ($([ $DRY -eq 1 ] && echo 'DRY-RUN; no changes' || echo 'live') | SELinux:$([ $SEL -eq 1 ] && echo on || echo off) | semanage:$([ $HAVE_SEMANAGE -eq 1 ] && echo available || echo absent))"
+sec_phpmyadmin
+sec_domains
+sec_htpasswd
+sec_binary
+sec_clamav
+sec_frontend
+sec_signon
+
+# Validate nginx after changing htpasswd permissions or SELinux contexts.
+if want htpasswd && [ $DRY -eq 0 ]; then
+  if command -v nginx >/dev/null && nginx -t >/dev/null 2>&1; then :; else warn "nginx -t failed; check the configuration"; fi
+fi
+
+say "\n${c_b}== Summary ==${c_0}"
+say "  checks: $CHK   fixes: $FIXN   errors: $ERRN"
+[ $DRY -eq 1 ] && say "  (dry-run: no changes applied; remove --dry-run to apply fixes)"
+exit $([ $ERRN -gt 0 ] && echo 1 || echo 0)

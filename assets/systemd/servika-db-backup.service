@@ -1,0 +1,6 @@
+[Unit]
+Description=Servika panel database backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/servika-db-backup

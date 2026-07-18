@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Body-level scrolling is required for the sticky sidebar.
+   Using height: 100% locks root scrolling and prevents the sidebar from staying sticky. */
+html, body, #root { min-height: 100%; }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8fafc;   /* slate-50 light default */
+  color: #0f172a;              /* slate-900 */
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+html.dark body {
+  background-color: #0f172a;   /* slate-900 dark */
+  color: #e2e8f0;              /* slate-200 */
+}
+
+/* Apply the global transition in dark mode. */
+html.dark {
+  color-scheme: dark;
+}
+
+/* Keep the focus ring visible for accessibility. */
+:focus-visible {
+  outline: 2px solid #ea580c;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Use dark scrollbar colors in dark mode. */
+html.dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html.dark ::-webkit-scrollbar-track { background: #1e293b; }
+html.dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }

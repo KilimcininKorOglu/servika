@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+# servika-update safely updates an installed Servika instance from GitHub.
+#
+#   servika-update            # Fetch the latest release, replace assets, and restart
+#   servika-update --dry-run  # Show changes without applying them
+#   servika-update --force    # Apply the update even when the binary is unchanged
+#   servika-update --branch X # Update from another branch (default: main)
+#
+# This command preserves /etc/servika/env, the MariaDB panel database, and /home/c_* sites.
+# Before migrations run, it creates a full panel database dump. A failed dump stops the update.
+# If the new release fails its health check, the previous binary and database are restored.
+set -euo pipefail
+
+REPO="${SERVIKA_REPO:-servika/servika}"
+BRANCH="main"; DRY=0; FORCE=0
+PREFIX=/opt/servika
+BIN="$PREFIX/bin/servika-server"
+SEED="$PREFIX/bin/servika-seed-admin"
+FDIST="$PREFIX/frontend-dist"
+MIGR="$PREFIX/src/migrations"
+SCRIPTS="$PREFIX/src/scripts"
+DB_BACKUP=/usr/local/bin/servika-db-backup
+DB_BACKUP_DIR=/var/backups/servika/db
+PRE_UPDATE_DUMP=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY=1 ;;
+    --force) FORCE=1 ;;
+    --branch) BRANCH="$2"; shift ;;
+    --branch=*) BRANCH="${1#*=}" ;;
+    -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+c_b="\033[1;34m"; c_g="\033[32m"; c_r="\033[31m"; c_y="\033[33m"; c_0="\033[0m"
+[ -t 1 ] || { c_b=; c_g=; c_r=; c_y=; c_0=; }
+ok()   { echo -e "  ${c_g}✓${c_0} $*"; }
+warn() { echo -e "  ${c_y}!${c_0} $*"; }
+die()  { echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
+step() { echo -e "${c_b}══ $* ══${c_0}"; }
+
+version() { curl -fsS http://127.0.0.1:8080/healthz 2>/dev/null | grep -oE '"version":"[^"]*"' | cut -d'"' -f4; }
+
+[ "$(id -u)" = 0 ] || die "root is required (sudo servika-update)"
+[ -x "$BIN" ] || die "Servika is not installed ($BIN is missing); run install.sh first"
+command -v curl >/dev/null || die "curl is required"
+command -v tar  >/dev/null || die "tar is required"
+
+step "Servika update (github.com/$REPO@$BRANCH)"
+
+TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
+echo "  downloading..."
+curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar xz -C "$TMP" \
+  || die "download failed; verify that the repository is public and branch '$BRANCH' exists"
+SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
+A="$SRC/assets"
+NEWBIN="$A/servika-server"
+[ -f "$NEWBIN" ] || die "$A/servika-server is missing"
+
+# Validate the binary without executing it, then hash every release component so updates to
+# frontend, migrations, operations tools, or systemd units are not skipped.
+head -c4 "$NEWBIN" | grep -q $'\x7fELF' || die "the downloaded binary is not a valid ELF file"
+CURVER=$(version); [ -n "$CURVER" ] || CURVER="?"
+echo "  current version: $CURVER"
+RELHASH=$( { sha256sum "$NEWBIN" | cut -d' ' -f1
+  [ -f "$A/frontend-dist.tar.gz" ] && sha256sum "$A/frontend-dist.tar.gz" | cut -d' ' -f1
+  [ -f "$A/migrations.tar.gz" ] && sha256sum "$A/migrations.tar.gz" | cut -d' ' -f1
+  find "$A/ops" "$A/systemd" -type f 2>/dev/null | LC_ALL=C sort \
+    | xargs -r sha256sum 2>/dev/null | cut -d' ' -f1
+  true; } | sha256sum | cut -d' ' -f1)
+MARKER="$PREFIX/.release_hash"
+CURREL=$(cat "$MARKER" 2>/dev/null || echo missing)
+if [ "$RELHASH" = "$CURREL" ] && [ "$FORCE" = 0 ]; then
+  ok "the complete release is already current; use --force to reapply"
+  exit 0
+fi
+
+if [ "$DRY" = 1 ]; then
+  step "DRY RUN"
+  echo "  • $BIN (replace if changed; backup: $BIN.bak)"
+  echo "  • $FDIST/"
+  echo "  • $MIGR/"
+  echo "  • /usr/local/bin operations tools and $SCRIPTS"
+  echo "  • $DB_BACKUP and /etc/systemd/system/servika-db-backup.{service,timer}"
+  echo "  • full panel database dump before migrations: $DB_BACKUP_DIR (not created during dry run)"
+  echo "  • systemctl restart servika"
+  exit 0
+fi
+
+# Install the backup tool and timer before taking the mandatory pre-update dump.
+[ -f "$A/ops/servika-db-backup" ] \
+  || die "the release does not contain the database backup tool; update was not started"
+install -m 0755 "$A/ops/servika-db-backup" "$DB_BACKUP"
+UNITS_INSTALLED=0
+for unit in servika-db-backup.service servika-db-backup.timer; do
+  if [ -f "$A/systemd/$unit" ]; then
+    install -m 0644 "$A/systemd/$unit" "/etc/systemd/system/$unit"
+    UNITS_INSTALLED=1
+  fi
+done
+if [ "$UNITS_INSTALLED" = 1 ]; then
+  systemctl daemon-reload >/dev/null 2>&1 || true
+  systemctl enable --now servika-db-backup.timer >/dev/null 2>&1 || true
+  if systemctl is-active --quiet servika-db-backup.timer; then
+    ok "daily panel database backup timer active"
+  else
+    warn "database backup timer could not be started"
+  fi
+fi
+
+# Refuse to expose migrations unless a complete recovery point exists.
+step "Pre-update database backup"
+[ -x "$DB_BACKUP" ] || die "database backup tool is unavailable; update was not started"
+PRE_UPDATE_DUMP=$("$DB_BACKUP") \
+  || die "pre-update database backup failed; update was not started"
+[ -n "$PRE_UPDATE_DUMP" ] && [ -f "$PRE_UPDATE_DUMP" ] \
+  || die "pre-update database backup could not be verified; update was not started"
+ok "pre-update database dump: $PRE_UPDATE_DUMP"
+
+cp -f "$BIN" "$BIN.bak"
+[ -x "$SEED" ] && cp -f "$SEED" "$SEED.bak" 2>/dev/null || true
+ok "current binary backed up"
+
+install -m 0755 "$NEWBIN" "$BIN"
+[ -f "$A/servika-seed-admin" ] && install -m 0755 "$A/servika-seed-admin" "$SEED"
+ok "binary updated"
+
+if [ -f "$A/frontend-dist.tar.gz" ]; then
+  rm -rf "${FDIST:?}/"* && tar xzf "$A/frontend-dist.tar.gz" -C "$FDIST"
+  ok "frontend updated"
+fi
+
+if [ -f "$A/migrations.tar.gz" ]; then
+  mkdir -p "$MIGR"; tar xzf "$A/migrations.tar.gz" -C "$MIGR"
+  ok "migrations synchronized ($(ls "$MIGR"/*.sql 2>/dev/null | wc -l) SQL files)"
+fi
+
+if [ -d "$A/ops" ]; then
+  for t in "$A"/ops/*; do bn=$(basename "$t"); install -m 0755 "$t" "/usr/local/bin/${bn%.sh}" 2>/dev/null || true; done
+  mkdir -p "$SCRIPTS"; cp "$A"/ops/* "$SCRIPTS/" 2>/dev/null || true
+  ok "operations tools updated"
+fi
+
+command -v restorecon >/dev/null && restorecon -R "$PREFIX/bin" "$FDIST" >/dev/null 2>&1 || true
+
+step "Restarting"
+systemctl restart servika
+HEALTHY=0
+for i in 1 2 3 4 5 6; do
+  sleep 2
+  if systemctl is-active --quiet servika && curl -fsS http://127.0.0.1:8080/healthz >/dev/null 2>&1; then HEALTHY=1; break; fi
+done
+
+if [ "$HEALTHY" = 1 ]; then
+  systemctl reload nginx >/dev/null 2>&1 || true
+  echo "$RELHASH" > "$MARKER" 2>/dev/null || true
+  NEWVER=$(version); [ -n "$NEWVER" ] || NEWVER="?"
+  ok "panel active and health check passed"
+  echo -e "${c_g}══ Update complete ($CURVER to $NEWVER); environment, database, and sites preserved ══${c_0}"
+else
+  warn "the new release failed its health check; restoring the previous binary and database"
+  install -m 0755 "$BIN.bak" "$BIN"
+  [ -f "$SEED.bak" ] && install -m 0755 "$SEED.bak" "$SEED" 2>/dev/null || true
+  command -v restorecon >/dev/null && restorecon "$BIN" >/dev/null 2>&1 || true
+
+  # Stop all panel writes, verify the recovery point again, then restore the pre-update schema
+  # and data before starting the previous binary.
+  systemctl stop servika >/dev/null 2>&1 || true
+  if [ -n "$PRE_UPDATE_DUMP" ] && [ -f "$PRE_UPDATE_DUMP" ] \
+    && gzip -t "$PRE_UPDATE_DUMP" && gunzip -c "$PRE_UPDATE_DUMP" | mysql; then
+    ok "database restored from $PRE_UPDATE_DUMP"
+  else
+    warn "database restore failed; the recovery dump remains at $PRE_UPDATE_DUMP"
+  fi
+
+  systemctl restart servika; sleep 3
+  if systemctl is-active --quiet servika; then
+    die "rollback completed and the previous release is active; inspect journalctl -u servika -n 40"
+  else
+    die "rollback failed to start Servika; inspect journalctl -u servika -n 40 (database dump: $PRE_UPDATE_DUMP)"
+  fi
+fi

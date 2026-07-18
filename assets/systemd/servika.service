@@ -1,0 +1,18 @@
+[Unit]
+Description=Servika backend
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/servika/env
+ExecStart=/opt/servika/bin/servika-server
+Restart=on-failure
+RestartSec=3
+User=root
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=servika
+
+[Install]
+WantedBy=multi-user.target

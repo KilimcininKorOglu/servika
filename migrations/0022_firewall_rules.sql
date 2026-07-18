@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS firewall_rules (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  type VARCHAR(12) NOT NULL,
+  ip VARCHAR(64) NOT NULL DEFAULT '',
+  port INT NOT NULL DEFAULT 0,
+  protocol VARCHAR(4) NOT NULL DEFAULT 'tcp',
+  description VARCHAR(200) NOT NULL DEFAULT '',
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY ix_firewall_type (type),
+  KEY ix_firewall_enabled (enabled)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4

@@ -1,0 +1,989 @@
+// Package provisioner manages Linux users, nginx vhosts, multi-version PHP-FPM, and SSL/TLS for domains.
+package provisioner
+
+import (
+	"bytes"
+	"database/sql"
+	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"os/user"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"text/template"
+)
+
+var (
+	domainNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9.-]{1,251}\.[a-z]{2,24}$`)
+	slugSan           = regexp.MustCompile(`[^a-z0-9]+`)
+	packageDB         *sql.DB
+)
+
+const (
+	cacheZoneName     = "servikacache"
+	cacheZoneDir      = "/var/cache/nginx/servikacache"
+	cacheZoneConf     = "/etc/nginx/conf.d/servikacache.conf"
+	cacheZoneTempConf = "/etc/nginx/conf.d/00-servikacache-temporary.conf"
+	cacheZoneBody     = `# Managed automatically by Servika. DO NOT EDIT.
+# Vhosts use "fastcgi_cache servikacache"; this file provides the matching zone definition.
+fastcgi_cache_path ` + cacheZoneDir + ` levels=1:2 keys_zone=` + cacheZoneName + `:100m max_size=1g inactive=60m use_temp_path=off;
+`
+)
+
+var cacheZoneDefinitionPattern = regexp.MustCompile(`keys_zone\s*=\s*` + regexp.QuoteMeta(cacheZoneName) + `\s*:`)
+
+// Init configures database-backed state and repairs the managed FastCGI cache zone.
+func Init(db *sql.DB) {
+	packageDB = db
+	healCacheZoneOnStartup()
+}
+
+func healCacheZoneOnStartup() {
+	changed, err := ensureCacheZone()
+	if err != nil {
+		log.Printf("servikacache repair: could not write zone configuration: %v", err)
+		return
+	}
+	if !changed {
+		return
+	}
+	if out, err := exec.Command("nginx", "-t").CombinedOutput(); err != nil {
+		log.Printf("servikacache repair: nginx configuration remains invalid, reload skipped: %s", strings.TrimSpace(string(out)))
+		return
+	}
+	if out, err := exec.Command("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
+		log.Printf("servikacache repair: nginx reload failed: %s", strings.TrimSpace(string(out)))
+		return
+	}
+	log.Printf("servikacache repair: zone configuration restored and nginx reloaded")
+}
+
+func ensureCacheZone() (bool, error) {
+	changed := false
+	if err := os.MkdirAll(cacheZoneDir, 0700); err != nil {
+		return false, fmt.Errorf("create cache directory: %w", err)
+	}
+	if uid, gid, err := uidGid("nginx"); err == nil {
+		if err := os.Chown(cacheZoneDir, uid, gid); err != nil {
+			return false, fmt.Errorf("set cache directory ownership: %w", err)
+		}
+	}
+	_, _ = exec.Command("restorecon", "-R", cacheZoneDir).CombinedOutput()
+
+	if _, err := os.Stat(cacheZoneTempConf); err == nil {
+		if err := os.Remove(cacheZoneTempConf); err != nil {
+			return false, fmt.Errorf("remove temporary cache zone configuration: %w", err)
+		}
+		changed = true
+	}
+
+	if cacheZoneDefinedElsewhere() {
+		if _, err := os.Stat(cacheZoneConf); err == nil {
+			if err := os.Remove(cacheZoneConf); err != nil {
+				return false, fmt.Errorf("remove duplicate managed cache zone configuration: %w", err)
+			}
+			changed = true
+		}
+		return changed, nil
+	}
+
+	if current, err := os.ReadFile(cacheZoneConf); err == nil && string(current) == cacheZoneBody {
+		return changed, nil
+	}
+	if err := os.WriteFile(cacheZoneConf, []byte(cacheZoneBody), 0644); err != nil {
+		return false, fmt.Errorf("write cache zone configuration: %w", err)
+	}
+	_, _ = exec.Command("restorecon", cacheZoneConf).CombinedOutput()
+	return true, nil
+}
+
+func cacheZoneDefinedElsewhere() bool {
+	files := []string{"/etc/nginx/nginx.conf"}
+	if extra, err := filepath.Glob("/etc/nginx/conf.d/*.conf"); err == nil {
+		files = append(files, extra...)
+	}
+	for _, filename := range files {
+		if filename == cacheZoneConf {
+			continue
+		}
+		body, err := os.ReadFile(filename)
+		if err == nil && cacheZoneDefinitionPattern.Match(body) {
+			return true
+		}
+	}
+	return false
+}
+
+type phpConfig struct {
+	PoolDir string
+	SockDir string
+	Service string
+}
+
+var phpMap = map[string]phpConfig{
+	"7.4": {PoolDir: "/etc/opt/remi/php74/php-fpm.d", SockDir: "/var/opt/remi/php74/run/php-fpm", Service: "php74-php-fpm"},
+	"8.2": {PoolDir: "/etc/opt/remi/php82/php-fpm.d", SockDir: "/var/opt/remi/php82/run/php-fpm", Service: "php82-php-fpm"},
+	"8.3": {PoolDir: "/etc/php-fpm.d", SockDir: "/run/php-fpm", Service: "php-fpm"},
+	"8.4": {PoolDir: "/etc/opt/remi/php84/php-fpm.d", SockDir: "/var/opt/remi/php84/run/php-fpm", Service: "php84-php-fpm"},
+	"8.5": {PoolDir: "/etc/opt/remi/php85/php-fpm.d", SockDir: "/var/opt/remi/php85/run/php-fpm", Service: "php85-php-fpm"},
+}
+
+func ValidateDomain(d string) error {
+	d = strings.ToLower(strings.TrimSpace(d))
+	if d == "" {
+		return fmt.Errorf("domain name is required")
+	}
+	if len(d) > 253 {
+		return fmt.Errorf("domain name is too long")
+	}
+	if !domainNamePattern.MatchString(d) {
+		return fmt.Errorf("invalid domain name format (example: example.com)")
+	}
+	return nil
+}
+
+func SlugFromDomain(d string) string {
+	s := strings.ToLower(strings.TrimSpace(d))
+	s = slugSan.ReplaceAllString(s, "_")
+	s = strings.Trim(s, "_")
+	if len(s) > 26 {
+		s = s[:26]
+	}
+	return "c_" + s
+}
+
+func normalizePHP(v string) string {
+	v = strings.TrimSpace(v)
+	if _, ok := phpMap[v]; !ok {
+		return "8.3"
+	}
+	return v
+}
+
+// vhostTmpl covers vhosts both with and without SSL.
+var vhostTmpl = template.Must(template.New("v").Parse(`{{- if .SSL -}}
+# {{.DomainName}} — port 80 remains open for the HTTP-01 challenge; all other traffic redirects to 443
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{.DomainName}} www.{{.DomainName}};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/_acme;
+        auth_basic off;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name {{.DomainName}} www.{{.DomainName}};
+
+    ssl_certificate     {{.CertPath}};
+    ssl_certificate_key {{.KeyPath}};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # ---- Security headers (managed by the panel) ----
+{{if .HdrXContentType}}    add_header X-Content-Type-Options "nosniff" always;
+{{end}}{{if .HdrXXSS}}    add_header X-XSS-Protection "1; mode=block" always;
+{{end}}{{if .HdrReferrer}}    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+{{end}}{{if .HdrPermissions}}    add_header Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()" always;
+{{end}}{{if .HdrCSPUpgrade}}    add_header Content-Security-Policy "upgrade-insecure-requests" always;
+{{end}}{{if .HdrHSTS}}    add_header Strict-Transport-Security "max-age={{.HSTSMaxAge}}{{if .HSTSSubdomains}}; includeSubDomains{{end}}{{if .HSTSPreload}}; preload{{end}}" always;
+{{end}}
+    root {{.WebRoot}};
+    index index.php index.html index.htm;
+
+    access_log /var/log/nginx/{{.DomainName}}.access.log;
+    error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
+
+{{if eq .Backend "apache"}}    # ---- Backend: Apache (127.0.0.1:10080 proxy) ----
+    location / {
+        proxy_pass http://127.0.0.1:10080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_read_timeout 60s;
+    }
+{{else if eq .Backend "static"}}    # ---- Backend: Static files (no PHP), PHP source-exposure guard ----
+    location ~* \.(php|phtml|php3|php4|php5|phps)(/|$) { return 404; }
+    location / { try_files $uri $uri/ =404; }
+{{else}}    # ---- Backend: nginx + PHP-FPM (default) ----
+    location / { try_files $uri $uri/ /index.php?$query_string; }
+
+{{if .FastCgiCache}}    set $skip_cache 0;
+    if ($request_method = POST) { set $skip_cache 1; }
+    if ($query_string != "") { set $skip_cache 1; }
+    if ($request_uri ~* "/wp-admin/|/wp-login.php|/cart/|/checkout/|/my-account/|preview=true|sitemap.*\.xml") { set $skip_cache 1; }
+    if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in") { set $skip_cache 1; }
+{{end}}    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:{{.PHPSocket}};
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_param HTTPS on;
+        fastcgi_read_timeout 60s;
+{{if .FastCgiCache}}        fastcgi_cache servikacache;
+        fastcgi_cache_valid 200 301 302 {{.FastCgiCacheMinutes}}m;
+        fastcgi_cache_valid 404 1m;
+        fastcgi_cache_bypass $skip_cache;
+        fastcgi_no_cache $skip_cache;
+        fastcgi_cache_use_stale error timeout invalid_header updating http_500 http_503;
+        fastcgi_cache_background_update on;
+        fastcgi_cache_lock on;
+        add_header X-Cache-Status $upstream_cache_status always;
+{{end}}    }
+{{end}}
+{{if .BrowserCache}}    # ---- Browser cache (static files) ----
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {
+        expires {{.BrowserCacheDays}}d;
+        access_log off;
+        add_header Cache-Control "public, immutable" always;
+    }
+{{end}}
+
+    location ~ /\.(?!well-known) { deny all; }
+
+{{if .ExtraDirectives}}    # ---- Additional directives (user-provided) ----
+    {{.ExtraDirectives}}
+{{end}}    # Servika managed (SSL: {{.SSLSource}}) — {{.DomainName}}
+}
+{{- else -}}
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{.DomainName}} www.{{.DomainName}};
+
+    root {{.WebRoot}};
+    index index.php index.html index.htm;
+
+    access_log /var/log/nginx/{{.DomainName}}.access.log;
+    error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
+
+    # ---- Security headers (managed by the panel) ----
+{{if .HdrXContentType}}    add_header X-Content-Type-Options "nosniff" always;
+{{end}}{{if .HdrXXSS}}    add_header X-XSS-Protection "1; mode=block" always;
+{{end}}{{if .HdrReferrer}}    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+{{end}}{{if .HdrPermissions}}    add_header Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()" always;
+{{end}}{{if .HdrCSPUpgrade}}    add_header Content-Security-Policy "upgrade-insecure-requests" always;
+{{end}}
+    location /.well-known/acme-challenge/ {
+        root /var/www/_acme;
+        auth_basic off;
+        try_files $uri =404;
+    }
+
+{{if eq .Backend "apache"}}    # ---- Backend: Apache (127.0.0.1:10080 proxy) ----
+    location / {
+        proxy_pass http://127.0.0.1:10080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto http;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_read_timeout 60s;
+    }
+{{else if eq .Backend "static"}}    # ---- Backend: Static files (no PHP), PHP source-exposure guard ----
+    location ~* \.(php|phtml|php3|php4|php5|phps)(/|$) { return 404; }
+    location / { try_files $uri $uri/ =404; }
+{{else}}    # ---- Backend: nginx + PHP-FPM (default) ----
+    location / { try_files $uri $uri/ /index.php?$query_string; }
+
+{{if .FastCgiCache}}    set $skip_cache 0;
+    if ($request_method = POST) { set $skip_cache 1; }
+    if ($query_string != "") { set $skip_cache 1; }
+    if ($request_uri ~* "/wp-admin/|/wp-login.php|/cart/|/checkout/|/my-account/|preview=true|sitemap.*\.xml") { set $skip_cache 1; }
+    if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in") { set $skip_cache 1; }
+{{end}}    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:{{.PHPSocket}};
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_read_timeout 60s;
+{{if .FastCgiCache}}        fastcgi_cache servikacache;
+        fastcgi_cache_valid 200 301 302 {{.FastCgiCacheMinutes}}m;
+        fastcgi_cache_valid 404 1m;
+        fastcgi_cache_bypass $skip_cache;
+        fastcgi_no_cache $skip_cache;
+        fastcgi_cache_use_stale error timeout invalid_header updating http_500 http_503;
+        fastcgi_cache_background_update on;
+        fastcgi_cache_lock on;
+        add_header X-Cache-Status $upstream_cache_status always;
+{{end}}    }
+{{end}}
+{{if .BrowserCache}}    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {
+        expires {{.BrowserCacheDays}}d;
+        access_log off;
+        add_header Cache-Control "public, immutable" always;
+    }
+{{end}}
+
+    location ~ /\.(?!well-known) { deny all; }
+
+{{if .ExtraDirectives}}    # ---- Additional directives (user-provided) ----
+    {{.ExtraDirectives}}
+{{end}}    # Servika managed — {{.DomainName}} (HTTP only, PHP {{.PHPVersion}})
+}
+{{- end -}}
+`))
+
+var suspendedVhostTmpl = template.Must(template.New("suspended").Parse(`# {{.DomainName}} suspended by Servika
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{.DomainName}} www.{{.DomainName}};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/_acme;
+        auth_basic off;
+        try_files $uri =404;
+    }
+
+    access_log /var/log/nginx/{{.DomainName}}.access.log;
+    error_log /var/log/nginx/{{.DomainName}}.error.log warn;
+
+    location / { return 503; }
+    error_page 503 /_suspended.html;
+    location = /_suspended.html {
+        internal;
+        default_type text/html;
+        return 503 '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Account Suspended</title><style>body{font-family:system-ui,sans-serif;background:#f8fafc;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}.card{max-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:48px;text-align:center}h1{font-size:22px;color:#0f172a;margin:0 0 8px}p{color:#64748b;line-height:1.6}</style></head><body><div class="card"><h1>Account Suspended</h1><p>This website has been temporarily suspended. Please contact your service provider.</p></div></body></html>';
+    }
+}
+{{if .SSL}}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name {{.DomainName}} www.{{.DomainName}};
+
+    ssl_certificate {{.CertPath}};
+    ssl_certificate_key {{.KeyPath}};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    access_log /var/log/nginx/{{.DomainName}}.access.log;
+    error_log /var/log/nginx/{{.DomainName}}.error.log warn;
+
+    location / { return 503; }
+    error_page 503 /_suspended.html;
+    location = /_suspended.html {
+        internal;
+        default_type text/html;
+        return 503 '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Account Suspended</title><style>body{font-family:system-ui,sans-serif;background:#f8fafc;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}.card{max-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:48px;text-align:center}h1{font-size:22px;color:#0f172a;margin:0 0 8px}p{color:#64748b;line-height:1.6}</style></head><body><div class="card"><h1>Account Suspended</h1><p>This website has been temporarily suspended. Please contact your service provider.</p></div></body></html>';
+    }
+}
+{{end}}`))
+
+var phpPoolTmpl = template.Must(template.New("p").Parse(`[{{.User}}]
+user = {{.User}}
+group = {{.User}}
+listen = {{.Socket}}
+listen.owner = nginx
+listen.group = nginx
+listen.mode = 0660
+pm = ondemand
+pm.max_children = 8
+pm.process_idle_timeout = 30s
+pm.max_requests = 500
+php_admin_value[disable_functions] = exec,passthru,shell_exec,system,proc_open,popen
+php_admin_value[upload_tmp_dir] = /home/{{.User}}/tmp
+php_admin_value[sys_temp_dir] = /home/{{.User}}/tmp
+php_admin_value[session.save_path] = /home/{{.User}}/tmp
+catch_workers_output = yes
+`))
+
+// VhostOpts contains the optional SSL and server settings used to render a vhost.
+type VhostOpts struct {
+	DomainName string
+	WebRoot    string
+	PHPSocket  string
+	PHPVersion string
+	CertPath   string
+	KeyPath    string
+	SSLSource  string // "self-signed" | "letsencrypt" | ""
+	Suspended  bool
+
+	// nginx security header toggles, enabled by default.
+	HdrXContentType bool
+	HdrXXSS         bool
+	HdrReferrer     bool
+	HdrPermissions  bool
+	HdrCSPUpgrade   bool
+	HdrHSTS         bool
+	HSTSMaxAge      int
+	HSTSSubdomains  bool
+	HSTSPreload     bool
+
+	// Performance caching.
+	FastCgiCache        bool
+	FastCgiCacheMinutes int
+	BrowserCache        bool
+	BrowserCacheDays    int
+
+	// User-provided extra directives.
+	ExtraDirectives string
+
+	// Web server backend: "php-fpm" by default, "apache", or "static".
+	Backend string
+}
+
+func (o VhostOpts) SSL() bool {
+	return o.CertPath != "" && o.KeyPath != ""
+}
+
+type Result struct {
+	SystemUser string
+	WebRoot    string
+	FTPHost    string
+	PHPVersion string
+	PHPSocket  string
+}
+
+func phpPoolPath(systemUser, phpVersion string) (string, string, string) {
+	version := normalizePHP(phpVersion)
+	config := phpMap[version]
+	return filepath.Join(config.PoolDir, systemUser+".conf"),
+		filepath.Join(config.SockDir, systemUser+".sock"),
+		config.Service
+}
+
+// renderAndReload writes the vhost, validates nginx, and reloads it for both SSL modes.
+// For the "apache" backend, it also writes the per-domain Apache vhost and reloads httpd.
+// When switching away from Apache, it removes the obsolete Apache vhost.
+func renderAndReload(opts VhostOpts, systemUser string) error {
+	// Use PHP-FPM as the default backend.
+	if opts.Backend == "" {
+		opts.Backend = "php-fpm"
+	}
+	if !opts.Suspended && packageDB != nil {
+		var suspended int
+		_ = packageDB.QueryRow(
+			`SELECT COALESCE(suspended,0) FROM domains WHERE system_user=?`, systemUser).
+			Scan(&suspended)
+		opts.Suspended = suspended == 1
+	}
+
+	tmpl := vhostTmpl
+	if opts.Suspended {
+		tmpl = suspendedVhostTmpl
+	}
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, opts); err != nil {
+		return fmt.Errorf("template render: %w", err)
+	}
+	cfgPath := "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
+	previousConfig, readErr := os.ReadFile(cfgPath)
+	hadPreviousConfig := readErr == nil
+	if err := os.WriteFile(cfgPath, buf.Bytes(), 0644); err != nil {
+		return fmt.Errorf("write vhost: %w", err)
+	}
+	if _, err := ensureCacheZone(); err != nil {
+		return err
+	}
+	if out, err := exec.Command("nginx", "-t").CombinedOutput(); err != nil {
+		if hadPreviousConfig {
+			_ = os.WriteFile(cfgPath, previousConfig, 0644)
+		} else {
+			_ = os.Remove(cfgPath)
+		}
+		return fmt.Errorf("nginx -t failed: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+	if out, err := exec.Command("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
+		return fmt.Errorf("nginx reload: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+
+	// Manage the Apache backend idempotently by writing or removing its vhost.
+	if opts.Backend == "apache" && !opts.Suspended {
+		if err := writeApacheVhost(opts, systemUser); err != nil {
+			return err
+		}
+	} else {
+		if err := deleteApacheVhostIfExists(systemUser); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func Provision(domainName, phpVersion string) (*Result, error) {
+	if err := ValidateDomain(domainName); err != nil {
+		return nil, err
+	}
+	phpVersion = normalizePHP(phpVersion)
+	domainName = strings.ToLower(strings.TrimSpace(domainName))
+	systemUser := SlugFromDomain(domainName)
+	home := "/home/" + systemUser
+
+	if !userExists(systemUser) {
+		out, err := exec.Command("useradd", "-m", "-d", home, "-s", "/usr/sbin/nologin", systemUser).CombinedOutput()
+		if err != nil && !strings.Contains(string(out), "already exists") {
+			return nil, fmt.Errorf("useradd: %s: %w", strings.TrimSpace(string(out)), err)
+		}
+	}
+
+	dirs := []string{"public_html", "logs", "tmp", "ssl", ".cron"}
+	for _, d := range dirs {
+		_ = os.MkdirAll(filepath.Join(home, d), 0755)
+	}
+
+	uid, gid, err := uidGid(systemUser)
+	if err == nil {
+		_ = filepath.Walk(home, func(p string, _ os.FileInfo, _ error) error {
+			_ = os.Chown(p, uid, gid)
+			return nil
+		})
+	}
+
+	_ = os.Chmod(home, 0711)
+	_ = filepath.Walk(filepath.Join(home, "public_html"), func(p string, info os.FileInfo, _ error) error {
+		if info == nil {
+			return nil
+		}
+		if info.IsDir() {
+			_ = os.Chmod(p, 0755)
+		} else {
+			_ = os.Chmod(p, 0644)
+		}
+		return nil
+	})
+
+	indexPath := filepath.Join(home, "public_html", "index.html")
+	_ = os.WriteFile(indexPath, []byte(welcomeHTML(domainName)), 0644)
+	if err == nil {
+		_ = os.Chown(indexPath, uid, gid)
+	}
+
+	_, _ = exec.Command("restorecon", "-R", home).CombinedOutput()
+
+	// PHP-FPM pool
+	poolPath, socket, service := phpPoolPath(systemUser, phpVersion)
+	_ = os.MkdirAll(filepath.Dir(poolPath), 0755)
+	_ = os.MkdirAll(filepath.Dir(socket), 0755)
+	var poolBuf bytes.Buffer
+	_ = phpPoolTmpl.Execute(&poolBuf, map[string]string{"User": systemUser, "Socket": socket})
+	if err := os.WriteFile(poolPath, poolBuf.Bytes(), 0644); err != nil {
+		return nil, fmt.Errorf("write PHP pool: %w", err)
+	}
+	if out, err := exec.Command("systemctl", "reload-or-restart", service).CombinedOutput(); err != nil {
+		return nil, fmt.Errorf("php-fpm (%s) reload: %s: %w", service, strings.TrimSpace(string(out)), err)
+	}
+
+	// Create the initial vhost without SSL.
+	if err := renderAndReload(VhostOpts{
+		DomainName: domainName,
+		WebRoot:    filepath.Join(home, "public_html"),
+		PHPSocket:  socket,
+		PHPVersion: phpVersion,
+	}, systemUser); err != nil {
+		return nil, err
+	}
+
+	return &Result{
+		SystemUser: systemUser,
+		WebRoot:    filepath.Join(home, "public_html"),
+		FTPHost:    domainName, // The handler stores h.IPv4, the server IP, in the ftp_host database column.
+		PHPVersion: phpVersion,
+		PHPSocket:  socket,
+	}, nil
+}
+
+func Deprovision(domainName, systemUser string) error {
+	cfgPath := "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
+	_ = os.Remove(cfgPath)
+	subdomainVhosts, _ := filepath.Glob("/etc/nginx/conf.d/sub_" + systemUser + "_*.conf")
+	for _, vhostPath := range subdomainVhosts {
+		_ = os.Remove(vhostPath)
+	}
+	for _, config := range phpMap {
+		p := filepath.Join(config.PoolDir, systemUser+".conf")
+		if _, err := os.Stat(p); err == nil {
+			_ = os.Remove(p)
+			_, _ = exec.Command("systemctl", "reload-or-restart", config.Service).CombinedOutput()
+		}
+	}
+	_, _ = exec.Command("systemctl", "reload", "nginx").CombinedOutput()
+
+	if !strings.HasPrefix(systemUser, "c_") {
+		return fmt.Errorf("security: refusing to delete a user without the c_ prefix")
+	}
+	if userExists(systemUser) {
+		_, _ = exec.Command("userdel", "-r", systemUser).CombinedOutput()
+	}
+	return nil
+}
+
+func SetPHPVersion(domainName, systemUser, newVersion, certPath, keyPath, sslSource, backend string) (string, error) {
+	newVersion = normalizePHP(newVersion)
+	for _, config := range phpMap {
+		p := filepath.Join(config.PoolDir, systemUser+".conf")
+		if _, err := os.Stat(p); err == nil {
+			_ = os.Remove(p)
+			_, _ = exec.Command("systemctl", "reload-or-restart", config.Service).CombinedOutput()
+		}
+	}
+
+	poolPath, socket, service := phpPoolPath(systemUser, newVersion)
+	_ = os.MkdirAll(filepath.Dir(poolPath), 0755)
+	_ = os.MkdirAll(filepath.Dir(socket), 0755)
+	var poolBuf bytes.Buffer
+	_ = phpPoolTmpl.Execute(&poolBuf, map[string]string{"User": systemUser, "Socket": socket})
+	if err := os.WriteFile(poolPath, poolBuf.Bytes(), 0644); err != nil {
+		return "", fmt.Errorf("write new pool: %w", err)
+	}
+	if out, err := exec.Command("systemctl", "reload-or-restart", service).CombinedOutput(); err != nil {
+		return "", fmt.Errorf("php-fpm (%s) reload: %s: %w", service, strings.TrimSpace(string(out)), err)
+	}
+
+	home := "/home/" + systemUser
+	if err := renderAndReload(VhostOpts{
+		DomainName: domainName,
+		WebRoot:    filepath.Join(home, "public_html"),
+		PHPSocket:  socket,
+		PHPVersion: newVersion,
+		CertPath:   certPath,
+		KeyPath:    keyPath,
+		SSLSource:  sslSource,
+		Backend:    backend,
+	}, systemUser); err != nil {
+		return "", err
+	}
+	return socket, nil
+}
+
+// EnableSelfSigned generates a self-signed certificate with OpenSSL and re-renders the vhost with SSL.
+func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, err error) {
+	phpVersion = normalizePHP(phpVersion)
+	home := "/home/" + systemUser
+	sslDir := filepath.Join(home, "ssl")
+	_ = os.MkdirAll(sslDir, 0755)
+
+	certPath = filepath.Join(sslDir, domainName+".crt")
+	keyPath = filepath.Join(sslDir, domainName+".key")
+
+	subj := fmt.Sprintf("/C=TR/ST=Local/L=Servika/O=%s/CN=%s", domainName, domainName)
+	args := []string{
+		"req", "-x509", "-nodes",
+		"-newkey", "rsa:2048",
+		"-keyout", keyPath,
+		"-out", certPath,
+		"-days", "365",
+		"-subj", subj,
+		"-addext", "subjectAltName=DNS:" + domainName + ",DNS:www." + domainName,
+	}
+	if out, err := exec.Command("openssl", args...).CombinedOutput(); err != nil {
+		return "", "", fmt.Errorf("openssl: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+	_ = os.Chmod(keyPath, 0640)
+
+	uid, gid, _ := uidGid(systemUser)
+	_ = os.Chown(certPath, uid, gid)
+	_ = os.Chown(keyPath, uid, gid)
+	_, _ = exec.Command("restorecon", "-R", sslDir).CombinedOutput()
+
+	_, socket, _ := phpPoolPath(systemUser, phpVersion)
+	if err := renderAndReload(VhostOpts{
+		DomainName: domainName,
+		WebRoot:    filepath.Join(home, "public_html"),
+		PHPSocket:  socket,
+		PHPVersion: phpVersion,
+		CertPath:   certPath,
+		KeyPath:    keyPath,
+		SSLSource:  "self-signed",
+		Backend:    backend,
+	}, systemUser); err != nil {
+		return "", "", err
+	}
+	return certPath, keyPath, nil
+}
+
+// EnableLetsEncrypt obtains a certificate with acme.sh and re-renders the vhost with SSL.
+func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, err error) {
+	phpVersion = normalizePHP(phpVersion)
+	home := "/home/" + systemUser
+
+	// Prepare the ACME webroot.
+	_ = os.MkdirAll("/var/www/_acme", 0755)
+	_, _ = exec.Command("restorecon", "-R", "/var/www/_acme").CombinedOutput()
+
+	sslDir := filepath.Join(home, "ssl")
+	_ = os.MkdirAll(sslDir, 0755)
+	certPath = filepath.Join(sslDir, domainName+".crt")
+	keyPath = filepath.Join(sslDir, domainName+".key")
+
+	// Request the certificate through the HTTP-01 webroot challenge.
+	args := []string{
+		"--issue",
+		"--webroot", "/var/www/_acme",
+		"-d", domainName,
+		"-d", "www." + domainName,
+		"--keylength", "2048",
+		"--force",
+	}
+	if out, err := exec.Command("/root/.acme.sh/acme.sh", args...).CombinedOutput(); err != nil {
+		return "", "", fmt.Errorf("acme.sh issue: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+
+	// Install the certificate into the target paths with acme.sh install-cert.
+	insArgs := []string{
+		"--install-cert",
+		"-d", domainName,
+		"--cert-file", certPath,
+		"--key-file", keyPath,
+		"--fullchain-file", certPath,
+		"--reloadcmd", "systemctl reload nginx",
+	}
+	if out, err := exec.Command("/root/.acme.sh/acme.sh", insArgs...).CombinedOutput(); err != nil {
+		return "", "", fmt.Errorf("acme.sh install-cert: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+
+	uid, gid, _ := uidGid(systemUser)
+	_ = os.Chown(certPath, uid, gid)
+	_ = os.Chown(keyPath, uid, gid)
+	_, _ = exec.Command("restorecon", "-R", sslDir).CombinedOutput()
+
+	_, socket, _ := phpPoolPath(systemUser, phpVersion)
+	if err := renderAndReload(VhostOpts{
+		DomainName: domainName,
+		WebRoot:    filepath.Join(home, "public_html"),
+		PHPSocket:  socket,
+		PHPVersion: phpVersion,
+		CertPath:   certPath,
+		KeyPath:    keyPath,
+		SSLSource:  "letsencrypt",
+		Backend:    backend,
+	}, systemUser); err != nil {
+		return "", "", err
+	}
+	return certPath, keyPath, nil
+}
+
+// DisableSSL re-renders the vhost without SSL while retaining certificate files for reuse.
+func DisableSSL(domainName, systemUser, phpVersion, backend string) error {
+	phpVersion = normalizePHP(phpVersion)
+	home := "/home/" + systemUser
+	_, socket, _ := phpPoolPath(systemUser, phpVersion)
+	return renderAndReload(VhostOpts{
+		DomainName: domainName,
+		WebRoot:    filepath.Join(home, "public_html"),
+		PHPSocket:  socket,
+		PHPVersion: phpVersion,
+		Backend:    backend,
+	}, systemUser)
+}
+
+func userExists(username string) bool {
+	_, err := user.Lookup(username)
+	return err == nil
+}
+
+func uidGid(username string) (int, int, error) {
+	account, err := user.Lookup(username)
+	if err != nil {
+		return 0, 0, err
+	}
+	uid, _ := strconv.Atoi(account.Uid)
+	gid, _ := strconv.Atoi(account.Gid)
+	return uid, gid, nil
+}
+
+func welcomeHTML(domain string) string {
+	return fmt.Sprintf(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%s</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:linear-gradient(135deg,#f8fafc,#fff7ed);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{max-width:560px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:48px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.05)}
+  .logo{width:48px;height:48px;background:#ea580c;border-radius:10px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+  h1{font-size:24px;color:#0f172a;margin-bottom:8px}
+  p{color:#64748b;line-height:1.6;margin-bottom:8px}
+  .muted{font-size:13px;color:#94a3b8;margin-top:24px}
+  code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:13px;color:#475569}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">G</div>
+  <h1>%s</h1>
+  <p>The website was created successfully.</p>
+  <p>Use FTP or the file manager to upload content.</p>
+  <p class="muted">Web root: <code>public_html/</code> · PHP enabled · Managed by Servika</p>
+</div>
+</body>
+</html>`, domain, domain)
+}
+
+// ApplyVhostForDomain re-renders an nginx vhost for a domain ID.
+// It runs after PHP version or socket changes and loads SSL settings from the database.
+func ApplyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string) error {
+	var domainName, systemUser, certPath, keyPath, sslSource, backend string
+	var suspended int
+	if err := db.QueryRow(
+		`SELECT domain_name, system_user, COALESCE(cert_path,''), COALESCE(key_path,''), COALESCE(ssl_source,''),
+		        COALESCE(web_backend,'php-fpm'), COALESCE(suspended,0)
+		 FROM domains WHERE id=?`, domainID).
+		Scan(&domainName, &systemUser, &certPath, &keyPath, &sslSource, &backend, &suspended); err != nil {
+		return fmt.Errorf("read domain details: %w", err)
+	}
+	home := "/home/" + systemUser
+
+	// Default nginx settings to enabled when no row exists.
+	opts := VhostOpts{
+		DomainName:      domainName,
+		WebRoot:         filepath.Join(home, "public_html"),
+		PHPSocket:       socket,
+		PHPVersion:      phpVersion,
+		CertPath:        certPath,
+		KeyPath:         keyPath,
+		SSLSource:       sslSource,
+		Backend:         backend,
+		Suspended:       suspended == 1,
+		HdrXContentType: true, HdrXXSS: true, HdrReferrer: true,
+		HdrPermissions: true, HdrCSPUpgrade: true, HdrHSTS: true,
+		HSTSMaxAge: 31536000, HSTSSubdomains: true, HSTSPreload: false,
+	}
+	// Disable FastCGI cache and enable a 30-day browser cache by default.
+	opts.FastCgiCache = false
+	opts.FastCgiCacheMinutes = 60
+	opts.BrowserCache = true
+	opts.BrowserCacheDays = 30
+
+	var b1, b2, b3, b4, b5, b6, b7, b8, bFC, bBC int
+	var maxAge, fastCgiCacheMinutes, browserCacheDays int
+	var extraDirectives string
+	err := db.QueryRow(
+		`SELECT hdr_x_content_type, hdr_x_xss, hdr_referrer, hdr_permissions,
+		        hdr_csp_upgrade, hdr_hsts, hsts_max_age, hsts_subdomains, hsts_preload, extra_directives,
+		        fastcgi_cache, fastcgi_cache_minutes, browser_cache, browser_cache_days
+		 FROM nginx_settings WHERE domain_id=?`, domainID).
+		Scan(&b1, &b2, &b3, &b4, &b5, &b6, &maxAge, &b7, &b8, &extraDirectives,
+			&bFC, &fastCgiCacheMinutes, &bBC, &browserCacheDays)
+	if err == nil {
+		opts.HdrXContentType = b1 == 1
+		opts.HdrXXSS = b2 == 1
+		opts.HdrReferrer = b3 == 1
+		opts.HdrPermissions = b4 == 1
+		opts.HdrCSPUpgrade = b5 == 1
+		opts.HdrHSTS = b6 == 1
+		opts.HSTSMaxAge = maxAge
+		opts.HSTSSubdomains = b7 == 1
+		opts.HSTSPreload = b8 == 1
+		opts.ExtraDirectives = extraDirectives
+		opts.FastCgiCache = bFC == 1
+		opts.FastCgiCacheMinutes = fastCgiCacheMinutes
+		opts.BrowserCache = bBC == 1
+		opts.BrowserCacheDays = browserCacheDays
+	}
+	// Add protected-directory .htpasswd blocks regardless of whether nginx_settings has a row.
+	if pb := buildProtectedBlocks(db, domainID, socket); pb != "" {
+		if opts.ExtraDirectives != "" {
+			opts.ExtraDirectives += "\n"
+		}
+		opts.ExtraDirectives += pb
+	}
+	return renderAndReload(opts, systemUser)
+}
+
+// RerenderVhost resolves a domain's PHP socket and re-renders its vhost.
+func RerenderVhost(db *sql.DB, domainID int64) error {
+	var systemUser, phpVersion string
+	if err := db.QueryRow(
+		`SELECT system_user, php_version FROM domains WHERE id=?`, domainID).
+		Scan(&systemUser, &phpVersion); err != nil {
+		return err
+	}
+	socket, err := PHPSocketFor(systemUser, phpVersion)
+	if err != nil {
+		socket = "/run/php-fpm/" + systemUser + ".sock"
+	}
+	return ApplyVhostForDomain(db, domainID, socket, phpVersion)
+}
+
+// PHPSocketFor returns the active socket path for a system user and PHP version.
+func PHPSocketFor(systemUser, phpVersion string) (string, error) {
+	phpVersion = normalizePHP(phpVersion)
+	// AppStream 8.3
+	if phpVersion == "8.3" {
+		return "/run/php-fpm/" + systemUser + ".sock", nil
+	}
+	// Remi pattern: 5.6 -> 56, 7.4 -> 74, 8.2 -> 82
+	versionCode := strings.Replace(phpVersion, ".", "", 1)
+	if len(versionCode) >= 2 {
+		socketDir := "/var/opt/remi/php" + versionCode + "/run/php-fpm"
+		// Verify that the service is installed.
+		if _, err := os.Stat("/opt/remi/php" + versionCode + "/root/usr/sbin/php-fpm"); err == nil {
+			return socketDir + "/" + systemUser + ".sock", nil
+		}
+	}
+	return "", fmt.Errorf("unsupported or uninstalled version: %s", phpVersion)
+}
+
+// buildProtectedBlocks generates nginx auth_basic location blocks from protected_directories.
+// Each protected path receives an outer prefix location and a nested .php location that prevents PHP source disclosure.
+func buildProtectedBlocks(db *sql.DB, domainID int64, socket string) string {
+	rows, err := db.Query(`SELECT DISTINCT path, htpasswd_file FROM protected_directories WHERE domain_id=? ORDER BY path`, domainID)
+	if err != nil {
+		return ""
+	}
+	defer rows.Close()
+	var b strings.Builder
+	for rows.Next() {
+		var path, file string
+		if err := rows.Scan(&path, &file); err != nil {
+			continue
+		}
+		if path == "/" {
+			// The root path cannot use a separate "location /" because it duplicates the required
+			// existing prefix and nginx rejects it. Define auth_basic at the server level instead,
+			// allowing all locations, including PHP, to inherit it. The acme-challenge location
+			// remains exempt through "auth_basic off", so Let's Encrypt issuance and renewal work.
+			fmt.Fprintf(&b, `    auth_basic "Authentication Required";
+    auth_basic_user_file %s;
+`, file)
+			continue
+		}
+		fmt.Fprintf(&b, `    location ^~ %s {
+        auth_basic "Authentication Required";
+        auth_basic_user_file %s;
+        location ~ \.php$ {
+            auth_basic "Authentication Required";
+            auth_basic_user_file %s;
+            try_files $uri =404;
+            fastcgi_split_path_info ^(.+\.php)(/.+)$;
+            fastcgi_pass unix:%s;
+            fastcgi_index index.php;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param HTTPS on;
+        }
+    }
+`, path, file, file, socket)
+	}
+	_ = rows.Err()
+	return b.String()
+}
