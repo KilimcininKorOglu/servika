@@ -19,6 +19,7 @@ type RecordItem = {
 
 type Domain = { id: number; domain_name: string; ipv4: string }
 type SOA = { primary_ns: string; hostmaster: string; refresh: number; retry: number; expire: number; minimum: number; ttl: number }
+type DNSSECStatus = { active: boolean; signed: boolean; ds: string[]; status: string }
 
 const RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SRV', 'CAA', 'PTR', 'DS', 'TLSA', 'SSHFP', 'NAPTR']
 
@@ -52,6 +53,10 @@ export default function DomainDNSPage() {
   const [bulkDeleteConfirmationOpen, setBulkDeleteConfirmationOpen] = useState(false)
   const [soa, setSOA] = useState<SOA | null>(null)
   const [soaOpen, setSOAOpen] = useState(false)
+  const [dnssec, setDNSSEC] = useState<DNSSECStatus | null>(null)
+  const [dnssecProcessing, setDNSSECProcessing] = useState(false)
+  const [dnssecDisableConfirmationOpen, setDNSSECDisableConfirmationOpen] = useState(false)
+  const [dsCopied, setDSCopied] = useState(false)
 
   function load() {
     if (!id) return
@@ -95,9 +100,36 @@ export default function DomainDNSPage() {
     if (id) {
       api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
       api.get<SOA>(`/domains/${id}/dns/soa`).then(r => setSOA(r.data)).catch(() => {})
+      api.get<DNSSECStatus>(`/domains/${id}/dns/dnssec`).then(r => setDNSSEC(r.data)).catch(() => {})
     }
     load()
   }, [id])
+
+  async function changeDNSSEC(active: boolean) {
+    if (!id) return
+    setError(null); setSuccess(null); setDNSSECDisableConfirmationOpen(false); setDNSSECProcessing(true)
+    try {
+      const { data } = await api.post<DNSSECStatus>(`/domains/${id}/dns/dnssec`, { active })
+      setDNSSEC(data)
+      setSuccess(active
+        ? 'DNSSEC enabled. Add the DS record below at your domain registrar.'
+        : 'DNSSEC disabled.')
+    } catch (e) {
+      setError(apiError(e, 'Could not update DNSSEC'))
+    } finally {
+      setDNSSECProcessing(false)
+    }
+  }
+
+  async function refreshDNSSEC() {
+    if (!id) return
+    try {
+      const { data } = await api.get<DNSSECStatus>(`/domains/${id}/dns/dnssec`)
+      setDNSSEC(data)
+    } catch (e) {
+      setError(apiError(e, 'Could not refresh DNSSEC status'))
+    }
+  }
 
   async function saveSOA() {
     if (!id || !soa) return
@@ -180,6 +212,58 @@ export default function DomainDNSPage() {
               <div className="flex items-end">
                 <button onClick={saveSOA} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded-md">Save SOA</button>
               </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {dnssec && (
+        <div className="border border-slate-200 dark:border-slate-800 rounded-xl mb-4 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 gap-3 flex-wrap">
+            <div>
+              <div className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                DNSSEC
+                {dnssec.active ? (
+                  dnssec.signed
+                    ? <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium">Signed</span>
+                    : <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-medium">Signing…</span>
+                ) : (
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium">Disabled</span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Signs this zone with BIND inline signing. Add the generated DS record at your domain registrar.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {dnssec.active && (
+                <button onClick={refreshDNSSEC} className="px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-md transition">Refresh status</button>
+              )}
+              {dnssec.active ? (
+                <button disabled={dnssecProcessing} onClick={() => setDNSSECDisableConfirmationOpen(true)} className="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition disabled:opacity-50">Disable</button>
+              ) : (
+                <button disabled={dnssecProcessing} onClick={() => changeDNSSEC(true)} className="px-3 py-1.5 text-sm bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-medium rounded-md transition disabled:opacity-50">{dnssecProcessing ? 'Enabling…' : 'Enable'}</button>
+              )}
+            </div>
+          </div>
+          {dnssec.active && (
+            <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+              {dnssec.ds.length > 0 ? (
+                <div>
+                  <div className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1">DS record for your registrar</div>
+                  {dnssec.ds.map((record, index) => (
+                    <div key={index} className="flex items-center gap-2 mb-1">
+                      <code className="flex-1 text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 break-all text-slate-800 dark:text-slate-200">{record}</code>
+                      <button onClick={() => { void navigator.clipboard?.writeText(record); setDSCopied(true); setTimeout(() => setDSCopied(false), 1500) }}
+                        className="px-2 py-1 text-xs bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded transition whitespace-nowrap">{dsCopied ? 'Copied' : 'Copy'}</button>
+                    </div>
+                  ))}
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Add this DS record in your registrar's DNSSEC settings. Propagation may take up to the record TTL.</p>
+                </div>
+              ) : (
+                <p className="text-xs text-amber-600 dark:text-amber-400">Signing is still in progress. Refresh the status after a few seconds.</p>
+              )}
+              {dnssec.status && (
+                <pre className="mt-2 text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-2 overflow-x-auto max-h-44">{dnssec.status}</pre>
+              )}
             </div>
           )}
         </div>
@@ -309,6 +393,16 @@ export default function DomainDNSPage() {
         confirmText={`Yes, delete ${selected.size} records`}
         onConfirm={bulkDelete}
         onCancel={() => setBulkDeleteConfirmationOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={dnssecDisableConfirmationOpen}
+        title="Disable DNSSEC"
+        message="Remove the DS record at your domain registrar and wait for its TTL before disabling DNSSEC. Otherwise the domain may stop resolving with SERVFAIL. Continue only after the DS record has been removed."
+        dangerous
+        confirmText="DS removed, disable DNSSEC"
+        onConfirm={() => changeDNSSEC(false)}
+        onCancel={() => setDNSSECDisableConfirmationOpen(false)}
       />
     </div>
   )

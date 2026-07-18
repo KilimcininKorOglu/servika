@@ -69,9 +69,9 @@ else ok "TLS certificate already exists"; fi
 # 5) pure-ftpd.conf with MySQL authentication, chroot, passive mode, and optional TLS
 CONF=/etc/pure-ftpd/pure-ftpd.conf
 set_directive(){ # $1=directive $2=value
-  if grep -qE "^[# ]*$1[[:space:]]" "$CONF"; then
-    sed -i -E "s|^[# ]*$1[[:space:]].*|$1                  $2|" "$CONF"
-  else echo "$1                  $2" >> "$CONF"; fi
+  # Remove every active or commented directive before writing one canonical value.
+  sed -i -E "/^[# ]*$1[[:space:]]/d" "$CONF"
+  echo "$1                  $2" >> "$CONF"
 }
 set_directive MySQLConfigFile /etc/pure-ftpd/pureftpd-mysql.conf
 set_directive ChrootEveryone   yes
@@ -80,6 +80,7 @@ set_directive PassivePortRange "30000 30100"
 set_directive CreateHomeDir    yes
 set_directive TLS              1
 set_directive TLSCipherSuite   HIGH
+set_directive CertFile         /etc/pki/pure-ftpd/pure-ftpd.pem
 set_directive DontResolve      yes
 set_directive MaxClientsNumber 50
 set_directive MaxClientsPerIP  8

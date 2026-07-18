@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestValidRecordFieldsRejectsZoneDirectiveInjection(t *testing.T) {
@@ -96,6 +97,33 @@ func TestTXTRecordsEscapeZoneControlCharacters(t *testing.T) {
 	for _, unsafe := range []string{"\n", `next\value`, `value""`} {
 		if strings.Contains(quoted, unsafe) {
 			t.Fatalf("txtQuote() retained unsafe sequence %q: %s", unsafe, quoted)
+		}
+	}
+}
+
+func TestNextSerialAtAdvancesWithinTheSameDay(t *testing.T) {
+	now := time.Date(2026, time.July, 19, 12, 0, 0, 0, time.UTC)
+	if got := nextSerialAt(2026071907, now); got != 2026071908 {
+		t.Fatalf("nextSerialAt() = %d, want 2026071908", got)
+	}
+	if got := nextSerialAt(2026071809, now); got != 2026071900 {
+		t.Fatalf("nextSerialAt() = %d, want 2026071900", got)
+	}
+}
+
+func TestZoneIncludeStatementAlwaysBlocksTransfers(t *testing.T) {
+	unsigned := zoneIncludeStatement("example.com", false)
+	if !strings.Contains(unsigned, "allow-transfer { none; };") {
+		t.Fatalf("unsigned zone permits transfers: %s", unsigned)
+	}
+	if strings.Contains(unsigned, "dnssec-policy") {
+		t.Fatalf("unsigned zone enables DNSSEC: %s", unsigned)
+	}
+
+	signed := zoneIncludeStatement("example.com", true)
+	for _, expected := range []string{"allow-transfer { none; };", "dnssec-policy default;", `key-directory "/var/named/dynamic";`, "inline-signing yes;"} {
+		if !strings.Contains(signed, expected) {
+			t.Fatalf("signed zone does not contain %q: %s", expected, signed)
 		}
 	}
 }
