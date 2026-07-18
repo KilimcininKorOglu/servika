@@ -20,7 +20,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const MaxUploadBytes = 10 * 1024 * 1024 * 1024 // 10 GB
+const (
+	// MaxUploadBytes is the maximum accepted multipart request body size.
+	MaxUploadBytes     = 2 * 1024 * 1024 * 1024
+	maxMultipartMemory = 32 * 1024 * 1024
+)
+
+var errUploadTooLarge = errors.New("upload exceeds the size limit")
 
 var managedSystemUserPattern = regexp.MustCompile(`^c_[A-Za-z0-9_]+$`)
 
@@ -251,7 +257,11 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 	if rel == "" {
 		rel = "/"
 	}
-	if err := r.ParseMultipartForm(MaxUploadBytes); err != nil {
+	if err := parseMultipartUpload(w, r, MaxUploadBytes, maxMultipartMemory); err != nil {
+		if errors.Is(err, errUploadTooLarge) {
+			httpx.WriteError(w, http.StatusRequestEntityTooLarge, "upload exceeds the 2 GiB limit")
+			return
+		}
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
@@ -262,7 +272,7 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 	if fh.Size > MaxUploadBytes {
-		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "file is too large (maximum 10 GB)")
+		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "file is too large (maximum 2 GiB)")
 		return
 	}
 	abs, err := jailJoinStrict(home, filepath.Join(rel, fh.Filename))
@@ -289,6 +299,18 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 		"size": written,
 		"name": fh.Filename,
 	})
+}
+
+func parseMultipartUpload(w http.ResponseWriter, r *http.Request, maxBytes int64, maxMemory int64) error {
+	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+	if err := r.ParseMultipartForm(maxMemory); err != nil {
+		var maxBytesError *http.MaxBytesError
+		if errors.As(err, &maxBytesError) {
+			return errUploadTooLarge
+		}
+		return err
+	}
+	return nil
 }
 
 func statusFromErr(err error) int {
