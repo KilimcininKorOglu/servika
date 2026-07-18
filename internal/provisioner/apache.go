@@ -15,18 +15,32 @@ import (
 const ApacheUpstream = "127.0.0.1:10080"
 
 var apacheVhostTmpl = template.Must(template.New("a").Parse(`# {{.DomainName}} — Servika Apache backend (nginx reverse proxy)
+# Response security headers are applied at the nginx edge to avoid duplicates.
+# Apache enforces execution and access policy: CGI is disabled, scripts and
+# backup files are denied, and symlinks require matching ownership.
 <VirtualHost 127.0.0.1:10080>
     ServerName {{.DomainName}}
     ServerAlias www.{{.DomainName}}
     DocumentRoot {{.WebRoot}}
 
     <Directory {{.WebRoot}}>
-        Options Indexes FollowSymLinks
-        AllowOverride All
+        Options -ExecCGI -Indexes -Includes -FollowSymLinks +SymLinksIfOwnerMatch
+        AllowOverride AuthConfig FileInfo Indexes Limit Options=Indexes,MultiViews
         Require all granted
+
+        RemoveHandler .cgi .pl .py .sh .rb .lua .fcgi .fpl
+        <FilesMatch "\.(cgi|pl|py|sh|rb|lua|fcgi)$">
+            Require all denied
+        </FilesMatch>
+        <FilesMatch "\.(sql|bak|old|orig|save|swp|dump|tar|tgz|gz|zip|rar|7z|log|inc)$">
+            Require all denied
+        </FilesMatch>
+        <FilesMatch "\.php\.bak$">
+            Require all denied
+        </FilesMatch>
     </Directory>
 
-    <FilesMatch \.php$>
+    <FilesMatch "\.php$">
         SetHandler "proxy:unix:{{.PHPSocket}}|fcgi://localhost"
     </FilesMatch>
 

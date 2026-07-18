@@ -49,3 +49,116 @@ func TestManagedCacheZoneMatchesVhostUsage(t *testing.T) {
 		t.Fatalf("managed configuration does not define cache zone %q", cacheZoneName)
 	}
 }
+
+func TestTenantVhostAppliesHardeningAtEveryHeaderBoundary(t *testing.T) {
+	opts := VhostOpts{
+		DomainName:       "example.com",
+		WebRoot:          "/home/c_example_com/public_html",
+		PHPSocket:        "/run/php-fpm/c_example_com.sock",
+		PHPVersion:       "8.3",
+		HdrXContentType:  true,
+		HdrXXSS:          true,
+		HdrReferrer:      true,
+		HdrPermissions:   true,
+		BrowserCache:     true,
+		BrowserCacheDays: 30,
+	}
+	opts.SecHeaders = buildSecurityHeaders(opts)
+	opts.DenyBlocks = denyBlocksNginx
+
+	var rendered bytes.Buffer
+	if err := vhostTmpl.Execute(&rendered, opts); err != nil {
+		t.Fatalf("render vhost: %v", err)
+	}
+	config := rendered.String()
+
+	for _, directive := range []string{
+		"disable_symlinks if_not_owner;",
+		`location ~* \.(cgi|pl|py|sh|rb|lua|fcgi)$ { deny all; }`,
+		`location ~* \.(sql|sql\.gz|bak|old|orig|save|swp|dump|tar|tgz|gz|zip|rar|7z|log|inc|php\.bak)$ { deny all; }`,
+	} {
+		if !strings.Contains(config, directive) {
+			t.Errorf("vhost does not contain hardening directive %q", directive)
+		}
+	}
+	if count := strings.Count(config, `add_header X-Frame-Options "SAMEORIGIN" always;`); count != 3 {
+		t.Errorf("X-Frame-Options appears %d times, want server, PHP, and browser-cache locations", count)
+	}
+	if strings.Contains(config, "Strict-Transport-Security") {
+		t.Error("HTTP-only vhost must not emit HSTS")
+	}
+	browserCacheLocation := `location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf)$ {`
+	if !strings.Contains(config, browserCacheLocation) {
+		t.Error("browser-cache location must contain only the approved static extensions")
+	}
+}
+
+func TestTLSVhostRepeatsHSTSAtEveryHeaderBoundary(t *testing.T) {
+	opts := VhostOpts{
+		DomainName:       "example.com",
+		WebRoot:          "/home/c_example_com/public_html",
+		PHPSocket:        "/run/php-fpm/c_example_com.sock",
+		PHPVersion:       "8.3",
+		CertPath:         "/etc/letsencrypt/live/example.com/fullchain.pem",
+		KeyPath:          "/etc/letsencrypt/live/example.com/privkey.pem",
+		HdrHSTS:          true,
+		HSTSMaxAge:       31536000,
+		HSTSSubdomains:   true,
+		BrowserCache:     true,
+		BrowserCacheDays: 30,
+	}
+	opts.SecHeaders = buildSecurityHeaders(opts)
+	opts.DenyBlocks = denyBlocksNginx
+
+	var rendered bytes.Buffer
+	if err := vhostTmpl.Execute(&rendered, opts); err != nil {
+		t.Fatalf("render TLS vhost: %v", err)
+	}
+	if count := strings.Count(rendered.String(), "add_header Strict-Transport-Security"); count != 3 {
+		t.Errorf("HSTS appears %d times, want server, PHP, and browser-cache locations", count)
+	}
+}
+
+func TestPHPPoolConfinesTenantAndDisablesProcessExecution(t *testing.T) {
+	var rendered bytes.Buffer
+	if err := phpPoolTmpl.Execute(&rendered, map[string]string{
+		"User":   "c_example_com",
+		"Socket": "/run/php-fpm/c_example_com.sock",
+	}); err != nil {
+		t.Fatalf("render PHP pool: %v", err)
+	}
+	config := rendered.String()
+
+	if !strings.Contains(config, "php_admin_value[open_basedir] = /home/c_example_com/:/tmp/") {
+		t.Error("PHP pool does not confine filesystem access to the tenant home and temporary directory")
+	}
+	for _, function := range []string{"exec", "proc_open", "pcntl_exec", "symlink", "posix_setuid"} {
+		if !strings.Contains(config, function) {
+			t.Errorf("PHP pool does not disable %q", function)
+		}
+	}
+}
+
+func TestApacheVhostDeniesScriptsBackupsAndForeignSymlinks(t *testing.T) {
+	var rendered bytes.Buffer
+	if err := apacheVhostTmpl.Execute(&rendered, VhostOpts{
+		DomainName: "example.com",
+		WebRoot:    "/home/c_example_com/public_html",
+		PHPSocket:  "/run/php-fpm/c_example_com.sock",
+	}); err != nil {
+		t.Fatalf("render Apache vhost: %v", err)
+	}
+	config := rendered.String()
+
+	for _, directive := range []string{
+		"Options -ExecCGI -Indexes -Includes -FollowSymLinks +SymLinksIfOwnerMatch",
+		"RemoveHandler .cgi .pl .py .sh .rb .lua .fcgi .fpl",
+		`<FilesMatch "\.(cgi|pl|py|sh|rb|lua|fcgi)$">`,
+		`<FilesMatch "\.(sql|bak|old|orig|save|swp|dump|tar|tgz|gz|zip|rar|7z|log|inc)$">`,
+		"AllowOverride AuthConfig FileInfo Indexes Limit Options=Indexes,MultiViews",
+	} {
+		if !strings.Contains(config, directive) {
+			t.Errorf("Apache vhost does not contain hardening directive %q", directive)
+		}
+	}
+}

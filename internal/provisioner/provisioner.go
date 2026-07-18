@@ -35,10 +35,12 @@ fastcgi_cache_path ` + cacheZoneDir + ` levels=1:2 keys_zone=` + cacheZoneName +
 
 var cacheZoneDefinitionPattern = regexp.MustCompile(`keys_zone\s*=\s*` + regexp.QuoteMeta(cacheZoneName) + `\s*:`)
 
-// Init configures database-backed state and repairs the managed FastCGI cache zone.
+// Init configures database-backed state and repairs managed server configuration.
 func Init(db *sql.DB) {
 	packageDB = db
 	healCacheZoneOnStartup()
+	healPanelVhostHeadersOnStartup()
+	healVhostsOnStartup()
 }
 
 func healCacheZoneOnStartup() {
@@ -121,14 +123,15 @@ type phpConfig struct {
 	PoolDir string
 	SockDir string
 	Service string
+	FPMBin  string
 }
 
 var phpMap = map[string]phpConfig{
-	"7.4": {PoolDir: "/etc/opt/remi/php74/php-fpm.d", SockDir: "/var/opt/remi/php74/run/php-fpm", Service: "php74-php-fpm"},
-	"8.2": {PoolDir: "/etc/opt/remi/php82/php-fpm.d", SockDir: "/var/opt/remi/php82/run/php-fpm", Service: "php82-php-fpm"},
-	"8.3": {PoolDir: "/etc/php-fpm.d", SockDir: "/run/php-fpm", Service: "php-fpm"},
-	"8.4": {PoolDir: "/etc/opt/remi/php84/php-fpm.d", SockDir: "/var/opt/remi/php84/run/php-fpm", Service: "php84-php-fpm"},
-	"8.5": {PoolDir: "/etc/opt/remi/php85/php-fpm.d", SockDir: "/var/opt/remi/php85/run/php-fpm", Service: "php85-php-fpm"},
+	"7.4": {PoolDir: "/etc/opt/remi/php74/php-fpm.d", SockDir: "/var/opt/remi/php74/run/php-fpm", Service: "php74-php-fpm", FPMBin: "/opt/remi/php74/root/usr/sbin/php-fpm"},
+	"8.2": {PoolDir: "/etc/opt/remi/php82/php-fpm.d", SockDir: "/var/opt/remi/php82/run/php-fpm", Service: "php82-php-fpm", FPMBin: "/opt/remi/php82/root/usr/sbin/php-fpm"},
+	"8.3": {PoolDir: "/etc/php-fpm.d", SockDir: "/run/php-fpm", Service: "php-fpm", FPMBin: "/usr/sbin/php-fpm"},
+	"8.4": {PoolDir: "/etc/opt/remi/php84/php-fpm.d", SockDir: "/var/opt/remi/php84/run/php-fpm", Service: "php84-php-fpm", FPMBin: "/opt/remi/php84/root/usr/sbin/php-fpm"},
+	"8.5": {PoolDir: "/etc/opt/remi/php85/php-fpm.d", SockDir: "/var/opt/remi/php85/run/php-fpm", Service: "php85-php-fpm", FPMBin: "/opt/remi/php85/root/usr/sbin/php-fpm"},
 }
 
 func ValidateDomain(d string) error {
@@ -196,16 +199,13 @@ server {
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 1d;
 
-    # ---- Security headers (managed by the panel) ----
-{{if .HdrXContentType}}    add_header X-Content-Type-Options "nosniff" always;
-{{end}}{{if .HdrXXSS}}    add_header X-XSS-Protection "1; mode=block" always;
-{{end}}{{if .HdrReferrer}}    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-{{end}}{{if .HdrPermissions}}    add_header Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()" always;
-{{end}}{{if .HdrCSPUpgrade}}    add_header Content-Security-Policy "upgrade-insecure-requests" always;
-{{end}}{{if .HdrHSTS}}    add_header Strict-Transport-Security "max-age={{.HSTSMaxAge}}{{if .HSTSSubdomains}}; includeSubDomains{{end}}{{if .HSTSPreload}}; preload{{end}}" always;
-{{end}}
     root {{.WebRoot}};
     index index.php index.html index.htm;
+    disable_symlinks if_not_owner;
+
+    # ---- Security headers (managed by the panel) ----
+{{.SecHeaders}}
+{{.DenyBlocks}}
 
     access_log /var/log/nginx/{{.DomainName}}.access.log;
     error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
@@ -241,7 +241,8 @@ server {
         fastcgi_param PATH_INFO $fastcgi_path_info;
         fastcgi_param HTTPS on;
         fastcgi_read_timeout 60s;
-{{if .FastCgiCache}}        fastcgi_cache servikacache;
+        # Repeat headers because this location may define add_header below.
+{{.SecHeaders}}{{if .FastCgiCache}}        fastcgi_cache servikacache;
         fastcgi_cache_valid 200 301 302 {{.FastCgiCacheMinutes}}m;
         fastcgi_cache_valid 404 1m;
         fastcgi_cache_bypass $skip_cache;
@@ -253,11 +254,12 @@ server {
 {{end}}    }
 {{end}}
 {{if .BrowserCache}}    # ---- Browser cache (static files) ----
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf)$ {
         expires {{.BrowserCacheDays}}d;
         access_log off;
         add_header Cache-Control "public, immutable" always;
-    }
+        # Repeat headers because this location defines add_header.
+{{.SecHeaders}}    }
 {{end}}
 
     location ~ /\.(?!well-known) { deny all; }
@@ -274,23 +276,20 @@ server {
 
     root {{.WebRoot}};
     index index.php index.html index.htm;
+    disable_symlinks if_not_owner;
 
     access_log /var/log/nginx/{{.DomainName}}.access.log;
     error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
 
     # ---- Security headers (managed by the panel) ----
-{{if .HdrXContentType}}    add_header X-Content-Type-Options "nosniff" always;
-{{end}}{{if .HdrXXSS}}    add_header X-XSS-Protection "1; mode=block" always;
-{{end}}{{if .HdrReferrer}}    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-{{end}}{{if .HdrPermissions}}    add_header Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()" always;
-{{end}}{{if .HdrCSPUpgrade}}    add_header Content-Security-Policy "upgrade-insecure-requests" always;
-{{end}}
+{{.SecHeaders}}
     location /.well-known/acme-challenge/ {
         root /var/www/_acme;
         auth_basic off;
         try_files $uri =404;
     }
 
+{{.DenyBlocks}}
 {{if eq .Backend "apache"}}    # ---- Backend: Apache (127.0.0.1:10080 proxy) ----
     location / {
         proxy_pass http://127.0.0.1:10080;
@@ -321,7 +320,8 @@ server {
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_param PATH_INFO $fastcgi_path_info;
         fastcgi_read_timeout 60s;
-{{if .FastCgiCache}}        fastcgi_cache servikacache;
+        # Repeat headers because this location may define add_header below.
+{{.SecHeaders}}{{if .FastCgiCache}}        fastcgi_cache servikacache;
         fastcgi_cache_valid 200 301 302 {{.FastCgiCacheMinutes}}m;
         fastcgi_cache_valid 404 1m;
         fastcgi_cache_bypass $skip_cache;
@@ -332,11 +332,12 @@ server {
         add_header X-Cache-Status $upstream_cache_status always;
 {{end}}    }
 {{end}}
-{{if .BrowserCache}}    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {
+{{if .BrowserCache}}    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf)$ {
         expires {{.BrowserCacheDays}}d;
         access_log off;
         add_header Cache-Control "public, immutable" always;
-    }
+        # Repeat headers because this location defines add_header.
+{{.SecHeaders}}    }
 {{end}}
 
     location ~ /\.(?!well-known) { deny all; }
@@ -347,6 +348,45 @@ server {
 }
 {{- end -}}
 `))
+
+const denyBlocksNginx = `    # ---- Deny CGI and interpreter scripts ----
+    location ~* \.(cgi|pl|py|sh|rb|lua|fcgi)$ { deny all; }
+    # ---- Deny backup, dump, and sensitive files ----
+    location ~* \.(sql|sql\.gz|bak|old|orig|save|swp|dump|tar|tgz|gz|zip|rar|7z|log|inc|php\.bak)$ { deny all; }
+`
+
+func buildSecurityHeaders(opts VhostOpts) string {
+	var headers strings.Builder
+	if opts.HdrXContentType {
+		headers.WriteString("    add_header X-Content-Type-Options \"nosniff\" always;\n")
+	}
+	headers.WriteString("    add_header X-Frame-Options \"SAMEORIGIN\" always;\n")
+	if opts.HdrXXSS {
+		headers.WriteString("    add_header X-XSS-Protection \"1; mode=block\" always;\n")
+	}
+	if opts.HdrReferrer {
+		headers.WriteString("    add_header Referrer-Policy \"strict-origin-when-cross-origin\" always;\n")
+	}
+	if opts.HdrPermissions {
+		headers.WriteString("    add_header Permissions-Policy \"geolocation=(), microphone=(), camera=(), interest-cohort=()\" always;\n")
+	}
+	headers.WriteString("    add_header Content-Security-Policy-Report-Only \"default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';\" always;\n")
+	if opts.SSL() && opts.HdrCSPUpgrade {
+		headers.WriteString("    add_header Content-Security-Policy \"upgrade-insecure-requests\" always;\n")
+	}
+	if opts.SSL() && opts.HdrHSTS {
+		includeSubdomains := ""
+		if opts.HSTSSubdomains {
+			includeSubdomains = "; includeSubDomains"
+		}
+		preload := ""
+		if opts.HSTSPreload {
+			preload = "; preload"
+		}
+		fmt.Fprintf(&headers, "    add_header Strict-Transport-Security \"max-age=%d%s%s\" always;\n", opts.HSTSMaxAge, includeSubdomains, preload)
+	}
+	return headers.String()
+}
 
 var suspendedVhostTmpl = template.Must(template.New("suspended").Parse(`# {{.DomainName}} suspended by Servika
 server {
@@ -407,7 +447,9 @@ pm = ondemand
 pm.max_children = 8
 pm.process_idle_timeout = 30s
 pm.max_requests = 500
-php_admin_value[disable_functions] = exec,passthru,shell_exec,system,proc_open,popen
+; Security settings use php_admin_value so tenant code cannot override them.
+php_admin_value[open_basedir] = /home/{{.User}}/:/tmp/
+php_admin_value[disable_functions] = exec,passthru,shell_exec,system,proc_open,popen,proc_close,proc_get_status,proc_terminate,proc_nice,pcntl_exec,dl,symlink,link,posix_kill,posix_mkfifo,posix_setpgid,posix_setsid,posix_setuid,posix_setgid
 php_admin_value[upload_tmp_dir] = /home/{{.User}}/tmp
 php_admin_value[sys_temp_dir] = /home/{{.User}}/tmp
 php_admin_value[session.save_path] = /home/{{.User}}/tmp
@@ -447,6 +489,10 @@ type VhostOpts struct {
 
 	// Web server backend: "php-fpm" by default, "apache", or "static".
 	Backend string
+
+	// Render-time security blocks that are not persisted in the database.
+	SecHeaders string
+	DenyBlocks string
 }
 
 func (o VhostOpts) SSL() bool {
@@ -469,6 +515,44 @@ func phpPoolPath(systemUser, phpVersion string) (string, string, string) {
 		config.Service
 }
 
+func writePoolValidated(systemUser, phpVersion string) (socket, service string, err error) {
+	version := normalizePHP(phpVersion)
+	config := phpMap[version]
+	poolPath, socket, service := phpPoolPath(systemUser, version)
+
+	if err := os.MkdirAll(filepath.Dir(poolPath), 0755); err != nil {
+		return "", "", fmt.Errorf("create PHP pool directory: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(socket), 0755); err != nil {
+		return "", "", fmt.Errorf("create PHP socket directory: %w", err)
+	}
+
+	var pool bytes.Buffer
+	if err := phpPoolTmpl.Execute(&pool, map[string]string{"User": systemUser, "Socket": socket}); err != nil {
+		return "", "", fmt.Errorf("render PHP pool: %w", err)
+	}
+
+	previousPool, readErr := os.ReadFile(poolPath)
+	hadPreviousPool := readErr == nil
+	if err := os.WriteFile(poolPath, pool.Bytes(), 0644); err != nil {
+		return "", "", fmt.Errorf("write PHP pool: %w", err)
+	}
+	if config.FPMBin != "" {
+		if output, err := exec.Command(config.FPMBin, "-t").CombinedOutput(); err != nil {
+			if hadPreviousPool {
+				_ = os.WriteFile(poolPath, previousPool, 0644)
+			} else {
+				_ = os.Remove(poolPath)
+			}
+			return "", "", fmt.Errorf("php-fpm -t (%s) failed, pool restored: %s: %w", version, strings.TrimSpace(string(output)), err)
+		}
+	}
+	if output, err := exec.Command("systemctl", "reload-or-restart", service).CombinedOutput(); err != nil {
+		return "", "", fmt.Errorf("php-fpm (%s) reload: %s: %w", service, strings.TrimSpace(string(output)), err)
+	}
+	return socket, service, nil
+}
+
 // renderAndReload writes the vhost, validates nginx, and reloads it for both SSL modes.
 // For the "apache" backend, it also writes the per-domain Apache vhost and reloads httpd.
 // When switching away from Apache, it removes the obsolete Apache vhost.
@@ -484,6 +568,9 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 			Scan(&suspended)
 		opts.Suspended = suspended == 1
 	}
+
+	opts.SecHeaders = buildSecurityHeaders(opts)
+	opts.DenyBlocks = denyBlocksNginx
 
 	tmpl := vhostTmpl
 	if opts.Suspended {
@@ -577,17 +664,10 @@ func Provision(domainName, phpVersion string) (*Result, error) {
 
 	_, _ = exec.Command("restorecon", "-R", home).CombinedOutput()
 
-	// PHP-FPM pool
-	poolPath, socket, service := phpPoolPath(systemUser, phpVersion)
-	_ = os.MkdirAll(filepath.Dir(poolPath), 0755)
-	_ = os.MkdirAll(filepath.Dir(socket), 0755)
-	var poolBuf bytes.Buffer
-	_ = phpPoolTmpl.Execute(&poolBuf, map[string]string{"User": systemUser, "Socket": socket})
-	if err := os.WriteFile(poolPath, poolBuf.Bytes(), 0644); err != nil {
-		return nil, fmt.Errorf("write PHP pool: %w", err)
-	}
-	if out, err := exec.Command("systemctl", "reload-or-restart", service).CombinedOutput(); err != nil {
-		return nil, fmt.Errorf("php-fpm (%s) reload: %s: %w", service, strings.TrimSpace(string(out)), err)
+	// Write, validate, and activate the tenant PHP-FPM pool.
+	socket, _, err := writePoolValidated(systemUser, phpVersion)
+	if err != nil {
+		return nil, err
 	}
 
 	// Create the initial vhost without SSL.
@@ -644,16 +724,9 @@ func SetPHPVersion(domainName, systemUser, newVersion, certPath, keyPath, sslSou
 		}
 	}
 
-	poolPath, socket, service := phpPoolPath(systemUser, newVersion)
-	_ = os.MkdirAll(filepath.Dir(poolPath), 0755)
-	_ = os.MkdirAll(filepath.Dir(socket), 0755)
-	var poolBuf bytes.Buffer
-	_ = phpPoolTmpl.Execute(&poolBuf, map[string]string{"User": systemUser, "Socket": socket})
-	if err := os.WriteFile(poolPath, poolBuf.Bytes(), 0644); err != nil {
-		return "", fmt.Errorf("write new pool: %w", err)
-	}
-	if out, err := exec.Command("systemctl", "reload-or-restart", service).CombinedOutput(); err != nil {
-		return "", fmt.Errorf("php-fpm (%s) reload: %s: %w", service, strings.TrimSpace(string(out)), err)
+	socket, _, err := writePoolValidated(systemUser, newVersion)
+	if err != nil {
+		return "", err
 	}
 
 	home := "/home/" + systemUser
@@ -986,4 +1059,134 @@ func buildProtectedBlocks(db *sql.DB, domainID int64, socket string) string {
 	}
 	_ = rows.Err()
 	return b.String()
+}
+
+const (
+	vhostHardenSentinel = "/var/lib/servika/.vhost_hardening_v2_done"
+	panelVhostPath      = "/etc/nginx/conf.d/_panel.conf"
+	panelSecSentinel    = "# SERVIKA-PANEL-SEC v2"
+)
+
+func healVhostsOnStartup() {
+	if packageDB == nil {
+		return
+	}
+	if _, err := os.Stat(vhostHardenSentinel); err == nil {
+		return
+	}
+
+	rows, err := packageDB.Query(`SELECT id, system_user, php_version FROM domains`)
+	if err != nil {
+		log.Printf("vhost hardening: could not list domains: %v", err)
+		return
+	}
+	type domain struct {
+		id         int64
+		systemUser string
+		phpVersion string
+	}
+	var domains []domain
+	rowReadFailed := false
+	for rows.Next() {
+		var item domain
+		if err := rows.Scan(&item.id, &item.systemUser, &item.phpVersion); err != nil {
+			log.Printf("vhost hardening: could not read domain row: %v", err)
+			rowReadFailed = true
+			continue
+		}
+		domains = append(domains, item)
+	}
+	rowsErr := rows.Err()
+	_ = rows.Close()
+	if rowsErr != nil {
+		log.Printf("vhost hardening: domain iteration failed: %v", rowsErr)
+		return
+	}
+	if rowReadFailed {
+		log.Printf("vhost hardening: at least one domain row could not be read, retry scheduled for next startup")
+		return
+	}
+
+	failed := 0
+	for _, item := range domains {
+		domainFailed := false
+		socket, _, err := writePoolValidated(item.systemUser, item.phpVersion)
+		if err != nil {
+			log.Printf("vhost hardening: %s PHP pool update failed: %v", item.systemUser, err)
+			domainFailed = true
+			if resolved, resolveErr := PHPSocketFor(item.systemUser, item.phpVersion); resolveErr == nil {
+				socket = resolved
+			}
+		}
+		if socket == "" {
+			socket = "/run/php-fpm/" + item.systemUser + ".sock"
+		}
+		if err := ApplyVhostForDomain(packageDB, item.id, socket, item.phpVersion); err != nil {
+			log.Printf("vhost hardening: %s vhost update failed: %v", item.systemUser, err)
+			domainFailed = true
+		}
+		if domainFailed {
+			failed++
+		}
+	}
+	if failed != 0 {
+		log.Printf("vhost hardening: %d of %d domains failed, retry scheduled for next startup", failed, len(domains))
+		return
+	}
+
+	if err := os.MkdirAll(filepath.Dir(vhostHardenSentinel), 0755); err != nil {
+		log.Printf("vhost hardening: could not create sentinel directory: %v", err)
+		return
+	}
+	if err := os.WriteFile(vhostHardenSentinel, []byte("done\n"), 0644); err != nil {
+		log.Printf("vhost hardening: could not write sentinel: %v", err)
+	}
+}
+
+func healPanelVhostHeadersOnStartup() {
+	original, err := os.ReadFile(panelVhostPath)
+	if err != nil {
+		return
+	}
+	content := string(original)
+	if strings.Contains(content, panelSecSentinel) {
+		return
+	}
+	anchor := "server_name _;"
+	anchorIndex := strings.Index(content, anchor)
+	if anchorIndex < 0 {
+		log.Printf("panel security repair: %q anchor not found", anchor)
+		return
+	}
+
+	headers := "\n    " + panelSecSentinel + "\n" +
+		"    add_header X-Content-Type-Options \"nosniff\" always;\n" +
+		"    add_header X-Frame-Options \"SAMEORIGIN\" always;\n" +
+		"    add_header Referrer-Policy \"strict-origin-when-cross-origin\" always;\n" +
+		"    add_header Permissions-Policy \"geolocation=(), microphone=(), camera=(), interest-cohort=()\" always;\n" +
+		"    add_header Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'\" always;\n" +
+		"    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;\n"
+	insertAt := anchorIndex + len(anchor)
+	updated := content[:insertAt] + headers + content[insertAt:]
+
+	cacheHeader := "        add_header Cache-Control \"public, immutable\";"
+	repeatedHeaders := cacheHeader + "\n" +
+		"        add_header X-Content-Type-Options \"nosniff\" always;\n" +
+		"        add_header X-Frame-Options \"SAMEORIGIN\" always;\n" +
+		"        add_header Referrer-Policy \"strict-origin-when-cross-origin\" always;\n" +
+		"        add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;"
+	updated = strings.ReplaceAll(updated, cacheHeader, repeatedHeaders)
+
+	if err := os.WriteFile(panelVhostPath, []byte(updated), 0644); err != nil {
+		log.Printf("panel security repair: could not write vhost: %v", err)
+		return
+	}
+	if output, err := exec.Command("nginx", "-t").CombinedOutput(); err != nil {
+		_ = os.WriteFile(panelVhostPath, original, 0644)
+		log.Printf("panel security repair: nginx -t failed, vhost restored: %s", strings.TrimSpace(string(output)))
+		return
+	}
+	if output, err := exec.Command("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
+		log.Printf("panel security repair: nginx reload failed: %s", strings.TrimSpace(string(output)))
+	}
 }
