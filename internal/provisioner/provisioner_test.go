@@ -75,7 +75,7 @@ func TestTenantVhostAppliesHardeningAtEveryHeaderBoundary(t *testing.T) {
 	for _, directive := range []string{
 		"disable_symlinks if_not_owner;",
 		`location ~* \.(cgi|pl|py|sh|rb|lua|fcgi)$ { deny all; }`,
-		`location ~* \.(sql|sql\.gz|bak|old|orig|save|swp|dump|tar|tgz|gz|zip|rar|7z|log|inc|php\.bak)$ { deny all; }`,
+		`location ~* \.(sql|sql\.gz|bak|old|orig|save|swp|swo|dump|inc|log|php\.bak|php~|php\.save)$ { deny all; }`,
 	} {
 		if !strings.Contains(config, directive) {
 			t.Errorf("vhost does not contain hardening directive %q", directive)
@@ -87,9 +87,14 @@ func TestTenantVhostAppliesHardeningAtEveryHeaderBoundary(t *testing.T) {
 	if strings.Contains(config, "Strict-Transport-Security") {
 		t.Error("HTTP-only vhost must not emit HSTS")
 	}
-	browserCacheLocation := `location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf)$ {`
+	browserCacheLocation := `location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {`
 	if !strings.Contains(config, browserCacheLocation) {
-		t.Error("browser-cache location must contain only the approved static extensions")
+		t.Error("browser-cache location must allow static files and legitimate ZIP or GZIP downloads")
+	}
+	for _, archiveExtension := range []string{"|tar|", "|tgz|", "|zip|", "|rar|", "|7z|"} {
+		if strings.Contains(denyBlocksNginx, archiveExtension) {
+			t.Errorf("sensitive-file deny block must not reject legitimate archive extension %q", archiveExtension)
+		}
 	}
 }
 
@@ -154,11 +159,17 @@ func TestApacheVhostDeniesScriptsBackupsAndForeignSymlinks(t *testing.T) {
 		"Options -ExecCGI -Indexes -Includes -FollowSymLinks +SymLinksIfOwnerMatch",
 		"RemoveHandler .cgi .pl .py .sh .rb .lua .fcgi .fpl",
 		`<FilesMatch "\.(cgi|pl|py|sh|rb|lua|fcgi)$">`,
-		`<FilesMatch "\.(sql|bak|old|orig|save|swp|dump|tar|tgz|gz|zip|rar|7z|log|inc)$">`,
+		`<FilesMatch "\.(sql|sql\.gz|bak|old|orig|save|swp|swo|dump|inc|log)$">`,
+		`<FilesMatch "\.(php\.bak|php~|php\.save)$">`,
 		"AllowOverride AuthConfig FileInfo Indexes Limit Options=Indexes,MultiViews",
 	} {
 		if !strings.Contains(config, directive) {
 			t.Errorf("Apache vhost does not contain hardening directive %q", directive)
+		}
+	}
+	for _, archiveExtension := range []string{"|tar|", "|tgz|", "|zip|", "|rar|", "|7z|"} {
+		if strings.Contains(config, archiveExtension) {
+			t.Errorf("Apache vhost must not reject legitimate archive extension %q", archiveExtension)
 		}
 	}
 }

@@ -253,8 +253,9 @@ server {
         add_header X-Cache-Status $upstream_cache_status always;
 {{end}}    }
 {{end}}
-{{if .BrowserCache}}    # ---- Browser cache (static files) ----
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf)$ {
+{{if .BrowserCache}}    # ---- Browser cache (static files and legitimate archive downloads) ----
+    # ZIP and GZIP downloads are allowed; sensitive .sql.gz files are denied by the earlier location.
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {
         expires {{.BrowserCacheDays}}d;
         access_log off;
         add_header Cache-Control "public, immutable" always;
@@ -332,7 +333,9 @@ server {
         add_header X-Cache-Status $upstream_cache_status always;
 {{end}}    }
 {{end}}
-{{if .BrowserCache}}    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf)$ {
+{{if .BrowserCache}}    # ---- Browser cache (static files and legitimate archive downloads) ----
+    # ZIP and GZIP downloads are allowed; sensitive .sql.gz files are denied by the earlier location.
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {
         expires {{.BrowserCacheDays}}d;
         access_log off;
         add_header Cache-Control "public, immutable" always;
@@ -352,7 +355,8 @@ server {
 const denyBlocksNginx = `    # ---- Deny CGI and interpreter scripts ----
     location ~* \.(cgi|pl|py|sh|rb|lua|fcgi)$ { deny all; }
     # ---- Deny backup, dump, and sensitive files ----
-    location ~* \.(sql|sql\.gz|bak|old|orig|save|swp|dump|tar|tgz|gz|zip|rar|7z|log|inc|php\.bak)$ { deny all; }
+    # Legitimate archives and compressed sitemaps remain downloadable.
+    location ~* \.(sql|sql\.gz|bak|old|orig|save|swp|swo|dump|inc|log|php\.bak|php~|php\.save)$ { deny all; }
 `
 
 func buildSecurityHeaders(opts VhostOpts) string {

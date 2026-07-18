@@ -32,10 +32,12 @@ var apacheVhostTmpl = template.Must(template.New("a").Parse(`# {{.DomainName}} â
         <FilesMatch "\.(cgi|pl|py|sh|rb|lua|fcgi)$">
             Require all denied
         </FilesMatch>
-        <FilesMatch "\.(sql|bak|old|orig|save|swp|dump|tar|tgz|gz|zip|rar|7z|log|inc)$">
+        # Deny backup, dump, and sensitive files while allowing legitimate archives.
+        # Compressed SQL dumps remain protected; sitemap.xml.gz and archives remain available.
+        <FilesMatch "\.(sql|sql\.gz|bak|old|orig|save|swp|swo|dump|inc|log)$">
             Require all denied
         </FilesMatch>
-        <FilesMatch "\.php\.bak$">
+        <FilesMatch "\.(php\.bak|php~|php\.save)$">
             Require all denied
         </FilesMatch>
     </Directory>
