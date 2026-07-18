@@ -11,7 +11,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"servika/internal/provisioner"
 )
@@ -258,4 +260,109 @@ func nonzero(v, def int) int {
 		return def
 	}
 	return v
+}
+
+func planProbeHTTPS(domainName string) int {
+	if provisioner.ValidateDomain(domainName) != nil {
+		return 0
+	}
+	output, _ := resourceCommand("curl", "-sk", "--max-time", "10",
+		"-o", os.DevNull, "-w", "%{http_code}",
+		"-H", "Host: "+domainName, "https://127.0.0.1/").Output()
+	status, _ := strconv.Atoi(strings.TrimSpace(string(output)))
+	return status
+}
+
+func tenantServiceActive(unit string) bool {
+	output, _ := resourceCommand("systemctl", "is-active", unit).CombinedOutput()
+	return strings.TrimSpace(string(output)) == "active"
+}
+
+func tenantCutoverRegressed(baseline, post int) bool {
+	return baseline >= 200 && baseline < 500 && post >= 500
+}
+
+// HealTenantFPM migrates planned domains to isolated PHP-FPM services with rollback checks.
+func HealTenantFPM(ctx context.Context, db *sql.DB) {
+	if db == nil {
+		return
+	}
+	rows, err := db.QueryContext(ctx,
+		`SELECT id, system_user, COALESCE(php_version,'8.3'), domain_name
+		 FROM domains WHERE plan_id IS NOT NULL ORDER BY id`)
+	if err != nil {
+		log.Printf("tenant PHP-FPM healing could not list domains: %v", err)
+		return
+	}
+
+	type domain struct {
+		id         int64
+		systemUser string
+		phpVersion string
+		domainName string
+	}
+	var domains []domain
+	for rows.Next() {
+		var item domain
+		if err := rows.Scan(&item.id, &item.systemUser, &item.phpVersion, &item.domainName); err != nil {
+			log.Printf("tenant PHP-FPM healing skipped an unreadable domain row: %v", err)
+			continue
+		}
+		domains = append(domains, item)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("tenant PHP-FPM healing stopped while reading domains: %v", err)
+		_ = rows.Close()
+		return
+	}
+	if err := rows.Close(); err != nil {
+		log.Printf("tenant PHP-FPM healing could not close domain rows: %v", err)
+		return
+	}
+
+	var migrated, alreadyActive, rolledBack int
+	for _, item := range domains {
+		select {
+		case <-ctx.Done():
+			log.Printf("tenant PHP-FPM healing canceled: migrated=%d active=%d rolled_back=%d", migrated, alreadyActive, rolledBack)
+			return
+		default:
+		}
+		if item.systemUser == "" || !strings.HasPrefix(item.systemUser, "c_") {
+			continue
+		}
+		if provisioner.TenantFPMActive(item.systemUser) {
+			alreadyActive++
+			continue
+		}
+
+		baseline := planProbeHTTPS(item.domainName)
+		if err := ApplyAll(ctx, db, item.id); err != nil {
+			log.Printf("tenant PHP-FPM healing failed to apply limits for %s: %v", item.systemUser, err)
+		}
+		if !provisioner.TenantFPMActive(item.systemUser) {
+			log.Printf("tenant PHP-FPM healing left %s on the shared service after cutover failure", item.systemUser)
+			continue
+		}
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(700 * time.Millisecond):
+		}
+		active := tenantServiceActive("php-fpm-" + item.systemUser + ".service")
+		post := planProbeHTTPS(item.domainName)
+		if !active || tenantCutoverRegressed(baseline, post) {
+			log.Printf("tenant PHP-FPM healing is rolling back %s: active=%v baseline=%d post=%d", item.systemUser, active, baseline, post)
+			if err := provisioner.RollbackToSharedFPM(db, item.id, item.systemUser, item.phpVersion); err != nil {
+				log.Printf("tenant PHP-FPM healing rollback failed for %s: %v", item.systemUser, err)
+			}
+			_ = DeleteSystemdSlice(item.systemUser)
+			rolledBack++
+			continue
+		}
+		log.Printf("tenant PHP-FPM healing completed cutover for %s: baseline=%d post=%d", item.systemUser, baseline, post)
+		migrated++
+	}
+	log.Printf("tenant PHP-FPM healing completed: migrated=%d active=%d rolled_back=%d planned=%d", migrated, alreadyActive, rolledBack, len(domains))
 }

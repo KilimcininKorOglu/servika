@@ -45,6 +45,7 @@ import (
 	"servika/internal/provisioner"
 	"servika/internal/redis"
 	"servika/internal/resource"
+	"servika/internal/resourcelimit"
 	"servika/internal/sitecopy"
 	"servika/internal/sshaccess"
 	"servika/internal/stats"
@@ -93,6 +94,11 @@ func main() {
 	if err := plans.SeedSync(context.Background(), d); err != nil {
 		log.Printf("plans seed sync warn: %v", err)
 	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+		defer cancel()
+		resourcelimit.HealTenantFPM(ctx, d)
+	}()
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
 	authH := &auth.Handlers{DB: d, Secret: cfg.JWTSecret, LifetimeSec: cfg.JWTLifetime}

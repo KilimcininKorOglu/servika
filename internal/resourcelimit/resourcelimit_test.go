@@ -40,6 +40,29 @@ func TestResourceCommandUsesExplicitEnvironment(t *testing.T) {
 	}
 }
 
+func TestTenantCutoverRegressedOnlyOnNewServerError(t *testing.T) {
+	tests := []struct {
+		name     string
+		baseline int
+		post     int
+		want     bool
+	}{
+		{name: "healthy site becomes server error", baseline: 200, post: 500, want: true},
+		{name: "client error becomes server error", baseline: 404, post: 503, want: true},
+		{name: "existing server error remains server error", baseline: 500, post: 503, want: false},
+		{name: "healthy site remains healthy", baseline: 200, post: 200, want: false},
+		{name: "unreachable probe remains inconclusive", baseline: 0, post: 0, want: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := tenantCutoverRegressed(test.baseline, test.post); got != test.want {
+				t.Fatalf("tenantCutoverRegressed(%d, %d) = %v, want %v", test.baseline, test.post, got, test.want)
+			}
+		})
+	}
+}
+
 func TestCalculatePMMaxChildrenUsesPlanValueOrMemoryBudget(t *testing.T) {
 	tests := []struct {
 		name   string

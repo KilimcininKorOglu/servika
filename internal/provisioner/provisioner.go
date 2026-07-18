@@ -569,6 +569,10 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 	if opts.Backend == "" {
 		opts.Backend = "php-fpm"
 	}
+	// Preserve the isolated socket across every vhost rewrite, including SSL changes.
+	if TenantFPMActive(systemUser) {
+		opts.PHPSocket = tenantSocket(systemUser)
+	}
 	if !opts.Suspended && packageDB != nil {
 		var suspended int
 		_ = packageDB.QueryRow(
