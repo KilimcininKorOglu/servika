@@ -5,6 +5,7 @@ package resourcelimit
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -518,6 +519,45 @@ func nonzero(v, def int) int {
 	return v
 }
 
+// ReassertLimits reapplies a planned domain's limits without restarting its tenant PHP-FPM service.
+func ReassertLimits(ctx context.Context, db *sql.DB, domainID int64) error {
+	var systemUser string
+	var planID sql.NullInt64
+	if err := db.QueryRowContext(ctx,
+		`SELECT system_user, plan_id FROM domains WHERE id=?`, domainID).
+		Scan(&systemUser, &planID); err != nil {
+		return err
+	}
+	if systemUser == "" {
+		return fmt.Errorf("system_user is empty")
+	}
+	if !planID.Valid {
+		return nil
+	}
+
+	l, err := GetPlanLimits(ctx, db, domainID)
+	if err != nil {
+		return err
+	}
+
+	var reassertErrors []error
+	if err := WriteSystemdSlice(systemUser, l); err != nil {
+		reassertErrors = append(reassertErrors, fmt.Errorf("systemd slice: %w", err))
+	}
+	if _, err := db.ExecContext(ctx, `INSERT INTO php_settings(domain_id, pm_max_children)
+		VALUES(?,?) ON DUPLICATE KEY UPDATE pm_max_children=VALUES(pm_max_children)`,
+		domainID, calculatePMMaxChildren(l)); err != nil {
+		reassertErrors = append(reassertErrors, fmt.Errorf("store PHP-FPM worker limit: %w", err))
+	}
+	if err := ApplyXFSQuota(systemUser, l); err != nil {
+		reassertErrors = append(reassertErrors, fmt.Errorf("XFS quota: %w", err))
+	}
+	if err := ApplyMySQLLimits(ctx, db, domainID, l); err != nil {
+		reassertErrors = append(reassertErrors, fmt.Errorf("MariaDB governor: %w", err))
+	}
+	return errors.Join(reassertErrors...)
+}
+
 func planProbeHTTPS(domainName string) int {
 	if provisioner.ValidateDomain(domainName) != nil {
 		return 0
@@ -588,6 +628,11 @@ func HealTenantFPM(ctx context.Context, db *sql.DB) {
 			continue
 		}
 		if provisioner.TenantFPMActive(item.systemUser) {
+			if err := ReassertLimits(ctx, db, item.id); err != nil {
+				log.Printf("tenant PHP-FPM healing failed to reassert limits for %s: %v", item.systemUser, err)
+			} else {
+				log.Printf("tenant PHP-FPM healing reasserted limits for active tenant %s without restarting it", item.systemUser)
+			}
 			alreadyActive++
 			continue
 		}
@@ -620,5 +665,5 @@ func HealTenantFPM(ctx context.Context, db *sql.DB) {
 		log.Printf("tenant PHP-FPM healing completed cutover for %s: baseline=%d post=%d", item.systemUser, baseline, post)
 		migrated++
 	}
-	log.Printf("tenant PHP-FPM healing completed: migrated=%d active=%d rolled_back=%d planned=%d", migrated, alreadyActive, rolledBack, len(domains))
+	log.Printf("tenant PHP-FPM healing completed: migrated=%d active_reasserted=%d rolled_back=%d planned=%d", migrated, alreadyActive, rolledBack, len(domains))
 }
