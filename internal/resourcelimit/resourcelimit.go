@@ -28,6 +28,10 @@ type Limits struct {
 	MySQLMaxConnections int
 	DiskQuotaMB         int
 	PMMaxChildren       int
+	IOReadMBps          int
+	IOWriteMBps         int
+	IOReadIOPS          int
+	IOWriteIOPS         int
 }
 
 // GetPlanLimits returns limits from the domain's assigned plan.
@@ -38,15 +42,21 @@ func GetPlanLimits(ctx context.Context, db *sql.DB, domainID int64) (Limits, err
 		SELECT COALESCE(p.cpu_percent,0), COALESCE(p.ram_mb,0),
 		       COALESCE(p.max_process,0), COALESCE(p.inode_quota,0),
 		       COALESCE(p.io_weight,100), COALESCE(p.mysql_max_connections,0),
-		       COALESCE(p.disk_quota_mb,0), COALESCE(p.pm_max_children,0)
+		       COALESCE(p.disk_quota_mb,0), COALESCE(p.pm_max_children,0),
+		       COALESCE(p.io_read_mbps,0), COALESCE(p.io_write_mbps,0),
+		       COALESCE(p.io_read_iops,0), COALESCE(p.io_write_iops,0)
 		FROM domains d LEFT JOIN service_plans p ON p.id=d.plan_id
 		WHERE d.id=?`, domainID).
 		Scan(&l.CPUPercent, &l.RAMMB, &l.MaxProcess, &l.InodeQuota,
-			&l.IOWeight, &l.MySQLMaxConnections, &l.DiskQuotaMB, &l.PMMaxChildren)
+			&l.IOWeight, &l.MySQLMaxConnections, &l.DiskQuotaMB, &l.PMMaxChildren,
+			&l.IOReadMBps, &l.IOWriteMBps, &l.IOReadIOPS, &l.IOWriteIOPS)
 	return l, err
 }
 
-const sliceDir = "/etc/systemd/system"
+const (
+	sliceDir     = "/etc/systemd/system"
+	ioDevicePath = "/home"
+)
 
 func calculatePMMaxChildren(l Limits) int {
 	if l.PMMaxChildren > 0 {
@@ -78,7 +88,7 @@ func slicePath(systemUser string) string {
 }
 
 // WriteSystemdSlice writes /etc/systemd/system/servika-<system-user>.slice with cgroup v2
-// CPUQuota, MemoryMax, TasksMax, and IOWeight controls.
+// CPUQuota, MemoryMax, TasksMax, IOWeight, and optional absolute disk I/O limits.
 func WriteSystemdSlice(systemUser string, l Limits) error {
 	content := fmt.Sprintf(`# Servika per-domain resource slice: %s
 [Unit]
@@ -96,12 +106,13 @@ MemoryMax=%dM
 MemoryHigh=%dM
 TasksMax=%d
 IOWeight=%d
-`, systemUser, systemUser,
+%s`, systemUser, systemUser,
 		nonzero(l.CPUPercent, 100),
 		nonzero(l.RAMMB, 512),
 		nonzero(l.RAMMB, 512)*90/100, // MemoryHigh = 90% of Max (soft throttle)
 		nonzero(l.MaxProcess, 50),
-		nonzero(l.IOWeight, 100))
+		nonzero(l.IOWeight, 100),
+		ioSliceLines(l))
 
 	if err := os.WriteFile(slicePath(systemUser), []byte(content), 0644); err != nil {
 		return fmt.Errorf("write slice: %w", err)
@@ -118,11 +129,89 @@ IOWeight=%d
 			fmt.Sprintf("TasksMax=%d", nonzero(l.MaxProcess, 50)),
 			fmt.Sprintf("IOWeight=%d", nonzero(l.IOWeight, 100)),
 		}
+		properties = append(properties, ioSetPropertyArgs(l)...)
 		if out, err := resourceCommand("systemctl", properties...).CombinedOutput(); err != nil {
 			return fmt.Errorf("update active slice: %s: %w", strings.TrimSpace(string(out)), err)
 		}
+		clearKernelIOLimits(systemUser, l)
 	}
 	return nil
+}
+
+func ioSliceLines(l Limits) string {
+	var lines strings.Builder
+	if l.IOReadMBps > 0 {
+		fmt.Fprintf(&lines, "IOReadBandwidthMax=%s %dM\n", ioDevicePath, l.IOReadMBps)
+	}
+	if l.IOWriteMBps > 0 {
+		fmt.Fprintf(&lines, "IOWriteBandwidthMax=%s %dM\n", ioDevicePath, l.IOWriteMBps)
+	}
+	if l.IOReadIOPS > 0 {
+		fmt.Fprintf(&lines, "IOReadIOPSMax=%s %d\n", ioDevicePath, l.IOReadIOPS)
+	}
+	if l.IOWriteIOPS > 0 {
+		fmt.Fprintf(&lines, "IOWriteIOPSMax=%s %d\n", ioDevicePath, l.IOWriteIOPS)
+	}
+	return lines.String()
+}
+
+func ioSetPropertyArgs(l Limits) []string {
+	argument := func(property string, value int, bandwidth bool) string {
+		if value <= 0 {
+			return property + "="
+		}
+		if bandwidth {
+			return fmt.Sprintf("%s=%s %dM", property, ioDevicePath, value)
+		}
+		return fmt.Sprintf("%s=%s %d", property, ioDevicePath, value)
+	}
+	return []string{
+		argument("IOReadBandwidthMax", l.IOReadMBps, true),
+		argument("IOWriteBandwidthMax", l.IOWriteMBps, true),
+		argument("IOReadIOPSMax", l.IOReadIOPS, false),
+		argument("IOWriteIOPSMax", l.IOWriteIOPS, false),
+	}
+}
+
+// clearKernelIOLimits removes stale live limits that systemd empty assignments may retain.
+func clearKernelIOLimits(systemUser string, l Limits) {
+	clears := make([]string, 0, 4)
+	if l.IOReadMBps <= 0 {
+		clears = append(clears, "rbps=max")
+	}
+	if l.IOWriteMBps <= 0 {
+		clears = append(clears, "wbps=max")
+	}
+	if l.IOReadIOPS <= 0 {
+		clears = append(clears, "riops=max")
+	}
+	if l.IOWriteIOPS <= 0 {
+		clears = append(clears, "wiops=max")
+	}
+	if len(clears) == 0 {
+		return
+	}
+
+	output, err := resourceCommand(
+		"systemctl", "show", sliceName(systemUser), "-p", "ControlGroup", "--value",
+	).Output()
+	controlGroup := strings.TrimSpace(string(output))
+	if err != nil || controlGroup == "" {
+		return
+	}
+	ioMaxPath := filepath.Join("/sys/fs/cgroup", controlGroup, "io.max")
+	data, err := os.ReadFile(ioMaxPath)
+	if err != nil {
+		return
+	}
+	suffix := " " + strings.Join(clears, " ")
+	for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+		_ = os.WriteFile(ioMaxPath, []byte(fields[0]+suffix), 0644)
+	}
 }
 
 // DeleteSystemdSlice removes the systemd slice when it exists.

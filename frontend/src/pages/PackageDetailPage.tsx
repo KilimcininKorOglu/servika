@@ -9,7 +9,9 @@ type Plan = {
   max_domain: number; max_db: number; max_email: number; max_ftp: number
   cpu_percent: number; ram_mb: number; max_process: number
   inode_quota: number; io_weight: number; mysql_max_connections: number
-  pm_max_children: number; php_version: string
+  pm_max_children: number
+  io_read_mbps: number; io_write_mbps: number; io_read_iops: number; io_write_iops: number
+  php_version: string
   fastcgi_cache: boolean; client_max_body_mb: number; nginx_extra_directives: string
   is_default: boolean; created_at: string
 }
@@ -176,6 +178,21 @@ export default function PackageDetailPage() {
             </Field>
             <Field label="I/O Weight" hint="systemd IOWeight (1-1000)">
               <input type="number" min={1} max={1000} value={plan.io_weight} onChange={e => updatePlan('io_weight', Number(e.target.value) || 0)} className={numberInputClass} />
+            </Field>
+          </div>
+          <div className="mt-4 text-xs font-medium text-slate-500">Disk I/O, absolute throttles independent of IOWeight (cgroup v2)</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+            <Field label="Disk Read (MB/s)" hint="Absolute read bandwidth. 0 = unlimited">
+              <input type="number" min={0} value={plan.io_read_mbps} onChange={e => updatePlan('io_read_mbps', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            </Field>
+            <Field label="Disk Write (MB/s)" hint="Absolute write bandwidth. 0 = unlimited">
+              <input type="number" min={0} value={plan.io_write_mbps} onChange={e => updatePlan('io_write_mbps', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            </Field>
+            <Field label="Read IOPS" hint="Maximum read operations per second. 0 = unlimited">
+              <input type="number" min={0} value={plan.io_read_iops} onChange={e => updatePlan('io_read_iops', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            </Field>
+            <Field label="Write IOPS" hint="Maximum write operations per second. 0 = unlimited">
+              <input type="number" min={0} value={plan.io_write_iops} onChange={e => updatePlan('io_write_iops', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
             </Field>
           </div>
         </Card>

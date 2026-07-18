@@ -40,6 +40,36 @@ func TestResourceCommandUsesExplicitEnvironment(t *testing.T) {
 	}
 }
 
+func TestIOSliceLinesWritesOnlyConfiguredAbsoluteLimits(t *testing.T) {
+	limits := Limits{IOReadMBps: 25, IOWriteIOPS: 800}
+	lines := ioSliceLines(limits)
+
+	if !strings.Contains(lines, "IOReadBandwidthMax=/home 25M") {
+		t.Fatalf("ioSliceLines() omitted the read bandwidth limit: %q", lines)
+	}
+	if !strings.Contains(lines, "IOWriteIOPSMax=/home 800") {
+		t.Fatalf("ioSliceLines() omitted the write IOPS limit: %q", lines)
+	}
+	if strings.Contains(lines, "IOWriteBandwidthMax") || strings.Contains(lines, "IOReadIOPSMax") {
+		t.Fatalf("ioSliceLines() emitted an unlimited property: %q", lines)
+	}
+}
+
+func TestIOSetPropertyArgsClearsUnlimitedValues(t *testing.T) {
+	arguments := strings.Join(ioSetPropertyArgs(Limits{IOReadMBps: 25, IOWriteIOPS: 800}), "\n")
+
+	for _, expected := range []string{
+		"IOReadBandwidthMax=/home 25M",
+		"IOWriteBandwidthMax=",
+		"IOReadIOPSMax=",
+		"IOWriteIOPSMax=/home 800",
+	} {
+		if !strings.Contains(arguments, expected) {
+			t.Fatalf("ioSetPropertyArgs() omitted %q from %q", expected, arguments)
+		}
+	}
+}
+
 func TestTenantCutoverRegressedOnlyOnNewServerError(t *testing.T) {
 	tests := []struct {
 		name     string

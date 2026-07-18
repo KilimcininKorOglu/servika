@@ -35,6 +35,10 @@ type Plan struct {
 	IOWeight             int    `json:"io_weight"` // systemd IOWeight from 1 to 1000.
 	MySQLMaxConnections  int    `json:"mysql_max_connections"`
 	PMMaxChildren        int    `json:"pm_max_children"` // Zero derives the limit from plan memory.
+	IOReadMBps           int    `json:"io_read_mbps"`    // Zero means unlimited.
+	IOWriteMBps          int    `json:"io_write_mbps"`   // Zero means unlimited.
+	IOReadIOPS           int    `json:"io_read_iops"`    // Zero means unlimited.
+	IOWriteIOPS          int    `json:"io_write_iops"`   // Zero means unlimited.
 	PHPVersion           string `json:"php_version"`
 	FastCGICache         bool   `json:"fastcgi_cache"`
 	ClientMaxBodyMB      int    `json:"client_max_body_mb"`
@@ -52,6 +56,8 @@ const selectAll = `SELECT id, name, description, disk_quota_mb, traffic_quota_mb
   max_domain, max_db, max_email, max_ftp,
   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
   COALESCE(pm_max_children,0),
+  COALESCE(io_read_mbps,0), COALESCE(io_write_mbps,0),
+  COALESCE(io_read_iops,0), COALESCE(io_write_iops,0),
   php_version, fastcgi_cache, client_max_body_mb, COALESCE(nginx_extra_directives,''), is_default, DATE_FORMAT(created_at,'%Y-%m-%d') FROM service_plans`
 
 func b01(b bool) int {
@@ -68,6 +74,7 @@ func scan(rs interface{ Scan(...any) error }) (Plan, error) {
 		&p.MaxDomain, &p.MaxDB, &p.MaxEmail, &p.MaxFTP,
 		&p.CPUPercent, &p.RAMMB, &p.MaxProcess, &p.InodeQuota, &p.IOWeight, &p.MySQLMaxConnections,
 		&p.PMMaxChildren,
+		&p.IOReadMBps, &p.IOWriteMBps, &p.IOReadIOPS, &p.IOWriteIOPS,
 		&p.PHPVersion, &fc, &p.ClientMaxBodyMB, &p.NginxExtraDirectives, &vars, &p.CreatedAt)
 	p.IsDefault = vars == 1
 	p.FastCGICache = fc == 1
@@ -170,12 +177,14 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
 		   max_domain, max_db, max_email, max_ftp,
 		   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
-		   pm_max_children, php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives, is_default)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		   pm_max_children, io_read_mbps, io_write_mbps, io_read_iops, io_write_iops,
+		   php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives, is_default)
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
-		p.PMMaxChildren, p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v)
+		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
+		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return
@@ -213,12 +222,14 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		`UPDATE service_plans SET name=?, description=?, disk_quota_mb=?, traffic_quota_mb=?,
 		   max_domain=?, max_db=?, max_email=?, max_ftp=?,
 		   cpu_percent=?, ram_mb=?, max_process=?, inode_quota=?, io_weight=?, mysql_max_connections=?,
-		   pm_max_children=?, php_version=?, fastcgi_cache=?, client_max_body_mb=?, nginx_extra_directives=?, is_default=?
+		   pm_max_children=?, io_read_mbps=?, io_write_mbps=?, io_read_iops=?, io_write_iops=?,
+		   php_version=?, fastcgi_cache=?, client_max_body_mb=?, nginx_extra_directives=?, is_default=?
 		 WHERE id=?`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
-		p.PMMaxChildren, p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v, id); err != nil {
+		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
+		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return
 	}
