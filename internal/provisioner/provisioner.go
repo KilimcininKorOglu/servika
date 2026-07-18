@@ -43,6 +43,7 @@ func Init(db *sql.DB) {
 	healPanelVhostHeadersOnStartup()
 	healVhostsOnStartup()
 	HealHomePerms()
+	EnsureTenantFPMOnStartup()
 }
 
 func healCacheZoneOnStartup() {
@@ -704,6 +705,7 @@ func Deprovision(domainName, systemUser string) error {
 	for _, vhostPath := range subdomainVhosts {
 		_ = os.Remove(vhostPath)
 	}
+	TeardownTenantFPM(systemUser)
 	for _, config := range phpMap {
 		p := filepath.Join(config.PoolDir, systemUser+".conf")
 		if _, err := os.Stat(p); err == nil {
@@ -1033,6 +1035,9 @@ func ApplyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string) 
 		Scan(&domainName, &systemUser, &certPath, &keyPath, &sslSource, &backend, &suspended); err != nil {
 		return fmt.Errorf("read domain details: %w", err)
 	}
+	if TenantFPMActive(systemUser) {
+		socket = tenantSocket(systemUser)
+	}
 	home := "/home/" + systemUser
 
 	// Default nginx settings to enabled when no row exists.
@@ -1107,8 +1112,15 @@ func RerenderVhost(db *sql.DB, domainID int64) error {
 	return ApplyVhostForDomain(db, domainID, socket, phpVersion)
 }
 
-// PHPSocketFor returns the active socket path for a system user and PHP version.
+// PHPSocketFor returns the active tenant or shared socket path.
 func PHPSocketFor(systemUser, phpVersion string) (string, error) {
+	if TenantFPMActive(systemUser) {
+		return tenantSocket(systemUser), nil
+	}
+	return sharedSocketPath(systemUser, phpVersion)
+}
+
+func sharedSocketPath(systemUser, phpVersion string) (string, error) {
 	phpVersion = normalizePHP(phpVersion)
 	// AppStream 8.3
 	if phpVersion == "8.3" {
@@ -1220,16 +1232,22 @@ func healVhostsOnStartup() {
 	failed := 0
 	for _, item := range domains {
 		domainFailed := false
-		socket, _, err := writePoolValidated(item.systemUser, item.phpVersion)
-		if err != nil {
-			log.Printf("vhost hardening: %s PHP pool update failed: %v", item.systemUser, err)
-			domainFailed = true
-			if resolved, resolveErr := PHPSocketFor(item.systemUser, item.phpVersion); resolveErr == nil {
-				socket = resolved
+		var socket string
+		if TenantFPMActive(item.systemUser) {
+			socket = tenantSocket(item.systemUser)
+		} else {
+			resolved, _, err := writePoolValidated(item.systemUser, item.phpVersion)
+			if err != nil {
+				log.Printf("vhost hardening: %s PHP pool update failed: %v", item.systemUser, err)
+				domainFailed = true
+				if fallback, resolveErr := sharedSocketPath(item.systemUser, item.phpVersion); resolveErr == nil {
+					resolved = fallback
+				}
 			}
-		}
-		if socket == "" {
-			socket = "/run/php-fpm/" + item.systemUser + ".sock"
+			socket = resolved
+			if socket == "" {
+				socket = "/run/php-fpm/" + item.systemUser + ".sock"
+			}
 		}
 		if err := ApplyVhostForDomain(packageDB, item.id, socket, item.phpVersion); err != nil {
 			log.Printf("vhost hardening: %s vhost update failed: %v", item.systemUser, err)

@@ -186,6 +186,61 @@ func TestTenantCommandUsesExplicitArgumentsAndEnvironment(t *testing.T) {
 	}
 }
 
+func TestTenantFPMUnitUsesServikaSliceAndHomeIsolation(t *testing.T) {
+	unit := renderTenantUnit("c_example_com", "/usr/sbin/php-fpm")
+	for _, directive := range []string{
+		"Description=Servika per-tenant PHP-FPM for c_example_com",
+		"Slice=servika-c_example_com.slice",
+		"ProtectHome=tmpfs",
+		"BindPaths=/home/c_example_com",
+		"ReadWritePaths=/home/c_example_com /var/log/php-fpm",
+	} {
+		if !strings.Contains(unit, directive) {
+			t.Errorf("tenant PHP-FPM unit does not contain %q", directive)
+		}
+	}
+}
+
+func TestResolveTenantPMMaxChildrenUsesPlanOrMemory(t *testing.T) {
+	tests := []struct {
+		name         string
+		planChildren int
+		memoryMB     int
+		wantChildren int
+	}{
+		{name: "explicit plan value", planChildren: 12, memoryMB: 256, wantChildren: 12},
+		{name: "memory derived", memoryMB: 1024, wantChildren: 16},
+		{name: "minimum worker count", memoryMB: 128, wantChildren: 4},
+		{name: "missing plan fallback", wantChildren: 8},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := resolveTenantPMMaxChildren(test.planChildren, test.memoryMB); got != test.wantChildren {
+				t.Fatalf("resolveTenantPMMaxChildren() = %d, want %d", got, test.wantChildren)
+			}
+		})
+	}
+}
+
+func TestTenantPoolSanitizesScalarSettings(t *testing.T) {
+	if got := tenantSanitizeScalar("512M\nphp_admin_value[open_basedir] = /", "256M"); got != "256M" {
+		t.Fatalf("newline setting = %q, want fallback", got)
+	}
+	if got := tenantSanitizeScalar("512M\x00unsafe", "256M"); got != "256M" {
+		t.Fatalf("NUL setting = %q, want fallback", got)
+	}
+	if got := tenantSanitizeScalar(" 512M ", "256M"); got != "512M" {
+		t.Fatalf("valid setting = %q, want 512M", got)
+	}
+}
+
+func TestTenantPoolUsesSafeDefaultWorkerLimit(t *testing.T) {
+	pool := renderTenantPool(nil, "c_example_com", 0)
+	if !strings.Contains(pool, "pm.max_children = 8") {
+		t.Fatal("tenant PHP-FPM pool does not use the safe worker fallback")
+	}
+}
+
 func TestApacheVhostDeniesScriptsBackupsAndForeignSymlinks(t *testing.T) {
 	var rendered bytes.Buffer
 	if err := apacheVhostTmpl.Execute(&rendered, VhostOpts{

@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"strconv"
 	"strings"
+	"time"
 
 	"servika/internal/credentials"
 	"servika/internal/dns"
@@ -17,6 +18,7 @@ import (
 	"servika/internal/provisioner"
 	"servika/internal/quota"
 	"servika/internal/redis"
+	"servika/internal/resourcelimit"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -135,9 +137,19 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.DomainName = strings.ToLower(strings.TrimSpace(req.DomainName))
+	if req.PlanID == nil {
+		var defaultPlanID int64
+		err := h.DB.QueryRowContext(r.Context(),
+			`SELECT id FROM service_plans WHERE is_default=1 ORDER BY id LIMIT 1`).Scan(&defaultPlanID)
+		if err == nil {
+			req.PlanID = &defaultPlanID
+		} else if !errors.Is(err, sql.ErrNoRows) {
+			log.Printf("read default plan: %v", err)
+		}
+	}
 	if req.PHPVersion == "" {
 		req.PHPVersion = "8.3"
-		// If a plan is selected, inherit the PHP version from the plan
+		// If a plan is selected, inherit the PHP version from the plan.
 		if req.PlanID != nil {
 			var pv string
 			if e := h.DB.QueryRowContext(r.Context(), `SELECT php_version FROM service_plans WHERE id=?`, *req.PlanID).Scan(&pv); e == nil && strings.TrimSpace(pv) != "" {
@@ -217,6 +229,14 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		log.Printf("DNS WriteZone %q error: %v", req.DomainName, err)
 	}
 
+	go func(domainID int64) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+		if err := resourcelimit.ApplyAll(ctx, h.DB, domainID); err != nil {
+			log.Printf("resource limit apply after domain creation, domain=%d: %v", domainID, err)
+		}
+	}(id)
+
 	row := h.DB.QueryRowContext(r.Context(), selectAll+" WHERE d.id=?", id)
 	d, _ := scan(row)
 
@@ -249,6 +269,9 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		// nginx vhost + PHP pool + Linux user
 		if err := provisioner.Deprovision(domainName, sk); err != nil {
 			log.Printf("deprovision warn (%s): %v", domainName, err)
+		}
+		if err := resourcelimit.DeleteSystemdSlice(sk); err != nil {
+			log.Printf("resource slice cleanup warn (%s): %v", sk, err)
 		}
 		// Redis tenant cache: Valkey ACL user + WP drop-in + domain_redis row.
 		// Since domain_redis has no CASCADE FK, the row was orphaned when the domain was deleted.

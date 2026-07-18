@@ -9,7 +9,7 @@ type Plan = {
   max_domain: number; max_db: number; max_email: number; max_ftp: number
   cpu_percent: number; ram_mb: number; max_process: number
   inode_quota: number; io_weight: number; mysql_max_connections: number
-  php_version: string
+  pm_max_children: number; php_version: string
   fastcgi_cache: boolean; client_max_body_mb: number; nginx_extra_directives: string
   is_default: boolean; created_at: string
 }
@@ -161,6 +161,9 @@ export default function PackageDetailPage() {
             </Field>
             <Field label="MySQL Connections" hint="MAX_USER_CONNECTIONS">
               <input type="number" min={1} value={plan.mysql_max_connections} onChange={e => updatePlan('mysql_max_connections', Number(e.target.value) || 0)} className={numberInputClass} />
+            </Field>
+            <Field label="PHP-FPM max_children" hint="0 = Automatic (max(4, RAM/64)). Keeps per-tenant PHP-FPM consistent with the memory limit.">
+              <input type="number" min={0} value={plan.pm_max_children} onChange={e => updatePlan('pm_max_children', Number(e.target.value) || 0)} placeholder="0 = Automatic" className={numberInputClass} />
             </Field>
             <Field label="Disk (MB)" hint="0 = unlimited">
               <input type="number" min={0} value={plan.disk_quota_mb} onChange={e => updatePlan('disk_quota_mb', Number(e.target.value) || 0)} className={numberInputClass} />

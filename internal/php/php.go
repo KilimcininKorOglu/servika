@@ -489,16 +489,23 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to save PHP settings")
 		return
 	}
-	socket, err := ApplyToFilesystem(systemUser, version, req.Settings)
-	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "failed to apply PHP pool configuration")
-		return
-	}
-
-	// Render and reload the nginx vhost with the new socket.
-	if err := provisioner.ApplyVhostForDomain(h.DB, id, socket, version); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "failed to apply nginx virtual host")
-		return
+	var socket string
+	if provisioner.TenantFPMActive(systemUser) {
+		socket, err = provisioner.EnableTenantFPM(h.DB, id, systemUser, version)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to apply tenant PHP-FPM configuration")
+			return
+		}
+	} else {
+		socket, err = ApplyToFilesystem(systemUser, version, req.Settings)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to apply PHP pool configuration")
+			return
+		}
+		if err := provisioner.ApplyVhostForDomain(h.DB, id, socket, version); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to apply nginx virtual host")
+			return
+		}
 	}
 
 	if req.PHPVersion != "" {

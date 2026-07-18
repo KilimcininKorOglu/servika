@@ -34,6 +34,7 @@ type Plan struct {
 	InodeQuota           int    `json:"inode_quota"`
 	IOWeight             int    `json:"io_weight"` // systemd IOWeight from 1 to 1000.
 	MySQLMaxConnections  int    `json:"mysql_max_connections"`
+	PMMaxChildren        int    `json:"pm_max_children"` // Zero derives the limit from plan memory.
 	PHPVersion           string `json:"php_version"`
 	FastCGICache         bool   `json:"fastcgi_cache"`
 	ClientMaxBodyMB      int    `json:"client_max_body_mb"`
@@ -50,6 +51,7 @@ type Handlers struct {
 const selectAll = `SELECT id, name, description, disk_quota_mb, traffic_quota_mb,
   max_domain, max_db, max_email, max_ftp,
   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
+  COALESCE(pm_max_children,0),
   php_version, fastcgi_cache, client_max_body_mb, COALESCE(nginx_extra_directives,''), is_default, DATE_FORMAT(created_at,'%Y-%m-%d') FROM service_plans`
 
 func b01(b bool) int {
@@ -65,6 +67,7 @@ func scan(rs interface{ Scan(...any) error }) (Plan, error) {
 	err := rs.Scan(&p.ID, &p.Name, &p.Description, &p.DiskQuotaMB, &p.TrafficQuotaMB,
 		&p.MaxDomain, &p.MaxDB, &p.MaxEmail, &p.MaxFTP,
 		&p.CPUPercent, &p.RAMMB, &p.MaxProcess, &p.InodeQuota, &p.IOWeight, &p.MySQLMaxConnections,
+		&p.PMMaxChildren,
 		&p.PHPVersion, &fc, &p.ClientMaxBodyMB, &p.NginxExtraDirectives, &vars, &p.CreatedAt)
 	p.IsDefault = vars == 1
 	p.FastCGICache = fc == 1
@@ -167,12 +170,12 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
 		   max_domain, max_db, max_email, max_ftp,
 		   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
-		   php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives, is_default)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		   pm_max_children, php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives, is_default)
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
-		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v)
+		p.PMMaxChildren, p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return
@@ -210,12 +213,12 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		`UPDATE service_plans SET name=?, description=?, disk_quota_mb=?, traffic_quota_mb=?,
 		   max_domain=?, max_db=?, max_email=?, max_ftp=?,
 		   cpu_percent=?, ram_mb=?, max_process=?, inode_quota=?, io_weight=?, mysql_max_connections=?,
-		   php_version=?, fastcgi_cache=?, client_max_body_mb=?, nginx_extra_directives=?, is_default=?
+		   pm_max_children=?, php_version=?, fastcgi_cache=?, client_max_body_mb=?, nginx_extra_directives=?, is_default=?
 		 WHERE id=?`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
-		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v, id); err != nil {
+		p.PMMaxChildren, p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return
 	}
@@ -269,6 +272,24 @@ func (h *Handlers) SearchDomains(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, out)
 }
 
+type seedTier struct {
+	Name, Description                                string
+	Disk, Traffic, MaxDomain, MaxDB, MaxMail, MaxFTP int
+	CPU, RAM, Process, Inode, IO, MySQL, PMMax       int
+	Default                                          int
+}
+
+func seedPlans() []seedTier {
+	return []seedTier{
+		{"Starter", "One site for a small project", 1024, 5120, 1, 1, 5, 2,
+			50, 256, 30, 25000, 100, 15, 4, 1},
+		{"Standard", "Multiple projects and email", 10240, 51200, 5, 10, 25, 10,
+			100, 512, 60, 100000, 100, 30, 8, 0},
+		{"Professional", "High traffic and large sites", 51200, 204800, 25, 50, 100, 50,
+			200, 2048, 150, 500000, 200, 100, 32, 0},
+	}
+}
+
 // SeedIfEmpty creates three default plans with resource limits when none exist.
 func SeedIfEmpty(ctx context.Context, db *sql.DB) error {
 	var n int
@@ -279,30 +300,37 @@ func SeedIfEmpty(ctx context.Context, db *sql.DB) error {
 		return nil
 	}
 	log.Printf("seed: adding 3 default plans")
-	rows := []struct {
-		Name, Description                                string
-		Disk, Traffic, MaxDomain, MaxDB, MaxMail, MaxFTP int
-		CPU, RAM, Process, Inode, IO, MySQLConnections   int
-		Default                                          int
-	}{
-		{"Starter", "One site for a small project", 1024, 5120, 1, 1, 5, 2,
-			50, 256, 30, 25000, 100, 15, 1},
-		{"Standard", "Multiple projects and email", 10240, 51200, 5, 10, 25, 10,
-			100, 512, 60, 100000, 100, 30, 0},
-		{"Professional", "High traffic and large sites", 51200, 204800, 25, 50, 100, 50,
-			200, 2048, 150, 500000, 200, 100, 0},
-	}
-	for _, p := range rows {
+	for _, p := range seedPlans() {
 		_, err := db.ExecContext(ctx,
 			`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
 			   max_domain, max_db, max_email, max_ftp,
 			   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
-			   is_default)
-			 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+			   pm_max_children, is_default)
+			 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 			p.Name, p.Description, p.Disk, p.Traffic, p.MaxDomain, p.MaxDB, p.MaxMail, p.MaxFTP,
-			p.CPU, p.RAM, p.Process, p.Inode, p.IO, p.MySQLConnections, p.Default)
+			p.CPU, p.RAM, p.Process, p.Inode, p.IO, p.MySQL, p.PMMax, p.Default)
 		if err != nil {
 			log.Printf("seed plan %s: %v", p.Name, err)
+		}
+	}
+	return nil
+}
+
+// SeedSync inserts missing standard plans without modifying existing plans.
+func SeedSync(ctx context.Context, db *sql.DB) error {
+	for _, p := range seedPlans() {
+		_, err := db.ExecContext(ctx,
+			`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
+			   max_domain, max_db, max_email, max_ftp,
+			   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
+			   pm_max_children, is_default)
+			 SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0
+			 FROM DUAL
+			 WHERE NOT EXISTS (SELECT 1 FROM service_plans WHERE name=?)`,
+			p.Name, p.Description, p.Disk, p.Traffic, p.MaxDomain, p.MaxDB, p.MaxMail, p.MaxFTP,
+			p.CPU, p.RAM, p.Process, p.Inode, p.IO, p.MySQL, p.PMMax, p.Name)
+		if err != nil {
+			log.Printf("seed sync plan %s: %v", p.Name, err)
 		}
 	}
 	return nil

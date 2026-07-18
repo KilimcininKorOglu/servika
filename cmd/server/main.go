@@ -90,6 +90,9 @@ func main() {
 	if err := plans.SeedIfEmpty(context.Background(), d); err != nil {
 		log.Printf("plans seed warn: %v", err)
 	}
+	if err := plans.SeedSync(context.Background(), d); err != nil {
+		log.Printf("plans seed sync warn: %v", err)
+	}
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
 	authH := &auth.Handlers{DB: d, Secret: cfg.JWTSecret, LifetimeSec: cfg.JWTLifetime}

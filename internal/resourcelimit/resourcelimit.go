@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"servika/internal/provisioner"
 )
 
 // Limits contains active resource values loaded from a service plan.
@@ -23,6 +25,7 @@ type Limits struct {
 	IOWeight            int
 	MySQLMaxConnections int
 	DiskQuotaMB         int
+	PMMaxChildren       int
 }
 
 // GetPlanLimits returns limits from the domain's assigned plan.
@@ -33,15 +36,35 @@ func GetPlanLimits(ctx context.Context, db *sql.DB, domainID int64) (Limits, err
 		SELECT COALESCE(p.cpu_percent,0), COALESCE(p.ram_mb,0),
 		       COALESCE(p.max_process,0), COALESCE(p.inode_quota,0),
 		       COALESCE(p.io_weight,100), COALESCE(p.mysql_max_connections,0),
-		       COALESCE(p.disk_quota_mb,0)
+		       COALESCE(p.disk_quota_mb,0), COALESCE(p.pm_max_children,0)
 		FROM domains d LEFT JOIN service_plans p ON p.id=d.plan_id
 		WHERE d.id=?`, domainID).
 		Scan(&l.CPUPercent, &l.RAMMB, &l.MaxProcess, &l.InodeQuota,
-			&l.IOWeight, &l.MySQLMaxConnections, &l.DiskQuotaMB)
+			&l.IOWeight, &l.MySQLMaxConnections, &l.DiskQuotaMB, &l.PMMaxChildren)
 	return l, err
 }
 
 const sliceDir = "/etc/systemd/system"
+
+func calculatePMMaxChildren(l Limits) int {
+	if l.PMMaxChildren > 0 {
+		return l.PMMaxChildren
+	}
+	if l.RAMMB > 0 {
+		return max(4, l.RAMMB/64)
+	}
+	return 8
+}
+
+func resourceCommand(name string, args ...string) *exec.Cmd {
+	command := exec.Command(name, args...)
+	command.Env = []string{
+		"PATH=/usr/sbin:/usr/bin:/sbin:/bin",
+		"LANG=C",
+		"LC_ALL=C",
+	}
+	return command
+}
 
 func sliceName(systemUser string) string {
 	// systemd slice, for example servika-c_registry_persistent_test_local.slice.
@@ -81,11 +104,22 @@ IOWeight=%d
 	if err := os.WriteFile(slicePath(systemUser), []byte(content), 0644); err != nil {
 		return fmt.Errorf("write slice: %w", err)
 	}
-	if out, err := exec.Command("systemctl", "daemon-reload").CombinedOutput(); err != nil {
+	if out, err := resourceCommand("systemctl", "daemon-reload").CombinedOutput(); err != nil {
 		return fmt.Errorf("daemon-reload: %s: %w", strings.TrimSpace(string(out)), err)
 	}
-	// Restart the slice so existing processes receive the new limits.
-	_, _ = exec.Command("systemctl", "restart", sliceName(systemUser)).CombinedOutput()
+	if err := resourceCommand("systemctl", "is-active", "--quiet", sliceName(systemUser)).Run(); err == nil {
+		properties := []string{
+			"set-property", "--runtime", sliceName(systemUser),
+			fmt.Sprintf("CPUQuota=%d%%", nonzero(l.CPUPercent, 100)),
+			fmt.Sprintf("MemoryMax=%dM", nonzero(l.RAMMB, 512)),
+			fmt.Sprintf("MemoryHigh=%dM", nonzero(l.RAMMB, 512)*90/100),
+			fmt.Sprintf("TasksMax=%d", nonzero(l.MaxProcess, 50)),
+			fmt.Sprintf("IOWeight=%d", nonzero(l.IOWeight, 100)),
+		}
+		if out, err := resourceCommand("systemctl", properties...).CombinedOutput(); err != nil {
+			return fmt.Errorf("update active slice: %s: %w", strings.TrimSpace(string(out)), err)
+		}
+	}
 	return nil
 }
 
@@ -96,52 +130,7 @@ func DeleteSystemdSlice(systemUser string) error {
 		return nil
 	}
 	_ = os.Remove(p)
-	_, _ = exec.Command("systemctl", "daemon-reload").CombinedOutput()
-	return nil
-}
-
-// ApplyPHPFPMSlicePool adds resource-limit fallback settings to /etc/php-fpm.d/<system-user>.conf.
-// PHP-FPM pools run as children of a shared systemd-managed master process, so assigning a per-pool
-// systemd slice through a service override would incorrectly move the entire PHP-FPM service.
-// A practical future approach is to place initial pool workers in the slice with
-// `systemd-run --slice=<slice-name>` or move pool processes directly into the cgroup.
-func ApplyPHPFPMSlicePool(systemUser string, l Limits) error {
-	// Per-pool cgroup enrollment is not persistent because PHP-FPM workers are children of a shared
-	// master process. A Delegate=yes cgroup could isolate enrollment without affecting the master.
-	// The current implementation writes the domain slice and uses pool-level rlimit_* settings as
-	// a persistent fallback. Manual cgclassify enrollment would be lost after a PHP-FPM restart.
-	pool := "/etc/php-fpm.d/" + systemUser + ".conf"
-	if _, err := os.Stat(pool); os.IsNotExist(err) {
-		return nil // No-op when the pool does not exist.
-	}
-	// Add rlimit settings as a cgroup-independent fallback.
-	b, err := os.ReadFile(pool)
-	if err != nil {
-		return err
-	}
-	body := string(b)
-	// Remove obsolete limit lines.
-	lines := []string{}
-	for _, line := range strings.Split(body, "\n") {
-		s := strings.TrimSpace(line)
-		if strings.HasPrefix(s, "rlimit_") || strings.HasPrefix(s, "; servika-limit") {
-			continue
-		}
-		lines = append(lines, line)
-	}
-	body = strings.Join(lines, "\n")
-	limitBlock := fmt.Sprintf("\n; servika-limit - managed by the plan\nrlimit_files = %d\nrlimit_core = 0\n",
-		nonzero(l.MaxProcess, 50)*4) // Set rlimit_files to approximately four times pm.max_children.
-	body += limitBlock
-	if err := os.WriteFile(pool, []byte(body), 0644); err != nil {
-		return err
-	}
-	// Preserve the version hook for a future PHP-FPM master reload.
-	phpVersion := "8.3"
-	if b, _ := os.ReadFile("/etc/php-fpm.d/" + systemUser + ".conf"); len(b) > 0 {
-		// Use 8.3 until the pool contains a reliable version hint.
-	}
-	_ = phpVersion
+	_, _ = resourceCommand("systemctl", "daemon-reload").CombinedOutput()
 	return nil
 }
 
@@ -153,7 +142,7 @@ func ApplyXFSQuota(systemUser string, l Limits) error {
 		return nil
 	}
 	// Use the UID as a simple project ID mapping.
-	uidOut, err := exec.Command("id", "-u", systemUser).Output()
+	uidOut, err := resourceCommand("id", "-u", systemUser).Output()
 	if err != nil {
 		return fmt.Errorf("get UID: %w", err)
 	}
@@ -177,12 +166,12 @@ func ApplyXFSQuota(systemUser string, l Limits) error {
 		f.WriteString(line)
 	}
 	// Initialize the project quota idempotently and ignore unsupported operations.
-	_ = exec.Command("xfs_quota", "-x", "-c",
+	_ = resourceCommand("xfs_quota", "-x", "-c",
 		fmt.Sprintf("project -s -p %s %s", home, projID), "/home").Run()
 
 	limit := fmt.Sprintf("limit -p bsoft=%dk bhard=%dk isoft=%d ihard=%d %s",
 		blockKB, blockKB, inode, inode, projID)
-	if out, err := exec.Command("xfs_quota", "-x", "-c", limit, "/home").CombinedOutput(); err != nil {
+	if out, err := resourceCommand("xfs_quota", "-x", "-c", limit, "/home").CombinedOutput(); err != nil {
 		// Continue when XFS quotas are unavailable, such as when the pquota mount option is absent.
 		log.Printf("xfs_quota %s: %s (the pquota mount option may be inactive)", systemUser, strings.TrimSpace(string(out)))
 	}
@@ -209,38 +198,49 @@ func ApplyMySQLLimit(_ string, l Limits, mysqlDBUser string) error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command("mysql", "-uroot", "-e", sqlCmd)
+	cmd := resourceCommand("mysql", "-uroot", "-e", sqlCmd)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("mysql limit: %s: %w", strings.TrimSpace(string(out)), err)
 	}
 	return nil
 }
 
-// ApplyAll applies systemd slice, PHP-FPM, XFS, and MySQL limits from a domain's plan.
+// ApplyAll applies systemd slice, tenant PHP-FPM, XFS, and MySQL limits from a domain's plan.
 func ApplyAll(ctx context.Context, db *sql.DB, domainID int64) error {
-	var systemUser, dbUser string
+	var systemUser, dbUser, phpVersion string
+	var planID sql.NullInt64
 	if err := db.QueryRowContext(ctx,
-		`SELECT system_user, COALESCE(db_user,'') FROM domains WHERE id=?`, domainID).
-		Scan(&systemUser, &dbUser); err != nil {
+		`SELECT system_user, COALESCE(db_user,''), COALESCE(php_version,'8.3'), plan_id
+		 FROM domains WHERE id=?`, domainID).
+		Scan(&systemUser, &dbUser, &phpVersion, &planID); err != nil {
 		return err
 	}
 	if systemUser == "" {
 		return fmt.Errorf("system_user is empty")
 	}
+	if !planID.Valid {
+		if provisioner.TenantFPMActive(systemUser) {
+			if err := provisioner.RollbackToSharedFPM(db, domainID, systemUser, phpVersion); err != nil {
+				return fmt.Errorf("rollback tenant PHP-FPM: %w", err)
+			}
+		}
+		return DeleteSystemdSlice(systemUser)
+	}
+
 	l, err := GetPlanLimits(ctx, db, domainID)
 	if err != nil {
 		return err
 	}
-	// Remove enforcement when no plan is assigned.
-	if l.CPUPercent == 0 && l.RAMMB == 0 && l.MaxProcess == 0 {
-		_ = DeleteSystemdSlice(systemUser)
-		return nil
-	}
 	if err := WriteSystemdSlice(systemUser, l); err != nil {
 		log.Printf("write slice %s: %v", systemUser, err)
 	}
-	if err := ApplyPHPFPMSlicePool(systemUser, l); err != nil {
-		log.Printf("fpm pool %s: %v", systemUser, err)
+	if _, err := db.ExecContext(ctx, `INSERT INTO php_settings(domain_id, pm_max_children)
+		VALUES(?,?) ON DUPLICATE KEY UPDATE pm_max_children=VALUES(pm_max_children)`,
+		domainID, calculatePMMaxChildren(l)); err != nil {
+		return fmt.Errorf("store PHP-FPM worker limit: %w", err)
+	}
+	if _, err := provisioner.EnableTenantFPM(db, domainID, systemUser, phpVersion); err != nil {
+		log.Printf("tenant PHP-FPM %s: %v", systemUser, err)
 	}
 	if err := ApplyXFSQuota(systemUser, l); err != nil {
 		log.Printf("xfs quota %s: %v", systemUser, err)
