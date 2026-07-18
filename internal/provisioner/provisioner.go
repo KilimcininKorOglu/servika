@@ -43,6 +43,7 @@ func Init(db *sql.DB) {
 	healPanelVhostHeadersOnStartup()
 	healVhostsOnStartup()
 	HealHomePerms()
+	ensureFPMSELinuxFcontext()
 	EnsureTenantFPMOnStartup()
 }
 

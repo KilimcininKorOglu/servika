@@ -259,6 +259,16 @@ systemctl is-active --quiet crond && ok "daily backup cron + crond ACTIVE (03:00
 
 # SELinux
 setsebool -P httpd_can_network_connect 1 >/dev/null 2>&1 && ok "SELinux httpd_can_network_connect"
+if command -v getenforce >/dev/null 2>&1 \
+  && [ "$(getenforce)" != "Disabled" ] \
+  && command -v semanage >/dev/null 2>&1; then
+  fcontext_list=$(semanage fcontext -l 2>/dev/null || true)
+  case "$fcontext_list" in
+    *'/run/php-fpm-['*) ;;
+    *) semanage fcontext -a -t httpd_var_run_t '/run/php-fpm-[^/]+(/.*)?' >/dev/null 2>&1 || true ;;
+  esac
+  ok "SELinux fcontext for per-tenant PHP-FPM sockets"
+fi
 restorecon -R /opt/servika/bin /opt/servika/frontend-dist >/dev/null 2>&1
 
 # ============ 11) Valkey + optimization ============

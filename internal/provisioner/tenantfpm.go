@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -34,6 +36,48 @@ func tenantSocket(systemUser string) string {
 
 func tenantCfgDir(systemUser string) string {
 	return filepath.Join(tenantCfgRoot, systemUser)
+}
+
+const fpmSocketFcontextSpec = "/run/php-fpm-[^/]+(/.*)?"
+
+var (
+	fcontextMu   sync.Mutex
+	fcontextDone bool
+)
+
+// ensureFPMSELinuxFcontext persistently labels per-tenant socket paths for nginx access.
+func ensureFPMSELinuxFcontext() {
+	fcontextMu.Lock()
+	defer fcontextMu.Unlock()
+	if fcontextDone {
+		return
+	}
+	if !selinuxActive() {
+		fcontextDone = true
+		return
+	}
+	if _, err := exec.LookPath("semanage"); err != nil {
+		fcontextDone = true
+		return
+	}
+
+	output, _ := tenantCommand("semanage", "fcontext", "-l").CombinedOutput()
+	if strings.Contains(string(output), "/run/php-fpm-[") {
+		fcontextDone = true
+		return
+	}
+	if _, err := tenantCommand("semanage", "fcontext", "-a", "-t", "httpd_var_run_t", fpmSocketFcontextSpec).CombinedOutput(); err == nil {
+		fcontextDone = true
+	}
+}
+
+func selinuxActive() bool {
+	output, err := tenantCommand("getenforce").Output()
+	if err != nil {
+		return false
+	}
+	status := strings.TrimSpace(string(output))
+	return status == "Enforcing" || status == "Permissive"
 }
 
 // TenantFPMActive reports whether a tenant PHP-FPM unit is installed.
@@ -298,6 +342,7 @@ func EnableTenantFPM(db *sql.DB, domainID int64, systemUser, phpVersion string) 
 		return "", fmt.Errorf("restart tenant PHP-FPM: %s: %w", strings.TrimSpace(string(output)), err)
 	}
 
+	ensureFPMSELinuxFcontext()
 	_, _ = tenantCommand("restorecon", "-R", tenantRunDir(systemUser)).CombinedOutput()
 	_, _ = tenantCommand("restorecon", "-R", configDir).CombinedOutput()
 	socket := tenantSocket(systemUser)
