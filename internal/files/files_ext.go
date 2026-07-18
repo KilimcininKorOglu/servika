@@ -4,6 +4,7 @@ package files
 // The original jailJoin is in files.go; this file adds handlers and hardening.
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -13,7 +14,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 
+	"servika/internal/archivex"
 	"servika/internal/httpx"
 )
 
@@ -193,6 +196,12 @@ type extractReq struct {
 	Target string `json:"target"` // Optional extraction directory. Defaults to the archive directory.
 }
 
+func newFileCommand(ctx context.Context, name string, arguments ...string) *exec.Cmd {
+	command := exec.CommandContext(ctx, name, arguments...)
+	command.Env = []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
+	return command
+}
+
 func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 	home, systemUser, err := h.home(r)
 	if err != nil {
@@ -209,9 +218,9 @@ func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	info, err := os.Stat(abs)
-	if err != nil || info.IsDir() {
-		httpx.WriteError(w, http.StatusBadRequest, "file not found or path is a directory")
+	info, err := os.Lstat(abs)
+	if err != nil || !info.Mode().IsRegular() {
+		httpx.WriteError(w, http.StatusBadRequest, "file not found or path is not a regular file")
 		return
 	}
 
@@ -228,55 +237,52 @@ func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-
-	low := strings.ToLower(abs)
-	var cmd *exec.Cmd
-	var gzipOutput *os.File
-	var gzipTarget string
-	switch {
-	case strings.HasSuffix(low, ".zip"):
-		cmd = exec.Command("unzip", "-o", "-q", abs, "-d", targetAbs)
-	case strings.HasSuffix(low, ".tar.gz") || strings.HasSuffix(low, ".tgz"):
-		cmd = exec.Command("tar", "-xzf", abs, "-C", targetAbs)
-	case strings.HasSuffix(low, ".tar.bz2") || strings.HasSuffix(low, ".tbz2"):
-		cmd = exec.Command("tar", "-xjf", abs, "-C", targetAbs)
-	case strings.HasSuffix(low, ".tar.xz") || strings.HasSuffix(low, ".txz"):
-		cmd = exec.Command("tar", "-xJf", abs, "-C", targetAbs)
-	case strings.HasSuffix(low, ".tar"):
-		cmd = exec.Command("tar", "-xf", abs, "-C", targetAbs)
-	case strings.HasSuffix(low, ".gz"):
-		gzipTarget = filepath.Join(targetAbs, strings.TrimSuffix(filepath.Base(abs), ".gz"))
-		gzipOutput, err = os.OpenFile(gzipTarget, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-		if err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
-			return
-		}
-		cmd = exec.Command("gunzip", "-k", "-c", abs)
-		cmd.Stdout = gzipOutput
-	default:
-		httpx.WriteError(w, http.StatusBadRequest, "unsupported format (zip, tar, tar.gz/tgz, tar.bz2, tar.xz, gz)")
-		return
-	}
-
-	if gzipOutput != nil {
-		err = cmd.Run()
-		if closeErr := gzipOutput.Close(); err == nil {
-			err = closeErr
-		}
-		if err != nil {
-			_ = os.Remove(gzipTarget)
-		}
-	} else {
-		_, err = cmd.CombinedOutput()
-	}
-	if err != nil {
+	if _, err := newFileCommand(r.Context(), "chown", systemUser+":"+systemUser, targetAbs).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
 
-	// In an isolated environment, assign all extracted files to the domain user.
-	_, _ = exec.Command("chown", "-R", systemUser+":"+systemUser, targetAbs).CombinedOutput()
-	_, _ = exec.Command("restorecon", "-R", targetAbs).CombinedOutput()
+	lowerPath := strings.ToLower(abs)
+	if strings.HasSuffix(lowerPath, ".gz") && archivex.DetectType(lowerPath) == archivex.TypeUnknown {
+		gzipRelative := filepath.Join(target, strings.TrimSuffix(filepath.Base(abs), ".gz"))
+		gzipTarget, err := jailJoinStrict(home, gzipRelative)
+		if err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, "invalid extraction target")
+			return
+		}
+		gzipOutput, err := os.OpenFile(gzipTarget, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|syscall.O_NOFOLLOW, 0644)
+		if err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+			return
+		}
+		command := newFileCommand(r.Context(), "gunzip", "-k", "-c", abs)
+		command.Stdout = gzipOutput
+		runErr := command.Run()
+		closeErr := gzipOutput.Close()
+		if runErr != nil || closeErr != nil {
+			_ = os.Remove(gzipTarget)
+			httpx.WriteError(w, http.StatusBadRequest, "invalid gzip file")
+			return
+		}
+	} else {
+		if archivex.DetectType(lowerPath) == archivex.TypeUnknown {
+			httpx.WriteError(w, http.StatusBadRequest, "unsupported format (zip, tar, tar.gz/tgz, tar.bz2, tar.xz, gz)")
+			return
+		}
+		if _, err := archivex.Extract(r.Context(), abs, targetAbs, systemUser); err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, "invalid archive")
+			return
+		}
+	}
+
+	if _, err := newFileCommand(r.Context(), "chown", "-R", systemUser+":"+systemUser, targetAbs).CombinedOutput(); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	if _, err := newFileCommand(r.Context(), "restorecon", "-R", targetAbs).CombinedOutput(); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
 
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"ok":     true,

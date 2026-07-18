@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -20,6 +21,8 @@ import (
 )
 
 const MaxUploadBytes = 10 * 1024 * 1024 * 1024 // 10 GB
+
+var managedSystemUserPattern = regexp.MustCompile(`^c_[A-Za-z0-9_]+$`)
 
 type Handlers struct {
 	DB *sql.DB
@@ -42,7 +45,7 @@ func (h *Handlers) home(r *http.Request) (string, string, error) {
 	if isDemo == 1 {
 		return "", "", errDemo
 	}
-	if !strings.HasPrefix(systemUser, "c_") {
+	if !managedSystemUserPattern.MatchString(systemUser) {
 		return "", "", errBadUser
 	}
 	return "/home/" + systemUser, systemUser, nil
