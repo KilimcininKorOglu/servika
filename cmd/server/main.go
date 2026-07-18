@@ -99,6 +99,7 @@ func main() {
 		defer cancel()
 		resourcelimit.HealTenantFPM(ctx, d)
 	}()
+	go resourcelimit.SlowQueryWatchdog(context.Background(), d)
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
 	authH := &auth.Handlers{DB: d, Secret: cfg.JWTSecret, LifetimeSec: cfg.JWTLifetime}

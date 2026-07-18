@@ -34,11 +34,14 @@ type Plan struct {
 	InodeQuota           int    `json:"inode_quota"`
 	IOWeight             int    `json:"io_weight"` // systemd IOWeight from 1 to 1000.
 	MySQLMaxConnections  int    `json:"mysql_max_connections"`
-	PMMaxChildren        int    `json:"pm_max_children"` // Zero derives the limit from plan memory.
-	IOReadMBps           int    `json:"io_read_mbps"`    // Zero means unlimited.
-	IOWriteMBps          int    `json:"io_write_mbps"`   // Zero means unlimited.
-	IOReadIOPS           int    `json:"io_read_iops"`    // Zero means unlimited.
-	IOWriteIOPS          int    `json:"io_write_iops"`   // Zero means unlimited.
+	PMMaxChildren        int    `json:"pm_max_children"`         // Zero derives the limit from plan memory.
+	IOReadMBps           int    `json:"io_read_mbps"`            // Zero means unlimited.
+	IOWriteMBps          int    `json:"io_write_mbps"`           // Zero means unlimited.
+	IOReadIOPS           int    `json:"io_read_iops"`            // Zero means unlimited.
+	IOWriteIOPS          int    `json:"io_write_iops"`           // Zero means unlimited.
+	DBMaxQueriesPerHour  int    `json:"db_max_queries_per_hour"` // Zero means unlimited.
+	DBMaxUpdatesPerHour  int    `json:"db_max_updates_per_hour"` // Zero means unlimited.
+	DBMaxQuerySeconds    int    `json:"db_max_query_seconds"`    // Zero disables query termination.
 	PHPVersion           string `json:"php_version"`
 	FastCGICache         bool   `json:"fastcgi_cache"`
 	ClientMaxBodyMB      int    `json:"client_max_body_mb"`
@@ -58,6 +61,8 @@ const selectAll = `SELECT id, name, description, disk_quota_mb, traffic_quota_mb
   COALESCE(pm_max_children,0),
   COALESCE(io_read_mbps,0), COALESCE(io_write_mbps,0),
   COALESCE(io_read_iops,0), COALESCE(io_write_iops,0),
+  COALESCE(db_max_queries_per_hour,0), COALESCE(db_max_updates_per_hour,0),
+  COALESCE(db_max_query_seconds,0),
   php_version, fastcgi_cache, client_max_body_mb, COALESCE(nginx_extra_directives,''), is_default, DATE_FORMAT(created_at,'%Y-%m-%d') FROM service_plans`
 
 func b01(b bool) int {
@@ -75,6 +80,7 @@ func scan(rs interface{ Scan(...any) error }) (Plan, error) {
 		&p.CPUPercent, &p.RAMMB, &p.MaxProcess, &p.InodeQuota, &p.IOWeight, &p.MySQLMaxConnections,
 		&p.PMMaxChildren,
 		&p.IOReadMBps, &p.IOWriteMBps, &p.IOReadIOPS, &p.IOWriteIOPS,
+		&p.DBMaxQueriesPerHour, &p.DBMaxUpdatesPerHour, &p.DBMaxQuerySeconds,
 		&p.PHPVersion, &fc, &p.ClientMaxBodyMB, &p.NginxExtraDirectives, &vars, &p.CreatedAt)
 	p.IsDefault = vars == 1
 	p.FastCGICache = fc == 1
@@ -178,12 +184,14 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		   max_domain, max_db, max_email, max_ftp,
 		   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
 		   pm_max_children, io_read_mbps, io_write_mbps, io_read_iops, io_write_iops,
+		   db_max_queries_per_hour, db_max_updates_per_hour, db_max_query_seconds,
 		   php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives, is_default)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
 		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
+		p.DBMaxQueriesPerHour, p.DBMaxUpdatesPerHour, p.DBMaxQuerySeconds,
 		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
@@ -223,12 +231,14 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		   max_domain=?, max_db=?, max_email=?, max_ftp=?,
 		   cpu_percent=?, ram_mb=?, max_process=?, inode_quota=?, io_weight=?, mysql_max_connections=?,
 		   pm_max_children=?, io_read_mbps=?, io_write_mbps=?, io_read_iops=?, io_write_iops=?,
+		   db_max_queries_per_hour=?, db_max_updates_per_hour=?, db_max_query_seconds=?,
 		   php_version=?, fastcgi_cache=?, client_max_body_mb=?, nginx_extra_directives=?, is_default=?
 		 WHERE id=?`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
 		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
+		p.DBMaxQueriesPerHour, p.DBMaxUpdatesPerHour, p.DBMaxQuerySeconds,
 		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return

@@ -5,26 +5,57 @@ import (
 	"testing"
 )
 
-func TestMySQLLimitSQLRejectsInjectedAccountName(t *testing.T) {
-	injected := "tenant'@'localhost' WITH MAX_USER_CONNECTIONS 0; DROP USER 'root"
-
-	query, err := mysqlLimitSQL(injected, 12)
-
-	if err == nil {
-		t.Fatalf("mysqlLimitSQL() accepted an injected account name and returned %q", query)
+func TestMySQLLimitSQLRejectsInjectedOrProtectedAccount(t *testing.T) {
+	limits := Limits{MySQLMaxConnections: 12}
+	for _, account := range []string{
+		"tenant'@'localhost' WITH MAX_USER_CONNECTIONS 0; DROP USER 'root",
+		"root",
+		"panel",
+	} {
+		query, err := mysqlLimitSQL(account, "localhost", limits)
+		if err == nil {
+			t.Fatalf("mysqlLimitSQL() accepted account %q and returned %q", account, query)
+		}
 	}
 }
 
-func TestMySQLLimitSQLBuildsStatementForValidAccount(t *testing.T) {
-	query, err := mysqlLimitSQL("c_tenant_db", 12)
+func TestMySQLLimitSQLBuildsAllLimitsAndClampsNegativeValues(t *testing.T) {
+	limits := Limits{
+		MySQLMaxConnections: 12,
+		DBMaxQueriesPerHour: 300,
+		DBMaxUpdatesPerHour: -1,
+	}
+	query, err := mysqlLimitSQL("c_tenant_db", "localhost", limits)
 	if err != nil {
 		t.Fatalf("mysqlLimitSQL() returned an unexpected error: %v", err)
 	}
-	if !strings.Contains(query, "TO 'c_tenant_db'@'localhost'") {
-		t.Fatalf("mysqlLimitSQL() query = %q, want the validated account", query)
+	for _, expected := range []string{
+		"ALTER USER 'c_tenant_db'@'localhost'",
+		"MAX_USER_CONNECTIONS 12",
+		"MAX_QUERIES_PER_HOUR 300",
+		"MAX_UPDATES_PER_HOUR 0",
+	} {
+		if !strings.Contains(query, expected) {
+			t.Fatalf("mysqlLimitSQL() omitted %q from %q", expected, query)
+		}
 	}
-	if !strings.Contains(query, "MAX_USER_CONNECTIONS 12") {
-		t.Fatalf("mysqlLimitSQL() query = %q, want connection limit 12", query)
+}
+
+func TestQueryExceedsLimitOnlyAfterConfiguredThreshold(t *testing.T) {
+	tests := []struct {
+		seconds int
+		limit   int
+		want    bool
+	}{
+		{seconds: 6, limit: 5, want: true},
+		{seconds: 5, limit: 5, want: false},
+		{seconds: 60, limit: 0, want: false},
+		{seconds: 60, limit: -1, want: false},
+	}
+	for _, test := range tests {
+		if got := queryExceedsLimit(test.seconds, test.limit); got != test.want {
+			t.Fatalf("queryExceedsLimit(%d, %d) = %v, want %v", test.seconds, test.limit, got, test.want)
+		}
 	}
 }
 

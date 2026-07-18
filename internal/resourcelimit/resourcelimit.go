@@ -32,6 +32,9 @@ type Limits struct {
 	IOWriteMBps         int
 	IOReadIOPS          int
 	IOWriteIOPS         int
+	DBMaxQueriesPerHour int
+	DBMaxUpdatesPerHour int
+	DBMaxQuerySeconds   int
 }
 
 // GetPlanLimits returns limits from the domain's assigned plan.
@@ -44,12 +47,15 @@ func GetPlanLimits(ctx context.Context, db *sql.DB, domainID int64) (Limits, err
 		       COALESCE(p.io_weight,100), COALESCE(p.mysql_max_connections,0),
 		       COALESCE(p.disk_quota_mb,0), COALESCE(p.pm_max_children,0),
 		       COALESCE(p.io_read_mbps,0), COALESCE(p.io_write_mbps,0),
-		       COALESCE(p.io_read_iops,0), COALESCE(p.io_write_iops,0)
+		       COALESCE(p.io_read_iops,0), COALESCE(p.io_write_iops,0),
+		       COALESCE(p.db_max_queries_per_hour,0), COALESCE(p.db_max_updates_per_hour,0),
+		       COALESCE(p.db_max_query_seconds,0)
 		FROM domains d LEFT JOIN service_plans p ON p.id=d.plan_id
 		WHERE d.id=?`, domainID).
 		Scan(&l.CPUPercent, &l.RAMMB, &l.MaxProcess, &l.InodeQuota,
 			&l.IOWeight, &l.MySQLMaxConnections, &l.DiskQuotaMB, &l.PMMaxChildren,
-			&l.IOReadMBps, &l.IOWriteMBps, &l.IOReadIOPS, &l.IOWriteIOPS)
+			&l.IOReadMBps, &l.IOWriteMBps, &l.IOReadIOPS, &l.IOWriteIOPS,
+			&l.DBMaxQueriesPerHour, &l.DBMaxUpdatesPerHour, &l.DBMaxQuerySeconds)
 	return l, err
 }
 
@@ -69,7 +75,11 @@ func calculatePMMaxChildren(l Limits) int {
 }
 
 func resourceCommand(name string, args ...string) *exec.Cmd {
-	command := exec.Command(name, args...)
+	return resourceCommandContext(context.Background(), name, args...)
+}
+
+func resourceCommandContext(ctx context.Context, name string, args ...string) *exec.Cmd {
+	command := exec.CommandContext(ctx, name, args...)
 	command.Env = []string{
 		"PATH=/usr/sbin:/usr/bin:/sbin:/bin",
 		"LANG=C",
@@ -269,41 +279,147 @@ func ApplyXFSQuota(systemUser string, l Limits) error {
 	return nil
 }
 
-var mysqlAccountPattern = regexp.MustCompile(`^[A-Za-z0-9_]{1,64}$`)
-
-func mysqlLimitSQL(mysqlDBUser string, maxConnections int) (string, error) {
-	if !mysqlAccountPattern.MatchString(mysqlDBUser) {
-		return "", fmt.Errorf("invalid MySQL username")
+var (
+	mysqlAccountPattern = regexp.MustCompile(`^[A-Za-z0-9_]{1,64}$`)
+	mysqlHostPattern    = regexp.MustCompile(`^[A-Za-z0-9_.%\-]{1,64}$`)
+	protectedMySQLUsers = map[string]bool{
+		"root": true, "mysql": true, "mariadb.sys": true, "panel": true,
+		"event_scheduler": true, "debian-sys-maint": true, "replication": true,
+		"repl": true, "healthcheck": true, "": true,
 	}
-	return fmt.Sprintf(
-		"GRANT USAGE ON *.* TO '%s'@'localhost' WITH MAX_USER_CONNECTIONS %d;FLUSH PRIVILEGES;",
-		mysqlDBUser, maxConnections), nil
+)
+
+func governedMySQLAccount(user string) bool {
+	return mysqlAccountPattern.MatchString(user) && !protectedMySQLUsers[strings.ToLower(user)]
 }
 
-// ApplyMySQLLimit sets MAX_USER_CONNECTIONS for a database user.
-func ApplyMySQLLimit(_ string, l Limits, mysqlDBUser string) error {
-	if l.MySQLMaxConnections <= 0 {
-		return nil
+func nonNegative(value int) int {
+	if value < 0 {
+		return 0
 	}
-	sqlCmd, err := mysqlLimitSQL(mysqlDBUser, l.MySQLMaxConnections)
+	return value
+}
+
+func mysqlLimitSQL(user, host string, l Limits) (string, error) {
+	if !governedMySQLAccount(user) {
+		return "", fmt.Errorf("invalid or protected MySQL username")
+	}
+	if !mysqlHostPattern.MatchString(host) {
+		return "", fmt.Errorf("invalid MySQL host")
+	}
+	return fmt.Sprintf(
+		"ALTER USER '%s'@'%s' WITH MAX_USER_CONNECTIONS %d MAX_QUERIES_PER_HOUR %d MAX_UPDATES_PER_HOUR %d;",
+		user, host, nonNegative(l.MySQLMaxConnections), nonNegative(l.DBMaxQueriesPerHour),
+		nonNegative(l.DBMaxUpdatesPerHour)), nil
+}
+
+// ApplyMySQLLimits applies native MariaDB limits to every database account owned by a domain.
+func ApplyMySQLLimits(ctx context.Context, db *sql.DB, domainID int64, l Limits) error {
+	rows, err := db.QueryContext(ctx,
+		`SELECT db_user, COALESCE(db_host,'localhost') FROM db_accounts WHERE domain_id=?`, domainID)
 	if err != nil {
 		return err
 	}
-	cmd := resourceCommand("mysql", "-uroot", "-e", sqlCmd)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("mysql limit: %s: %w", strings.TrimSpace(string(out)), err)
+	defer rows.Close()
+
+	var statements []string
+	for rows.Next() {
+		var user, host string
+		if err := rows.Scan(&user, &host); err != nil {
+			return err
+		}
+		statement, err := mysqlLimitSQL(user, host, l)
+		if err != nil {
+			log.Printf("mysql governor skipped account %q: %v", user, err)
+			continue
+		}
+		statements = append(statements, statement)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	if len(statements) == 0 {
+		return nil
+	}
+	statements = append(statements, "FLUSH USER_RESOURCES;")
+	command := resourceCommandContext(ctx, "mysql", "-uroot", "-e", strings.Join(statements, ""))
+	if output, err := command.CombinedOutput(); err != nil {
+		return fmt.Errorf("mysql governor: %s: %w", strings.TrimSpace(string(output)), err)
 	}
 	return nil
 }
 
+const governorPollInterval = 5 * time.Second
+
+// SlowQueryWatchdog terminates tenant queries that exceed their plan duration limit.
+func SlowQueryWatchdog(ctx context.Context, db *sql.DB) {
+	if db == nil {
+		return
+	}
+	ticker := time.NewTicker(governorPollInterval)
+	defer ticker.Stop()
+	log.Printf("MySQL governor slow-query watchdog started with interval %s", governorPollInterval)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			governorScanOnce(ctx, db)
+		}
+	}
+}
+
+func queryExceedsLimit(seconds, limit int) bool {
+	return limit > 0 && seconds > limit
+}
+
+func governorScanOnce(ctx context.Context, db *sql.DB) {
+	output, err := resourceCommandContext(ctx, "mysql", "-uroot", "-N", "-B", "-e",
+		"SELECT ID,USER,TIME FROM information_schema.PROCESSLIST WHERE COMMAND<>'Sleep' AND TIME>0").Output()
+	if err != nil {
+		return
+	}
+	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+		fields := strings.Split(line, "\t")
+		if len(fields) < 3 {
+			continue
+		}
+		queryID, idErr := strconv.Atoi(strings.TrimSpace(fields[0]))
+		user := strings.TrimSpace(fields[1])
+		seconds, secondsErr := strconv.Atoi(strings.TrimSpace(fields[2]))
+		if idErr != nil || secondsErr != nil || seconds <= 0 || !governedMySQLAccount(user) {
+			continue
+		}
+
+		var limit int
+		err := db.QueryRowContext(ctx,
+			`SELECT COALESCE(p.db_max_query_seconds,0)
+			 FROM db_accounts a JOIN domains d ON d.id=a.domain_id
+			 LEFT JOIN service_plans p ON p.id=d.plan_id
+			 WHERE a.db_user=? LIMIT 1`, user).Scan(&limit)
+		if err != nil || !queryExceedsLimit(seconds, limit) {
+			continue
+		}
+		killOutput, killErr := resourceCommandContext(ctx, "mysql", "-uroot", "-e",
+			fmt.Sprintf("KILL QUERY %d", queryID)).CombinedOutput()
+		if killErr != nil {
+			log.Printf("MySQL governor failed to terminate query for %s (id=%d): %s: %v",
+				user, queryID, strings.TrimSpace(string(killOutput)), killErr)
+			continue
+		}
+		log.Printf("MySQL governor terminated query for %s after %ds, limit %ds (id=%d)",
+			user, seconds, limit, queryID)
+	}
+}
+
 // ApplyAll applies systemd slice, tenant PHP-FPM, XFS, and MySQL limits from a domain's plan.
 func ApplyAll(ctx context.Context, db *sql.DB, domainID int64) error {
-	var systemUser, dbUser, phpVersion string
+	var systemUser, phpVersion string
 	var planID sql.NullInt64
 	if err := db.QueryRowContext(ctx,
-		`SELECT system_user, COALESCE(db_user,''), COALESCE(php_version,'8.3'), plan_id
+		`SELECT system_user, COALESCE(php_version,'8.3'), plan_id
 		 FROM domains WHERE id=?`, domainID).
-		Scan(&systemUser, &dbUser, &phpVersion, &planID); err != nil {
+		Scan(&systemUser, &phpVersion, &planID); err != nil {
 		return err
 	}
 	if systemUser == "" {
@@ -336,10 +452,8 @@ func ApplyAll(ctx context.Context, db *sql.DB, domainID int64) error {
 	if err := ApplyXFSQuota(systemUser, l); err != nil {
 		log.Printf("xfs quota %s: %v", systemUser, err)
 	}
-	if dbUser != "" {
-		if err := ApplyMySQLLimit(systemUser, l, dbUser); err != nil {
-			log.Printf("mysql limit %s: %v", systemUser, err)
-		}
+	if err := ApplyMySQLLimits(ctx, db, domainID, l); err != nil {
+		log.Printf("mysql governor %s: %v", systemUser, err)
 	}
 	return nil
 }

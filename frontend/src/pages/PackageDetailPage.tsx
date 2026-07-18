@@ -11,6 +11,7 @@ type Plan = {
   inode_quota: number; io_weight: number; mysql_max_connections: number
   pm_max_children: number
   io_read_mbps: number; io_write_mbps: number; io_read_iops: number; io_write_iops: number
+  db_max_queries_per_hour: number; db_max_updates_per_hour: number; db_max_query_seconds: number
   php_version: string
   fastcgi_cache: boolean; client_max_body_mb: number; nginx_extra_directives: string
   is_default: boolean; created_at: string
@@ -193,6 +194,18 @@ export default function PackageDetailPage() {
             </Field>
             <Field label="Write IOPS" hint="Maximum write operations per second. 0 = unlimited">
               <input type="number" min={0} value={plan.io_write_iops} onChange={e => updatePlan('io_write_iops', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            </Field>
+          </div>
+          <div className="mt-4 text-xs font-medium text-slate-500">Database, native MariaDB resource limits</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+            <Field label="Queries per Hour" hint="MAX_QUERIES_PER_HOUR. 0 = unlimited">
+              <input type="number" min={0} value={plan.db_max_queries_per_hour} onChange={e => updatePlan('db_max_queries_per_hour', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            </Field>
+            <Field label="Updates per Hour" hint="MAX_UPDATES_PER_HOUR. 0 = unlimited">
+              <input type="number" min={0} value={plan.db_max_updates_per_hour} onChange={e => updatePlan('db_max_updates_per_hour', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            </Field>
+            <Field label="Query Time (seconds)" hint="Queries exceeding this duration are terminated. 0 = disabled">
+              <input type="number" min={0} value={plan.db_max_query_seconds} onChange={e => updatePlan('db_max_query_seconds', Number(e.target.value) || 0)} placeholder="0 = disabled" className={numberInputClass} />
             </Field>
           </div>
         </Card>
