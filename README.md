@@ -198,4 +198,4 @@ Prebuilt binaries and archives in `assets/` enable `curl | bash` installation wi
 ## Contributing and license
 
 - Contributions through issues and pull requests are welcome.
-- License: **MIT**. See [LICENSE](LICENSE). You may use, modify, distribute, and include it in your own products.
+- License: **MIT**. See [LICENSE](LICENSE).
