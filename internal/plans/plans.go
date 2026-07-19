@@ -94,7 +94,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := make([]Plan, 0)
 	for rows.Next() {
 		p, err := scan(rows)
@@ -275,7 +275,7 @@ func (h *Handlers) SearchDomains(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	type dom struct {
 		ID         int64  `json:"id"`
 		DomainName string `json:"domain_name"`

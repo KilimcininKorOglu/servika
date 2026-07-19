@@ -239,11 +239,12 @@ func renderTenantPool(db *sql.DB, systemUser string, domainID int64) string {
 	body.WriteString("listen.owner = nginx\nlisten.group = nginx\nlisten.mode = 0660\n")
 	fmt.Fprintf(&body, "pm = %s\n", settings.PMStrategy)
 	fmt.Fprintf(&body, "pm.max_children = %d\n", maxChildren)
-	if settings.PMStrategy == "dynamic" {
+	switch settings.PMStrategy {
+	case "dynamic":
 		fmt.Fprintf(&body, "pm.start_servers = %d\n", startServers)
 		body.WriteString("pm.min_spare_servers = 1\n")
 		fmt.Fprintf(&body, "pm.max_spare_servers = %d\n", maxSpareServers)
-	} else if settings.PMStrategy == "ondemand" {
+	case "ondemand":
 		body.WriteString("pm.process_idle_timeout = 30s\n")
 	}
 	fmt.Fprintf(&body, "pm.max_requests = %d\n", settings.PMMaxRequests)

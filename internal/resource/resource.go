@@ -141,7 +141,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 				dbUsers = append(dbUsers, u)
 			}
 		}
-		rows.Close()
+		_ = rows.Close()
 	}
 	o.DBCount.Usage = int64(len(dbUsers))
 	o.DBCount.Limit = maxDB

@@ -102,7 +102,7 @@ func CustomerOnly(secret []byte) func(http.Handler) http.Handler {
 func CheckScope(r *http.Request, secret []byte, urlDomainIDParam string) (bool, error) {
 	authH := r.Header.Get("Authorization")
 	if !strings.HasPrefix(authH, "Bearer ") {
-		return false, errors.New("Authorization required")
+		return false, errors.New("authorization required")
 	}
 	raw := strings.TrimPrefix(authH, "Bearer ")
 	// Try admin claims first
@@ -113,15 +113,15 @@ func CheckScope(r *http.Request, secret []byte, urlDomainIDParam string) (bool, 
 	// Then try customer claims.
 	mc, err := auth.ParseCustomer(secret, raw)
 	if err != nil {
-		return false, errors.New("Invalid token")
+		return false, errors.New("invalid token")
 	}
 	if urlDomainIDParam == "" {
 		// This endpoint has no domain ID scope but the customer is still restricted (e.g. /domains list)
-		return false, errors.New("Customers cannot access this endpoint")
+		return false, errors.New("customers cannot access this endpoint")
 	}
 	id, _ := strconv.ParseInt(urlDomainIDParam, 10, 64)
 	if id != mc.DomainID {
-		return false, errors.New("Access to this domain is forbidden")
+		return false, errors.New("access to this domain is forbidden")
 	}
 	_ = time.Now
 	return false, nil // Customer scope is valid.

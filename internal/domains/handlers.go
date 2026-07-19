@@ -87,7 +87,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "Database operation failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := make([]Domain, 0)
 	for rows.Next() {
 		d, err := scan(rows)
@@ -504,7 +504,7 @@ func (h *Handlers) ListDatabases(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "Database query failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := make([]DBAccount, 0)
 	for rows.Next() {
 		var d DBAccount

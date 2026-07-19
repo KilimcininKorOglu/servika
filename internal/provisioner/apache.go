@@ -64,7 +64,7 @@ func apacheVhostPath(systemUser string) string {
 func writeApacheVhost(opts VhostOpts, systemUser string) error {
 	var buf bytes.Buffer
 	if err := apacheVhostTmpl.Execute(&buf, opts); err != nil {
-		return fmt.Errorf("Apache template: %w", err)
+		return fmt.Errorf("apache template: %w", err)
 	}
 	if err := os.WriteFile(apacheVhostPath(systemUser), buf.Bytes(), 0644); err != nil {
 		return fmt.Errorf("write Apache vhost: %w", err)

@@ -69,7 +69,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("db: %v", err)
 	}
-	defer d.Close()
+	defer func() { _ = d.Close() }()
 
 	// migrations
 	runMigrations(d)

@@ -218,7 +218,7 @@ func MySQLDropAllForDomain(db *sql.DB, domainID int64) error {
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	for rows.Next() {
 		var dbName, dbUser string
 		if err := rows.Scan(&dbName, &dbUser); err != nil {

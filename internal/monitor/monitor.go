@@ -155,7 +155,7 @@ func probe(targetURL string) DomainHealth {
 		res.Error = "request failed"
 		return res
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	res.Reachable = true
 	res.StatusCode = resp.StatusCode
 	res.Server = resp.Header.Get("Server")

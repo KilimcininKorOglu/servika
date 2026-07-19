@@ -76,7 +76,7 @@ func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare backup restore")
 		return
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 	if _, err := newRestoreCommand(r.Context(), "chown", systemUser+":"+systemUser, tmpDir).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare backup restore")
 		return

@@ -220,7 +220,7 @@ func readTenantCertificate(path string, expectedUID int) ([]byte, error) {
 		_ = syscall.Close(fd)
 		return nil, fmt.Errorf("open tenant certificate: invalid file descriptor")
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	info, err := file.Stat()
 	if err != nil {
@@ -252,7 +252,7 @@ func writeSystemCertificate(path string, data []byte, mode os.FileMode) error {
 		return fmt.Errorf("create temporary certificate: %w", err)
 	}
 	temporaryPath := temporary.Name()
-	defer os.Remove(temporaryPath)
+	defer func() { _ = os.Remove(temporaryPath) }()
 
 	if err := temporary.Chmod(mode); err != nil {
 		_ = temporary.Close()
@@ -309,7 +309,7 @@ func HealSSLCertPathsOnStartup() {
 		log.Printf("SSL certificate path healing: query failed: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	migrated := 0
 	for rows.Next() {
@@ -1237,7 +1237,7 @@ func HealHomePerms() {
 		log.Printf("heal tenant home permissions: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	_, sentinelErr := os.Stat(homeACLSentinel)
 	migrateExisting := os.IsNotExist(sentinelErr)
@@ -1494,7 +1494,7 @@ func buildProtectedBlocks(db *sql.DB, domainID int64, socket string) string {
 	if err != nil {
 		return ""
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var b strings.Builder
 	for rows.Next() {
 		var path, file string

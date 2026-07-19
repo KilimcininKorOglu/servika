@@ -167,7 +167,7 @@ func (h *Handlers) ListAll(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	_ = rows.Err()
-	rows.Close()
+	_ = rows.Close()
 
 	out := make([]AllInstallation, len(candidates))
 	sem := make(chan struct{}, 4)

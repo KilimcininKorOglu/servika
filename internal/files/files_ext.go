@@ -372,12 +372,12 @@ func copyFile(src, dst string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, perm)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 	_, err = io.Copy(out, in)
 	return err
 }
@@ -514,7 +514,7 @@ func (h *Handlers) NewFile(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	f.Close()
+	_ = f.Close()
 	chown(abs, systemUser)
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{"ok": true, "path": req.Path})
 }
@@ -603,9 +603,10 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 			size = size*10 + int64(c-'0')
 		}
 		ftype := "file"
-		if parts[2] == "d" {
+		switch parts[2] {
+		case "d":
 			ftype = "folder"
-		} else if parts[2] == "l" {
+		case "l":
 			ftype = "symlink"
 		}
 		// Make the path relative to home.

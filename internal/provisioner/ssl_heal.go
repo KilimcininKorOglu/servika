@@ -282,7 +282,7 @@ func HealSSLVhost443OnStartup() {
 			list = append(list, x)
 		}
 	}
-	rows.Close()
+	_ = rows.Close()
 	if len(list) == 0 {
 		return
 	}

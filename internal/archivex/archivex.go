@@ -14,6 +14,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
@@ -80,12 +81,7 @@ func unsafeMemberName(name string) bool {
 	if strings.HasPrefix(name, "/") {
 		return true
 	}
-	for _, part := range strings.Split(name, "/") {
-		if part == ".." {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(strings.Split(name, "/"), "..")
 }
 
 // Scan validates every archive member without writing files.
@@ -199,7 +195,7 @@ func scanZIP(ctx context.Context, archivePath string) error {
 	if err != nil {
 		return fmt.Errorf("open ZIP archive: %w", err)
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	for _, member := range reader.File {
 		if err := ctx.Err(); err != nil {
@@ -221,7 +217,7 @@ func scanTAR(ctx context.Context, archivePath string, archiveType Type) error {
 	if err != nil {
 		return fmt.Errorf("open archive: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	var reader io.Reader = file
 	var gzipReader *gzip.Reader
@@ -234,7 +230,7 @@ func scanTAR(ctx context.Context, archivePath string, archiveType Type) error {
 		if err != nil {
 			return fmt.Errorf("open gzip stream: %w", err)
 		}
-		defer gzipReader.Close()
+		defer func() { _ = gzipReader.Close() }()
 		reader = gzipReader
 	case TypeTARBzip2:
 		reader = bzip2.NewReader(file)
@@ -339,7 +335,7 @@ func Extract(ctx context.Context, archivePath, destination, systemUser string) (
 		if err != nil {
 			return "", fmt.Errorf("open archive: %w", err)
 		}
-		defer file.Close()
+		defer func() { _ = file.Close() }()
 
 		flag := "-x"
 		switch archiveType {

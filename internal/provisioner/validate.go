@@ -44,17 +44,17 @@ server {
 `, indentLines(d, "    "))
 
 	if _, err := tmp.WriteString(block); err != nil {
-		tmp.Close()
-		os.Remove(tmpPath)
+		_ = tmp.Close()
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("write temporary validation file: %w", err)
 	}
-	tmp.Close()
+	_ = tmp.Close()
 
 	if err := os.Rename(tmpPath, finalPath); err != nil {
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("prepare temporary validation file: %w", err)
 	}
-	defer os.Remove(finalPath)
+	defer func() { _ = os.Remove(finalPath) }()
 
 	out, err := exec.Command("nginx", "-t").CombinedOutput()
 	if err != nil {

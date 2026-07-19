@@ -37,7 +37,7 @@ func (h *Handlers) ListCustomers(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "customers could not be listed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := make([]Customer, 0)
 	for rows.Next() {
 		var cs Customer

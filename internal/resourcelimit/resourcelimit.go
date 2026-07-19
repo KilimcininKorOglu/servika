@@ -264,8 +264,8 @@ func ApplyXFSQuota(systemUser string, l Limits) error {
 	line := fmt.Sprintf("%s:%s\n", projID, home)
 	f, _ := os.OpenFile("/etc/projid", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if f != nil {
-		defer f.Close()
-		f.WriteString(line)
+		defer func() { _ = f.Close() }()
+		_, _ = f.WriteString(line)
 	}
 	// Initialize the project quota idempotently and ignore unsupported operations.
 	_ = resourceCommand("xfs_quota", "-x", "-c",
@@ -370,7 +370,7 @@ func ApplyMySQLLimits(ctx context.Context, db *sql.DB, domainID int64, l Limits)
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var users []string
 	for rows.Next() {

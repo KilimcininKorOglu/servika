@@ -42,7 +42,7 @@ func validName(name string) bool {
 		return false
 	}
 	for _, character := range name {
-		if !(character >= 'a' && character <= 'z' || character >= '0' && character <= '9' || character == '-') {
+		if (character < 'a' || character > 'z') && (character < '0' || character > '9') && character != '-' {
 			return false
 		}
 	}
@@ -70,7 +70,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "plugins could not be loaded")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	plugins := []Plugin{}
 	for rows.Next() {

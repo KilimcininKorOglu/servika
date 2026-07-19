@@ -83,7 +83,7 @@ func aggregateDomain(db *sql.DB, domainID int64, domainName string) bool {
 	if err != nil {
 		return false
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	if start > 0 {
 		if _, err := file.Seek(start, 0); err != nil {
 			start = 0

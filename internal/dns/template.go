@@ -100,7 +100,7 @@ func LoadTemplate(ctx context.Context, db *sql.DB) ([]TemplateRow, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := make([]TemplateRow, 0)
 	for rows.Next() {
 		var row TemplateRow
@@ -221,10 +221,10 @@ func syncOpenDKIM(domainName, selector, privatePEM, publicKey string) {
 }
 
 func appendUnique(path, line string) {
-	key := strings.SplitN(line, " ", 2)[0]
+	key, _, _ := strings.Cut(line, " ")
 	body, _ := os.ReadFile(path)
 	for _, existing := range strings.Split(string(body), "\n") {
-		if strings.SplitN(existing, " ", 2)[0] == key {
+		if eKey, _, _ := strings.Cut(existing, " "); eKey == key {
 			return
 		}
 	}
@@ -232,7 +232,7 @@ func appendUnique(path, line string) {
 	if err != nil {
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	_, _ = file.WriteString(line + "\n")
 }
 

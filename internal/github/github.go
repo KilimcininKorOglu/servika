@@ -99,7 +99,7 @@ func ghCall(ctx context.Context, method, path, token string, body any) ([]byte, 
 	if err != nil {
 		return nil, 0, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	b, _ := io.ReadAll(resp.Body)
 	return b, resp.StatusCode, nil
 }

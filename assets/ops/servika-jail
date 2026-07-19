@@ -42,7 +42,7 @@ build_template() {
     [ -e "$f" ] && { mkdir -p "$TEMPLATE$(dirname "$f")"; cp -f "$f" "$TEMPLATE$f"; }
   done
   # Keep /bin compatible with /usr/bin.
-  ( cd "$TEMPLATE"; [ -e bin/bash ] || cp usr/bin/bash bin/bash 2>/dev/null; ln -sf bash bin/sh 2>/dev/null )
+  ( cd "$TEMPLATE" || exit; [ -e bin/bash ] || cp usr/bin/bash bin/bash 2>/dev/null; ln -sf bash bin/sh 2>/dev/null )
   cp -f "$TEMPLATE/usr/bin/"* "$TEMPLATE/bin/" 2>/dev/null || true
   # terminfo entries required by nano, less, and clear
   for d in x l v s; do cp -a "/usr/share/terminfo/$d" "$TEMPLATE/usr/share/terminfo/" 2>/dev/null || true; done

@@ -124,7 +124,7 @@ func (h *Handlers) findings(ctx context.Context, sid int64) []Finding {
 	if err != nil {
 		return out
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	for rows.Next() {
 		var b Finding
 		if err := rows.Scan(&b.File, &b.Signature, &b.Engine, &b.Quarantine); err == nil {

@@ -76,7 +76,7 @@ func tickOnce(db *sql.DB) {
 		log.Printf("backup scheduler tick query: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var due []dueDomain
 	for rows.Next() {
@@ -169,7 +169,7 @@ func pruneOld(db *sql.DB, domainID int64, systemUser string, retention int) erro
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	type item struct {
 		ID   int64
@@ -183,7 +183,7 @@ func pruneOld(db *sql.DB, domainID int64, systemUser string, retention int) erro
 		}
 		all = append(all, it)
 	}
-	rows.Close()
+	_ = rows.Close()
 	if len(all) <= retention {
 		return nil
 	}

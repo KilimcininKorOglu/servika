@@ -93,7 +93,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "rules could not be listed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := []Rule{}
 	for rows.Next() {
 		var rule Rule
@@ -289,7 +289,7 @@ func (h *Handlers) rebuild() error {
 		}
 	}
 	_ = rows.Err()
-	rows.Close()
+	_ = rows.Close()
 
 	// Allowlist drops come after permitted IP accepts and before close or banned rules.
 	// Since established,related and lo come first, active sessions and SSH are not interrupted.
@@ -307,25 +307,25 @@ func (h *Handlers) rebuild() error {
 
 	var b bytes.Buffer
 	// Replace atomically and idempotently by ensuring, deleting, and rebuilding the table.
-	b.WriteString("table inet " + tableName + " {}\n")
-	b.WriteString("delete table inet " + tableName + "\n")
-	b.WriteString("table inet " + tableName + " {\n")
+	fmt.Fprintf(&b, "table inet %s {}\n", tableName)
+	fmt.Fprintf(&b, "delete table inet %s\n", tableName)
+	fmt.Fprintf(&b, "table inet %s {\n", tableName)
 	b.WriteString("\tchain input {\n")
 	b.WriteString("\t\ttype filter hook input priority filter; policy accept;\n")
 	b.WriteString("\t\tct state established,related accept\n")
 	b.WriteString("\t\tiif \"lo\" accept\n")
 	// Ordering matters: whitelist accepts, allowlist drops, closed-port drops, then banned drops.
 	for _, r := range allowlisted {
-		b.WriteString(r + "\n")
+		fmt.Fprintf(&b, "%s\n", r)
 	}
 	for _, r := range restricted {
-		b.WriteString(r + "\n")
+		fmt.Fprintf(&b, "%s\n", r)
 	}
 	for _, r := range closed {
-		b.WriteString(r + "\n")
+		fmt.Fprintf(&b, "%s\n", r)
 	}
 	for _, r := range banned {
-		b.WriteString(r + "\n")
+		fmt.Fprintf(&b, "%s\n", r)
 	}
 	b.WriteString("\t}\n}\n")
 
@@ -367,8 +367,8 @@ func validIP(s string) bool {
 func saddr(ip string) string {
 	fam := "ip"
 	host := ip
-	if i := strings.IndexByte(ip, '/'); i >= 0 {
-		host = ip[:i]
+	if before, _, found := strings.Cut(ip, "/"); found {
+		host = before
 	}
 	if p := net.ParseIP(host); p != nil && p.To4() == nil {
 		fam = "ip6"

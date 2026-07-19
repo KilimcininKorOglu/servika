@@ -95,9 +95,7 @@ func (h *Handlers) LoadHistory(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	bucket := hours * 3600 / 500 // Seconds per bucket, targeting about 500 points.
-	if bucket < 60 {
-		bucket = 60
-	}
+	bucket = max(bucket, 60)
 	rows, err := h.DB.QueryContext(r.Context(), `
 		SELECT MIN(ts)          AS ts,
 		       ROUND(AVG(load1),2),
@@ -112,7 +110,7 @@ func (h *Handlers) LoadHistory(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to read load history")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := []LoadPoint{}
 	for rows.Next() {
 		var point LoadPoint

@@ -228,4 +228,4 @@ fi
 say "\n${c_b}== Summary ==${c_0}"
 say "  checks: $CHK   fixes: $FIXN   errors: $ERRN"
 [ $DRY -eq 1 ] && say "  (dry-run: no changes applied; remove --dry-run to apply fixes)"
-exit $([ $ERRN -gt 0 ] && echo 1 || echo 0)
+exit "$([ $ERRN -gt 0 ] && echo 1 || echo 0)"

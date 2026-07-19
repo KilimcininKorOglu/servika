@@ -106,7 +106,7 @@ func readCPUStat() (cpuStat, error) {
 	if err != nil {
 		return cpuStat{}, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	var stat cpuStat
 	found := false
 	if err := scanLines(f, func(line string) bool {
@@ -169,25 +169,25 @@ func ReadMem() (MemUsage, error) {
 	if err != nil {
 		return MemUsage{}, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	var total, free, buffers, cached, available int64
 	if err := scanLines(f, func(line string) bool {
 		var v int64
 		switch {
 		case strings.HasPrefix(line, "MemTotal:"):
-			fmt.Sscanf(line, "MemTotal: %d kB", &v)
+			_, _ = fmt.Sscanf(line, "MemTotal: %d kB", &v)
 			total = v
 		case strings.HasPrefix(line, "MemFree:"):
-			fmt.Sscanf(line, "MemFree: %d kB", &v)
+			_, _ = fmt.Sscanf(line, "MemFree: %d kB", &v)
 			free = v
 		case strings.HasPrefix(line, "Buffers:"):
-			fmt.Sscanf(line, "Buffers: %d kB", &v)
+			_, _ = fmt.Sscanf(line, "Buffers: %d kB", &v)
 			buffers = v
 		case strings.HasPrefix(line, "Cached:"):
-			fmt.Sscanf(line, "Cached: %d kB", &v)
+			_, _ = fmt.Sscanf(line, "Cached: %d kB", &v)
 			cached = v
 		case strings.HasPrefix(line, "MemAvailable:"):
-			fmt.Sscanf(line, "MemAvailable: %d kB", &v)
+			_, _ = fmt.Sscanf(line, "MemAvailable: %d kB", &v)
 			available = v
 		}
 		return true
@@ -215,16 +215,16 @@ func ReadSwap() SwapUsage {
 	if err != nil {
 		return SwapUsage{}
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	var total, free int64
 	if err := scanLines(f, func(line string) bool {
 		var v int64
 		switch {
 		case strings.HasPrefix(line, "SwapTotal:"):
-			fmt.Sscanf(line, "SwapTotal: %d kB", &v)
+			_, _ = fmt.Sscanf(line, "SwapTotal: %d kB", &v)
 			total = v
 		case strings.HasPrefix(line, "SwapFree:"):
-			fmt.Sscanf(line, "SwapFree: %d kB", &v)
+			_, _ = fmt.Sscanf(line, "SwapFree: %d kB", &v)
 			free = v
 		}
 		return true
@@ -275,7 +275,7 @@ func ReadDisks() []DiskUsage {
 	if err != nil {
 		return nil
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	seen := map[string]bool{}
 	seenDev := map[string]bool{} // Track duplicate /dev devices created by bind mounts.
 	out := []DiskUsage{}
@@ -336,25 +336,25 @@ func ReadNetwork() NetworkUsage {
 	if err != nil {
 		return NetworkUsage{}
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	type rec struct {
 		name   string
 		rx, tx int64
 	}
 	var stats []rec
 	if err := scanLines(f, func(line string) bool {
-		i := strings.Index(line, ":")
-		if i < 0 {
+		name, after, found := strings.Cut(line, ":")
+		if !found {
 			return true
 		}
-		name := strings.TrimSpace(line[:i])
+		name = strings.TrimSpace(name)
 		if name == "lo" || strings.HasPrefix(name, "veth") || strings.HasPrefix(name, "br-") ||
 			strings.HasPrefix(name, "docker") || strings.HasPrefix(name, "tap") ||
 			strings.HasPrefix(name, "tun") || strings.HasPrefix(name, "wg") ||
 			strings.HasPrefix(name, "virbr") || strings.HasPrefix(name, "vnet") {
 			return true
 		}
-		fld := strings.Fields(line[i+1:])
+		fld := strings.Fields(after)
 		if len(fld) < 9 {
 			return true
 		}
@@ -482,8 +482,7 @@ func ReadInfo() SystemInfo {
 	}
 	if data, err := os.ReadFile("/etc/os-release"); err == nil {
 		for _, line := range strings.Split(string(data), "\n") {
-			if strings.HasPrefix(line, "PRETTY_NAME=") {
-				v := strings.TrimPrefix(line, "PRETTY_NAME=")
+			if v, found := strings.CutPrefix(line, "PRETTY_NAME="); found {
 				v = strings.Trim(v, "\"'")
 				info.OSName = v
 				break
@@ -493,8 +492,8 @@ func ReadInfo() SystemInfo {
 	if f, err := os.Open("/proc/cpuinfo"); err == nil {
 		if err := scanLines(f, func(line string) bool {
 			if strings.HasPrefix(line, "model name") {
-				if i := strings.Index(line, ":"); i >= 0 {
-					info.CPUModel = strings.TrimSpace(line[i+1:])
+				if _, after, found := strings.Cut(line, ":"); found {
+					info.CPUModel = strings.TrimSpace(after)
 					return false
 				}
 			}
@@ -502,7 +501,7 @@ func ReadInfo() SystemInfo {
 		}); err != nil {
 			info.CPUModel = ""
 		}
-		f.Close()
+		_ = f.Close()
 	}
 	cached := info
 	infoCache = &cached
@@ -540,7 +539,7 @@ func ReadServices() []ServiceStat {
 		}(i, s.name)
 	}
 	mat := make(map[int]bool)
-	for i := 0; i < len(serviceList); i++ {
+	for range len(serviceList) {
 		r := <-ch
 		mat[r.i] = r.enabled
 	}

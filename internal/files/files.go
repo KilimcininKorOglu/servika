@@ -183,7 +183,7 @@ func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", "attachment; filename=\""+info.Name()+"\"")
 	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
@@ -298,7 +298,7 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	if fh.Size > MaxUploadBytes {
 		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "file is too large (maximum 2 GiB)")
 		return
@@ -313,7 +313,7 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 	written, err := io.Copy(out, file)
 	if err != nil {
 		_ = os.Remove(abs)

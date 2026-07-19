@@ -46,7 +46,7 @@ func downloadUpdateTool() error {
 	if err != nil {
 		return fmt.Errorf("download update tool: %w", err)
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode != http.StatusOK {
 		return fmt.Errorf("download update tool: HTTP %d", response.StatusCode)
 	}

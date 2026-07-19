@@ -56,7 +56,7 @@ func (h *Handlers) IonCubeInstall(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to create temporary directory")
 		return
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 	tarPath := filepath.Join(tmpDir, "ioncube.tar.gz")
 	if err := download(ctx, IonCubeURL, tarPath); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to download IonCube Loader")
@@ -145,7 +145,7 @@ func download(ctx context.Context, url, destination string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
@@ -153,7 +153,7 @@ func download(ctx context.Context, url, destination string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	_, err = io.Copy(f, resp.Body)
 	return err
 }
@@ -163,12 +163,12 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 	_, err = io.Copy(out, in)
 	return err
 }

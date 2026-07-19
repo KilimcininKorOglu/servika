@@ -125,7 +125,7 @@ func dsFromDNSKEY(ctx context.Context, zone string) []string {
 	if err != nil {
 		return nil
 	}
-	defer os.Remove(keyFile.Name())
+	defer func() { _ = os.Remove(keyFile.Name()) }()
 	if _, err := keyFile.Write(dnsKeys); err != nil {
 		_ = keyFile.Close()
 		return nil

@@ -173,7 +173,7 @@ func (h *Handlers) Tail(w http.ResponseWriter, r *http.Request) {
 		flusher.Flush()
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	// Send approximately the last 200 lines first.
 	if existing, err := lastNLines(path, 200); err == nil {
 		for _, ln := range existing {
@@ -210,7 +210,7 @@ func (h *Handlers) Tail(w http.ResponseWriter, r *http.Request) {
 				// Reopen the file when rotation truncates its size.
 				if st, err := os.Stat(path); err == nil {
 					if cur, _ := f.Seek(0, io.SeekCurrent); cur > st.Size() {
-						f.Close()
+						_ = f.Close()
 						f, err = os.Open(path)
 						if err != nil {
 							return
@@ -229,7 +229,7 @@ func lastNLines(path string, n int) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	st, err := f.Stat()
 	if err != nil {
 		return nil, err

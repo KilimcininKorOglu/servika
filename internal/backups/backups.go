@@ -78,7 +78,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := make([]Backup, 0)
 	for rows.Next() {
 		var y Backup
@@ -106,7 +106,7 @@ func (h *Handlers) Summary(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not list backups")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := []SummaryRow{}
 	var totalBytes int64
 	var totalBackups int
@@ -263,7 +263,7 @@ func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	st, _ := f.Stat()
 	w.Header().Set("Content-Type", "application/gzip")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+file+`"`)

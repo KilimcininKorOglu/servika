@@ -65,7 +65,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not list records")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := []Sub{}
 	for rows.Next() {
 		var s Sub

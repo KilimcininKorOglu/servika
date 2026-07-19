@@ -89,7 +89,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteJSON(w, http.StatusOK, summary) // Return an empty summary when no log exists.
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	summary.HasLog = true
 
 	if err := summarizeLog(file, &summary); err != nil {

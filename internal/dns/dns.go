@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -72,7 +73,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := make([]Record, 0)
 	for rows.Next() {
 		record, err := scan(rows)
@@ -415,10 +416,5 @@ func validRecordFields(name, value string) bool {
 }
 
 func validType(t string) bool {
-	for _, x := range ValidTypes {
-		if x == t {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(ValidTypes, t)
 }

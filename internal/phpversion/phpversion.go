@@ -118,7 +118,7 @@ func Discover(m VersionMetadata) Version {
 		s.Installable = true
 		// Read module count and the actual version.
 		if out, err := systemCommandContext(context.Background(), s.PHPBin, "-v").Output(); err == nil {
-			line := strings.SplitN(string(out), "\n", 2)[0]
+			line, _, _ := strings.Cut(string(out), "\n")
 			// "PHP 8.3.31 (cli) ..."
 			parts := strings.Fields(line)
 			if len(parts) >= 2 {
@@ -168,8 +168,8 @@ func compareVersions(a, b string) int {
 	pb := strings.Split(b, ".")
 	for i := 0; i < len(pa) && i < len(pb); i++ {
 		ia, ib := 0, 0
-		fmt.Sscanf(pa[i], "%d", &ia)
-		fmt.Sscanf(pb[i], "%d", &ib)
+		_, _ = fmt.Sscanf(pa[i], "%d", &ia)
+		_, _ = fmt.Sscanf(pb[i], "%d", &ib)
 		if ia != ib {
 			return ia - ib
 		}
