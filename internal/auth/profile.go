@@ -101,10 +101,18 @@ func (h *Handlers) TwoFASetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	secret := TOTPGenerateSecret()
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{
-		"secret":  secret,
-		"otpauth": TOTPURI(secret, "root", "Servika"),
-	})
+	uri := TOTPURI(secret, "root", "Servika")
+	resp := map[string]any{
+		"secret":      secret,
+		"otpauth":     uri, // backwards-compatible (manual entry fallback)
+		"otpauth_uri": uri,
+	}
+	// QR PNG data-URI for scanning with an authenticator app. When generation
+	// fails the manual-entry fallback (secret + otpauth) is still present.
+	if dataURI, err := TOTPQRDataURI(uri); err == nil {
+		resp["qr_data_uri"] = dataURI
+	}
+	httpx.WriteJSON(w, http.StatusOK, resp)
 }
 
 // POST /me/2fa/enable — {secret, code}: enables 2FA if the code validates against the secret

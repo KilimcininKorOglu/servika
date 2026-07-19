@@ -52,7 +52,7 @@ export default function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState(''); const [newPassword, setNewPassword] = useState(''); const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState(''); const [passwordError, setPasswordError] = useState(''); const [isPasswordLoading, setIsPasswordLoading] = useState(false)
 
-  const [twoFactorSetup, setTwoFactorSetup] = useState<{ secret: string; otpauth: string } | null>(null)
+  const [twoFactorSetup, setTwoFactorSetup] = useState<{ secret: string; otpauth: string; otpauth_uri?: string; qr_data_uri?: string } | null>(null)
   const [twoFactorCode, setTwoFactorCode] = useState(''); const [twoFactorError, setTwoFactorError] = useState(''); const [isTwoFactorLoading, setIsTwoFactorLoading] = useState(false)
   const [isDisablingTwoFactor, setIsDisablingTwoFactor] = useState(false); const [disableCode, setDisableCode] = useState('')
 
@@ -90,7 +90,7 @@ export default function SettingsPage() {
 
   async function startTwoFactorSetup() {
     setTwoFactorError(''); setTwoFactorCode('')
-    try { const response = await api.get<{ secret: string; otpauth: string }>('/me/2fa/setup'); setTwoFactorSetup(response.data) }
+    try { const response = await api.get<{ secret: string; otpauth: string; otpauth_uri?: string; qr_data_uri?: string }>('/me/2fa/setup'); setTwoFactorSetup(response.data) }
     catch (error) { setTwoFactorError(apiError(error)) }
   }
   async function enableTwoFactor(event: React.FormEvent) {
@@ -185,7 +185,15 @@ export default function SettingsPage() {
 
               {!currentUser?.two_fa && twoFactorSetup && (
                 <form onSubmit={enableTwoFactor} className="space-y-3 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-900">
-                  <p className="text-sm text-slate-700 dark:text-slate-300">1) Add this key to your authenticator app (Google Authenticator, Authy, or Microsoft Authenticator):</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">1) Scan the QR code or enter the key in your authenticator app (Google Authenticator, Authy, or Microsoft Authenticator):</p>
+                  {twoFactorSetup.qr_data_uri && (
+                    <div className="flex flex-col items-center gap-2 py-1">
+                      <img src={twoFactorSetup.qr_data_uri} alt="2FA QR code" width={256} height={256}
+                        className="w-64 h-64 rounded-2xl bg-white p-3 border border-slate-200 dark:border-slate-700 shadow-sm" />
+                      <p className="text-xs text-slate-500 dark:text-slate-500">Scan with your authenticator app</p>
+                    </div>
+                  )}
+                  <p className="text-xs text-slate-500 dark:text-slate-500">If you cannot scan, enter the secret key manually:</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <code className="font-mono text-sm px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 tracking-widest select-all">{groupedSecret}</code>
                     <button type="button" onClick={() => { navigator.clipboard?.writeText(twoFactorSetup.secret) }} className="text-xs px-2.5 py-1.5 rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Copy</button>
