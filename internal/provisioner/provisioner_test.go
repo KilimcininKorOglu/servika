@@ -146,14 +146,14 @@ func TestPHPPoolConfinesTenantAndDisablesProcessExecution(t *testing.T) {
 	}
 }
 
-func TestTenantHomePermissionsBlockOtherUsersAndPermitWebGroup(t *testing.T) {
+func TestLegacyTenantHomePermissionsBlockOtherUsersAndPermitWebGroup(t *testing.T) {
 	home := t.TempDir()
 	publicHTML := filepath.Join(home, "public_html")
 	if err := os.Mkdir(publicHTML, 0755); err != nil {
 		t.Fatalf("create public_html: %v", err)
 	}
 
-	applyHomePerms(home, os.Getuid(), os.Getgid())
+	applyLegacyHomePerms(home, os.Getuid(), os.Getgid())
 
 	homeInfo, err := os.Stat(home)
 	if err != nil {

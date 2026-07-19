@@ -883,7 +883,7 @@ func Provision(domainName, phpVersion string) (*Result, error) {
 		return nil
 	})
 	if err == nil {
-		hardenHomePerms(home, uid)
+		hardenHomePerms(home, systemUser, uid, gid)
 	}
 
 	indexPath := filepath.Join(home, "public_html", "index.html")
@@ -1123,7 +1123,14 @@ func uidGid(username string) (int, int, error) {
 	return uid, gid, nil
 }
 
-func applyHomePerms(home string, uid, nginxGID int) {
+const homeACLSentinel = "/var/lib/servika/.home_acl_v1_done"
+
+func aclAvailable() bool {
+	_, err := exec.LookPath("setfacl")
+	return err == nil
+}
+
+func applyLegacyHomePerms(home string, uid, nginxGID int) {
 	publicHTML := filepath.Join(home, "public_html")
 	_ = os.Chown(home, uid, nginxGID)
 	_ = os.Chmod(home, 0710)
@@ -1131,15 +1138,64 @@ func applyHomePerms(home string, uid, nginxGID int) {
 	_ = os.Chmod(publicHTML, 0750)
 }
 
-func hardenHomePerms(home string, uid int) {
-	_, nginxGID, err := uidGid("nginx")
-	if err == nil {
-		applyHomePerms(home, uid, nginxGID)
-		return
+func hardenHomePerms(home, systemUser string, uid, gid int) bool {
+	publicHTML := filepath.Join(home, "public_html")
+	if !managedPublicHTML(publicHTML, systemUser) {
+		log.Printf("tenant home permissions: rejected unmanaged path %s", publicHTML)
+		return false
 	}
-	log.Printf("tenant home permissions: nginx account not found, retaining service-compatible permissions for %s", home)
+	if aclAvailable() {
+		_ = os.Chown(home, uid, gid)
+		_ = os.Chmod(home, 0710)
+		_ = os.Chown(publicHTML, uid, gid)
+		_ = os.Chmod(publicHTML, 0750)
+		if output, err := tenantCommand("setfacl", "-m", "u:nginx:--x", home).CombinedOutput(); err != nil {
+			log.Printf("tenant home permissions: home ACL failed for %s: %s", systemUser, strings.TrimSpace(string(output)))
+			return false
+		}
+		if output, err := tenantCommand("setfacl", "-m", "u:nginx:rX", publicHTML).CombinedOutput(); err != nil {
+			log.Printf("tenant home permissions: document root ACL failed for %s: %s", systemUser, strings.TrimSpace(string(output)))
+			return false
+		}
+		if output, err := tenantCommand("setfacl", "-d", "-m", "u:nginx:rX", publicHTML).CombinedOutput(); err != nil {
+			log.Printf("tenant home permissions: default ACL failed for %s: %s", systemUser, strings.TrimSpace(string(output)))
+			return false
+		}
+		return true
+	}
+
+	if _, nginxGID, err := uidGid("nginx"); err == nil {
+		applyLegacyHomePerms(home, uid, nginxGID)
+		return false
+	}
+	log.Printf("tenant home permissions: ACL tools and nginx account unavailable for %s", systemUser)
 	_ = os.Chmod(home, 0711)
-	_ = os.Chmod(filepath.Join(home, "public_html"), 0755)
+	_ = os.Chmod(publicHTML, 0755)
+	return false
+}
+
+func managedPublicHTML(path, systemUser string) bool {
+	if !tenantUserPattern.MatchString(systemUser) {
+		return false
+	}
+	expected := filepath.Join("/home", systemUser, "public_html")
+	if filepath.Clean(path) != expected {
+		return false
+	}
+	info, err := os.Lstat(path)
+	return err == nil && info.IsDir() && info.Mode()&os.ModeSymlink == 0
+}
+
+func hardenHomePermsRecursive(publicHTML, systemUser string) bool {
+	if !managedPublicHTML(publicHTML, systemUser) || !aclAvailable() {
+		return false
+	}
+	output, err := tenantCommand("setfacl", "-R", "-P", "-m", "u:nginx:rX", publicHTML).CombinedOutput()
+	if err != nil {
+		log.Printf("tenant home permissions: recursive ACL failed for %s: %s", systemUser, strings.TrimSpace(string(output)))
+		return false
+	}
+	return true
 }
 
 // HealHomePerms applies tenant-isolating ownership and permissions to existing managed homes.
