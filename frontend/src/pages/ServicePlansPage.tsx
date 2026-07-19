@@ -224,6 +224,31 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
           <input type="checkbox" checked={form.is_default} onChange={e => setForm({ ...form, is_default: e.target.checked })} className="rounded" />
           Default plan for new domains
         </label>
+
+        {/* WAF (ModSecurity + OWASP CRS) plan default */}
+        <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+          <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">WAF Default (ModSecurity + OWASP CRS)</h4>
+          <div className="grid grid-cols-3 gap-3">
+            <label className="flex items-center gap-2 h-[38px] px-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 cursor-pointer">
+              <input type="checkbox" checked={form.waf_enabled} onChange={e => setForm({ ...form, waf_enabled: e.target.checked })} className="rounded" />
+              <span className="text-sm text-slate-700 dark:text-slate-300">Enabled in this plan</span>
+            </label>
+            <select value={form.waf_mode} onChange={e => setForm({ ...form, waf_mode: e.target.value })}
+              disabled={!form.waf_enabled}
+              className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded text-sm disabled:opacity-50">
+              <option value="on">Block (On)</option>
+              <option value="detect">Detect (log only)</option>
+            </select>
+            <select value={form.waf_paranoia} onChange={e => setForm({ ...form, waf_paranoia: Number(e.target.value) || 1 })}
+              disabled={!form.waf_enabled}
+              className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded text-sm disabled:opacity-50">
+              <option value={1}>Level 1 (Low)</option>
+              <option value={2}>Level 2 (Medium)</option>
+              <option value={3}>Level 3 (High)</option>
+              <option value={4}>Level 4 (Strict)</option>
+            </select>
+          </div>
+        </div>
         <p className="text-xs text-slate-500 dark:text-slate-500">0 = unlimited. Disk and traffic values are in MB. New domains on this plan are provisioned with the selected PHP version.</p>
 
         {error && <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-300">{error}</div>}
