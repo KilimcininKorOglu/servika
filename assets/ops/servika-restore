@@ -27,7 +27,7 @@
 # first; on an unhealthy start the previous binary + pre-repair DB are rolled back.
 set -euo pipefail
 
-REPO="${SERVIKA_REPO:-servika/servika}"
+REPO="${SERVIKA_REPO:-KilimcininKorOglu/servika}"
 BRANCH="main"; DRY=0; DODB=1; DORESTART=1
 
 # Paths are overridable via env (for isolated testing). Production defaults apply.

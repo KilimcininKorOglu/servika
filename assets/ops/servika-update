@@ -11,7 +11,7 @@
 # If the new release fails its health check, the previous binary and database are restored.
 set -euo pipefail
 
-REPO="${SERVIKA_REPO:-servika/servika}"
+REPO="${SERVIKA_REPO:-KilimcininKorOglu/servika}"
 BRANCH="main"; DRY=0; FORCE=0
 PREFIX=/opt/servika
 BIN="$PREFIX/bin/servika-server"
