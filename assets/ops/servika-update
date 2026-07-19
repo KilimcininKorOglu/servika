@@ -191,6 +191,7 @@ if [ "$HEALTHY" = 1 ]; then
   echo "$RELHASH" > "$MARKER" 2>/dev/null || true
   NEWVER=$(version); [ -n "$NEWVER" ] || NEWVER="?"
   ok "panel active and health check passed"
+  ok "resource limits applied from plans + existing sites are being safely migrated to per-tenant PHP-FPM isolation (self-check + auto-rollback, in the background)"
   echo -e "${c_g}══ Update complete ($CURVER to $NEWVER); environment, database, and sites preserved ══${c_0}"
 else
   warn "the new release failed its health check; restoring the previous binary and database"
