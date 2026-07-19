@@ -253,6 +253,7 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/web-backend", domainsH.GetWebBackend)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/web-backend", domainsH.SetWebBackend)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/ftp/password", domainsH.SetFTPPassword)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/ftp/password-show", domainsH.ShowFTPPassword)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/databases", domainsH.ListDatabases)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/databases", domainsH.CreateDatabase)
 				r.With(middleware.AdminOnly).Delete("/databases/{dbid}", domainsH.DeleteDatabase)

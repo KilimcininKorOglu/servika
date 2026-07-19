@@ -484,6 +484,26 @@ func (h *Handlers) SetFTPPassword(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// ShowFTPPassword returns the plaintext FTP password for a domain.
+func (h *Handlers) ShowFTPPassword(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	var sk string
+	err := h.DB.QueryRowContext(r.Context(),
+		`SELECT system_user FROM domains WHERE id=?`, id).Scan(&sk)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		return
+	}
+	var pass string
+	err = h.DB.QueryRowContext(r.Context(),
+		`SELECT password_md5 FROM ftp_accounts WHERE username=? AND status='active'`, sk).Scan(&pass)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpx.WriteJSON(w, http.StatusOK, map[string]string{"ftp_pass_plain": ""})
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]string{"ftp_pass_plain": pass})
+}
+
 // DBAccount describes a database account belonging to a domain.
 type DBAccount struct {
 	ID        int64  `json:"id"`
