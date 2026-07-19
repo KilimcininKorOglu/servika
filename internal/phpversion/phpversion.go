@@ -12,18 +12,14 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"servika/internal/httpx"
 )
 
-// SupportedVersions contains supported Remi versions and AppStream PHP 8.3.
+// SupportedVersions contains PHP versions provided for AlmaLinux 10.
 var SupportedVersions = []VersionMetadata{
-	{"5.6", "56", "remi"},
-	{"7.0", "70", "remi"},
-	{"7.1", "71", "remi"},
-	{"7.2", "72", "remi"},
-	{"7.3", "73", "remi"},
 	{"7.4", "74", "remi"},
 	{"8.0", "80", "remi"},
 	{"8.1", "81", "remi"},
@@ -32,6 +28,7 @@ var SupportedVersions = []VersionMetadata{
 	{"8.3", "83", "remi"},
 	{"8.4", "84", "remi"},
 	{"8.5", "85", "remi"},
+	{"8.6", "86", "remi"},
 }
 
 // VersionMetadata identifies a supported PHP distribution.
@@ -45,6 +42,7 @@ type VersionMetadata struct {
 type Version struct {
 	VersionMetadata
 	Loaded      bool   `json:"loaded"`
+	Installable bool   `json:"installable"`
 	PoolDir     string `json:"pool_dir,omitempty"`
 	SockDir     string `json:"sock_dir,omitempty"`
 	Service     string `json:"service,omitempty"`
@@ -52,6 +50,50 @@ type Version struct {
 	RealVersion string `json:"real_version,omitempty"` // For example, "8.3.31".
 	ModuleCount int    `json:"module_count,omitempty"`
 	Description string `json:"description,omitempty"`
+}
+
+var (
+	availabilityMu    sync.Mutex
+	availabilityCache = map[string]bool{}
+	availabilityAt    time.Time
+)
+
+const availabilityTTL = 10 * time.Minute
+
+// systemCommandContext creates a privileged command without inheriting panel secrets.
+func systemCommandContext(ctx context.Context, name string, arguments ...string) *exec.Cmd {
+	command := exec.CommandContext(ctx, name, arguments...)
+	command.Env = []string{
+		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+		"LANG=C",
+		"LC_ALL=C",
+	}
+	return command
+}
+
+// packageAvailable reports whether a PHP package is installed or available from DNF.
+func packageAvailable(m VersionMetadata) bool {
+	if m.Resource == "appstream" {
+		return true
+	}
+
+	packageName := "php" + m.Code + "-php-fpm"
+	availabilityMu.Lock()
+	defer availabilityMu.Unlock()
+	if time.Since(availabilityAt) >= availabilityTTL {
+		availabilityCache = map[string]bool{}
+		availabilityAt = time.Now()
+	}
+	if available, ok := availabilityCache[packageName]; ok {
+		return available
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	available := systemCommandContext(ctx, "dnf", "-q", "list", "--available", packageName).Run() == nil ||
+		systemCommandContext(ctx, "dnf", "-q", "list", "--installed", packageName).Run() == nil
+	availabilityCache[packageName] = available
+	return available
 }
 
 // paths returns installation paths for version metadata.
@@ -73,8 +115,9 @@ func Discover(m VersionMetadata) Version {
 	// Consider the version installed when its PHP binary exists.
 	if _, err := os.Stat(s.PHPBin); err == nil {
 		s.Loaded = true
+		s.Installable = true
 		// Read module count and the actual version.
-		if out, err := exec.Command(s.PHPBin, "-v").Output(); err == nil {
+		if out, err := systemCommandContext(context.Background(), s.PHPBin, "-v").Output(); err == nil {
 			line := strings.SplitN(string(out), "\n", 2)[0]
 			// "PHP 8.3.31 (cli) ..."
 			parts := strings.Fields(line)
@@ -82,7 +125,7 @@ func Discover(m VersionMetadata) Version {
 				s.RealVersion = parts[1]
 			}
 		}
-		if out, err := exec.Command(s.PHPBin, "-m").Output(); err == nil {
+		if out, err := systemCommandContext(context.Background(), s.PHPBin, "-m").Output(); err == nil {
 			lines := strings.Split(string(out), "\n")
 			n := 0
 			for _, ln := range lines {
@@ -93,6 +136,8 @@ func Discover(m VersionMetadata) Version {
 			}
 			s.ModuleCount = n
 		}
+	} else {
+		s.Installable = packageAvailable(m)
 	}
 	if m.Resource == "appstream" {
 		s.Description = "System default (AlmaLinux AppStream)"
@@ -199,10 +244,16 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !packageAvailable(m) {
+		httpx.WriteError(w, http.StatusConflict,
+			fmt.Sprintf("PHP %s is unavailable from the configured repositories", req.Version))
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Minute)
 	defer cancel()
 	args := append([]string{"install", "-y"}, PackageNames(m)...)
-	cmd := exec.CommandContext(ctx, "dnf", args...)
+	cmd := systemCommandContext(ctx, "dnf", args...)
 	_, err := cmd.CombinedOutput()
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError,
@@ -235,7 +286,7 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Enable and start the PHP-FPM service.
-	_, _ = exec.Command("systemctl", "enable", "--now", svc).CombinedOutput()
+	_, _ = systemCommandContext(context.Background(), "systemctl", "enable", "--now", svc).CombinedOutput()
 
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
 		"ok":      true,
@@ -279,12 +330,12 @@ func (h *Handlers) Remove(w http.ResponseWriter, r *http.Request) {
 
 	// Stop PHP-FPM.
 	_, _, service, _ := paths(m)
-	_, _ = exec.Command("systemctl", "disable", "--now", service).CombinedOutput()
+	_, _ = systemCommandContext(context.Background(), "systemctl", "disable", "--now", service).CombinedOutput()
 
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Minute)
 	defer cancel()
 	args := append([]string{"remove", "-y"}, "php"+m.Code+"-*")
-	cmd := exec.CommandContext(ctx, "dnf", args...)
+	cmd := systemCommandContext(ctx, "dnf", args...)
 	_, err := cmd.CombinedOutput()
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError,

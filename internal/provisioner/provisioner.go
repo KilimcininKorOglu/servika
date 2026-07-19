@@ -138,10 +138,13 @@ type phpConfig struct {
 
 var phpMap = map[string]phpConfig{
 	"7.4": {PoolDir: "/etc/opt/remi/php74/php-fpm.d", SockDir: "/var/opt/remi/php74/run/php-fpm", Service: "php74-php-fpm", FPMBin: "/opt/remi/php74/root/usr/sbin/php-fpm"},
+	"8.0": {PoolDir: "/etc/opt/remi/php80/php-fpm.d", SockDir: "/var/opt/remi/php80/run/php-fpm", Service: "php80-php-fpm", FPMBin: "/opt/remi/php80/root/usr/sbin/php-fpm"},
+	"8.1": {PoolDir: "/etc/opt/remi/php81/php-fpm.d", SockDir: "/var/opt/remi/php81/run/php-fpm", Service: "php81-php-fpm", FPMBin: "/opt/remi/php81/root/usr/sbin/php-fpm"},
 	"8.2": {PoolDir: "/etc/opt/remi/php82/php-fpm.d", SockDir: "/var/opt/remi/php82/run/php-fpm", Service: "php82-php-fpm", FPMBin: "/opt/remi/php82/root/usr/sbin/php-fpm"},
 	"8.3": {PoolDir: "/etc/php-fpm.d", SockDir: "/run/php-fpm", Service: "php-fpm", FPMBin: "/usr/sbin/php-fpm"},
 	"8.4": {PoolDir: "/etc/opt/remi/php84/php-fpm.d", SockDir: "/var/opt/remi/php84/run/php-fpm", Service: "php84-php-fpm", FPMBin: "/opt/remi/php84/root/usr/sbin/php-fpm"},
 	"8.5": {PoolDir: "/etc/opt/remi/php85/php-fpm.d", SockDir: "/var/opt/remi/php85/run/php-fpm", Service: "php85-php-fpm", FPMBin: "/opt/remi/php85/root/usr/sbin/php-fpm"},
+	"8.6": {PoolDir: "/etc/opt/remi/php86/php-fpm.d", SockDir: "/var/opt/remi/php86/run/php-fpm", Service: "php86-php-fpm", FPMBin: "/opt/remi/php86/root/usr/sbin/php-fpm"},
 }
 
 func ValidateDomain(d string) error {
