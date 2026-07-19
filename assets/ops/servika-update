@@ -151,6 +151,33 @@ command -v bsdtar >/dev/null 2>&1 || dnf install -y libarchive >/dev/null 2>&1 |
 command -v unar >/dev/null 2>&1 || dnf install -y unar >/dev/null 2>&1 || true
 command -v restorecon >/dev/null && restorecon -R "$PREFIX/bin" "$FDIST" >/dev/null 2>&1 || true
 
+# 10b) Disk quota (XFS user quota) GRUB configuration — does NOT auto-reboot live servers.
+# When the root filesystem is XFS + noquota, idempotently write `rootflags=uquota` to
+# /etc/default/grub. Quota can only be enabled at MOUNT time (via reboot). The operator
+# schedules the reboot — a sentinel file + clear warning are left. Panel startup's
+# HealQuotaOnStartup applies limits automatically once the filesystem quota is active.
+command -v quota >/dev/null 2>&1 || dnf install -y quota xfsprogs >/dev/null 2>&1 || true
+QROOTFS=$(findmnt -no FSTYPE / 2>/dev/null || echo "")
+QROOTOPTS=$(findmnt -no OPTIONS / 2>/dev/null || echo "")
+QSENTINEL=/etc/servika/reboot-required-quota
+if [ "$QROOTFS" = "xfs" ] && ! echo "$QROOTOPTS" | grep -qwE 'usrquota|uquota|quota'; then
+  if ! grep -q 'rootflags=uquota' /etc/default/grub 2>/dev/null; then
+    if grep -q '^GRUB_CMDLINE_LINUX=' /etc/default/grub 2>/dev/null; then
+      sed -i 's/^\(GRUB_CMDLINE_LINUX="[^"]*\)"/\1 rootflags=uquota"/' /etc/default/grub
+    else
+      echo 'GRUB_CMDLINE_LINUX="rootflags=uquota"' >> /etc/default/grub
+    fi
+    command -v grubby >/dev/null 2>&1 && grubby --update-kernel=ALL --args="rootflags=uquota" >/dev/null 2>&1 || true
+    grub2-mkconfig -o /boot/grub2/grub.cfg >/dev/null 2>&1 || true
+    for cfg in /boot/efi/EFI/*/grub.cfg; do [ -f "$cfg" ] && grub2-mkconfig -o "$cfg" >/dev/null 2>&1 || true; done
+  fi
+  mkdir -p /etc/servika
+  echo "rootflags=uquota written to GRUB $(date -Is 2>/dev/null) — reboot pending" > "$QSENTINEL" 2>/dev/null || true
+  warn "Disk quota: GRUB updated — a SINGLE reboot is required to activate (the operator schedules it on the live server). AUTO-REBOOT WAS NOT PERFORMED."
+elif [ "$QROOTFS" = "xfs" ]; then
+  [ -f "$QSENTINEL" ] && rm -f "$QSENTINEL" 2>/dev/null && ok "disk quota active — reboot sentinel cleared" || ok "disk quota active (root XFS user quota)"
+fi
+
 step "Restarting"
 systemctl restart servika
 HEALTHY=0

@@ -236,48 +236,178 @@ func DeleteSystemdSlice(systemUser string) error {
 	return nil
 }
 
-// ApplyXFSQuota applies inode and block project quotas to a user's directory through xfs_quota.
-// The /home filesystem must use XFS with the pquota mount option enabled.
-func ApplyXFSQuota(systemUser string, l Limits) error {
-	home := "/home/" + systemUser
-	if _, err := os.Stat(home); os.IsNotExist(err) {
-		return nil
-	}
-	// Use the UID as a simple project ID mapping.
-	uidOut, err := resourceCommand("id", "-u", systemUser).Output()
+// ── XFS USER quota (CloudLinux disk + inode parity) ──────────────────────────
+// Tenant homes (/home/c_<sk>) may NOT be on a separate mount (both production servers
+// have /home on the root XFS /dev/vdaN / /dev/sdaN). XFS *user* quota is applied to
+// the tenant user (c_<sk>) on the root mount. Files are owned c_<sk>:c_<sk> so user
+// quota maps exactly; tenants cannot chown, providing escape protection. The previous
+// PROJECT-quota approach (/home separate mount + pquota) does not work on this
+// infrastructure and is replaced by user-quota.
+//
+// The root XFS quota can only be enabled at MOUNT time; live remount cannot activate it.
+// GRUB `rootflags=uquota` + a single reboot IS required (installer/update script writes it).
+// When quota is INACTIVE on the filesystem (noquota, reboot pending) ALL quota operations
+// are SILENTLY skipped — never a hard failure (otherwise tenant create would break).
+
+// quotaMount is the mount point where XFS user quota is enforced.
+// /home is not a separate mount, so the root is used.
+const quotaMount = "/"
+
+// Plan-less tenant defaults (CloudLinux parity — don't leave unlimited).
+const (
+	defaultDiskMB = 5120   // 5 GB
+	defaultInode  = 500000 // 500k files+dirs
+)
+
+// reQuotaSK validates the system user allowlist.
+// provisioner.SlugFromDomain produces "c_" + [a-z0-9_].
+// Only values passing this regex reach xfs_quota arg slices — shell/arg injection is closed.
+var reQuotaSK = regexp.MustCompile(`^c_[a-z0-9_]{1,60}$`)
+
+// mountQuotaActive checks whether XFS user quota accounting/enforcement is on for the root
+// filesystem. It parses `xfs_quota -x -c 'state -u' /`; when noquota the output is empty
+// and both return false.
+func mountQuotaActive() (accounting, enforcement bool) {
+	out, err := resourceCommand("xfs_quota", "-x", "-c", "state -u", quotaMount).CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("get UID: %w", err)
+		return false, false
 	}
-	projID := strings.TrimSpace(string(uidOut))
-	if projID == "" || projID == "0" {
-		return fmt.Errorf("invalid UID: %s", projID)
+	for _, ln := range strings.Split(string(out), "\n") {
+		t := strings.TrimSpace(ln)
+		switch {
+		case strings.HasPrefix(t, "Accounting:"):
+			accounting = strings.Contains(t, "ON")
+		case strings.HasPrefix(t, "Enforcement:"):
+			enforcement = strings.Contains(t, "ON")
+		}
 	}
+	return accounting, enforcement
+}
 
-	// Apply xfs_quota when supported and skip silently otherwise.
-	// Block limits use kilobytes, so disk_quota_mb is multiplied by 1024.
-	blockKB := l.DiskQuotaMB * 1024
-	inode := l.InodeQuota
-	if blockKB <= 0 && inode <= 0 {
+// quotaLimitArgs builds the arg slice for xfs_quota (safe — testable without shell).
+// soft is set to hard * 0.95. diskMB or inode of 0 means "0" = UNLIMITED for that metric
+// (xfs_quota bhard/ihard=0 → no limit). sk must already pass reQuotaSK before calling.
+func quotaLimitArgs(sk string, diskMB, inode int) []string {
+	if diskMB < 0 {
+		diskMB = 0
+	}
+	if inode < 0 {
+		inode = 0
+	}
+	diskSoft := diskMB * 95 / 100
+	inodeSoft := inode * 95 / 100
+	limit := fmt.Sprintf("limit -u bsoft=%dm bhard=%dm isoft=%d ihard=%d %s",
+		diskSoft, diskMB, inodeSoft, inode, sk)
+	return []string{"-x", "-c", limit, quotaMount}
+}
+
+// ApplyQuota enforces XFS user disk+inode quota for a tenant (c_<sk>).
+// When the filesystem quota is INACTIVE (noquota — reboot pending) it logs and returns nil
+// (NEVER an error). diskMB/inode of 0 leaves that metric unlimited. The command is called
+// with an arg slice (no shell); sk passes the allowlist (reQuotaSK) — no injection possible.
+func ApplyQuota(ctx context.Context, sk string, diskMB, inode int) error {
+	if !reQuotaSK.MatchString(sk) {
+		return fmt.Errorf("quota: invalid system user format: %q", sk)
+	}
+	if acc, enf := mountQuotaActive(); !acc && !enf {
+		log.Printf("quota: inactive on filesystem (noquota) — single reboot required, skipping %s", sk)
 		return nil
 	}
-	// Add the project mapping idempotently.
-	line := fmt.Sprintf("%s:%s\n", projID, home)
-	f, _ := os.OpenFile("/etc/projid", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if f != nil {
-		defer func() { _ = f.Close() }()
-		_, _ = f.WriteString(line)
+	home := "/home/" + sk
+	if _, err := os.Stat(home); os.IsNotExist(err) {
+		return nil // not yet provisioned — skip silently
 	}
-	// Initialize the project quota idempotently and ignore unsupported operations.
-	_ = resourceCommand("xfs_quota", "-x", "-c",
-		fmt.Sprintf("project -s -p %s %s", home, projID), "/home").Run()
-
-	limit := fmt.Sprintf("limit -p bsoft=%dk bhard=%dk isoft=%d ihard=%d %s",
-		blockKB, blockKB, inode, inode, projID)
-	if out, err := resourceCommand("xfs_quota", "-x", "-c", limit, "/home").CombinedOutput(); err != nil {
-		// Continue when XFS quotas are unavailable, such as when the pquota mount option is absent.
-		log.Printf("xfs_quota %s: %s (the pquota mount option may be inactive)", systemUser, strings.TrimSpace(string(out)))
+	// Ensure the user actually exists and has a non-zero UID.
+	uidOut, err := resourceCommand("id", "-u", sk).Output()
+	if err != nil {
+		return nil
 	}
+	if uid := strings.TrimSpace(string(uidOut)); uid == "" || uid == "0" {
+		return fmt.Errorf("quota: %s has invalid uid (%q)", sk, uid)
+	}
+	if out, e := resourceCommandContext(ctx, "xfs_quota", quotaLimitArgs(sk, diskMB, inode)...).CombinedOutput(); e != nil {
+		return fmt.Errorf("xfs_quota limit %s: %s: %w", sk, strings.TrimSpace(string(out)), e)
+	}
+	log.Printf("quota applied: %s disk=%dMB inode=%d", sk, diskMB, inode)
 	return nil
+}
+
+// effectiveQuota resolves the effective quota: domain override (>0) > plan value >
+// (no plan) default. When a plan IS assigned the plan value is used (0 = explicitly
+// unlimited per plan); when no plan exists a reasonable default is applied (CloudLinux
+// parity). Domain override beats both.
+func effectiveQuota(diskOverride, inodeOverride int, planAssigned bool, planDisk, planInode int) (int, int) {
+	disk, inode := defaultDiskMB, defaultInode
+	if planAssigned {
+		disk, inode = planDisk, planInode
+	}
+	if diskOverride > 0 {
+		disk = diskOverride
+	}
+	if inodeOverride > 0 {
+		inode = inodeOverride
+	}
+	return disk, inode
+}
+
+// DomainQuotaApply resolves the effective quota (override > plan > default) for a domain
+// and calls ApplyQuota. Used by create + plan-change hooks (ApplyAll / ReassertLimits) and
+// HealQuotaOnStartup — this is the single resolution source.
+func DomainQuotaApply(ctx context.Context, db *sql.DB, domainID int64) error {
+	var sk string
+	var dDisk, dInode int
+	var planID sql.NullInt64
+	var pDisk, pInode int
+	err := db.QueryRowContext(ctx, `
+		SELECT d.system_user,
+		       COALESCE(d.disk_quota_mb,0), COALESCE(d.inode_quota,0),
+		       d.plan_id,
+		       COALESCE(p.disk_quota_mb,0), COALESCE(p.inode_quota,0)
+		FROM domains d LEFT JOIN service_plans p ON p.id=d.plan_id
+		WHERE d.id=?`, domainID).
+		Scan(&sk, &dDisk, &dInode, &planID, &pDisk, &pInode)
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(sk, "c_") {
+		return nil // admin / invalid system user — don't touch
+	}
+	disk, inode := effectiveQuota(dDisk, dInode, planID.Valid, pDisk, pInode)
+	return ApplyQuota(ctx, sk, disk, inode)
+}
+
+// quotaReportRow returns the Used and Hard fields from a `xfs_quota report -u -N <metric> /`
+// output line matching sk. The block metric returns KB; the inode metric returns count.
+// Output format: User Used Soft Hard [grace...].
+func quotaReportRow(metric, sk string) (used, hard int) {
+	out, err := resourceCommand("xfs_quota", "-x", "-c", "report -u -N "+metric, quotaMount).CombinedOutput()
+	if err != nil {
+		return 0, 0
+	}
+	for _, ln := range strings.Split(string(out), "\n") {
+		f := strings.Fields(ln)
+		if len(f) < 4 || f[0] != sk {
+			continue
+		}
+		used, _ = strconv.Atoi(f[1])
+		hard, _ = strconv.Atoi(f[3])
+		return used, hard
+	}
+	return 0, 0
+}
+
+// QuotaStatus returns the live disk (MB) / inode usage and limits from xfs_quota for a
+// tenant (UI consumption). When quota is inactive or sk invalid all values return 0.
+func QuotaStatus(sk string) (usedMB, limitMB, usedInode, limitInode int) {
+	if !reQuotaSK.MatchString(sk) {
+		return 0, 0, 0, 0
+	}
+	if acc, enf := mountQuotaActive(); !acc && !enf {
+		return 0, 0, 0, 0
+	}
+	bUsedKB, bHardKB := quotaReportRow("-b", sk) // KB
+	iUsed, iHard := quotaReportRow("-i", sk)     // count
+	return bUsedKB / 1024, bHardKB / 1024, iUsed, iHard
 }
 
 var (
@@ -485,7 +615,14 @@ func ApplyAll(ctx context.Context, db *sql.DB, domainID int64) error {
 				return fmt.Errorf("rollback tenant PHP-FPM: %w", err)
 			}
 		}
-		return DeleteSystemdSlice(systemUser)
+		_ = DeleteSystemdSlice(systemUser)
+		// Even without a plan, apply DEFAULT disk/inode quota (CloudLinux parity:
+		// never leave tenants unlimited). When the filesystem is noquota,
+		// DomainQuotaApply skips silently (never an error).
+		if err := DomainQuotaApply(ctx, db, domainID); err != nil {
+			log.Printf("quota (no plan) %s: %v", systemUser, err)
+		}
+		return nil
 	}
 
 	l, err := GetPlanLimits(ctx, db, domainID)
@@ -503,8 +640,8 @@ func ApplyAll(ctx context.Context, db *sql.DB, domainID int64) error {
 	if _, err := provisioner.EnableTenantFPM(db, domainID, systemUser, phpVersion); err != nil {
 		log.Printf("tenant PHP-FPM %s: %v", systemUser, err)
 	}
-	if err := ApplyXFSQuota(systemUser, l); err != nil {
-		log.Printf("xfs quota %s: %v", systemUser, err)
+	if err := DomainQuotaApply(ctx, db, domainID); err != nil {
+		log.Printf("xfs user-quota %s: %v", systemUser, err)
 	}
 	if err := ApplyMySQLLimits(ctx, db, domainID, l); err != nil {
 		log.Printf("mysql governor %s: %v", systemUser, err)
@@ -549,8 +686,8 @@ func ReassertLimits(ctx context.Context, db *sql.DB, domainID int64) error {
 		domainID, calculatePMMaxChildren(l)); err != nil {
 		reassertErrors = append(reassertErrors, fmt.Errorf("store PHP-FPM worker limit: %w", err))
 	}
-	if err := ApplyXFSQuota(systemUser, l); err != nil {
-		reassertErrors = append(reassertErrors, fmt.Errorf("XFS quota: %w", err))
+	if err := DomainQuotaApply(ctx, db, domainID); err != nil {
+		reassertErrors = append(reassertErrors, fmt.Errorf("XFS user-quota: %w", err))
 	}
 	if err := ApplyMySQLLimits(ctx, db, domainID, l); err != nil {
 		reassertErrors = append(reassertErrors, fmt.Errorf("MariaDB governor: %w", err))
@@ -666,4 +803,54 @@ func HealTenantFPM(ctx context.Context, db *sql.DB) {
 		migrated++
 	}
 	log.Printf("tenant PHP-FPM healing completed: migrated=%d active_reasserted=%d rolled_back=%d planned=%d", migrated, alreadyActive, rolledBack, len(domains))
+}
+
+// HealQuotaOnStartup re-asserts effective XFS user quota (override > plan > default) for ALL
+// tenants (c_<sk>) at startup. When the filesystem quota is INACTIVE (noquota — single reboot
+// pending) NOTHING is applied; every domain is logged as "skipped" (NEVER a hard error).
+// Panel boot is not blocked (called in a background goroutine). Code/plan drift converges on
+// every restart. Log: "quota heal: N tenants / M skipped [ (fs noquota)]".
+func HealQuotaOnStartup(ctx context.Context, db *sql.DB) {
+	if db == nil {
+		return
+	}
+	// Filesystem quota inactive: log once and exit (all tenants skipped — reboot pending).
+	if acc, enf := mountQuotaActive(); !acc && !enf {
+		var total int
+		_ = db.QueryRowContext(ctx,
+			`SELECT COUNT(*) FROM domains WHERE system_user LIKE 'c\_%'`).Scan(&total)
+		log.Printf("quota heal: 0 tenants / %d skipped (fs noquota — single reboot required)", total)
+		return
+	}
+	rows, err := db.QueryContext(ctx,
+		`SELECT id FROM domains WHERE system_user LIKE 'c\_%' ORDER BY id`)
+	if err != nil {
+		log.Printf("quota heal: could not read domain list: %v", err)
+		return
+	}
+	var ids []int64
+	for rows.Next() {
+		var id int64
+		if rows.Scan(&id) == nil {
+			ids = append(ids, id)
+		}
+	}
+	_ = rows.Close()
+
+	var applied, skipped int
+	for _, id := range ids {
+		select {
+		case <-ctx.Done():
+			log.Printf("quota heal: cancelled (ctx) — %d tenants / %d skipped", applied, skipped)
+			return
+		default:
+		}
+		if e := DomainQuotaApply(ctx, db, id); e != nil {
+			log.Printf("quota heal: domain %d error: %v", id, e)
+			skipped++
+			continue
+		}
+		applied++
+	}
+	log.Printf("quota heal: %d tenants / %d skipped", applied, skipped)
 }

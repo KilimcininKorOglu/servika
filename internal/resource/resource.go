@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"servika/internal/httpx"
+	"servika/internal/resourcelimit"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -29,8 +30,12 @@ type Summary struct {
 	SSLExpiry  string `json:"ssl_expiry,omitempty"`
 
 	// Metrics with plan limits, expressed as usage and limit.
-	DiskMB      Limit `json:"disk_mb"`      // Limit comes from disk_quota_mb.
-	TrafficMB   Limit `json:"traffic_mb"`   // Limit comes from traffic_quota_mb.
+	DiskMB    Limit `json:"disk_mb"`    // Limit comes from disk_quota_mb (XFS when quota active).
+	TrafficMB Limit `json:"traffic_mb"` // Limit comes from traffic_quota_mb.
+
+	// Inode quota (populated only when XFS user quota is ACTIVE, otherwise 0).
+	InodeUsage  int64 `json:"inode_usage"`
+	InodeLimit  int64 `json:"inode_limit"`
 	DBCount     Limit `json:"db_count"`     // Limit comes from max_db.
 	FTPCount    Limit `json:"ftp_count"`    // Limit comes from max_ftp.
 	EmailCount  Limit `json:"email_count"`  // Limit comes from max_email.
@@ -124,6 +129,19 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 	o.DiskMB.Usage = duMB(home)
 	_, _ = h.DB.ExecContext(ctx, `UPDATE domains SET size_kb=? WHERE id=?`, o.DiskMB.Usage*1024, id)
 	o.DiskMB.Limit = diskQuota
+	// When XFS user quota is ACTIVE, pull real disk usage/limit and inode usage/limit from
+	// the filesystem (more accurate than du, and includes inodes). On noquota, QuotaStatus
+	// returns all zeros and du-based values are preserved.
+	if usedMB, limitMB, usedIno, limitIno := resourcelimit.QuotaStatus(o.SystemUser); limitMB > 0 || limitIno > 0 {
+		if usedMB > 0 {
+			o.DiskMB.Usage = int64(usedMB)
+		}
+		if limitMB > 0 {
+			o.DiskMB.Limit = int64(limitMB)
+		}
+		o.InodeUsage = int64(usedIno)
+		o.InodeLimit = int64(limitIno)
+	}
 
 	// Convert domains.traffic_kb from kilobytes to megabytes.
 	var trafficKB int64

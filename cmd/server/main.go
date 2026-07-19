@@ -100,6 +100,11 @@ func main() {
 		resourcelimit.HealTenantFPM(ctx, d)
 	}()
 	go resourcelimit.SlowQueryWatchdog(context.Background(), d)
+	// HealQuotaOnStartup: reassert XFS user quota (disk + inode, CloudLinux parity) for every
+	// tenant on boot. When the root XFS has noquota (single reboot pending after GRUB update),
+	// all tenants are silently skipped — never a hard error. Runs in a background goroutine so
+	// panel boot is not blocked.
+	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
 	authH := &auth.Handlers{DB: d, Secret: cfg.JWTSecret, LifetimeSec: cfg.JWTLifetime}

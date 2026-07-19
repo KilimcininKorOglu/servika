@@ -48,6 +48,38 @@ dnf install -y nginx httpd mariadb-server valkey certbot python3-certbot-nginx \
   && ok "nginx, httpd, mariadb, valkey, certbot, clamav, bind, nftables, archives, ACL, bubblewrap, utilities" || die "base package installation"
 command -v unar >/dev/null 2>&1 || dnf install -y unar >/dev/null 2>&1 || warn "unar could not be installed; RAR support will use bsdtar when available"
 
+# ============ 2b) Disk quota (XFS user quota - CloudLinux parity) ============
+# Per-tenant disk + inode quota is enforced via XFS *user* quota (files are owned
+# c_<sk>:c_<sk> → user quota maps exactly + escape-protected). The root XFS quota
+# can only be enabled at MOUNT time (live remount cannot activate it) → GRUB
+# `rootflags=uquota` is written. On a fresh install a post-install reboot brings
+# the quota ACTIVE.
+step "2b) Disk quota (XFS user quota)"
+dnf install -y quota xfsprogs >/dev/null 2>&1 && ok "quota + xfsprogs" || warn "quota packages skipped"
+ROOTFS_TYPE=$(findmnt -no FSTYPE / 2>/dev/null || echo "")
+ROOTFS_OPTS=$(findmnt -no OPTIONS / 2>/dev/null || echo "")
+if [ "$ROOTFS_TYPE" != "xfs" ]; then
+  warn "root filesystem is not XFS ($ROOTFS_TYPE) — XFS disk quota skipped"
+elif echo "$ROOTFS_OPTS" | grep -qwE 'usrquota|uquota|quota'; then
+  ok "root XFS user quota already active"
+else
+  if grep -q 'rootflags=uquota' /etc/default/grub 2>/dev/null; then
+    ok "GRUB rootflags=uquota already present"
+  else
+    if grep -q '^GRUB_CMDLINE_LINUX=' /etc/default/grub 2>/dev/null; then
+      sed -i 's/^\(GRUB_CMDLINE_LINUX="[^"]*\)"/\1 rootflags=uquota"/' /etc/default/grub
+    else
+      echo 'GRUB_CMDLINE_LINUX="rootflags=uquota"' >> /etc/default/grub
+    fi
+    # Update existing boot entries (BLS) + regenerate grub.cfg (BIOS + EFI).
+    command -v grubby >/dev/null 2>&1 && grubby --update-kernel=ALL --args="rootflags=uquota" >/dev/null 2>&1 || true
+    grub2-mkconfig -o /boot/grub2/grub.cfg >/dev/null 2>&1 || true
+    for cfg in /boot/efi/EFI/*/grub.cfg; do [ -f "$cfg" ] && grub2-mkconfig -o "$cfg" >/dev/null 2>&1 || true; done
+    ok "GRUB rootflags=uquota added (root XFS)"
+  fi
+  warn "Disk quota requires a SINGLE reboot to become active (root filesystem cannot be remounted with quota)."
+fi
+
 # ============ 3) PHP (8 versions + base + wp-cli) ============
 step "3) PHP versions (8 Remi + base) + wp-cli"
 BASE_PKGS="php php-fpm php-cli php-mysqlnd php-mbstring php-json php-pecl-zip php-pecl-redis6"
@@ -327,4 +359,7 @@ echo -e "${c_g} ✓ Servika installation complete${c_0}"
 echo -e "   Panel:  ${c_b}https://${IP:-SERVER_IP}:8443${c_0}"
 echo -e "   User: ${c_b}root${c_0}   Password: ${c_b}this server's root password${c_0}"
 echo -e "   (panel administrator login authenticates the server's root account through PAM)"
+if [ "$(findmnt -no FSTYPE / 2>/dev/null)" = "xfs" ] && ! findmnt -no OPTIONS / 2>/dev/null | grep -qwE 'usrquota|uquota|quota'; then
+  echo -e "   ${c_y}Disk quota: GRUB rootflags=uquota written — a SINGLE reboot is required to activate.${c_0}"
+fi
 echo -e "${c_g}═══════════════════════════════════════════════${c_0}"
