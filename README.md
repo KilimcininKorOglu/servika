@@ -7,7 +7,7 @@ Turns a clean **AlmaLinux 10** server into a complete hosting control panel with
 Run as **root** on a clean AlmaLinux 10 server with at least 2 GB of RAM:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/servika/servika/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/install.sh | bash
 ```
 
 Installation takes approximately 5 to 10 minutes while packages download. When it finishes, the panel address and login information are displayed.
@@ -80,7 +80,7 @@ The updater preserves `/etc/servika/env` and `/home/c_*` customer sites. Before 
 The update can also be started from **Tools and Settings > Panel Update**. If `servika-update` is missing from an older installation, the panel downloads it automatically. To bootstrap the tool manually when the panel is unavailable, run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/servika/servika/main/assets/ops/servika-update \
+curl -fsSL https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update \
   -o /usr/local/bin/servika-update && chmod +x /usr/local/bin/servika-update
 
 servika-update

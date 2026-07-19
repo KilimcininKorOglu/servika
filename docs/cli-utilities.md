@@ -24,7 +24,7 @@ servika-update --branch X   # Update from a different branch
 To bootstrap the updater on an older installation:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/servika/servika/main/assets/ops/servika-update \
+curl -fsSL https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update \
   -o /usr/local/bin/servika-update && chmod +x /usr/local/bin/servika-update
 ```
 

@@ -12,7 +12,7 @@
 Run as **root** on a clean server:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/servika/servika/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/install.sh | bash
 ```
 
 The installer takes 5 to 10 minutes. It provisions nginx, MariaDB, multi-version PHP-FPM, Valkey (Redis), phpMyAdmin, and an nftables firewall automatically.

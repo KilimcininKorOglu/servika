@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Servika one-line installation bootstrap
-#   curl -fsSL https://raw.githubusercontent.com/servika/servika/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/install.sh | bash
 #
 # This bootstrap downloads the complete repository, including the installer,
 # prebuilt binaries, and configuration files, then runs servika-install.sh.
 set -euo pipefail
 
-REPO="servika/servika"
+REPO="KilimcininKorOglu/servika"
 BRANCH="main"
 
 c_b="\033[1;34m"; c_g="\033[32m"; c_r="\033[31m"; c_0="\033[0m"

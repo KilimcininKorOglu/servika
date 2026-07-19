@@ -14,7 +14,7 @@ import (
 
 const (
 	updateScript  = "/usr/local/bin/servika-update"
-	updateRawURL  = "https://raw.githubusercontent.com/servika/servika/main/assets/ops/servika-update"
+	updateRawURL  = "https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update"
 	updateLogPath = "/opt/servika/logs/update.log"
 	updateUnit    = "servika-update"
 )
