@@ -50,7 +50,7 @@ command -v unar >/dev/null 2>&1 || dnf install -y unar >/dev/null 2>&1 || warn "
 
 # ============ 3) PHP (8 versions + base + wp-cli) ============
 step "3) PHP versions (8 Remi + base) + wp-cli"
-BASE_PKGS="php php-fpm php-cli php-mysqlnd php-mbstring php-json php-pecl-redis6"
+BASE_PKGS="php php-fpm php-cli php-mysqlnd php-mbstring php-json php-pecl-zip php-pecl-redis6"
 dnf install -y $BASE_PKGS >/dev/null 2>&1 && ok "base php + php-redis"
 for v in $PHP_VERS; do
   pkgs=""; for e in $PHP_EXT; do pkgs="$pkgs php$v-php-$e"; done
@@ -103,7 +103,7 @@ for t in "$A"/ops/*; do
   install -m 0755 "$t" "/usr/local/bin/$nm" 2>/dev/null
 done
 cp "$A/ops/"* /opt/servika/src/scripts/ 2>/dev/null
-ok "operations tools (/usr/local/bin: update, optimize, redis-setup, ftp-setup, backup-all, repair, jail, wp-redis)"
+ok "operations tools (/usr/local/bin: update, db-backup, optimize, redis-setup, ftp-setup, backup-all, repair, jail, wp-redis)"
 
 # ============ 7) PANEL SSL (self-signed) ============
 step "7) Panel SSL (:8443 self-signed)"
@@ -169,7 +169,16 @@ ok "phpMyAdmin pool + configuration + permissions"
 # ============ 10) systemd + services ============
 step "10) systemd + services"
 cp "$A/systemd/servika.service" /etc/systemd/system/servika.service
+for unit in servika-db-backup.service servika-db-backup.timer; do
+  [ -f "$A/systemd/$unit" ] && cp "$A/systemd/$unit" "/etc/systemd/system/$unit"
+done
 systemctl daemon-reload
+if [ -f /etc/systemd/system/servika-db-backup.timer ]; then
+  systemctl enable --now servika-db-backup.timer >/dev/null 2>&1
+  systemctl is-active --quiet servika-db-backup.timer \
+    && ok "daily panel database backup active (03:30, 14-day retention)" \
+    || warn "database backup timer could not be started"
+fi
 systemctl enable --now php-fpm >/dev/null 2>&1
 for v in $PHP_VERS; do systemctl enable --now php$v-php-fpm >/dev/null 2>&1; done
 ok "php-fpm (base + 5 versions)"
@@ -247,10 +256,15 @@ SHELL=/bin/bash
 PATH=/usr/local/bin:/usr/bin:/bin
 0 3 * * * root /usr/local/bin/servika-backup-all
 CRON
-ok "daily backup cron (03:00 UTC)"
+# Enable and start crond now because the AlmaLinux preset does not start it before reboot.
+# The enable --now operation is idempotent and activates backups immediately.
+systemctl enable --now crond >/dev/null 2>&1
+systemctl is-active --quiet crond && ok "daily backup cron + crond ACTIVE (03:00 UTC)" || warn "crond could not be started, the backup cron may not run"
 
 # SELinux
 setsebool -P httpd_can_network_connect 1 >/dev/null 2>&1 && ok "SELinux httpd_can_network_connect"
+setsebool -P httpd_enable_homedirs=on httpd_read_user_content=on >/dev/null 2>&1 \
+  && ok "SELinux HTTP access to tenant home content"
 if command -v getenforce >/dev/null 2>&1 \
   && [ "$(getenforce)" != "Disabled" ] \
   && command -v semanage >/dev/null 2>&1; then
@@ -303,7 +317,7 @@ step "15) Verification"
 IP=$(hostname -I 2>/dev/null | awk '{print $1}')
 CODE=$(curl -sk -o /dev/null -w '%{http_code}' https://127.0.0.1:8443/ 2>/dev/null)
 API=$(curl -sk -o /dev/null -w '%{http_code}' https://127.0.0.1:8443/api/v1/domains 2>/dev/null)
-echo -e "  services: $(systemctl is-active mariadb nginx valkey php-fpm named pure-ftpd servika | tr '\n' ' ')"
+echo -e "  services: $(systemctl is-active mariadb nginx valkey php-fpm named pure-ftpd servika crond | tr '\n' ' ')"
 echo -e "  panel :8443 → HTTP $CODE   ·   API (auth) → HTTP $API   ·   DNS :53 → $(systemctl is-active named)   ·   FTP :21 → $(systemctl is-active pure-ftpd)"
 echo -e "  utilities: SSL/acme.sh $([ -x /root/.acme.sh/acme.sh ] && echo ✓ || echo ✗)   ·   firewall/nft $(command -v nft >/dev/null && echo ✓ || echo ✗)   ·   unzip/zip $(command -v unzip >/dev/null && command -v zip >/dev/null && echo ✓ || echo ✗)   ·   composer $(command -v composer >/dev/null && echo ✓ || echo ✗)   ·   apache/httpd $(systemctl is-active httpd)"
 echo -e "  isolation: plan-driven cgroup limits + per-tenant PHP-FPM ready   ·   bubblewrap $(command -v bwrap >/dev/null && echo ✓ || echo ✗)"
