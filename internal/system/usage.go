@@ -63,7 +63,7 @@ type NetworkUsage struct {
 type ServiceStat struct {
 	Name    string `json:"name"`
 	Label   string `json:"label"`
-	Enabled bool   `json:"active"`
+	Enabled bool   `json:"enabled"`
 }
 
 type SystemInfo struct {
