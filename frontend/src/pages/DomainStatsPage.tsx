@@ -21,7 +21,7 @@ export default function DomainStatsPage() {
   function load() {
     if (!id) return
     setLoading(true); setError(null)
-    api.get<Summary>(`/domains/${id}/stats`)
+    api.get<Summary>(`/domains/${id}/statistics`)
       .then(response => setSummary(response.data))
       .catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
