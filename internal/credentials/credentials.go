@@ -75,6 +75,12 @@ func ValidDBSuffix(suffix string) bool {
 	return mysqlSuffixPattern.MatchString(suffix)
 }
 
+// ValidDBIdentifier reports whether a database name or user is a valid MySQL identifier
+// (alphanumeric + underscore, 1-64 chars). Used as a security gate before DROP operations.
+func ValidDBIdentifier(name string) bool {
+	return mysqlIdentifierPattern.MatchString(name)
+}
+
 // StrongPassword reports whether a customer-chosen database password is strong enough: at least
 // 12 characters and a mix of letters and digits. The returned reason is English for API display.
 func StrongPassword(password string) (bool, string) {

@@ -6,7 +6,6 @@ package files
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -76,25 +75,22 @@ func (h *Handlers) Write(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	abs, err := jailJoinStrict(home, req.Path)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
 	if len(req.Content) > 5*1024*1024 {
 		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "files over 5 MB cannot be saved with the editor")
 		return
 	}
 	// Preserve permissions when the file already exists.
-	mode := os.FileMode(0644)
-	if info, err := os.Stat(abs); err == nil {
-		mode = info.Mode().Perm()
+	mode := uint32(0644)
+	if f, err := openAt2Beneath(home, req.Path, 0, 0); err == nil {
+		if st, err2 := f.Stat(); err2 == nil {
+			mode = uint32(st.Mode().Perm())
+		}
+		_ = f.Close()
 	}
-	if err := os.WriteFile(abs, []byte(req.Content), mode); err != nil {
+	if err := writeBeneath(home, req.Path, []byte(req.Content), mode, systemUser); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	chown(abs, systemUser)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"ok":   true,
 		"path": req.Path,
@@ -120,32 +116,26 @@ func (h *Handlers) Rename(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	oldPath, err := jailJoinStrict(home, req.Old)
+	// Verify source exists under home (read-only check; the actual rename is symlink-safe).
+	_, err = jailJoinStrict(home, req.Old)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	newPath, err := jailJoinStrict(home, req.New)
-	if err != nil {
+	if _, err := jailJoinStrict(home, req.New); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	if oldPath == home || newPath == home {
+	if req.Old == "/" || req.New == "/" {
 		httpx.WriteError(w, http.StatusBadRequest, "the home directory cannot be moved")
 		return
 	}
-	if _, err := os.Stat(oldPath); err != nil {
-		httpx.WriteError(w, http.StatusNotFound, "source missing")
-		return
-	}
-	// Ensure the target directory exists.
-	_ = os.MkdirAll(filepath.Dir(newPath), 0755)
-	chown(filepath.Dir(newPath), systemUser)
-	if err := os.Rename(oldPath, newPath); err != nil {
+	// Ensure the target parent directory exists (symlink-safe).
+	_ = mkdirAllBeneath(home, filepath.Dir(req.New), systemUser)
+	if err := renameBeneath(home, req.Old, req.New, systemUser); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	chown(newPath, systemUser)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "old": req.Old, "new": req.New})
 }
 
@@ -157,7 +147,7 @@ type chmodReq struct {
 }
 
 func (h *Handlers) Chmod(w http.ResponseWriter, r *http.Request) {
-	home, systemUser, err := h.home(r)
+	home, _, err := h.home(r)
 	if err != nil {
 		httpx.WriteError(w, statusFromErr(err), "operation failed")
 		return
@@ -167,22 +157,16 @@ func (h *Handlers) Chmod(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	abs, err := jailJoinStrict(home, req.Path)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
 	mod := strings.TrimPrefix(req.Mode, "0")
 	n, err := strconv.ParseUint(mod, 8, 32)
 	if err != nil || n > 0o777 {
 		httpx.WriteError(w, http.StatusBadRequest, "mode must be octal (0000-0777)")
 		return
 	}
-	if err := os.Chmod(abs, os.FileMode(n)); err != nil {
+	if err := chmodBeneath(home, req.Path, uint32(n)); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	chown(abs, systemUser)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "path": req.Path, "mode": req.Mode})
 }
 
@@ -314,13 +298,9 @@ func (h *Handlers) bulkMoveCopy(w http.ResponseWriter, r *http.Request, move boo
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	targetAbs, err := jailJoinStrict(home, req.Target)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	info, err := os.Stat(targetAbs)
-	if err != nil || !info.IsDir() {
+	// Verify the target is a directory under home (symlink-safe).
+	targetDir, err := isDirBeneath(home, req.Target)
+	if err != nil || !targetDir {
 		httpx.WriteError(w, http.StatusBadRequest, "target is not a directory")
 		return
 	}
@@ -328,27 +308,21 @@ func (h *Handlers) bulkMoveCopy(w http.ResponseWriter, r *http.Request, move boo
 	successful := 0
 	errorsList := []string{}
 	for _, source := range req.Sources {
-		sourceAbs, err := jailJoinStrict(home, source)
-		if err != nil {
-			errorsList = append(errorsList, source+": invalid source path")
-			continue
-		}
-		destination := filepath.Join(targetAbs, filepath.Base(sourceAbs))
-		if destination == sourceAbs {
+		destination := filepath.Join(req.Target, filepath.Base(source))
+		if destination == source {
 			errorsList = append(errorsList, source+": source and target are identical")
 			continue
 		}
 		var operationErr error
 		if move {
-			operationErr = os.Rename(sourceAbs, destination)
+			operationErr = renameBeneath(home, source, destination, systemUser)
 		} else {
-			operationErr = copyAny(sourceAbs, destination)
+			operationErr = copyTreeBeneath(home, source, destination, systemUser)
 		}
 		if operationErr != nil {
 			errorsList = append(errorsList, source+": operation failed")
 			continue
 		}
-		_, _ = newFileCommand(r.Context(), "chown", "-R", systemUser+":"+systemUser, destination).CombinedOutput()
 		successful++
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
@@ -356,53 +330,6 @@ func (h *Handlers) bulkMoveCopy(w http.ResponseWriter, r *http.Request, move boo
 	})
 }
 
-func copyAny(src, dst string) error {
-	info, err := os.Lstat(src)
-	if err != nil {
-		return err
-	}
-	if info.IsDir() {
-		return copyDir(src, dst)
-	}
-	return copyFile(src, dst, info.Mode().Perm())
-}
-
-func copyFile(src, dst string, perm os.FileMode) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = in.Close() }()
-	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, perm)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = out.Close() }()
-	_, err = io.Copy(out, in)
-	return err
-}
-
-func copyDir(src, dst string) error {
-	si, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(dst, si.Mode().Perm()); err != nil {
-		return err
-	}
-	entries, err := os.ReadDir(src)
-	if err != nil {
-		return err
-	}
-	for _, e := range entries {
-		s := filepath.Join(src, e.Name())
-		d := filepath.Join(dst, e.Name())
-		if err := copyAny(s, d); err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 // ----- Archive selected files -----
 
@@ -500,22 +427,10 @@ func (h *Handlers) NewFile(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	abs, err := jailJoinStrict(home, req.Path)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	if _, err := os.Stat(abs); err == nil {
-		httpx.WriteError(w, http.StatusConflict, "file already exists")
-		return
-	}
-	f, err := os.OpenFile(abs, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
-	if err != nil {
+	if err := createExclBeneath(home, req.Path, systemUser); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	_ = f.Close()
-	chown(abs, systemUser)
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{"ok": true, "path": req.Path})
 }
 

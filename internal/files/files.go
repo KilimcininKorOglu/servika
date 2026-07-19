@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"os/user"
 	"path/filepath"
 	"regexp"
@@ -239,16 +238,10 @@ func (h *Handlers) Mkdir(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	abs, err := jailJoinStrict(home, req.Path)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	if err := os.MkdirAll(abs, 0755); err != nil {
+	if err := mkdirAllBeneath(home, req.Path, systemUser); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	chown(abs, systemUser)
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{"ok": true, "path": req.Path})
 }
 
@@ -259,16 +252,11 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rel := r.URL.Query().Get("path")
-	abs, err := jailJoinStrict(home, rel)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	if abs == home {
+	if rel == "" || rel == "/" {
 		httpx.WriteError(w, http.StatusBadRequest, "the home directory cannot be deleted")
 		return
 	}
-	if err := os.RemoveAll(abs); err != nil {
+	if err := removeAllBeneath(home, rel); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
@@ -303,27 +291,15 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "file is too large (maximum 2 GiB)")
 		return
 	}
-	abs, err := jailJoinStrict(home, filepath.Join(rel, fh.Filename))
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	out, err := os.Create(abs)
+	uploadPath := filepath.Join(rel, fh.Filename)
+	written, err := copyStreamBeneath(home, uploadPath, file, systemUser)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	defer func() { _ = out.Close() }()
-	written, err := io.Copy(out, file)
-	if err != nil {
-		_ = os.Remove(abs)
-		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
-		return
-	}
-	chown(abs, systemUser)
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
 		"ok":   true,
-		"path": filepath.ToSlash(filepath.Join(rel, fh.Filename)),
+		"path": filepath.ToSlash(uploadPath),
 		"size": written,
 		"name": fh.Filename,
 	})
@@ -353,10 +329,3 @@ func statusFromErr(err error) int {
 	return http.StatusInternalServerError
 }
 
-// chown restores ownership and the SELinux context for a managed path.
-func chown(path, systemUser string) {
-	if uu, err := userLookup(systemUser); err == nil {
-		_ = osChown(path, uu.UID, uu.GID)
-	}
-	_, _ = exec.Command("restorecon", path).CombinedOutput()
-}

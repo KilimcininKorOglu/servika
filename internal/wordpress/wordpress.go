@@ -398,7 +398,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /domains/{id}/wordpress removes an installation from {dir, db_delete}.
 func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, _, _, demo, ok := h.domain(r)
+	id, systemUser, _, _, demo, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -431,8 +431,12 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		if b, err := os.ReadFile(filepath.Join(dir, "wp-config.php")); err == nil {
 			if m := reDBName.FindSubmatch(b); len(m) == 2 {
 				dbName := string(m[1])
-				if dbUser, ok := managedDBAccount(dbName); ok {
-					_ = credentials.MySQLDropDB(h.DB, dbName, dbUser)
+				// Cross-tenant guard: only drop databases that belong to this domain
+				// AND carry the wp_ prefix (prevents arbitrary DB drop via payload).
+				if h.dropAllowed(r, id, dbName) {
+					if dbUser, ok := managedDBAccount(dbName); ok {
+						_ = credentials.MySQLDropDB(h.DB, dbName, dbUser)
+					}
 				}
 			}
 		}
@@ -470,6 +474,35 @@ func managedDBAccount(dbName string) (string, bool) {
 		return "", false
 	}
 	return "wpu_" + m[1], true
+}
+
+// dbNameWPGuard validates that a database name is a syntactically valid MySQL identifier
+// and carries the wp_ prefix used by managed WordPress installations. Rejects names that
+// fail the identifier check (SQL injection / cross-tenant guard).
+func dbNameWPGuard(dbAdi string) bool {
+	if !credentials.ValidDBIdentifier(dbAdi) {
+		return false
+	}
+	return strings.HasPrefix(dbAdi, "wp_")
+}
+
+// dbOwnedBy checks whether the authenticated domain owns the given WordPress database.
+// The database must belong to a db_accounts row whose domain_id matches the request domain.
+func (h *Handlers) dbOwnedBy(r *http.Request, domainID int64, dbAdi string) bool {
+	var cnt int
+	err := h.DB.QueryRowContext(r.Context(),
+		"SELECT COUNT(*) FROM db_accounts WHERE domain_id=? AND db_name=?", domainID, dbAdi).Scan(&cnt)
+	return err == nil && cnt > 0
+}
+
+// dropAllowed gates database deletion for managed WordPress databases.
+// A database may only be dropped when:
+//   - It passes dbNameWPGuard (wp_ prefix + valid MySQL identifier)
+//   - The authenticated domain owns it (dbOwnedBy)
+// Without this gate a tenant could supply an arbitrary dbName in the delete payload
+// and trick the panel into dropping another customer's database (cross-tenant DB drop).
+func (h *Handlers) dropAllowed(r *http.Request, domainID int64, dbAdi string) bool {
+	return dbNameWPGuard(dbAdi) && h.dbOwnedBy(r, domainID, dbAdi)
 }
 
 func randSlug() string {
