@@ -331,6 +331,9 @@ command -v servika-optimize >/dev/null 2>&1 && servika-optimize >/dev/null 2>&1 
 step "12) Starting panel"
 systemctl enable --now servika >/dev/null 2>&1; sleep 3
 systemctl enable --now nginx >/dev/null 2>&1; systemctl restart nginx >/dev/null 2>&1
+if systemctl is-active --quiet firewalld 2>/dev/null; then
+  firewall-cmd --add-port={80,8443}/tcp --permanent >/dev/null 2>&1 && firewall-cmd --reload >/dev/null 2>&1 && ok "firewalld: port 80/tcp + 8443/tcp opened"
+fi
 if systemctl is-active --quiet servika; then ok "servika ACTIVE"; else journalctl -u servika --no-pager -n 20; die "panel did not start"; fi
 
 # ---- Run the Pure-FTPd setup after migrations create the ftp_accounts table ----
