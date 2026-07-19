@@ -29,7 +29,7 @@ die(){ echo -e "  ${c_r}✗ $*${c_0}"; exit 1; }
 [ -d "$A" ] || die "assets/ was not found ($A)"
 grep -qiE "AlmaLinux|Rocky|Red Hat|CentOS" /etc/os-release || warn "AlmaLinux/RHEL 10 was expected, continuing anyway"
 
-PHP_VERS="74 82 83 84 85"
+PHP_VERS="74 80 81 82 83 84 85 86"
 PHP_EXT="fpm cli mysqlnd mbstring bcmath intl gd soap opcache pdo xml zip pgsql ldap"
 
 # ============ 1) REPOSITORIES ============
@@ -44,11 +44,12 @@ step "2) Base packages"
 dnf install -y nginx httpd mariadb-server valkey certbot python3-certbot-nginx \
   clamav clamav-update httpd-tools mod_proxy_html tar openssl policycoreutils-python-utils \
   setools-console jq bind bind-utils nftables unzip zip cronie xfsprogs sudo \
-  bubblewrap rsync git curl >/dev/null 2>&1 \
-  && ok "nginx, httpd, mariadb, valkey, certbot, clamav, bind, nftables, unzip/zip, bubblewrap, utilities" || die "base package installation"
+  acl libarchive bubblewrap rsync git curl >/dev/null 2>&1 \
+  && ok "nginx, httpd, mariadb, valkey, certbot, clamav, bind, nftables, archives, ACL, bubblewrap, utilities" || die "base package installation"
+command -v unar >/dev/null 2>&1 || dnf install -y unar >/dev/null 2>&1 || warn "unar could not be installed; RAR support will use bsdtar when available"
 
-# ============ 3) PHP (5 versions + base + wp-cli) ============
-step "3) PHP versions (5 Remi + base) + wp-cli"
+# ============ 3) PHP (8 versions + base + wp-cli) ============
+step "3) PHP versions (8 Remi + base) + wp-cli"
 BASE_PKGS="php php-fpm php-cli php-mysqlnd php-mbstring php-json php-pecl-zip php-pecl-redis6"
 dnf install -y $BASE_PKGS >/dev/null 2>&1 && ok "base php + php-redis"
 for v in $PHP_VERS; do
@@ -155,6 +156,9 @@ SQL
   [ -f /opt/phpmyadmin/sql/create_tables.sql ] && mysql -u root phpmyadmin < /opt/phpmyadmin/sql/create_tables.sql 2>/dev/null
 fi
 [ -f "$A/phpmyadmin/pma-signon.php" ] && cp "$A/phpmyadmin/pma-signon.php" /opt/servika/pma-signon/ 2>/dev/null
+openssl rand -hex 32 > /etc/servika/pma-internal.token
+chown root:apache /etc/servika/pma-internal.token
+chmod 0640 /etc/servika/pma-internal.token
 cp "$A/php-fpm/phpmyadmin.conf" /etc/php-fpm.d/phpmyadmin.conf
 mkdir -p /var/lib/phpmyadmin/{tmp,sessions}
 chown -R nginx:nginx /opt/phpmyadmin /var/lib/phpmyadmin 2>/dev/null
