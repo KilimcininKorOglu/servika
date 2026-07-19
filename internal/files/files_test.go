@@ -6,9 +6,30 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestFileMetadataReturnsContractFieldsForPermissionsDisplay(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "index.html")
+	if err := os.WriteFile(path, []byte("content"), 0640); err != nil {
+		t.Fatalf("write metadata fixture: %v", err)
+	}
+	info, err := os.Lstat(path)
+	if err != nil {
+		t.Fatalf("stat metadata fixture: %v", err)
+	}
+
+	mode, permissions, owner, group := fileMetadata(info)
+	if mode != "0640" || permissions != "-rw-r-----" {
+		t.Fatalf("fileMetadata() mode = %q, permissions = %q", mode, permissions)
+	}
+	if owner == "" || group == "" {
+		t.Fatal("fileMetadata() omitted owner or group")
+	}
+}
 
 func TestParseMultipartUploadRejectsBodyAboveRequestLimit(t *testing.T) {
 	var body bytes.Buffer

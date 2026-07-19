@@ -9,11 +9,13 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"servika/internal/httpx"
 
@@ -64,12 +66,34 @@ var (
 )
 
 type Entry struct {
-	Name      string `json:"name"`
-	Path      string `json:"path"` // Relative to home for the panel UI.
-	Type      string `json:"type"` // "folder" | "file" | "symlink"
-	SizeBytes int64  `json:"size_b"`
-	Mode      string `json:"mode"`    // "0644"
-	Changed   string `json:"changed"` // RFC3339
+	Name        string `json:"name"`
+	Path        string `json:"path"` // Relative to home for the panel UI.
+	Type        string `json:"type"` // "folder" | "file" | "symlink"
+	SizeBytes   int64  `json:"size_b"`
+	Mode        string `json:"mode"`        // "0644"
+	Permissions string `json:"permissions"` // "-rw-r--r--"
+	Owner       string `json:"owner"`
+	Group       string `json:"group"`
+	Changed     string `json:"changed"` // RFC3339
+}
+
+func fileMetadata(info os.FileInfo) (mode, permissions, owner, group string) {
+	mode = "0" + strconv.FormatInt(int64(info.Mode().Perm()), 8)
+	permissions = info.Mode().String()
+	stat, ok := info.Sys().(*syscall.Stat_t)
+	if !ok {
+		return mode, permissions, "", ""
+	}
+
+	owner = strconv.FormatUint(uint64(stat.Uid), 10)
+	if account, err := user.LookupId(owner); err == nil {
+		owner = account.Username
+	}
+	group = strconv.FormatUint(uint64(stat.Gid), 10)
+	if accountGroup, err := user.LookupGroupId(group); err == nil {
+		group = accountGroup.Name
+	}
+	return mode, permissions, owner, group
 }
 
 func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
@@ -104,13 +128,17 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		} else if info.Mode()&os.ModeSymlink != 0 {
 			ftype = "symlink"
 		}
+		mode, permissions, owner, group := fileMetadata(info)
 		out = append(out, Entry{
-			Name:      e.Name(),
-			Path:      filepath.ToSlash(filepath.Join(rel, e.Name())),
-			Type:      ftype,
-			SizeBytes: info.Size(),
-			Mode:      "0" + strconv.FormatInt(int64(info.Mode().Perm()), 8),
-			Changed:   info.ModTime().UTC().Format("2006-01-02T15:04:05Z"),
+			Name:        e.Name(),
+			Path:        filepath.ToSlash(filepath.Join(rel, e.Name())),
+			Type:        ftype,
+			SizeBytes:   info.Size(),
+			Mode:        mode,
+			Permissions: permissions,
+			Owner:       owner,
+			Group:       group,
+			Changed:     info.ModTime().UTC().Format("2006-01-02T15:04:05Z"),
 		})
 	}
 	// Sort folders first, then alphabetically.

@@ -114,6 +114,48 @@ func TestScanAcceptsRegularArchiveMembers(t *testing.T) {
 	}
 }
 
+func TestValidateBSDTarListingsRejectsUnsafeRARMembers(t *testing.T) {
+	tests := []struct {
+		name    string
+		names   string
+		verbose string
+		want    error
+	}{
+		{name: "parent traversal", names: "../escape\n", verbose: "-rw-r--r-- file\n", want: ErrUnsafePath},
+		{name: "symbolic link", names: "public/link\n", verbose: "lrwxrwxrwx link -> /etc\n", want: ErrUnsafeMember},
+		{name: "regular files", names: "public/index.html\npublic/assets/\n", verbose: "-rw-r--r-- index.html\ndrwxr-xr-x assets\n"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validateBSDTarListings([]byte(test.names), []byte(test.verbose))
+			if !errors.Is(err, test.want) {
+				t.Fatalf("validateBSDTarListings() error = %v, want %v", err, test.want)
+			}
+		})
+	}
+}
+
+func TestValidateLSARListingRejectsUnsafeRARMembers(t *testing.T) {
+	tests := []struct {
+		name string
+		json string
+		want error
+	}{
+		{name: "parent traversal", json: `{"lsarContents":[{"XADFileName":"../escape","XADFileType":"Regular"}]}`, want: ErrUnsafePath},
+		{name: "symbolic link", json: `{"lsarContents":[{"XADFileName":"link","XADFileType":"Symbolic Link","XADLinkDestination":"/etc"}]}`, want: ErrUnsafeMember},
+		{name: "regular file", json: `{"lsarContents":[{"XADFileName":"public/index.html","XADFileType":"Regular"}]}`},
+		{name: "invalid listing", json: `{}`, want: ErrInvalidArchive},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validateLSARListing([]byte(test.json))
+			if !errors.Is(err, test.want) {
+				t.Fatalf("validateLSARListing() error = %v, want %v", err, test.want)
+			}
+		})
+	}
+}
+
 func TestTenantCommandUsesExplicitEnvironment(t *testing.T) {
 	t.Setenv("SERVIKA_JWT_SECRET", "must-not-be-inherited")
 	command := tenantCommand(context.Background(), "c_example", "tar", "-x")
@@ -138,6 +180,7 @@ func TestDetectTypeRecognizesSupportedFormats(t *testing.T) {
 		"archive.tbz2":    TypeTARBzip2,
 		"archive.tar.xz":  TypeTARXz,
 		"archive.txz":     TypeTARXz,
+		"archive.RAR":     TypeRAR,
 		"archive.gz":      TypeUnknown,
 	}
 	for name, want := range tests {

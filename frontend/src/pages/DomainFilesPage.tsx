@@ -10,7 +10,10 @@ type Entry = {
   path: string
   type: 'folder' | 'file' | 'symlink'
   size_b: number
-  mod: string
+  mode: string
+  permissions: string
+  owner: string
+  group: string
   changed: string
 }
 
@@ -141,9 +144,9 @@ export default function DomainFilesPage() {
     }
   }
 
-  async function changePermissions(e: Entry, mod: string) {
+  async function changePermissions(e: Entry, mode: string) {
     try {
-      await api.post(`/domains/${id}/files/chmod`, { path: e.path, mod })
+      await api.post(`/domains/${id}/files/chmod`, { path: e.path, mode })
       setChmodFor(null); scan()
     } catch (err) {
       alert(apiError(err, 'Could not change permissions'))
@@ -279,7 +282,7 @@ export default function DomainFilesPage() {
       setTreeRefreshKey(x => x + 1)
       scan()
     } catch (err) {
-      alert(apiError(err, 'Could not open archive. ZIP and TAR archives are supported.'))
+      alert(apiError(err, 'Could not open archive. ZIP, RAR, and TAR archives are supported.'))
     } finally {
       setExtractActive(false)
     }
@@ -382,6 +385,14 @@ export default function DomainFilesPage() {
         setTimeout(() => URL.revokeObjectURL(a.href), 1000)
       })
       .catch(err => alert('Download failed: ' + err.message))
+  }
+
+  function openInBrowser(entry: Entry) {
+    if (!domain || entry.type !== 'file') return
+    const relativePath = docrootRelativePath(entry.path)
+    if (relativePath === null) return
+    const encodedPath = relativePath.split('/').map(segment => encodeURIComponent(segment)).join('/')
+    window.open(`https://${domain.domain_name}${encodedPath}`, '_blank', 'noopener,noreferrer')
   }
 
   const parts = path.split('/').filter(Boolean)
@@ -691,9 +702,19 @@ export default function DomainFilesPage() {
                   <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">
                     {e.type === 'folder' ? '—' : formatSize(e.size_b)}
                   </td>
-                  <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">{e.mod}</td>
+                  <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">
+                    <div>{e.permissions || e.mode}</div>
+                    {(e.owner || e.group) && <div className="text-xs text-slate-400 dark:text-slate-500">{e.owner}:{e.group}</div>}
+                  </td>
                   <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500">{formatDate(e.changed)}</td>
                   <td className="px-4 py-2.5 text-right space-x-2">
+                    {e.type === 'file' && docrootRelativePath(e.path) !== null && (
+                      <button
+                        onClick={() => openInBrowser(e)}
+                        className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition"
+                        title="Open on website"
+                      >Open</button>
+                    )}
                     {e.type !== 'folder' && (
                       <button
                         onClick={() => download(e)}
@@ -702,7 +723,7 @@ export default function DomainFilesPage() {
                         Download
                       </button>
                     )}
-                    {e.type === "file" && /\.(zip|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|gz)$/i.test(e.name) && (
+                    {e.type === "file" && /\.(zip|rar|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|gz)$/i.test(e.name) && (
                       <button
                         onClick={() => extract(e)}
                         disabled={extractActive}
@@ -821,6 +842,13 @@ export default function DomainFilesPage() {
   )
 }
 
+function docrootRelativePath(path: string): string | null {
+  const root = '/public_html'
+  if (path === root) return '/'
+  if (!path.startsWith(root + '/')) return null
+  return path.slice(root.length)
+}
+
 function formatSize(b: number): string {
   if (b < 1024) return `${b} B`
   if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`
@@ -857,7 +885,7 @@ function RenameModal({ entry, onDone, onCancel }: { entry: Entry; onDone: (newNa
 }
 
 function ChmodModal({ entry, onDone, onCancel }: { entry: Entry; onDone: (mod: string) => void; onCancel: () => void }) {
-  const [mod, setMod] = useState(entry.mod || '0644')
+  const [mod, setMod] = useState(entry.mode || '0644')
   // Nine permission-bit checkboxes.
   const n = parseInt(mod.replace(/^0/, ''), 8) || 0
   function bit(b: number) { return (n & b) !== 0 }

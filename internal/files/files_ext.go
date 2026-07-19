@@ -6,7 +6,6 @@ package files
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -187,9 +186,7 @@ func (h *Handlers) Chmod(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "path": req.Path, "mode": req.Mode})
 }
 
-var _ = errors.New // keep import
-
-// ----- Extract ZIP, TAR, or TAR.GZ -----
+// ----- Extract ZIP, TAR, RAR, or compressed TAR -----
 
 type extractReq struct {
 	Path   string `json:"path"`   // Archive path.
@@ -266,7 +263,7 @@ func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		if archivex.DetectType(lowerPath) == archivex.TypeUnknown {
-			httpx.WriteError(w, http.StatusBadRequest, "unsupported format (zip, tar, tar.gz/tgz, tar.bz2, tar.xz, gz)")
+			httpx.WriteError(w, http.StatusBadRequest, "unsupported format (zip, rar, tar, tar.gz/tgz, tar.bz2, tar.xz, gz)")
 			return
 		}
 		if _, err := archivex.Extract(r.Context(), abs, targetAbs, systemUser); err != nil {
@@ -351,7 +348,7 @@ func (h *Handlers) bulkMoveCopy(w http.ResponseWriter, r *http.Request, move boo
 			errorsList = append(errorsList, source+": operation failed")
 			continue
 		}
-		_, _ = exec.Command("chown", "-R", systemUser+":"+systemUser, destination).CombinedOutput()
+		_, _ = newFileCommand(r.Context(), "chown", "-R", systemUser+":"+systemUser, destination).CombinedOutput()
 		successful++
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
@@ -453,7 +450,7 @@ func (h *Handlers) Archive(w http.ResponseWriter, r *http.Request) {
 			// Change directory and use a relative name.
 			args = append(args, kAbs)
 		}
-		_, err := exec.Command("zip", args...).CombinedOutput()
+		_, err := newFileCommand(r.Context(), "zip", args...).CombinedOutput()
 		if err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 			return
@@ -467,14 +464,14 @@ func (h *Handlers) Archive(w http.ResponseWriter, r *http.Request) {
 			}
 			args = append(args, kAbs)
 		}
-		_, err := exec.Command("tar", args...).CombinedOutput()
+		_, err := newFileCommand(r.Context(), "tar", args...).CombinedOutput()
 		if err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 			return
 		}
 	}
-	_, _ = exec.Command("chown", systemUser+":"+systemUser, outputAbs).CombinedOutput()
-	_, _ = exec.Command("restorecon", outputAbs).CombinedOutput()
+	_, _ = newFileCommand(r.Context(), "chown", systemUser+":"+systemUser, outputAbs).CombinedOutput()
+	_, _ = newFileCommand(r.Context(), "restorecon", outputAbs).CombinedOutput()
 
 	info, _ := os.Stat(outputAbs)
 	var size int64
@@ -536,7 +533,7 @@ func (h *Handlers) CalculateSize(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	out, err := exec.Command("du", "-sb", abs).CombinedOutput()
+	out, err := newFileCommand(r.Context(), "du", "-sb", abs).CombinedOutput()
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
@@ -587,7 +584,7 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 	q = strings.ReplaceAll(q, "?", "")
 	pattern := "*" + q + "*"
 
-	out, _ := exec.Command("find", baseAbs, "-iname", pattern, "-printf", "%p\t%s\t%y\t%T@\n").Output()
+	out, _ := newFileCommand(r.Context(), "find", baseAbs, "-iname", pattern, "-printf", "%p\t%s\t%y\t%T@\n").Output()
 	results := []Entry{}
 	for _, ln := range strings.Split(string(out), "\n") {
 		if ln == "" {
@@ -616,16 +613,17 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 		if relativePath == "" {
 			relativePath = "/"
 		}
-		info, _ := os.Stat(absp)
-		mod := "0644"
+		info, _ := os.Lstat(absp)
+		mode, permissions, owner, group := "", "", "", ""
 		var changedAt string
 		if info != nil {
-			mod = "0" + strconv.FormatInt(int64(info.Mode().Perm()), 8)
+			mode, permissions, owner, group = fileMetadata(info)
 			changedAt = info.ModTime().UTC().Format("2006-01-02T15:04:05Z")
 		}
 		results = append(results, Entry{
 			Name: filepath.Base(absp), Path: filepath.ToSlash(relativePath),
-			Type: ftype, SizeBytes: size, Mode: mod, Changed: changedAt,
+			Type: ftype, SizeBytes: size, Mode: mode, Permissions: permissions,
+			Owner: owner, Group: group, Changed: changedAt,
 		})
 		if len(results) >= 500 {
 			break
