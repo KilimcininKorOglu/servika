@@ -259,6 +259,8 @@ systemctl is-active --quiet crond && ok "daily backup cron + crond ACTIVE (03:00
 
 # SELinux
 setsebool -P httpd_can_network_connect 1 >/dev/null 2>&1 && ok "SELinux httpd_can_network_connect"
+setsebool -P httpd_enable_homedirs=on httpd_read_user_content=on >/dev/null 2>&1 \
+  && ok "SELinux HTTP access to tenant home content"
 if command -v getenforce >/dev/null 2>&1 \
   && [ "$(getenforce)" != "Disabled" ] \
   && command -v semanage >/dev/null 2>&1; then

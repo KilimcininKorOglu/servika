@@ -171,6 +171,55 @@ func TestTenantHomePermissionsBlockOtherUsersAndPermitWebGroup(t *testing.T) {
 	}
 }
 
+func TestCertificateSystemDirUsesServikaPKIPath(t *testing.T) {
+	if got := certSystemDir("example.com"); got != "/etc/pki/servika/example.com" {
+		t.Fatalf("certSystemDir() = %q, want %q", got, "/etc/pki/servika/example.com")
+	}
+}
+
+func TestReadTenantCertificateAcceptsOwnedRegularFile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "example.com.crt")
+	content := []byte("test certificate")
+	if err := os.WriteFile(path, content, 0600); err != nil {
+		t.Fatalf("write certificate fixture: %v", err)
+	}
+
+	got, err := readTenantCertificate(path, os.Getuid())
+	if err != nil {
+		t.Fatalf("readTenantCertificate() returned an unexpected error: %v", err)
+	}
+	if !bytes.Equal(got, content) {
+		t.Fatalf("readTenantCertificate() = %q, want %q", got, content)
+	}
+}
+
+func TestReadTenantCertificateRejectsUnexpectedOwner(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "example.com.crt")
+	if err := os.WriteFile(path, []byte("test certificate"), 0600); err != nil {
+		t.Fatalf("write certificate fixture: %v", err)
+	}
+
+	if _, err := readTenantCertificate(path, os.Getuid()+1); err == nil {
+		t.Fatal("readTenantCertificate() accepted a file owned by another account")
+	}
+}
+
+func TestReadTenantCertificateRejectsSymlink(t *testing.T) {
+	directory := t.TempDir()
+	target := filepath.Join(directory, "target.key")
+	if err := os.WriteFile(target, []byte("private key"), 0600); err != nil {
+		t.Fatalf("write private key fixture: %v", err)
+	}
+	link := filepath.Join(directory, "example.com.key")
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatalf("create certificate symlink: %v", err)
+	}
+
+	if _, err := readTenantCertificate(link, os.Getuid()); err == nil {
+		t.Fatal("readTenantCertificate() accepted a symlink")
+	}
+}
+
 func TestTenantCommandUsesExplicitArgumentsAndEnvironment(t *testing.T) {
 	t.Setenv("SERVIKA_JWT_SECRET", "must-not-leak")
 	command := tenantCommand("pkill", "-KILL", "-u", "c_example_com")
@@ -183,6 +232,18 @@ func TestTenantCommandUsesExplicitArgumentsAndEnvironment(t *testing.T) {
 	}
 	if !strings.Contains(environment, "PATH=/usr/sbin:/usr/bin:/sbin:/bin") {
 		t.Fatal("tenant command does not define its executable search path")
+	}
+}
+
+func TestACMECommandUsesRootHomeWithoutPanelSecrets(t *testing.T) {
+	t.Setenv("SERVIKA_DB_DSN", "must-not-leak")
+	command := acmeCommand("--issue", "-d", "example.com")
+	environment := strings.Join(command.Env, "\n")
+	if strings.Contains(environment, "SERVIKA_DB_DSN") {
+		t.Fatal("ACME command inherited a panel secret")
+	}
+	if !strings.Contains(environment, "HOME=/root") {
+		t.Fatal("ACME command does not define the root account home")
 	}
 }
 

@@ -41,8 +41,10 @@ func tenantCfgDir(systemUser string) string {
 const fpmSocketFcontextSpec = "/run/php-fpm-[^/]+(/.*)?"
 
 var (
-	fcontextMu   sync.Mutex
-	fcontextDone bool
+	fcontextMu       sync.Mutex
+	fcontextDone     bool
+	httpdBooleanMu   sync.Mutex
+	httpdBooleanDone bool
 )
 
 // ensureFPMSELinuxFcontext persistently labels per-tenant socket paths for nginx access.
@@ -78,6 +80,51 @@ func selinuxActive() bool {
 	}
 	status := strings.TrimSpace(string(output))
 	return status == "Enforcing" || status == "Permissive"
+}
+
+// ensureHTTPDHomeBooleans persistently permits web servers to read tenant home content.
+func ensureHTTPDHomeBooleans() {
+	httpdBooleanMu.Lock()
+	defer httpdBooleanMu.Unlock()
+	if httpdBooleanDone {
+		return
+	}
+	if !selinuxActive() {
+		httpdBooleanDone = true
+		return
+	}
+	if _, err := exec.LookPath("setsebool"); err != nil {
+		httpdBooleanDone = true
+		return
+	}
+
+	required := []string{"httpd_enable_homedirs", "httpd_read_user_content"}
+	disabled := make([]string, 0, len(required))
+	for _, boolean := range required {
+		output, err := tenantCommand("getsebool", boolean).Output()
+		if err != nil {
+			continue
+		}
+		if !strings.Contains(string(output), "--> on") {
+			disabled = append(disabled, boolean)
+		}
+	}
+	if len(disabled) == 0 {
+		httpdBooleanDone = true
+		return
+	}
+
+	args := []string{"-P"}
+	for _, boolean := range disabled {
+		args = append(args, boolean+"=on")
+	}
+	output, err := tenantCommand("setsebool", args...).CombinedOutput()
+	if err != nil {
+		log.Printf("SELinux HTTP home boolean update failed: %s: %v", strings.TrimSpace(string(output)), err)
+		return
+	}
+	httpdBooleanDone = true
+	log.Printf("SELinux: enabled HTTP home access booleans: %v", disabled)
 }
 
 // TenantFPMActive reports whether a tenant PHP-FPM unit is installed.

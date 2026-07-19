@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -13,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"text/template"
 )
 
@@ -24,11 +26,13 @@ var (
 )
 
 const (
-	cacheZoneName     = "servikacache"
-	cacheZoneDir      = "/var/cache/nginx/servikacache"
-	cacheZoneConf     = "/etc/nginx/conf.d/servikacache.conf"
-	cacheZoneTempConf = "/etc/nginx/conf.d/00-servikacache-temporary.conf"
-	cacheZoneBody     = `# Managed automatically by Servika. DO NOT EDIT.
+	cacheZoneName          = "servikacache"
+	cacheZoneDir           = "/var/cache/nginx/servikacache"
+	cacheZoneConf          = "/etc/nginx/conf.d/servikacache.conf"
+	cacheZoneTempConf      = "/etc/nginx/conf.d/00-servikacache-temporary.conf"
+	certSystemBaseDir      = "/etc/pki/servika"
+	maxCertificateFileSize = 1 << 20
+	cacheZoneBody          = `# Managed automatically by Servika. DO NOT EDIT.
 # Vhosts use "fastcgi_cache servikacache"; this file provides the matching zone definition.
 fastcgi_cache_path ` + cacheZoneDir + ` levels=1:2 keys_zone=` + cacheZoneName + `:100m max_size=1g inactive=60m use_temp_path=off;
 `
@@ -44,6 +48,8 @@ func Init(db *sql.DB) {
 	healVhostsOnStartup()
 	HealHomePerms()
 	ensureFPMSELinuxFcontext()
+	ensureHTTPDHomeBooleans()
+	HealSSLCertPathsOnStartup()
 	EnsureTenantFPMOnStartup()
 }
 
@@ -150,6 +156,213 @@ func ValidateDomain(d string) error {
 		return fmt.Errorf("invalid domain name format (example: example.com)")
 	}
 	return nil
+}
+
+func certSystemDir(domainName string) string {
+	return filepath.Join(certSystemBaseDir, domainName)
+}
+
+func prepareCertificateDir(domainName string) (string, error) {
+	if err := ValidateDomain(domainName); err != nil {
+		return "", err
+	}
+	sslDir := certSystemDir(strings.ToLower(strings.TrimSpace(domainName)))
+	if err := os.MkdirAll(sslDir, 0755); err != nil {
+		return "", fmt.Errorf("create certificate directory: %w", err)
+	}
+	if err := os.Chown(sslDir, 0, 0); err != nil {
+		return "", fmt.Errorf("set certificate directory ownership: %w", err)
+	}
+	if err := os.Chmod(sslDir, 0755); err != nil {
+		return "", fmt.Errorf("set certificate directory permissions: %w", err)
+	}
+	_, _ = tenantCommand("restorecon", "-R", sslDir).CombinedOutput()
+	return sslDir, nil
+}
+
+func applyCertificatePermissions(sslDir, certPath, keyPath string) error {
+	for _, item := range []struct {
+		path string
+		mode os.FileMode
+	}{
+		{path: certPath, mode: 0644},
+		{path: keyPath, mode: 0600},
+	} {
+		if err := os.Chown(item.path, 0, 0); err != nil {
+			return fmt.Errorf("set certificate ownership: %w", err)
+		}
+		if err := os.Chmod(item.path, item.mode); err != nil {
+			return fmt.Errorf("set certificate permissions: %w", err)
+		}
+	}
+	_, _ = tenantCommand("restorecon", "-R", sslDir).CombinedOutput()
+	return nil
+}
+
+func readTenantCertificate(path string, expectedUID int) ([]byte, error) {
+	fd, err := syscall.Open(path, syscall.O_RDONLY|syscall.O_NOFOLLOW, 0)
+	if err != nil {
+		return nil, fmt.Errorf("open tenant certificate: %w", err)
+	}
+	file := os.NewFile(uintptr(fd), path)
+	if file == nil {
+		_ = syscall.Close(fd)
+		return nil, fmt.Errorf("open tenant certificate: invalid file descriptor")
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("inspect tenant certificate: %w", err)
+	}
+	if !info.Mode().IsRegular() {
+		return nil, fmt.Errorf("tenant certificate is not a regular file")
+	}
+	stat, ok := info.Sys().(*syscall.Stat_t)
+	if !ok || int(stat.Uid) != expectedUID {
+		return nil, fmt.Errorf("tenant certificate owner does not match the tenant")
+	}
+	if info.Size() <= 0 || info.Size() > maxCertificateFileSize {
+		return nil, fmt.Errorf("tenant certificate size is invalid")
+	}
+	data, err := io.ReadAll(io.LimitReader(file, maxCertificateFileSize+1))
+	if err != nil {
+		return nil, fmt.Errorf("read tenant certificate: %w", err)
+	}
+	if len(data) > maxCertificateFileSize {
+		return nil, fmt.Errorf("tenant certificate exceeds the size limit")
+	}
+	return data, nil
+}
+
+func writeSystemCertificate(path string, data []byte, mode os.FileMode) error {
+	temporary, err := os.CreateTemp(filepath.Dir(path), ".servika-certificate-*")
+	if err != nil {
+		return fmt.Errorf("create temporary certificate: %w", err)
+	}
+	temporaryPath := temporary.Name()
+	defer os.Remove(temporaryPath)
+
+	if err := temporary.Chmod(mode); err != nil {
+		_ = temporary.Close()
+		return fmt.Errorf("set temporary certificate permissions: %w", err)
+	}
+	if _, err := temporary.Write(data); err != nil {
+		_ = temporary.Close()
+		return fmt.Errorf("write temporary certificate: %w", err)
+	}
+	if err := temporary.Sync(); err != nil {
+		_ = temporary.Close()
+		return fmt.Errorf("sync temporary certificate: %w", err)
+	}
+	if err := temporary.Chown(0, 0); err != nil {
+		_ = temporary.Close()
+		return fmt.Errorf("set temporary certificate ownership: %w", err)
+	}
+	if err := temporary.Close(); err != nil {
+		return fmt.Errorf("close temporary certificate: %w", err)
+	}
+	if err := os.Rename(temporaryPath, path); err != nil {
+		return fmt.Errorf("install certificate: %w", err)
+	}
+	return nil
+}
+
+func copyTenantCertificate(source, destination string, expectedUID int, mode os.FileMode) error {
+	data, err := readTenantCertificate(source, expectedUID)
+	if err != nil {
+		return err
+	}
+	return writeSystemCertificate(destination, data, mode)
+}
+
+func removeHomeCertificate(systemUser, domainName string) {
+	if !tenantUserPattern.MatchString(systemUser) || ValidateDomain(domainName) != nil {
+		return
+	}
+	domainName = strings.ToLower(strings.TrimSpace(domainName))
+	sslDir := filepath.Join("/home", systemUser, "ssl")
+	_ = os.Remove(filepath.Join(sslDir, domainName+".crt"))
+	_ = os.Remove(filepath.Join(sslDir, domainName+".key"))
+}
+
+// HealSSLCertPathsOnStartup migrates active certificates from tenant homes into root-owned system storage.
+func HealSSLCertPathsOnStartup() {
+	if packageDB == nil {
+		return
+	}
+	rows, err := packageDB.Query(`SELECT id, domain_name, system_user, COALESCE(php_version,'8.3'), cert_path, key_path
+		FROM domains
+		WHERE ssl_enabled=1 AND (cert_path LIKE '/home/%' OR key_path LIKE '/home/%')`)
+	if err != nil {
+		log.Printf("SSL certificate path healing: query failed: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	migrated := 0
+	for rows.Next() {
+		var id int64
+		var domainName, systemUser, phpVersion, oldCertPath, oldKeyPath string
+		if err := rows.Scan(&id, &domainName, &systemUser, &phpVersion, &oldCertPath, &oldKeyPath); err != nil {
+			log.Printf("SSL certificate path healing: row scan failed: %v", err)
+			continue
+		}
+		if ValidateDomain(domainName) != nil || !tenantUserPattern.MatchString(systemUser) {
+			log.Printf("SSL certificate path healing: refused invalid domain or tenant for domain ID %d", id)
+			continue
+		}
+		domainName = strings.ToLower(strings.TrimSpace(domainName))
+		expectedCertPath := filepath.Join("/home", systemUser, "ssl", domainName+".crt")
+		expectedKeyPath := filepath.Join("/home", systemUser, "ssl", domainName+".key")
+		if filepath.Clean(oldCertPath) != expectedCertPath || filepath.Clean(oldKeyPath) != expectedKeyPath {
+			log.Printf("SSL certificate path healing: refused unexpected tenant paths for %s", domainName)
+			continue
+		}
+		uid, _, err := uidGid(systemUser)
+		if err != nil {
+			log.Printf("SSL certificate path healing: resolve owner for %s: %v", domainName, err)
+			continue
+		}
+		sslDir, err := prepareCertificateDir(domainName)
+		if err != nil {
+			log.Printf("SSL certificate path healing: prepare directory for %s: %v", domainName, err)
+			continue
+		}
+		newCertPath := filepath.Join(sslDir, domainName+".crt")
+		newKeyPath := filepath.Join(sslDir, domainName+".key")
+		if err := copyTenantCertificate(oldCertPath, newCertPath, uid, 0644); err != nil {
+			log.Printf("SSL certificate path healing: migrate certificate for %s: %v", domainName, err)
+			continue
+		}
+		if err := copyTenantCertificate(oldKeyPath, newKeyPath, uid, 0600); err != nil {
+			log.Printf("SSL certificate path healing: migrate private key for %s: %v", domainName, err)
+			continue
+		}
+		_, _ = tenantCommand("restorecon", "-R", sslDir).CombinedOutput()
+
+		socket, err := PHPSocketFor(systemUser, phpVersion)
+		if err != nil {
+			log.Printf("SSL certificate path healing: resolve PHP socket for %s: %v", domainName, err)
+			continue
+		}
+		if err := applyVhostForDomain(packageDB, id, socket, phpVersion, &newCertPath, &newKeyPath); err != nil {
+			log.Printf("SSL certificate path healing: render vhost for %s: %v", domainName, err)
+			continue
+		}
+		if _, err := packageDB.Exec(`UPDATE domains SET cert_path=?, key_path=? WHERE id=?`, newCertPath, newKeyPath, id); err != nil {
+			log.Printf("SSL certificate path healing: update database for %s: %v", domainName, err)
+			continue
+		}
+		removeHomeCertificate(systemUser, domainName)
+		migrated++
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("SSL certificate path healing: row iteration failed: %v", err)
+	}
+	if migrated > 0 {
+		log.Printf("SSL certificate path healing: migrated %d certificate sets", migrated)
+	}
 }
 
 func SlugFromDomain(d string) string {
@@ -711,6 +924,9 @@ func Deprovision(domainName, systemUser string) error {
 		_ = os.Remove(vhostPath)
 	}
 	TeardownTenantFPM(systemUser)
+	if domainName != "" && ValidateDomain(domainName) == nil {
+		_ = os.RemoveAll(certSystemDir(strings.ToLower(strings.TrimSpace(domainName))))
+	}
 	for _, config := range phpMap {
 		p := filepath.Join(config.PoolDir, systemUser+".conf")
 		if _, err := os.Stat(p); err == nil {
@@ -762,11 +978,16 @@ func SetPHPVersion(domainName, systemUser, newVersion, certPath, keyPath, sslSou
 
 // EnableSelfSigned generates a self-signed certificate with OpenSSL and re-renders the vhost with SSL.
 func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, err error) {
+	if err := ValidateDomain(domainName); err != nil {
+		return "", "", err
+	}
+	domainName = strings.ToLower(strings.TrimSpace(domainName))
 	phpVersion = normalizePHP(phpVersion)
 	home := "/home/" + systemUser
-	sslDir := filepath.Join(home, "ssl")
-	_ = os.MkdirAll(sslDir, 0755)
-
+	sslDir, err := prepareCertificateDir(domainName)
+	if err != nil {
+		return "", "", err
+	}
 	certPath = filepath.Join(sslDir, domainName+".crt")
 	keyPath = filepath.Join(sslDir, domainName+".key")
 
@@ -780,15 +1001,12 @@ func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certP
 		"-subj", subj,
 		"-addext", "subjectAltName=DNS:" + domainName + ",DNS:www." + domainName,
 	}
-	if out, err := exec.Command("openssl", args...).CombinedOutput(); err != nil {
+	if out, err := tenantCommand("openssl", args...).CombinedOutput(); err != nil {
 		return "", "", fmt.Errorf("openssl: %s: %w", strings.TrimSpace(string(out)), err)
 	}
-	_ = os.Chmod(keyPath, 0640)
-
-	uid, gid, _ := uidGid(systemUser)
-	_ = os.Chown(certPath, uid, gid)
-	_ = os.Chown(keyPath, uid, gid)
-	_, _ = exec.Command("restorecon", "-R", sslDir).CombinedOutput()
+	if err := applyCertificatePermissions(sslDir, certPath, keyPath); err != nil {
+		return "", "", err
+	}
 
 	_, socket, _ := phpPoolPath(systemUser, phpVersion)
 	if err := renderAndReload(VhostOpts{
@@ -803,20 +1021,27 @@ func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certP
 	}, systemUser); err != nil {
 		return "", "", err
 	}
+	removeHomeCertificate(systemUser, domainName)
 	return certPath, keyPath, nil
 }
 
 // EnableLetsEncrypt obtains a certificate with acme.sh and re-renders the vhost with SSL.
 func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, err error) {
+	if err := ValidateDomain(domainName); err != nil {
+		return "", "", err
+	}
+	domainName = strings.ToLower(strings.TrimSpace(domainName))
 	phpVersion = normalizePHP(phpVersion)
 	home := "/home/" + systemUser
 
 	// Prepare the ACME webroot.
 	_ = os.MkdirAll("/var/www/_acme", 0755)
-	_, _ = exec.Command("restorecon", "-R", "/var/www/_acme").CombinedOutput()
+	_, _ = tenantCommand("restorecon", "-R", "/var/www/_acme").CombinedOutput()
 
-	sslDir := filepath.Join(home, "ssl")
-	_ = os.MkdirAll(sslDir, 0755)
+	sslDir, err := prepareCertificateDir(domainName)
+	if err != nil {
+		return "", "", err
+	}
 	certPath = filepath.Join(sslDir, domainName+".crt")
 	keyPath = filepath.Join(sslDir, domainName+".key")
 
@@ -829,7 +1054,7 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 		"--keylength", "2048",
 		"--force",
 	}
-	if out, err := exec.Command("/root/.acme.sh/acme.sh", args...).CombinedOutput(); err != nil {
+	if out, err := acmeCommand(args...).CombinedOutput(); err != nil {
 		return "", "", fmt.Errorf("acme.sh issue: %s: %w", strings.TrimSpace(string(out)), err)
 	}
 
@@ -842,14 +1067,12 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 		"--fullchain-file", certPath,
 		"--reloadcmd", "systemctl reload nginx",
 	}
-	if out, err := exec.Command("/root/.acme.sh/acme.sh", insArgs...).CombinedOutput(); err != nil {
+	if out, err := acmeCommand(insArgs...).CombinedOutput(); err != nil {
 		return "", "", fmt.Errorf("acme.sh install-cert: %s: %w", strings.TrimSpace(string(out)), err)
 	}
-
-	uid, gid, _ := uidGid(systemUser)
-	_ = os.Chown(certPath, uid, gid)
-	_ = os.Chown(keyPath, uid, gid)
-	_, _ = exec.Command("restorecon", "-R", sslDir).CombinedOutput()
+	if err := applyCertificatePermissions(sslDir, certPath, keyPath); err != nil {
+		return "", "", err
+	}
 
 	_, socket, _ := phpPoolPath(systemUser, phpVersion)
 	if err := renderAndReload(VhostOpts{
@@ -864,6 +1087,7 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	}, systemUser); err != nil {
 		return "", "", err
 	}
+	removeHomeCertificate(systemUser, domainName)
 	return certPath, keyPath, nil
 }
 
@@ -963,6 +1187,12 @@ func tenantCommand(name string, args ...string) *exec.Cmd {
 	return command
 }
 
+func acmeCommand(args ...string) *exec.Cmd {
+	command := tenantCommand("/root/.acme.sh/acme.sh", args...)
+	command.Env = append(command.Env, "HOME=/root")
+	return command
+}
+
 // SuspendUserRuntime disables or restores cron execution and terminates managed tenant processes.
 func SuspendUserRuntime(systemUser string, suspended bool) {
 	if !tenantUserPattern.MatchString(systemUser) {
@@ -1031,6 +1261,10 @@ func welcomeHTML(domain string) string {
 // ApplyVhostForDomain re-renders an nginx vhost for a domain ID.
 // It runs after PHP version or socket changes and loads SSL settings from the database.
 func ApplyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string) error {
+	return applyVhostForDomain(db, domainID, socket, phpVersion, nil, nil)
+}
+
+func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, certPathOverride, keyPathOverride *string) error {
 	var domainName, systemUser, certPath, keyPath, sslSource, backend string
 	var suspended int
 	if err := db.QueryRow(
@@ -1039,6 +1273,10 @@ func ApplyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string) 
 		 FROM domains WHERE id=?`, domainID).
 		Scan(&domainName, &systemUser, &certPath, &keyPath, &sslSource, &backend, &suspended); err != nil {
 		return fmt.Errorf("read domain details: %w", err)
+	}
+	if certPathOverride != nil && keyPathOverride != nil {
+		certPath = *certPathOverride
+		keyPath = *keyPathOverride
 	}
 	if TenantFPMActive(systemUser) {
 		socket = tenantSocket(systemUser)
