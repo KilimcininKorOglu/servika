@@ -20,14 +20,14 @@ Installation takes approximately 5 to 10 minutes while packages download. When i
 
 ## What does it install?
 
-| Component       | Details                                                                                     |
-|-----------------|---------------------------------------------------------------------------------------------|
-| **Web**         | nginx (panel on :8443 and customer sites on :80/:443)                                       |
-| **PHP**         | 7.4 / 8.2 / 8.3 / 8.4 / 8.5 (Remi), independent version selection and FPM pool per domain   |
-| **Database**    | MariaDB 10.11 (`panel` DB) and phpMyAdmin (`/pma/`)                                         |
-| **Cache**       | Valkey (Redis), isolated per-tenant object cache with automatic WordPress integration        |
-| **Security**    | nftables firewall, SELinux compatibility, and ClamAV                                        |
-| **Performance** | Automatic MariaDB, nginx, and OPcache tuning (`servika-optimize`)                           |
+| Component       | Details                                                                                                     |
+|-----------------|-------------------------------------------------------------------------------------------------------------|
+| **Web**         | nginx (panel on :8443 and customer sites on :80/:443)                                                       |
+| **PHP**         | 7.4 / 8.0 / 8.1 / 8.2 / 8.3 / 8.4 / 8.5 / 8.6 (Remi), independent version selection and FPM pool per domain |
+| **Database**    | MariaDB 10.11 (`panel` DB) and phpMyAdmin (`/pma/`)                                                         |
+| **Cache**       | Valkey (Redis), isolated per-tenant object cache with automatic WordPress integration                       |
+| **Security**    | nftables firewall, SELinux compatibility, and ClamAV                                                        |
+| **Performance** | Automatic MariaDB, nginx, and OPcache tuning (`servika-optimize`)                                           |
 
 ## Panel features
 
@@ -166,7 +166,7 @@ cmd/server/       Go entry point (main)
 internal/         Backend packages (domains, wordpress, dns, redis, firewall, github, backups, ...)
 frontend/src/     React interface (pages/, components/, lib/)
 migrations/       SQL schema migrations applied at startup
-scripts/          Operations utilities (optimize, repair, redis-setup, seed_admin, ...)
+scripts/          Build-time tools (build-assets.sh, seed_admin.go)
 assets/           Prebuilt release artifacts used by the installer
 install.sh        One-line bootstrap that downloads the repository and runs servika-install.sh
 ```
