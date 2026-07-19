@@ -46,8 +46,12 @@ type Plan struct {
 	FastCGICache         bool   `json:"fastcgi_cache"`
 	ClientMaxBodyMB      int    `json:"client_max_body_mb"`
 	NginxExtraDirectives string `json:"nginx_extra_directives"`
-	IsDefault            bool   `json:"is_default"`
-	CreatedAt            string `json:"created_at"`
+	// WAF (ModSecurity + OWASP CRS) plan defaults — domains in this plan inherit these values.
+	WAFEnabled  bool   `json:"waf_enabled"`
+	WAFMode     string `json:"waf_mode"`     // "on" (block) | "detect" (log only) | "off"
+	WAFParanoia int    `json:"waf_paranoia"` // CRS paranoia 1..4
+	IsDefault   bool   `json:"is_default"`
+	CreatedAt   string `json:"created_at"`
 }
 
 // Handlers provides service plan HTTP handlers.
@@ -63,7 +67,9 @@ const selectAll = `SELECT id, name, description, disk_quota_mb, traffic_quota_mb
   COALESCE(io_read_iops,0), COALESCE(io_write_iops,0),
   COALESCE(db_max_queries_per_hour,0), COALESCE(db_max_updates_per_hour,0),
   COALESCE(db_max_query_seconds,0),
-  php_version, fastcgi_cache, client_max_body_mb, COALESCE(nginx_extra_directives,''), is_default, DATE_FORMAT(created_at,'%Y-%m-%d') FROM service_plans`
+  php_version, fastcgi_cache, client_max_body_mb, COALESCE(nginx_extra_directives,''),
+  COALESCE(waf_enabled,0), COALESCE(waf_mode,'on'), COALESCE(waf_paranoia,1),
+  is_default, DATE_FORMAT(created_at,'%Y-%m-%d') FROM service_plans`
 
 func b01(b bool) int {
 	if b {
@@ -74,16 +80,19 @@ func b01(b bool) int {
 
 func scan(rs interface{ Scan(...any) error }) (Plan, error) {
 	var p Plan
-	var vars, fc int
+	var vars, fc, wafEn int
 	err := rs.Scan(&p.ID, &p.Name, &p.Description, &p.DiskQuotaMB, &p.TrafficQuotaMB,
 		&p.MaxDomain, &p.MaxDB, &p.MaxEmail, &p.MaxFTP,
 		&p.CPUPercent, &p.RAMMB, &p.MaxProcess, &p.InodeQuota, &p.IOWeight, &p.MySQLMaxConnections,
 		&p.PMMaxChildren,
 		&p.IOReadMBps, &p.IOWriteMBps, &p.IOReadIOPS, &p.IOWriteIOPS,
 		&p.DBMaxQueriesPerHour, &p.DBMaxUpdatesPerHour, &p.DBMaxQuerySeconds,
-		&p.PHPVersion, &fc, &p.ClientMaxBodyMB, &p.NginxExtraDirectives, &vars, &p.CreatedAt)
+		&p.PHPVersion, &fc, &p.ClientMaxBodyMB, &p.NginxExtraDirectives,
+		&wafEn, &p.WAFMode, &p.WAFParanoia,
+		&vars, &p.CreatedAt)
 	p.IsDefault = vars == 1
 	p.FastCGICache = fc == 1
+	p.WAFEnabled = wafEn == 1
 	return p, err
 }
 
@@ -155,6 +164,16 @@ func fillDefaults(p *Plan) {
 	if p.ClientMaxBodyMB == 0 {
 		p.ClientMaxBodyMB = 64
 	}
+	// WAF defaults
+	switch strings.ToLower(strings.TrimSpace(p.WAFMode)) {
+	case "on", "detect", "off":
+		p.WAFMode = strings.ToLower(strings.TrimSpace(p.WAFMode))
+	default:
+		p.WAFMode = "on"
+	}
+	if p.WAFParanoia < 1 || p.WAFParanoia > 4 {
+		p.WAFParanoia = 1
+	}
 }
 
 // Create creates a service plan.
@@ -185,20 +204,26 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
 		   pm_max_children, io_read_mbps, io_write_mbps, io_read_iops, io_write_iops,
 		   db_max_queries_per_hour, db_max_updates_per_hour, db_max_query_seconds,
-		   php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives, is_default)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		   php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives,
+		   waf_enabled, waf_mode, waf_paranoia, is_default)
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
 		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
 		p.DBMaxQueriesPerHour, p.DBMaxUpdatesPerHour, p.DBMaxQuerySeconds,
-		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v)
+		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives,
+		b01(p.WAFEnabled), p.WAFMode, p.WAFParanoia, v)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return
 	}
 	id, _ := res.LastInsertId()
 	row := h.DB.QueryRowContext(r.Context(), selectAll+" WHERE id=?", id)
+	// WAF plan default may have changed — re-render vhosts for domains in this plan
+	// whose WAF override is set to inherit. Runs in the background.
+	go h.wafPlanReapply(id)
+
 	saved, _ := scan(row)
 	httpx.WriteJSON(w, http.StatusCreated, saved)
 }
@@ -232,20 +257,46 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		   cpu_percent=?, ram_mb=?, max_process=?, inode_quota=?, io_weight=?, mysql_max_connections=?,
 		   pm_max_children=?, io_read_mbps=?, io_write_mbps=?, io_read_iops=?, io_write_iops=?,
 		   db_max_queries_per_hour=?, db_max_updates_per_hour=?, db_max_query_seconds=?,
-		   php_version=?, fastcgi_cache=?, client_max_body_mb=?, nginx_extra_directives=?, is_default=?
+		   php_version=?, fastcgi_cache=?, client_max_body_mb=?, nginx_extra_directives=?, waf_enabled=?, waf_mode=?, waf_paranoia=?, is_default=?
 		 WHERE id=?`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
 		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
 		p.DBMaxQueriesPerHour, p.DBMaxUpdatesPerHour, p.DBMaxQuerySeconds,
-		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, v, id); err != nil {
+		p.PHPVersion, b01(p.FastCGICache), p.ClientMaxBodyMB, p.NginxExtraDirectives, b01(p.WAFEnabled), p.WAFMode, p.WAFParanoia, v, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
 		return
 	}
 	row := h.DB.QueryRowContext(r.Context(), selectAll+" WHERE id=?", id)
+	// WAF plan default may have changed — re-render vhosts for domains in this plan
+	// whose WAF override is set to inherit. Runs in the background.
+	go h.wafPlanReapply(id)
+
 	saved, _ := scan(row)
 	httpx.WriteJSON(w, http.StatusOK, saved)
+}
+
+// wafPlanReapply re-applies the WAF settings (including plan-default inheritors)
+// for all domains in this plan. Runs in a background goroutine.
+func (h *Handlers) wafPlanReapply(planID int64) {
+	rows, err := h.DB.Query(`SELECT id FROM domains WHERE plan_id=?`, planID)
+	if err != nil {
+		return
+	}
+	var ids []int64
+	for rows.Next() {
+		var did int64
+		if rows.Scan(&did) == nil {
+			ids = append(ids, did)
+		}
+	}
+	_ = rows.Close()
+	for _, did := range ids {
+		if err := provisioner.WAFApply(h.DB, did); err != nil {
+			log.Printf("waf plan reapply domain=%d: %v", did, err)
+		}
+	}
 }
 
 // Delete deletes an unused service plan.

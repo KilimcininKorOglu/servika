@@ -21,6 +21,9 @@ type Plan = {
   fastcgi_cache: boolean
   client_max_body_mb: number
   nginx_extra_directives: string
+  waf_enabled: boolean
+  waf_mode: string
+  waf_paranoia: number
   is_default: boolean
   created_at: string
 }
@@ -167,6 +170,9 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
     fastcgi_cache: plan.fastcgi_cache || false,
     client_max_body_mb: plan.client_max_body_mb || 64,
     nginx_extra_directives: plan.nginx_extra_directives || '',
+    waf_enabled: plan.waf_enabled || false,
+    waf_mode: plan.waf_mode || 'on',
+    waf_paranoia: plan.waf_paranoia || 1,
     is_default: plan.is_default || false,
     created_at: '',
   })

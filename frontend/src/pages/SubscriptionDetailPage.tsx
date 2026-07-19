@@ -27,6 +27,7 @@ const ICONS = {
   lock:     'M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17',
   stats:'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
   imunify:   'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+  waf:       'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
   mail:     'M3 8l9 6 9-6m-9 6V4m0 0v16',
   dns:       'M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18',
   apache:    'M13 10V3L4 14h7v7l9-11h-7z',
@@ -319,6 +320,7 @@ function DashboardTabContent({ domain }: { domain: Domain }) {
         <ToolCard label="Password-Protected Directories" description=".htpasswd" icon={ICONS.lock} color="amber" phase="F7" />
         <ToolCard label="Statistics" description="Traffic analysis" icon={ICONS.stats} color="indigo" phase="F10" />
         <ToolCard label="Imunify" description="Antivirus" icon={ICONS.imunify} color="emerald" />
+        <ToolCard label="WAF (Web Application Firewall)" description="ModSecurity + OWASP CRS" icon={ICONS.waf} color="emerald" to={`/subscriptions/${domain.id}/waf`} />
       </Group>
     </div>
   )

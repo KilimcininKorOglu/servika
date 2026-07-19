@@ -29,6 +29,7 @@ import DomainPHPPage from '@/pages/DomainPHPPage'
 import DomainBackupsPage from '@/pages/DomainBackupsPage'
 import DomainGitPage from '@/pages/DomainGitPage'
 import DomainWebServerPage from '@/pages/DomainWebServerPage'
+import DomainWafPage from '@/pages/DomainWafPage'
 import PHPExtensionsPage from '@/pages/PHPExtensionsPage'
 import PackagesPage from '@/pages/PackagesPage'
 import PackageDetailPage from '@/pages/PackageDetailPage'
@@ -92,6 +93,7 @@ export default function App() {
         <Route path="subscriptions/:id/backups"      element={<DomainBackupsPage />} />
         <Route path="subscriptions/:id/git"           element={<DomainGitPage />} />
         <Route path="subscriptions/:id/web-server"    element={<DomainWebServerPage />} />
+        <Route path="subscriptions/:id/waf"           element={<DomainWafPage />} />
         <Route path="system/php-modules"           element={<PHPExtensionsPage />} />
         <Route path="tools/packages"               element={<PackagesPage />} />
         <Route path="tools/packages/:id"           element={<PackageDetailPage />} />

@@ -312,6 +312,9 @@ restorecon -R /opt/servika/bin /opt/servika/frontend-dist >/dev/null 2>&1
 # ============ 11) Valkey + optimization ============
 step "11) Valkey (Redis) + performance tuning"
 command -v servika-redis-setup >/dev/null 2>&1 && servika-redis-setup >/dev/null 2>&1 && ok "servika-redis-setup" || warn "redis-setup skipped"
+# WAF (ModSecurity + OWASP CRS) infrastructure — idempotent, per-domain opt-in (module loading is harmless).
+# On first install the connector compilation may take several minutes; failure does not stop the installation.
+command -v servika-waf-setup >/dev/null 2>&1 && servika-waf-setup >/dev/null 2>&1 && ok "servika-waf-setup (ModSecurity+CRS)" || warn "waf-setup skipped (panel WAF runs gracefully without the module)"
 command -v servika-optimize >/dev/null 2>&1 && servika-optimize >/dev/null 2>&1 && ok "servika-optimize" || warn "optimization skipped"
 
 # ============ 12) START PANEL; MIGRATIONS RUN AT STARTUP ============

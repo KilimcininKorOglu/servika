@@ -52,6 +52,7 @@ import (
 	"servika/internal/subdomain"
 	"servika/internal/system"
 	"servika/internal/users"
+	"servika/internal/waf"
 	"servika/internal/wordpress"
 
 	"github.com/go-chi/chi/v5"
@@ -134,6 +135,7 @@ func main() {
 	copyH := &sitecopy.Handlers{DB: d}
 	wpH := &wordpress.Handlers{DB: d}
 	fwH := &firewall.Handlers{DB: d}
+	wafH := &waf.Handlers{DB: d}
 	redisH := &redis.Handlers{DB: d}
 	subH := &subdomain.Handlers{DB: d, IPv4: ipv4}
 	sshaccess.EnsureInfra()
@@ -332,6 +334,8 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/php-settings", phpH.GetSettings)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/php-settings", phpH.PutSettings)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/resources", resourceH.Show)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/waf", wafH.Show)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/waf", wafH.Save)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/nginx-settings", nginxsetH.Show)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/nginx-settings", nginxsetH.Save)
 				r.With(middleware.AdminOnly).Get("/php-extensions", phpExtH.List)

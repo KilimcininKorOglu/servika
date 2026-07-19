@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"servika/internal/httpx"
+	"servika/internal/provisioner"
 	"servika/internal/resourcelimit"
 
 	"github.com/go-chi/chi/v5"
@@ -66,6 +67,11 @@ func (h *Handlers) SetPlan(w http.ResponseWriter, r *http.Request) {
 		defer cancel()
 		if err := resourcelimit.ApplyAll(ctx, h.DB, did); err != nil {
 			log.Printf("resource limit apply domain=%d: %v", did, err)
+		}
+		// Plan change may also change the WAF default; re-render the vhost with WAF
+		// (domain override takes precedence, plan default is the fallback).
+		if err := provisioner.WAFApply(h.DB, did); err != nil {
+			log.Printf("waf apply (plan change) domain=%d: %v", did, err)
 		}
 	}(id)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "plan_id": req.PlanID})

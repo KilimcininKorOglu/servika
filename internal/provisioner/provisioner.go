@@ -59,6 +59,7 @@ func Init(db *sql.DB) {
 	HealSSLCertPathsOnStartup()
 	HealSSLVhost443OnStartup()
 	EnsureTenantFPMOnStartup()
+	HealWAFOnStartup() // WAF: validate ModSecurity module status + refresh per-domain modsec confs for WAF-enabled domains
 }
 
 func healCacheZoneOnStartup() {
@@ -433,7 +434,7 @@ server {
 
     # ---- Security headers (managed by the panel) ----
 {{.SecHeaders}}
-{{.DenyBlocks}}
+{{.ModSec}}{{.DenyBlocks}}
 
     access_log /var/log/nginx/{{.DomainName}}.access.log;
     error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
@@ -725,6 +726,7 @@ type VhostOpts struct {
 	// Render-time security blocks that are not persisted in the database.
 	SecHeaders string
 	DenyBlocks string
+	ModSec     string // WAF (ModSecurity) server-context directive block; empty when WAF is off or module absent
 }
 
 func (o VhostOpts) SSL() bool {
@@ -807,6 +809,13 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 
 	opts.SecHeaders = buildSecurityHeaders(opts)
 	opts.DenyBlocks = denyBlocksNginx
+	// WAF (ModSecurity) directive: computed from effective settings on every render.
+	// When suspended the suspended template (no ModSec field) is rendered — computation is skipped.
+	// buildModSec returns "" when WAF is off or the module is absent (doesn't break the vhost);
+	// when active it also refreshes the per-domain modsec conf — single source, self-healing.
+	if !opts.Suspended {
+		opts.ModSec = buildModSec(systemUser)
+	}
 
 	tmpl := vhostTmpl
 	if opts.Suspended {
@@ -937,6 +946,11 @@ func Deprovision(domainName, systemUser string) error {
 	TeardownTenantFPM(systemUser)
 	if domainName != "" && ValidateDomain(domainName) == nil {
 		_ = os.RemoveAll(certSystemDir(strings.ToLower(strings.TrimSpace(domainName))))
+	}
+	// Clean up per-domain WAF modsec confs (prevent orphans).
+	if reWafSK.MatchString(systemUser) {
+		_ = os.Remove(filepath.Join(wafDomainsDir, systemUser+".conf"))
+		_ = os.Remove(filepath.Join(wafDomainsDir, systemUser+".custom.conf"))
 	}
 	for _, config := range phpMap {
 		p := filepath.Join(config.PoolDir, systemUser+".conf")

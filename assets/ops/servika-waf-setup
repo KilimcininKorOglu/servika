@@ -1,0 +1,260 @@
+#!/usr/bin/env bash
+# servika-waf-setup — ModSecurity v3 + OWASP CRS installation (IDEMPOTENT).
+#
+#   servika-waf-setup            # install what is missing; fast exit when ready
+#   servika-waf-setup --force    # rebuild connector (e.g. nginx ABI changed)
+#   servika-waf-setup --status   # status report only, no changes
+#
+# WHAT IT DOES (only the missing pieces):
+#   1) libmodsecurity v3 (builds from source if absent → /usr/local/modsecurity)
+#   2) ModSecurity-nginx connector compiled against the RUNNING nginx → dynamic .so
+#   3) OWASP CRS + /etc/nginx/modsec config (modsecurity.conf, crs-setup.conf, main.conf)
+#   4) Loads module in nginx.conf MAIN context
+#      🔴 nginx -t GATE + automatic ROLLBACK: if -t fails nginx.conf is restored (entire
+#         nginx stays up). Module loading is HARMLESS: behavior does not change until a
+#         vhost says "modsecurity on" → WAF per-domain opt-in (panel manages it).
+#
+# PRESERVES: existing vhosts, sites, CRS custom rules. Safe to re-run.
+set -uo pipefail
+
+# ---- constants ----
+MODSEC_VER=v3.0.14
+CONNECTOR_VER=v1.0.3
+CRS_VER=v4.28.0
+MODSEC_PREFIX=/usr/local/modsecurity
+SRC=/usr/local/src
+MODSEC_DIR=/etc/nginx/modsec
+CRS_DIR=$MODSEC_DIR/crs
+DOMAINS_DIR=$MODSEC_DIR/domains
+MODULE_DIR=/usr/lib64/nginx/modules
+MODULE=$MODULE_DIR/ngx_http_modsecurity_module.so
+NGINX_CONF=/etc/nginx/nginx.conf
+ABI_STAMP=$MODSEC_DIR/.built_for_nginx
+AUDIT_LOG=/var/log/nginx/modsec_audit.log
+WORK_DIR=/var/cache/nginx/modsec
+LOADLINE="load_module $MODULE;"
+MARK="# servika-waf: ModSecurity module (main-context, per-domain opt-in)"
+
+FORCE=0; STATUS=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --force) FORCE=1 ;;
+    --status) STATUS=1 ;;
+    -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+c_b="\033[1;34m"; c_g="\033[32m"; c_r="\033[31m"; c_y="\033[33m"; c_0="\033[0m"
+[ -t 1 ] || { c_b=; c_g=; c_r=; c_y=; c_0=; }
+ok()   { echo -e "  ${c_g}✓${c_0} $*"; }
+warn() { echo -e "  ${c_y}!${c_0} $*"; }
+die()  { echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
+step() { echo -e "${c_b}══ $* ══${c_0}"; }
+
+[ "$(id -u)" = 0 ] || die "root required"
+command -v nginx >/dev/null || die "nginx not found"
+NGVER=$(nginx -v 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+[ -n "$NGVER" ] || die "could not read nginx version"
+
+# Create directories early (ABI stamp is written to MODSEC_DIR during the connector step).
+mkdir -p "$MODSEC_DIR" "$DOMAINS_DIR" "$WORK_DIR" "$MODULE_DIR"
+
+# ---- status helpers ----
+have_lib() { [ -e "$MODSEC_PREFIX/lib/libmodsecurity.so" ]; }
+have_module() { [ -f "$MODULE" ]; }
+abi_ok() { [ -f "$ABI_STAMP" ] && [ "$(cat "$ABI_STAMP" 2>/dev/null)" = "$NGVER" ]; }
+have_crs() { [ -f "$CRS_DIR/crs-setup.conf" ] && [ -d "$CRS_DIR/rules" ]; }
+module_loaded() { grep -qF "ngx_http_modsecurity_module.so" "$NGINX_CONF" 2>/dev/null; }
+
+if [ "$STATUS" = 1 ]; then
+  step "WAF status (nginx $NGVER)"
+  have_lib     && ok "libmodsecurity: installed" || warn "libmodsecurity: MISSING"
+  have_module  && ok "connector .so: installed ($(abi_ok && echo "ABI=$NGVER compatible" || echo "ABI stamp different/missing"))" || warn "connector .so: MISSING"
+  have_crs     && ok "OWASP CRS: installed" || warn "OWASP CRS: MISSING"
+  module_loaded && ok "nginx.conf load_module: PRESENT" || warn "nginx.conf load_module: MISSING"
+  exit 0
+fi
+
+step "Servika WAF installation (ModSecurity $MODSEC_VER + CRS $CRS_VER, nginx $NGVER)"
+
+# Everything ready + ABI-compatible + not forced → fast exit (skip heavy compile).
+if have_lib && have_module && abi_ok && have_crs && module_loaded && [ "$FORCE" = 0 ]; then
+  ok "everything ready + nginx ABI ($NGVER) compatible — nothing to do (use --force to rebuild)"
+  exit 0
+fi
+
+# ---- 1) libmodsecurity (compile from source if absent — HEAVY) ----
+if ! have_lib; then
+  step "compiling libmodsecurity $MODSEC_VER (heavy, several minutes)"
+  dnf install -y gcc-c++ make automake libtool pkgconf-pkg-config flex bison wget git \
+    libxml2-devel pcre2-devel libcurl-devel lmdb-devel openssl-devel >/dev/null 2>&1 || \
+    warn "some dependencies could not be installed — compile will still be attempted"
+  rm -rf "$SRC/ModSecurity"
+  git clone -b "$MODSEC_VER" --depth 1 https://github.com/owasp-modsecurity/ModSecurity "$SRC/ModSecurity" \
+    || die "could not clone ModSecurity"
+  cd "$SRC/ModSecurity"
+  git submodule update --init --recursive --depth 1 >/dev/null 2>&1 || warn "submodule warning"
+  ./build.sh >/dev/null 2>&1 || die "build.sh failed"
+  ./configure --prefix="$MODSEC_PREFIX" --with-pcre2 >/dev/null 2>&1 || die "configure failed (PCRE2)"
+  make -j"$(nproc)" >/dev/null 2>&1 || die "libmodsecurity make failed"
+  make install >/dev/null 2>&1 || die "libmodsecurity make install failed"
+  ok "libmodsecurity installed ($MODSEC_PREFIX)"
+else
+  ok "libmodsecurity already installed ($MODSEC_PREFIX) — skipping"
+fi
+
+# Runtime linker must find libmodsecurity.so.3 (dlopen + runtime).
+if [ ! -f /etc/ld.so.conf.d/modsecurity.conf ] || ! grep -q "$MODSEC_PREFIX/lib" /etc/ld.so.conf.d/modsecurity.conf 2>/dev/null; then
+  echo "$MODSEC_PREFIX/lib" > /etc/ld.so.conf.d/modsecurity.conf
+fi
+ldconfig
+
+# ---- 2) connector (.so) — compiled against the RUNNING nginx ----
+if ! have_module || ! abi_ok || [ "$FORCE" = 1 ]; then
+  step "compiling ModSecurity-nginx connector (against nginx $NGVER)"
+  dnf install -y gcc make wget git pcre2-devel zlib-devel openssl-devel >/dev/null 2>&1 || true
+  [ -d "$SRC/ModSecurity-nginx" ] || \
+    git clone -b "$CONNECTOR_VER" --depth 1 https://github.com/owasp-modsecurity/ModSecurity-nginx "$SRC/ModSecurity-nginx" \
+      || die "could not clone ModSecurity-nginx"
+  cd "$SRC"
+  if [ ! -d "$SRC/nginx-$NGVER" ]; then
+    wget -qO "$SRC/nginx-$NGVER.tar.gz" "https://nginx.org/download/nginx-$NGVER.tar.gz" \
+      || die "could not download nginx-$NGVER source"
+    tar xzf "$SRC/nginx-$NGVER.tar.gz" -C "$SRC" || die "could not extract nginx source"
+  fi
+  cd "$SRC/nginx-$NGVER"
+  export MODSECURITY_INC="$MODSEC_PREFIX/include"
+  export MODSECURITY_LIB="$MODSEC_PREFIX/lib"
+  # el10/GCC 14+: implicit-function-declaration is now an ERROR. nginx's ModSecurity-nginx
+  # feature probe uses printf() without <stdio.h> → the probe FAILS and reports "ModSecurity
+  # library ... not found" (even when the library IS present). -Wno-error=... downgrades the
+  # probe to a warning.
+  ./configure --with-compat \
+    --with-cc-opt="-Wno-error=implicit-function-declaration" \
+    --add-dynamic-module=../ModSecurity-nginx >/tmp/waf-configure.log 2>&1 \
+    || { tail -20 /tmp/waf-configure.log; die "connector configure failed (see /tmp/waf-configure.log)"; }
+  make modules >/tmp/waf-make.log 2>&1 \
+    || { tail -20 /tmp/waf-make.log; die "make modules failed (see /tmp/waf-make.log)"; }
+  [ -f objs/ngx_http_modsecurity_module.so ] || die "module was not produced"
+  mkdir -p "$MODULE_DIR"
+  install -m 0644 objs/ngx_http_modsecurity_module.so "$MODULE"
+  strip "$MODULE" 2>/dev/null || true
+  echo "$NGVER" > "$ABI_STAMP"
+  ok "connector installed ($MODULE, $(du -h "$MODULE" | cut -f1), ABI=$NGVER)"
+else
+  ok "connector already installed + ABI ($NGVER) compatible — skipping"
+fi
+
+# ---- 3) /etc/nginx/modsec config + CRS ----
+step "OWASP CRS + config"
+mkdir -p "$MODSEC_DIR" "$DOMAINS_DIR" "$WORK_DIR"
+
+# CRS (clone if absent; PRESERVE custom rules if present — don't touch)
+if ! have_crs; then
+  rm -rf "$CRS_DIR"
+  git clone -b "$CRS_VER" --depth 1 https://github.com/coreruleset/coreruleset "$CRS_DIR" \
+    || die "could not clone OWASP CRS"
+  ok "CRS $CRS_VER cloned ($CRS_DIR)"
+else
+  ok "CRS already installed — preserving"
+fi
+# crs-setup.conf (create from example if absent; the paranoia SecAction in the example is
+# COMMENTED OUT by default → per-domain conf sets paranoia via id:900000, no conflict)
+if [ ! -f "$CRS_DIR/crs-setup.conf" ]; then
+  [ -f "$CRS_DIR/crs-setup.conf.example" ] && cp "$CRS_DIR/crs-setup.conf.example" "$CRS_DIR/crs-setup.conf" \
+    || die "crs-setup.conf.example missing"
+  ok "crs-setup.conf created"
+fi
+
+# modsecurity.conf (base configuration — per-domain SecRuleEngine OVERRIDES this)
+cat > "$MODSEC_DIR/modsecurity.conf" <<MODSECEOF
+# Servika — ModSecurity base configuration.
+# NOTE: SecRuleEngine is DetectionOnly here; per-domain conf (loaded after Include)
+# overrides with On/DetectionOnly → the real mode always comes from the panel setting.
+SecRuleEngine DetectionOnly
+SecRequestBodyAccess On
+SecRequestBodyLimit 13107200
+SecRequestBodyNoFilesLimit 131072
+SecRequestBodyLimitAction Reject
+SecRequestBodyJsonDepthLimit 512
+SecResponseBodyAccess On
+SecResponseBodyMimeType text/plain text/html text/xml application/json
+SecResponseBodyLimit 1048576
+SecResponseBodyLimitAction ProcessPartial
+SecTmpDir $WORK_DIR
+SecDataDir $WORK_DIR
+SecAuditEngine RelevantOnly
+SecAuditLogRelevantStatus "^(?:5|4(?!04))"
+SecAuditLogParts ABIJDEFHZ
+SecAuditLogType Serial
+SecAuditLog $AUDIT_LOG
+SecArgumentSeparator &
+SecCookieFormat 0
+SecStatusEngine Off
+SecPcreMatchLimit 100000
+SecPcreMatchLimitRecursion 100000
+MODSECEOF
+
+# main.conf — GLOBAL default reference package (per-domain confs reuse its parts).
+cat > "$MODSEC_DIR/main.conf" <<MAINEOF
+# Servika — WAF global reference (per-domain confs at /etc/nginx/modsec/domains/<sk>.conf).
+# This file is not directly attached to a vhost; it exists to show the full rule package in one place.
+Include $MODSEC_DIR/modsecurity.conf
+Include $CRS_DIR/crs-setup.conf
+Include $CRS_DIR/rules/*.conf
+MAINEOF
+ok "modsecurity.conf + main.conf written"
+
+# audit log + work dir writable (nginx user) + SELinux context
+[ -f "$AUDIT_LOG" ] || : > "$AUDIT_LOG"
+chown nginx:nginx "$AUDIT_LOG" 2>/dev/null || true
+chown -R nginx:nginx "$WORK_DIR" 2>/dev/null || true
+chmod 0750 "$WORK_DIR" 2>/dev/null || true
+if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ]; then
+  command -v restorecon >/dev/null 2>&1 && restorecon -R "$AUDIT_LOG" "$WORK_DIR" >/dev/null 2>&1 || true
+fi
+
+# ---- 4) load module in nginx.conf MAIN context (nginx -t GATE + ROLLBACK) ----
+step "Module loading (nginx -t gate + rollback)"
+if module_loaded; then
+  ok "load_module already in nginx.conf — skipping"
+else
+  cp -a "$NGINX_CONF" "$NGINX_CONF.waf-bak"
+  # Insert AFTER the "include /usr/share/nginx/modules/*.conf;" line; otherwise at file start.
+  if grep -qE '^\s*include\s+/usr/share/nginx/modules/\*\.conf;' "$NGINX_CONF"; then
+    awk -v mark="$MARK" -v loadln="$LOADLINE" '
+      { print }
+      $0 ~ /include \/usr\/share\/nginx\/modules\/\*\.conf;/ && !d { print mark; print loadln; d=1 }
+    ' "$NGINX_CONF" > "$NGINX_CONF.wafnew"
+  else
+    { echo "$MARK"; echo "$LOADLINE"; cat "$NGINX_CONF"; } > "$NGINX_CONF.wafnew"
+  fi
+  if ! grep -qF "ngx_http_modsecurity_module.so" "$NGINX_CONF.wafnew"; then
+    rm -f "$NGINX_CONF.wafnew" "$NGINX_CONF.waf-bak"
+    die "load_module line could not be inserted (unexpected nginx.conf structure) — untouched"
+  fi
+  mv -f "$NGINX_CONF.wafnew" "$NGINX_CONF"
+  if nginx -t >/tmp/waf-nginx-t.log 2>&1; then
+    rm -f "$NGINX_CONF.waf-bak"
+    systemctl reload nginx >/dev/null 2>&1 || true
+    ok "module loaded + nginx -t OK + reload"
+  else
+    # 🔴 ROLLBACK: -t failed → restore nginx.conf (whole nginx stays up)
+    mv -f "$NGINX_CONF.waf-bak" "$NGINX_CONF"
+    echo "---- nginx -t ----"; tail -15 /tmp/waf-nginx-t.log
+    die "nginx -t FAILED — nginx.conf RESTORED (nginx intact). Module not loaded."
+  fi
+fi
+
+# Final check: main nginx must still pass -t
+if nginx -t >/dev/null 2>&1; then
+  ok "main nginx -t OK — installation complete"
+else
+  die "unexpected: post-install nginx -t failed (check manually: nginx -t)"
+fi
+
+step "WAF infrastructure READY"
+echo "  • Module loaded (per-domain opt-in) — existing sites are NOT affected."
+echo "  • Panel: domain > Security > WAF to enable/disable + mode + paranoia."
