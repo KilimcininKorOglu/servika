@@ -36,6 +36,8 @@ export default function DomainsPage() {
 
   const [plans, setPlans] = useState<Plan[]>([])
   const [phpVersions, setPhpVersions] = useState<PHPVer[]>([])
+  const [modalLoading, setModalLoading] = useState(false)
+  const [modalReady, setModalReady] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [creationResult, setCreationResult] = useState<CreateResult | null>(null)
@@ -43,25 +45,48 @@ export default function DomainsPage() {
   const [formPhpVersion, setFormPhpVersion] = useState('8.3')
   const [formPlanId, setFormPlanId] = useState<number | ''>('')
 
+  // The domain list depends only on /domains. /plans and /php/versions (which can be
+  // slow due to dnf discovery) are loaded lazily when the create modal opens.
+  // The list renders as soon as domains arrive and never blocks on dnf.
   function load() {
     setLoading(true)
-    Promise.all([
-      api.get<Domain[]>('/domains'),
-      api.get<Plan[]>('/plans').catch(() => ({ data: [] })),
-      api.get<PHPVer[]>('/php/versions').catch(() => ({ data: [] })),
-    ]).then(([domainsResponse, plansResponse, phpVersionsResponse]) => {
-      setItems(domainsResponse.data)
-      setPlans(plansResponse.data as Plan[]); setPhpVersions(phpVersionsResponse.data as PHPVer[])
-    }).catch(error => setError(apiError(error))).finally(() => setLoading(false))
+    api.get<Domain[]>('/domains')
+      .then(r => setItems(r.data))
+      .catch(e => setError(apiError(e)))
+      .finally(() => setLoading(false))
   }
   useEffect(load, [])
 
+  // Load plans + PHP versions for the create modal — separate from the list load.
+  // Called lazily when the modal first opens; cached after the first successful fetch.
+  function loadModalData() {
+    if (modalReady || modalLoading) return
+    setModalLoading(true)
+    Promise.all([
+      api.get<Plan[]>('/plans').catch(() => ({ data: [] })),
+      api.get<PHPVer[]>('/php/versions').catch(() => ({ data: [] })),
+    ]).then(([plansResponse, phpVersionsResponse]) => {
+      const pl = plansResponse.data as Plan[]
+      setPlans(pl)
+      setPhpVersions(phpVersionsResponse.data as PHPVer[])
+      setModalReady(true)
+      // If no plan has been selected yet (modal opened before data arrived) pick the default.
+      setFormPlanId(prev => {
+        if (prev !== '') return prev
+        const d = pl.find(p => p.name === 'Starter') || pl[0]
+        return d ? d.id : ''
+      })
+    }).finally(() => setModalLoading(false))
+  }
+
   function openCreate() {
     setError(null); setSuccess(null); setCreationResult(null)
-    // Prefer the starter plan, then the first plan, or no plan.
+    // Default plan = "Starter" (if data has already arrived, pick it now; otherwise
+    // loadModalData sets it once the fetch completes).
     const defaultPlan = plans.find(plan => plan.name === 'Starter') || plans[0]
     setFormDomainName(''); setFormPhpVersion('8.3'); setFormPlanId(defaultPlan ? defaultPlan.id : '')
     setCreateOpen(true)
+    loadModalData() // lazy: fetch plans/php versions if they haven't been loaded yet
   }
 
   async function submitCreate(e: React.FormEvent) {
@@ -288,7 +313,10 @@ export default function DomainsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">PHP Version</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">
+                  PHP Version
+                  {modalLoading && phpVersions.length === 0 && <span className="ml-2 text-[11px] text-slate-400 dark:text-slate-500">Loading…</span>}
+                </label>
                 <select
                   value={formPhpVersion}
                   onChange={e => setFormPhpVersion(e.target.value)}
@@ -305,7 +333,10 @@ export default function DomainsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Service Plan</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">
+                  Service Plan
+                  {modalLoading && plans.length === 0 && <span className="ml-2 text-[11px] text-slate-400 dark:text-slate-500">Loading…</span>}
+                </label>
                 <select
                   value={formPlanId}
                   onChange={e => setFormPlanId(e.target.value === '' ? '' : Number(e.target.value))}

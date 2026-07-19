@@ -52,13 +52,73 @@ type Version struct {
 	Description string `json:"description,omitempty"`
 }
 
+// ---- Availability cache ----
+// PERF: dnf shell-out is expensive (~0.85s per package) and can hang for SECONDS when dnf is
+// locked or slow (e.g. panel update running dnf). Previously packageAvailable() ran this on
+// the REQUEST PATH (synchronous, 20s timeout) — every caller of AllVersions() (especially
+// /php/versions from the Domains page) would stall. Now dnf is ONLY called in the background
+// sweeper goroutine; the request path only READS the cache and NEVER blocks.
 var (
 	availabilityMu    sync.Mutex
-	availabilityCache = map[string]bool{}
-	availabilityAt    time.Time
+	availabilityCache = map[string]bool{} // pkg -> installable (populated by sweeper)
+	sweeperOnce       sync.Once
+	dnfProbe          = dnfPackageExists // injectable for tests (default: real dnf)
 )
 
-const availabilityTTL = 10 * time.Minute
+const (
+	availabilityTTL = 10 * time.Minute // background sweep period
+	dnfTimeout      = 3 * time.Second  // per-package dnf timeout (sweeper only)
+)
+
+// StartAvailabilitySweeper starts the background dnf sweep loop (once). Called from main at
+// server startup; idempotent. Runs the initial sweep and periodic refresh in a goroutine.
+func StartAvailabilitySweeper() {
+	sweeperOnce.Do(func() { go sweepLoop() })
+}
+
+// sweepLoop runs an initial sweep at boot and refreshes every availabilityTTL. All Remi
+// package availability is probed and the cache updated. Runs independently of the request path.
+func sweepLoop() {
+	sweepOnce()
+	t := time.NewTicker(availabilityTTL)
+	defer t.Stop()
+	for range t.C {
+		sweepOnce()
+	}
+}
+
+// sweepOnce performs a single dnf scan round. Results are written atomically to
+// availabilityCache (no partial updates).
+func sweepOnce() {
+	fresh := map[string]bool{}
+	for _, m := range SupportedVersions {
+		if m.Resource != "remi" {
+			continue // appstream is always available; no need to ask dnf
+		}
+		pkg := "php" + m.Code + "-php-fpm"
+		if _, done := fresh[pkg]; done {
+			continue
+		}
+		fresh[pkg] = dnfProbe(pkg)
+	}
+	availabilityMu.Lock()
+	availabilityCache = fresh
+	availabilityMu.Unlock()
+}
+
+// dnfPackageExists probes a SINGLE package via dnf (called ONLY from the background sweeper).
+// installed OR available → dnf exit 0 when found. Each query is bounded by dnfTimeout; when
+// dnf is locked or slow it gives up after 3s (never affects the request path).
+func dnfPackageExists(pkg string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), dnfTimeout)
+	defer cancel()
+	if exec.CommandContext(ctx, "dnf", "-q", "list", "--installed", pkg).Run() == nil {
+		return true
+	}
+	ctx2, cancel2 := context.WithTimeout(context.Background(), dnfTimeout)
+	defer cancel2()
+	return exec.CommandContext(ctx2, "dnf", "-q", "list", "--available", pkg).Run() == nil
+}
 
 // systemCommandContext creates a privileged command without inheriting panel secrets.
 func systemCommandContext(ctx context.Context, name string, arguments ...string) *exec.Cmd {
@@ -71,29 +131,27 @@ func systemCommandContext(ctx context.Context, name string, arguments ...string)
 	return command
 }
 
-// packageAvailable reports whether a PHP package is installed or available from DNF.
+// packageAvailable reports whether a PHP package is installable on this OS.
+// REQUEST PATH — NEVER calls dnf, only reads the cache. AppStream is always available.
+// When the cache is empty (first boot, sweep not yet completed) returns a safe default
+// (false = "not yet known") and guarantees the sweeper has started; the request NEVER
+// blocks for seconds. Once the sweep finishes the real values land in the cache and
+// subsequent requests get correct results instantly.
 func packageAvailable(m VersionMetadata) bool {
 	if m.Resource == "appstream" {
-		return true
+		return true // system default is always present
 	}
-
-	packageName := "php" + m.Code + "-php-fpm"
+	StartAvailabilitySweeper() // idempotent; main already starts it at boot, this is a safety net
+	pkg := "php" + m.Code + "-php-fpm"
 	availabilityMu.Lock()
-	defer availabilityMu.Unlock()
-	if time.Since(availabilityAt) >= availabilityTTL {
-		availabilityCache = map[string]bool{}
-		availabilityAt = time.Now()
+	v, ok := availabilityCache[pkg]
+	availabilityMu.Unlock()
+	if ok {
+		return v
 	}
-	if available, ok := availabilityCache[packageName]; ok {
-		return available
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-	available := systemCommandContext(ctx, "dnf", "-q", "list", "--available", packageName).Run() == nil ||
-		systemCommandContext(ctx, "dnf", "-q", "list", "--installed", packageName).Run() == nil
-	availabilityCache[packageName] = available
-	return available
+	// Cache not yet populated → don't block the request; default to false. Once the sweep
+	// completes the correct value lands in the cache.
+	return false
 }
 
 // paths returns installation paths for version metadata.

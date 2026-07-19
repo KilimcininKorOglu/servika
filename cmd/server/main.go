@@ -142,6 +142,9 @@ func main() {
 	phpExtH := &phpext.Handlers{DB: d}
 	packagesH := &packages.Handlers{DB: d}
 	phpVersionH := &phpversion.Handlers{DB: d}
+	// PERF: move PHP availability discovery (dnf) to a background sweeper so request-path
+	// callers like /php/versions never block on a slow or locked dnf.
+	phpversion.StartAvailabilitySweeper()
 	pluginH := &plugin.Handlers{DB: d}
 	go pluginH.HealthLoop(context.Background())
 
