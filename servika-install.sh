@@ -332,8 +332,11 @@ step "13) Administrator access (root + PAM)"
 DSN="panel:${DBPASS}@tcp(127.0.0.1:3306)/panel?parseTime=true"
 if [ -x /opt/servika/bin/servika-seed-admin ]; then
   # Seed the users record for ownership and audit; login still uses root through PAM.
+  if [ -z "$ADMIN_PASSWORD" ]; then
+    ADMIN_PASSWORD="$(openssl rand -hex 16)"
+  fi
   /opt/servika/bin/servika-seed-admin -dsn "$DSN" -username root \
-    -password "$(openssl rand -hex 16)" -email "$ADMIN_EMAIL" >/dev/null 2>&1 \
+    -password "$ADMIN_PASSWORD" -email "$ADMIN_EMAIL" >/dev/null 2>&1 \
     && ok "administrator record ready" || warn "seed skipped (not critical)"
 fi
 # Clear seed defaults so the root profile starts empty and can be completed in the profile page.
