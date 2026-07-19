@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"text/template"
 )
@@ -43,6 +44,10 @@ var cacheZoneDefinitionPattern = regexp.MustCompile(`keys_zone\s*=\s*` + regexp.
 // Init configures database-backed state and repairs managed server configuration.
 func Init(db *sql.DB) {
 	packageDB = db
+	// Chicken-egg fix: guarantee per-user ACL (setfacl) and the RAR extractor (bsdtar) are
+	// installed BEFORE HealHomePerms and the file manager RAR extraction rely on them. This
+	// keeps per-user ACL isolation and RAR extraction ready on the very first update + restart.
+	ensureArchiveTools()
 	healCacheZoneOnStartup()
 	healPanelVhostHeadersOnStartup()
 	healPanelIndexNoCacheOnStartup()
@@ -1123,6 +1128,46 @@ func uidGid(username string) (int, int, error) {
 	uid, _ := strconv.Atoi(account.Uid)
 	gid, _ := strconv.Atoi(account.Gid)
 	return uid, gid, nil
+}
+
+// ensureArchiveToolsOnce runs the archive-tool heal at most once per process (no repeated dnf).
+var ensureArchiveToolsOnce sync.Once
+
+// ensureArchiveTools guarantees that per-user ACL (setfacl, acl package) and the RAR extractor
+// (bsdtar, libarchive) are installed on the host, at panel startup, BEFORE HealHomePerms and the
+// file manager RAR extraction rely on them.
+//
+// Why this is needed (chicken-egg): servika-update updates itself first; the step that installs
+// `dnf install acl bsdtar` exists only in the new update script, so it does not run on the first
+// update. Without the tools, hardenHomePerms falls back to the fail-safe group=nginx model
+// (per-user ACL only arrives on the second update) and .rar archives cannot be opened. This heal
+// installs the tools from the panel's own startup, so per-user ACL isolation and RAR extraction
+// are ready even on the first update + restart.
+//
+// Idempotent and once per process (sync.Once). When a tool is already on PATH, dnf is NOT called.
+// When dnf is unavailable (different distribution or minimal environment), the heal is skipped
+// silently so the existing fail-safe branches (group=nginx, RAR unar/unrar fallback) stay in
+// effect. Each install is logged.
+func ensureArchiveTools() {
+	ensureArchiveToolsOnce.Do(func() {
+		if _, err := exec.LookPath("dnf"); err != nil {
+			return
+		}
+		if _, err := exec.LookPath("setfacl"); err != nil {
+			if out, err := exec.Command("dnf", "install", "-y", "acl").CombinedOutput(); err != nil {
+				log.Printf("archive-tool heal: 'acl' install failed (fail-safe group=nginx in effect): %s", strings.TrimSpace(string(out)))
+			} else {
+				log.Printf("archive-tool heal: 'acl' (setfacl) installed; per-user ACL isolation active on first update")
+			}
+		}
+		if _, err := exec.LookPath("bsdtar"); err != nil {
+			if out, err := exec.Command("dnf", "install", "-y", "bsdtar").CombinedOutput(); err != nil {
+				log.Printf("archive-tool heal: 'bsdtar' install failed (RAR may fall back to unar/unrar): %s", strings.TrimSpace(string(out)))
+			} else {
+				log.Printf("archive-tool heal: 'bsdtar' (libarchive) installed; RAR extraction ready on first update")
+			}
+		}
+	})
 }
 
 const homeACLSentinel = "/var/lib/servika/.home_acl_v1_done"
