@@ -57,6 +57,7 @@ func Init(db *sql.DB) {
 	ensureFPMSELinuxFcontext()
 	ensureHTTPDHomeBooleans()
 	HealSSLCertPathsOnStartup()
+	HealSSLVhost443OnStartup()
 	EnsureTenantFPMOnStartup()
 }
 
@@ -993,42 +994,11 @@ func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certP
 	}
 	domainName = strings.ToLower(strings.TrimSpace(domainName))
 	phpVersion = normalizePHP(phpVersion)
-	home := "/home/" + systemUser
-	sslDir, err := prepareCertificateDir(domainName)
+	certPath, keyPath, err = generateSelfSigned(domainName)
 	if err != nil {
 		return "", "", err
 	}
-	certPath = filepath.Join(sslDir, domainName+".crt")
-	keyPath = filepath.Join(sslDir, domainName+".key")
-
-	subj := fmt.Sprintf("/C=TR/ST=Local/L=Servika/O=%s/CN=%s", domainName, domainName)
-	args := []string{
-		"req", "-x509", "-nodes",
-		"-newkey", "rsa:2048",
-		"-keyout", keyPath,
-		"-out", certPath,
-		"-days", "365",
-		"-subj", subj,
-		"-addext", "subjectAltName=DNS:" + domainName + ",DNS:www." + domainName,
-	}
-	if out, err := tenantCommand("openssl", args...).CombinedOutput(); err != nil {
-		return "", "", fmt.Errorf("openssl: %s: %w", strings.TrimSpace(string(out)), err)
-	}
-	if err := applyCertificatePermissions(sslDir, certPath, keyPath); err != nil {
-		return "", "", err
-	}
-
-	_, socket, _ := phpPoolPath(systemUser, phpVersion)
-	if err := renderAndReload(VhostOpts{
-		DomainName: domainName,
-		WebRoot:    filepath.Join(home, "public_html"),
-		PHPSocket:  socket,
-		PHPVersion: phpVersion,
-		CertPath:   certPath,
-		KeyPath:    keyPath,
-		SSLSource:  "self-signed",
-		Backend:    backend,
-	}, systemUser); err != nil {
+	if err := writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPath, "self-signed"); err != nil {
 		return "", "", err
 	}
 	removeHomeCertificate(systemUser, domainName)
@@ -1036,17 +1006,19 @@ func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certP
 }
 
 // EnableLetsEncrypt obtains a certificate with acme.sh and re-renders the vhost with SSL.
+//
+// Rate-limit resilience (teardown fix — see ssl_heal.go):
+//  1. REUSE-BEFORE-ISSUE: when a valid certificate (notAfter > now+30d, covers domain+www,
+//     matching key) exists in the acme store or /etc/pki, deploy it and SKIP issuance.
+//     This never triggers a re-issue with the same SAN set (LE 429 rate-limit).
+//  2. FAIL-SAFE: when issuance fails (including 429), sslFailSafe keeps 443 alive with the
+//     existing/self-signed certificate. The vhost is never dropped to HTTP-only.
 func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, err error) {
 	if err := ValidateDomain(domainName); err != nil {
 		return "", "", err
 	}
 	domainName = strings.ToLower(strings.TrimSpace(domainName))
 	phpVersion = normalizePHP(phpVersion)
-	home := "/home/" + systemUser
-
-	// Prepare the ACME webroot.
-	_ = os.MkdirAll("/var/www/_acme", 0755)
-	_, _ = tenantCommand("restorecon", "-R", "/var/www/_acme").CombinedOutput()
 
 	sslDir, err := prepareCertificateDir(domainName)
 	if err != nil {
@@ -1055,17 +1027,38 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	certPath = filepath.Join(sslDir, domainName+".crt")
 	keyPath = filepath.Join(sslDir, domainName+".key")
 
-	// Request the certificate through the HTTP-01 webroot challenge.
+	// (1) Reuse-before-issue: skip a fresh issuance when a valid certificate exists.
+	if src, srcKey, real := bestCertificate(domainName, 30); src != "" {
+		if cp, kp, e := installToPKI(domainName, src, srcKey); e == nil {
+			source := "self-signed"
+			if real {
+				source = "letsencrypt"
+			}
+			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, source); e != nil {
+				return "", "", e
+			}
+			removeHomeCertificate(systemUser, domainName)
+			log.Printf("ssl reuse: %s valid %s certificate found; fresh LE issuance skipped (rate-limit protection)", domainName, source)
+			return cp, kp, nil
+		}
+	}
+
+	// (2) Real issuance/renewal (only reached when <30 days remain or no cert exists).
+	_ = os.MkdirAll("/var/www/_acme", 0755)
+	_, _ = tenantCommand("restorecon", "-R", "/var/www/_acme").CombinedOutput()
+
+	// --force removed: acme.sh does not re-issue when it already has a valid cert
+	// (rate-limit protection). It still renews inside the renewal window.
 	args := []string{
 		"--issue",
 		"--webroot", "/var/www/_acme",
 		"-d", domainName,
 		"-d", "www." + domainName,
 		"--keylength", "2048",
-		"--force",
 	}
-	if out, err := acmeCommand(args...).CombinedOutput(); err != nil {
-		return "", "", fmt.Errorf("acme.sh issue: %s: %w", strings.TrimSpace(string(out)), err)
+	if out, e := acmeCommand(args...).CombinedOutput(); e != nil {
+		// FAIL-SAFE (no teardown): keep 443 alive with the existing/self-signed cert.
+		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme issue: "+strings.TrimSpace(string(out)))
 	}
 
 	// Install the certificate into the target paths with acme.sh install-cert.
@@ -1077,25 +1070,14 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 		"--fullchain-file", certPath,
 		"--reloadcmd", "systemctl reload nginx",
 	}
-	if out, err := acmeCommand(insArgs...).CombinedOutput(); err != nil {
-		return "", "", fmt.Errorf("acme.sh install-cert: %s: %w", strings.TrimSpace(string(out)), err)
+	if out, e := acmeCommand(insArgs...).CombinedOutput(); e != nil {
+		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme install-cert: "+strings.TrimSpace(string(out)))
 	}
 	if err := applyCertificatePermissions(sslDir, certPath, keyPath); err != nil {
 		return "", "", err
 	}
-
-	_, socket, _ := phpPoolPath(systemUser, phpVersion)
-	if err := renderAndReload(VhostOpts{
-		DomainName: domainName,
-		WebRoot:    filepath.Join(home, "public_html"),
-		PHPSocket:  socket,
-		PHPVersion: phpVersion,
-		CertPath:   certPath,
-		KeyPath:    keyPath,
-		SSLSource:  "letsencrypt",
-		Backend:    backend,
-	}, systemUser); err != nil {
-		return "", "", err
+	if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPath, "letsencrypt"); e != nil {
+		return "", "", e
 	}
 	removeHomeCertificate(systemUser, domainName)
 	return certPath, keyPath, nil
