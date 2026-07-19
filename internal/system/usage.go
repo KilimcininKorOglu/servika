@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"servika/internal/httpx"
+	"servika/internal/resourcelimit"
 )
 
 const PanelVersion = "Servika 0.2.0"
@@ -86,6 +87,10 @@ type Usage struct {
 	Network       NetworkUsage  `json:"network"`
 	Services      []ServiceStat `json:"services"`
 	UptimeSeconds int64         `json:"uptime_sec"`
+
+	// QuotaRebootRequired is true when disk quota enforcement is INACTIVE (fs noquota /
+	// uqnoenforce). A yellow warning banner on the dashboard reads this flag.
+	QuotaRebootRequired bool `json:"quota_reboot_required"`
 }
 
 type cpuStat struct{ total, idle uint64 }
@@ -568,18 +573,22 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	var swap SwapUsage
 	var info SystemInfo
 
+	var quotaReboot bool
+
 	var wg sync.WaitGroup
-	wg.Add(5)
+	wg.Add(6)
 	go func() { defer wg.Done(); disks = ReadDisks() }()
 	go func() { defer wg.Done(); network = ReadNetwork() }()
 	go func() { defer wg.Done(); services = ReadServices() }()
 	go func() { defer wg.Done(); swap = ReadSwap() }()
 	go func() { defer wg.Done(); info = ReadInfo() }()
+	go func() { defer wg.Done(); quotaReboot = resourcelimit.QuotaRebootRequired() }()
 	wg.Wait()
 
 	httpx.WriteJSON(w, http.StatusOK, Usage{
 		System: info, CPU: cpu, Memory: mem, Swap: swap,
 		Disk: disk, Disks: disks, Network: network,
 		Services: services, UptimeSeconds: ReadUptime(),
+		QuotaRebootRequired: quotaReboot,
 	})
 }

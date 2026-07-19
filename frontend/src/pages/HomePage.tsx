@@ -17,6 +17,7 @@ type Service = { name: string; label: string; enabled: boolean }
 type SystemUsage = {
   system: SystemInfo; cpu: CPU; memory: Memory; swap: Swap
   disk: Disk; disks: Disk[]; network: Network; services: Service[]; uptime_sec: number
+  quota_reboot_required?: boolean
 }
 type Domain = { id: number; domain_name: string; ssl: boolean; status: string }
 
@@ -52,6 +53,21 @@ export default function HomePage() {
           Live
         </div>
       </div>
+
+      {/* Disk quota inactive — single reboot required (only when flag is true) */}
+      {s?.quota_reboot_required && (
+        <div className="mb-3 flex items-start gap-3 rounded-2xl border border-amber-300 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/15 px-4 py-3">
+          <svg className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M10.363 3.591 2.257 17.657a1.5 1.5 0 0 0 1.302 2.25h16.882a1.5 1.5 0 0 0 1.302-2.25L13.638 3.591a1.5 1.5 0 0 0-2.598 0Z" />
+          </svg>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-amber-800 dark:text-amber-200">Disk quota inactive</div>
+            <div className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+              Disk quota is inactive — a single server reboot is required to enable it.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Compact KPI ring gauges */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">

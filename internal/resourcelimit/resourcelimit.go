@@ -284,6 +284,50 @@ func mountQuotaActive() (accounting, enforcement bool) {
 	return accounting, enforcement
 }
 
+// ── Quota visibility sentinel ───────────────────────────────────────────────
+// When XFS user-quota enforcement is INACTIVE (noquota → single reboot pending;
+// or uqnoenforce → accounting on / enforcement off), ALL quota operations silently
+// no-op. So the operator doesn't assume "quota is active", HealQuotaOnStartup WRITES
+// this sentinel at boot; it DELETES it when enforcement is active. The status
+// endpoint reads it and drops a quota-reboot-required flag into the UI.
+const quotaSentinelDir = "/etc/servika"
+const quotaRebootSentinel = quotaSentinelDir + "/reboot-required-quota"
+
+// quotaSentinelWrite writes the reboot-required sentinel idempotently. Fixed path;
+// os.WriteFile = O_WRONLY|O_CREATE|O_TRUNC, 0644, root. Content = description +
+// RFC3339 timestamp.
+func quotaSentinelWrite() {
+	if err := os.MkdirAll(quotaSentinelDir, 0755); err != nil {
+		log.Printf("quota sentinel: could not create directory (%s): %v", quotaSentinelDir, err)
+		return
+	}
+	body := "disk quota inactive — rootflags=uquota + reboot required\n" +
+		time.Now().Format(time.RFC3339) + "\n"
+	if err := os.WriteFile(quotaRebootSentinel, []byte(body), 0644); err != nil {
+		log.Printf("quota sentinel write failed (%s): %v", quotaRebootSentinel, err)
+	}
+}
+
+// quotaSentinelDelete removes the stale reboot warning after enforcement becomes
+// active (post-reboot). If the file doesn't exist it is a no-op (idempotent).
+func quotaSentinelDelete() {
+	if err := os.Remove(quotaRebootSentinel); err != nil && !os.IsNotExist(err) {
+		log.Printf("quota sentinel delete failed (%s): %v", quotaRebootSentinel, err)
+	}
+}
+
+// QuotaRebootRequired reports whether disk quota enforcement is INACTIVE (a single
+// reboot is pending). Checks the sentinel file first (HealQuotaOnStartup writes it at
+// boot) to avoid exec; falls back to live XFS enforcement check. The status endpoint
+// uses this to feed the quota_reboot_required UI flag.
+func QuotaRebootRequired() bool {
+	if _, err := os.Stat(quotaRebootSentinel); err == nil {
+		return true
+	}
+	_, enf := mountQuotaActive()
+	return !enf
+}
+
 // quotaLimitArgs builds the arg slice for xfs_quota (safe — testable without shell).
 // soft is set to hard * 0.95. diskMB or inode of 0 means "0" = UNLIMITED for that metric
 // (xfs_quota bhard/ihard=0 → no limit). sk must already pass reQuotaSK before calling.
@@ -309,8 +353,14 @@ func ApplyQuota(ctx context.Context, sk string, diskMB, inode int) error {
 	if !reQuotaSK.MatchString(sk) {
 		return fmt.Errorf("quota: invalid system user format: %q", sk)
 	}
-	if acc, enf := mountQuotaActive(); !acc && !enf {
-		log.Printf("quota: inactive on filesystem (noquota) — single reboot required, skipping %s", sk)
+	if acc, enf := mountQuotaActive(); !enf {
+		// enforcement off → don't write limits (they won't be enforced).
+		// When acc is on this is the uqnoenforce case.
+		if acc {
+			log.Printf("quota: XFS quota accounting is on but enforcement is OFF (uqnoenforce?) — limits NOT enforced, skipping %s", sk)
+		} else {
+			log.Printf("quota: inactive on filesystem (noquota) — single reboot required, skipping %s", sk)
+		}
 		return nil
 	}
 	home := "/home/" + sk
@@ -402,7 +452,11 @@ func QuotaStatus(sk string) (usedMB, limitMB, usedInode, limitInode int) {
 	if !reQuotaSK.MatchString(sk) {
 		return 0, 0, 0, 0
 	}
-	if acc, enf := mountQuotaActive(); !acc && !enf {
+	if acc, enf := mountQuotaActive(); !enf {
+		// enforcement off → limits aren't enforced; don't report usage/limit (return 0).
+		if acc {
+			log.Printf("quota status: XFS quota accounting is on but enforcement is OFF (uqnoenforce?) — limits NOT enforced")
+		}
 		return 0, 0, 0, 0
 	}
 	bUsedKB, bHardKB := quotaReportRow("-b", sk) // KB
@@ -814,14 +868,22 @@ func HealQuotaOnStartup(ctx context.Context, db *sql.DB) {
 	if db == nil {
 		return
 	}
-	// Filesystem quota inactive: log once and exit (all tenants skipped — reboot pending).
-	if acc, enf := mountQuotaActive(); !acc && !enf {
+	// Quota enforcement is off: write the reboot-required sentinel (UI visibility) +
+	// single log + exit.
+	if acc, enf := mountQuotaActive(); !enf {
+		quotaSentinelWrite()
 		var total int
 		_ = db.QueryRowContext(ctx,
 			`SELECT COUNT(*) FROM domains WHERE system_user LIKE 'c\_%'`).Scan(&total)
-		log.Printf("quota heal: 0 tenants / %d skipped (fs noquota — single reboot required)", total)
+		if acc {
+			log.Printf("quota heal: 0 tenants / %d skipped (XFS accounting on but enforcement OFF — uqnoenforce? limits NOT enforced; sentinel written)", total)
+		} else {
+			log.Printf("quota heal: 0 tenants / %d skipped (fs noquota — single reboot required; sentinel written)", total)
+		}
 		return
 	}
+	// Enforcement is active → remove the stale post-reboot warning (idempotent).
+	quotaSentinelDelete()
 	rows, err := db.QueryContext(ctx,
 		`SELECT id FROM domains WHERE system_user LIKE 'c\_%' ORDER BY id`)
 	if err != nil {
