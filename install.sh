@@ -25,7 +25,13 @@ fi
 SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
 [ -z "$SRC" ] && SRC=$(find "$TMP" -maxdepth 1 -mindepth 1 -type d | head -1)
 cd "$SRC" || { echo -e "${c_r}✗ package could not be opened${c_0}"; exit 1; }
-chmod +x servika-install.sh assets/servika-server assets/servika-seed-admin assets/ops/* 2>/dev/null || true
+	MACHINE=$(uname -m)
+	case "$MACHINE" in
+	  x86_64)  ARCH=linux_amd64 ;;
+	  aarch64) ARCH=linux_arm64 ;;
+	  *)       echo -e "${c_r}✗ unsupported architecture: $MACHINE (expected x86_64 or aarch64)${c_0}"; exit 1 ;;
+	esac
+	chmod +x servika-install.sh "assets/$ARCH/servika-server" "assets/$ARCH/servika-seed-admin" assets/ops/* 2>/dev/null || true
 
 echo -e "${c_g}✓ downloaded, starting installation${c_0}\n"
 exec bash servika-install.sh "$@"
