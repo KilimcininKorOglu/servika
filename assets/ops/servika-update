@@ -128,9 +128,39 @@ install -m 0755 "$NEWBIN" "$BIN"
 [ -f "$A/servika-seed-admin" ] && install -m 0755 "$A/servika-seed-admin" "$SEED"
 ok "binary updated"
 
+# 7) frontend-dist — ATOMIC + VERIFIED swap.
+# The old pattern `rm -rf "${FDIST:?}/"* && tar xzf ...` DELETED the running frontend FIRST,
+# so an interrupted extraction or a reboot before flush meant 0-byte files → WHITE SCREEN
+# outage with no rollback. Now the new version is extracted to a separate temp directory,
+# its integrity is VERIFIED, and only then it is atomically swapped in with mv. A
+# corrupted or truncated extraction NEVER touches the running frontend.
 if [ -f "$A/frontend-dist.tar.gz" ]; then
-  rm -rf "${FDIST:?}/"* && tar xzf "$A/frontend-dist.tar.gz" -C "$FDIST"
-  ok "frontend updated"
+  FDNEW="${FDIST}.new.$$"
+  # On extraction failure: clean up the temp directory + roll back the binary (already
+  # swapped in step 6) to the backup so a failed update is a complete no-op on disk.
+  # The service has NOT been restarted yet (restart is step 11) — the running panel
+  # keeps serving the old binary + old frontend without interruption.
+  fdist_abort() {
+    rm -rf "$FDNEW" 2>/dev/null || true
+    install -m 0755 "$BIN.bak" "$BIN" 2>/dev/null || true
+    [ -f "$SEED.bak" ] && install -m 0755 "$SEED.bak" "$SEED" 2>/dev/null || true
+    command -v restorecon >/dev/null && restorecon "$BIN" >/dev/null 2>&1 || true
+    die "$1"
+  }
+  rm -rf "$FDNEW"; mkdir -p "$FDNEW"
+  if ! tar xzf "$A/frontend-dist.tar.gz" -C "$FDNEW"; then
+    fdist_abort "frontend-dist extraction failed — running frontend + previous binary PRESERVED"
+  fi
+  # Integrity gate: index.html must be non-empty + at least one JS bundle must exist
+  # (0-byte or truncated tarballs are rejected).
+  if [ ! -s "$FDNEW/index.html" ] || ! ls "$FDNEW"/assets/index-*.js >/dev/null 2>&1; then
+    fdist_abort "frontend-dist corrupt (index.html or JS bundles empty or missing) — running frontend + previous binary PRESERVED"
+  fi
+  rm -rf "${FDIST}.old"
+  [ -d "$FDIST" ] && mv "$FDIST" "${FDIST}.old"
+  mv "$FDNEW" "$FDIST"
+  sync   # reboot-safe: flush to disk to prevent delayed-allocation data loss
+  ok "frontend updated (atomic verified swap)"
 fi
 
 if [ -f "$A/migrations.tar.gz" ]; then
