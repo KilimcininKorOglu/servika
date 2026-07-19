@@ -181,7 +181,7 @@ fi
 step "Restarting"
 systemctl restart servika
 HEALTHY=0
-for i in 1 2 3 4 5 6; do
+for _i in 1 2 3 4 5 6; do
   sleep 2
   if systemctl is-active --quiet servika && curl -fsS http://127.0.0.1:8080/healthz >/dev/null 2>&1; then HEALTHY=1; break; fi
 done
