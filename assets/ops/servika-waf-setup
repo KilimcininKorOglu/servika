@@ -94,7 +94,7 @@ if ! have_lib; then
   rm -rf "$SRC/ModSecurity"
   git clone -b "$MODSEC_VER" --depth 1 https://github.com/owasp-modsecurity/ModSecurity "$SRC/ModSecurity" \
     || die "could not clone ModSecurity"
-  cd "$SRC/ModSecurity"
+  cd "$SRC/ModSecurity" || exit 1
   git submodule update --init --recursive --depth 1 >/dev/null 2>&1 || warn "submodule warning"
   ./build.sh >/dev/null 2>&1 || die "build.sh failed"
   ./configure --prefix="$MODSEC_PREFIX" --with-pcre2 >/dev/null 2>&1 || die "configure failed (PCRE2)"
@@ -118,13 +118,13 @@ if ! have_module || ! abi_ok || [ "$FORCE" = 1 ]; then
   [ -d "$SRC/ModSecurity-nginx" ] || \
     git clone -b "$CONNECTOR_VER" --depth 1 https://github.com/owasp-modsecurity/ModSecurity-nginx "$SRC/ModSecurity-nginx" \
       || die "could not clone ModSecurity-nginx"
-  cd "$SRC"
+  cd "$SRC" || exit 1
   if [ ! -d "$SRC/nginx-$NGVER" ]; then
     wget -qO "$SRC/nginx-$NGVER.tar.gz" "https://nginx.org/download/nginx-$NGVER.tar.gz" \
       || die "could not download nginx-$NGVER source"
     tar xzf "$SRC/nginx-$NGVER.tar.gz" -C "$SRC" || die "could not extract nginx source"
   fi
-  cd "$SRC/nginx-$NGVER"
+  cd "$SRC/nginx-$NGVER" || exit 1
   export MODSECURITY_INC="$MODSEC_PREFIX/include"
   export MODSECURITY_LIB="$MODSEC_PREFIX/lib"
   # el10/GCC 14+: implicit-function-declaration is now an ERROR. nginx's ModSecurity-nginx
