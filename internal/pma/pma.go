@@ -3,6 +3,7 @@ package pma
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
@@ -24,10 +25,12 @@ type Handlers struct {
 	DB *sql.DB
 }
 
-func randomHex(n int) string {
+func randomHex(n int) (string, error) {
 	b := make([]byte, n)
-	_, _ = rand.Read(b)
-	return hex.EncodeToString(b)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }
 
 // internalAuthToken returns the static token used by signon.php to call the panel.
@@ -70,7 +73,11 @@ func (h *Handlers) RequestToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := randomHex(24)
+	token, err := randomHex(24)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to create a secure signon token")
+		return
+	}
 	expires := time.Now().Add(2 * time.Minute) // Two-minute validity window.
 
 	_, err = h.DB.ExecContext(r.Context(),
@@ -99,8 +106,8 @@ func (h *Handlers) RequestToken(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) Redeem(w http.ResponseWriter, r *http.Request) {
 	auth := r.Header.Get("X-Internal-Auth")
 	expected := internalAuthToken()
-	if expected == "" || auth == "" || auth != expected {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+	if expected == "" || auth == "" || subtle.ConstantTimeCompare([]byte(auth), []byte(expected)) != 1 {
+		httpx.WriteError(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
@@ -108,7 +115,7 @@ func (h *Handlers) Redeem(w http.ResponseWriter, r *http.Request) {
 		Token string `json:"token"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Token == "" {
-		http.Error(w, "token is required", http.StatusBadRequest)
+		httpx.WriteError(w, http.StatusBadRequest, "token is required")
 		return
 	}
 
@@ -120,29 +127,38 @@ func (h *Handlers) Redeem(w http.ResponseWriter, r *http.Request) {
 		 FROM pma_tokens WHERE token=?`, req.Token).
 		Scan(&dbUser, &dbPassword, &dbName, &expiresAt, &used)
 	if errors.Is(err, sql.ErrNoRows) {
-		http.Error(w, "token not found", http.StatusNotFound)
+		httpx.WriteError(w, http.StatusNotFound, "token not found")
 		return
 	}
 	if err != nil {
-		http.Error(w, "database operation failed", http.StatusInternalServerError)
+		httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
 		return
 	}
 	if used == 1 {
-		http.Error(w, "token has already been used", http.StatusGone)
+		httpx.WriteError(w, http.StatusGone, "token has already been used")
 		return
 	}
 	if time.Now().After(expiresAt) {
-		http.Error(w, "token has expired", http.StatusGone)
+		httpx.WriteError(w, http.StatusGone, "token has expired")
 		return
 	}
-	// Mark the token as used.
-	_, _ = h.DB.ExecContext(r.Context(),
-		`UPDATE pma_tokens SET used=1 WHERE token=?`, req.Token)
 
-	json.NewEncoder(w).Encode(map[string]any{
+	result, err := h.DB.ExecContext(r.Context(),
+		`UPDATE pma_tokens SET used=1 WHERE token=? AND used=0 AND expires_at >= NOW()`, req.Token)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
+		return
+	}
+	consumed, err := result.RowsAffected()
+	if err != nil || consumed != 1 {
+		httpx.WriteError(w, http.StatusGone, "token is no longer valid")
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"username": dbUser,
 		"password": dbPassword,
 		"db":       dbName,
-		"host":     "127.0.0.1",
+		"host":     "localhost",
 	})
 }

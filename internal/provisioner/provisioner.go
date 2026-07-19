@@ -45,6 +45,8 @@ func Init(db *sql.DB) {
 	packageDB = db
 	healCacheZoneOnStartup()
 	healPanelVhostHeadersOnStartup()
+	healPanelIndexNoCacheOnStartup()
+	ensurePMAStartup()
 	healVhostsOnStartup()
 	HealHomePerms()
 	ensureFPMSELinuxFcontext()

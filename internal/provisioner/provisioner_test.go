@@ -171,6 +171,25 @@ func TestLegacyTenantHomePermissionsBlockOtherUsersAndPermitWebGroup(t *testing.
 	}
 }
 
+func TestPMASignonAssetMatchesStartupRepairContent(t *testing.T) {
+	asset, err := os.ReadFile("../../assets/phpmyadmin/pma-signon.php")
+	if err != nil {
+		t.Fatalf("read phpMyAdmin signon asset: %v", err)
+	}
+	if string(asset) != pmaSignonPHP {
+		t.Fatal("phpMyAdmin signon asset differs from startup repair content")
+	}
+}
+
+func TestPMAConfigHostUsesLocalSocketAccount(t *testing.T) {
+	config := "$cfg['Servers'][$i]['host'] = '127.0.0.1';"
+	got := pmaConfigHost.ReplaceAllString(config, `${1}'localhost';`)
+	want := "$cfg['Servers'][$i]['host'] = 'localhost';"
+	if got != want {
+		t.Fatalf("phpMyAdmin host repair = %q, want %q", got, want)
+	}
+}
+
 func TestCertificateSystemDirUsesServikaPKIPath(t *testing.T) {
 	if got := certSystemDir("example.com"); got != "/etc/pki/servika/example.com" {
 		t.Fatalf("certSystemDir() = %q, want %q", got, "/etc/pki/servika/example.com")
