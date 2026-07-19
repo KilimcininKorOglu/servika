@@ -1212,29 +1212,47 @@ func HealHomePerms() {
 	}
 	defer rows.Close()
 
+	_, sentinelErr := os.Stat(homeACLSentinel)
+	migrateExisting := os.IsNotExist(sentinelErr)
 	updated := 0
+	migrationSucceeded := aclAvailable()
 	for rows.Next() {
 		var systemUser string
 		if err := rows.Scan(&systemUser); err != nil || !tenantUserPattern.MatchString(systemUser) {
 			continue
 		}
 		home := filepath.Join("/home", systemUser)
-		info, err := os.Stat(home)
-		if err != nil || !info.IsDir() {
+		info, err := os.Lstat(home)
+		if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
 			continue
 		}
-		uid, _, err := uidGid(systemUser)
+		uid, gid, err := uidGid(systemUser)
 		if err != nil {
 			continue
 		}
-		hardenHomePerms(home, uid)
+		if !hardenHomePerms(home, systemUser, uid, gid) {
+			migrationSucceeded = false
+		}
+		if migrateExisting && !hardenHomePermsRecursive(filepath.Join(home, "public_html"), systemUser) {
+			migrationSucceeded = false
+		}
 		updated++
 	}
 	if err := rows.Err(); err != nil {
 		log.Printf("heal tenant home permissions rows: %v", err)
+		migrationSucceeded = false
 	}
 	if updated > 0 {
 		log.Printf("healed permissions for %d tenant homes", updated)
+	}
+	if migrateExisting && migrationSucceeded {
+		if err := os.MkdirAll(filepath.Dir(homeACLSentinel), 0755); err != nil {
+			log.Printf("heal tenant home permissions: could not create sentinel directory: %v", err)
+			return
+		}
+		if err := os.WriteFile(homeACLSentinel, []byte("done\n"), 0644); err != nil {
+			log.Printf("heal tenant home permissions: could not write sentinel: %v", err)
+		}
 	}
 }
 
