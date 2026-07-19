@@ -147,7 +147,7 @@ export default function DomainGitPage() {
   async function cloneRepo() {
     setProcessing(true); setError(null); setSuccess(null); setLatestLog(null); setCloneConfirmOpen(false)
     try {
-      const { data } = await api.post(`/domains/${id}/git/cloneRepo`)
+      const { data } = await api.post(`/domains/${id}/git/clone`)
       setSuccess(`Cloned. Commit: ${data.commit.slice(0, 7)}`)
       setLatestLog(data.log)
       load()
