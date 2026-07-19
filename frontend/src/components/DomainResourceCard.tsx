@@ -17,7 +17,7 @@ export default function DomainResourceCard({ domainId }: { domainId: number | st
 
   function load() {
     setLoading(true)
-    api.get<Summary>(`/domains/${domainId}/resource`)
+    api.get<Summary>(`/domains/${domainId}/resources`)
       .then(r => setSummary(r.data))
       .catch(() => setSummary(null))
       .finally(() => setLoading(false))

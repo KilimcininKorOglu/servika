@@ -55,7 +55,7 @@ export default function SubscriptionDetailPage() {
   useEffect(() => {
     if (!id) return
     loadDomain()
-    api.get<{ disk_mb: { usage: number } }>(`/domains/${id}/resource`)
+    api.get<{ disk_mb: { usage: number } }>(`/domains/${id}/resources`)
       .then(r => setDiskMB(r.data.disk_mb.usage))
       .catch(() => {})
   }, [id])
