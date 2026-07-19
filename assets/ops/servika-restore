@@ -1,0 +1,259 @@
+#!/usr/bin/env bash
+# servika-restore — Restore Servika CORE files from the canonical release.
+#
+# PURPOSE (different from servika-update):
+#   • "restore", not "upgrade to latest" — repairs CORRUPTED core files
+#     (0-byte frontend, deleted/corrupt binary, missing ops-tool) by matching
+#     them to the canonical release.
+#   • INTEGRITY-FIRST / FORCE: restores even when the release hash matches if
+#     integrity is broken (empty/missing/not ELF). Update SKIPS on hash match.
+#
+#   servika-restore              # restore core from canonical (main) → restart if needed
+#   servika-restore --dry-run    # diagnose only + show what would change, touch NOTHING
+#   servika-restore --branch X   # different branch (default: main)
+#   servika-restore --no-db-dump # skip pre-migration DB dump (emergency; CAUTION)
+#   servika-restore --no-restart # repair files but do not restart the service
+#
+# PRESERVES (NEVER touches — does not delete or modify):
+#   • /etc/servika/env           (JWT / DB / Redis secrets)
+#   • MariaDB `panel` DB + ALL customer data
+#   • /home/c_*                  (customer sites)
+#   • /var/backups/servika/*     (existing backups — only ADDS a NEW dump for safety)
+# Only writes these core paths: $BIN, $SEED, $FDIST, $MIGR (adds), $SCRIPTS, /usr/local/bin ops.
+#
+# SAFETY: frontend + binary deployed via ATOMIC + INTEGRITY-VERIFIED swap. A corrupt or
+# truncated download NEVER touches the running file (0-byte outage prevention — same pattern
+# as servika-update). Migrations are applied at service restart → FAIL-CLOSED DB dump is taken
+# first; on an unhealthy start the previous binary + pre-repair DB are rolled back.
+set -euo pipefail
+
+REPO="${SERVIKA_REPO:-servika/servika}"
+BRANCH="main"; DRY=0; DODB=1; DORESTART=1
+
+# Paths are overridable via env (for isolated testing). Production defaults apply.
+PREFIX="${SERVIKA_PREFIX:-/opt/servika}"
+BIN="${SERVIKA_BIN:-$PREFIX/bin/servika-server}"
+SEED="${SERVIKA_SEED:-$PREFIX/bin/servika-seed-admin}"
+FDIST="${SERVIKA_FDIST:-$PREFIX/frontend-dist}"
+MIGR="${SERVIKA_MIGR:-$PREFIX/src/migrations}"
+SCRIPTS="${SERVIKA_SCRIPTS:-$PREFIX/src/scripts}"
+OPSBIN="${SERVIKA_OPSBIN:-/usr/local/bin}"
+SVC="${SERVIKA_SVC:-servika}"
+HEALTH="${SERVIKA_HEALTH:-http://127.0.0.1:8080/healthz}"
+DBBK="${SERVIKA_DBBK:-/usr/local/bin/servika-db-backup}"  # panel DB dump tool
+DBDIR="${SERVIKA_DBDIR:-/var/backups/servika/db}"         # dump location
+PREDUMP=""                                                  # pre-repair dump (restored on rollback)
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY=1 ;;
+    --branch) BRANCH="$2"; shift ;;
+    --branch=*) BRANCH="${1#*=}" ;;
+    --no-db-dump) DODB=0 ;;
+    --no-restart) DORESTART=0 ;;
+    -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+c_b="\033[1;34m"; c_g="\033[32m"; c_r="\033[31m"; c_y="\033[33m"; c_0="\033[0m"
+[ -t 1 ] || { c_b=; c_g=; c_r=; c_y=; c_0=; }
+ok()   { echo -e "  ${c_g}✓${c_0} $*"; }
+warn() { echo -e "  ${c_y}!${c_0} $*"; }
+die()  { echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
+step() { echo -e "${c_b}══ $* ══${c_0}"; }
+
+is_elf() { head -c4 "$1" 2>/dev/null | grep -q $'\x7fELF'; }
+
+[ "$(id -u)" = 0 ] || die "root required (sudo servika-restore)"
+command -v curl >/dev/null || die "curl required"
+command -v tar  >/dev/null || die "tar required"
+
+step "Servika core repair (github.com/$REPO@$BRANCH)$([ $DRY = 1 ] && echo '  [DRY-RUN]')"
+
+# ───────────────────────────────────────────────────────────────────────────
+# a) Fetch the canonical release → $A (assets directory).
+#    SERVIKA_ASSETS_OVERRIDE skips the download (isolated/offline test).
+# ───────────────────────────────────────────────────────────────────────────
+if [ -n "${SERVIKA_ASSETS_OVERRIDE:-}" ]; then
+  A="$SERVIKA_ASSETS_OVERRIDE"
+  [ -d "$A" ] || die "SERVIKA_ASSETS_OVERRIDE directory not found: $A"
+  warn "TEST/OFFLINE: download skipped, local assets used ($A)"
+else
+  echo "  downloading…"
+  TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
+  curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar xz -C "$TMP" \
+    || die "download failed — is the repo public and branch '$BRANCH' available?"
+  SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
+  [ -n "$SRC" ] || die "downloaded archive is empty or has an unexpected structure — repair cancelled"
+  A="$SRC/assets"
+fi
+[ -d "$A" ] || die "assets/ not found ($A) — repo structure differs from expected"
+NEWBIN="$A/servika-server"
+[ -f "$NEWBIN" ] || die "$NEWBIN missing — canonical release is corrupt or incomplete, repair cancelled"
+
+# ───────────────────────────────────────────────────────────────────────────
+# b) INTEGRITY DIAGNOSIS (show first — let the operator see what is broken).
+# ───────────────────────────────────────────────────────────────────────────
+step "Current installation diagnosis"
+BIN_BAD=0
+if [ -s "$FDIST/index.html" ] && ls "$FDIST"/assets/index-*.js >/dev/null 2>&1; then
+  ok "frontend-dist intact (index.html non-empty + JS bundle present)"
+else
+  warn "frontend-dist CORRUPT/MISSING (index.html empty or JS bundle absent) — will be repaired"
+fi
+if [ -f "$BIN" ] && is_elf "$BIN" && [ -x "$BIN" ]; then
+  ok "server binary intact (ELF + executable)"
+else
+  BIN_BAD=1; warn "server binary CORRUPT/MISSING (absent / not ELF / not executable) — will be repaired"
+fi
+MISS_OPS=""
+if [ -d "$A/ops" ]; then
+  for t in "$A"/ops/*; do
+    bn=$(basename "$t"); nm="${bn%.sh}"
+    [ -x "$OPSBIN/$nm" ] || MISS_OPS="$MISS_OPS $nm"
+  done
+fi
+if [ -n "$MISS_OPS" ]; then warn "missing ops-tools:$MISS_OPS — will be installed"; else ok "ops-tools complete"; fi
+
+if [ "$DRY" = 1 ]; then
+  step "DRY-RUN — would repair (applied NOTHING, touched NOTHING)"
+  echo "  • $FDIST/  → atomic verified swap from canonical (always refreshed)"
+  echo "  • $BIN     → $([ $BIN_BAD = 1 ] && echo 'CORRUPT: replaced with canonical binary' || echo 'synced to canonical (if different)') (+ $BIN.bak)"
+  echo "  • $SEED    → synced to canonical seed-admin"
+  echo "  • $MIGR/   → new .sql files ADDED (existing preserved)"
+  echo "  • $OPSBIN + $SCRIPTS → ops-tools synced"
+  echo "  • PRESERVED: /etc/servika/env · panel DB · /home/c_* · /var/backups/servika/*"
+  [ $DODB = 1 ] && echo "  • pre-restart FAIL-CLOSED DB dump → $DBDIR (NOT taken in DRY-RUN)"
+  [ $DORESTART = 1 ] && echo "  • systemctl restart $SVC + /healthz (binary+DB rollback on failure)"
+  exit 0
+fi
+
+# ───────────────────────────────────────────────────────────────────────────
+# c) frontend-dist — ATOMIC + VERIFIED swap (servika-update pattern).
+#    New version extracted to a separate temp directory → index.html non-empty +
+#    JS bundle VERIFIED → atomic mv. Corrupt/truncated extraction NEVER touches
+#    the running frontend.
+# ───────────────────────────────────────────────────────────────────────────
+if [ -f "$A/frontend-dist.tar.gz" ]; then
+  step "frontend-dist repair"
+  FDNEW="${FDIST}.new.$$"
+  rm -rf "$FDNEW"; mkdir -p "$FDNEW"
+  fdist_abort() { rm -rf "$FDNEW" 2>/dev/null || true; die "$1"; }
+  if ! tar xzf "$A/frontend-dist.tar.gz" -C "$FDNEW"; then
+    fdist_abort "frontend-dist extraction failed — RUNNING frontend PRESERVED (untouched)"
+  fi
+  # integrity gate: index.html non-empty + at least one JS bundle (0-byte/truncated tarball rejected)
+  if [ ! -s "$FDNEW/index.html" ] || ! ls "$FDNEW"/assets/index-*.js >/dev/null 2>&1; then
+    fdist_abort "downloaded frontend-dist CORRUPT (index.html or JS bundles empty or missing) — RUNNING frontend PRESERVED"
+  fi
+  rm -rf "${FDIST}.old"
+  [ -d "$FDIST" ] && mv "$FDIST" "${FDIST}.old"
+  mkdir -p "$(dirname "$FDIST")"
+  mv "$FDNEW" "$FDIST"
+  sync   # reboot-safe: flush to disk to prevent delayed-allocation data loss (0-byte)
+  ok "frontend-dist repaired (atomic verified swap)"
+else
+  warn "frontend-dist.tar.gz missing in canonical release — frontend skipped"
+fi
+
+# ───────────────────────────────────────────────────────────────────────────
+# d) binary + seed — VERIFY ELF + size>1MB → .bak backup → atomic replace.
+#    Do NOT overwrite the RUNNING binary with cp -f (TLS-EOF trap): install(1) is
+#    an atomic rename; the running process holds the old inode until restart.
+# ───────────────────────────────────────────────────────────────────────────
+step "server binary repair"
+is_elf "$NEWBIN" || die "downloaded binary is not a valid ELF — binary repair cancelled (existing preserved)"
+NSZ=$(stat -c%s "$NEWBIN" 2>/dev/null || echo 0)
+[ "$NSZ" -gt 1048576 ] || die "downloaded binary is suspiciously small ($NSZ bytes ≤1MB) — repair cancelled (existing preserved)"
+mkdir -p "$(dirname "$BIN")"
+DO_BIN=1
+if [ "$BIN_BAD" = 0 ] && [ -f "$BIN" ] && cmp -s "$NEWBIN" "$BIN"; then
+  DO_BIN=0; ok "binary already byte-identical to canonical — unchanged"
+fi
+if [ "$DO_BIN" = 1 ]; then
+  [ -f "$BIN" ] && cp -f "$BIN" "$BIN.bak" && ok "existing binary backed up ($BIN.bak)" || warn "no existing binary to back up (fresh install scenario)"
+  install -m 0755 "$NEWBIN" "$BIN"
+  ok "binary deployed from canonical (atomic)"
+fi
+if [ -f "$A/servika-seed-admin" ]; then
+  if is_elf "$A/servika-seed-admin"; then
+    [ -f "$SEED" ] && cp -f "$SEED" "$SEED.bak" 2>/dev/null || true
+    install -m 0755 "$A/servika-seed-admin" "$SEED"
+    ok "seed-admin synced"
+  else
+    warn "canonical seed-admin is not ELF — skipped"
+  fi
+fi
+
+# ───────────────────────────────────────────────────────────────────────────
+# e) ops-tools + src/scripts + migrations. Migrations are ADDED (existing preserved).
+# ───────────────────────────────────────────────────────────────────────────
+if [ -f "$A/migrations.tar.gz" ]; then
+  mkdir -p "$MIGR"; tar xzf "$A/migrations.tar.gz" -C "$MIGR"
+  ok "migrations synced ($(ls "$MIGR"/*.sql 2>/dev/null | wc -l) sql, existing preserved)"
+elif [ -d "$A/migrations" ]; then
+  mkdir -p "$MIGR"; cp -n "$A"/migrations/*.sql "$MIGR/" 2>/dev/null || true
+  ok "migrations synced (from directory)"
+fi
+if [ -d "$A/ops" ]; then
+  mkdir -p "$OPSBIN" "$SCRIPTS"
+  for t in "$A"/ops/*; do bn=$(basename "$t"); install -m 0755 "$t" "$OPSBIN/${bn%.sh}" 2>/dev/null || true; done
+  cp "$A"/ops/* "$SCRIPTS/" 2>/dev/null || true
+  ok "ops-tools + src/scripts synced"
+fi
+command -v restorecon >/dev/null && restorecon -R "$(dirname "$BIN")" "$FDIST" >/dev/null 2>&1 || true
+
+# ───────────────────────────────────────────────────────────────────────────
+# f/g) restart + healthcheck + rollback. Migrations run at restart → FAIL-CLOSED
+#      DB dump first. On unhealthy start, roll back to previous binary + pre-repair DB.
+# ───────────────────────────────────────────────────────────────────────────
+if [ "$DORESTART" = 0 ]; then
+  step "Repair complete — service not restarted (--no-restart)"
+  ok "core files synced to canonical (env/DB/sites/backups preserved)"
+  exit 0
+fi
+
+if [ "$DODB" = 1 ]; then
+  step "Pre-restart DB backup (FAIL-CLOSED)"
+  if [ -x "$DBBK" ]; then
+    PREDUMP=$("$DBBK") || die "pre-repair DB backup FAILED — restart cancelled (files repaired, DB untouched)"
+    [ -n "$PREDUMP" ] && [ -f "$PREDUMP" ] || die "pre-repair DB backup could not be verified — restart cancelled"
+    ok "pre-repair dump: $PREDUMP ($(du -h "$PREDUMP" 2>/dev/null | cut -f1))"
+  else
+    die "DB backup tool missing ($DBBK) — migrations without backup refused. Emergency: use --no-db-dump (CAUTION) or --no-restart"
+  fi
+else
+  warn "DB dump SKIPPED (--no-db-dump) — restart will apply migrations with no rollback path"
+fi
+
+step "Restarting"
+systemctl restart "$SVC"
+HEALTHY=0
+for _i in 1 2 3 4 5 6; do
+  sleep 2
+  if systemctl is-active --quiet "$SVC" && curl -fsS "$HEALTH" >/dev/null 2>&1; then HEALTHY=1; break; fi
+done
+
+if [ "$HEALTHY" = 1 ]; then
+  systemctl reload nginx >/dev/null 2>&1 || true
+  ok "panel ACTIVE + /healthz OK"
+  echo -e "${c_g}══ Repair complete — core restored to canonical (env/DB/sites/backups preserved) ══${c_0}"
+else
+  warn "post-repair start failed — rolling back to previous binary + pre-repair DB"
+  [ -f "$BIN.bak" ] && install -m 0755 "$BIN.bak" "$BIN"
+  [ -f "$SEED.bak" ] && install -m 0755 "$SEED.bak" "$SEED" 2>/dev/null || true
+  command -v restorecon >/dev/null && restorecon "$BIN" >/dev/null 2>&1 || true
+  systemctl stop "$SVC" >/dev/null 2>&1 || true
+  if [ -n "$PREDUMP" ] && [ -f "$PREDUMP" ]; then
+    if zcat "$PREDUMP" | mysql; then ok "DB restored to pre-repair backup ($PREDUMP)"
+    else warn "DB restore FAILED — manually: zcat '$PREDUMP' | mysql"; fi
+  fi
+  systemctl restart "$SVC"; sleep 3
+  if systemctl is-active --quiet "$SVC"; then
+    die "rollback complete — panel is running the PREVIOUS version + PREVIOUS DB. Error: journalctl -u $SVC -n 40"
+  else
+    die "CRITICAL: panel did not start even after rollback — journalctl -u $SVC -n 40 (DB backup: $PREDUMP)"
+  fi
+fi

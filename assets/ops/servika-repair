@@ -7,7 +7,23 @@
 #   sections: phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon (default: all)
 #   --dry-run : Show proposed repairs without applying changes
 #   --deep    : Recursively repair ownership in domain homes, which can be slow
+#
+#   servika-repair restore [...]  → CORE FILE CONTENT repair (0-byte frontend / corrupt
+#     binary / missing ops-tool) atomic verified restore from the canonical release.
+#     secrets/data are PRESERVED. Delegates to the separate servika-restore tool
+#     (arguments are forwarded unchanged).
 set -uo pipefail
+
+# 'restore' SUB-COMMAND: delegates content repair to the separate tool. BACKWARDS-COMPATIBLE —
+# existing bare / --quiet / --dry-run / --deep / --only calls repair permissions/ownership/SELinux
+# unchanged; only when the first argument is exactly 'restore' does delegation activate.
+if [ "${1:-}" = "restore" ]; then
+  shift
+  command -v servika-restore >/dev/null 2>&1 && exec servika-restore "$@"
+  _rd="$(cd "$(dirname "$0")" 2>/dev/null && pwd)/servika-restore"
+  [ -x "$_rd" ] && exec "$_rd" "$@"
+  echo "servika-restore not found (core content repair tool is not installed)" >&2; exit 127
+fi
 
 DRY=0; DEEP=0; QUIET=0; ONLY="phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon"
 while [ $# -gt 0 ]; do
