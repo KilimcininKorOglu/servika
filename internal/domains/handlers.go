@@ -516,9 +516,21 @@ func (h *Handlers) ListDatabases(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, out)
 }
 
+// createDBReq models a "New Database" request.
+//
+// When Auto is true (or no fields are supplied), the database name, user, and password are
+// generated automatically (legacy behavior, backward compatible). Otherwise the customer
+// customizes:
+//   - DBSuffix: database name suffix; the panel forcibly prepends the `<system_user>_` prefix.
+//   - UserMode "new": UserSuffix is supplied (prefix prepended); "existing": ExistingUser selected.
+//   - Password: customer supplies a strong password, or leaves it blank for a generated one.
 type createDBReq struct {
-	DBName string `json:"db_name"`
-	DBUser string `json:"db_user"`
+	Auto         bool   `json:"auto"`
+	DBSuffix     string `json:"db_suffix"`
+	UserMode     string `json:"user_mode"` // "new" | "existing"
+	UserSuffix   string `json:"user_suffix"`
+	ExistingUser string `json:"existing_user"`
+	Password     string `json:"password"`
 }
 
 func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
@@ -537,6 +549,10 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
 		return
 	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "Domain query failed")
+		return
+	}
 	if isDemo == 1 {
 		httpx.WriteError(w, http.StatusForbidden, "Databases cannot be added to demo subscriptions")
 		return
@@ -545,28 +561,118 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusForbidden, "Plan limit exceeded")
 		return
 	}
-	if req.DBName == "" {
-		req.DBName = sk + "_db" + strconv.FormatInt(id, 10)
-	}
-	if req.DBUser == "" {
-		req.DBUser = req.DBName
-	}
-	if !credentials.ValidCustomerDBIdentifier(sk, req.DBName) ||
-		!credentials.ValidCustomerDBIdentifier(sk, req.DBUser) {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid database name or user; both must use the domain user prefix")
-		return
-	}
-	pass := credentials.RandomPassword(24)
-	if err := credentials.MySQLCreateDB(h.DB, id, req.DBName, req.DBUser, pass); err != nil {
-		if errors.Is(err, credentials.ErrInvalidMySQLCredentials) {
-			httpx.WriteError(w, http.StatusBadRequest, "Invalid database name or user")
+
+	// Backward compatible: empty body or Auto=true generates everything (legacy behavior).
+	auto := req.Auto ||
+		(req.DBSuffix == "" && req.UserSuffix == "" && req.ExistingUser == "" && req.Password == "")
+
+	var dbName, dbUser, password string
+	existingUserMode := false
+
+	if auto {
+		dbName = sk + "_db" + strconv.FormatInt(id, 10)
+		dbUser = dbName
+		password = credentials.RandomPassword(24)
+	} else {
+		if req.DBSuffix == "" {
+			httpx.WriteError(w, http.StatusBadRequest, "Database name suffix is required")
 			return
 		}
-		httpx.WriteError(w, http.StatusInternalServerError, "Database creation failed")
+		if !credentials.ValidDBSuffix(req.DBSuffix) {
+			httpx.WriteError(w, http.StatusBadRequest, "Invalid database suffix (lowercase letters, digits, underscore only; 1-32 characters)")
+			return
+		}
+		dbName = sk + "_" + req.DBSuffix
+		if !credentials.ValidCustomerDBIdentifier(sk, dbName) {
+			httpx.WriteError(w, http.StatusBadRequest, "Database name too long (prefix + suffix must be at most 64 characters)")
+			return
+		}
+
+		switch req.UserMode {
+		case "existing":
+			if req.ExistingUser == "" || !credentials.ValidCustomerDBIdentifier(sk, req.ExistingUser) {
+				httpx.WriteError(w, http.StatusBadRequest, "Invalid existing user")
+				return
+			}
+			// Ownership: the selected user must actually belong to this domain (prefix guarantee).
+			var n int
+			_ = h.DB.QueryRowContext(r.Context(),
+				`SELECT COUNT(*) FROM db_accounts WHERE domain_id=? AND db_user=?`, id, req.ExistingUser).Scan(&n)
+			if n == 0 {
+				httpx.WriteError(w, http.StatusBadRequest, "Selected user does not belong to this domain")
+				return
+			}
+			dbUser = req.ExistingUser
+			existingUserMode = true
+		default: // "new"
+			if req.UserSuffix == "" {
+				httpx.WriteError(w, http.StatusBadRequest, "User name suffix is required")
+				return
+			}
+			if !credentials.ValidDBSuffix(req.UserSuffix) {
+				httpx.WriteError(w, http.StatusBadRequest, "Invalid user suffix (lowercase letters, digits, underscore only; 1-32 characters)")
+				return
+			}
+			dbUser = sk + "_" + req.UserSuffix
+			if !credentials.ValidCustomerDBIdentifier(sk, dbUser) {
+				httpx.WriteError(w, http.StatusBadRequest, "User name too long (prefix + suffix must be at most 64 characters)")
+				return
+			}
+			if req.Password == "" {
+				password = credentials.RandomPassword(24)
+			} else {
+				if ok, reason := credentials.StrongPassword(req.Password); !ok {
+					httpx.WriteError(w, http.StatusBadRequest, reason)
+					return
+				}
+				password = req.Password
+			}
+		}
+	}
+
+	// Name collision: return a clear 409 instead of a duplicate-key 500.
+	var collision int
+	_ = h.DB.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM db_accounts WHERE db_name=?`, dbName).Scan(&collision)
+	if collision > 0 {
+		httpx.WriteError(w, http.StatusConflict, "A database with this name already exists: "+dbName)
 		return
 	}
+
+	if existingUserMode {
+		if err := credentials.MySQLCreateDBForUser(h.DB, id, dbName, dbUser); err != nil {
+			if errors.Is(err, credentials.ErrInvalidMySQLCredentials) {
+				httpx.WriteError(w, http.StatusBadRequest, "Invalid database name or user")
+				return
+			}
+			httpx.WriteError(w, http.StatusInternalServerError, "Database creation failed")
+			return
+		}
+		// Surface the existing user's password in the response (the customer already owns it).
+		_ = h.DB.QueryRowContext(r.Context(),
+			`SELECT db_pass_plain FROM db_accounts WHERE db_user=? LIMIT 1`, dbUser).Scan(&password)
+	} else {
+		if err := credentials.MySQLCreateDB(h.DB, id, dbName, dbUser, password); err != nil {
+			if errors.Is(err, credentials.ErrInvalidMySQLCredentials) {
+				httpx.WriteError(w, http.StatusBadRequest, "Invalid database name or user")
+				return
+			}
+			httpx.WriteError(w, http.StatusInternalServerError, "Database creation failed")
+			return
+		}
+	}
+
+	// Governor/limits: apply plan limits to the new database user in the background, best-effort.
+	go func(domainID int64) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+		if err := resourcelimit.ApplyAll(ctx, h.DB, domainID); err != nil {
+			log.Printf("resourcelimit apply (db-create) domain=%d: %v", domainID, err)
+		}
+	}(id)
+
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
-		"ok": true, "domain_id": id, "db_name": req.DBName, "db_user": req.DBUser, "db_pass": pass,
+		"ok": true, "domain_id": id, "db_name": dbName, "db_user": dbUser, "db_pass": password,
 	})
 }
 
@@ -586,7 +692,17 @@ func (h *Handlers) DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusForbidden, "Databases cannot be deleted from demo subscriptions")
 		return
 	}
-	if err := credentials.MySQLDropDB(h.DB, dbName, dbUser); err != nil {
+	// When the user is shared across other databases (existing-user mode), drop only the database
+	// and keep the user, so the sharing databases keep their access.
+	var shared int
+	_ = h.DB.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM db_accounts WHERE db_user=? AND db_name<>?`, dbUser, dbName).Scan(&shared)
+	if shared > 0 {
+		if err := credentials.MySQLDropDBKeepUser(h.DB, dbName); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "Database deletion failed")
+			return
+		}
+	} else if err := credentials.MySQLDropDB(h.DB, dbName, dbUser); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "Database deletion failed")
 		return
 	}

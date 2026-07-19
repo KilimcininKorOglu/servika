@@ -58,6 +58,7 @@ func FTPDelete(db *sql.DB, systemUser string) error {
 var (
 	mysqlIdentifierPattern = regexp.MustCompile(`^[A-Za-z0-9_]{1,64}$`)
 	mysqlPasswordPattern   = regexp.MustCompile(`^[ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789]{1,255}$`)
+	mysqlSuffixPattern     = regexp.MustCompile(`^[a-z0-9_]{1,32}$`)
 )
 
 // ValidCustomerDBIdentifier reports whether a database identifier is safe and namespaced to a domain user.
@@ -65,6 +66,37 @@ func ValidCustomerDBIdentifier(systemUser, identifier string) bool {
 	return mysqlIdentifierPattern.MatchString(systemUser) &&
 		mysqlIdentifierPattern.MatchString(identifier) &&
 		strings.HasPrefix(identifier, systemUser+"_")
+}
+
+// ValidDBSuffix reports whether a customer-provided database/user suffix is safe before the panel
+// prepends the `<system_user>_` prefix. Only lowercase letters, digits, and underscore, 1-32 chars.
+// The combined length (prefix + suffix) is additionally validated with mysqlIdentifierPattern.
+func ValidDBSuffix(suffix string) bool {
+	return mysqlSuffixPattern.MatchString(suffix)
+}
+
+// StrongPassword reports whether a customer-chosen database password is strong enough: at least
+// 12 characters and a mix of letters and digits. The returned reason is English for API display.
+func StrongPassword(password string) (bool, string) {
+	if !ValidPassword(password) {
+		return false, "password contains invalid characters (line breaks or control chars)"
+	}
+	if len([]rune(password)) < 12 {
+		return false, "password must be at least 12 characters"
+	}
+	var hasLetter, hasDigit bool
+	for _, r := range password {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z':
+			hasLetter = true
+		case r >= '0' && r <= '9':
+			hasDigit = true
+		}
+	}
+	if !hasLetter || !hasDigit {
+		return false, "password must contain both letters and digits"
+	}
+	return true, ""
 }
 
 func escapeSQLString(value string) string {
@@ -114,6 +146,37 @@ func MySQLCreateDB(db *sql.DB, domainID int64, dbName, dbUser, dbPass string) er
 	return err
 }
 
+// MySQLCreateDBForUser creates a database and grants access to an EXISTING database user without
+// touching that user's password (so other databases sharing the user are not broken). A new
+// db_accounts row is inserted for this domain+database using the existing user's stored password
+// (needed for phpMyAdmin single sign-on). The caller MUST first verify that dbUser belongs to this
+// domain (ownership + prefix check).
+func MySQLCreateDBForUser(db *sql.DB, domainID int64, dbName, dbUser string) error {
+	if !mysqlIdentifierPattern.MatchString(dbName) || !mysqlIdentifierPattern.MatchString(dbUser) {
+		return fmt.Errorf("%w: database name or user", ErrInvalidMySQLCredentials)
+	}
+	var pass string
+	if err := db.QueryRow(
+		`SELECT db_pass_plain FROM db_accounts WHERE db_user=? LIMIT 1`, dbUser).Scan(&pass); err != nil {
+		return fmt.Errorf("existing user password not found: %w", err)
+	}
+	// Create the database and grant the existing user access. No CREATE/ALTER USER statement, so
+	// the user's password is preserved.
+	stmts := []string{
+		fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;", dbName),
+		fmt.Sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO '%s'@'localhost';", dbName, dbUser),
+		"FLUSH PRIVILEGES;",
+	}
+	if out, err := exec.Command("mysql", "-e", strings.Join(stmts, " ")).CombinedOutput(); err != nil {
+		return fmt.Errorf("mysql exec: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+	_, err := db.Exec(
+		`INSERT INTO db_accounts(domain_id, db_name, db_user, db_pass_plain, db_host)
+		 VALUES(?,?,?,?, 'localhost')`,
+		domainID, dbName, dbUser, pass)
+	return err
+}
+
 // MySQLDropDB removes a database and user, then deletes the account metadata.
 func MySQLDropDB(db *sql.DB, dbName, dbUser string) error {
 	if !mysqlIdentifierPattern.MatchString(dbName) {
@@ -128,6 +191,21 @@ func MySQLDropDB(db *sql.DB, dbName, dbUser string) error {
 		"FLUSH PRIVILEGES;",
 	}
 	if out, err := exec.Command("mysql", "-e", strings.Join(stmts, " ")).CombinedOutput(); err != nil {
+		return fmt.Errorf("mysql drop: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+	_, err := db.Exec(`DELETE FROM db_accounts WHERE db_name=?`, dbName)
+	return err
+}
+
+// MySQLDropDBKeepUser drops only the database and its metadata row, leaving the user intact. Use
+// this for single-database deletion when the user is shared across other databases (existing-user
+// mode), so the sharing databases keep their access.
+func MySQLDropDBKeepUser(db *sql.DB, dbName string) error {
+	if !mysqlIdentifierPattern.MatchString(dbName) {
+		return fmt.Errorf("%w: database name", ErrInvalidMySQLCredentials)
+	}
+	if out, err := exec.Command("mysql", "-e",
+		fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", dbName)).CombinedOutput(); err != nil {
 		return fmt.Errorf("mysql drop: %s: %w", strings.TrimSpace(string(out)), err)
 	}
 	_, err := db.Exec(`DELETE FROM db_accounts WHERE db_name=?`, dbName)
