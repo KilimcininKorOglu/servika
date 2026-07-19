@@ -517,7 +517,6 @@ var serviceList = []struct{ name, label string }{
 	{"servika", "Panel"},
 	{"nginx", "Nginx"},
 	{"mariadb", "MariaDB"},
-	{"pure-ftpd-mysql", "FTP (Pure-FTPd)"},
 	{"pure-ftpd", "FTP"},
 	{"named", "DNS (BIND)"},
 	{"php74-php-fpm", "PHP 7.4-FPM"},
