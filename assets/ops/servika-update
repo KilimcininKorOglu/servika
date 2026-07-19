@@ -23,6 +23,14 @@ DB_BACKUP=/usr/local/bin/servika-db-backup
 DB_BACKUP_DIR=/var/backups/servika/db
 PRE_UPDATE_DUMP=""
 
+# Detect host architecture for binary selection.
+MACHINE=$(uname -m)
+case "$MACHINE" in
+  x86_64)  ARCH=linux_amd64 ;;
+  aarch64) ARCH=linux_arm64 ;;
+  *)       die "unsupported architecture: $MACHINE (expected x86_64 or aarch64)" ;;
+esac
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY=1 ;;
@@ -57,12 +65,14 @@ curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar x
   || die "download failed; verify that the repository is public and branch '$BRANCH' exists"
 SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
 A="$SRC/assets"
-NEWBIN="$A/servika-server"
-[ -f "$NEWBIN" ] || die "$A/servika-server is missing"
+NEWBIN="$A/$ARCH/servika-server"
+[ -f "$NEWBIN" ] || die "$A/$ARCH/servika-server is missing"
 
 # Validate the binary without executing it, then hash every release component so updates to
 # frontend, migrations, operations tools, or systemd units are not skipped.
 head -c4 "$NEWBIN" | grep -q $'\x7fELF' || die "the downloaded binary is not a valid ELF file"
+# Cross-arch guard: prevent deploying an amd64 binary onto an arm64 host (or vice versa).
+command -v file >/dev/null 2>&1 && file "$NEWBIN" | grep -q "$MACHINE" || die "the downloaded binary does not match the host architecture ($MACHINE)"
 CURVER=$(version); [ -n "$CURVER" ] || CURVER="?"
 echo "  current version: $CURVER"
 RELHASH=$( { sha256sum "$NEWBIN" | cut -d' ' -f1
@@ -125,7 +135,7 @@ cp -f "$BIN" "$BIN.bak"
 ok "current binary backed up"
 
 install -m 0755 "$NEWBIN" "$BIN"
-[ -f "$A/servika-seed-admin" ] && install -m 0755 "$A/servika-seed-admin" "$SEED"
+[ -f "$A/$ARCH/servika-seed-admin" ] && install -m 0755 "$A/$ARCH/servika-seed-admin" "$SEED"
 ok "binary updated"
 
 # 7) frontend-dist — ATOMIC + VERIFIED swap.

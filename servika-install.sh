@@ -5,9 +5,19 @@
 #   ./servika-install.sh [--admin-password <password>] [--admin-email <email>]
 #
 # The assets directory must be located next to this script:
-#   servika-server  servika-seed-admin  frontend-dist.tar.gz
-#   migrations.tar.gz  nginx/*  php-fpm/*  phpmyadmin/*  systemd/*  ops/*
+# The assets directory must be located next to this script:
+#   linux_amd64/servika-server  linux_amd64/servika-seed-admin
+#   linux_arm64/servika-server  linux_arm64/servika-seed-admin
+#   frontend-dist.tar.gz  migrations.tar.gz  nginx/*  php-fpm/*  phpmyadmin/*  systemd/*  ops/*
 set -uo pipefail
+
+# Detect host architecture for binary selection.
+MACHINE=$(uname -m)
+case "$MACHINE" in
+  x86_64)  ARCH=linux_amd64 ;;
+  aarch64) ARCH=linux_arm64 ;;
+  *)       echo "unsupported architecture: $MACHINE (expected x86_64 or aarch64)" >&2; exit 1 ;;
+esac
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 A="$HERE/assets"
@@ -125,8 +135,8 @@ ok "/etc/servika/env (JWT + DB DSN + Redis administrator generated)"
 
 # ============ 6) ARTIFACT DEPLOYMENT ============
 step "6) Panel binary + frontend + migrations"
-install -m 0755 "$A/servika-server" /opt/servika/bin/servika-server
-[ -f "$A/servika-seed-admin" ] && install -m 0755 "$A/servika-seed-admin" /opt/servika/bin/servika-seed-admin
+install -m 0755 "$A/$ARCH/servika-server" /opt/servika/bin/servika-server
+[ -f "$A/$ARCH/servika-seed-admin" ] && install -m 0755 "$A/$ARCH/servika-seed-admin" /opt/servika/bin/servika-seed-admin
 tar xzf "$A/frontend-dist.tar.gz" -C /opt/servika/frontend-dist && ok "frontend-dist"
 tar xzf "$A/migrations.tar.gz" -C /opt/servika/src/migrations && ok "migrations ($(ls /opt/servika/src/migrations/*.sql 2>/dev/null | wc -l) SQL)"
 # Operations tools and phpMyAdmin signon

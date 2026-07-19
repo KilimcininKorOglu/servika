@@ -44,6 +44,14 @@ DBBK="${SERVIKA_DBBK:-/usr/local/bin/servika-db-backup}"  # panel DB dump tool
 DBDIR="${SERVIKA_DBDIR:-/var/backups/servika/db}"         # dump location
 PREDUMP=""                                                  # pre-repair dump (restored on rollback)
 
+# Detect host architecture for binary selection.
+MACHINE=$(uname -m)
+case "$MACHINE" in
+  x86_64)  ARCH=linux_amd64 ;;
+  aarch64) ARCH=linux_arm64 ;;
+  *)       die "unsupported architecture: $MACHINE (expected x86_64 or aarch64)" ;;
+esac
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY=1 ;;
@@ -90,7 +98,7 @@ else
   A="$SRC/assets"
 fi
 [ -d "$A" ] || die "assets/ not found ($A) — repo structure differs from expected"
-NEWBIN="$A/servika-server"
+NEWBIN="$A/$ARCH/servika-server"
 [ -f "$NEWBIN" ] || die "$NEWBIN missing — canonical release is corrupt or incomplete, repair cancelled"
 
 # ───────────────────────────────────────────────────────────────────────────
@@ -165,6 +173,8 @@ fi
 # ───────────────────────────────────────────────────────────────────────────
 step "server binary repair"
 is_elf "$NEWBIN" || die "downloaded binary is not a valid ELF — binary repair cancelled (existing preserved)"
+# Cross-arch guard: prevent deploying an amd64 binary onto an arm64 host (or vice versa).
+command -v file >/dev/null 2>&1 && file "$NEWBIN" | grep -q "$MACHINE" || die "the downloaded binary does not match the host architecture ($MACHINE) — repair cancelled (existing preserved)"
 NSZ=$(stat -c%s "$NEWBIN" 2>/dev/null || echo 0)
 [ "$NSZ" -gt 1048576 ] || die "downloaded binary is suspiciously small ($NSZ bytes ≤1MB) — repair cancelled (existing preserved)"
 mkdir -p "$(dirname "$BIN")"
@@ -177,10 +187,10 @@ if [ "$DO_BIN" = 1 ]; then
   install -m 0755 "$NEWBIN" "$BIN"
   ok "binary deployed from canonical (atomic)"
 fi
-if [ -f "$A/servika-seed-admin" ]; then
-  if is_elf "$A/servika-seed-admin"; then
+if [ -f "$A/$ARCH/servika-seed-admin" ]; then
+  if is_elf "$A/$ARCH/servika-seed-admin"; then
     [ -f "$SEED" ] && cp -f "$SEED" "$SEED.bak" 2>/dev/null || true
-    install -m 0755 "$A/servika-seed-admin" "$SEED"
+    install -m 0755 "$A/$ARCH/servika-seed-admin" "$SEED"
     ok "seed-admin synced"
   else
     warn "canonical seed-admin is not ELF — skipped"

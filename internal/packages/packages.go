@@ -90,7 +90,7 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 		name := nameArch
 		if i := strings.LastIndex(name, "."); i > 0 {
 			suf := name[i+1:]
-			if suf == "x86_64" || suf == "noarch" || suf == "i686" || suf == "src" {
+			if suf == "x86_64" || suf == "noarch" || suf == "i686" || suf == "src" || suf == "aarch64" {
 				name = name[:i]
 			}
 		}
