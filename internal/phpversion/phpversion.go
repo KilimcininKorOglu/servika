@@ -112,12 +112,12 @@ func sweepOnce() {
 func dnfPackageExists(pkg string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), dnfTimeout)
 	defer cancel()
-	if exec.CommandContext(ctx, "dnf", "-q", "list", "--installed", pkg).Run() == nil {
+	if systemCommandContext(ctx, "dnf", "-q", "list", "--installed", pkg).Run() == nil {
 		return true
 	}
 	ctx2, cancel2 := context.WithTimeout(context.Background(), dnfTimeout)
 	defer cancel2()
-	return exec.CommandContext(ctx2, "dnf", "-q", "list", "--available", pkg).Run() == nil
+	return systemCommandContext(ctx2, "dnf", "-q", "list", "--available", pkg).Run() == nil
 }
 
 // systemCommandContext creates a privileged command without inheriting panel secrets.
