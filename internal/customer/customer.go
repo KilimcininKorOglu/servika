@@ -29,12 +29,12 @@ type loginReq struct {
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	var req loginReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	req.Username = strings.TrimSpace(req.Username)
 	if req.Username == "" || req.Password == "" {
-		httpx.WriteError(w, http.StatusBadRequest, "Username and password are required")
+		httpx.WriteError(w, http.StatusBadRequest, "username and password are required")
 		return
 	}
 
@@ -48,20 +48,20 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		 WHERE fa.username = ?`, req.Username).
 		Scan(&ftpID, &domainID, &storedPassword, &status, &domainName)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusUnauthorized, "Invalid username or password")
+		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Authentication failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "authentication failed")
 		return
 	}
 	if status != "active" {
-		httpx.WriteError(w, http.StatusForbidden, "FTP account is suspended")
+		httpx.WriteError(w, http.StatusForbidden, "fTP account is suspended")
 		return
 	}
 	// Plain text comparison (Pure-FTPd MYSQLCrypt cleartext)
 	if req.Password != storedPassword {
-		httpx.WriteError(w, http.StatusUnauthorized, "Invalid username or password")
+		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
 
@@ -74,7 +74,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	tok, exp, err := auth.GenerateCustomer(h.Secret, c, 24*3600)
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Token generation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
 		return
 	}
 

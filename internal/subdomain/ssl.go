@@ -109,7 +109,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 	}
 	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)
 	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "PHP version is not installed on the server")
+		httpx.WriteError(w, http.StatusBadRequest, "pHP version is not installed on the server")
 		return
 	}
 	certPath, keyPath := certificatePaths(systemUser, fqdn)
@@ -124,7 +124,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		err = issueSelfSigned(fqdn, certPath, keyPath)
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "SSL installation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "sSL installation failed")
 		return
 	}
 	_ = os.Chmod(keyPath, 0o640)
@@ -133,7 +133,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 
 	config := vhostSSL(fqdn, docrootOf(systemUser, fqdn), socket, certPath, keyPath)
 	if err := applyVhost(confPath(systemUser, name), config); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "SSL installation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "sSL installation failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "fqdn": fqdn, "type": certificateType})
@@ -161,7 +161,7 @@ func (h *Handlers) SSLRemove(w http.ResponseWriter, r *http.Request) {
 	}
 	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)
 	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "PHP version is not installed on the server")
+		httpx.WriteError(w, http.StatusBadRequest, "pHP version is not installed on the server")
 		return
 	}
 	if err := applyVhost(confPath(systemUser, name), vhost(fqdn, docrootOf(systemUser, fqdn), socket)); err != nil {

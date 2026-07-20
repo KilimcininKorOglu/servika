@@ -24,7 +24,7 @@ func (h *Handlers) claims(r *http.Request) *Claims {
 func (h *Handlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	c := h.claims(r)
 	if c == nil {
-		httpx.WriteError(w, http.StatusUnauthorized, "No active session")
+		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
 		return
 	}
 	var b struct {
@@ -34,13 +34,13 @@ func (h *Handlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		PrefLang  string `json:"pref_lang"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	b.FullName = strings.TrimSpace(b.FullName)
 	b.Email = strings.TrimSpace(b.Email)
 	if b.Email != "" && !strings.Contains(b.Email, "@") {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid email address")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid email address")
 		return
 	}
 	theme := "system"
@@ -54,7 +54,7 @@ func (h *Handlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if _, err := h.DB.Exec(
 		`UPDATE users SET full_name=?, email=?, pref_theme=?, pref_lang=?, updated_at=NOW() WHERE id=?`,
 		b.FullName, b.Email, theme, language, c.UserID); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Profile update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "profile update failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
@@ -64,7 +64,7 @@ func (h *Handlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	c := h.claims(r)
 	if c == nil {
-		httpx.WriteError(w, http.StatusUnauthorized, "No active session")
+		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
 		return
 	}
 	var b struct {
@@ -72,22 +72,22 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		New     string `json:"new"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if len(b.New) < 8 {
-		httpx.WriteError(w, http.StatusBadRequest, "New password must be at least 8 characters")
+		httpx.WriteError(w, http.StatusBadRequest, "new password must be at least 8 characters")
 		return
 	}
 	if !verifyRootPassword(b.Current) {
 		writeAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", false)
-		httpx.WriteError(w, http.StatusUnauthorized, "Current password is incorrect")
+		httpx.WriteError(w, http.StatusUnauthorized, "current password is incorrect")
 		return
 	}
 	cmd := exec.Command("chpasswd")
 	cmd.Stdin = strings.NewReader("root:" + b.New)
 	if _, err := cmd.CombinedOutput(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Password change failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "password change failed")
 		return
 	}
 	writeAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", true)
@@ -97,7 +97,7 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 // GET /me/2fa/setup — generate a new secret (not yet activated), return otpauth URI
 func (h *Handlers) TwoFASetup(w http.ResponseWriter, r *http.Request) {
 	if h.claims(r) == nil {
-		httpx.WriteError(w, http.StatusUnauthorized, "No active session")
+		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
 		return
 	}
 	secret := TOTPGenerateSecret()
@@ -119,7 +119,7 @@ func (h *Handlers) TwoFASetup(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) TwoFAEnable(w http.ResponseWriter, r *http.Request) {
 	c := h.claims(r)
 	if c == nil {
-		httpx.WriteError(w, http.StatusUnauthorized, "No active session")
+		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
 		return
 	}
 	var b struct {
@@ -129,7 +129,7 @@ func (h *Handlers) TwoFAEnable(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&b)
 	b.Secret = strings.TrimSpace(b.Secret)
 	if !TOTPVerify(b.Secret, b.Code) {
-		httpx.WriteError(w, http.StatusBadRequest, "Code verification failed; enter the six-digit code from your authenticator app")
+		httpx.WriteError(w, http.StatusBadRequest, "code verification failed; enter the six-digit code from your authenticator app")
 		return
 	}
 	if _, err := h.DB.Exec(`UPDATE users SET totp_secret=?, totp_enabled=1 WHERE id=?`, b.Secret, c.UserID); err != nil {
@@ -144,7 +144,7 @@ func (h *Handlers) TwoFAEnable(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) TwoFADisable(w http.ResponseWriter, r *http.Request) {
 	c := h.claims(r)
 	if c == nil {
-		httpx.WriteError(w, http.StatusUnauthorized, "No active session")
+		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
 		return
 	}
 	var b struct {
@@ -154,7 +154,7 @@ func (h *Handlers) TwoFADisable(w http.ResponseWriter, r *http.Request) {
 	var secret string
 	_ = h.DB.QueryRow(`SELECT totp_secret FROM users WHERE id=?`, c.UserID).Scan(&secret)
 	if !TOTPVerify(secret, b.Code) {
-		httpx.WriteError(w, http.StatusBadRequest, "Code verification failed")
+		httpx.WriteError(w, http.StatusBadRequest, "code verification failed")
 		return
 	}
 	if _, err := h.DB.Exec(`UPDATE users SET totp_secret='', totp_enabled=0 WHERE id=?`, c.UserID); err != nil {

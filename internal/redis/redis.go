@@ -214,12 +214,12 @@ func (h *Handlers) Open(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if adminPass() == "" {
-		httpx.WriteError(w, http.StatusServiceUnavailable, "Redis is not configured (SERVIKA_REDIS_ADMIN_PASS is missing)")
+		httpx.WriteError(w, http.StatusServiceUnavailable, "redis is not configured (SERVIKA_REDIS_ADMIN_PASS is missing)")
 		return
 	}
 	password := genPass()
 	if err := enableUser(systemUser, password); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Redis ACL could not be created")
+		httpx.WriteError(w, http.StatusInternalServerError, "redis ACL could not be created")
 		return
 	}
 	if _, err := h.DB.ExecContext(r.Context(),
@@ -227,7 +227,7 @@ func (h *Handlers) Open(w http.ResponseWriter, r *http.Request) {
 		 ON DUPLICATE KEY UPDATE system_user=VALUES(system_user), redis_pass=VALUES(redis_pass), enabled=1`,
 		id, systemUser, password); err != nil {
 		disableUser(systemUser) // Roll back the ACL if the database write fails.
-		httpx.WriteError(w, http.StatusInternalServerError, "Redis settings could not be saved")
+		httpx.WriteError(w, http.StatusInternalServerError, "redis settings could not be saved")
 		return
 	}
 	// Connect existing WordPress installations on a best-effort basis, retaining the manual snippet otherwise.

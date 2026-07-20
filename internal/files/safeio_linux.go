@@ -19,15 +19,14 @@ package files
 import (
 	"io"
 	"os"
-	"os/user"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"golang.org/x/sys/unix"
 )
-
 
 type usrInfo struct{ UID, GID int }
 

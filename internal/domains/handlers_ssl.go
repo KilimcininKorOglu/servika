@@ -36,11 +36,11 @@ func (h *Handlers) SSLStatus(w http.ResponseWriter, r *http.Request) {
 		 FROM domains WHERE id=?`, id).
 		Scan(&enabled, &source, &certPath, &keyPath, &expiresAt)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database read failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, sslStatusResp{
@@ -56,14 +56,14 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var req sslIssueReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if req.Type == "" {
 		req.Type = "self-signed"
 	}
 	if req.Type != "self-signed" && req.Type != "letsencrypt" {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid type (self-signed|letsencrypt)")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid type (self-signed|letsencrypt)")
 		return
 	}
 	var domainName, systemUser, phpVersion, backend string
@@ -72,11 +72,11 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		`SELECT domain_name, system_user, php_version, is_demo, COALESCE(web_backend,'php-fpm') FROM domains WHERE id=?`, id).
 		Scan(&domainName, &systemUser, &phpVersion, &isDemo, &backend)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "SSL cannot be installed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "sSL cannot be installed for demo subscriptions")
 		return
 	}
 
@@ -88,7 +88,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		certPath, keyPath, err = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "SSL installation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "sSL installation failed")
 		return
 	}
 
@@ -100,7 +100,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE domains SET ssl_enabled=1, ssl_source=?, cert_path=?, key_path=?, ssl_expiry=?
 		 WHERE id=?`, req.Type, certPath, keyPath, expiresAt, id); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
 		return
 	}
 
@@ -122,21 +122,21 @@ func (h *Handlers) SSLDisable(w http.ResponseWriter, r *http.Request) {
 		`SELECT domain_name, system_user, php_version, is_demo, COALESCE(web_backend,'php-fpm') FROM domains WHERE id=?`, id).
 		Scan(&domainName, &systemUser, &phpVersion, &isDemo, &backend)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "Demo subscriptions cannot be modified")
+		httpx.WriteError(w, http.StatusForbidden, "demo subscriptions cannot be modified")
 		return
 	}
 	if err := provisioner.DisableSSL(domainName, systemUser, phpVersion, backend); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "SSL disable failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "sSL disable failed")
 		return
 	}
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE domains SET ssl_enabled=0, ssl_source='', cert_path='', key_path='', ssl_expiry=NULL
 		 WHERE id=?`, id); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})

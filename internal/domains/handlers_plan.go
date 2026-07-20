@@ -27,7 +27,7 @@ func (h *Handlers) SetPlan(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var req setPlanReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	// verify the plan exists
@@ -35,11 +35,11 @@ func (h *Handlers) SetPlan(w http.ResponseWriter, r *http.Request) {
 		var n int
 		if err := h.DB.QueryRowContext(r.Context(),
 			`SELECT COUNT(*) FROM service_plans WHERE id=?`, *req.PlanID).Scan(&n); err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "Database operation failed")
+			httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
 			return
 		}
 		if n == 0 {
-			httpx.WriteError(w, http.StatusBadRequest, "Plan not found")
+			httpx.WriteError(w, http.StatusBadRequest, "plan not found")
 			return
 		}
 	}
@@ -48,16 +48,16 @@ func (h *Handlers) SetPlan(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.QueryRowContext(r.Context(),
 		`SELECT system_user FROM domains WHERE id=?`, id).Scan(&systemUser); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+			httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		} else {
-			httpx.WriteError(w, http.StatusInternalServerError, "Database operation failed")
+			httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
 		}
 		return
 	}
 	// update
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE domains SET plan_id=? WHERE id=?`, req.PlanID, id); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Plan assignment failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "plan assignment failed")
 		return
 	}
 	// Reapply resource limits in the background with an independent context.

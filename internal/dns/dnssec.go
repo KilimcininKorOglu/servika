@@ -65,7 +65,7 @@ func (h *Handlers) PostDNSSEC(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo {
-		httpx.WriteError(w, http.StatusForbidden, "DNSSEC cannot be changed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "dNSSEC cannot be changed for demo subscriptions")
 		return
 	}
 	var request struct {
@@ -94,7 +94,7 @@ func (h *Handlers) PostDNSSEC(w http.ResponseWriter, r *http.Request) {
 			log.Printf("rollback DNSSEC state for domain %d: %v", id, rollbackErr)
 		}
 		log.Printf("write DNS zone after DNSSEC change for domain %d: %v", id, err)
-		httpx.WriteError(w, http.StatusInternalServerError, "DNS zone could not be updated")
+		httpx.WriteError(w, http.StatusInternalServerError, "dNS zone could not be updated")
 		return
 	}
 

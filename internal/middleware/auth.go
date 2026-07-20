@@ -46,12 +46,12 @@ func RequireAuth(secret []byte) func(http.Handler) http.Handler {
 			raw := strings.TrimSpace(r.Header.Get("Authorization"))
 			const p = "Bearer "
 			if !strings.HasPrefix(raw, p) {
-				httpx.WriteError(w, http.StatusUnauthorized, "Authorization required")
+				httpx.WriteError(w, http.StatusUnauthorized, "authorization required")
 				return
 			}
 			tokenRaw := raw[len(p):]
 			if len(tokenRaw) > 8192 {
-				httpx.WriteError(w, http.StatusUnauthorized, "Invalid session")
+				httpx.WriteError(w, http.StatusUnauthorized, "invalid session")
 				return
 			}
 
@@ -67,7 +67,7 @@ func RequireAuth(secret []byte) func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
-			httpx.WriteError(w, http.StatusUnauthorized, "Invalid session")
+			httpx.WriteError(w, http.StatusUnauthorized, "invalid session")
 		})
 	}
 }
@@ -82,7 +82,7 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := ClaimsFrom(r)
 			if c == nil || !allowed[c.Role] {
-				httpx.WriteError(w, http.StatusForbidden, "Insufficient permissions")
+				httpx.WriteError(w, http.StatusForbidden, "insufficient permissions")
 				return
 			}
 			next.ServeHTTP(w, r)
@@ -94,7 +94,7 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 func AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if ClaimsFrom(r) == nil {
-			httpx.WriteError(w, http.StatusForbidden, "Administrator access required")
+			httpx.WriteError(w, http.StatusForbidden, "administrator access required")
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -116,21 +116,21 @@ func CustomerScopeParam(param string) func(http.Handler) http.Handler {
 			}
 			mc := CustomerClaimsFrom(r)
 			if mc == nil {
-				httpx.WriteError(w, http.StatusUnauthorized, "Authorization required")
+				httpx.WriteError(w, http.StatusUnauthorized, "authorization required")
 				return
 			}
 			urlID, _ := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
 			if urlID != mc.DomainID {
-				httpx.WriteError(w, http.StatusForbidden, "Access to this domain is forbidden")
+				httpx.WriteError(w, http.StatusForbidden, "access to this domain is forbidden")
 				return
 			}
 			suspended, err := suspendedDomainLookup(r.Context(), mc.DomainID)
 			if err != nil {
-				httpx.WriteError(w, http.StatusInternalServerError, "Could not verify account status")
+				httpx.WriteError(w, http.StatusInternalServerError, "could not verify account status")
 				return
 			}
 			if suspended {
-				httpx.WriteError(w, http.StatusForbidden, "Account is suspended")
+				httpx.WriteError(w, http.StatusForbidden, "account is suspended")
 				return
 			}
 			next.ServeHTTP(w, r)

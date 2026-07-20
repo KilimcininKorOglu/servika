@@ -92,7 +92,7 @@ func (h *Handlers) PutSOA(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "SOA settings are read-only for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "sOA settings are read-only for demo subscriptions")
 		return
 	}
 	var soa SOA

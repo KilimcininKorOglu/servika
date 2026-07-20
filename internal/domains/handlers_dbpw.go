@@ -23,14 +23,14 @@ func (h *Handlers) SetDatabasePassword(w http.ResponseWriter, r *http.Request) {
 	dbid, _ := strconv.ParseInt(chi.URLParam(r, "dbid"), 10, 64)
 	var req setDBPwReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if req.Password == "" {
 		req.Password = credentials.RandomPassword(24)
 	}
 	if len(req.Password) < 6 {
-		httpx.WriteError(w, http.StatusBadRequest, "Password must be at least 6 characters")
+		httpx.WriteError(w, http.StatusBadRequest, "password must be at least 6 characters")
 		return
 	}
 
@@ -41,20 +41,20 @@ func (h *Handlers) SetDatabasePassword(w http.ResponseWriter, r *http.Request) {
 		 FROM db_accounts db JOIN domains d ON d.id=db.domain_id
 		 WHERE db.id=?`, dbid).Scan(&dbName, &dbUser, &isDemo)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Database record not found")
+		httpx.WriteError(w, http.StatusNotFound, "database record not found")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database read failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "Database passwords cannot be changed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "database passwords cannot be changed for demo subscriptions")
 		return
 	}
 
 	if err := credentials.MySQLChangePassword(h.DB, dbUser, req.Password); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Password change failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "password change failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{

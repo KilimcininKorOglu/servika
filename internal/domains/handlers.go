@@ -84,7 +84,7 @@ func scan(rs interface{ Scan(...any) error }) (Domain, error) {
 func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.DB.QueryContext(r.Context(), selectAll+" ORDER BY d.id DESC")
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database operation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
 		return
 	}
 	defer func() { _ = rows.Close() }()
@@ -92,7 +92,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		d, err := scan(rows)
 		if err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "Database read failed")
+			httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 			return
 		}
 		out = append(out, d)
@@ -105,11 +105,11 @@ func (h *Handlers) Get(w http.ResponseWriter, r *http.Request) {
 	row := h.DB.QueryRowContext(r.Context(), selectAll+" WHERE d.id=?", id)
 	d, err := scan(row)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database read failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, d)
@@ -133,7 +133,7 @@ type createResp struct {
 func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	var req createReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	req.DomainName = strings.ToLower(strings.TrimSpace(req.DomainName))
@@ -158,26 +158,26 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if err := provisioner.ValidateDomain(req.DomainName); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid domain name")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid domain name")
 		return
 	}
 
 	var existing int64
 	err := h.DB.QueryRowContext(r.Context(), `SELECT id FROM domains WHERE domain_name=?`, req.DomainName).Scan(&existing)
 	if err == nil {
-		httpx.WriteError(w, http.StatusConflict, "This domain name is already registered")
+		httpx.WriteError(w, http.StatusConflict, "this domain name is already registered")
 		return
 	}
 
 	// 1) Linux user + nginx + PHP pool
 	if err := quota.CheckDomainAllowed(r.Context(), h.DB, nil); err != nil {
-		httpx.WriteError(w, http.StatusForbidden, "Plan limit exceeded")
+		httpx.WriteError(w, http.StatusForbidden, "plan limit exceeded")
 		return
 	}
 	pr, err := provisioner.Provision(req.DomainName, req.PHPVersion)
 	if err != nil {
 		log.Printf("provision %q failed: %v", req.DomainName, err)
-		httpx.WriteError(w, http.StatusInternalServerError, "Domain provisioning failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "domain provisioning failed")
 		return
 	}
 
@@ -193,7 +193,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		h.IPv4, pr.SystemUser, dbUser, dbName, pr.WebRoot)
 	if err != nil {
 		_ = provisioner.Deprovision(req.DomainName, pr.SystemUser)
-		httpx.WriteError(w, http.StatusInternalServerError, "Domain record creation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "domain record creation failed")
 		return
 	}
 	id, _ := res.LastInsertId()
@@ -255,11 +255,11 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		`SELECT domain_name, system_user, is_demo FROM domains WHERE id=?`, id).
 		Scan(&domainName, &sk, &isDemo)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database read failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 		return
 	}
 
@@ -290,7 +290,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := h.DB.ExecContext(r.Context(), `DELETE FROM domains WHERE id=?`, id); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Domain deletion failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "domain deletion failed")
 		return
 	}
 
@@ -326,7 +326,7 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var req setPHPReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if req.PHPVersion == "" {
@@ -339,25 +339,25 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 		`SELECT domain_name, system_user, is_demo, COALESCE(web_backend,'php-fpm'), COALESCE(cert_path,''), COALESCE(key_path,''), COALESCE(ssl_source,'') FROM domains WHERE id=?`, id).
 		Scan(&domainName, &sk, &isDemo, &backend, &certPath, &keyPath, &sslSource)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database read failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "PHP versions cannot be changed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "pHP versions cannot be changed for demo subscriptions")
 		return
 	}
 	socket, err := provisioner.SetPHPVersion(domainName, sk, req.PHPVersion, certPath, keyPath, sslSource, backend)
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "PHP version change failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "pHP version change failed")
 		return
 	}
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE domains SET php_version=? WHERE id=?`, req.PHPVersion, id); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
@@ -378,11 +378,11 @@ func (h *Handlers) GetWebBackend(w http.ResponseWriter, r *http.Request) {
 	err := h.DB.QueryRowContext(r.Context(),
 		`SELECT COALESCE(web_backend,'php-fpm') FROM domains WHERE id=?`, id).Scan(&backend)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database read failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
@@ -395,11 +395,11 @@ func (h *Handlers) SetWebBackend(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var req setBackendReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if !validBackends[req.Backend] {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid backend (php-fpm|apache|static)")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid backend (php-fpm|apache|static)")
 		return
 	}
 	var domainName, sk, phpVersion string
@@ -408,28 +408,28 @@ func (h *Handlers) SetWebBackend(w http.ResponseWriter, r *http.Request) {
 		`SELECT domain_name, system_user, php_version, is_demo FROM domains WHERE id=?`, id).
 		Scan(&domainName, &sk, &phpVersion, &isDemo)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database read failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "The backend cannot be changed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "the backend cannot be changed for demo subscriptions")
 		return
 	}
 	_ = domainName
 	// 1) update DB
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE domains SET web_backend=? WHERE id=?`, req.Backend, id); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
 		return
 	}
 	// 2) Reapply the vhost (nginx + apache manager read web_backend from the DB)
 	socket, _ := provisioner.PHPSocketFor(sk, phpVersion)
 	if err := provisioner.ApplyVhostForDomain(h.DB, id, socket, phpVersion); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Virtual host update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "virtual host update failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
@@ -446,14 +446,14 @@ func (h *Handlers) SetFTPPassword(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var req setFTPPwReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if req.Password == "" {
 		req.Password = credentials.RandomPassword(20)
 	}
 	if !credentials.ValidPassword(req.Password) {
-		httpx.WriteError(w, http.StatusBadRequest, "Password contains invalid characters")
+		httpx.WriteError(w, http.StatusBadRequest, "password contains invalid characters")
 		return
 	}
 	var sk string
@@ -462,15 +462,15 @@ func (h *Handlers) SetFTPPassword(w http.ResponseWriter, r *http.Request) {
 		`SELECT system_user, is_demo FROM domains WHERE id=?`, id).
 		Scan(&sk, &isDemo)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "FTP passwords cannot be changed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "fTP passwords cannot be changed for demo subscriptions")
 		return
 	}
 	if err := credentials.FTPUpdatePassword(h.DB, sk, req.Password); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "FTP password update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "fTP password update failed")
 		return
 	}
 	// If SSH is enabled, sync the system (SSH) password with FTP too
@@ -491,7 +491,7 @@ func (h *Handlers) ShowFTPPassword(w http.ResponseWriter, r *http.Request) {
 	err := h.DB.QueryRowContext(r.Context(),
 		`SELECT system_user FROM domains WHERE id=?`, id).Scan(&sk)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	var pass string
@@ -521,7 +521,7 @@ func (h *Handlers) ListDatabases(w http.ResponseWriter, r *http.Request) {
 		`SELECT id, domain_id, db_name, db_user, db_host, db_pass_plain, DATE_FORMAT(created_at,'%Y-%m-%d %H:%i')
 		 FROM db_accounts WHERE domain_id=? ORDER BY id`, id)
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database query failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database query failed")
 		return
 	}
 	defer func() { _ = rows.Close() }()
@@ -557,7 +557,7 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var req createDBReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	var sk string
@@ -566,19 +566,19 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 		`SELECT system_user, is_demo FROM domains WHERE id=?`, id).
 		Scan(&sk, &isDemo)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Domain not found")
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Domain query failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "domain query failed")
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "Databases cannot be added to demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "databases cannot be added to demo subscriptions")
 		return
 	}
 	if err := quota.CheckDatabaseAllowed(r.Context(), h.DB, id); err != nil {
-		httpx.WriteError(w, http.StatusForbidden, "Plan limit exceeded")
+		httpx.WriteError(w, http.StatusForbidden, "plan limit exceeded")
 		return
 	}
 
@@ -595,23 +595,23 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 		password = credentials.RandomPassword(24)
 	} else {
 		if req.DBSuffix == "" {
-			httpx.WriteError(w, http.StatusBadRequest, "Database name suffix is required")
+			httpx.WriteError(w, http.StatusBadRequest, "database name suffix is required")
 			return
 		}
 		if !credentials.ValidDBSuffix(req.DBSuffix) {
-			httpx.WriteError(w, http.StatusBadRequest, "Invalid database suffix (lowercase letters, digits, underscore only; 1-32 characters)")
+			httpx.WriteError(w, http.StatusBadRequest, "invalid database suffix (lowercase letters, digits, underscore only; 1-32 characters)")
 			return
 		}
 		dbName = sk + "_" + req.DBSuffix
 		if !credentials.ValidCustomerDBIdentifier(sk, dbName) {
-			httpx.WriteError(w, http.StatusBadRequest, "Database name too long (prefix + suffix must be at most 64 characters)")
+			httpx.WriteError(w, http.StatusBadRequest, "database name too long (prefix + suffix must be at most 64 characters)")
 			return
 		}
 
 		switch req.UserMode {
 		case "existing":
 			if req.ExistingUser == "" || !credentials.ValidCustomerDBIdentifier(sk, req.ExistingUser) {
-				httpx.WriteError(w, http.StatusBadRequest, "Invalid existing user")
+				httpx.WriteError(w, http.StatusBadRequest, "invalid existing user")
 				return
 			}
 			// Ownership: the selected user must actually belong to this domain (prefix guarantee).
@@ -619,23 +619,23 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 			_ = h.DB.QueryRowContext(r.Context(),
 				`SELECT COUNT(*) FROM db_accounts WHERE domain_id=? AND db_user=?`, id, req.ExistingUser).Scan(&n)
 			if n == 0 {
-				httpx.WriteError(w, http.StatusBadRequest, "Selected user does not belong to this domain")
+				httpx.WriteError(w, http.StatusBadRequest, "selected user does not belong to this domain")
 				return
 			}
 			dbUser = req.ExistingUser
 			existingUserMode = true
 		default: // "new"
 			if req.UserSuffix == "" {
-				httpx.WriteError(w, http.StatusBadRequest, "User name suffix is required")
+				httpx.WriteError(w, http.StatusBadRequest, "user name suffix is required")
 				return
 			}
 			if !credentials.ValidDBSuffix(req.UserSuffix) {
-				httpx.WriteError(w, http.StatusBadRequest, "Invalid user suffix (lowercase letters, digits, underscore only; 1-32 characters)")
+				httpx.WriteError(w, http.StatusBadRequest, "invalid user suffix (lowercase letters, digits, underscore only; 1-32 characters)")
 				return
 			}
 			dbUser = sk + "_" + req.UserSuffix
 			if !credentials.ValidCustomerDBIdentifier(sk, dbUser) {
-				httpx.WriteError(w, http.StatusBadRequest, "User name too long (prefix + suffix must be at most 64 characters)")
+				httpx.WriteError(w, http.StatusBadRequest, "user name too long (prefix + suffix must be at most 64 characters)")
 				return
 			}
 			if req.Password == "" {
@@ -662,10 +662,10 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 	if existingUserMode {
 		if err := credentials.MySQLCreateDBForUser(h.DB, id, dbName, dbUser); err != nil {
 			if errors.Is(err, credentials.ErrInvalidMySQLCredentials) {
-				httpx.WriteError(w, http.StatusBadRequest, "Invalid database name or user")
+				httpx.WriteError(w, http.StatusBadRequest, "invalid database name or user")
 				return
 			}
-			httpx.WriteError(w, http.StatusInternalServerError, "Database creation failed")
+			httpx.WriteError(w, http.StatusInternalServerError, "database creation failed")
 			return
 		}
 		// Surface the existing user's password in the response (the customer already owns it).
@@ -674,10 +674,10 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if err := credentials.MySQLCreateDB(h.DB, id, dbName, dbUser, password); err != nil {
 			if errors.Is(err, credentials.ErrInvalidMySQLCredentials) {
-				httpx.WriteError(w, http.StatusBadRequest, "Invalid database name or user")
+				httpx.WriteError(w, http.StatusBadRequest, "invalid database name or user")
 				return
 			}
-			httpx.WriteError(w, http.StatusInternalServerError, "Database creation failed")
+			httpx.WriteError(w, http.StatusInternalServerError, "database creation failed")
 			return
 		}
 	}
@@ -705,11 +705,11 @@ func (h *Handlers) DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 		 FROM db_accounts db JOIN domains d ON d.id=db.domain_id
 		 WHERE db.id=?`, dbid).Scan(&dbName, &dbUser, &isDemo)
 	if errors.Is(err, sql.ErrNoRows) {
-		httpx.WriteError(w, http.StatusNotFound, "Database record not found")
+		httpx.WriteError(w, http.StatusNotFound, "database record not found")
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "Databases cannot be deleted from demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "databases cannot be deleted from demo subscriptions")
 		return
 	}
 	// When the user is shared across other databases (existing-user mode), drop only the database
@@ -719,11 +719,11 @@ func (h *Handlers) DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 		`SELECT COUNT(*) FROM db_accounts WHERE db_user=? AND db_name<>?`, dbUser, dbName).Scan(&shared)
 	if shared > 0 {
 		if err := credentials.MySQLDropDBKeepUser(h.DB, dbName); err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "Database deletion failed")
+			httpx.WriteError(w, http.StatusInternalServerError, "database deletion failed")
 			return
 		}
 	} else if err := credentials.MySQLDropDB(h.DB, dbName, dbUser); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Database deletion failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "database deletion failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "deleted": dbName})
@@ -738,11 +738,11 @@ type bulkOwnerReq struct {
 func (h *Handlers) BulkOwner(w http.ResponseWriter, r *http.Request) {
 	var req bulkOwnerReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if len(req.IDs) == 0 {
-		httpx.WriteError(w, http.StatusBadRequest, "At least one domain ID is required")
+		httpx.WriteError(w, http.StatusBadRequest, "at least one domain ID is required")
 		return
 	}
 	// customer_id may be NULL or a positive value.
@@ -751,7 +751,7 @@ func (h *Handlers) BulkOwner(w http.ResponseWriter, r *http.Request) {
 		_ = h.DB.QueryRowContext(r.Context(),
 			`SELECT COUNT(*) FROM customers WHERE id=?`, *req.CustomerID).Scan(&exists)
 		if exists == 0 {
-			httpx.WriteError(w, http.StatusBadRequest, "Customer not found")
+			httpx.WriteError(w, http.StatusBadRequest, "customer not found")
 			return
 		}
 	}
@@ -770,7 +770,7 @@ func (h *Handlers) BulkOwner(w http.ResponseWriter, r *http.Request) {
 	sql := `UPDATE domains SET customer_id=? WHERE id IN (` + strings.Join(placeholders, ",") + `)`
 	res, err := h.DB.ExecContext(r.Context(), sql, args...)
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Bulk update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "bulk update failed")
 		return
 	}
 	n, _ := res.RowsAffected()
@@ -786,15 +786,15 @@ type bulkStatusReq struct {
 func (h *Handlers) BulkStatus(w http.ResponseWriter, r *http.Request) {
 	var req bulkStatusReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	if len(req.IDs) == 0 {
-		httpx.WriteError(w, http.StatusBadRequest, "At least one domain ID is required")
+		httpx.WriteError(w, http.StatusBadRequest, "at least one domain ID is required")
 		return
 	}
 	if req.Status != "active" && req.Status != "passive" {
-		httpx.WriteError(w, http.StatusBadRequest, "Status must be active or passive")
+		httpx.WriteError(w, http.StatusBadRequest, "status must be active or passive")
 		return
 	}
 	placeholders := make([]string, len(req.IDs))
@@ -806,7 +806,7 @@ func (h *Handlers) BulkStatus(w http.ResponseWriter, r *http.Request) {
 	sql := `UPDATE domains SET status=? WHERE id IN (` + strings.Join(placeholders, ",") + `)`
 	res, err := h.DB.ExecContext(r.Context(), sql, args...)
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Bulk update failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "bulk update failed")
 		return
 	}
 	n, _ := res.RowsAffected()

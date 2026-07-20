@@ -326,7 +326,7 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	}
 	// Lock to serialize concurrent installs to the same target.
 	if _, loaded := wpInstallLock.LoadOrStore(target, true); loaded {
-		httpx.WriteError(w, http.StatusConflict, "WordPress installation is already in progress for this directory")
+		httpx.WriteError(w, http.StatusConflict, "wordPress installation is already in progress for this directory")
 		return
 	}
 	defer wpInstallLock.Delete(target)
@@ -465,7 +465,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	root := "/home/" + systemUser + "/public_html"
 	// Protect the root site by refusing to remove public_html itself.
 	if dir == root {
-		httpx.WriteError(w, http.StatusBadRequest, "WordPress in the root directory cannot be removed from the panel because it would delete the entire site; use File Manager")
+		httpx.WriteError(w, http.StatusBadRequest, "wordPress in the root directory cannot be removed from the panel because it would delete the entire site; use File Manager")
 		return
 	}
 	if deleteRequest.DBDelete {

@@ -111,7 +111,7 @@ func (h *Handlers) Configure(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if demo {
-		httpx.WriteError(w, http.StatusForbidden, "SSH access cannot be changed for a demo subscription")
+		httpx.WriteError(w, http.StatusForbidden, "sSH access cannot be changed for a demo subscription")
 		return
 	}
 	if !validSystemUser(systemUser) {

@@ -93,7 +93,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo {
-		httpx.WriteError(w, http.StatusForbidden, "DNS records are read-only for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "dNS records are read-only for demo subscriptions")
 		return
 	}
 	var record Record
@@ -150,7 +150,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo {
-		httpx.WriteError(w, http.StatusForbidden, "DNS records are read-only for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "dNS records are read-only for demo subscriptions")
 		return
 	}
 	var record Record
@@ -199,7 +199,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo {
-		httpx.WriteError(w, http.StatusForbidden, "DNS records are read-only for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "dNS records are read-only for demo subscriptions")
 		return
 	}
 	if _, err := h.DB.ExecContext(r.Context(),
@@ -219,7 +219,7 @@ func (h *Handlers) BulkDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo {
-		httpx.WriteError(w, http.StatusForbidden, "DNS records are read-only for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "dNS records are read-only for demo subscriptions")
 		return
 	}
 	var req struct {
@@ -260,7 +260,7 @@ func (h *Handlers) BulkStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo {
-		httpx.WriteError(w, http.StatusForbidden, "DNS records are read-only for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "dNS records are read-only for demo subscriptions")
 		return
 	}
 	var req struct {
@@ -307,7 +307,7 @@ func (h *Handlers) ApplyTemplate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo {
-		httpx.WriteError(w, http.StatusForbidden, "DNS templates are unavailable for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "dNS templates are unavailable for demo subscriptions")
 		return
 	}
 	var ipv4 string

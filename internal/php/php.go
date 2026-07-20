@@ -477,7 +477,7 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if demo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "PHP settings are fixed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "pHP settings are fixed for demo subscriptions")
 		return
 	}
 	if req.PHPVersion != "" && req.PHPVersion != version {

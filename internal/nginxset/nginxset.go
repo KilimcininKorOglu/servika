@@ -159,11 +159,11 @@ func (h *Handlers) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if directive := provisioner.DangerousNginxDirective(req.Settings.ExtraDirectives); directive != "" {
-		httpx.WriteError(w, http.StatusBadRequest, "Nginx directive is not allowed")
+		httpx.WriteError(w, http.StatusBadRequest, "nginx directive is not allowed")
 		return
 	}
 	if err := provisioner.ValidateNginxDirectives(req.Settings.ExtraDirectives); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid nginx directives")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid nginx directives")
 		return
 	}
 	if err := Save(r.Context(), h.DB, id, req.Settings); err != nil {

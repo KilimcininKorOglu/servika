@@ -46,7 +46,7 @@ func (h *Handlers) IonCubeInstall(w http.ResponseWriter, r *http.Request) {
 	}
 	extDir := strings.TrimSpace(string(extOut))
 	if extDir == "" {
-		httpx.WriteError(w, http.StatusInternalServerError, "PHP extension directory is empty")
+		httpx.WriteError(w, http.StatusInternalServerError, "pHP extension directory is empty")
 		return
 	}
 

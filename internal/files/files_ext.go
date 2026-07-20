@@ -330,7 +330,6 @@ func (h *Handlers) bulkMoveCopy(w http.ResponseWriter, r *http.Request, move boo
 	})
 }
 
-
 // ----- Archive selected files -----
 
 type archiveReq struct {

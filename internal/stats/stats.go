@@ -82,14 +82,14 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	summary := Summary{
-	DomainName:   domainName,
-	StatusGroup:  map[string]int{"2xx": 0, "3xx": 0, "4xx": 0, "5xx": 0},
-	TopPaths:     []KV{},
-	TopIP:        []KV{},
-	AggStatus:    []KV{},
-	Daily:        []Day{},
-	LastRequests: []string{},
-}
+		DomainName:   domainName,
+		StatusGroup:  map[string]int{"2xx": 0, "3xx": 0, "4xx": 0, "5xx": 0},
+		TopPaths:     []KV{},
+		TopIP:        []KV{},
+		AggStatus:    []KV{},
+		Daily:        []Day{},
+		LastRequests: []string{},
+	}
 
 	logPath := "/var/log/nginx/" + domainName + ".access.log"
 	file, err := os.Open(logPath)

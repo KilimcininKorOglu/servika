@@ -287,7 +287,7 @@ func (h *Handlers) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if demo {
-		httpx.WriteError(w, http.StatusForbidden, "Git cannot be connected to a demo subscription")
+		httpx.WriteError(w, http.StatusForbidden, "git cannot be connected to a demo subscription")
 		return
 	}
 	var req connectRequest

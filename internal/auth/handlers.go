@@ -71,22 +71,22 @@ func verifyRootPassword(password string) bool {
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	var req loginReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 	req.Username = strings.TrimSpace(req.Username)
 	if req.Username == "" || req.Password == "" {
-		httpx.WriteError(w, http.StatusBadRequest, "Username and password are required")
+		httpx.WriteError(w, http.StatusBadRequest, "username and password are required")
 		return
 	}
 	if req.Username != "root" {
 		writeAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
-		httpx.WriteError(w, http.StatusUnauthorized, "Invalid username or password")
+		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
 	if !verifyRootPassword(req.Password) {
 		writeAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
-		httpx.WriteError(w, http.StatusUnauthorized, "Invalid username or password")
+		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
 
@@ -102,7 +102,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 			}
 			if !TOTPVerify(sec, req.Code) {
 				writeAudit(h.DB, 1, "root", httpx.ClientIP(r), "auth.2fa", "root", false)
-				httpx.WriteError(w, http.StatusUnauthorized, "Invalid 2FA code")
+				httpx.WriteError(w, http.StatusUnauthorized, "invalid 2FA code")
 				return
 			}
 		}
@@ -111,7 +111,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	const adminUID = int64(1)
 	tok, err := Issue(h.Secret, h.LifetimeSec, adminUID, "root", "admin")
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "Token generation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
 		return
 	}
 	writeAudit(h.DB, adminUID, "root", httpx.ClientIP(r), "auth.login", "root", true)

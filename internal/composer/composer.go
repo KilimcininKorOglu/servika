@@ -71,7 +71,7 @@ func (h *Handlers) Run(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if demo {
-		httpx.WriteError(w, http.StatusForbidden, "Composer cannot run for a demo subscription")
+		httpx.WriteError(w, http.StatusForbidden, "composer cannot run for a demo subscription")
 		return
 	}
 	if !strings.HasPrefix(systemUser, "c_") {
@@ -79,7 +79,7 @@ func (h *Handlers) Run(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, err := os.Stat(composerBin); err != nil {
-		httpx.WriteError(w, http.StatusServiceUnavailable, "Composer is not installed on the server")
+		httpx.WriteError(w, http.StatusServiceUnavailable, "composer is not installed on the server")
 		return
 	}
 	var req struct {
