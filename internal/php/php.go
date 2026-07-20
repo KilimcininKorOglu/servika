@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -312,7 +313,7 @@ php_admin_flag[short_open_tag] = {{onoff .S.ShortOpenTag}}
 {{if .S.DebugMode}}; ---- Debug Mode (overrides display_errors/error_reporting) ----
 php_admin_flag[display_errors] = on
 php_admin_value[error_reporting] = E_ALL
-php_admin_value[auto_prepend_file] = /home/{{.SystemUser}}/.gpanel/debug_prepend.php
+php_admin_value[auto_prepend_file] = /home/{{.SystemUser}}/.servika/debug_prepend.php
 {{else}}php_admin_flag[display_errors] = {{onoff .S.DisplayErrors}}
 php_admin_value[error_reporting] = {{.S.ErrorReporting}}
 {{end}}
@@ -543,11 +544,26 @@ func (h *Handlers) GetDebugLog(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	data, readErr := os.ReadFile(p)
-	if readErr != nil {
+	f, openErr := os.Open(p)
+	if openErr != nil {
 		// File missing or unreadable -- debug may never have been triggered.
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{"lines": []string{}})
 		return
+	}
+	defer f.Close()
+	// DoS-safe: only read the last ~64KB instead of the entire file.
+	const tailBytes = 64 * 1024
+	var data []byte
+	if st, statErr := f.Stat(); statErr == nil && st.Size() > tailBytes {
+		buf := make([]byte, tailBytes)
+		if _, e := f.ReadAt(buf, st.Size()-tailBytes); e == nil || e == io.EOF {
+			if i := bytes.IndexByte(buf, '\n'); i >= 0 {
+				buf = buf[i+1:] // skip the partial first line
+			}
+			data = buf
+		}
+	} else {
+		data, _ = io.ReadAll(f)
 	}
 	lines := strings.Split(strings.TrimRight(string(data), "\n"), "\n")
 	if len(lines) == 1 && lines[0] == "" {
@@ -588,7 +604,7 @@ func debugLogPath(systemUser string) (string, error) {
 	if systemUser == "" || !strings.HasPrefix(systemUser, "c_") {
 		return "", fmt.Errorf("invalid system user")
 	}
-	return "/home/" + systemUser + "/.gpanel/php_debug.log", nil
+	return "/home/" + systemUser + "/.servika/php_debug.log", nil
 }
 
 // tenantDocRoot resolves the domain document root from the DB web_root column;

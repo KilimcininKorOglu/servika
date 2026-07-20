@@ -226,7 +226,7 @@ export default function DomainPHPPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-500 mt-1 leading-relaxed">
                   When enabled, PHP errors are displayed on-screen and fatal errors (E_ERROR, E_PARSE, ...) are
                   reliably caught via <code className="font-mono">register_shutdown_function</code> and logged to
-                  <code className="font-mono"> .gpanel/php_debug.log</code>. Fatal errors are captured even when the
+                  <code className="font-mono"> .servika/php_debug.log</code>. Fatal errors are captured even when the
                   application calls <code className="font-mono">error_reporting(0)</code>.
                 </p>
               </div>
@@ -244,7 +244,7 @@ export default function DomainPHPPage() {
           <Card title="Last Errors (Debug Log)">
             <div className="flex items-center justify-between gap-3 mb-3">
               <p className="text-xs text-slate-500 dark:text-slate-500 min-w-0 break-all">
-                Newest fatal errors on top. Source: <code className="font-mono">/home/{response.system_user}/.gpanel/php_debug.log</code> (last 200 lines).
+                Newest fatal errors on top. Source: <code className="font-mono">/home/{response.system_user}/.servika/php_debug.log</code> (last 200 lines).
               </p>
               <div className="flex gap-2 flex-shrink-0">
                 <button onClick={loadDebugLog} disabled={debugLogLoading}

@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -588,19 +590,19 @@ func repairTenantPoolDrift(domainID int64, systemUser, phpVersion string) {
 
 // ---- PHP Debug Mode (robust fatal error visibility) ----
 
-// tenantGpanelDir returns the panel-managed .gpanel directory for a tenant (root:root 0755).
-func tenantGpanelDir(systemUser string) string {
-	return filepath.Join("/home", systemUser, ".gpanel")
+// tenantServikaDir returns the panel-managed .servika directory for a tenant (root:root 0755).
+func tenantServikaDir(systemUser string) string {
+	return filepath.Join("/home", systemUser, ".servika")
 }
 
 // tenantDebugLogPath returns the per-domain debug log path (tenant:tenant 0644).
 func tenantDebugLogPath(systemUser string) string {
-	return filepath.Join(tenantGpanelDir(systemUser), "php_debug.log")
+	return filepath.Join(tenantServikaDir(systemUser), "php_debug.log")
 }
 
 // tenantDebugPrependPath returns the auto_prepend shim path (root:root 0644).
 func tenantDebugPrependPath(systemUser string) string {
-	return filepath.Join(tenantGpanelDir(systemUser), "debug_prepend.php")
+	return filepath.Join(tenantServikaDir(systemUser), "debug_prepend.php")
 }
 
 // errReportingRe matches valid error_reporting values (E_* tokens and operators only).
@@ -683,9 +685,9 @@ register_shutdown_function(function(){
 	return b.String()
 }
 
-// WriteDebugShim idempotently creates the .gpanel directory, debug log, and
+// WriteDebugShim idempotently creates the .servika directory, debug log, and
 // auto_prepend shim when DebugMode is enabled.
-//   - /home/<sk>/.gpanel        root:root 0755 (tenant cannot modify the shim)
+//   - /home/<sk>/.servika        root:root 0755 (tenant cannot modify the shim)
 //   - .../php_debug.log         tenant:tenant 0644 (worker appends as tenant UID)
 //   - .../debug_prepend.php     root:root 0644 (tenant reads, root writes)
 //
@@ -694,37 +696,133 @@ func WriteDebugShim(db *sql.DB, systemUser string, domainID int64) {
 	if systemUser == "" || !strings.HasPrefix(systemUser, "c_") {
 		return
 	}
-	if _, err := os.Stat(filepath.Join("/home", systemUser)); err != nil {
+	home := filepath.Join("/home", systemUser)
+	if _, err := os.Stat(home); err != nil {
 		return // tenant home missing
 	}
-	dir := tenantGpanelDir(systemUser)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	homeFd, err := unix.Open(home, unix.O_DIRECTORY|unix.O_RDONLY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
+	if err != nil {
 		return
 	}
-	_ = os.Chown(dir, 0, 0)
-	_ = os.Chmod(dir, 0755)
-	_, _ = exec.Command("restorecon", "-R", dir).CombinedOutput()
+	defer unix.Close(homeFd)
+
+	gpFd, ok := ensureRootDirAt(homeFd, ".servika")
+	if !ok {
+		return
+	}
+	defer unix.Close(gpFd)
+	restoreconFdPath(gpFd) // SELinux: relabel via pinned fd-path (no symlink -R).
 
 	// Debug log: tenant:tenant 0644 (worker appends as tenant UID).
-	logPath := tenantDebugLogPath(systemUser)
-	if f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644); err == nil {
-		_ = f.Close()
+	if lf, e := unix.Openat(gpFd, "php_debug.log",
+		unix.O_WRONLY|unix.O_CREAT|unix.O_APPEND|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0644); e == nil {
+		if uid, gid, ue := uidGid(systemUser); ue == nil {
+			_ = unix.Fchown(lf, uid, gid)
+		}
+		_ = unix.Fchmod(lf, 0644)
+		restoreconFdPath(lf)
+		unix.Close(lf)
 	}
-	if uid, gid, err := uidGid(systemUser); err == nil {
-		_ = os.Chown(logPath, uid, gid)
-	}
-	_ = os.Chmod(logPath, 0644)
-	_, _ = exec.Command("restorecon", logPath).CombinedOutput()
 
 	// Chain the app's own .user.ini auto_prepend to avoid breaking it.
-	orig := readUserIniAutoPrepend(tenantDocRoot(db, systemUser, domainID))
+	orig := readUserIniAutoPrepend(tenantDocRoot(nil, systemUser, 0))
 	prePath := tenantDebugPrependPath(systemUser)
 	if orig == prePath {
 		orig = "" // do not require itself
 	}
-	if err := os.WriteFile(prePath, []byte(renderDebugPrependPHP(systemUser, orig)), 0644); err == nil {
-		_ = os.Chown(prePath, 0, 0)
-		_ = os.Chmod(prePath, 0644)
-		_, _ = exec.Command("restorecon", prePath).CombinedOutput()
+	content := []byte(renderDebugPrependPHP(systemUser, orig))
+	if pf, e := unix.Openat(gpFd, "debug_prepend.php",
+		unix.O_WRONLY|unix.O_CREAT|unix.O_TRUNC|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0644); e == nil {
+		_, _ = unix.Write(pf, content)
+		_ = unix.Fchown(pf, 0, 0) // root:root -- tenant reads but cannot modify
+		_ = unix.Fchmod(pf, 0644)
+		restoreconFdPath(pf)
+		unix.Close(pf)
 	}
+}
+
+// ensureRootDirAt guarantees that `name` under parentFd is a real root:root 0755 directory.
+// If the entry is a symlink, file, or tenant-owned directory, it is treated as unsafe,
+// recursively removed (symlink-safe), and recreated. Uses O_NOFOLLOW open + fd-based
+// Fstat to close the TOCTOU final-step race. Idempotent. Returns the dir fd on success.
+func ensureRootDirAt(parentFd int, name string) (int, bool) {
+	for attempt := 0; attempt < 3; attempt++ {
+		var st unix.Stat_t
+		serr := unix.Fstatat(parentFd, name, &st, unix.AT_SYMLINK_NOFOLLOW)
+		if serr == nil {
+			if st.Mode&unix.S_IFMT != unix.S_IFDIR || st.Uid != 0 || st.Gid != 0 {
+				// Symlink, file, or wrong owner -- unsafe, remove.
+				if removeAtRecursive(parentFd, name) != nil {
+					return -1, false
+				}
+				serr = unix.ENOENT
+			}
+		}
+		if serr == unix.ENOENT {
+			if e := unix.Mkdirat(parentFd, name, 0755); e != nil && e != unix.EEXIST {
+				return -1, false
+			}
+		} else if serr != nil {
+			return -1, false
+		}
+		fd, e := unix.Openat(parentFd, name,
+			unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_RDONLY|unix.O_CLOEXEC, 0)
+		if e != nil {
+			continue // symlink-swap race -- retry
+		}
+		var fst unix.Stat_t
+		if unix.Fstat(fd, &fst) != nil ||
+			fst.Mode&unix.S_IFMT != unix.S_IFDIR || fst.Uid != 0 || fst.Gid != 0 {
+			unix.Close(fd)
+			_ = removeAtRecursive(parentFd, name)
+			continue
+		}
+		_ = unix.Fchmod(fd, 0755)
+		return fd, true
+	}
+	return -1, false
+}
+
+// removeAtRecursive removes a file, symlink, or directory at dirfd-relative name
+// without following any symlinks. Directories are traversed fd-recursively with
+// O_NOFOLLOW to prevent jail-escape.
+func removeAtRecursive(dirfd int, name string) error {
+	if err := unix.Unlinkat(dirfd, name, 0); err == nil {
+		return nil // file or symlink
+	}
+	fd, err := unix.Openat(dirfd, name,
+		unix.O_DIRECTORY|unix.O_NOFOLLOW|unix.O_RDONLY|unix.O_CLOEXEC, 0)
+	if err != nil {
+		return err
+	}
+	defer unix.Close(fd)
+	buf := make([]byte, 4096)
+	for {
+		n, readErr := unix.ReadDirent(fd, buf)
+		if n <= 0 {
+			break
+		}
+		_, _, names := unix.ParseDirent(buf[:n], -1, nil)
+		for _, childName := range names {
+			if childName == "." || childName == ".." {
+				continue
+			}
+			if err := unix.Unlinkat(fd, childName, 0); err != nil {
+				_ = removeAtRecursive(fd, childName)
+			}
+		}
+		if readErr != nil {
+			break
+		}
+	}
+	return unix.Unlinkat(dirfd, name, unix.AT_REMOVEDIR)
+}
+
+// restoreconFdPath runs restorecon on a pinned /proc/self/fd/<fd> path (no symlink risk).
+func restoreconFdPath(fd int) {
+	real, err := os.Readlink(fmt.Sprintf("/proc/self/fd/%d", fd))
+	if err != nil {
+		return
+	}
+	_, _ = exec.Command("restorecon", real).CombinedOutput()
 }
