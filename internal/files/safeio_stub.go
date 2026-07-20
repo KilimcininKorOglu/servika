@@ -14,43 +14,42 @@ import (
 
 var errSafeIOLinuxOnly = errors.New("safeio: openat2 is Linux-only, this platform is not supported")
 
-func openAt2Beneath(home, rel string, flags int, mode uint32) (*os.File, error) {
+func openAt2Beneath(_, _ string, _ int, _ uint32) (*os.File, error) {
 	return nil, errSafeIOLinuxOnly
 }
 
-func chmodBeneath(home, rel string, mode uint32) error {
+func chmodBeneath(_, _ string, _ uint32) error {
 	return errSafeIOLinuxOnly
 }
 
-func writeBeneath(home, rel string, data []byte, createMode uint32, sk string) error {
+func writeBeneath(_, _ string, _ []byte, _ uint32, _ string) error {
 	return errSafeIOLinuxOnly
 }
 
-func createExclBeneath(home, rel, sk string) error {
+func createExclBeneath(_, _, _ string) error {
 	return errSafeIOLinuxOnly
 }
 
-func copyStreamBeneath(home, rel string, src io.Reader, sk string) (int64, error) {
+func copyStreamBeneath(_, _ string, _ io.Reader, _ string) (int64, error) {
 	return 0, errSafeIOLinuxOnly
 }
 
-func mkdirAllBeneath(home, rel, sk string) error {
+func mkdirAllBeneath(_, _, _ string) error {
 	return errSafeIOLinuxOnly
 }
 
-func renameBeneath(home, oldRel, newRel, sk string) error {
+func renameBeneath(_, _, _, _ string) error {
 	return errSafeIOLinuxOnly
 }
 
-func removeAllBeneath(home, rel string) error {
+func removeAllBeneath(_, _ string) error {
 	return errSafeIOLinuxOnly
 }
 
-func copyTreeBeneath(home, srcRel, dstRel, sk string) error {
+func copyTreeBeneath(_, _, _, _ string) error {
 	return errSafeIOLinuxOnly
 }
 
-
-func isDirBeneath(home, rel string) (bool, error) {
+func isDirBeneath(_, _ string) (bool, error) {
 	return false, errSafeIOLinuxOnly
 }
