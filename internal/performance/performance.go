@@ -3,9 +3,13 @@
 package performance
 
 import (
+	"bufio"
 	"database/sql"
 	"net/http"
+	"os"
+	"os/exec"
 	"strconv"
+	"strings"
 
 	"servika/internal/httpx"
 
@@ -33,13 +37,30 @@ type Suggestion struct {
 	Setting  string `json:"setting"`
 }
 
+// CacheStats holds aggregated cache hit/miss counters and a computed hit rate.
+// For FastCGI, every upstream_cache_status variant is tracked. For Redis, only
+// keyspace_hits and keyspace_misses are available.
+type CacheStats struct {
+	Hit         int64   `json:"hit"`
+	Miss        int64   `json:"miss"`
+	Expired     int64   `json:"expired,omitempty"`
+	Bypass      int64   `json:"bypass,omitempty"`
+	Stale       int64   `json:"stale,omitempty"`
+	Updating    int64   `json:"updating,omitempty"`
+	Revalidated int64   `json:"revalidated,omitempty"`
+	Total       int64   `json:"total"`
+	HitRate     float64 `json:"hit_rate"`
+}
+
 // Summary describes a domain's performance configuration.
 type Summary struct {
-	DomainName  string       `json:"domain_name"`
-	PHPVersion  string       `json:"php_version"`
-	Score       int          `json:"score"` // Approximate performance score from 0 to 100.
-	Items       []Item       `json:"items"`
-	Suggestions []Suggestion `json:"suggestions"`
+	DomainName   string       `json:"domain_name"`
+	PHPVersion   string       `json:"php_version"`
+	Score        int          `json:"score"` // Approximate performance score from 0 to 100.
+	Items        []Item       `json:"items"`
+	Suggestions  []Suggestion `json:"suggestions"`
+	FastCGICache *CacheStats  `json:"fastcgi_cache,omitempty"`
+	RedisCache   *CacheStats  `json:"redis_cache,omitempty"`
 }
 
 // Show returns the current performance summary for a domain.
@@ -103,8 +124,100 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 	if len(summary.Suggestions) == 0 {
 		summary.Suggestions = append(summary.Suggestions, Suggestion{Text: "Performance settings are in good condition.", Severity: "info", Setting: ""})
 	}
+
+	// Collect cache metrics when accelerators are enabled.
+	if b(fastcgi) {
+		summary.FastCGICache = computeFastCGICacheStats(domainName)
+	}
+	if h.redisEnabled(r, id) {
+		summary.RedisCache = computeRedisCacheStats()
+		summary.Items = append(summary.Items, Item{
+			Name: "Redis Cache", Enabled: true, Value: "Enabled",
+			Setting: "redis", Description: "In-memory object cache for WordPress and PHP applications.",
+		})
+	}
+
 	summary.Score = score
 	httpx.WriteJSON(w, http.StatusOK, summary)
+}
+
+// redisEnabled checks whether the domain has an active Redis/Valkey cache.
+func (h *Handlers) redisEnabled(r *http.Request, domainID int64) bool {
+	var enabled int
+	err := h.DB.QueryRowContext(r.Context(),
+		`SELECT enabled FROM domain_redis WHERE domain_id=?`, domainID).Scan(&enabled)
+	return err == nil && enabled == 1
+}
+
+// computeFastCGICacheStats reads the domain's dedicated cache-status log
+// and aggregates upstream_cache_status values into a CacheStats struct.
+// The log file is written by nginx using the servika_cache_status log_format,
+// which records only the $upstream_cache_status variable per request.
+func computeFastCGICacheStats(domainName string) *CacheStats {
+	f, err := os.Open("/var/log/nginx/" + domainName + ".cache.log")
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+
+	var cs CacheStats
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		switch strings.TrimSpace(sc.Text()) {
+		case "HIT":
+			cs.Hit++
+		case "MISS":
+			cs.Miss++
+		case "EXPIRED":
+			cs.Expired++
+		case "BYPASS":
+			cs.Bypass++
+		case "STALE":
+			cs.Stale++
+		case "UPDATING":
+			cs.Updating++
+		case "REVALIDATED":
+			cs.Revalidated++
+		}
+	}
+	cs.Total = cs.Hit + cs.Miss + cs.Expired + cs.Bypass + cs.Stale + cs.Updating + cs.Revalidated
+	if cs.Total > 0 {
+		// HIT, STALE, and REVALIDATED are served from cache.
+		cs.HitRate = float64(cs.Hit+cs.Stale+cs.Revalidated) / float64(cs.Total) * 100
+	}
+	_ = sc.Err()
+	return &cs
+}
+
+// computeRedisCacheStats runs valkey-cli INFO stats and extracts keyspace
+// hit/miss counters. Returns nil when the admin password is unset or the
+// command fails.
+func computeRedisCacheStats() *CacheStats {
+	pass := os.Getenv("SERVIKA_REDIS_ADMIN_PASS")
+	if pass == "" {
+		return nil
+	}
+	cmd := exec.Command("valkey-cli", "INFO", "stats")
+	cmd.Env = append(os.Environ(), "REDISCLI_AUTH="+pass)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil
+	}
+	var cs CacheStats
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimSpace(line)
+		if after, ok := strings.CutPrefix(line, "keyspace_hits:"); ok {
+			cs.Hit, _ = strconv.ParseInt(strings.TrimSpace(after), 10, 64)
+		}
+		if after, ok := strings.CutPrefix(line, "keyspace_misses:"); ok {
+			cs.Miss, _ = strconv.ParseInt(strings.TrimSpace(after), 10, 64)
+		}
+	}
+	cs.Total = cs.Hit + cs.Miss
+	if cs.Total > 0 {
+		cs.HitRate = float64(cs.Hit) / float64(cs.Total) * 100
+	}
+	return &cs
 }
 
 func statusString(enabled bool) string {

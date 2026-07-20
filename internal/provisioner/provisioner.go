@@ -37,6 +37,12 @@ const (
 # Vhosts use "fastcgi_cache servikacache"; this file provides the matching zone definition.
 fastcgi_cache_path ` + cacheZoneDir + ` levels=1:2 keys_zone=` + cacheZoneName + `:100m max_size=1g inactive=60m use_temp_path=off;
 `
+	cacheLogFormatName = "servika_cache_status"
+	cacheLogFormatConf = "/etc/nginx/conf.d/00-servika-cache-log.conf"
+	cacheLogFormatBody = `# Managed automatically by Servika. DO NOT EDIT.
+# Provides a minimal log format that records only the upstream cache status for FastCGI cache hit-rate metrics.
+log_format ` + cacheLogFormatName + ` '$upstream_cache_status';
+`
 )
 
 var cacheZoneDefinitionPattern = regexp.MustCompile(`keys_zone\s*=\s*` + regexp.QuoteMeta(cacheZoneName) + `\s*:`)
@@ -112,13 +118,29 @@ func ensureCacheZone() (bool, error) {
 	}
 
 	if current, err := os.ReadFile(cacheZoneConf); err == nil && string(current) == cacheZoneBody {
-		return changed, nil
+		// Zone body unchanged; still ensure the log format file exists.
+		return ensureCacheLogFormat(), nil
 	}
 	if err := os.WriteFile(cacheZoneConf, []byte(cacheZoneBody), 0644); err != nil {
 		return false, fmt.Errorf("write cache zone configuration: %w", err)
 	}
 	_, _ = exec.Command("restorecon", cacheZoneConf).CombinedOutput()
-	return true, nil
+	return ensureCacheLogFormat() || true, nil
+}
+
+// ensureCacheLogFormat writes the log_format definition file for cache status
+// so that nginx vhosts can reference the servika_cache_status format. The file
+// is prefixed 00- to load before any domain vhost in alphabetical glob order.
+func ensureCacheLogFormat() bool {
+	if current, err := os.ReadFile(cacheLogFormatConf); err == nil && string(current) == cacheLogFormatBody {
+		return false
+	}
+	if err := os.WriteFile(cacheLogFormatConf, []byte(cacheLogFormatBody), 0644); err != nil {
+		log.Printf("servikacache repair: could not write cache log format: %v", err)
+		return false
+	}
+	_, _ = exec.Command("restorecon", cacheLogFormatConf).CombinedOutput()
+	return true
 }
 
 // purgeFastCGICache removes all nginx FastCGI cache entries so that
@@ -518,6 +540,7 @@ server {
         fastcgi_cache_background_update on;
         fastcgi_cache_lock on;
         add_header X-Cache-Status $upstream_cache_status always;
+        access_log /var/log/nginx/{{.DomainName}}.cache.log servika_cache_status buffer=32k flush=5m;
 {{end}}    }
 {{end}}
 {{if .BrowserCache}}    # ---- Browser cache (static files and legitimate archive downloads) ----
@@ -598,6 +621,7 @@ server {
         fastcgi_cache_background_update on;
         fastcgi_cache_lock on;
         add_header X-Cache-Status $upstream_cache_status always;
+        access_log /var/log/nginx/{{.DomainName}}.cache.log servika_cache_status buffer=32k flush=5m;
 {{end}}    }
 {{end}}
 {{if .BrowserCache}}    # ---- Browser cache (static files and legitimate archive downloads) ----

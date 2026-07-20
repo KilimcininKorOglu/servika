@@ -5,7 +5,8 @@ import Breadcrumb from '@/components/Breadcrumb'
 
 type Item = { name: string; enabled: boolean; value: string; setting: string; description: string }
 type Suggestion = { text: string; severity: string; setting: string }
-type Summary = { domain_name: string; php_version: string; score: number; items: Item[]; suggestions: Suggestion[] }
+type CacheStats = { hit: number; miss: number; expired?: number; bypass?: number; stale?: number; updating?: number; revalidated?: number; total: number; hit_rate: number }
+type Summary = { domain_name: string; php_version: string; score: number; items: Item[]; suggestions: Suggestion[]; fastcgi_cache?: CacheStats; redis_cache?: CacheStats }
 
 export default function DomainPerformancePage() {
   const { id } = useParams()
@@ -62,19 +63,29 @@ export default function DomainPerformancePage() {
           <div className="sm:col-span-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Accelerators</h3>
             <div className="space-y-2">
-              {summary.items.map(item => (
+              {summary.items.map(item => {
+                const fcStats = item.name === 'FastCGI Cache' ? summary.fastcgi_cache : undefined
+                const redisStats = item.name === 'Redis Cache' ? summary.redis_cache : undefined
+                const cacheStats = fcStats || redisStats
+                return (
                 <div key={item.name} className="flex items-center justify-between gap-3 py-1.5 border-b border-slate-50 dark:border-slate-800 last:border-0">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${item.enabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.name}</span>
                       <span className="text-xs font-mono text-slate-400">{item.value}</span>
+                      {cacheStats && cacheStats.total > 0 && (
+                        <span className={`text-xs font-mono ${cacheStats.hit_rate >= 80 ? 'text-emerald-500' : cacheStats.hit_rate >= 50 ? 'text-amber-500' : 'text-rose-500'}`}>
+                          {cacheStats.hit_rate.toFixed(1)}% hit · {cacheStats.total.toLocaleString()} req
+                        </span>
+                      )}
                     </div>
                     <p className="text-[11px] text-slate-400 ml-4 truncate">{item.description}</p>
                   </div>
                   {item.setting && <button onClick={() => navigateToSetting(item.setting)} className="shrink-0 text-xs text-brand-600 dark:text-brand-400 hover:underline">Configure →</button>}
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
