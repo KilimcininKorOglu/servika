@@ -168,6 +168,7 @@ export default function DomainFilesPage() {
     fd.append('file', f)
     try {
       await api.post(`/domains/${id}/files/upload`, fd, {
+        timeout: 0, // large upload: disable client timeout (backend 30m ceiling)
         params: { path },
       })
       scan()
@@ -185,6 +186,7 @@ export default function DomainFilesPage() {
     fd.append('file', f)
     try {
       await api.post(`/domains/${id}/files/upload`, fd, {
+        timeout: 0, // large upload: disable client timeout (backend 30m ceiling)
         params: { path },
         onUploadProgress: (e: any) => {
           if (onProgress && typeof e.loaded === 'number') {
