@@ -246,6 +246,7 @@ func vhost(fqdn, docroot, socket string) string {
 
     location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|pdf|zip|gz)$ {
         expires 30d;
+        add_header Cache-Control "public";
         access_log off;
     }
 
