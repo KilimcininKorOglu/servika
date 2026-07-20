@@ -201,8 +201,8 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, statusResponse{
-		Enabled: true, Host: redisHost, Port: redisPort, Username: systemUser, Password: password,
-		Prefix: systemUser + ":", WPSnippet: wpSnippet(systemUser, password),
+		Enabled: true, Host: redisHost, Port: redisPort, Username: systemUser, Password: "***",
+		Prefix: systemUser + ":", WPSnippet: wpSnippet(systemUser, "***"),
 	})
 }
 
