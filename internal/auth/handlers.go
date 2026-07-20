@@ -3,6 +3,7 @@ package auth
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -135,8 +136,10 @@ func writeAudit(db *sql.DB, uid int64, username, ip, action, target string, ok b
 	if ok {
 		okv = 1
 	}
-	_, _ = db.Exec(
+	if _, err := db.Exec(
 		`INSERT INTO audit_log(actor_user_id, actor_username, ip, action, target, ok)
 		 VALUES(?,?,?,?,?,?)`,
-		uidVal, username, ip, action, target, okv)
+		uidVal, username, ip, action, target, okv); err != nil {
+		log.Printf("audit log insert failed: %v", err)
+	}
 }
