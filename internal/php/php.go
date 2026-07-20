@@ -550,7 +550,7 @@ func (h *Handlers) GetDebugLog(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{"lines": []string{}})
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	// DoS-safe: only read the last ~64KB instead of the entire file.
 	const tailBytes = 64 * 1024
 	var data []byte
@@ -605,38 +605,6 @@ func debugLogPath(systemUser string) (string, error) {
 		return "", fmt.Errorf("invalid system user")
 	}
 	return "/home/" + systemUser + "/.servika/php_debug.log", nil
-}
-
-// tenantDocRoot resolves the domain document root from the DB web_root column;
-// falls back to /home/<systemUser>/public_html when empty.
-func tenantDocRoot(db *sql.DB, systemUser string, domainID int64) string {
-	if db != nil && domainID > 0 {
-		var webRoot string
-		if err := db.QueryRow(`SELECT COALESCE(web_root,'') FROM domains WHERE id=?`, domainID).Scan(&webRoot); err == nil {
-			if webRoot = strings.TrimSpace(webRoot); webRoot != "" {
-				return webRoot
-			}
-		}
-	}
-	return filepath.Join("/home", systemUser, "public_html")
-}
-
-// readUserIniAutoPrepend reads the auto_prepend_file value from docroot/.user.ini.
-// Returns empty string when absent.
-func readUserIniAutoPrepend(docRoot string) string {
-	data, err := os.ReadFile(filepath.Join(docRoot, ".user.ini"))
-	if err != nil {
-		return ""
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		if strings.HasPrefix(strings.TrimSpace(line), "auto_prepend_file") {
-			parts := strings.SplitN(line, "=", 2)
-			if len(parts) == 2 {
-				return strings.TrimSpace(parts[1])
-			}
-		}
-	}
-	return ""
 }
 
 // versionModules lists modules loaded by PHP-FPM for a version.

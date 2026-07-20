@@ -158,7 +158,7 @@ func computeFastCGICacheStats(domainName string) *CacheStats {
 	if err != nil {
 		return nil
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var cs CacheStats
 	sc := bufio.NewScanner(f)

@@ -717,13 +717,13 @@ func installDebugShim(home, sk string, content []byte) {
 	if err != nil {
 		return
 	}
-	defer unix.Close(homeFd)
+	defer func() { _ = unix.Close(homeFd) }()
 
 	gpFd, ok := ensureRootDirAt(homeFd, ".servika")
 	if !ok {
 		return
 	}
-	defer unix.Close(gpFd)
+	defer func() { _ = unix.Close(gpFd) }()
 	restoreconFdPath(gpFd) // SELinux: relabel via pinned fd-path (no symlink -R).
 
 	// Debug log: tenant:tenant 0644. O_NOFOLLOW + fd-based Fchown/Fchmod.
@@ -734,7 +734,7 @@ func installDebugShim(home, sk string, content []byte) {
 		}
 		_ = unix.Fchmod(lf, 0644)
 		restoreconFdPath(lf)
-		unix.Close(lf)
+		_ = unix.Close(lf)
 	}
 
 	// auto_prepend shim: root:root -- tenant reads, cannot modify.
@@ -744,7 +744,7 @@ func installDebugShim(home, sk string, content []byte) {
 		_ = unix.Fchown(pf, 0, 0)
 		_ = unix.Fchmod(pf, 0644)
 		restoreconFdPath(pf)
-		unix.Close(pf)
+		_ = unix.Close(pf)
 	}
 }
 
@@ -780,7 +780,7 @@ func ensureRootDirAt(parentFd int, name string) (int, bool) {
 		var fst unix.Stat_t
 		if unix.Fstat(fd, &fst) != nil ||
 			fst.Mode&unix.S_IFMT != unix.S_IFDIR || fst.Uid != 0 || fst.Gid != 0 {
-			unix.Close(fd)
+			_ = unix.Close(fd)
 			_ = removeAtRecursive(parentFd, name)
 			continue
 		}
@@ -802,7 +802,7 @@ func removeAtRecursive(dirfd int, name string) error {
 	if err != nil {
 		return err
 	}
-	defer unix.Close(fd)
+	defer func() { _ = unix.Close(fd) }()
 	buf := make([]byte, 4096)
 	for {
 		n, readErr := unix.ReadDirent(fd, buf)
