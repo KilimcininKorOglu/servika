@@ -126,7 +126,10 @@ func (h *Handlers) TwoFAEnable(w http.ResponseWriter, r *http.Request) {
 		Secret string `json:"secret"`
 		Code   string `json:"code"`
 	}
-	_ = json.NewDecoder(r.Body).Decode(&b)
+	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
 	b.Secret = strings.TrimSpace(b.Secret)
 	if !TOTPVerify(b.Secret, b.Code) {
 		httpx.WriteError(w, http.StatusBadRequest, "code verification failed; enter the six-digit code from your authenticator app")
@@ -150,7 +153,10 @@ func (h *Handlers) TwoFADisable(w http.ResponseWriter, r *http.Request) {
 	var b struct {
 		Code string `json:"code"`
 	}
-	_ = json.NewDecoder(r.Body).Decode(&b)
+	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
 	var secret string
 	_ = h.DB.QueryRow(`SELECT totp_secret FROM users WHERE id=?`, c.UserID).Scan(&secret)
 	if !TOTPVerify(secret, b.Code) {

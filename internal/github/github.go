@@ -258,7 +258,10 @@ func (h *Handlers) ListRepos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var repos []ghRepo
-	_ = json.Unmarshal(b, &repos)
+	if err := json.Unmarshal(b, &repos); err != nil {
+		httpx.WriteError(w, http.StatusBadGateway, "could not parse repository list from GitHub")
+		return
+	}
 	out := make([]map[string]any, 0, len(repos))
 	for _, rp := range repos {
 		out = append(out, map[string]any{
@@ -302,7 +305,10 @@ func (h *Handlers) ListBranches(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var brs []ghBranch
-	_ = json.Unmarshal(b, &brs)
+	if err := json.Unmarshal(b, &brs); err != nil {
+		httpx.WriteError(w, http.StatusBadGateway, "could not parse branch list from GitHub")
+		return
+	}
 	names := make([]string, 0, len(brs))
 	for _, br := range brs {
 		names = append(names, br.Name)
@@ -398,13 +404,17 @@ func (h *Handlers) Use(w http.ResponseWriter, r *http.Request) {
 			resp["webhook_error"] = patErrorMessage(st, body)
 		} else {
 			var created ghHook
-			_ = json.Unmarshal(body, &created)
-			_, _ = h.DB.ExecContext(r.Context(),
-				`UPDATE github_connections SET webhook_id=?, webhook_url=? WHERE domain_id=?`,
-				created.ID, hookURL, id)
-			resp["webhook_ok"] = true
-			resp["webhook_id"] = created.ID
-			resp["webhook_url"] = hookURL
+			if err := json.Unmarshal(body, &created); err != nil {
+				resp["webhook_ok"] = false
+				resp["webhook_error"] = "could not parse webhook response from GitHub"
+			} else {
+				_, _ = h.DB.ExecContext(r.Context(),
+					`UPDATE github_connections SET webhook_id=?, webhook_url=? WHERE domain_id=?`,
+					created.ID, hookURL, id)
+				resp["webhook_ok"] = true
+				resp["webhook_id"] = created.ID
+				resp["webhook_url"] = hookURL
+			}
 		}
 	}
 	httpx.WriteJSON(w, http.StatusOK, resp)
