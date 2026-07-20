@@ -107,7 +107,7 @@ export default function DomainPHPPage() {
       ]} />
 
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">PHP Settings</h1>
-      {response && <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
+      {response && <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
         <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">{response.domain_name}</Link>
         {' · System user: '}<code className="font-mono">{response.system_user}</code>
       </p>}
@@ -121,7 +121,7 @@ export default function DomainPHPPage() {
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
-      {loading || !settings || !response ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div> : (
+      {loading || !settings || !response ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-400">Loading…</div> : (
         <>
           {/* PHP version displayed as compact segmented controls */}
           <Card title="PHP Version">
@@ -148,7 +148,7 @@ export default function DomainPHPPage() {
                 if (!version) return null
                 const isActive = response.php_version === selectedVersion
                 return (
-                  <span className="text-xs text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
                     <span>{version.description}</span>
                     {isActive ? (
                       <span className="text-[10px] uppercase tracking-wider bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">Active</span>
@@ -223,7 +223,7 @@ export default function DomainPHPPage() {
                     {settings.debug_mode ? 'On' : 'Off'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1 leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                   When enabled, PHP errors are displayed on-screen and fatal errors (E_ERROR, E_PARSE, ...) are
                   reliably caught via <code className="font-mono">register_shutdown_function</code> and logged to
                   <code className="font-mono"> .servika/php_debug.log</code>. Fatal errors are captured even when the
@@ -243,7 +243,7 @@ export default function DomainPHPPage() {
           {/* Last Errors -- debug log panel */}
           <Card title="Last Errors (Debug Log)">
             <div className="flex items-center justify-between gap-3 mb-3">
-              <p className="text-xs text-slate-500 dark:text-slate-500 min-w-0 break-all">
+              <p className="text-xs text-slate-500 dark:text-slate-400 min-w-0 break-all">
                 Newest fatal errors on top. Source: <code className="font-mono">/home/{response.system_user}/.servika/php_debug.log</code> (last 200 lines).
               </p>
               <div className="flex gap-2 flex-shrink-0">
@@ -258,7 +258,7 @@ export default function DomainPHPPage() {
               </div>
             </div>
             {debugLog.length === 0 ? (
-              <div className="text-xs text-slate-400 dark:text-slate-500 italic py-4 text-center">
+              <div className="text-xs text-slate-400 dark:text-slate-400 italic py-4 text-center">
                 {!settings.debug_mode
                   ? 'Debug mode is off. Enable it above and save to start logging fatal errors.'
                   : 'No errors recorded. The debug log is empty.'}
@@ -296,7 +296,7 @@ export default function DomainPHPPage() {
           {/* Read-only, server-level PHP modules */}
           <Card title="Installed PHP Modules">
             <div className="flex items-baseline justify-between mb-2">
-              <p className="text-xs text-slate-500 dark:text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 <strong>{response.modules?.length || 0}</strong> modules are installed for PHP {response.php_version}. Modules are managed server-wide and cannot be enabled or disabled for an individual domain.
               </p>
               <Link to="/tools/php-modules" className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium whitespace-nowrap">
@@ -314,7 +314,7 @@ export default function DomainPHPPage() {
 
           {/* Per-domain disable_functions controls for dangerous functions */}
           <Card title="Disable Dangerous Functions">
-            <p className="text-xs text-slate-500 dark:text-slate-500 mb-3">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
               These functions pose shell injection, RCE, and malware risks. Category toggles update <code className="font-mono">disable_functions</code>. <strong>On means enabled</strong>, and <strong>off means blocked</strong>.
             </p>
             {(() => {
@@ -388,7 +388,7 @@ export default function DomainPHPPage() {
                                 {isBlocked ? 'Blocked' : (isMixed ? 'Mixed' : 'Active')}
                               </span>
                             </div>
-                            <div className="text-[11px] text-slate-600 dark:text-slate-500 font-mono mt-0.5 break-all">
+                            <div className="text-[11px] text-slate-600 dark:text-slate-400 font-mono mt-0.5 break-all">
                               {group.functions.join(', ')}
                             </div>
                           </div>
@@ -401,16 +401,16 @@ export default function DomainPHPPage() {
             })()}
 
             <details className="mt-4">
-              <summary className="text-xs text-slate-600 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100">Edit manually (raw disable_functions)</summary>
+              <summary className="text-xs text-slate-600 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100">Edit manually (raw disable_functions)</summary>
               <input value={settings.disable_functions} onChange={e => updateSetting('disable_functions', e.target.value)}
                 className="w-full mt-2 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-xs font-mono" />
-              <p className="text-[11px] text-slate-500 dark:text-slate-500 mt-1">Comma-separated function names.</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Comma-separated function names.</p>
             </details>
           </Card>
 
           {/* Additional directives */}
           <Card title="Additional Configuration Directives">
-            <p className="text-xs text-slate-500 dark:text-slate-500 mb-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
               Define additional parameters using php.ini syntax. Example: <code className="font-mono">extension=imagick.so</code>
             </p>
             <textarea value={settings.extra_directives} onChange={e => updateSetting('extra_directives', e.target.value)}
@@ -452,7 +452,7 @@ function Label({ children }: { children: any }) {
   return <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">{children}</label>
 }
 function Hint({ text }: { text: string }) {
-  return <span title={text} className="inline-block ml-1 text-slate-400 dark:text-slate-500 cursor-help">ⓘ</span>
+  return <span title={text} className="inline-block ml-1 text-slate-400 dark:text-slate-400 cursor-help">ⓘ</span>
 }
 function Field({ label, help, children }: { label: string; help: string; children: any }) {
   return (
@@ -476,7 +476,7 @@ function NumberField({ label, help, suffix, value, onChange }: { label: string; 
       <div className="flex">
         <input type="number" value={value} onChange={e => onChange(parseInt(e.target.value || '0'))}
           className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-mono" />
-        {suffix && <span className="ml-2 text-xs text-slate-500 dark:text-slate-500 self-center">{suffix}</span>}
+        {suffix && <span className="ml-2 text-xs text-slate-500 dark:text-slate-400 self-center">{suffix}</span>}
       </div>
     </Section>
   )
@@ -491,7 +491,7 @@ function Flag({ label, help, value, onChange }: { label: string; help: string; v
   return (
     <Section label={label} help={help}>
       <button onClick={() => onChange(!value)}
-        className={`px-3 py-2 rounded-md text-sm font-mono w-full text-left transition border ${value ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 text-emerald-700 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-500'}`}>
+        className={`px-3 py-2 rounded-md text-sm font-mono w-full text-left transition border ${value ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 text-emerald-700 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`}>
         {value ? '✓ On' : '○ Off'}
       </button>
     </Section>
