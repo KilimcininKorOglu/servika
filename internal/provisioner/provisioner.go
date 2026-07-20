@@ -1001,6 +1001,7 @@ func Deprovision(domainName, systemUser string) error {
 		}
 	}
 	_, _ = exec.Command("systemctl", "reload", "nginx").CombinedOutput()
+	purgeFastCGICache(systemUser)
 
 	if !strings.HasPrefix(systemUser, "c_") {
 		return fmt.Errorf("security: refusing to delete a user without the c_ prefix")
