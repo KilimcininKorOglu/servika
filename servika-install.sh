@@ -167,6 +167,23 @@ grep -q "client_max_body_size 10240m" /etc/nginx/nginx.conf || \
 cp "$A/nginx/_panel.conf"    /etc/nginx/conf.d/_panel.conf
 cp "$A/nginx/_default80.conf" /etc/nginx/conf.d/_default80.conf
 cp "$A/nginx/php-fpm.conf"    /etc/nginx/conf.d/php-fpm.conf 2>/dev/null
+# Suppress the default server block shipped by AlmaLinux nginx.rpm (conflicts with _default80.conf).
+if grep -q "^\s*server_name\s*_;\s*$" /etc/nginx/nginx.conf; then
+  line=$(grep -n "^\s*server_name\s*_;\s*$" /etc/nginx/nginx.conf | cut -d: -f1 | head -1)
+  if [ -n "$line" ]; then
+    start=$((line - 2))
+    end=$((line + 8))
+    sed -i "${start},${end}s/^/    #/" /etc/nginx/nginx.conf
+    ok "nginx default server block disabled (replaced by _default80.conf)"
+  fi
+fi
+# Raise nginx worker file-descriptor limit (otherwise setrlimit RLIMIT_NOFILE fails).
+mkdir -p /etc/systemd/system/nginx.service.d
+	cat > /etc/systemd/system/nginx.service.d/servika-nofile.conf <<'NFEOF'
+[Service]
+LimitNOFILE=65535
+NFEOF
+systemctl daemon-reload 2>/dev/null
 nginx -t >/dev/null 2>&1 && ok "nginx -t OK" || { nginx -t; die "nginx configuration error"; }
 
 # ============ 9) phpMyAdmin ============
