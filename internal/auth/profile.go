@@ -84,6 +84,10 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusUnauthorized, "current password is incorrect")
 		return
 	}
+	if strings.ContainsAny(b.New, "\n\r") {
+		httpx.WriteError(w, http.StatusBadRequest, "password contains invalid characters")
+		return
+	}
 	cmd := exec.Command("chpasswd")
 	cmd.Stdin = strings.NewReader("root:" + b.New)
 	if _, err := cmd.CombinedOutput(); err != nil {
