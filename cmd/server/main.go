@@ -227,7 +227,7 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/antivirus/scan", avH.Scan)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/antivirus/scan/{sid}", avH.ScanStatus)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/antivirus/quarantine", avH.Quarantine)
-				r.With(middleware.CustomerScope).Post("/domains/{id}/antivirus/update-signature", avH.UpdateSignature)
+				r.With(middleware.AdminOnly).Post("/domains/{id}/antivirus/update-signature", avH.UpdateSignature)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/copy", copyH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/copy", copyH.Create)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/copy/{name}", copyH.Delete)

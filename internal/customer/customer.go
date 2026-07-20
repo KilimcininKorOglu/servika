@@ -87,16 +87,6 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// CustomerOnly: middleware, returns 403 if token type is "customer" and domain_id does not match the path
-// If it is an admin token it bypasses (admins can do anything)
-func CustomerOnly(secret []byte) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
 // CheckScope: manual scope check inside a handler. Allow if admin.
 // If a customer token, {id} in the URL must match token.DomainID.
 func CheckScope(r *http.Request, secret []byte, urlDomainIDParam string) (bool, error) {
