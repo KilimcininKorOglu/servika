@@ -3,11 +3,14 @@ package httpx
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 // ErrorBody is the standard HTTP API error response.
 type ErrorBody struct {
-	Error string `json:"error"`
+	Error     string `json:"error"`
+	RequestID string `json:"request_id,omitempty"`
 }
 
 // WriteJSON writes a JSON response with the provided HTTP status.
@@ -23,6 +26,14 @@ func WriteJSON(w http.ResponseWriter, status int, body any) {
 // WriteError writes a standard JSON error response.
 func WriteError(w http.ResponseWriter, status int, message string) {
 	WriteJSON(w, status, ErrorBody{Error: message})
+}
+
+// WriteErrorR writes a JSON error response annotated with the chi RequestID from context.
+// Use this where the request is available; WriteError remains available for callers
+// that only have a ResponseWriter.
+func WriteErrorR(w http.ResponseWriter, r *http.Request, status int, message string) {
+	reqID := middleware.GetReqID(r.Context())
+	WriteJSON(w, status, ErrorBody{Error: message, RequestID: reqID})
 }
 
 // ClientIP returns the originating client address, honoring reverse-proxy headers.
