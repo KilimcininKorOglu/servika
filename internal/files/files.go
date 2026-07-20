@@ -23,7 +23,7 @@ import (
 
 const (
 	// MaxUploadBytes is the maximum accepted multipart request body size.
-	MaxUploadBytes     = 2 * 1024 * 1024 * 1024
+	MaxUploadBytes     = 10 * 1024 * 1024 * 1024
 	maxMultipartMemory = 32 * 1024 * 1024
 )
 
