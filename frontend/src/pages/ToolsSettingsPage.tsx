@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Breadcrumb from '@/components/Breadcrumb'
 import PanelUpdate from '@/components/PanelUpdate'
+import ServerOptimizeCard from '@/components/ServerOptimizeCard'
 
 type Tool = {
   title: string
@@ -82,6 +83,7 @@ export default function ToolsSettingsPage() {
       </p>
 
       <PanelUpdate />
+      <ServerOptimizeCard />
 
       {GROUPS.map(group => (
         <div key={group.name} className="mb-7">

@@ -246,6 +246,33 @@ func wpStdout(ctx context.Context, systemUser string, args ...string) ([]byte, e
 	return out.Bytes(), err
 }
 
+// wpInstallLock serializes concurrent WordPress installs per target path.
+var wpInstallLock sync.Map
+
+// installAlreadyExists checks if target dir already has WordPress content.
+func installAlreadyExists(target string) (string, bool) {
+	entries, err := os.ReadDir(target)
+	if err != nil {
+		return "", false
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if name == "wp-config.php" {
+			return "WordPress is already installed in this directory", true
+		}
+		if name == "index.html" || name == "index.htm" || name == "index.php" ||
+			name == "favicon.ico" || name == "favicon.png" ||
+			name == ".htaccess" || name == ".htpasswd" ||
+			name == "robots.txt" || name == "sitemap.xml" ||
+			name == "cgi-bin" || name == ".well-known" ||
+			strings.HasPrefix(name, ".") {
+			continue
+		}
+		return "Target directory already contains content", true
+	}
+	return "", false
+}
+
 // POST /domains/{id}/wordpress installs WordPress.
 func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	id, systemUser, domainName, ssl, demo, ok := h.domain(r)
@@ -296,8 +323,14 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	if req.SubDir != "" {
 		target = filepath.Join(root, req.SubDir)
 	}
-	if _, err := os.Stat(filepath.Join(target, "wp-config.php")); err == nil {
-		httpx.WriteError(w, http.StatusConflict, "WordPress is already installed in this directory")
+	// Lock to serialize concurrent installs to the same target.
+	if _, loaded := wpInstallLock.LoadOrStore(target, true); loaded {
+		httpx.WriteError(w, http.StatusConflict, "WordPress installation is already in progress for this directory")
+		return
+	}
+	defer wpInstallLock.Delete(target)
+	if msg, ok := installAlreadyExists(target); ok {
+		httpx.WriteError(w, http.StatusConflict, msg)
 		return
 	}
 	if err := os.MkdirAll(target, 0o755); err != nil {
@@ -499,6 +532,7 @@ func (h *Handlers) dbOwnedBy(r *http.Request, domainID int64, dbAdi string) bool
 // A database may only be dropped when:
 //   - It passes dbNameWPGuard (wp_ prefix + valid MySQL identifier)
 //   - The authenticated domain owns it (dbOwnedBy)
+//
 // Without this gate a tenant could supply an arbitrary dbName in the delete payload
 // and trick the panel into dropping another customer's database (cross-tenant DB drop).
 func (h *Handlers) dropAllowed(r *http.Request, domainID int64, dbAdi string) bool {
