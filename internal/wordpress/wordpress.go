@@ -9,8 +9,8 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
-	"log"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -410,7 +410,10 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 	var updateRequest struct {
 		Dir string `json:"dir"`
 	}
-	_ = json.NewDecoder(r.Body).Decode(&updateRequest)
+	if err := json.NewDecoder(r.Body).Decode(&updateRequest); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
 	dir, err := resolveDirectory(systemUser, updateRequest.Dir)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
@@ -450,7 +453,10 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		Dir      string `json:"dir"`
 		DBDelete bool   `json:"delete_db"`
 	}
-	_ = json.NewDecoder(r.Body).Decode(&deleteRequest)
+	if err := json.NewDecoder(r.Body).Decode(&deleteRequest); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
 	dir, err := resolveDirectory(systemUser, deleteRequest.Dir)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
