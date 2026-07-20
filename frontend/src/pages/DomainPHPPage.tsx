@@ -16,6 +16,7 @@ type Settings = {
   pm_strategy: string; pm_max_children: number; pm_max_requests: number
   pm_start_servers: number; pm_min_spare_servers: number; pm_max_spare_servers: number
   extra_directives: string
+  debug_mode: boolean
 }
 
 type Response = {
@@ -40,12 +41,14 @@ export default function DomainPHPPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [debugLog, setDebugLog] = useState<string[]>([])
+  const [debugLogLoading, setDebugLogLoading] = useState(false)
 
   function load() {
     if (!id) return
     setLoading(true); setError(null)
     api.get<Response>(`/domains/${id}/php-settings`)
-      .then(r => { setResponse(r.data); setSelectedVersion(r.data.php_version); setSettings(r.data.settings) })
+      .then(r => { setResponse(r.data); setSelectedVersion(r.data.php_version); setSettings(r.data.settings); loadDebugLog() })
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
   }
@@ -62,6 +65,32 @@ export default function DomainPHPPage() {
       setError(apiError(e, 'Failed to save settings'))
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  async function loadDebugLog() {
+    if (!id) return
+    setDebugLogLoading(true)
+    try {
+      const { data } = await api.get<{ lines: string[] }>(`/domains/${id}/php/debug-log`)
+      setDebugLog(data.lines || [])
+    } catch {
+      setDebugLog([])
+    } finally {
+      setDebugLogLoading(false)
+    }
+  }
+
+  async function clearDebugLog() {
+    if (!id) return
+    setDebugLogLoading(true); setError(null)
+    try {
+      await api.delete(`/domains/${id}/php/debug-log`)
+      setDebugLog([])
+    } catch (e) {
+      setError(apiError(e, 'Failed to clear debug log'))
+    } finally {
+      setDebugLogLoading(false)
     }
   }
 
@@ -178,6 +207,73 @@ export default function DomainPHPPage() {
             <Field label="mail.force_extra_parameters" help="Additional parameters for the mail() function">
               <Txt value={settings.mail_force_extra_parameters} onChange={v => updateSetting('mail_force_extra_parameters', v)} mono />
             </Field>
+          </Card>
+          {/* PHP Debug Mode */}
+          <Card title="PHP Debug Mode">
+            <div className="flex items-start gap-4">
+              <button onClick={() => updateSetting('debug_mode', !settings.debug_mode)}
+                className={`flex-shrink-0 mt-0.5 relative inline-flex h-6 w-11 items-center rounded-full transition ${settings.debug_mode ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                title={settings.debug_mode ? 'Disable debug mode' : 'Enable debug mode'}>
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${settings.debug_mode ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Debug mode</span>
+                  <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold ${settings.debug_mode ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                    {settings.debug_mode ? 'On' : 'Off'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1 leading-relaxed">
+                  When enabled, PHP errors are displayed on-screen and fatal errors (E_ERROR, E_PARSE, ...) are
+                  reliably caught via <code className="font-mono">register_shutdown_function</code> and logged to
+                  <code className="font-mono"> .gpanel/php_debug.log</code>. Fatal errors are captured even when the
+                  application calls <code className="font-mono">error_reporting(0)</code>.
+                </p>
+              </div>
+            </div>
+            {settings.debug_mode && (
+              <div className="mt-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
+                <strong>Warning:</strong> With debug mode on, <strong>display_errors = on</strong> and
+                <strong> error_reporting = E_ALL</strong> are forced; error details may be visible to site visitors.
+                Only enable during troubleshooting, <strong>disable on production</strong>. Changes take effect after clicking <strong>Save</strong>.
+              </div>
+            )}
+          </Card>
+
+          {/* Last Errors -- debug log panel */}
+          <Card title="Last Errors (Debug Log)">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className="text-xs text-slate-500 dark:text-slate-500 min-w-0 break-all">
+                Newest fatal errors on top. Source: <code className="font-mono">/home/{response.system_user}/.gpanel/php_debug.log</code> (last 200 lines).
+              </p>
+              <div className="flex gap-2 flex-shrink-0">
+                <button onClick={loadDebugLog} disabled={debugLogLoading}
+                  className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium rounded-md transition">
+                  {debugLogLoading ? 'Loading...' : 'Refresh'}
+                </button>
+                <button onClick={clearDebugLog} disabled={debugLogLoading}
+                  className="px-3 py-1.5 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium rounded-md transition">
+                  Clear
+                </button>
+              </div>
+            </div>
+            {debugLog.length === 0 ? (
+              <div className="text-xs text-slate-400 dark:text-slate-500 italic py-4 text-center">
+                {!settings.debug_mode
+                  ? 'Debug mode is off. Enable it above and save to start logging fatal errors.'
+                  : 'No errors recorded. The debug log is empty.'}
+              </div>
+            ) : (
+              <div className="max-h-80 overflow-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-950">
+                <ul className="divide-y divide-slate-800">
+                  {[...debugLog].reverse().map((line, i) => (
+                    <li key={i} className="px-3 py-1.5 text-[11px] font-mono text-red-300 whitespace-pre-wrap break-all leading-relaxed">
+                      {line}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </Card>
 
           {/* PHP-FPM pool */}
