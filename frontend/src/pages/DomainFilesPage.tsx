@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -20,6 +20,12 @@ type Entry = {
 type ListResp = { path: string; content: Entry[]; total: number }
 type Domain = { id: number; domain_name: string; system_user: string }
 
+type CtxItem =
+  | { separator: true; key: string }
+  | { separator?: false; key: string; label: string; icon: string; onClick: () => void; danger?: boolean }
+
+const ARCHIVE_RX = /\.(zip|rar|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|gz)$/i
+
 const ROOT = '/'
 
 export default function DomainFilesPage() {
@@ -39,8 +45,9 @@ export default function DomainFilesPage() {
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
   const [extractActive, setExtractActive] = useState(false)
   const [newMenuOpen, setNewMenuOpen] = useState(false)
-  const [archiveMenuOpen, setArchiveMenuOpen] = useState(false)
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; entry: Entry } | null>(null)
+  const longPressRef = useRef<number | undefined>(undefined)
+  const longPressTriggeredRef = useRef(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Entry[] | null>(null)
   const [copyMoveModal, setCopyModal] = useState<{ type: 'copy' | 'move'; paths: string[] } | null>(null)
@@ -298,6 +305,79 @@ export default function DomainFilesPage() {
     }
   }
 
+  // Context menu
+  function openContext(clientX: number, clientY: number, entry: Entry) {
+    setSelectedPaths(prev => prev.has(entry.path) ? prev : new Set([entry.path]))
+    setContextMenu({ x: clientX, y: clientY, entry })
+  }
+
+  function rowContext(ev: React.MouseEvent, entry: Entry) {
+    ev.preventDefault()
+    openContext(ev.clientX, ev.clientY, entry)
+  }
+
+  function touchStart(ev: React.TouchEvent, entry: Entry) {
+    if (ev.touches.length !== 1) return
+    const t = ev.touches[0]
+    const cx = t.clientX, cy = t.clientY
+    longPressTriggeredRef.current = false
+    longPressRef.current = window.setTimeout(() => {
+      longPressTriggeredRef.current = true
+      openContext(cx, cy, entry)
+    }, 500)
+  }
+
+  function touchEnd(ev: React.TouchEvent) {
+    if (longPressRef.current !== undefined) { clearTimeout(longPressRef.current); longPressRef.current = undefined }
+    if (longPressTriggeredRef.current) { ev.preventDefault() }
+  }
+
+  function touchMove() {
+    if (longPressRef.current !== undefined) { clearTimeout(longPressRef.current); longPressRef.current = undefined }
+  }
+
+  function buildCtxItems(): CtxItem[] {
+    if (!contextMenu) return []
+    const e = contextMenu.entry
+    const multi = selectedPaths.has(e.path) && selectedPaths.size > 1
+    const closeAfter = (fn: () => void) => () => { setContextMenu(null); fn() }
+    const items: CtxItem[] = []
+
+    if (!multi) {
+      if (e.type === 'folder') {
+        items.push({ key: 'open', label: 'Open', icon: '📂', onClick: closeAfter(() => navigateTo(e.path)) })
+      } else {
+        if (docrootRelativePath(e.path) !== null)
+          items.push({ key: 'browse', label: 'Open in Browser', icon: '🌐', onClick: closeAfter(() => openInBrowser(e)) })
+        items.push({ key: 'edit', label: 'Edit', icon: '✏️', onClick: closeAfter(() => openEditor(e)) })
+      }
+    }
+
+    items.push({ key: 'download', label: 'Download', icon: '⬇️', onClick: closeAfter(() => download(e)) })
+    items.push({ separator: true, key: 's1' })
+    items.push({ key: 'rename', label: 'Rename', icon: '✏️', onClick: closeAfter(() => setRenameFor(e)) })
+    items.push({ key: 'perms', label: 'Permissions', icon: '🔒', onClick: closeAfter(() => setChmodFor(e)) })
+    items.push({ key: 'size', label: 'Calculate Size', icon: '📏', onClick: closeAfter(() => calculateSize(e.path)) })
+
+    if (e.type !== 'folder' && ARCHIVE_RX.test(e.name)) {
+      items.push({ key: 'extract', label: 'Extract Archive', icon: '📦', onClick: closeAfter(() => extract(e)) })
+    }
+
+    items.push({ separator: true, key: 's2' })
+    items.push({ key: 'copy', label: 'Copy', icon: '📋', onClick: closeAfter(() => {
+      const paths = multi ? Array.from(selectedPaths) : [e.path]
+      setCopyModal({ type: 'copy', paths })
+    })})
+    items.push({ key: 'move', label: 'Move', icon: '📂', onClick: closeAfter(() => {
+      const paths = multi ? Array.from(selectedPaths) : [e.path]
+      setCopyModal({ type: 'move', paths })
+    })})
+    items.push({ separator: true, key: 's3' })
+    items.push({ key: 'delete', label: 'Delete', icon: '🗑️', onClick: closeAfter(() => remove(e)), danger: true })
+
+    return items
+  }
+
   async function copyOrMove(target: string) {
     if (!copyMoveModal) return
     const url = copyMoveModal.type === 'copy' ? 'copy' : 'move'
@@ -415,12 +495,12 @@ export default function DomainFilesPage() {
         </p>
       )}
 
-      <div className="grid grid-cols-12 gap-4">
-        <aside className="col-span-12 lg:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-[13rem_minmax(0,1fr)] gap-4">
+        <aside>
           <DirTree domainId={id!} selected={path} onSelect={setPath} refreshKey={treeRefreshKey} />
         </aside>
         <section
-          className={`col-span-12 lg:col-span-9 relative ${dragCounter > 0 ? "ring-2 ring-brand-500 ring-offset-2 ring-offset-slate-50 rounded-lg" : ""}`}
+          className={`relative min-w-0 ${dragCounter > 0 ? "ring-2 ring-brand-500 ring-offset-2 ring-offset-slate-50 rounded-lg" : ""}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -440,6 +520,7 @@ export default function DomainFilesPage() {
       {selectedPaths.size > 0 && (
         <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-md flex items-center gap-3 flex-wrap">
           <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">{selectedPaths.size} items selected</span>
+          <span className="text-xs text-amber-700/80 dark:text-amber-300/80">Right-click for actions</span>
           <button onClick={() => setBulkDeleteConfirmOpen(true)} className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-medium">Delete ({selectedPaths.size})</button>
           <button onClick={() => setSelectedPaths(new Set())} className="text-xs px-3 py-1.5 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:bg-amber-900/30 rounded">Clear selection</button>
         </div>
@@ -498,109 +579,19 @@ export default function DomainFilesPage() {
           )}
         </div>
 
-        {/* Copy */}
-        <button onClick={() => setCopyModal({ type: 'copy', paths: Array.from(selectedPaths) })}
-          disabled={selectedPaths.size === 0}
-          className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-sm rounded">
-          Copy
+        {/* Refresh */}
+        <button onClick={scan}
+          className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">
+          ↻ Refresh
         </button>
 
-        {/* Move */}
-        <button onClick={() => setCopyModal({ type: 'move', paths: Array.from(selectedPaths) })}
-          disabled={selectedPaths.size === 0}
-          className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-sm rounded">
-          Move
-        </button>
-
-        {/* Archive dropdown */}
-        <div className="relative">
-          <button onClick={() => setArchiveMenuOpen(value => !value)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">
-            Archive
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5.516 7.548c.436-.446 1.043-.481 1.576 0L10 10.405l2.908-2.857c.533-.481 1.141-.446 1.576 0 .436.445.408 1.197 0 1.615-.406.418-3.695 3.629-3.695 3.629a1.105 1.105 0 01-1.576 0S5.924 9.581 5.516 9.163c-.409-.418-.436-1.17 0-1.615z"/></svg>
+        {/* Bulk delete */}
+        {selectedPaths.size > 1 && (
+          <button onClick={() => setBulkDeleteConfirmOpen(true)}
+            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white text-sm rounded font-medium">
+            Delete ({selectedPaths.size})
           </button>
-          {archiveMenuOpen && (
-            <div className="absolute z-40 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg min-w-[180px] py-1">
-              <button
-                onClick={() => {
-                  setArchiveMenuOpen(false)
-                  if (selectedPaths.size !== 1) { alert('Select one archive file'); return }
-                  const path = Array.from(selectedPaths)[0]
-                  const file = content.find(e => e.path === path)
-                  if (file) extract(file)
-                }}
-                disabled={selectedPaths.size !== 1}
-                className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:text-slate-300">
-                📂 Extract Archive
-              </button>
-              <button
-                onClick={() => { setArchiveMenuOpen(false); setArchiveModal(true) }}
-                disabled={selectedPaths.size === 0}
-                className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:text-slate-300">
-                📦 Add to Archive (ZIP/TAR.GZ)
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* More-actions dropdown */}
-        <div className="relative">
-          <button onClick={() => setMoreMenuOpen(value => !value)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">
-            More
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5.516 7.548c.436-.446 1.043-.481 1.576 0L10 10.405l2.908-2.857c.533-.481 1.141-.446 1.576 0 .436.445.408 1.197 0 1.615-.406.418-3.695 3.629-3.695 3.629a1.105 1.105 0 01-1.576 0S5.924 9.581 5.516 9.163c-.409-.418-.436-1.17 0-1.615z"/></svg>
-          </button>
-          {moreMenuOpen && (
-            <div className="absolute z-40 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg min-w-[200px] py-1">
-              <button
-                onClick={() => {
-                  setMoreMenuOpen(false)
-                  if (selectedPaths.size !== 1) { alert('Select one item'); return }
-                  calculateSize(Array.from(selectedPaths)[0])
-                }}
-                disabled={selectedPaths.size !== 1}
-                className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:text-slate-300">
-                📏 Calculate Size
-              </button>
-              <button
-                onClick={() => {
-                  setMoreMenuOpen(false)
-                  if (selectedPaths.size !== 1) { alert('Select one item'); return }
-                  const path = Array.from(selectedPaths)[0]
-                  const file = content.find(e => e.path === path)
-                  if (file) setChmodFor(file)
-                }}
-                disabled={selectedPaths.size !== 1}
-                className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:text-slate-300">
-                🔒 Change Permissions
-              </button>
-              <button
-                onClick={() => {
-                  setMoreMenuOpen(false)
-                  if (selectedPaths.size !== 1) { alert('Select one item'); return }
-                  const path = Array.from(selectedPaths)[0]
-                  const file = content.find(e => e.path === path)
-                  if (file) setRenameFor(file)
-                }}
-                disabled={selectedPaths.size !== 1}
-                className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:text-slate-300">
-                ✏ Rename
-              </button>
-              <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
-              <button onClick={() => { setMoreMenuOpen(false); scan() }}
-                className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                ↻ Refresh
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Delete */}
-        <button onClick={() => setBulkDeleteConfirmOpen(true)}
-          disabled={selectedPaths.size === 0}
-          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white text-sm rounded font-medium">
-          Delete{selectedPaths.size > 0 ? ` (${selectedPaths.size})` : ''}
-        </button>
+        )}
 
         <div className="flex-1" />
 
@@ -672,7 +663,12 @@ export default function DomainFilesPage() {
                 </tr>
               )}
               {(searchResults ?? content).map((e) => (
-                <tr key={e.path} className={`hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 transition ${selectedPaths.has(e.path) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
+                <tr key={e.path}
+                  onContextMenu={(ev) => rowContext(ev, e)}
+                  onTouchStart={(ev) => touchStart(ev, e)}
+                  onTouchEnd={touchEnd}
+                  onTouchMove={touchMove}
+                  className={`hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 transition ${selectedPaths.has(e.path) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
                   <td className="px-3 py-2.5 text-center">
                     <input type="checkbox" checked={selectedPaths.has(e.path)}
                       onChange={() => toggleSelection2(e.path)}
@@ -707,52 +703,12 @@ export default function DomainFilesPage() {
                     {(e.owner || e.group) && <div className="text-xs text-slate-400 dark:text-slate-500">{e.owner}:{e.group}</div>}
                   </td>
                   <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500">{formatDate(e.changed)}</td>
-                  <td className="px-4 py-2.5 text-right space-x-2">
-                    {e.type === 'file' && docrootRelativePath(e.path) !== null && (
-                      <button
-                        onClick={() => openInBrowser(e)}
-                        className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition"
-                        title="Open on website"
-                      >Open</button>
-                    )}
-                    {e.type !== 'folder' && (
-                      <button
-                        onClick={() => download(e)}
-                        className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 px-2 py-1 rounded hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 transition"
-                      >
-                        Download
-                      </button>
-                    )}
-                    {e.type === "file" && /\.(zip|rar|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|gz)$/i.test(e.name) && (
-                      <button
-                        onClick={() => extract(e)}
-                        disabled={extractActive}
-                        className="text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:text-violet-300 disabled:text-slate-300 px-2 py-1 rounded hover:bg-violet-50 dark:bg-violet-900/20 transition"
-                        title="Extract archive"
-                      >📦 Extract</button>
-                    )}
-                    {e.type === "file" && (
-                      <button
-                        onClick={() => openEditor(e)}
-                        className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 px-2 py-1 rounded hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 transition"
-                        title="Edit"
-                      >Edit</button>
-                    )}
+                  <td className="px-2 py-2.5 text-right">
                     <button
-                      onClick={() => setRenameFor(e)}
-                      className="text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100 px-2 py-1 rounded hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 transition"
-                      title="Rename"
-                    >Rename</button>
-                    <button
-                      onClick={() => setChmodFor(e)}
-                      className="text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100 px-2 py-1 rounded hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 transition"
-                      title="Permissions"
-                    >Permissions</button>
-                    <button
-                      onClick={() => remove(e)}
-                      className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 transition"
-                    >
-                      Delete
+                      onClick={(ev) => { ev.stopPropagation(); openContext(ev.clientX, ev.clientY, e) }}
+                      className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:hover:bg-slate-800 rounded transition"
+                      title="Actions">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                     </button>
                   </td>
                 </tr>
@@ -761,6 +717,13 @@ export default function DomainFilesPage() {
           </table>
         )}
       </div>
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={buildCtxItems()}
+          onClose={() => setContextMenu(null)} />
+      )}
       {editor && (
         <CodeEditor path={editor.path} content={editor.content}
           onChange={s => setEditor({ ...editor, content: s })}
@@ -862,6 +825,70 @@ function formatDate(iso: string): string {
   } catch {
     return iso
   }
+}
+
+
+// ===== Context Menu Component =====
+function ContextMenu({ x, y, items, onClose }: { x: number; y: number; items: CtxItem[]; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ x, y })
+  const [measured, setMeasured] = useState(false)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const vw = window.innerWidth, vh = window.innerHeight
+    let nx = x, ny = y
+    if (x + r.width > vw - 8) nx = Math.max(8, vw - r.width - 8)
+    if (y + r.height > vh - 8) ny = Math.max(8, vh - r.height - 8)
+    setPos({ x: nx, y: ny })
+    setMeasured(true)
+  }, [x, y])
+
+  useEffect(() => {
+    function onDown(ev: MouseEvent) { if (ref.current && !ref.current.contains(ev.target as Node)) onClose() }
+    function onKey(ev: KeyboardEvent) { if (ev.key === 'Escape') onClose() }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey) }
+  }, [onClose])
+
+  function menuKey(ev: React.KeyboardEvent) {
+    const el = ref.current
+    if (!el) return
+    const mis = Array.from(el.querySelectorAll<HTMLElement>('[data-mi]'))
+    if (!mis.length) return
+    const idx = mis.indexOf(document.activeElement as HTMLElement)
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); mis[(idx + 1 + mis.length) % mis.length].focus() }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); mis[(idx - 1 + mis.length) % mis.length].focus() }
+    else if (ev.key === 'Home') { ev.preventDefault(); mis[0].focus() }
+    else if (ev.key === 'End') { ev.preventDefault(); mis[mis.length - 1].focus() }
+  }
+
+  return (
+    <div
+      ref={ref}
+      role="menu"
+      onKeyDown={menuKey}
+      className={`fixed z-[60] min-w-[190px] py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl text-sm ${measured ? '' : 'opacity-0'}`}
+      style={{ left: pos.x, top: pos.y }}
+      tabIndex={-1}>
+      {items.map(item => item.separator ? (
+        <div key={item.key} className="my-1 border-t border-slate-100 dark:border-slate-700" />
+      ) : (
+        <button
+          key={item.key}
+          data-mi
+          onClick={item.onClick}
+          className={`w-full text-left px-3 py-1.5 flex items-center gap-2 transition ${item.danger ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+          role="menuitem">
+          <span className="flex-shrink-0">{item.icon}</span>
+          <span>{item.label}</span>
+        </button>
+      ))}
+    </div>
+  )
 }
 
 // ===== Helper components =====
