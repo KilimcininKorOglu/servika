@@ -96,6 +96,7 @@ type Settings struct {
 
 	// Additional
 	ExtraDirectives string `json:"extra_directives"`
+	DebugMode       bool   `json:"debug_mode"`
 }
 
 // Defaults returns the default per-domain PHP settings.
@@ -124,6 +125,7 @@ func Defaults() Settings {
 		PMMinSpareServers: 1,
 		PMMaxSpareServers: 3,
 		ExtraDirectives:   "",
+		DebugMode:         false,
 	}
 }
 
@@ -135,13 +137,13 @@ func Get(ctx context.Context, db *sql.DB, domainID int64) (Settings, error) {
 		display_errors, log_errors, allow_url_fopen, file_uploads, short_open_tag,
 		error_reporting, include_path, open_basedir, session_save_path, mail_force_extra_parameters,
 		pm_strategy, pm_max_children, pm_max_requests, pm_start_servers, pm_min_spare_servers, pm_max_spare_servers,
-		extra_directives FROM php_settings WHERE domain_id=?`, domainID)
+		extra_directives, debug_mode FROM php_settings WHERE domain_id=?`, domainID)
 	err := row.Scan(&s.MemoryLimit, &s.MaxExecutionTime, &s.MaxInputTime, &s.PostMaxSize,
 		&s.UploadMaxFilesize, &s.OpcacheEnable, &s.DisableFunctions,
 		&s.DisplayErrors, &s.LogErrors, &s.AllowURLFopen, &s.FileUploads, &s.ShortOpenTag,
 		&s.ErrorReporting, &s.IncludePath, &s.OpenBasedir, &s.SessionSavePath, &s.MailForceExtraParameters,
 		&s.PMStrategy, &s.PMMaxChildren, &s.PMMaxRequests, &s.PMStartServers, &s.PMMinSpareServers, &s.PMMaxSpareServers,
-		&s.ExtraDirectives)
+		&s.ExtraDirectives, &s.DebugMode)
 	if errors.Is(err, sql.ErrNoRows) {
 		return s, nil // Return defaults.
 	}
@@ -161,8 +163,8 @@ func Save(ctx context.Context, db *sql.DB, domainID int64, s Settings) error {
 			display_errors, log_errors, allow_url_fopen, file_uploads, short_open_tag,
 			error_reporting, include_path, open_basedir, session_save_path, mail_force_extra_parameters,
 			pm_strategy, pm_max_children, pm_max_requests, pm_start_servers, pm_min_spare_servers, pm_max_spare_servers,
-			extra_directives)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+			extra_directives, debug_mode)
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 		 ON DUPLICATE KEY UPDATE
 			memory_limit=VALUES(memory_limit),
 			max_execution_time=VALUES(max_execution_time),
@@ -187,13 +189,14 @@ func Save(ctx context.Context, db *sql.DB, domainID int64, s Settings) error {
 			pm_start_servers=VALUES(pm_start_servers),
 			pm_min_spare_servers=VALUES(pm_min_spare_servers),
 			pm_max_spare_servers=VALUES(pm_max_spare_servers),
-			extra_directives=VALUES(extra_directives)`,
+			extra_directives=VALUES(extra_directives),
+			debug_mode=VALUES(debug_mode)`,
 		domainID, s.MemoryLimit, s.MaxExecutionTime, s.MaxInputTime, s.PostMaxSize,
 		s.UploadMaxFilesize, b2i(s.OpcacheEnable), s.DisableFunctions,
 		b2i(s.DisplayErrors), b2i(s.LogErrors), b2i(s.AllowURLFopen), b2i(s.FileUploads), b2i(s.ShortOpenTag),
 		s.ErrorReporting, s.IncludePath, s.OpenBasedir, s.SessionSavePath, s.MailForceExtraParameters,
 		s.PMStrategy, s.PMMaxChildren, s.PMMaxRequests, s.PMStartServers, s.PMMinSpareServers, s.PMMaxSpareServers,
-		s.ExtraDirectives)
+		s.ExtraDirectives, b2i(s.DebugMode))
 	return err
 }
 
@@ -302,12 +305,17 @@ php_admin_value[max_input_vars] = 10000
 php_admin_value[disable_functions] = {{.S.DisableFunctions}}
 
 ; ---- Common ----
-php_admin_flag[display_errors] = {{onoff .S.DisplayErrors}}
 php_admin_flag[log_errors] = {{onoff .S.LogErrors}}
 php_admin_flag[allow_url_fopen] = {{onoff .S.AllowURLFopen}}
 php_admin_flag[file_uploads] = {{onoff .S.FileUploads}}
 php_admin_flag[short_open_tag] = {{onoff .S.ShortOpenTag}}
+{{if .S.DebugMode}}; ---- Debug Mode (overrides display_errors/error_reporting) ----
+php_admin_flag[display_errors] = on
+php_admin_value[error_reporting] = E_ALL
+php_admin_value[auto_prepend_file] = /home/{{.SystemUser}}/.gpanel/debug_prepend.php
+{{else}}php_admin_flag[display_errors] = {{onoff .S.DisplayErrors}}
 php_admin_value[error_reporting] = {{.S.ErrorReporting}}
+{{end}}
 php_admin_value[include_path] = {{.S.IncludePath}}
 php_admin_value[open_basedir] = {{if .S.OpenBasedir}}{{.S.OpenBasedir}}{{else}}/home/{{.SystemUser}}/:/tmp/{{end}}
 {{if .S.MailForceExtraParameters}}php_admin_value[mail.force_extra_parameters] = {{.S.MailForceExtraParameters}}{{end}}
@@ -490,6 +498,7 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var socket string
+	provisioner.WriteDebugShim(h.DB, systemUser, id)
 	if provisioner.TenantFPMActive(systemUser) {
 		socket, err = provisioner.EnableTenantFPM(h.DB, id, systemUser, version)
 		if err != nil {
@@ -518,6 +527,100 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 		"php_version": version,
 		"socket":      socket,
 	})
+}
+
+// GetDebugLog returns the last 200 lines of the per-domain PHP debug log.
+func (h *Handlers) GetDebugLog(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	var systemUser string
+	if err := h.DB.QueryRowContext(r.Context(),
+		`SELECT system_user FROM domains WHERE id=?`, id).Scan(&systemUser); err != nil {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	p, err := debugLogPath(systemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	data, readErr := os.ReadFile(p)
+	if readErr != nil {
+		// File missing or unreadable -- debug may never have been triggered.
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{"lines": []string{}})
+		return
+	}
+	lines := strings.Split(strings.TrimRight(string(data), "\n"), "\n")
+	if len(lines) == 1 && lines[0] == "" {
+		lines = []string{}
+	}
+	const maxLines = 200
+	if len(lines) > maxLines {
+		lines = lines[len(lines)-maxLines:]
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"lines": lines})
+}
+
+// ClearDebugLog truncates the per-domain PHP debug log.
+func (h *Handlers) ClearDebugLog(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	var systemUser string
+	if err := h.DB.QueryRowContext(r.Context(),
+		`SELECT system_user FROM domains WHERE id=?`, id).Scan(&systemUser); err != nil {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	p, err := debugLogPath(systemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := os.Truncate(p, 0); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to clear debug log")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+// debugLogPath returns the per-domain PHP debug log path. The systemUser value
+// originates from the domain record and is validated for the c_ prefix, so
+// there is no path traversal risk.
+func debugLogPath(systemUser string) (string, error) {
+	if systemUser == "" || !strings.HasPrefix(systemUser, "c_") {
+		return "", fmt.Errorf("invalid system user")
+	}
+	return "/home/" + systemUser + "/.gpanel/php_debug.log", nil
+}
+
+// tenantDocRoot resolves the domain document root from the DB web_root column;
+// falls back to /home/<systemUser>/public_html when empty.
+func tenantDocRoot(db *sql.DB, systemUser string, domainID int64) string {
+	if db != nil && domainID > 0 {
+		var webRoot string
+		if err := db.QueryRow(`SELECT COALESCE(web_root,'') FROM domains WHERE id=?`, domainID).Scan(&webRoot); err == nil {
+			if webRoot = strings.TrimSpace(webRoot); webRoot != "" {
+				return webRoot
+			}
+		}
+	}
+	return filepath.Join("/home", systemUser, "public_html")
+}
+
+// readUserIniAutoPrepend reads the auto_prepend_file value from docroot/.user.ini.
+// Returns empty string when absent.
+func readUserIniAutoPrepend(docRoot string) string {
+	data, err := os.ReadFile(filepath.Join(docRoot, ".user.ini"))
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "auto_prepend_file") {
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) == 2 {
+				return strings.TrimSpace(parts[1])
+			}
+		}
+	}
+	return ""
 }
 
 // versionModules lists modules loaded by PHP-FPM for a version.

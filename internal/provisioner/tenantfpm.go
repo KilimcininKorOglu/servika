@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -173,6 +174,11 @@ type tenantPoolSettings struct {
 	DisableFunctions  string
 	PMStrategy        string
 	PMMaxRequests     int
+	// Logging / Debug Mode (php_settings) -- robust fatal error visibility.
+	DisplayErrors  bool
+	LogErrors      bool
+	ErrorReporting string
+	DebugMode      bool
 }
 
 const hardenedDisableFunctions = "exec,passthru,shell_exec,system,proc_open,popen,proc_close,proc_get_status,proc_terminate,proc_nice,pcntl_exec,dl,symlink,link,posix_kill,posix_mkfifo,posix_setpgid,posix_setsid,posix_setuid,posix_setgid"
@@ -187,6 +193,10 @@ func tenantReadPoolSettings(db *sql.DB, domainID int64) tenantPoolSettings {
 		DisableFunctions:  hardenedDisableFunctions,
 		PMStrategy:        "ondemand",
 		PMMaxRequests:     500,
+		DisplayErrors:     false,
+		LogErrors:         true,
+		ErrorReporting:    "E_ALL & ~E_DEPRECATED & ~E_STRICT",
+		DebugMode:         false,
 	}
 	if db == nil || domainID <= 0 {
 		return settings
@@ -221,6 +231,21 @@ func tenantReadPoolSettings(db *sql.DB, domainID int64) tenantPoolSettings {
 	case "static", "dynamic", "ondemand":
 	default:
 		settings.PMStrategy = "ondemand"
+	}
+	// display_errors/log_errors/error_reporting/debug_mode are read separately
+	// (backward-compatible: if debug_mode column is absent, the query errors out
+	// and defaults are preserved, main settings remain unaffected).
+	var de, le, dm int
+	var er string
+	if derr := db.QueryRow(`SELECT COALESCE(display_errors,0), COALESCE(log_errors,1),
+	        COALESCE(error_reporting,''), COALESCE(debug_mode,0)
+	        FROM php_settings WHERE domain_id=?`, domainID).Scan(&de, &le, &er, &dm); derr == nil {
+		settings.DisplayErrors = de != 0
+		settings.LogErrors = le != 0
+		settings.DebugMode = dm != 0
+		if strings.TrimSpace(er) != "" {
+			settings.ErrorReporting = tenantSanitizeScalar(er, settings.ErrorReporting)
+		}
 	}
 	return settings
 }
@@ -259,11 +284,19 @@ func renderTenantPool(db *sql.DB, systemUser string, domainID int64) string {
 	fmt.Fprintf(&body, "php_admin_value[max_input_time] = %d\n", settings.MaxInputTime)
 	fmt.Fprintf(&body, "php_admin_value[post_max_size] = %s\n", settings.PostMaxSize)
 	fmt.Fprintf(&body, "php_admin_value[upload_max_filesize] = %s\n", settings.UploadMaxFilesize)
-	// Explicitly enable logging and disable display_errors for production.
-	// Intentionally NOT setting error_log -- PHP errors go to stderr and are
-	// captured by catch_workers_output into the per-tenant error log.
+	// Logging / debug mode: log_errors is always on (PHP errors go to stderr
+	// and are captured by catch_workers_output). display_errors and
+	// error_reporting are conditionally controlled by DebugMode (see below).
 	body.WriteString("php_admin_flag[log_errors] = on\n")
-	body.WriteString("php_admin_flag[display_errors] = off\n")
+	if settings.DebugMode {
+		body.WriteString("; ---- Debug Mode (overrides display_errors/error_reporting) ----\n")
+		body.WriteString("php_admin_flag[display_errors] = on\n")
+		body.WriteString("php_admin_value[error_reporting] = E_ALL\n")
+		fmt.Fprintf(&body, "php_admin_value[auto_prepend_file] = %s\n", tenantDebugPrependPath(systemUser))
+	} else {
+		body.WriteString("php_admin_flag[display_errors] = off\n")
+		fmt.Fprintf(&body, "php_admin_value[error_reporting] = %s\n", sanitizeErrorReporting(settings.ErrorReporting))
+	}
 	body.WriteString("catch_workers_output = yes\n")
 	return body.String()
 }
@@ -352,6 +385,7 @@ func EnableTenantFPM(db *sql.DB, domainID int64, systemUser, phpVersion string) 
 
 	poolPath := filepath.Join(configDir, "pool.conf")
 	previousPool, readErr := os.ReadFile(poolPath)
+	WriteDebugShim(db, systemUser, domainID)
 	if err := os.WriteFile(poolPath, []byte(renderTenantPool(db, systemUser, domainID)), 0644); err != nil {
 		return "", fmt.Errorf("write tenant pool: %w", err)
 	}
@@ -550,4 +584,147 @@ func repairTenantPoolDrift(domainID int64, systemUser, phpVersion string) {
 		log.Printf("repairTenantPoolDrift: %s reload warning: %s", systemUser, strings.TrimSpace(string(output)))
 	}
 	log.Printf("repairTenantPoolDrift: %s pool.conf updated (logging hardening + config drift repair)", systemUser)
+}
+
+// ---- PHP Debug Mode (robust fatal error visibility) ----
+
+// tenantGpanelDir returns the panel-managed .gpanel directory for a tenant (root:root 0755).
+func tenantGpanelDir(systemUser string) string {
+	return filepath.Join("/home", systemUser, ".gpanel")
+}
+
+// tenantDebugLogPath returns the per-domain debug log path (tenant:tenant 0644).
+func tenantDebugLogPath(systemUser string) string {
+	return filepath.Join(tenantGpanelDir(systemUser), "php_debug.log")
+}
+
+// tenantDebugPrependPath returns the auto_prepend shim path (root:root 0644).
+func tenantDebugPrependPath(systemUser string) string {
+	return filepath.Join(tenantGpanelDir(systemUser), "debug_prepend.php")
+}
+
+// errReportingRe matches valid error_reporting values (E_* tokens and operators only).
+var errReportingRe = regexp.MustCompile(`^[A-Za-z0-9_ &|~()]+$`)
+
+// sanitizeErrorReporting restricts error_reporting to [A-Za-z0-9_ &|~()] tokens only,
+// preventing line/directive injection into pool config. Falls back to E_ALL on empty/invalid.
+func sanitizeErrorReporting(v string) string {
+	v = strings.TrimSpace(v)
+	if v == "" || !errReportingRe.MatchString(v) {
+		return "E_ALL"
+	}
+	return v
+}
+
+// tenantDocRoot resolves the domain document root from the DB web_root column;
+// falls back to /home/<systemUser>/public_html when empty.
+func tenantDocRoot(db *sql.DB, systemUser string, domainID int64) string {
+	if db != nil && domainID > 0 {
+		var webRoot string
+		if err := db.QueryRow(`SELECT COALESCE(web_root,'') FROM domains WHERE id=?`, domainID).Scan(&webRoot); err == nil {
+			if webRoot = strings.TrimSpace(webRoot); webRoot != "" {
+				return webRoot
+			}
+		}
+	}
+	return filepath.Join("/home", systemUser, "public_html")
+}
+
+// readUserIniAutoPrepend reads the auto_prepend_file value from docroot/.user.ini.
+// In debug mode, the pool's php_admin_value[auto_prepend_file] OVERRIDES the app's
+// .user.ini prepend; this value is chained back inside the shim so the app's own
+// prepend is preserved.
+func readUserIniAutoPrepend(docRoot string) string {
+	data, err := os.ReadFile(filepath.Join(docRoot, ".user.ini"))
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "auto_prepend_file") {
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) == 2 {
+				return strings.TrimSpace(parts[1])
+			}
+		}
+	}
+	return ""
+}
+
+// renderDebugPrependPHP generates the auto_prepend shim content. A
+// register_shutdown_function + error_get_last() catches fatals even when the
+// app calls error_reporting(0), writes them to the per-domain debug log, and
+// displays them if display_errors is on. The original app's own .user.ini
+// auto_prepend (orig) is embedded at render time and chained via require_once,
+// so the app's own prepend is NOT broken.
+func renderDebugPrependPHP(systemUser, orig string) string {
+	logPath := tenantDebugLogPath(systemUser)
+	var b strings.Builder
+	// phpPrepend is embedded as a raw string so \\n produces literal backslash-n in PHP output.
+	const phpPrepend = `<?php
+// Servika PHP Debug Mode -- auto-generated, DO NOT EDIT.
+register_shutdown_function(function(){
+  $e=error_get_last();
+  if($e && in_array($e['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_RECOVERABLE_ERROR],true)){
+    @file_put_contents('`
+	b.WriteString(phpPrepend)
+	fmt.Fprintf(&b, "%s", logPath)
+	b.WriteString(`',
+      date('c').' ['.($_SERVER['REQUEST_URI']??'?').'] '.$e['message'].' @ '.$e['file'].':'.$e['line']."\n",
+      FILE_APPEND|LOCK_EX);
+    if(ini_get('display_errors')) echo "\n<pre style='background:#111;color:#f66;padding:8px'>PHP Fatal: ".htmlspecialchars($e['message'])." @ ".$e['file'].':'.$e['line']."</pre>";
+  }
+});
+`)
+	if orig != "" {
+		esc := strings.ReplaceAll(orig, "\\", "\\\\")
+		esc = strings.ReplaceAll(esc, "'", "\\'")
+		fmt.Fprintf(&b, "@require_once '%s';\n", esc)
+	}
+	return b.String()
+}
+
+// WriteDebugShim idempotently creates the .gpanel directory, debug log, and
+// auto_prepend shim when DebugMode is enabled.
+//   - /home/<sk>/.gpanel        root:root 0755 (tenant cannot modify the shim)
+//   - .../php_debug.log         tenant:tenant 0644 (worker appends as tenant UID)
+//   - .../debug_prepend.php     root:root 0644 (tenant reads, root writes)
+//
+// All paths are labeled with restorecon for correct SELinux context.
+func WriteDebugShim(db *sql.DB, systemUser string, domainID int64) {
+	if systemUser == "" || !strings.HasPrefix(systemUser, "c_") {
+		return
+	}
+	if _, err := os.Stat(filepath.Join("/home", systemUser)); err != nil {
+		return // tenant home missing
+	}
+	dir := tenantGpanelDir(systemUser)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return
+	}
+	_ = os.Chown(dir, 0, 0)
+	_ = os.Chmod(dir, 0755)
+	_, _ = exec.Command("restorecon", "-R", dir).CombinedOutput()
+
+	// Debug log: tenant:tenant 0644 (worker appends as tenant UID).
+	logPath := tenantDebugLogPath(systemUser)
+	if f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644); err == nil {
+		_ = f.Close()
+	}
+	if uid, gid, err := uidGid(systemUser); err == nil {
+		_ = os.Chown(logPath, uid, gid)
+	}
+	_ = os.Chmod(logPath, 0644)
+	_, _ = exec.Command("restorecon", logPath).CombinedOutput()
+
+	// Chain the app's own .user.ini auto_prepend to avoid breaking it.
+	orig := readUserIniAutoPrepend(tenantDocRoot(db, systemUser, domainID))
+	prePath := tenantDebugPrependPath(systemUser)
+	if orig == prePath {
+		orig = "" // do not require itself
+	}
+	if err := os.WriteFile(prePath, []byte(renderDebugPrependPHP(systemUser, orig)), 0644); err == nil {
+		_ = os.Chown(prePath, 0, 0)
+		_ = os.Chmod(prePath, 0644)
+		_, _ = exec.Command("restorecon", prePath).CombinedOutput()
+	}
 }

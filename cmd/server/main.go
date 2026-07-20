@@ -337,6 +337,8 @@ func main() {
 				r.Get("/php/versions", phpH.Versions)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/php-settings", phpH.GetSettings)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/php-settings", phpH.PutSettings)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/php/debug-log", phpH.GetDebugLog)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/php/debug-log", phpH.ClearDebugLog)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/resources", resourceH.Show)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/waf", wafH.Show)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/waf", wafH.Save)
