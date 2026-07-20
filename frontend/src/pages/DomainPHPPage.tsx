@@ -134,7 +134,7 @@ export default function DomainPHPPage() {
                     <button key={version.version} onClick={() => setSelectedVersion(version.version)}
                       className={`relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-mono transition ${
                         isSelected
-                          ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-slate-100 ring-1 ring-brand-300'
+                          ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 ring-1 ring-brand-300'
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:bg-slate-800/60'
                       }`}>
                       <span className="font-semibold">PHP {version.version}</span>
@@ -388,7 +388,7 @@ export default function DomainPHPPage() {
                                 {isBlocked ? 'Blocked' : (isMixed ? 'Mixed' : 'Active')}
                               </span>
                             </div>
-                            <div className="text-[11px] text-slate-600 dark:text-slate-400 dark:text-slate-500 font-mono mt-0.5 break-all">
+                            <div className="text-[11px] text-slate-600 dark:text-slate-500 font-mono mt-0.5 break-all">
                               {group.functions.join(', ')}
                             </div>
                           </div>
@@ -401,7 +401,7 @@ export default function DomainPHPPage() {
             })()}
 
             <details className="mt-4">
-              <summary className="text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100">Edit manually (raw disable_functions)</summary>
+              <summary className="text-xs text-slate-600 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100">Edit manually (raw disable_functions)</summary>
               <input value={settings.disable_functions} onChange={e => updateSetting('disable_functions', e.target.value)}
                 className="w-full mt-2 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-xs font-mono" />
               <p className="text-[11px] text-slate-500 dark:text-slate-500 mt-1">Comma-separated function names.</p>
@@ -491,7 +491,7 @@ function Flag({ label, help, value, onChange }: { label: string; help: string; v
   return (
     <Section label={label} help={help}>
       <button onClick={() => onChange(!value)}
-        className={`px-3 py-2 rounded-md text-sm font-mono w-full text-left transition border ${value ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 text-emerald-700 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 dark:text-slate-500'}`}>
+        className={`px-3 py-2 rounded-md text-sm font-mono w-full text-left transition border ${value ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 text-emerald-700 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-500'}`}>
         {value ? '✓ On' : '○ Off'}
       </button>
     </Section>
