@@ -284,9 +284,9 @@ export default function DomainFilesPage() {
     }
   }
 
-  // Context menu
+  // Context menu: right-click does NOT change selection; single-item actions use
+  // ctxMenu.entry directly. Multi-select via checkboxes is preserved.
   function openContext(clientX: number, clientY: number, entry: Entry) {
-    setSelectedPaths(prev => prev.has(entry.path) ? prev : new Set([entry.path]))
     setContextMenu({ x: clientX, y: clientY, entry })
   }
 
