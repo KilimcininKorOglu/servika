@@ -102,7 +102,7 @@ func fileMetadata(info os.FileInfo) (mode, permissions, owner, group string) {
 func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	home, _, err := h.home(r)
 	if err != nil {
-		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		httpx.WriteError(w, statusFromErr(err), messageFromErr(err))
 		return
 	}
 	rel := r.URL.Query().Get("path")
@@ -163,7 +163,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 	home, _, err := h.home(r)
 	if err != nil {
-		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		httpx.WriteError(w, statusFromErr(err), messageFromErr(err))
 		return
 	}
 	rel := r.URL.Query().Get("path")
@@ -197,7 +197,7 @@ func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) Read(w http.ResponseWriter, r *http.Request) {
 	home, _, err := h.home(r)
 	if err != nil {
-		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		httpx.WriteError(w, statusFromErr(err), messageFromErr(err))
 		return
 	}
 	rel := r.URL.Query().Get("path")
@@ -234,7 +234,7 @@ type mkdirReq struct {
 func (h *Handlers) Mkdir(w http.ResponseWriter, r *http.Request) {
 	home, systemUser, err := h.home(r)
 	if err != nil {
-		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		httpx.WriteError(w, statusFromErr(err), messageFromErr(err))
 		return
 	}
 	var req mkdirReq
@@ -252,7 +252,7 @@ func (h *Handlers) Mkdir(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	home, _, err := h.home(r)
 	if err != nil {
-		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		httpx.WriteError(w, statusFromErr(err), messageFromErr(err))
 		return
 	}
 	rel := r.URL.Query().Get("path")
@@ -270,7 +270,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 	home, systemUser, err := h.home(r)
 	if err != nil {
-		httpx.WriteError(w, statusFromErr(err), "operation failed")
+		httpx.WriteError(w, statusFromErr(err), messageFromErr(err))
 		return
 	}
 	rel := r.URL.Query().Get("path")
@@ -338,4 +338,18 @@ func statusFromErr(err error) int {
 		return http.StatusBadRequest
 	}
 	return http.StatusInternalServerError
+}
+
+// messageFromErr returns a human-readable error message for filesystem-related
+// sentinel errors, or a generic fallback for unknown errors.
+func messageFromErr(err error) string {
+	switch err {
+	case os.ErrNotExist:
+		return "not found"
+	case errDemo:
+		return "not available for demo subscriptions"
+	case errBadUser, errEscape:
+		return "invalid path"
+	}
+	return "operation failed"
 }
