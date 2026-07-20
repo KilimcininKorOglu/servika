@@ -154,6 +154,7 @@ func main() {
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.Timeout(300 * time.Second))
 	r.Use(chimw.Compress(5, "application/json", "text/html", "text/css", "text/javascript", "application/javascript"))
+	r.Use(middleware.CORS)
 	r.Use(middleware.MaintenanceMode)
 	r.Use(middleware.BodyLimit)
 
