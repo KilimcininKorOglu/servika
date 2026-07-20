@@ -259,6 +259,11 @@ func renderTenantPool(db *sql.DB, systemUser string, domainID int64) string {
 	fmt.Fprintf(&body, "php_admin_value[max_input_time] = %d\n", settings.MaxInputTime)
 	fmt.Fprintf(&body, "php_admin_value[post_max_size] = %s\n", settings.PostMaxSize)
 	fmt.Fprintf(&body, "php_admin_value[upload_max_filesize] = %s\n", settings.UploadMaxFilesize)
+	// Explicitly enable logging and disable display_errors for production.
+	// Intentionally NOT setting error_log -- PHP errors go to stderr and are
+	// captured by catch_workers_output into the per-tenant error log.
+	body.WriteString("php_admin_flag[log_errors] = on\n")
+	body.WriteString("php_admin_flag[display_errors] = off\n")
 	body.WriteString("catch_workers_output = yes\n")
 	return body.String()
 }
@@ -491,6 +496,9 @@ func EnsureTenantFPMOnStartup() {
 		if !TenantFPMActive(item.systemUser) {
 			continue
 		}
+		// Config-drift repair: old provisions may have left pool files with
+		// unwritable error_log overrides that silently swallowed PHP fatals.
+		repairTenantPoolDrift(item.id, item.systemUser, item.phpVersion)
 		if output, _ := tenantCommand("systemctl", "is-active", tenantUnitName(item.systemUser)).CombinedOutput(); strings.TrimSpace(string(output)) == "active" {
 			continue
 		}
@@ -501,4 +509,45 @@ func EnsureTenantFPMOnStartup() {
 			}
 		}
 	}
+}
+
+// repairTenantPoolDrift rewrites a tenant pool.conf if it has drifted from the
+// current renderTenantPool template. Old provisions may have left unwritable
+// php_admin_value[error_log] overrides that silently swallowed PHP fatal errors.
+// Validates with php-fpm -t before committing; rolls back on failure. Graceful
+// reload (USR2) avoids site downtime.
+func repairTenantPoolDrift(domainID int64, systemUser, phpVersion string) {
+	if packageDB == nil || systemUser == "" || !strings.HasPrefix(systemUser, "c_") {
+		return
+	}
+	configDir := tenantCfgDir(systemUser)
+	poolPath := filepath.Join(configDir, "pool.conf")
+	current, err := os.ReadFile(poolPath)
+	if err != nil {
+		return // pool.conf missing -- EnableTenantFPM handles creation
+	}
+	expected := renderTenantPool(packageDB, systemUser, domainID)
+	if string(current) == expected {
+		return // no drift, no-op
+	}
+	phpVersion = normalizePHP(phpVersion)
+	config := phpMap[phpVersion]
+	if config.FPMBin == "" {
+		return
+	}
+	// Write the new pool config, validate, and rollback on failure.
+	if err := os.WriteFile(poolPath, []byte(expected), 0644); err != nil {
+		return
+	}
+	globalPath := filepath.Join(configDir, "php-fpm.conf")
+	if output, err := tenantCommand(config.FPMBin, "-t", "-y", globalPath).CombinedOutput(); err != nil {
+		_ = os.WriteFile(poolPath, current, 0644) // rollback
+		log.Printf("repairTenantPoolDrift: %s php-fpm -t failed, rolled back: %s", systemUser, strings.TrimSpace(string(output)))
+		return
+	}
+	// Graceful reload (USR2) -- does not drop active requests.
+	if output, err := tenantCommand("systemctl", "reload", tenantUnitName(systemUser)).CombinedOutput(); err != nil {
+		log.Printf("repairTenantPoolDrift: %s reload warning: %s", systemUser, strings.TrimSpace(string(output)))
+	}
+	log.Printf("repairTenantPoolDrift: %s pool.conf updated (logging hardening + config drift repair)", systemUser)
 }
