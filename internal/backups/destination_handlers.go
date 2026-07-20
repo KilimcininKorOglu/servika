@@ -76,6 +76,10 @@ func (h *Handlers) PutDestination(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "host and username are required")
 		return
 	}
+	if !validHost(req.Host) {
+		httpx.WriteError(w, http.StatusBadRequest, "host must be a valid hostname or IPv4/IPv6 address")
+		return
+	}
 	if req.Port == 0 {
 		if req.Type == "sftp" {
 			req.Port = 22

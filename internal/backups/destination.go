@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -108,6 +109,18 @@ func lftpEscape(s string) string {
 	s = strings.ReplaceAll(s, `\`, `\\`)
 	s = strings.ReplaceAll(s, `"`, `\"`)
 	return s
+}
+
+// validHost returns true when h is a plausible hostname or IP address.
+// It rejects values containing shell/lftp meta-characters that could enable
+// command injection when the host is embedded in command-line arguments.
+var hostPattern = regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9\-\.]{0,251})[a-zA-Z0-9]$|^[a-fA-F0-9:\.\[\]]+$`)
+
+func validHost(h string) bool {
+	if len(h) > 253 {
+		return false
+	}
+	return hostPattern.MatchString(h)
 }
 
 // testConnection verifies the destination credentials.
