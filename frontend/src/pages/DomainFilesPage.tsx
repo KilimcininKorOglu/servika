@@ -35,7 +35,6 @@ export default function DomainFilesPage() {
   const [content, setContent] = useState<Entry[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [editor, setEditor] = useState<{path: string; content: string} | null>(null)
   const [chmodFor, setChmodFor] = useState<Entry | null>(null)
@@ -157,26 +156,6 @@ export default function DomainFilesPage() {
       setChmodFor(null); scan()
     } catch (err) {
       alert(apiError(err, 'Could not change permissions'))
-    }
-  }
-
-  async function selectFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setUploadedFile(f.name)
-    const fd = new FormData()
-    fd.append('file', f)
-    try {
-      await api.post(`/domains/${id}/files/upload`, fd, {
-        timeout: 0, // large upload: disable client timeout (backend 30m ceiling)
-        params: { path },
-      })
-      scan()
-    } catch (err) {
-      alert(apiError(err, 'Upload failed'))
-    } finally {
-      setUploadedFile(null)
-      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -612,7 +591,7 @@ export default function DomainFilesPage() {
         </div>
 
         {/* Hidden upload input */}
-        <input ref={fileInputRef} type="file" multiple onChange={e => { const list = Array.from(e.target.files || []); if (list.length === 1) selectFile(e); else if (list.length > 1) uploadFiles(list); e.target.value = ""; }} className="hidden" />
+        <input ref={fileInputRef} type="file" multiple onChange={e => { const list = Array.from(e.target.files || []); if (list.length) uploadFiles(list); e.target.value = ""; }} className="hidden" />
 
         <div className="ml-auto text-sm text-slate-500 dark:text-slate-500">{content.length} items</div>
       </div>
