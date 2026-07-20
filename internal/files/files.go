@@ -296,7 +296,7 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ext := strings.ToLower(filepath.Ext(fh.Filename))
-	for _, blocked := range strings.Split(uploadBlockedExts, "|") {
+	for blocked := range strings.SplitSeq(uploadBlockedExts, "|") {
 		if ext == blocked {
 			httpx.WriteError(w, http.StatusForbidden, "file type not allowed")
 			return

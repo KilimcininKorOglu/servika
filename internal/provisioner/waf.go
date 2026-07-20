@@ -116,11 +116,11 @@ func wafDomainConfWrite(sk, engine string, paranoia int) error {
 				"# Example CRS exclusion: SecRuleRemoveById 942100\n"), 0644)
 	}
 	var b strings.Builder
-	b.WriteString("# Servika WAF — " + sk + " — AUTO-GENERATED, do not edit by hand.\n")
+	fmt.Fprintf(&b, "# Servika WAF — %s — AUTO-GENERATED, do not edit by hand.\n", sk)
 	b.WriteString("# Mode + paranoia are managed from the panel (domain override > plan default).\n")
-	b.WriteString("Include " + wafModsecDir + "/modsecurity.conf\n")
-	b.WriteString("SecRuleEngine " + engine + "\n")
-	b.WriteString("Include " + wafModsecDir + "/crs/crs-setup.conf\n")
+	fmt.Fprintf(&b, "Include %s/modsecurity.conf\n", wafModsecDir)
+	fmt.Fprintf(&b, "SecRuleEngine %s\n", engine)
+	fmt.Fprintf(&b, "Include %s/crs/crs-setup.conf\n", wafModsecDir)
 	// Set the paranoia level BEFORE CRS rules (including 901-INITIALIZATION) are loaded.
 	// The id:900000 paranoia SecAction in crs-setup.conf.example is commented out BY DEFAULT;
 	// using id:900000 here does not conflict and is the documented CRS mechanism.
@@ -128,8 +128,8 @@ func wafDomainConfWrite(sk, engine string, paranoia int) error {
 		"SecAction \"id:900000,phase:1,pass,nolog,t:none,"+
 			"setvar:tx.blocking_paranoia_level=%d,setvar:tx.detection_paranoia_level=%d\"\n",
 		paranoia, paranoia)
-	b.WriteString("Include " + wafModsecDir + "/crs/rules/*.conf\n")
-	b.WriteString("Include " + custom + "\n")
+	fmt.Fprintf(&b, "Include %s/crs/rules/*.conf\n", wafModsecDir)
+	fmt.Fprintf(&b, "Include %s\n", custom)
 	confPath := filepath.Join(wafDomainsDir, sk+".conf")
 	return os.WriteFile(confPath, []byte(b.String()), 0644)
 }

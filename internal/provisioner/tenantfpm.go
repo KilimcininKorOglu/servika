@@ -641,7 +641,7 @@ func readUserIniAutoPrepend(docRoot string) string {
 	if err != nil {
 		return ""
 	}
-	for _, line := range strings.Split(string(data), "\n") {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		if strings.HasPrefix(strings.TrimSpace(line), "auto_prepend_file") {
 			parts := strings.SplitN(line, "=", 2)
 			if len(parts) == 2 {
@@ -753,7 +753,7 @@ func installDebugShim(home, sk string, content []byte) {
 // recursively removed (symlink-safe), and recreated. Uses O_NOFOLLOW open + fd-based
 // Fstat to close the TOCTOU final-step race. Idempotent. Returns the dir fd on success.
 func ensureRootDirAt(parentFd int, name string) (int, bool) {
-	for attempt := 0; attempt < 3; attempt++ {
+	for range 3 {
 		var st unix.Stat_t
 		serr := unix.Fstatat(parentFd, name, &st, unix.AT_SYMLINK_NOFOLLOW)
 		if serr == nil {

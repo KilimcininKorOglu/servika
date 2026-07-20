@@ -631,7 +631,7 @@ func versionModules(version string) []string {
 		return nil
 	}
 	modules := []string{}
-	for _, ln := range strings.Split(string(out), "\n") {
+	for ln := range strings.SplitSeq(string(out), "\n") {
 		ln = strings.TrimSpace(ln)
 		if ln == "" || strings.HasPrefix(ln, "[") {
 			continue

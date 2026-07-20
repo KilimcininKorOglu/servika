@@ -204,7 +204,7 @@ func computeRedisCacheStats() *CacheStats {
 		return nil
 	}
 	var cs CacheStats
-	for _, line := range strings.Split(string(out), "\n") {
+	for line := range strings.SplitSeq(string(out), "\n") {
 		line = strings.TrimSpace(line)
 		if after, ok := strings.CutPrefix(line, "keyspace_hits:"); ok {
 			cs.Hit, _ = strconv.ParseInt(strings.TrimSpace(after), 10, 64)

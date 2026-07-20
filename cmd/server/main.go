@@ -423,7 +423,7 @@ func runMigrations(d *sql.DB) {
 		log.Printf("migration: %s", e.Name())
 		// Strip comment lines first
 		var cleaned []string
-		for _, line := range strings.Split(string(body), "\n") {
+		for line := range strings.SplitSeq(string(body), "\n") {
 			t := strings.TrimSpace(line)
 			if t == "" || strings.HasPrefix(t, "--") {
 				continue
@@ -431,7 +431,7 @@ func runMigrations(d *sql.DB) {
 			cleaned = append(cleaned, line)
 		}
 		sqlBody := strings.Join(cleaned, "\n")
-		for _, stmt := range strings.Split(sqlBody, ";") {
+		for stmt := range strings.SplitSeq(sqlBody, ";") {
 			s := strings.TrimSpace(stmt)
 			if s == "" {
 				continue
