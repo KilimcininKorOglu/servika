@@ -525,7 +525,7 @@ server {
     location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {
         expires {{.BrowserCacheDays}}d;
         access_log off;
-        add_header Cache-Control "public, immutable" always;
+        add_header Cache-Control "public" always;
         # Repeat headers because this location defines add_header.
 {{.SecHeaders}}    }
 {{end}}
@@ -605,7 +605,7 @@ server {
     location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|mp4|webm|pdf|zip|gz)$ {
         expires {{.BrowserCacheDays}}d;
         access_log off;
-        add_header Cache-Control "public, immutable" always;
+        add_header Cache-Control "public" always;
         # Repeat headers because this location defines add_header.
 {{.SecHeaders}}    }
 {{end}}
@@ -1702,7 +1702,7 @@ func healPanelVhostHeadersOnStartup() {
 	insertAt := anchorIndex + len(anchor)
 	updated := content[:insertAt] + headers + content[insertAt:]
 
-	cacheHeader := "        add_header Cache-Control \"public, immutable\";"
+	cacheHeader := "        add_header Cache-Control \"public\";"
 	repeatedHeaders := cacheHeader + "\n" +
 		"        add_header X-Content-Type-Options \"nosniff\" always;\n" +
 		"        add_header X-Frame-Options \"SAMEORIGIN\" always;\n" +
