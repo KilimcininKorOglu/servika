@@ -121,6 +121,44 @@ func ensureCacheZone() (bool, error) {
 	return true, nil
 }
 
+// purgeFastCGICache removes all nginx FastCGI cache entries so that
+// cache TTL and enable/disable changes take effect immediately on
+// the next request instead of serving stale cached content.
+func purgeFastCGICache(systemUser string) {
+	dir := cacheZoneDir
+	if _, err := os.Stat(dir); err != nil {
+		return
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return
+	}
+	var purged int
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		// Cache hierarchy: <dir>/<one-char>/<two-char>/<cache-file>
+		oneCharDir := filepath.Join(dir, entry.Name())
+		oneLevel, _ := os.ReadDir(oneCharDir)
+		for _, one := range oneLevel {
+			if !one.IsDir() {
+				continue
+			}
+			twoCharDir := filepath.Join(oneCharDir, one.Name())
+			twoLevel, _ := os.ReadDir(twoCharDir)
+			for _, two := range twoLevel {
+				if err := os.Remove(filepath.Join(twoCharDir, two.Name())); err == nil {
+					purged++
+				}
+			}
+		}
+	}
+	if purged > 0 {
+		log.Printf("fastcgi cache: purged %d entries (%s)", purged, systemUser)
+	}
+}
+
 func cacheZoneDefinedElsewhere() bool {
 	files := []string{"/etc/nginx/nginx.conf"}
 	if extra, err := filepath.Glob("/etc/nginx/conf.d/*.conf"); err == nil {
@@ -845,6 +883,9 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 	if out, err := exec.Command("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
 		return fmt.Errorf("nginx reload: %s: %w", strings.TrimSpace(string(out)), err)
 	}
+	// Purge stale FastCGI cache entries for this domain so that cache TTL and
+	// enable/disable changes take effect immediately instead of serving old content.
+	purgeFastCGICache(systemUser)
 
 	// Manage the Apache backend idempotently by writing or removing its vhost.
 	if opts.Backend == "apache" && !opts.Suspended {
