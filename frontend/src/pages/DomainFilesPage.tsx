@@ -169,7 +169,6 @@ export default function DomainFilesPage() {
     try {
       await api.post(`/domains/${id}/files/upload`, fd, {
         params: { path },
-        headers: { 'Content-Type': 'multipart/form-data' },
       })
       scan()
     } catch (err) {
@@ -187,7 +186,6 @@ export default function DomainFilesPage() {
     try {
       await api.post(`/domains/${id}/files/upload`, fd, {
         params: { path },
-        headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (e: any) => {
           if (onProgress && typeof e.loaded === 'number') {
             onProgress(e.loaded, e.total || f.size)
