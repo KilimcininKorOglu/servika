@@ -29,7 +29,7 @@ func newRestoreCommand(ctx context.Context, name string, arguments ...string) *e
 // This destructive operation overwrites public_html and recreates database tables.
 func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	backupID, _ := strconv.ParseInt(chi.URLParam(r, "backupID"), 10, 64)
+	backupID, _ := strconv.ParseInt(chi.URLParam(r, "bid"), 10, 64)
 
 	var systemUser, file, domainName string
 	var isDemo int

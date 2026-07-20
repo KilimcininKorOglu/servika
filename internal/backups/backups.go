@@ -227,7 +227,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 // Delete removes a domain backup record and archive.
 func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	backupID, _ := strconv.ParseInt(chi.URLParam(r, "backupID"), 10, 64)
+	backupID, _ := strconv.ParseInt(chi.URLParam(r, "bid"), 10, 64)
 	var systemUser, file string
 	err := h.DB.QueryRowContext(r.Context(),
 		`SELECT d.system_user, b.file FROM backups b
@@ -247,7 +247,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 // Download streams a domain backup archive.
 func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	backupID, _ := strconv.ParseInt(chi.URLParam(r, "backupID"), 10, 64)
+	backupID, _ := strconv.ParseInt(chi.URLParam(r, "bid"), 10, 64)
 	var systemUser, file string
 	err := h.DB.QueryRowContext(r.Context(),
 		`SELECT d.system_user, b.file FROM backups b
