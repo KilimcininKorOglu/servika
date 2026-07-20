@@ -700,6 +700,19 @@ func WriteDebugShim(db *sql.DB, systemUser string, domainID int64) {
 	if _, err := os.Stat(home); err != nil {
 		return // tenant home missing
 	}
+	orig := readUserIniAutoPrepend(tenantDocRoot(db, systemUser, domainID))
+	if orig == tenantDebugPrependPath(systemUser) {
+		orig = "" // do not require itself
+	}
+	installDebugShim(home, systemUser, []byte(renderDebugPrependPHP(systemUser, orig)))
+}
+
+// installDebugShim is the FS-writing core of WriteDebugShim (extracted for testability).
+// Symlink/TOCTOU-safe: /home/<sk> is tenant-owned (0710) so all operations use
+// dir-fd + *at-syscall + O_NOFOLLOW. .servika is validated as a real root:root 0755
+// directory (symlink/file/tenant-owned entries are removed and recreated), preventing
+// cross-tenant chown DoS and arbitrary root-write.
+func installDebugShim(home, sk string, content []byte) {
 	homeFd, err := unix.Open(home, unix.O_DIRECTORY|unix.O_RDONLY|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
 	if err != nil {
 		return
@@ -713,10 +726,10 @@ func WriteDebugShim(db *sql.DB, systemUser string, domainID int64) {
 	defer unix.Close(gpFd)
 	restoreconFdPath(gpFd) // SELinux: relabel via pinned fd-path (no symlink -R).
 
-	// Debug log: tenant:tenant 0644 (worker appends as tenant UID).
+	// Debug log: tenant:tenant 0644. O_NOFOLLOW + fd-based Fchown/Fchmod.
 	if lf, e := unix.Openat(gpFd, "php_debug.log",
 		unix.O_WRONLY|unix.O_CREAT|unix.O_APPEND|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0644); e == nil {
-		if uid, gid, ue := uidGid(systemUser); ue == nil {
+		if uid, gid, ue := uidGid(sk); ue == nil {
 			_ = unix.Fchown(lf, uid, gid)
 		}
 		_ = unix.Fchmod(lf, 0644)
@@ -724,17 +737,11 @@ func WriteDebugShim(db *sql.DB, systemUser string, domainID int64) {
 		unix.Close(lf)
 	}
 
-	// Chain the app's own .user.ini auto_prepend to avoid breaking it.
-	orig := readUserIniAutoPrepend(tenantDocRoot(nil, systemUser, 0))
-	prePath := tenantDebugPrependPath(systemUser)
-	if orig == prePath {
-		orig = "" // do not require itself
-	}
-	content := []byte(renderDebugPrependPHP(systemUser, orig))
+	// auto_prepend shim: root:root -- tenant reads, cannot modify.
 	if pf, e := unix.Openat(gpFd, "debug_prepend.php",
 		unix.O_WRONLY|unix.O_CREAT|unix.O_TRUNC|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0644); e == nil {
 		_, _ = unix.Write(pf, content)
-		_ = unix.Fchown(pf, 0, 0) // root:root -- tenant reads but cannot modify
+		_ = unix.Fchown(pf, 0, 0)
 		_ = unix.Fchmod(pf, 0644)
 		restoreconFdPath(pf)
 		unix.Close(pf)

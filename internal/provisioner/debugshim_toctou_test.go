@@ -1,0 +1,255 @@
+package provisioner
+
+import (
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"golang.org/x/sys/unix"
+)
+
+// TestInstallDebugShim_SymlinkAttackBlocked verifies that installDebugShim does
+// NOT follow a symlink placed at the .servika path. A tenant can symlink
+// /home/<su>/.servika to an arbitrary path before debug mode is enabled;
+// the fix must replace the symlink with a real root:root 0755 directory
+// without writing to or chown-ing the symlink target.
+// Requires root (symlink/chown semantics).
+func TestInstallDebugShim_SymlinkAttackBlocked(t *testing.T) {
+	if os.Geteuid() != 0 {
+		t.Skip("root required (symlink/chown semantics)")
+	}
+	base := t.TempDir()
+	home := filepath.Join(base, "home")
+	if err := os.Mkdir(home, 0o710); err != nil {
+		t.Fatal(err)
+	}
+
+	// Victim directory: the attacker's symlink target. Chown to nobody so
+	// that any chown-to-root by a vulnerable code path is detected.
+	victim := filepath.Join(base, "victim")
+	if err := os.Mkdir(victim, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := unix.Chown(victim, 65534, 65534); err != nil {
+		t.Fatalf("victim chown nobody: %v", err)
+	}
+	sentinel := filepath.Join(victim, "keep.txt")
+	if err := os.WriteFile(sentinel, []byte("UNTOUCHED"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	// Attack: home/.servika -> victim symlink (tenant would do this before debug is enabled).
+	servPath := filepath.Join(home, ".servika")
+	if err := os.Symlink(victim, servPath); err != nil {
+		t.Fatal(err)
+	}
+
+	// Trigger the actual FS core.
+	installDebugShim(home, "c_toctou_attack", []byte("<?php /* shim */"))
+
+	// (1) .servika is NO LONGER a symlink -- a real root:root directory.
+	var lst unix.Stat_t
+	if err := unix.Lstat(servPath, &lst); err != nil {
+		t.Fatalf(".servika lstat: %v", err)
+	}
+	if lst.Mode&unix.S_IFMT == unix.S_IFLNK {
+		t.Fatal("FAIL: .servika is STILL a symlink -- symlink WAS followed")
+	}
+	if lst.Mode&unix.S_IFMT != unix.S_IFDIR {
+		t.Fatal("FAIL: .servika is not a real directory")
+	}
+	if lst.Uid != 0 || lst.Gid != 0 {
+		t.Fatalf("FAIL: .servika is not root:root (uid=%d gid=%d)", lst.Uid, lst.Gid)
+	}
+
+	// (2) Victim is untouched: still nobody-owned, sentinel present, no shim leaked.
+	var vst unix.Stat_t
+	if err := unix.Lstat(victim, &vst); err != nil {
+		t.Fatalf("victim lstat: %v", err)
+	}
+	if vst.Uid != 65534 || vst.Gid != 65534 {
+		t.Fatalf("FAIL: victim was chown-ed -> cross-tenant DoS (uid=%d gid=%d)", vst.Uid, vst.Gid)
+	}
+	if _, err := os.Stat(sentinel); err != nil {
+		t.Fatalf("FAIL: victim sentinel is missing: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(victim, "debug_prepend.php")); err == nil {
+		t.Fatal("FAIL: debug_prepend.php was written to victim -> arbitrary root-write")
+	}
+
+	// (3) Shim was written to the REAL .servika directory.
+	if _, err := os.Stat(filepath.Join(servPath, "php_debug.log")); err != nil {
+		t.Fatal("FAIL: php_debug.log not created in real .servika")
+	}
+	if _, err := os.Stat(filepath.Join(servPath, "debug_prepend.php")); err != nil {
+		t.Fatal("FAIL: debug_prepend.php not created in real .servika")
+	}
+
+	// (4) At least one file created by root.
+	var gst unix.Stat_t
+	if err := unix.Lstat(filepath.Join(servPath, "debug_prepend.php"), &gst); err != nil {
+		t.Fatal(err)
+	}
+	if gst.Uid != 0 {
+		t.Fatalf("FAIL: debug_prepend.php owner is not root (uid=%d)", gst.Uid)
+	}
+}
+
+// TestInstallDebugShim_LogSymlinkAttackBlocked verifies that the php_debug.log
+// file is opened with O_NOFOLLOW. A tenant could place a symlink named
+// php_debug.log pointing to a sensitive path before the shim creates it.
+func TestInstallDebugShim_LogSymlinkAttackBlocked(t *testing.T) {
+	if os.Geteuid() != 0 {
+		t.Skip("root required (symlink/chown semantics)")
+	}
+	base := t.TempDir()
+	home := filepath.Join(base, "home")
+	if err := os.Mkdir(home, 0o710); err != nil {
+		t.Fatal(err)
+	}
+	// Create a valid .servika directory first (as ensureRootDirAt would).
+	servPath := filepath.Join(home, ".servika")
+	if err := os.Mkdir(servPath, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := unix.Chown(servPath, 0, 0); err != nil {
+		t.Fatal(err)
+	}
+
+	// Victim file: symlink target.
+	victim := filepath.Join(base, "victim_log")
+	if err := os.WriteFile(victim, []byte{}, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := unix.Chown(victim, 65534, 65534); err != nil {
+		t.Fatal(err)
+	}
+
+	// Attack: php_debug.log -> victim symlink.
+	if err := os.Symlink(victim, filepath.Join(servPath, "php_debug.log")); err != nil {
+		t.Fatal(err)
+	}
+
+	installDebugShim(home, "c_toctou_attack", []byte("<?php /* shim */"))
+
+	// php_debug.log is no longer a symlink.
+	var lst unix.Stat_t
+	logPath := filepath.Join(servPath, "php_debug.log")
+	if err := unix.Lstat(logPath, &lst); err != nil {
+		t.Fatal(err)
+	}
+	if lst.Mode&unix.S_IFMT == unix.S_IFLNK {
+		t.Fatal("FAIL: php_debug.log is STILL a symlink")
+	}
+	// Victim is untouched.
+	var vst unix.Stat_t
+	if err := unix.Lstat(victim, &vst); err != nil {
+		t.Fatal(err)
+	}
+	if vst.Uid != 65534 {
+		t.Fatalf("FAIL: victim chown-ed to %d", vst.Uid)
+	}
+}
+
+// TestInstallDebugShim_TenantOwnedDir verifies that ensureRootDirAt rejects
+// a tenant-owned directory at .servika and replaces it with root:root.
+func TestInstallDebugShim_TenantOwnedDir(t *testing.T) {
+	if os.Geteuid() != 0 {
+		t.Skip("root required")
+	}
+	base := t.TempDir()
+	home := filepath.Join(base, "home")
+	if err := os.Mkdir(home, 0o710); err != nil {
+		t.Fatal(err)
+	}
+	// Tenant-owned .servika (e.g., created manually).
+	servPath := filepath.Join(home, ".servika")
+	if err := os.Mkdir(servPath, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := unix.Chown(servPath, 65534, 65534); err != nil {
+		t.Fatal(err)
+	}
+
+	installDebugShim(home, "c_toctou_attack", []byte("<?php /* shim */"))
+
+	var lst unix.Stat_t
+	if err := unix.Lstat(servPath, &lst); err != nil {
+		t.Fatal(err)
+	}
+	if lst.Uid != 0 || lst.Gid != 0 {
+		t.Fatalf("FAIL: .servika still tenant-owned (uid=%d gid=%d)", lst.Uid, lst.Gid)
+	}
+	if _, err := os.Stat(filepath.Join(servPath, "debug_prepend.php")); err != nil {
+		t.Fatal("FAIL: shim not created in reclaimed directory")
+	}
+}
+
+// TestInstallDebugShim_GeneratedPHPSyntax verifies the generated shim file
+// passes php -l syntax validation and contains the expected function skeleton.
+func TestInstallDebugShim_GeneratedPHPSyntax(t *testing.T) {
+	if _, err := exec.LookPath("php"); err != nil {
+		t.Skip("php binary not found")
+	}
+	base := t.TempDir()
+	home := filepath.Join(base, "home")
+	if err := os.Mkdir(home, 0o710); err != nil {
+		t.Fatal(err)
+	}
+
+	content := []byte(renderDebugPrependPHP("c_test", ""))
+	installDebugShim(home, "c_test", content)
+
+	shimPath := filepath.Join(home, ".servika", "debug_prepend.php")
+	if out, err := exec.Command("php", "-l", shimPath).CombinedOutput(); err != nil {
+		t.Fatalf("php -l FAILED: %s: %v", string(out), err)
+	}
+
+	raw, _ := os.ReadFile(shimPath)
+	source := string(raw)
+	if !strings.Contains(source, "register_shutdown_function") {
+		t.Error("shim missing register_shutdown_function")
+	}
+	if !strings.Contains(source, "error_get_last") {
+		t.Error("shim missing error_get_last")
+	}
+}
+
+// TestInstallDebugShim_ChainedPrependPreserved verifies that when an app has
+// its own auto_prepend_file in .user.ini, the shim chains it via require_once.
+func TestInstallDebugShim_ChainedPrependPreserved(t *testing.T) {
+	if _, err := exec.LookPath("php"); err != nil {
+		t.Skip("php binary not found")
+	}
+	base := t.TempDir()
+	home := filepath.Join(base, "home")
+	if err := os.Mkdir(home, 0o710); err != nil {
+		t.Fatal(err)
+	}
+
+	// Simulate app's own prepend.
+	docRoot := filepath.Join(home, "public_html")
+	if err := os.MkdirAll(docRoot, 0755); err != nil {
+		t.Fatal(err)
+	}
+	userIni := filepath.Join(docRoot, ".user.ini")
+	if err := os.WriteFile(userIni, []byte("auto_prepend_file = /home/c_test/my_prepend.php"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	content := []byte(renderDebugPrependPHP("c_test", "/home/c_test/my_prepend.php"))
+	installDebugShim(home, "c_test", content)
+
+	shimPath := filepath.Join(home, ".servika", "debug_prepend.php")
+	if out, err := exec.Command("php", "-l", shimPath).CombinedOutput(); err != nil {
+		t.Fatalf("php -l FAILED: %s: %v", string(out), err)
+	}
+
+	raw, _ := os.ReadFile(shimPath)
+	source := string(raw)
+	if !strings.Contains(source, "require_once '/home/c_test/my_prepend.php'") {
+		t.Error("shim does not chain the app's auto_prepend")
+	}
+}
