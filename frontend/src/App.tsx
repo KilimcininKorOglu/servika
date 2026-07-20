@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import LoginPage from '@/pages/LoginPage'
 import DashboardLayout from '@/components/DashboardLayout'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import HomePage from '@/pages/HomePage'
 import DomainsPage from '@/pages/DomainsPage'
 import SubscriptionDetailPage from '@/pages/SubscriptionDetailPage'
@@ -55,6 +56,7 @@ function GuardedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
         <Route path="/cp/login" element={<CustomerLoginPage />} />
@@ -117,5 +119,6 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </ErrorBoundary>
   )
 }
