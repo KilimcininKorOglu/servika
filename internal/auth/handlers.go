@@ -81,7 +81,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Username != "root" {
 		writeAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
-		httpx.WriteError(w, http.StatusUnauthorized, "Only the server root user can sign in to the admin panel")
+		httpx.WriteError(w, http.StatusUnauthorized, "Invalid username or password")
 		return
 	}
 	if !verifyRootPassword(req.Password) {
