@@ -686,8 +686,8 @@ func ApplyAll(ctx context.Context, db *sql.DB, domainID int64) error {
 	if err := WriteSystemdSlice(systemUser, l); err != nil {
 		log.Printf("write slice %s: %v", systemUser, err)
 	}
-	if _, err := db.ExecContext(ctx, `INSERT INTO php_settings(domain_id, pm_max_children)
-		VALUES(?,?) ON DUPLICATE KEY UPDATE pm_max_children=VALUES(pm_max_children)`,
+	if _, err := db.ExecContext(ctx, `INSERT INTO php_settings(domain_id, pm_max_children, extra_directives, debug_mode)
+		VALUES(?,?, "", 0) ON DUPLICATE KEY UPDATE pm_max_children=VALUES(pm_max_children)`,
 		domainID, calculatePMMaxChildren(l)); err != nil {
 		return fmt.Errorf("store PHP-FPM worker limit: %w", err)
 	}
@@ -735,8 +735,8 @@ func ReassertLimits(ctx context.Context, db *sql.DB, domainID int64) error {
 	if err := WriteSystemdSlice(systemUser, l); err != nil {
 		reassertErrors = append(reassertErrors, fmt.Errorf("systemd slice: %w", err))
 	}
-	if _, err := db.ExecContext(ctx, `INSERT INTO php_settings(domain_id, pm_max_children)
-		VALUES(?,?) ON DUPLICATE KEY UPDATE pm_max_children=VALUES(pm_max_children)`,
+	if _, err := db.ExecContext(ctx, `INSERT INTO php_settings(domain_id, pm_max_children, extra_directives, debug_mode)
+		VALUES(?,?, "", 0) ON DUPLICATE KEY UPDATE pm_max_children=VALUES(pm_max_children)`,
 		domainID, calculatePMMaxChildren(l)); err != nil {
 		reassertErrors = append(reassertErrors, fmt.Errorf("store PHP-FPM worker limit: %w", err))
 	}
