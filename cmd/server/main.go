@@ -153,7 +153,9 @@ func main() {
 	r.Use(chimw.RealIP)
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.Timeout(300 * time.Second))
+	r.Use(chimw.Compress(5, "application/json", "text/html", "text/css", "text/javascript", "application/javascript"))
 	r.Use(middleware.MaintenanceMode)
+	r.Use(middleware.BodyLimit)
 
 	r.Post("/api/v1/git-webhook/{secret}", gitH.Webhook)
 	r.Post("/api/v1/internal/pma-redeem", pmaH.Redeem)
