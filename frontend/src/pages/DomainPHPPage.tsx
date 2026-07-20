@@ -108,7 +108,7 @@ export default function DomainPHPPage() {
 
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">PHP Settings</h1>
       {response && <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
-        <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{response.domain_name}</Link>
+        <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">{response.domain_name}</Link>
         {' · System user: '}<code className="font-mono">{response.system_user}</code>
       </p>}
 
@@ -135,7 +135,7 @@ export default function DomainPHPPage() {
                       className={`relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-mono transition ${
                         isSelected
                           ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-slate-100 ring-1 ring-brand-300'
-                          : 'text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100 hover:bg-white dark:bg-slate-800/60'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:bg-slate-800/60'
                       }`}>
                       <span className="font-semibold">PHP {version.version}</span>
                       {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Active" />}
@@ -299,7 +299,7 @@ export default function DomainPHPPage() {
               <p className="text-xs text-slate-500 dark:text-slate-500">
                 <strong>{response.modules?.length || 0}</strong> modules are installed for PHP {response.php_version}. Modules are managed server-wide and cannot be enabled or disabled for an individual domain.
               </p>
-              <Link to="/tools/php-modules" className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium whitespace-nowrap">
+              <Link to="/tools/php-modules" className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium whitespace-nowrap">
                 ↗ Manage Server Modules
               </Link>
             </div>
