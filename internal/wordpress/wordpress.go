@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"log"
 	"fmt"
 	"net/http"
 	"os"
@@ -418,7 +419,8 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 	out1, e1 := runWP(systemUser, "core", "update", "--path="+dir)
 	out2, _ := runWP(systemUser, "core", "update-db", "--path="+dir)
 	if e1 != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "update failed: "+strings.TrimSpace(string(out1)))
+		log.Printf("wp core update failed for %s (dir=%s): %s", systemUser, dir, strings.TrimSpace(string(out1)))
+		httpx.WriteError(w, http.StatusInternalServerError, "update failed")
 		return
 	}
 	version := ""
