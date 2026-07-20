@@ -185,7 +185,10 @@ func (h *Handlers) prepareMutation(w http.ResponseWriter, r *http.Request, direc
 // POST /domains/{id}/wordpress/plugin applies {dir, action: update|update-all|active|passive, name}.
 func (h *Handlers) PluginAction(w http.ResponseWriter, r *http.Request) {
 	var req struct{ Dir, Action, Name string }
-	_ = json.NewDecoder(r.Body).Decode(&req)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
 	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
 	if !ok {
 		return
@@ -196,7 +199,10 @@ func (h *Handlers) PluginAction(w http.ResponseWriter, r *http.Request) {
 // POST /domains/{id}/wordpress/theme applies {dir, action: update|update-all|active, name}.
 func (h *Handlers) ThemeAction(w http.ResponseWriter, r *http.Request) {
 	var req struct{ Dir, Action, Name string }
-	_ = json.NewDecoder(r.Body).Decode(&req)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
 	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
 	if !ok {
 		return
@@ -248,7 +254,10 @@ func (h *Handlers) UserPassword(w http.ResponseWriter, r *http.Request) {
 		UserID   int    `json:"user_id"`
 		Password string `json:"password"`
 	}
-	_ = json.NewDecoder(r.Body).Decode(&req)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
 	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
 	if !ok {
 		return
@@ -283,7 +292,10 @@ func (h *Handlers) UserPassword(w http.ResponseWriter, r *http.Request) {
 // and verifies checksums again.
 func (h *Handlers) Repair(w http.ResponseWriter, r *http.Request) {
 	var req struct{ Dir string }
-	_ = json.NewDecoder(r.Body).Decode(&req)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
 	systemUser, dir, ok := h.prepareMutation(w, r, req.Dir)
 	if !ok {
 		return
