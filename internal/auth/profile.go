@@ -104,7 +104,11 @@ func (h *Handlers) TwoFASetup(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
 		return
 	}
-	secret := TOTPGenerateSecret()
+	secret, err := TOTPGenerateSecret()
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not generate secret")
+		return
+	}
 	uri := TOTPURI(secret, "root", "Servika")
 	resp := map[string]any{
 		"secret":      secret,
@@ -135,11 +139,12 @@ func (h *Handlers) TwoFAEnable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	b.Secret = strings.TrimSpace(b.Secret)
-	if !TOTPVerify(b.Secret, b.Code) {
+	step, ok := TOTPVerifyStep(b.Secret, b.Code, -1)
+	if !ok {
 		httpx.WriteError(w, http.StatusBadRequest, "code verification failed; enter the six-digit code from your authenticator app")
 		return
 	}
-	if _, err := h.DB.Exec(`UPDATE users SET totp_secret=?, totp_enabled=1 WHERE id=?`, b.Secret, c.UserID); err != nil {
+	if _, err := h.DB.Exec(`UPDATE users SET totp_secret=?, totp_enabled=1, totp_last_step=? WHERE id=?`, b.Secret, step, c.UserID); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "2FA settings could not be saved")
 		return
 	}

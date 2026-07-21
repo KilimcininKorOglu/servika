@@ -27,6 +27,7 @@ type loginReq struct {
 
 // Login: with FTP user/password, returns a JWT for the domain the FTP account belongs to
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 64<<10) // login body over 64KB is abuse (DoS)
 	var req loginReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
