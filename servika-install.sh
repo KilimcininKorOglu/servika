@@ -92,6 +92,9 @@ fi
 
 # ============ 3) PHP (8 versions + base + wp-cli) ============
 step "3) PHP versions (8 Remi + base) + wp-cli"
+# Disable dnf automatic timers before batch install to prevent lock contention.
+# Managed panel updates handle patching on their own schedule.
+systemctl disable --now dnf-automatic.timer dnf-makecache.timer >/dev/null 2>&1 || true
 BASE_PKGS="php php-fpm php-cli php-mysqlnd php-mbstring php-json php-pecl-zip php-pecl-redis6"
 dnf install -y $BASE_PKGS >/dev/null 2>&1 && ok "base php + php-redis"
 for v in $PHP_VERS; do
