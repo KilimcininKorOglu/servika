@@ -58,22 +58,51 @@ type Version struct {
 // the REQUEST PATH (synchronous, 20s timeout) — every caller of AllVersions() (especially
 // /php/versions from the Domains page) would stall. Now dnf is ONLY called in the background
 // sweeper goroutine; the request path only READS the cache and NEVER blocks.
+//
+// FALSE-NEGATIVE FIX: the dnf probe is now THREE-STATE (available, checked). "dnf definitely
+// said NO" (checked=true, available=false) and "could not ASK dnf" (checked=false: timeout/lock/error)
+// are DISTINCT. Previously both collapsed to a single false → a transient dnf lock would turn the
+// ENTIRE cache to false, causing a bogus "EOL/unavailable" 409 when the user tried to install
+// a version that was actually installable.
 var (
 	availabilityMu    sync.Mutex
-	availabilityCache = map[string]bool{} // pkg -> installable (populated by sweeper)
+	availabilityCache = map[string]bool{} // pkg -> CONFIRMED installable (only written when checked=true)
 	sweeperOnce       sync.Once
-	dnfProbe          = dnfPackageExists // injectable for tests (default: real dnf)
+
+	// dnfProbe: background sweep probe (fills display cache). Injectable for tests.
+	// Returns (available, checked). checked=false → could not ask dnf, PRESERVE previous value.
+	dnfProbe = func(pkg string) (available bool, checked bool) {
+		return dnfProbeCore(pkg, dnfTimeout)
+	}
+	// dnfLiveProbe: install-gate LIVE authoritative probe (long timeout). Injectable for tests.
+	dnfLiveProbe = func(pkg string) (available bool, checked bool) {
+		return dnfProbeCore(pkg, dnfAuthTimeout)
+	}
 )
 
 const (
 	availabilityTTL = 10 * time.Minute // background sweep period
-	dnfTimeout      = 3 * time.Second  // per-package dnf timeout (sweeper only)
+	dnfTimeout      = 25 * time.Second // sweep per-package upper bound (3s→25s: dnf slow/first metadata load was too short → persistent false-negatives)
+	dnfAuthTimeout  = 30 * time.Second // install-gate live authoritative probe upper bound
 )
 
 // StartAvailabilitySweeper starts the background dnf sweep loop (once). Called from main at
 // server startup; idempotent. Runs the initial sweep and periodic refresh in a goroutine.
+// Also starts an async dnf makecache to pre-warm metadata so the first sweep does not
+// time out on stale or missing metadata and produce false negatives.
 func StartAvailabilitySweeper() {
-	sweeperOnce.Do(func() { go sweepLoop() })
+	sweeperOnce.Do(func() {
+		go warmMetadata()
+		go sweepLoop()
+	})
+}
+
+// warmMetadata runs dnf makecache once at startup to pre-warm metadata. Fire-and-forget;
+// independent goroutine from the sweep — does not starve it.
+func warmMetadata() {
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	_ = exec.CommandContext(ctx, "dnf", "-q", "makecache").Run()
 }
 
 // sweepLoop runs an initial sweep at boot and refreshes every availabilityTTL. All Remi
@@ -87,37 +116,75 @@ func sweepLoop() {
 	}
 }
 
-// sweepOnce performs a single dnf scan round. Results are written atomically to
-// availabilityCache (no partial updates).
+// sweepOnce performs a single dnf scan round.
+// NO ATOMIC-WIPE: only packages where dnf gave a DEFINITE answer (checked=true) are updated;
+// packages that "could not be asked" (checked=false: timeout/lock) PRESERVE their previous
+// cache value. This prevents a single transient failed round from flipping all previous true
+// values to false (last-known-good preservation).
 func sweepOnce() {
-	fresh := map[string]bool{}
+	// Start with a copy of the current cache — entries with checked=false retain their old value.
+	availabilityMu.Lock()
+	fresh := make(map[string]bool, len(availabilityCache))
+	for k, v := range availabilityCache {
+		fresh[k] = v
+	}
+	availabilityMu.Unlock()
+
+	seen := map[string]bool{}
 	for _, m := range SupportedVersions {
 		if m.Resource != "remi" {
 			continue // appstream is always available; no need to ask dnf
 		}
 		pkg := "php" + m.Code + "-php-fpm"
-		if _, done := fresh[pkg]; done {
+		if seen[pkg] {
 			continue
 		}
-		fresh[pkg] = dnfProbe(pkg)
+		seen[pkg] = true
+		available, checked := dnfProbe(pkg)
+		if checked {
+			fresh[pkg] = available // definite answer → write
+		}
+		// checked=false → fresh[pkg] RETAINS previous value (if any); unknown otherwise.
 	}
+
 	availabilityMu.Lock()
 	availabilityCache = fresh
 	availabilityMu.Unlock()
 }
 
-// dnfPackageExists probes a SINGLE package via dnf (called ONLY from the background sweeper).
-// installed OR available → dnf exit 0 when found. Each query is bounded by dnfTimeout; when
-// dnf is locked or slow it gives up after 3s (never affects the request path).
-func dnfPackageExists(pkg string) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), dnfTimeout)
+// dnfProbeCore performs a THREE-STATE dnf probe for a single package. Returns (available, checked):
+//   - (true,  true)  → dnf ran and listed the package (installed OR in repository) = DEFINITELY available.
+//   - (false, true)  → dnf ran and returned "No match" = DEFINITELY absent (EOL/removed).
+//   - (false, false) → COULD NOT ASK dnf (timeout/lock/metadata error) = UNKNOWN.
+//
+// Distinguishing "definitely absent" from "could not ask" is the CORE of this package:
+// timeout ≠ unavailable.
+func dnfProbeCore(pkg string, timeout time.Duration) (available bool, checked bool) {
+	// 1) Installed? (fast path) — success means definitely available.
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	if systemCommandContext(ctx, "dnf", "-q", "list", "--installed", pkg).Run() == nil {
-		return true
+		return true, true
 	}
-	ctx2, cancel2 := context.WithTimeout(context.Background(), dnfTimeout)
+
+	// 2) Available in repository? Use output + ctx to distinguish "definitely absent" from "could not ask".
+	ctx2, cancel2 := context.WithTimeout(context.Background(), timeout)
 	defer cancel2()
-	return systemCommandContext(ctx2, "dnf", "-q", "list", "--available", pkg).Run() == nil
+	out, err := systemCommandContext(ctx2, "dnf", "-q", "list", "--available", pkg).CombinedOutput()
+	if err == nil {
+		return true, true // dnf ran and listed the package → definitely available
+	}
+	// dnf returned non-zero / error. Was it timeout/lock or genuine "No match"?
+	if ctx2.Err() == context.DeadlineExceeded {
+		return false, false // timed out → could not ask
+	}
+	low := strings.ToLower(string(out))
+	if strings.Contains(low, "no match") || strings.Contains(low, "no matching") {
+		return false, true // dnf spoke clearly: package absent (EOL/removed)
+	}
+	// Lock ("waiting for process", "another app is currently holding"), metadata/network error, etc.
+	// → not confident. Treat as "could not ask" to avoid false negatives.
+	return false, false
 }
 
 // systemCommandContext creates a privileged command without inheriting panel secrets.
@@ -131,12 +198,13 @@ func systemCommandContext(ctx context.Context, name string, arguments ...string)
 	return command
 }
 
-// packageAvailable reports whether a PHP package is installable on this OS.
+// packageAvailable reports whether a PHP package is installable on this OS — DISPLAY hint.
 // REQUEST PATH — NEVER calls dnf, only reads the cache. AppStream is always available.
 // When the cache is empty (first boot, sweep not yet completed) returns a safe default
 // (false = "not yet known") and guarantees the sweeper has started; the request NEVER
 // blocks for seconds. Once the sweep finishes the real values land in the cache and
 // subsequent requests get correct results instantly.
+// WARNING: this is for DISPLAY only; the INSTALL gate does NOT trust this — it asks live dnf.
 func packageAvailable(m VersionMetadata) bool {
 	if m.Resource == "appstream" {
 		return true // system default is always present
@@ -152,6 +220,20 @@ func packageAvailable(m VersionMetadata) bool {
 	// Cache not yet populated → don't block the request; default to false. Once the sweep
 	// completes the correct value lands in the cache.
 	return false
+}
+
+// availabilityVerify performs a LIVE authoritative installability check for the INSTALL gate.
+// DOES NOT use the cache — asks dnf directly (long timeout). Returns (available, checked):
+//   - checked=true,  available=false → dnf DEFINITELY returned "No match" → safe to emit "EOL/unavailable".
+//   - checked=false                  → could not ask dnf (lock/busy) → NEVER say "EOL/unavailable" (false negative!).
+//
+// AppStream is always available.
+func availabilityVerify(m VersionMetadata) (available bool, checked bool) {
+	if m.Resource == "appstream" {
+		return true, true
+	}
+	pkg := "php" + m.Code + "-php-fpm"
+	return dnfLiveProbe(pkg)
 }
 
 // paths returns installation paths for version metadata.
@@ -195,6 +277,8 @@ func Discover(m VersionMetadata) Version {
 			s.ModuleCount = n
 		}
 	} else {
+		// Installability (DISPLAY): when not installed check cache (non-blocking).
+		// Even when cache returns "false" the INSTALL gate re-verifies via live dnf.
 		s.Installable = packageAvailable(m)
 	}
 	if m.Resource == "appstream" {
@@ -302,9 +386,20 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !packageAvailable(m) {
+	// Graceful pre-check — LIVE AUTHORITATIVE dnf (NOT cache). Goal: PREVENT false negatives.
+	// Only emit "EOL/unavailable" when dnf DEFINITELY returned "No match" (checked && !available).
+	// If dnf could not be asked (lock/busy) NEVER say "unavailable" — return a distinct "could not
+	// verify" message instead, so the user is not misled. A transient dnf lock no longer produces
+	// a bogus 409.
+	available, checked := availabilityVerify(m)
+	if checked && !available {
 		httpx.WriteError(w, http.StatusConflict,
-			fmt.Sprintf("PHP %s is unavailable from the configured repositories", req.Version))
+			fmt.Sprintf("PHP %s is unavailable from the configured repositories (likely EOL). Select an installable version.", req.Version))
+		return
+	}
+	if !checked {
+		httpx.WriteError(w, http.StatusConflict,
+			fmt.Sprintf("could not verify PHP %s availability right now (dnf may be busy or locked — another install may be in progress). Please try again in a few minutes.", req.Version))
 		return
 	}
 
