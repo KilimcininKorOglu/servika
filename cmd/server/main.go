@@ -150,7 +150,10 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
-	r.Use(chimw.RealIP)
+	// NOTE: chimw.RealIP is NOT used — it blindly writes spoofable X-Forwarded-For /
+	// X-Real-IP / True-Client-IP headers into r.RemoteAddr without a trusted-proxy check,
+	// which would bypass login rate-limiting. The real client IP is obtained via
+	// httpx.ClientIP (trusts X-Real-IP only from loopback/nginx peer).
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.Timeout(300 * time.Second))
 	r.Use(chimw.Compress(5, "application/json", "text/html", "text/css", "text/javascript", "application/javascript"))
@@ -171,8 +174,9 @@ func main() {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Post("/auth/login", authH.Login)
-		r.Post("/customer/login", customerH.Login)
+		// Brute-force protection: login endpoints are IP rate-limited (see middleware.LoginRateLimit)
+		r.With(middleware.LoginRateLimit).Post("/auth/login", authH.Login)
+		r.With(middleware.LoginRateLimit).Post("/customer/login", customerH.Login)
 
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAuth(cfg.JWTSecret))
