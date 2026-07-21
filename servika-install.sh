@@ -110,6 +110,19 @@ else ok "wp-cli (existing)"; fi
 step "4) MariaDB"
 systemctl enable --now mariadb >/dev/null 2>&1; sleep 2
 systemctl is-active --quiet mariadb || die "MariaDB did not start"
+
+# my.cnf security hardening: MySQL bound to loopback only + LOCAL INFILE disabled.
+# Panel and customer sites connect via 127.0.0.1; port 3306 is never exposed externally.
+cat > /etc/my.cnf.d/zz-servika-security.cnf <<'MYCNF'
+# Servika security hardening (installer)
+[mysqld]
+bind-address = 127.0.0.1
+local-infile = 0
+MYCNF
+systemctl restart mariadb >/dev/null 2>&1; sleep 2
+systemctl is-active --quiet mariadb || die "MariaDB (after security hardening) did not start"
+ok "MariaDB security: 3306 bound to loopback + local-infile disabled"
+
 DBPASS=$(openssl rand -hex 16)
 mysql -u root <<SQL
 CREATE DATABASE IF NOT EXISTS panel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
