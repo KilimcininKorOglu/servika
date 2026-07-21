@@ -1,0 +1,162 @@
+package system
+
+// KernelCare (TuxCare) integration — REBOOTLESS live kernel patching.
+// KernelCare applies security patches to the running kernel in memory so kernel
+// CVEs are closed without a server reboot (the approach used by cPanel).
+//
+// NOTE: the patch feed is TuxCare's proprietary product; we only integrate the
+// kcarectl agent. The agent + license key is installed/registered by the operator.
+// When kcarectl is ABSENT this layer is completely silent (Installed=false)
+// and the existing CVE flow works unchanged.
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"os/exec"
+	"strings"
+	"time"
+
+	"servika/internal/httpx"
+)
+
+const (
+	kcUnit    = "servika-kernelcare-update"
+	kcLogPath = "/opt/servika/logs/kernelcare-update.log"
+	kcWrapper = "/opt/servika/kernelcare-update.sh"
+)
+
+// KcStatus describes the KernelCare agent state (embedded in CVE summary).
+type KcStatus struct {
+	Installed       bool     `json:"installed"`        // kcarectl binary present
+	Active          bool     `json:"active"`           // patches loaded onto running kernel
+	Registered      bool     `json:"registered"`       // license key registered
+	EffectiveKernel string   `json:"effective_kernel"` // kcarectl --uname (patched-equivalent version)
+	PatchedCves     []string `json:"patched_cves"`     // CVEs extracted from patch-info
+	Running         bool     `json:"running"`          // --update in progress in background
+}
+
+// kcRunShell runs kcarectl with a timeout; returns (output, exit code).
+func kcRunShell(d time.Duration, args ...string) (string, int) {
+	ctx, cancel := context.WithTimeout(context.Background(), d)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, "kcarectl", args...).CombinedOutput()
+	if err == nil {
+		return string(out), 0
+	}
+	if ee, ok := err.(*exec.ExitError); ok {
+		return string(out), ee.ExitCode()
+	}
+	return string(out), -1
+}
+
+func kernelcareInstalled() bool {
+	_, err := exec.LookPath("kcarectl")
+	return err == nil
+}
+
+func kernelcareUpdateRunning() bool {
+	s := strings.TrimSpace(runOutput("systemctl", "is-active", kcUnit))
+	return s == "active" || s == "activating"
+}
+
+// kernelcareStatus queries the agent. Returns zero-value (Installed=false) when kcarectl is absent.
+func kernelcareStatus() KcStatus {
+	kc := KcStatus{}
+	if !kernelcareInstalled() {
+		return kc
+	}
+	kc.Installed = true
+	kc.Running = kernelcareUpdateRunning()
+
+	if o, c := kcRunShell(10*time.Second, "--uname"); c == 0 {
+		kc.EffectiveKernel = strings.TrimSpace(o)
+	}
+
+	// patch-info: patches loaded when exit 0 + non-empty; extract CVEs.
+	if pi, pc := kcRunShell(15*time.Second, "--patch-info"); pc == 0 && strings.TrimSpace(pi) != "" {
+		kc.Active = true
+		seen := map[string]bool{}
+		for _, tok := range strings.FieldsFunc(pi, func(r rune) bool {
+			return r == ' ' || r == '\n' || r == '\t' || r == ',' || r == ';' || r == '(' || r == ')'
+		}) {
+			if strings.HasPrefix(tok, "CVE-") && !seen[tok] {
+				seen[tok] = true
+				kc.PatchedCves = append(kc.PatchedCves, tok)
+			}
+		}
+	}
+
+	// registration status: --info output without "unregistered/not registered/no key" → registered.
+	info, _ := kcRunShell(10*time.Second, "--info")
+	low := strings.ToLower(info)
+	kc.Registered = strings.TrimSpace(info) != "" &&
+		!strings.Contains(low, "unregistered") &&
+		!strings.Contains(low, "not registered") &&
+		!strings.Contains(low, "no key") &&
+		!strings.Contains(low, "no valid key")
+
+	return kc
+}
+
+// KernelcareStatusHandler — GET /system/kernelcare : agent state (for polling).
+func KernelcareStatusHandler(w http.ResponseWriter, r *http.Request) {
+	httpx.WriteJSON(w, http.StatusOK, kernelcareStatus())
+}
+
+const kcWrapperContent = `#!/usr/bin/env bash
+set -uo pipefail
+echo "════════ KernelCare live kernel patch — $(date "+%Y-%m-%d %H:%M:%S") ════════"
+echo
+if command -v kcarectl >/dev/null 2>&1; then
+  kcarectl --update
+else
+  echo "  (kcarectl not found — KernelCare not installed)"
+fi
+echo
+echo "════════ ✓ Live patch complete ════════"
+`
+
+func kcWriteWrapper() error {
+	tmp := kcWrapper + ".tmp"
+	if err := os.WriteFile(tmp, []byte(kcWrapperContent), 0o700); err != nil {
+		return err
+	}
+	return os.Rename(tmp, kcWrapper)
+}
+
+// KernelcarePatch — POST /system/kernelcare/patch : run kcarectl --update in background
+// (systemd-run, survives tab/panel close).
+func KernelcarePatch(w http.ResponseWriter, r *http.Request) {
+	if !kernelcareInstalled() {
+		httpx.WriteError(w, http.StatusBadRequest, "KernelCare is not installed")
+		return
+	}
+	if kernelcareUpdateRunning() {
+		httpx.WriteError(w, http.StatusConflict, "live patching is already in progress")
+		return
+	}
+	_ = os.MkdirAll("/opt/servika/logs", 0o750)
+	if err := kcWriteWrapper(); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare: "+err.Error())
+		return
+	}
+	header := fmt.Sprintf("=== KernelCare live patch started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
+	if err := os.WriteFile(kcLogPath, []byte(header), 0o640); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not open log: "+err.Error())
+		return
+	}
+	cmd := exec.Command("systemd-run",
+		"--collect",
+		"--unit", kcUnit,
+		"--description", "Servika KernelCare live kernel patching",
+		"-p", "StandardOutput=append:"+kcLogPath,
+		"-p", "StandardError=append:"+kcLogPath,
+		kcWrapper)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start: "+strings.TrimSpace(string(out)))
+		return
+	}
+	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{"started": true})
+}
