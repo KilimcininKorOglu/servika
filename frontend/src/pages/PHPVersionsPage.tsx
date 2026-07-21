@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Version = {
   version: string; code: string; resource: 'remi' | 'appstream'
-  loaded: boolean
+  loaded: boolean; installable?: boolean
   pool_dir?: string; sock_dir?: string; service?: string; php_bin?: string
   real_version?: string; module_count?: number; description?: string
 }
 
-type Output = { title: string; output: string }
+// Detached job (systemd-run transient unit) — install/remove runs in background
+// under PID 1; survives tab close. Status + log polled for live progress.
+type ActiveOp = { version: string; resource: string; action: 'install' | 'remove' }
+type OpStatus = { running: boolean; version?: string; resource?: string; action?: 'install' | 'remove'; status?: string }
+type LogResponse = { log: string; running: boolean; version?: string; resource?: string; action?: 'install' | 'remove' }
+
 type Filter = 'all' | 'installed' | 'available'
 
 export default function PHPVersionsPage() {
@@ -17,155 +22,192 @@ export default function PHPVersionsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [processing, setProcessing] = useState<string | null>(null)
-  const [output, setOutput] = useState<Output | null>(null)
+  const [activeOp, setActiveOp] = useState<ActiveOp | null>(null)
+  const [opLog, setOpLog] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
+  const logRef = useRef<HTMLPreElement>(null)
 
-  function load() {
+  const load = useCallback(() => {
     setLoading(true)
     api.get<{ versions: Version[] }>('/php-versions')
-      .then(response => setVersions(response.data.versions || []))
-      .catch(error => setError(apiError(error)))
+      .then(r => setVersions(r.data.versions || []))
+      .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [])
+  }, [])
 
-  async function install(version: Version) {
-    if (!confirm(`Fourteen packages will be installed for PHP ${version.version} (${version.resource}): fpm, cli, mysqlnd, and 11 extensions. Continue?`)) return
-    const key = version.version + ':' + version.resource
-    setProcessing(key); setError(null); setSuccess(null)
+  // Initial load: version list + catch any running job (resume-on-reopen).
+  useEffect(() => {
+    load()
+    api.get<OpStatus>('/php-versions/status')
+      .then(r => {
+        if (r.data.running && r.data.version) {
+          setActiveOp({
+            version: r.data.version,
+            resource: r.data.resource || 'remi',
+            action: r.data.action || 'install',
+          })
+        }
+      })
+      .catch(() => { /* transient — ignore */ })
+  }, [load])
+
+  // Poll active job every 2s — live log streaming; on completion refresh list.
+  useEffect(() => {
+    if (!activeOp) return
+    let done = false
+    const tick = async () => {
+      try {
+        const r = await api.get<LogResponse>('/php-versions/log')
+        if (done) return
+        setOpLog(r.data.log || '')
+        if (!r.data.running) {
+          setSuccess(`PHP ${activeOp.version} ${activeOp.action === 'remove' ? 'removed' : 'installed'}`)
+          setTimeout(() => setSuccess(null), 6000)
+          setActiveOp(null)
+          load()
+        }
+      } catch { /* transient network error — keep polling */ }
+    }
+    const id = window.setInterval(tick, 2000)
+    tick()
+    return () => { done = true; window.clearInterval(id) }
+  }, [activeOp, load])
+
+  useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight }) }, [opLog])
+
+  async function install(v: Version) {
+    if (activeOp) { alert('A PHP operation is already in progress — wait for it to finish.'); return }
+    if (!confirm(`Fourteen packages will be installed for PHP ${v.version} (${v.resource}). Continue?`)) return
+    setError(null); setSuccess(null); setOpLog('')
     try {
-      const response = await api.post('/php-versions/install', { version: version.version, resource: version.resource })
-      setSuccess(`✓ PHP ${version.version} installed`)
-      setOutput({ title: `PHP ${version.version} installation`, output: response.data.output || '' })
-      setTimeout(() => setSuccess(null), 4000)
-      load()
-    } catch (error) { setError(apiError(error, 'Installation failed')) }
-    finally { setProcessing(null) }
+      await api.post('/php-versions/install', { version: v.version, resource: v.resource })
+      setOpLog(`PHP ${v.version} installation started…\n`)
+      setActiveOp({ version: v.version, resource: v.resource, action: 'install' })
+    } catch (e) { setError(apiError(e, 'Could not start installation')) }
   }
 
-  async function remove(version: Version) {
-    if (version.resource === 'appstream') {
+  async function remove(v: Version) {
+    if (v.resource === 'appstream') {
       alert('AppStream PHP is the system default and cannot be removed.')
       return
     }
-    if (!confirm(`PHP ${version.version} (Remi) and ALL its extensions will be REMOVED.\nThe operation will be rejected if a domain uses this version. Continue?`)) return
-    const key = version.version + ':' + version.resource
-    setProcessing(key); setError(null); setSuccess(null)
+    if (activeOp) { alert('A PHP operation is already in progress — wait for it to finish.'); return }
+    if (!confirm(`PHP ${v.version} (Remi) and ALL its extensions will be REMOVED.\nThe operation will be rejected if a domain uses this version. Continue?`)) return
+    setError(null); setSuccess(null); setOpLog('')
     try {
-      const response = await api.post('/php-versions/remove', { version: version.version, resource: version.resource })
-      setSuccess(`✓ PHP ${version.version} removed`)
-      setOutput({ title: `PHP ${version.version} removal`, output: response.data.output || '' })
-      setTimeout(() => setSuccess(null), 4000)
-      load()
-    } catch (error) { setError(apiError(error, 'Removal failed')) }
-    finally { setProcessing(null) }
+      await api.post('/php-versions/remove', { version: v.version, resource: v.resource })
+      setOpLog(`PHP ${v.version} removal started…\n`)
+      setActiveOp({ version: v.version, resource: v.resource, action: 'remove' })
+    } catch (e) { setError(apiError(e, 'Could not start removal')) }
   }
 
-  const filtered = versions.filter(version => {
-    if (filter === 'installed') return version.loaded
-    if (filter === 'available') return !version.loaded
+  const filtered = versions.filter(v => {
+    if (filter === 'installed') return v.loaded
+    if (filter === 'available') return !v.loaded
     return true
   })
-  const installedCount = versions.filter(version => version.loaded).length
+  const installedCount = versions.filter(v => v.loaded).length
 
   return (
     <div className="px-6 py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
-        { label: 'Tools and Settings' },
+        { label: 'Tools and Settings', href: '/tools-settings' },
         { label: 'PHP Versions' },
       ]} />
 
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">PHP Versions</h1>
-      <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
-        Add or remove PHP versions on the server. Each version runs in an independent PHP-FPM pool and can be selected per domain.
-        Installation includes 14 packages (fpm, cli, mysqlnd, mbstring, bcmath, intl, gd, soap, opcache, pdo, xml, zip, pgsql, ldap).
-      </p>
+      <div className="mb-5">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">PHP Versions</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Add or remove PHP versions. Each runs in an independent PHP-FPM pool and can be selected per domain.
+          Install includes 14 packages (fpm, cli, mysqlnd, and 11 extensions).
+        </p>
+      </div>
 
-      {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">{error}</div>}
-      {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
+      {error && <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-900/15 dark:text-red-300">{error}</div>}
+      {success && <div className="mb-3 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-900/15 dark:text-emerald-300">{success}</div>}
 
-      {/* Filter */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500 mr-2">Filter:</span>
-        {(['all', 'installed', 'available'] as const).map(option => (
-          <button key={option} onClick={() => setFilter(option)}
-            className={`px-3 py-1 text-sm rounded ${filter === option ? 'bg-brand-600 text-white' : 'border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800'}`}>
-            {option === 'all' ? 'All' : option === 'installed' ? `Installed (${installedCount})` : `Available (${versions.length - installedCount})`}
+      {/* Active operation — inline live log */}
+      {activeOp && (
+        <div className="mb-4 rounded-2xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-900/50 dark:bg-brand-900/15">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="h-3 w-3 animate-spin rounded-full border-2 border-brand-400 border-t-transparent" />
+            <span className="text-sm font-semibold text-brand-700 dark:text-brand-300">
+              PHP {activeOp.version} {activeOp.action === 'remove' ? 'removal' : 'installation'} in progress…
+            </span>
+          </div>
+          <pre ref={logRef} className="max-h-48 overflow-auto rounded-xl bg-slate-900 p-3 font-mono text-xs text-slate-100">{opLog || 'Waiting for output…'}</pre>
+        </div>
+      )}
+
+      {/* Filter tabs */}
+      <div className="mb-4 flex items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-800 dark:bg-slate-800/60">
+        {(['all', 'installed', 'available'] as const).map(opt => (
+          <button key={opt} onClick={() => setFilter(opt)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${filter === opt ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+            {opt === 'all' ? `All (${versions.length})` : opt === 'installed' ? `Installed (${installedCount})` : `Available (${versions.length - installedCount})`}
           </button>
         ))}
       </div>
 
-      {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div> : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filtered.map(version => {
-            const key = version.version + ':' + version.resource
-            const busy = processing === key
+      {loading ? (
+        <div className="flex items-center justify-center gap-2 py-12 text-sm text-slate-400">
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-transparent dark:border-slate-600 dark:border-t-transparent" />
+          Loading…
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {filtered.map(v => {
+            const key = v.version + ':' + v.resource
             return (
               <div key={key}
-                className={`border rounded-2xl p-4 transition ${version.loaded ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
-                <div className="flex items-start justify-between mb-2">
+                className={`rounded-2xl border p-4 transition ${
+                  v.loaded ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20'
+                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60'}`}>
+                <div className="mb-2 flex items-start justify-between">
                   <div>
-                    <div className="text-lg font-mono font-bold text-slate-900 dark:text-slate-100">PHP {version.version}</div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium ${
-                        version.resource === 'appstream'
-                          ? 'bg-sky-100 text-sky-700'
-                          : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
-                      }`}>{version.resource}</span>
-                      {version.loaded && <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">INSTALLED</span>}
-                      {parseInt(version.version) < 8 && <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">EOL</span>}
+                    <div className="font-mono text-lg font-bold text-slate-900 dark:text-slate-100">PHP {v.version}</div>
+                    <div className="mt-0.5 flex items-center gap-1.5">
+                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
+                        v.resource === 'appstream' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
+                          : 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
+                      }`}>{v.resource}</span>
+                      {v.loaded && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">INSTALLED</span>}
+                      {parseInt(v.version) < 8 && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">EOL</span>}
                     </div>
                   </div>
                 </div>
 
-                {version.description && <div className="text-xs text-slate-500 dark:text-slate-500 mb-2">{version.description}</div>}
+                {v.description && <div className="mb-2 text-xs text-slate-500 dark:text-slate-400">{v.description}</div>}
 
-                {version.loaded && (
-                  <div className="text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500 space-y-0.5 mb-3 font-mono bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-2">
-                    {version.real_version && <div>Version: <span className="text-slate-900 dark:text-slate-100">{version.real_version}</span></div>}
-                    {version.module_count !== undefined && <div>Extensions: <span className="text-slate-900 dark:text-slate-100">{version.module_count}</span></div>}
-                    {version.service && <div className="truncate">Service: <span className="text-slate-700 dark:text-slate-300">{version.service}</span></div>}
+                {v.loaded && (
+                  <div className="mb-3 space-y-0.5 rounded-lg border border-slate-200 bg-white p-2 font-mono text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+                    {v.real_version && <div>Version: <span className="text-slate-900 dark:text-slate-100">{v.real_version}</span></div>}
+                    {v.module_count !== undefined && <div>Extensions: <span className="text-slate-900 dark:text-slate-100">{v.module_count}</span></div>}
+                    {v.service && <div className="truncate">Service: <span className="text-slate-700 dark:text-slate-300">{v.service}</span></div>}
                   </div>
                 )}
 
-                {version.loaded ? (
-                  version.resource === 'appstream' ? (
-                    <button disabled className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-sm rounded cursor-not-allowed">
+                {v.loaded ? (
+                  v.resource === 'appstream' ? (
+                    <button disabled className="w-full cursor-not-allowed rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                       Fixed (system default)
                     </button>
                   ) : (
-                    <button onClick={() => remove(version)} disabled={busy}
-                      className="w-full px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-slate-300 text-white text-sm rounded">
-                      {busy ? 'Removing…' : '🗑 Remove'}
+                    <button onClick={() => remove(v)} disabled={!!activeOp}
+                      className="w-full rounded-xl bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40">
+                      {activeOp?.version === v.version ? 'In progress…' : 'Remove'}
                     </button>
                   )
                 ) : (
-                  <button onClick={() => install(version)} disabled={busy}
-                    className="w-full px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded">
-                    {busy ? '⏳ Installing…' : '⬇ Install'}
+                  <button onClick={() => install(v)} disabled={!!activeOp}
+                    className="w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+                    {activeOp?.version === v.version ? 'In progress…' : 'Install'}
                   </button>
                 )}
               </div>
             )
           })}
-        </div>
-      )}
-
-      {output && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setOutput(null)}>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full shadow-xl flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{output.title}</h3>
-              <button onClick={() => setOutput(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300">×</button>
-            </div>
-            <pre className="flex-1 overflow-auto p-3 bg-slate-900 text-slate-100 text-xs font-mono whitespace-pre-wrap">{output.output}</pre>
-            <div className="px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-right">
-              <button onClick={() => setOutput(null)}
-                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded">Close</button>
-            </div>
-          </div>
         </div>
       )}
     </div>
