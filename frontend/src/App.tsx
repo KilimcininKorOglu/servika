@@ -36,6 +36,8 @@ import PackagesPage from '@/pages/PackagesPage'
 import PackageDetailPage from '@/pages/PackageDetailPage'
 import PHPVersionsPage from '@/pages/PHPVersionsPage'
 import ToolsSettingsPage from '@/pages/ToolsSettingsPage'
+import PanelUpdatePage from '@/pages/PanelUpdatePage'
+import ServerOptimizePage from '@/pages/ServerOptimizePage'
 import DNSTemplatePage from '@/pages/DNSTemplatePage'
 import WordPressPage from '@/pages/WordPressPage'
 import FirewallPage from '@/pages/FirewallPage'
@@ -106,6 +108,8 @@ export default function App() {
         <Route path="service-plans"      element={<ServicePlansPage />} />
 
         <Route path="tools-settings" element={<ToolsSettingsPage />} />
+        <Route path="tools/update" element={<PanelUpdatePage />} />
+        <Route path="tools/optimize" element={<ServerOptimizePage />} />
         <Route path="statistics" element={<StatisticsPage />} />
         <Route path="extensions" element={<ComingSoonPage title="Extensions" icon="🧩" description="Third-party extension management for the panel" features={["Browse the marketplace", "One-click install and removal", "Version updates", "API integration", "Developer SDK"]} />} />
         <Route path="wordpress" element={<WordPressPage />} />
