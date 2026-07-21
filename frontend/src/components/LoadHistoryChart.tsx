@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 
 type Point = { ts: string; load_1m: number; load_5m: number; load_15m: number; memory: number }
@@ -11,17 +11,25 @@ const INTERVALS = [
   { label: '7d', hours: 168 },
 ]
 
-// SVG coordinate plane.
-const W = 1000, H = 260, ML = 44, MR = 14, MT = 14, MB = 28
+const SERIES = [
+  { key: 'load_1m' as const, label: '1min', color: '#f97316' },  // brand
+  { key: 'load_5m' as const, label: '5min', color: '#0ea5e9' },  // sky
+  { key: 'load_15m' as const, label: '15min', color: '#8b5cf6' }, // violet
+]
+
+// SVG plane — uniform scale (text/lines stay sharp)
+const W0 = 1000, H = 320, ML = 46, MR = 16, MT = 16, MB = 30
 
 export default function LoadHistoryChart() {
   const [hours, setHours] = useState(24)
   const [d, setD] = useState<Response | null>(null)
   const [forbidden, setForbidden] = useState(false)
+  const [hover, setHover] = useState<number | null>(null)
 
   useEffect(() => {
     let on = true
     async function tick() {
+      if (typeof document !== 'undefined' && document.hidden) return
       try {
         const r = await api.get<Response>(`/system/load-history?hour=${hours}`)
         if (on) { setD(r.data); setForbidden(false) }
@@ -34,116 +42,186 @@ export default function LoadHistoryChart() {
     return () => { on = false; clearInterval(t) }
   }, [hours])
 
-  if (forbidden) return null // Administrators only.
-
   const pts = d?.points || []
-  const coreCount = d?.cores || 0
+  const cores = d?.cores || 0
   const latest = pts[pts.length - 1]
 
-  // Y scale: cover the highest load or core count with 15% headroom.
-  const maxVal = Math.max(0.5, coreCount, ...pts.flatMap(p => [p.load_1m, p.load_5m, p.load_15m]))
-  const yMax = Math.ceil(maxVal * 1.15 * 10) / 10
-  const cw = W - ML - MR, ch = H - MT - MB
-  const xAt = (i: number) => ML + (pts.length <= 1 ? 0 : (i / (pts.length - 1)) * cw)
-  const yAt = (v: number) => MT + (1 - Math.min(v, yMax) / yMax) * ch
-  const line = (key: keyof Point) => pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${xAt(i).toFixed(1)},${yAt(p[key] as number).toFixed(1)}`).join(' ')
-  const area1 = pts.length
-    ? `M${xAt(0).toFixed(1)},${(H - MB).toFixed(1)} ` +
-      pts.map((p, i) => `L${xAt(i).toFixed(1)},${yAt(p.load_1m).toFixed(1)}`).join(' ') +
-      ` L${xAt(pts.length - 1).toFixed(1)},${(H - MB).toFixed(1)} Z`
-    : ''
+  // Measure card width: keep viewBox at fixed H (px) so text/lines are crisp.
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [Wpx, setWpx] = useState(0)
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver((es) => { const w = es[0]?.contentRect.width; if (w && w > 0) setWpx(Math.round(w)) })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const W = Wpx > 40 ? Wpx - 40 : W0 // p-5 card padding = 2×20px
 
-  // Axis labels.
-  const yTicks = [0, yMax / 2, yMax]
-  const xLabel = (ts: string) => hours > 24 ? ts.slice(5, 10).replace('-', '/') : ts.slice(11, 16)
-  const xTickIdx = pts.length > 1
-    ? [0, Math.floor(pts.length / 3), Math.floor((2 * pts.length) / 3), pts.length - 1]
-    : []
+  const cw = W - ML - MR, ch = H - MT - MB
+
+  const g = useMemo(() => {
+    if (!pts.length) return null
+    const allVals = pts.flatMap(p => [p.load_1m, p.load_5m, p.load_15m])
+    const maxVal = Math.max(0.5, cores, ...allVals)
+    const yMax = maxVal * 1.08
+    // √ scale: detail at low loads + spikes remain visible
+    const sq = Math.sqrt(yMax)
+    const yAt = (v: number) => MT + (1 - Math.sqrt(Math.max(0, Math.min(v, yMax))) / sq) * ch
+    const xAt = (i: number) => ML + (pts.length <= 1 ? cw / 2 : (i / (pts.length - 1)) * cw)
+
+    const smooth = (key: keyof Point) => {
+      const xs = pts.map((_, i) => xAt(i))
+      const ys = pts.map(p => yAt(p[key] as number))
+      const n = xs.length
+      if (n === 1) return `M${xs[0].toFixed(1)},${ys[0].toFixed(1)}`
+      const dx: number[] = [], m: number[] = []
+      for (let i = 0; i < n - 1; i++) { dx[i] = xs[i + 1] - xs[i]; m[i] = (ys[i + 1] - ys[i]) / (dx[i] || 1) }
+      const t: number[] = new Array(n)
+      t[0] = m[0]; t[n - 1] = m[n - 2]
+      for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2
+      for (let i = 0; i < n - 1; i++) {
+        if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; continue }
+        const a = t[i] / m[i], b = t[i + 1] / m[i], h = Math.hypot(a, b)
+        if (h > 3) { const s = 3 / h; t[i] = s * a * m[i]; t[i + 1] = s * b * m[i] }
+      }
+      let p = `M${xs[0].toFixed(1)},${ys[0].toFixed(1)}`
+      for (let i = 0; i < n - 1; i++) {
+        const hi = dx[i]
+        p += ` C${(xs[i] + hi / 3).toFixed(1)},${(ys[i] + t[i] * hi / 3).toFixed(1)} ${(xs[i + 1] - hi / 3).toFixed(1)},${(ys[i + 1] - t[i + 1] * hi / 3).toFixed(1)} ${xs[i + 1].toFixed(1)},${ys[i + 1].toFixed(1)}`
+      }
+      return p
+    }
+    const line1m = smooth('load_1m')
+    const area1m = pts.length > 1 ? `${line1m} L${xAt(pts.length - 1).toFixed(1)},${(H - MB).toFixed(1)} L${xAt(0).toFixed(1)},${(H - MB).toFixed(1)} Z` : ''
+
+    const nice = (x: number) => { if (x <= 0) return 0; const p = Math.pow(10, Math.floor(Math.log10(x))); const n = x / p; return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * p }
+    const rawTicks = [0, nice(yMax * 0.06), nice(yMax * 0.22), nice(yMax * 0.5), Math.round(yMax * 10) / 10]
+    const yTicks = [...new Set(rawTicks)].filter(v => v <= yMax).sort((a, b) => a - b)
+
+    const xLabel = (ts: string) => hours > 24 ? ts.slice(5, 10).replace('-', '/') : ts.slice(11, 16)
+    const xTickIdx = pts.length > 1 ? [0, Math.floor(pts.length / 3), Math.floor((2 * pts.length) / 3), pts.length - 1] : [0]
+
+    return { yAt, xAt, line1m, area1m, yTicks, xLabel, xTickIdx, yMax, smooth }
+  }, [pts, cores, hours, cw, ch])
+
+  if (forbidden) return null
+
+  const hp = hover != null ? pts[hover] : null
+
+  function onMove(e: React.MouseEvent<SVGSVGElement>) {
+    if (pts.length < 2) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const px = ((e.clientX - rect.left) / rect.width) * W
+    const df = (px - ML) / cw
+    setHover(Math.max(0, Math.min(pts.length - 1, Math.round(df * (pts.length - 1)))))
+  }
 
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+    <div ref={wrapRef} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">System Load History</h3>
           <p className="text-[11px] text-slate-400 dark:text-slate-500">
-            Load average (1 / 5 / 15min){coreCount ? ` · ${coreCount} cores` : ''}
+            Load average (1 / 5 / 15min){cores ? ` · ${cores} cores` : ''} · √ scale
           </p>
         </div>
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/50 rounded-lg p-0.5">
+        <div className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-800 dark:bg-slate-800/60">
           {INTERVALS.map(a => (
-            <button key={a.hours} onClick={() => setHours(a.hours)}
-              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${hours === a.hours
-                ? 'bg-white dark:bg-slate-700 text-brand-700 dark:text-brand-300 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
+            <button key={a.hours} onClick={() => { setHours(a.hours); setHover(null) }}
+              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${hours === a.hours
+                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
               {a.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Current values */}
-      {latest && (
-        <div className="flex flex-wrap gap-4 mb-3 text-xs">
-          <Value color="#6366f1" label="1min" v={latest.load_1m} coreCount={coreCount} />
-          <Value color="#f59e0b" label="5min" v={latest.load_5m} coreCount={coreCount} />
-          <Value color="#94a3b8" label="15min" v={latest.load_15m} coreCount={coreCount} />
-        </div>
-      )}
+      {/* live / hover values */}
+      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1.5">
+        {SERIES.map(s => {
+          const v = hp ? (hp[s.key] as number) : latest ? (latest[s.key] as number) : null
+          const over = cores > 0 && v != null && v > cores
+          return (
+            <div key={s.key} className="flex items-center gap-2 text-xs">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
+              <span className="text-slate-500 dark:text-slate-400">{s.label}</span>
+              <span className={`font-mono font-semibold tabular-nums ${over ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                {v == null ? '—' : v.toFixed(2)}
+              </span>
+            </div>
+          )
+        })}
+        {hp && <span className="ml-auto font-mono text-[11px] text-slate-400 dark:text-slate-500">{hp.ts.slice(5, 16).replace('-', '/').replace('T', ' ')}</span>}
+      </div>
 
-      {pts.length === 0 ? (
-        <div className="h-[220px] flex flex-col items-center justify-center text-center text-sm text-slate-400 dark:text-slate-500">
-          <div className="text-2xl mb-2">📈</div>
-          No data has been collected yet. Samples are recorded every minute, and the chart will populate shortly.
+      {!g ? (
+        <div className="flex h-[240px] flex-col items-center justify-center text-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-9 w-9 text-slate-300 dark:text-slate-600">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125 8 8l3 6 4-9 3 6h4" />
+          </svg>
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No data collected yet</p>
+          <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">Samples are recorded every minute; the chart populates within a few minutes.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ minWidth: 320 }} preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="load1grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.28" />
-                <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
-              </linearGradient>
-            </defs>
-            {/* Horizontal grid and Y-axis labels */}
-            {yTicks.map((v, i) => (
-              <g key={i}>
-                <line x1={ML} y1={yAt(v)} x2={W - MR} y2={yAt(v)} className="stroke-slate-100 dark:stroke-slate-700/60" strokeWidth="1" />
-                <text x={ML - 6} y={yAt(v) + 3} textAnchor="end" className="fill-slate-400" fontSize="11">{v.toFixed(1)}</text>
-              </g>
-            ))}
-            {/* Core-count reference line, representing 100% capacity */}
-            {coreCount > 0 && coreCount <= yMax && (
-              <g>
-                <line x1={ML} y1={yAt(coreCount)} x2={W - MR} y2={yAt(coreCount)} stroke="#ef4444" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
-                <text x={W - MR} y={yAt(coreCount) - 4} textAnchor="end" fill="#ef4444" fontSize="10" opacity="0.8">{coreCount} cores</text>
-              </g>
-            )}
-            {/* X-axis labels */}
-            {xTickIdx.map((idx, i) => (
-              <text key={i} x={xAt(idx)} y={H - 8} textAnchor={i === 0 ? 'start' : i === xTickIdx.length - 1 ? 'end' : 'middle'}
-                className="fill-slate-400" fontSize="11">{xLabel(pts[idx].ts)}</text>
-            ))}
-            {/* Data series */}
-            <path d={area1} fill="url(#load1grad)" />
-            <path d={line('load_15m')} fill="none" stroke="#94a3b8" strokeWidth="1.4" strokeLinejoin="round" opacity="0.85" />
-            <path d={line('load_5m')} fill="none" stroke="#f59e0b" strokeWidth="1.6" strokeLinejoin="round" opacity="0.9" />
-            <path d={line('load_1m')} fill="none" stroke="#6366f1" strokeWidth="2" strokeLinejoin="round" />
-          </svg>
-        </div>
-      )}
-    </div>
-  )
-}
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full select-none" onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+          <defs>
+            <linearGradient id="lh-area" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f97316" stopOpacity="0.30" />
+              <stop offset="70%" stopColor="#f97316" stopOpacity="0.06" />
+              <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+            </linearGradient>
+          </defs>
 
-function Value({ color, label, v, coreCount }: { color: string; label: string; v: number; coreCount: number }) {
-  const overCapacity = coreCount > 0 && v > coreCount
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="w-2.5 h-2.5 rounded-sm" style={{ background: color }} />
-      <span className="text-slate-500 dark:text-slate-400">{label}</span>
-      <span className={`font-mono font-semibold ${overCapacity ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100'}`}>
-        {v.toFixed(2)}
-      </span>
+          {/* horizontal grid + Y labels */}
+          {g.yTicks.map((v, i) => (
+            <g key={i}>
+              <line x1={ML} y1={g.yAt(v)} x2={W - MR} y2={g.yAt(v)} className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="1" />
+              <text x={ML - 8} y={g.yAt(v) + 3.5} textAnchor="end" className="fill-slate-400 dark:fill-slate-500" fontSize="11" fontFamily="ui-monospace,monospace">{v.toFixed(v < 10 ? 1 : 0)}</text>
+            </g>
+          ))}
+
+          {/* core reference (=100% capacity) */}
+          {cores > 0 && cores <= g.yMax && (
+            <g>
+              <line x1={ML} y1={g.yAt(cores)} x2={W - MR} y2={g.yAt(cores)} stroke="#ef4444" strokeWidth="1" strokeDasharray="5 5" opacity="0.55" />
+              <text x={W - MR} y={g.yAt(cores) - 5} textAnchor="end" fill="#ef4444" fontSize="10" opacity="0.85">{cores} cores · 100%</text>
+            </g>
+          )}
+
+          {/* X labels */}
+          {g.xTickIdx.map((idx, i) => (
+            <text key={i} x={g.xAt(idx)} y={H - 9} textAnchor={i === 0 ? 'start' : i === g.xTickIdx.length - 1 ? 'end' : 'middle'}
+              className="fill-slate-400 dark:fill-slate-500" fontSize="11" fontFamily="ui-monospace,monospace">{g.xLabel(pts[idx].ts)}</text>
+          ))}
+
+          {/* area + series (15→5→1 on top) */}
+          <path d={g.area1m} fill="url(#lh-area)" />
+          <path d={g.smooth('load_15m')} fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeLinejoin="round" opacity="0.75" />
+          <path d={g.smooth('load_5m')} fill="none" stroke="#0ea5e9" strokeWidth="1.8" strokeLinejoin="round" opacity="0.9" />
+          <path d={g.line1m} fill="none" stroke="#f97316" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round" />
+
+          {/* last point pulse */}
+          {pts.length > 0 && (
+            <g>
+              <circle cx={g.xAt(pts.length - 1)} cy={g.yAt(pts[pts.length - 1].load_1m)} r="7" fill="#f97316" opacity="0.18">
+                <animate attributeName="r" values="4;9;4" dur="2.4s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.28;0;0.28" dur="2.4s" repeatCount="indefinite" />
+              </circle>
+              <circle cx={g.xAt(pts.length - 1)} cy={g.yAt(pts[pts.length - 1].load_1m)} r="3" fill="#f97316" />
+            </g>
+          )}
+
+          {/* hover crosshair + dot */}
+          {hp && hover != null && (
+            <g>
+              <line x1={g.xAt(hover)} y1={MT} x2={g.xAt(hover)} y2={H - MB} className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx={g.xAt(hover)} cy={g.yAt(hp.load_1m)} r="3.5" fill="#f97316" stroke="#0d1524" strokeWidth="1.5" />
+            </g>
+          )}
+        </svg>
+      )}
     </div>
   )
 }

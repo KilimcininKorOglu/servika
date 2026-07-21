@@ -20,6 +20,8 @@ const ICONS = {
   profile:      'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
   lock:        'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
   firewall:    'M9 12l2 2 4-4m3 2c0 6-8 10-8 10S4 18 4 12V5l8-3 8 3v7z',
+  update:      'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+  optimize:    'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4',
 }
 
 const NAV: NavGroup[] = [
@@ -30,6 +32,7 @@ const NAV: NavGroup[] = [
   ]},
   { title: 'Server Management', items: [
     { to: '/tools-settings',     label: 'Tools and Settings', icon: ICONS.tools },
+    { to: '/tools/optimize',   label: 'Server Optimize',      icon: ICONS.optimize },
     { to: '/statistics',       label: 'Statistics',      icon: ICONS.stats },
     { to: '/extensions',          label: 'Extensions',         icon: ICONS.extensions },
     { to: '/wordpress',           label: 'WordPress',          icon: ICONS.wp },
