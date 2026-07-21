@@ -11,7 +11,7 @@ type LoginResponse = {
 }
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('root')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false)
