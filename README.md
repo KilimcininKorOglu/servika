@@ -85,7 +85,40 @@ servika-update --branch X   # Update from another branch
 
 The updater preserves `/etc/servika/env` and `/home/c_*` customer sites. Before exposing migrations, it creates a full MariaDB `panel` database dump and aborts if the dump fails. It then updates the binary, frontend (atomic verified swap), migrations, operations tools, and systemd units before restarting Servika and verifying `/healthz`. If the new release fails the health check, the previous binary and pre-update database dump are restored automatically.
 
-The update can also be started from **Tools and Settings > Panel Update**. If `servika-update` is missing from an older installation, the panel downloads it automatically. To bootstrap the tool manually when the panel is unavailable:
+The update can also be started from **Tools and Settings > Panel Update**. If `servika-update` is missing from an older installation, the panel downloads it automatically.
+
+## Version check and privacy
+
+Servika checks a public version manifest to show update and announcement information in **Tools and Settings > Panel Update**. The check is a plain HTTPS `GET` request. It has no query string and no request body. It does not send domains, hostnames, IP addresses, customer data, email addresses, database content, or license data.
+
+Only the `User-Agent` header includes the current panel version. Servika also creates a local anonymous installation ID at `/etc/servika/installation-id`, but the version check does not send that ID.
+
+Disable external version checks:
+
+```bash
+SERVIKA_VERSION_CHECK=0
+```
+
+Use another manifest endpoint:
+
+```bash
+SERVIKA_VERSION_ENDPOINT=https://example.com/version.json
+```
+
+The manifest format is:
+
+```json
+{
+  "latest": "0.3.0-f2",
+  "announcement": "",
+  "critical": false,
+  "release_date": ""
+}
+```
+
+If version checks are disabled, manual update from SSH and panel-triggered update still work.
+
+To bootstrap the tool manually when the panel is unavailable:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update \

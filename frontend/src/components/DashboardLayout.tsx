@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import MobileNavBar from './MobileNavBar'
 import TopBar from './TopBar'
 
 type NavItem = { to: string; label: string; icon: string }
@@ -44,9 +45,91 @@ const NAV: NavGroup[] = [
   ]},
 ]
 
+function SidebarNav({ groups, openGroups, onToggle, onNavigate }: {
+  groups: NavGroup[]
+  openGroups: Record<string, boolean>
+  onToggle: (title: string) => void
+  onNavigate?: () => void
+}) {
+  return (
+    <>
+      <div className="h-14 flex items-center px-5 border-b border-slate-200 dark:border-slate-800">
+        <div className="w-8 h-8 rounded-md bg-brand-600 flex items-center justify-center mr-2.5 shadow-sm shadow-brand-600/40">
+          <svg viewBox="0 0 32 32" className="w-4 h-4 text-white" fill="currentColor">
+            <path d="M9 10h14v3H9zM9 15h14v3H9zM9 20h9v3H9z" />
+          </svg>
+        </div>
+        <span className="text-base font-semibold text-slate-900 dark:text-slate-100">Servika</span>
+      </div>
+
+      <nav className="flex-1 px-2 py-3 overflow-y-auto">
+        {groups.map((group, groupIndex) => (
+          <div key={groupIndex} className="mb-2">
+            {group.title && (
+              <button
+                onClick={() => onToggle(group.title!)}
+                className="w-full flex items-center justify-between px-3 py-1.5 mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition"
+              >
+                <span>{group.title}</span>
+                <svg
+                  className={`w-3 h-3 transition-transform ${openGroups[group.title] ? '' : '-rotate-90'}`}
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            )}
+            {(!group.title || openGroups[group.title]) && (
+              <ul className="space-y-0.5">
+                {group.items.map((item) => {
+                  const hasParentPath = group.items.some(
+                    (other) => other.to !== item.to && other.to.startsWith(item.to + '/')
+                  )
+                  return (
+                    <li key={item.to}>
+                      <NavLink
+                        to={item.to}
+                        end={item.to === '/' || hasParentPath}
+                        onClick={onNavigate}
+                        className={({ isActive }) =>
+                          `group relative flex items-center px-3 py-2 lg:py-1.5 rounded-lg text-sm transition-all duration-150 ${
+                            isActive
+                              ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-medium shadow-sm dark:shadow-none'
+                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
+                          }`
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            {isActive && (
+                              <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-slate-900 dark:bg-white" aria-hidden />
+                            )}
+                            <svg className={`w-4 h-4 mr-2.5 flex-shrink-0 transition ${
+                              isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                            </svg>
+                            <span className="truncate">{item.label}</span>
+                          </>
+                        )}
+                      </NavLink>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        ))}
+      </nav>
+    </>
+  )
+}
+
 export default function DashboardLayout() {
   const isCustomer = typeof window !== 'undefined' && localStorage.getItem('servika.customer') === '1'
   const customerDomainID = typeof window !== 'undefined' ? localStorage.getItem('servika.customer.domain_id') || '' : ''
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const location = useLocation()
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'Hosting Services': true,
@@ -55,8 +138,25 @@ export default function DashboardLayout() {
     'My Domain': true,
   })
 
-  // Customer navigation — own domain only
-  const CUSTOMER_NAV: NavGroup[] = [
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') setMobileOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previousOverflow
+    }
+  }, [mobileOpen])
+
+  const customerNav: NavGroup[] = [
     { title: 'My Domain', items: [
       { to: `/subscriptions/${customerDomainID}`, label: 'Overview', icon: ICONS.home },
       { to: `/subscriptions/${customerDomainID}/files`, label: 'File Manager', icon: ICONS.domain },
@@ -73,89 +173,47 @@ export default function DashboardLayout() {
     ]},
   ]
 
-  const activeNav = isCustomer ? CUSTOMER_NAV : NAV
+  const activeNav = isCustomer ? customerNav : NAV
+  const mobileItems = isCustomer
+    ? [
+        { to: `/subscriptions/${customerDomainID}`, label: 'Overview', icon: ICONS.home, end: true },
+        { to: `/subscriptions/${customerDomainID}/files`, label: 'Files', icon: ICONS.domain },
+        { to: `/subscriptions/${customerDomainID}/databases`, label: 'DB', icon: ICONS.plan },
+        { to: `/subscriptions/${customerDomainID}/backups`, label: 'Backups', icon: ICONS.tools },
+      ]
+    : [
+        { to: '/', label: 'Home', icon: ICONS.home, end: true },
+        { to: '/domains', label: 'Domains', icon: ICONS.domain },
+        { to: '/tools-settings', label: 'Tools', icon: ICONS.tools },
+        { to: '/profile', label: 'Profile', icon: ICONS.profile },
+      ]
 
-  function toggle(b: string) {
-    setOpenGroups((s) => ({ ...s, [b]: !s[b] }))
+  function toggle(title: string) {
+    setOpenGroups((state) => ({ ...state, [title]: !state[title] }))
   }
 
   return (
     <div className="min-h-screen flex items-start bg-slate-50 dark:bg-slate-900">
-      <aside className="w-56 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0 sticky top-0 h-screen z-20 self-start">
-        <div className="h-14 flex items-center px-5 border-b border-slate-200 dark:border-slate-800">
-          <div className="w-8 h-8 rounded-md bg-brand-600 flex items-center justify-center mr-2.5 shadow-sm shadow-brand-600/40">
-            <svg viewBox="0 0 32 32" className="w-4 h-4 text-white" fill="currentColor">
-              <path d="M9 10h14v3H9zM9 15h14v3H9zM9 20h9v3H9z" />
-            </svg>
-          </div>
-          <span className="text-base font-semibold text-slate-900 dark:text-slate-100">Servika</span>
-        </div>
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden
+        />
+      )}
 
-        <nav className="flex-1 px-2 py-3 overflow-y-auto">
-          {activeNav.map((group, gi) => (
-            <div key={gi} className="mb-2">
-              {group.title && (
-                <button
-                  onClick={() => toggle(group.title!)}
-                  className="w-full flex items-center justify-between px-3 py-1.5 mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition"
-                >
-                  <span>{group.title}</span>
-                  <svg
-                    className={`w-3 h-3 transition-transform ${openGroups[group.title!] ? '' : '-rotate-90'}`}
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              )}
-              {(!group.title || openGroups[group.title]) && (
-                <ul className="space-y-0.5">
-                  {group.items.map((it) => {
-                    const hasParentPath = group.items.some(
-                      (it2) => it2.to !== it.to && it2.to.startsWith(it.to + '/')
-                    )
-                    return (
-                    <li key={it.to}>
-                      <NavLink
-                        to={it.to}
-                        end={it.to === '/' || hasParentPath}
-                        className={({ isActive }) =>
-                          `group relative flex items-center px-3 py-1.5 rounded-lg text-sm transition-all duration-150 ${
-                            isActive
-                              ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-medium shadow-sm dark:shadow-none'
-                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
-                          }`
-                        }
-                      >
-                        {({ isActive }) => (
-                          <>
-                            {isActive && (
-                              <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-slate-900 dark:bg-white" aria-hidden />
-                            )}
-                            <svg className={`w-4 h-4 mr-2.5 flex-shrink-0 transition ${
-                              isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'
-                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d={it.icon} />
-                            </svg>
-                            <span className="truncate">{it.label}</span>
-                          </>
-                        )}
-                      </NavLink>
-                    </li>
-                  )})}
-                </ul>
-              )}
-            </div>
-          ))}
-        </nav>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:translate-x-0 lg:flex-shrink-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <SidebarNav groups={activeNav} openGroups={openGroups} onToggle={toggle} onNavigate={() => setMobileOpen(false)} />
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopBar />
+      <div className="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
+        <TopBar onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 min-w-0">
           <Outlet />
         </main>
       </div>
+
+      <MobileNavBar items={mobileItems} />
     </div>
   )
 }

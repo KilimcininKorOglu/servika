@@ -2,6 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import {
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Domain = { id: number; domain_name: string; system_user: string }
 type LogFile = { key: string; label: string; path: string; size_b: number; changed: string; current: boolean }
@@ -110,7 +118,7 @@ export default function DomainLogsPage() {
   }, [lines, autoScroll, view])
 
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: 'Domains', href: '/domains' },
@@ -122,7 +130,7 @@ export default function DomainLogsPage() {
       {domain && (
         <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
           <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
-          {' · '}
+          {', '}
           <span className="font-mono">/var/log/nginx/{domain.domain_name}.*.log</span>
         </p>
       )}
@@ -150,7 +158,7 @@ export default function DomainLogsPage() {
           </button>
         ))}
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="w-full flex flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
           {/* View toggle */}
           <div className="flex rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden text-xs">
             <button
@@ -194,7 +202,7 @@ export default function DomainLogsPage() {
       </div>
 
       {/* Search */}
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex flex-col gap-2 mb-2 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-md">
           <svg className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
@@ -202,7 +210,7 @@ export default function DomainLogsPage() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by IP, path, status code, browser…"
+            placeholder="Search by IP, path, status code, browser..."
             className="w-full pl-8 pr-8 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none"
           />
           {search && (
@@ -227,7 +235,7 @@ export default function DomainLogsPage() {
         style={{ height: 540 }}
       >
         {lines.length === 0 ? (
-          <div className="p-6 text-sm text-slate-500 font-mono">{live ? 'Waiting… New lines will appear as they arrive.' : '(log file is empty or has not been created yet)'}</div>
+          <div className="p-6 text-sm text-slate-500 font-mono">{live ? 'Waiting... New lines will appear as they arrive.' : '(log file is empty or has not been created yet)'}</div>
         ) : visibleLines.length === 0 ? (
           <div className="p-6 text-sm text-slate-500 font-mono">"{search}" No lines match this search.</div>
         ) : view === 'raw' ? (
@@ -244,7 +252,7 @@ export default function DomainLogsPage() {
       </div>
 
       <div className="mt-2 text-xs text-slate-500 dark:text-slate-500 flex items-center justify-between">
-        <span>{search ? `${visibleLines.length} / ${lines.length} lines (filtered)` : `${lines.length} lines`} · window {MAX_WINDOW}</span>
+        <span>{search ? `${visibleLines.length} / ${lines.length} lines (filtered)` : `${lines.length} lines`}, window {MAX_WINDOW}</span>
         {live && <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>live stream</span>}
       </div>
     </div>
@@ -281,8 +289,8 @@ function parseAccess(line: string): AccessLine | null {
 function AccessTable({ lines }: { lines: string[] }) {
   const parsedLines = useMemo(() => lines.map(parseAccess), [lines])
   return (
-    <table className="w-full text-xs border-collapse">
-      <thead className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
+    <table className={`${responsiveTableClass} text-xs`}>
+      <thead className={`${responsiveTableHeadClass} sticky top-0 z-10 bg-slate-900/95 backdrop-blur text-slate-500 border-b border-slate-800`}>
         <tr>
           <th className="text-left font-medium px-3 py-2 whitespace-nowrap">Time</th>
           <th className="text-left font-medium px-3 py-2 whitespace-nowrap">IP</th>
@@ -293,32 +301,32 @@ function AccessTable({ lines }: { lines: string[] }) {
           <th className="text-left font-medium px-3 py-2">Browser</th>
         </tr>
       </thead>
-      <tbody className="divide-y divide-slate-800/70">
+      <tbody className={`${responsiveTableBodyClass} divide-slate-800/70`}>
         {lines.map((raw, i) => {
           const r = parsedLines[i]
           if (!r) {
             return (
-              <tr key={i}>
+              <tr key={i} className={responsiveTableRowClass}>
                 <td colSpan={7} className="px-3 py-1.5 font-mono text-slate-500 break-all">{raw}</td>
               </tr>
             )
           }
           return (
-            <tr key={i} className="hover:bg-slate-800/40">
-              <td className="px-3 py-1.5 font-mono text-slate-400 whitespace-nowrap">{shortTime(r.time)}</td>
-              <td className="px-3 py-1.5 font-mono text-slate-300 whitespace-nowrap">{r.ip}</td>
-              <td className="px-3 py-1.5">
-                <span className={`inline-block px-1.5 py-0.5 rounded font-mono font-semibold text-[10px] ${methodColor(r.method)}`}>{r.method || '—'}</span>
+            <tr key={i} className={`${responsiveTableRowClass} hover:bg-slate-800/40`}>
+              <td data-label="Time" className={`${responsiveTableCodeCellClass} text-slate-400 lg:whitespace-nowrap`}>{shortTime(r.time)}</td>
+              <td data-label="IP" className={`${responsiveTableCodeCellClass} text-slate-300 lg:whitespace-nowrap`}>{r.ip}</td>
+              <td data-label="Method" className={responsiveTableCellClass}>
+                <span className={`inline-block px-1.5 py-0.5 rounded font-mono font-semibold text-[10px] ${methodColor(r.method)}`}>{r.method || '-'}</span>
               </td>
-              <td className="px-3 py-1.5 font-mono text-slate-200 max-w-0">
-                <div className="truncate" title={r.referer && r.referer !== '-' ? `${r.path}\n← ${r.referer}` : r.path}>{r.path}</div>
+              <td data-label="Path" className={`${responsiveTableCodeCellClass} text-slate-200 break-all lg:max-w-0`}>
+                <div className="lg:truncate" title={r.referer && r.referer !== '-' ? `${r.path}\n← ${r.referer}` : r.path}>{r.path}</div>
               </td>
-              <td className="px-3 py-1.5">
+              <td data-label="Status" className={responsiveTableCellClass}>
                 <span className={`inline-block px-1.5 py-0.5 rounded font-mono font-semibold text-[10px] ${statusColor(r.status)}`}>{r.status}</span>
               </td>
-              <td className="px-3 py-1.5 font-mono text-slate-400 text-right whitespace-nowrap">{formatByteString(r.size)}</td>
-              <td className="px-3 py-1.5 text-slate-400 max-w-[220px]">
-                <div className="truncate" title={r.ua}>{shortUserAgent(r.ua)}</div>
+              <td data-label="Size" className={`${responsiveTableCodeCellClass} text-slate-400 lg:text-right lg:whitespace-nowrap`}>{formatByteString(r.size)}</td>
+              <td data-label="Browser" className={`${responsiveTableCellClass} text-slate-400 lg:max-w-[220px]`}>
+                <div className="lg:truncate" title={r.ua}>{shortUserAgent(r.ua)}</div>
               </td>
             </tr>
           )
@@ -336,8 +344,8 @@ const CLIENT_RE = /client: (\S+?)[,\s]/
 
 function ErrorTable({ lines }: { lines: string[] }) {
   return (
-    <table className="w-full text-xs border-collapse">
-      <thead className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-800">
+    <table className={`${responsiveTableClass} text-xs`}>
+      <thead className={`${responsiveTableHeadClass} sticky top-0 z-10 bg-slate-900/95 backdrop-blur text-slate-500 border-b border-slate-800`}>
         <tr>
           <th className="text-left font-medium px-3 py-2 whitespace-nowrap">Time</th>
           <th className="text-left font-medium px-3 py-2">Level</th>
@@ -345,12 +353,12 @@ function ErrorTable({ lines }: { lines: string[] }) {
           <th className="text-left font-medium px-3 py-2 w-full">Message</th>
         </tr>
       </thead>
-      <tbody className="divide-y divide-slate-800/70">
+      <tbody className={`${responsiveTableBodyClass} divide-slate-800/70`}>
         {lines.map((raw, i) => {
           const m = ERROR_RE.exec(raw)
           if (!m) {
             return (
-              <tr key={i}>
+              <tr key={i} className={responsiveTableRowClass}>
                 <td colSpan={4} className="px-3 py-1.5 font-mono text-slate-500 break-all">{raw}</td>
               </tr>
             )
@@ -358,14 +366,14 @@ function ErrorTable({ lines }: { lines: string[] }) {
           const cm = CLIENT_RE.exec(m[3])
           const client = cm ? cm[1] : ''
           return (
-            <tr key={i} className="hover:bg-slate-800/40">
-              <td className="px-3 py-1.5 font-mono text-slate-400 whitespace-nowrap">{m[1].slice(5)}</td>
-              <td className="px-3 py-1.5">
+            <tr key={i} className={`${responsiveTableRowClass} hover:bg-slate-800/40`}>
+              <td data-label="Time" className={`${responsiveTableCodeCellClass} text-slate-400 lg:whitespace-nowrap`}>{m[1].slice(5)}</td>
+              <td data-label="Level" className={responsiveTableCellClass}>
                 <span className={`inline-block px-1.5 py-0.5 rounded font-mono font-semibold text-[10px] ${levelColor(m[2])}`}>{m[2]}</span>
               </td>
-              <td className="px-3 py-1.5 font-mono text-slate-300 whitespace-nowrap">{client || '—'}</td>
-              <td className="px-3 py-1.5 font-mono text-slate-200 max-w-0">
-                <div className="truncate" title={m[3]}>{m[3]}</div>
+              <td data-label="Client" className={`${responsiveTableCodeCellClass} text-slate-300 lg:whitespace-nowrap`}>{client || '-'}</td>
+              <td data-label="Message" className={`${responsiveTableCodeCellClass} text-slate-200 break-all lg:max-w-0`}>
+                <div className="lg:truncate" title={m[3]}>{m[3]}</div>
               </td>
             </tr>
           )
@@ -414,7 +422,7 @@ function shortTime(z: string): string {
 
 function formatByteString(b: string): string {
   const n = parseInt(b, 10)
-  if (isNaN(n)) return '—'
+  if (isNaN(n)) return '-'
   if (n < 1024) return `${n} B`
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
   return `${(n / 1024 / 1024).toFixed(1)} MB`
@@ -422,7 +430,7 @@ function formatByteString(b: string): string {
 
 // Reduce the user agent to a short, readable summary.
 function shortUserAgent(ua: string): string {
-  if (!ua || ua === '-') return '—'
+  if (!ua || ua === '-') return '-'
   const bot = /(bot|crawl|spider|zgrab|curl|wget|python|go-http|scan|nikto|masscan)/i.exec(ua)
   if (bot) return `🤖 ${bot[1]}`
   let os = ''
@@ -437,7 +445,7 @@ function shortUserAgent(ua: string): string {
   else if (/Firefox\//.test(ua)) browser = 'Firefox'
   else if (/Safari\//.test(ua)) browser = 'Safari'
   const parts = [browser, os].filter(Boolean)
-  return parts.length ? parts.join(' · ') : ua.slice(0, 40)
+  return parts.length ? parts.join(', ') : ua.slice(0, 40)
 }
 
 function selectColor(s: string): string {

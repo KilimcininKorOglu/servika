@@ -4,6 +4,16 @@ import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import Modal from '@/components/Modal'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type RecordItem = {
   id: number
@@ -34,9 +44,9 @@ const VALUE_HINT: Record<string, string> = {
   SRV:   'weight port target, for example 5 5060 sip.example.com (priority is set separately)',
   CAA:   'flags tag "value", for example 0 issue "letsencrypt.org"',
   PTR:   'Target domain name, for example host.example.com',
-  DS:    'keytag algorithm digest-type digest, for example 12345 13 2 49FD46E6C4B45C55D4AC…',
-  TLSA:  'usage selector matching-type data, for example 3 1 1 0B9FA5A59EED715C26C1020C…',
-  SSHFP: 'algorithm type fingerprint, for example 4 2 123456789ABCDEF…',
+  DS:    'keytag algorithm digest-type digest, for example 12345 13 2 49FD46E6C4B45C55D4AC...',
+  TLSA:  'usage selector matching-type data, for example 3 1 1 0B9FA5A59EED715C26C1020C...',
+  SSHFP: 'algorithm type fingerprint, for example 4 2 123456789ABCDEF...',
   NAPTR: 'order preference "flags" "service" "regexp" replacement',
 }
 
@@ -164,7 +174,7 @@ export default function DomainDNSPage() {
   }
 
   return (
-    <div className="px-6 py-5 max-w-[1300px]">
+    <div className="px-4 py-4 max-w-[1300px] sm:px-6 sm:py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: 'Domains', href: '/domains' },
@@ -176,7 +186,7 @@ export default function DomainDNSPage() {
       {domain && (
         <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
           <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
-          {' · '}IP: <span className="font-mono">{domain.ipv4}</span>
+          {' '}IP: <span className="font-mono">{domain.ipv4}</span>
         </p>
       )}
 
@@ -226,7 +236,7 @@ export default function DomainDNSPage() {
                 {dnssec.active ? (
                   dnssec.signed
                     ? <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium">Signed</span>
-                    : <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-medium">Signing…</span>
+                    : <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-medium">Signing...</span>
                 ) : (
                   <span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium">Disabled</span>
                 )}
@@ -240,7 +250,7 @@ export default function DomainDNSPage() {
               {dnssec.active ? (
                 <button disabled={dnssecProcessing} onClick={() => setDNSSECDisableConfirmationOpen(true)} className="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition disabled:opacity-50">Disable</button>
               ) : (
-                <button disabled={dnssecProcessing} onClick={() => changeDNSSEC(true)} className="px-3 py-1.5 text-sm bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-medium rounded-md transition disabled:opacity-50">{dnssecProcessing ? 'Enabling…' : 'Enable'}</button>
+                <button disabled={dnssecProcessing} onClick={() => changeDNSSEC(true)} className="px-3 py-1.5 text-sm bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-medium rounded-md transition disabled:opacity-50">{dnssecProcessing ? 'Enabling...' : 'Enable'}</button>
               )}
             </div>
           </div>
@@ -269,7 +279,7 @@ export default function DomainDNSPage() {
         </div>
       )}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="grid grid-cols-2 gap-2 mb-4 sm:flex sm:items-center sm:flex-wrap">
         <button
           onClick={() => setEdit({} as RecordItem)}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-md shadow-sm transition"
@@ -287,7 +297,7 @@ export default function DomainDNSPage() {
           📋 Apply Default Template
         </button>
         <button onClick={load} className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md transition">↻ Refresh</button>
-        <span className="ml-auto text-sm text-slate-500 dark:text-slate-500">{records.length} records</span>
+        <span className="col-span-2 text-sm text-slate-500 dark:text-slate-500 sm:col-span-1 sm:ml-auto">{records.length} records</span>
       </div>
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
@@ -305,9 +315,9 @@ export default function DomainDNSPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+      <div className={responsiveTableContainerClass}>
         {loading ? (
-          <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div>
+          <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading...</div>
         ) : records.length === 0 ? (
           <div className="py-12 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-500 mb-3">No DNS records yet.</p>
@@ -316,8 +326,8 @@ export default function DomainDNSPage() {
             </button>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
+          <table className={responsiveTableClass}>
+            <thead className={responsiveTableHeadClass}>
               <tr>
                 <th className="px-4 py-2.5 w-10">
                   <input type="checkbox" aria-label="Select all" checked={records.length > 0 && selected.size === records.length}
@@ -333,28 +343,28 @@ export default function DomainDNSPage() {
                 <th className="text-right px-4 py-2.5">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className={responsiveTableBodyClass}>
               {records.map(k => (
-                <tr key={k.id} className={selected.has(k.id) ? 'bg-brand-50/60 dark:bg-brand-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'}>
-                  <td className="px-4 py-2.5">
+                <tr key={k.id} className={`${responsiveTableRowClass} ${selected.has(k.id) ? 'bg-brand-50/60 dark:bg-brand-900/10' : ''}`}>
+                  <td data-label="Select" className={responsiveTableCellClass}>
                     <input type="checkbox" aria-label={`Select ${k.name} ${k.type}`} checked={selected.has(k.id)} onChange={() => toggleSelection(k.id)}
                       className="rounded border-slate-300 dark:border-slate-600 cursor-pointer" />
                   </td>
-                  <td className="px-4 py-2.5 text-sm font-mono">{k.name}</td>
-                  <td className="px-4 py-2.5">
+                  <td data-label="Name" className={responsiveTableCodeCellClass}>{k.name}</td>
+                  <td data-label="Type" className={responsiveTableCellClass}>
                     <span className="text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded font-mono font-semibold">{k.type}</span>
                   </td>
-                  <td className="px-4 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200 break-all">{k.value}</td>
-                  <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">{k.ttl}</td>
-                  <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">{k.type === 'MX' || k.type === 'SRV' ? k.priority : '—'}</td>
-                  <td className="px-4 py-2.5">
+                  <td data-label="Value" className={`${responsiveTableCodeCellClass} break-all`}>{k.value}</td>
+                  <td data-label="TTL" className={responsiveTableCodeCellClass}>{k.ttl}</td>
+                  <td data-label="Priority" className={responsiveTableCodeCellClass}>{k.type === 'MX' || k.type === 'SRV' ? k.priority : 'None'}</td>
+                  <td data-label="Status" className={responsiveTableCellClass}>
                     {k.active ? (
                       <span className="text-xs text-emerald-700 dark:text-emerald-300 inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>
                     ) : (
                       <span className="text-xs text-slate-500 dark:text-slate-500">Disabled</span>
                     )}
                   </td>
-                  <td className="px-4 py-2.5 text-right space-x-1">
+                  <td className={responsiveTableActionCellClass}>
                     <button onClick={() => setEdit(k)} className="text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100 px-2 py-1 rounded hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800">Edit</button>
                     <button onClick={() => setRecordToDelete(k)} className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20">Delete</button>
                   </td>
@@ -493,7 +503,7 @@ function RecordModal({ current, domainId, ipv4, onClose, onSaved }: {
 
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-md text-sm">Cancel</button>
-          <button type="submit" disabled={processing || !form.value.trim()} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded-md">{processing ? 'Saving…' : (isNew ? 'Create' : 'Update')}</button>
+          <button type="submit" disabled={processing || !form.value.trim()} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded-md">{processing ? 'Saving...' : (isNew ? 'Create' : 'Update')}</button>
         </div>
       </form>
     </Modal>

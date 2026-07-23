@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Rule = {
   id: number; type: 'ban' | 'whitelist' | 'close'; ip: string; port: number
@@ -112,7 +122,7 @@ export default function FirewallPage() {
   const restrictionWarning = type === 'whitelist' && port.trim() !== ''
 
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Firewall' }]} />
       <div className="flex items-center gap-3 mb-1">
         <span className="text-2xl">🛡️</span>
@@ -142,7 +152,7 @@ export default function FirewallPage() {
             </div>
             <button onClick={() => applyTemplate(s)} disabled={!!busy}
               className="shrink-0 self-center px-3 py-1.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-lg disabled:opacity-50">
-              {busy === 'template:' + s.key ? '…' : 'Apply'}
+              {busy === 'template:' + s.key ? '...' : 'Apply'}
             </button>
           </div>
         ))}
@@ -152,7 +162,7 @@ export default function FirewallPage() {
       <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">✍️ Custom Rule</h2>
       <form onSubmit={add} className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-4 mb-6">
         {/* Step 1: choose an action. */}
-        <div className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-2">1 · What do you want to do?</div>
+        <div className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-2">1. What do you want to do?</div>
         <div className="grid grid-cols-3 gap-2 mb-3">
           {(['ban', 'whitelist', 'close'] as const).map(t => (
             <button key={t} type="button" onClick={() => setType(t)}
@@ -171,12 +181,12 @@ export default function FirewallPage() {
         </div>
 
         {/* Step 2: enter rule details. */}
-        <div className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-2">2 · Details</div>
+        <div className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-2">2. Details</div>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           {ipRequired && (
             <label className="block sm:col-span-2">
               <span className="text-[11px] text-slate-500 dark:text-slate-400">IP address or range</span>
-              <input value={ip} onChange={e => setIp(e.target.value)} required placeholder="1.2.3.4  ·  1.2.3.0/24"
+              <input value={ip} onChange={e => setIp(e.target.value)} required placeholder="1.2.3.4 or 1.2.3.0/24"
                 className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
             </label>
           )}
@@ -214,19 +224,19 @@ export default function FirewallPage() {
         )}
 
         <button disabled={busy === 'manual'} className="mt-3 px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-          {busy === 'manual' ? 'Applying…' : 'Add and Apply Rule'}
+          {busy === 'manual' ? 'Applying...' : 'Add and Apply Rule'}
         </button>
       </form>
 
       {/* ---------- ACTIVE RULES ---------- */}
       <div className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700/60">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Active Rules {!loading && <span className="text-slate-400 font-normal">· {rules.length}</span>}</h3>
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Active Rules {!loading && <span className="text-slate-400 font-normal">({rules.length})</span>}</h3>
           <button onClick={load} disabled={loading} className="text-xs px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">↻ Refresh</button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-900/50 text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/60">
+        <div className={responsiveTableContainerClass}>
+          <table className={responsiveTableClass}>
+            <thead className={responsiveTableHeadClass}>
               <tr>
                 <th className="text-left font-medium px-4 py-2.5">Type</th>
                 <th className="text-left font-medium px-4 py-2.5">IP / CIDR</th>
@@ -236,9 +246,9 @@ export default function FirewallPage() {
                 <th className="text-right font-medium px-4 py-2.5">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+            <tbody className={responsiveTableBodyClass}>
               {loading ? (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-400">Loading…</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-400">Loading...</td></tr>
               ) : rules.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-10 text-center">
                   <div className="text-2xl mb-1">🛡️</div>
@@ -247,14 +257,14 @@ export default function FirewallPage() {
                 </td></tr>
               ) : (
                 rules.map(rule => (
-                  <tr key={rule.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                    <td className="px-4 py-2.5"><TypeBadge type={rule.type} /></td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-slate-700 dark:text-slate-200">{rule.ip || <span className="text-slate-400">everyone</span>}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-300">{rule.port || <span className="text-slate-400">all</span>}</td>
-                    <td className="px-4 py-2.5 font-mono text-[11px] text-slate-500 uppercase">{rule.protocol}</td>
-                    <td className="px-4 py-2.5 text-xs text-slate-500 dark:text-slate-400">{rule.description || '—'}</td>
-                    <td className="px-4 py-2.5 text-right">
-                      <button disabled={!!busy} onClick={() => remove(rule)} className="text-xs px-2.5 py-1 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50">{busy === 'remove:' + rule.id ? '…' : 'Delete'}</button>
+                  <tr key={rule.id} className={responsiveTableRowClass}>
+                    <td data-label="Type" className={responsiveTableCellClass}><TypeBadge type={rule.type} /></td>
+                    <td data-label="IP / CIDR" className={responsiveTableCodeCellClass}>{rule.ip || <span className="text-slate-400">everyone</span>}</td>
+                    <td data-label="Port" className={responsiveTableCodeCellClass}>{rule.port || <span className="text-slate-400">all</span>}</td>
+                    <td data-label="Proto" className={`${responsiveTableCodeCellClass} uppercase`}>{rule.protocol}</td>
+                    <td data-label="Note" className={responsiveTableCellClass}>{rule.description || '-'}</td>
+                    <td className={responsiveTableActionCellClass}>
+                      <button disabled={!!busy} onClick={() => remove(rule)} className="text-xs px-2.5 py-1 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50">{busy === 'remove:' + rule.id ? '...' : 'Delete'}</button>
                     </td>
                   </tr>
                 ))

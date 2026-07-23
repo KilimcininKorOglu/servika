@@ -2,7 +2,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import PanelUpdate from '@/components/PanelUpdate'
 
 /*
- * Panel Update — dedicated page.
+ * Panel Update dedicated page.
  * The update runs in the background (systemd-run transient unit): it survives
  * tab/browser close and even panel self-restart. The PanelUpdate component
  * reads status from the server (systemctl is-active) and re-connects to live
@@ -22,7 +22,7 @@ export default function PanelUpdatePage() {
         <p className="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           Update the panel to the latest release from GitHub. Environment variables,
           database, and sites are preserved; a failed health check automatically rolls back
-          to the previous version. The operation runs in the background — you can close
+          to the previous version. The operation runs in the background, so you can close
           this page and the update continues uninterrupted.
         </p>
       </div>

@@ -3,6 +3,16 @@ import { useParams, Link } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import Modal from '@/components/Modal'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Task = {
   idx: number
@@ -82,7 +92,7 @@ export default function DomainCronPage() {
   }
 
   return (
-    <div className="px-6 py-5 max-w-[1300px]">
+    <div className="px-4 py-4 sm:px-6 sm:py-5 max-w-[1300px]">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: 'Domains', href: '/domains' },
@@ -94,12 +104,12 @@ export default function DomainCronPage() {
       {domain && (
         <p className="text-sm text-slate-500 dark:text-slate-500 mb-6">
           <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
-          {' · '}
+          {', '}
           <span className="font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">/var/spool/cron/{domain.system_user}</span>
         </p>
       )}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="grid grid-cols-2 gap-2 mb-4 sm:flex sm:items-center">
         <button
           onClick={() => setModal(true)}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-md shadow-sm transition"
@@ -110,14 +120,14 @@ export default function DomainCronPage() {
           Add Task
         </button>
         <button onClick={load} className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md transition">↻ Refresh</button>
-        <span className="ml-auto text-sm text-slate-500 dark:text-slate-500">{tasks.length} tasks</span>
+        <span className="col-span-2 text-sm text-slate-500 dark:text-slate-500 sm:col-span-1 sm:ml-auto">{tasks.length} tasks</span>
       </div>
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+      <div className={responsiveTableContainerClass}>
         {loading ? (
-          <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div>
+          <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading...</div>
         ) : tasks.length === 0 ? (
           <div className="py-16 text-center">
             <div className="w-14 h-14 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
@@ -128,8 +138,8 @@ export default function DomainCronPage() {
             <p className="text-sm text-slate-500 dark:text-slate-500">No tasks yet. Add one above.</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
+          <table className={responsiveTableClass}>
+            <thead className={responsiveTableHeadClass}>
               <tr>
                 <th className="text-left px-4 py-2.5">Min</th>
                 <th className="text-left px-4 py-2.5">Hour</th>
@@ -140,19 +150,21 @@ export default function DomainCronPage() {
                 <th className="text-right px-4 py-2.5">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className={responsiveTableBodyClass}>
               {tasks.map((task) => (
-                <tr key={task.idx} className="hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                  <td className="px-4 py-2.5 text-sm font-mono">{task.minute}</td>
-                  <td className="px-4 py-2.5 text-sm font-mono">{task.hour}</td>
-                  <td className="px-4 py-2.5 text-sm font-mono">{task.day}</td>
-                  <td className="px-4 py-2.5 text-sm font-mono">{task.month}</td>
-                  <td className="px-4 py-2.5 text-sm font-mono">{task.weekday}</td>
-                  <td className="px-4 py-2.5 text-sm">
-                    <div className="font-mono text-slate-800 dark:text-slate-200 truncate max-w-md" title={task.command}>{task.command}</div>
-                    {task.comment && <div className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">{task.comment}</div>}
+                <tr key={task.idx} className={responsiveTableRowClass}>
+                  <td data-label="Min" className={responsiveTableCodeCellClass}>{task.minute}</td>
+                  <td data-label="Hour" className={responsiveTableCodeCellClass}>{task.hour}</td>
+                  <td data-label="Day" className={responsiveTableCodeCellClass}>{task.day}</td>
+                  <td data-label="Month" className={responsiveTableCodeCellClass}>{task.month}</td>
+                  <td data-label="Weekday" className={responsiveTableCodeCellClass}>{task.weekday}</td>
+                  <td data-label="Command" className={responsiveTableCellClass}>
+                    <div className="min-w-0 flex-1 text-right lg:text-left">
+                      <div className="font-mono text-slate-800 dark:text-slate-200 break-all lg:truncate lg:max-w-md" title={task.command}>{task.command}</div>
+                      {task.comment && <div className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">{task.comment}</div>}
+                    </div>
                   </td>
-                  <td className="px-4 py-2.5 text-right">
+                  <td className={responsiveTableActionCellClass}>
                     <button onClick={() => remove(task)} className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 transition">Delete</button>
                   </td>
                 </tr>
@@ -259,7 +271,7 @@ function CronTaskModal({ open, onClose, onSaved, domainId }: {
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} disabled={processing} className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 rounded-md text-sm">Cancel</button>
           <button type="submit" disabled={processing || !command.trim()} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">
-            {processing ? 'Adding…' : 'Add Task'}
+            {processing ? 'Adding...' : 'Add Task'}
           </button>
         </div>
       </form>

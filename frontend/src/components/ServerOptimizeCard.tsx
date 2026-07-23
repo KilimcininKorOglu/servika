@@ -17,7 +17,7 @@ export default function ServerOptimizeCard() {
       const r = await api.get<Status>('/system/optimize')
       setRunning(r.data.running)
     } catch {
-      /* temporary -- swallow */
+      // Ignore transient failures so the card stays usable.
     }
   }, [])
 
@@ -33,7 +33,7 @@ export default function ServerOptimizeCard() {
         setLog(r.data.log)
         if (!r.data.running) { setRunning(false); loadStatus() }
       } catch {
-        /* temporary connection error -- keep polling */
+        // Keep polling through transient connection failures.
       }
     }
     const id = window.setInterval(tick, 2000)
@@ -72,7 +72,7 @@ export default function ServerOptimizeCard() {
       {running && (
         <div className="mt-2 inline-flex items-center gap-2 text-xs text-sky-700 dark:text-sky-300">
           <span className="w-3 h-3 rounded-full border-2 border-sky-500 border-t-transparent animate-spin" />
-          Optimization running -- package update may take a while, you can close the page (it continues in the background).
+          Optimization is running. Package updates may take a while; you can close the page while it continues in the background.
         </div>
       )}
 
@@ -80,14 +80,14 @@ export default function ServerOptimizeCard() {
         <pre ref={logRef} className="mt-2 text-[11px] font-mono bg-slate-900 text-slate-300 rounded-lg p-2.5 max-h-56 overflow-auto whitespace-pre-wrap leading-relaxed">{log}</pre>
       )}
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         {!confirmed ? (
           <button onClick={() => setConfirmed(true)} disabled={running || starting}
             className="text-xs px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 transition font-medium disabled:opacity-40 disabled:cursor-not-allowed">
             Update packages and optimize
           </button>
         ) : (
-          <span className="flex items-center gap-2 text-xs">
+          <span className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center">
             <span className="text-amber-600 dark:text-amber-400">This may briefly affect services. Continue?</span>
             <button onClick={start} disabled={starting}
               className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-medium transition disabled:opacity-40">

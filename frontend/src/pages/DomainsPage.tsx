@@ -3,6 +3,16 @@ import { Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import EmptyState from '@/components/EmptyState'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Domain = {
   id: number; domain_name: string; system_user: string
@@ -57,7 +67,7 @@ export default function DomainsPage() {
   }
   useEffect(load, [])
 
-  // Load plans + PHP versions for the create modal — separate from the list load.
+  // Load plans and PHP versions for the create modal separately from the list load.
   // Called lazily when the modal first opens; cached after the first successful fetch.
   function loadModalData() {
     if (modalReady || modalLoading) return
@@ -172,7 +182,7 @@ export default function DomainsPage() {
   }
 
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Domains' }]} />
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Domains</h1>
       <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
@@ -183,15 +193,15 @@ export default function DomainsPage() {
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
       {/* Toolbar */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <div className="flex-1 max-w-md">
+      <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-center sm:flex-wrap">
+        <div className="w-full sm:max-w-md sm:flex-1">
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
             placeholder="🔍 Search domains..."
             className="w-full px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:border-brand-500 outline-none" />
         </div>
         <span className="text-xs text-slate-500 dark:text-slate-500">{filtered.length} / {items.length}</span>
         <button onClick={openCreate}
-          className="ml-auto inline-flex items-center gap-1.5 text-sm px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-md font-medium shadow-sm">
+          className="inline-flex items-center justify-center gap-1.5 text-sm px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-md font-medium shadow-sm sm:ml-auto">
           <span className="text-base leading-none">+</span> New Domain
         </button>
       </div>
@@ -220,15 +230,15 @@ export default function DomainsPage() {
       )}
 
       {loading ? (
-        <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div>
+        <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading...</div>
       ) : items.length === 0 ? (
         <EmptyState title="No domains yet"
           description="Start by adding your first domain. A Linux user, nginx vhost, PHP-FPM pool, FTP account, MySQL database, and DNS zone will be created automatically."
           button={{ label: 'Create Domain', onClick: openCreate }} />
       ) : (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
+        <div className={responsiveTableContainerClass}>
+          <table className={responsiveTableClass}>
+            <thead className={responsiveTableHeadClass}>
               <tr>
                 <th className="px-3 py-2.5 w-10 text-center">
                   <input type="checkbox"
@@ -247,35 +257,37 @@ export default function DomainsPage() {
                 <th className="text-right px-4 py-2.5">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className={responsiveTableBodyClass}>
               {filtered.map(d => {
                 return (
-                  <tr key={d.id} className={`hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 transition ${selected.has(d.id) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
-                    <td className="px-3 py-2.5 text-center">
+                  <tr key={d.id} className={`${responsiveTableRowClass} ${selected.has(d.id) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
+                    <td data-label="Select" className={responsiveTableCellClass}>
                       <input type="checkbox" checked={selected.has(d.id)}
                         onChange={() => toggleSelection(d.id)} className="cursor-pointer" />
                     </td>
-                    <td className="px-4 py-2.5">
-                      <Link to={`/subscriptions/${d.id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">
-                        {d.domain_name}
-                      </Link>
-                      {d.is_demo && <span className="ml-2 text-[10px] uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">DEMO</span>}
+                    <td data-label="Domain Name" className={responsiveTableCellClass}>
+                      <div className="text-right lg:text-left">
+                        <Link to={`/subscriptions/${d.id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">
+                          {d.domain_name}
+                        </Link>
+                        {d.is_demo && <span className="ml-2 text-[10px] uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">DEMO</span>}
+                      </div>
                     </td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500">{d.system_user}</td>
-                    <td className="px-4 py-2.5 text-sm">
-                      {d.plan_name ? <span className="text-slate-700 dark:text-slate-300">{d.plan_name}</span> : <span className="text-slate-400 dark:text-slate-500 italic">—</span>}
+                    <td data-label="System User" className={responsiveTableCodeCellClass}>{d.system_user}</td>
+                    <td data-label="Plan" className={responsiveTableCellClass}>
+                      {d.plan_name ? <span className="text-slate-700 dark:text-slate-300">{d.plan_name}</span> : <span className="text-slate-400 dark:text-slate-500 italic">None</span>}
                     </td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500">{d.php_version || '-'}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500">{fmtKB(d.size_kb)}</td>
-                    <td className="px-4 py-2.5">
+                    <td data-label="PHP" className={responsiveTableCodeCellClass}>{d.php_version || '-'}</td>
+                    <td data-label="Disk" className={responsiveTableCodeCellClass}>{fmtKB(d.size_kb)}</td>
+                    <td data-label="Status" className={responsiveTableCellClass}>
                       <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-semibold ${
                         d.status === 'active' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-500'
                       }`}>{d.status}</span>
                     </td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500 whitespace-nowrap">{d.created_at || '-'}</td>
-                    <td className="px-4 py-2.5 text-right whitespace-nowrap">
-                      <Link to={`/subscriptions/${d.id}/subdomains`} className="text-xs text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 mr-3">+ Subdomain</Link>
-                      <Link to={`/subscriptions/${d.id}`} className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300">Manage →</Link>
+                    <td data-label="Created" className={responsiveTableCodeCellClass}>{d.created_at || '-'}</td>
+                    <td className={responsiveTableActionCellClass}>
+                      <Link to={`/subscriptions/${d.id}/subdomains`} className="text-xs text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400">+ Subdomain</Link>
+                      <Link to={`/subscriptions/${d.id}`} className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300">Manage</Link>
                     </td>
                   </tr>
                 )
@@ -315,7 +327,7 @@ export default function DomainsPage() {
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">
                   PHP Version
-                  {modalLoading && phpVersions.length === 0 && <span className="ml-2 text-[11px] text-slate-400 dark:text-slate-500">Loading…</span>}
+                  {modalLoading && phpVersions.length === 0 && <span className="ml-2 text-[11px] text-slate-400 dark:text-slate-500">Loading...</span>}
                 </label>
                 <select
                   value={formPhpVersion}
@@ -326,7 +338,7 @@ export default function DomainsPage() {
                   {phpVersions.length === 0
                     ? <option value="8.3">PHP 8.3 (default)</option>
                     : phpVersions.map(p => (
-                        <option key={p.version} value={p.version}>PHP {p.version}{p.description ? ` — ${p.description}` : ''}</option>
+                        <option key={p.version} value={p.version}>PHP {p.version}{p.description ? `, ${p.description}` : ''}</option>
                       ))
                   }
                 </select>
@@ -335,7 +347,7 @@ export default function DomainsPage() {
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">
                   Service Plan
-                  {modalLoading && plans.length === 0 && <span className="ml-2 text-[11px] text-slate-400 dark:text-slate-500">Loading…</span>}
+                  {modalLoading && plans.length === 0 && <span className="ml-2 text-[11px] text-slate-400 dark:text-slate-500">Loading...</span>}
                 </label>
                 <select
                   value={formPlanId}
@@ -343,7 +355,7 @@ export default function DomainsPage() {
                   disabled={creating}
                   className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:border-brand-500 outline-none bg-white dark:bg-slate-800"
                 >
-                  <option value="">— (none) —</option>
+                  <option value="">(none)</option>
                   {plans.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
@@ -362,7 +374,7 @@ export default function DomainsPage() {
                     <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3"/>
                   </svg>
                 )}
-                {creating ? 'Creating…' : 'Create'}
+                {creating ? 'Creating...' : 'Create'}
               </button>
             </div>
           </form>
@@ -381,7 +393,7 @@ export default function DomainsPage() {
             <div className="space-y-3">
               <div className="border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-slate-50 dark:bg-slate-900">
                 <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold mb-2">FTP</div>
-                <CopyRow label="Host" value={creationResult.ftp_host || '—'} copy={copyToClipboard} />
+                <CopyRow label="Host" value={creationResult.ftp_host || '-'} copy={copyToClipboard} />
                 <CopyRow label="Username" value={creationResult.ftp_user} copy={copyToClipboard} />
                 <CopyRow label="Password" value={creationResult.created_passwords.ftp} copy={copyToClipboard} password />
               </div>
@@ -420,7 +432,7 @@ export default function DomainsPage() {
                 const d = items.find(x => x.id === id)
                 return <li key={id} className="truncate">{d?.domain_name || '?'}</li>
               })}
-              {selected.size > 8 && <li className="text-slate-400 dark:text-slate-500 italic">+ {selected.size - 8} more…</li>}
+              {selected.size > 8 && <li className="text-slate-400 dark:text-slate-500 italic">+ {selected.size - 8} more...</li>}
             </ul>
             <div className="flex justify-end gap-2">
               <button onClick={() => setDeleteConfirmationOpen(false)}

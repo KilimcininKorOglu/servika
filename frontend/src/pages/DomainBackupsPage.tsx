@@ -3,6 +3,16 @@ import { useParams, Link } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Domain = { id: number; domain_name: string; system_user: string }
 type Backup = { id: number; domain_id: number; type: string; file: string; size_b: number; notes: string; created_at: string }
@@ -151,7 +161,7 @@ export default function DomainBackupsPage() {
     setProcessing(true); setError(null); setSuccess(null)
     try {
       const { data } = await api.post(`/domains/${id}/backups/${restoreBackup.id}/restore`)
-      setSuccess(`Restored: ${data.domain_name} — ${data.db_import || ''}`)
+      setSuccess(`Restored: ${data.domain_name}, ${data.db_import || ''}`)
       setRestoreBackup(null)
     } catch (e) {
       setError(apiError(e, 'Restore failed'))
@@ -173,7 +183,7 @@ export default function DomainBackupsPage() {
   }
 
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' },
         { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },
@@ -183,14 +193,14 @@ export default function DomainBackupsPage() {
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Backups</h1>
       {domain && <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
         <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
-        {' · '}home + MySQL dump = tar.gz · {sched.freq === 'none'
+        {', '}home + MySQL dump = tar.gz, {sched.freq === 'none'
           ? 'Automatic backups disabled'
-          : `${sched.freq === 'daily' ? 'Daily' : 'Weekly'} ${String(sched.hour).padStart(2,'0')}:00 · latest ${sched.retention} automatic backups retained`}
+          : `${sched.freq === 'daily' ? 'Daily' : 'Weekly'} ${String(sched.hour).padStart(2,'0')}:00, latest ${sched.retention} automatic backups retained`}
       </p>}
 
       {/* Automatic backup schedule */}
       <div className="mb-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Automatic Backup Schedule</h3>
             <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
@@ -259,7 +269,7 @@ export default function DomainBackupsPage() {
 
       {/* Remote backup destination (FTP/SFTP) */}
       <div className="mb-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Remote Backup Destination (FTP / SFTP)</h3>
             <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
@@ -339,7 +349,7 @@ export default function DomainBackupsPage() {
               className="cursor-pointer"/>
             Active (send every backup to this destination)
           </label>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             {destTest && (
               <span className={`text-xs px-2 py-1 rounded font-medium ${destTest.ok ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'}`}>
                 {destTest.ok ? '✓ Connection successful' : '✗ ' + (destTest.error?.slice(0, 80) || 'Error')}
@@ -347,7 +357,7 @@ export default function DomainBackupsPage() {
             )}
             <button type="button" onClick={testDestination} disabled={destinationSaving || !destForm.host || !destForm.username}
               className="text-xs px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:opacity-50">
-              {destinationSaving ? 'Testing…' : 'Test Connection'}
+              {destinationSaving ? 'Testing...' : 'Test Connection'}
             </button>
             <button type="button" onClick={saveDest} disabled={destinationSaving || !destForm.host || !destForm.username}
               className="text-xs px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 rounded font-medium">
@@ -363,22 +373,22 @@ export default function DomainBackupsPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center">
         <button onClick={create} disabled={processing} className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">
-          {processing ? 'Backing up…' : '+ Back Up Now'}
+          {processing ? 'Backing up...' : '+ Back Up Now'}
         </button>
         <button onClick={load} className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md">↻ Refresh</button>
-        <span className="ml-auto text-sm text-slate-500 dark:text-slate-500">{backups.length} backups</span>
+        <span className="text-sm text-slate-500 dark:text-slate-500 sm:ml-auto">{backups.length} backups</span>
       </div>
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
-        {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div> :
+      <div className={responsiveTableContainerClass}>
+        {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading...</div> :
          backups.length === 0 ? <div className="py-16 text-center text-sm text-slate-500 dark:text-slate-500">No backups yet</div> :
-        <table className="w-full">
-          <thead className="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
+        <table className={responsiveTableClass}>
+          <thead className={responsiveTableHeadClass}>
             <tr>
               <th className="text-left px-4 py-2.5">File</th>
               <th className="text-left px-4 py-2.5">Type</th>
@@ -387,18 +397,18 @@ export default function DomainBackupsPage() {
               <th className="text-right px-4 py-2.5">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className={responsiveTableBodyClass}>
             {backups.map(y => (
-              <tr key={y.id} className="hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                <td className="px-4 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200">{y.file}</td>
-                <td className="px-4 py-2.5">
+              <tr key={y.id} className={responsiveTableRowClass}>
+                <td data-label="File" className={responsiveTableCodeCellClass}>{y.file}</td>
+                <td data-label="Type" className={responsiveTableCellClass}>
                   <span className={`text-xs px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold ${
                     y.type === 'scheduled' ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:text-slate-500'
                   }`}>{y.type === 'scheduled' ? 'Scheduled' : y.type}</span>
                 </td>
-                <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">{formatSize(y.size_b)}</td>
-                <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500">{y.created_at}</td>
-                <td className="px-4 py-2.5 text-right space-x-1">
+                <td data-label="Size" className={responsiveTableCodeCellClass}>{formatSize(y.size_b)}</td>
+                <td data-label="Created" className={responsiveTableCellClass}>{y.created_at}</td>
+                <td className={responsiveTableActionCellClass}>
                   <button onClick={() => download(y)} className="text-sm text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 px-2 py-1 rounded">Download</button>
                   <button onClick={() => setRestoreBackup(y)} className="text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/30 dark:bg-amber-900/20 px-2 py-1 rounded">↺ Restore</button>
                   <button onClick={() => setBackupToDelete(y)} className="text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 px-2 py-1 rounded">Delete</button>

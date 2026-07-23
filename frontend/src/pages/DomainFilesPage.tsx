@@ -4,6 +4,16 @@ import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import DirTree from '@/components/DirTree'
 import CodeEditor from '@/components/CodeEditor'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Entry = {
   name: string
@@ -457,11 +467,11 @@ export default function DomainFilesPage() {
   const parts = path.split('/').filter(Boolean)
 
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: 'Domains', href: '/domains' },
-        { label: domain?.domain_name || '…', href: `/subscriptions/${id}` },
+        { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },
         { label: 'Files' },
       ]} />
 
@@ -469,7 +479,7 @@ export default function DomainFilesPage() {
       {domain && (
         <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
           <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
-          {' · '}
+          {', '}
           <span className="font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">/home/{domain.system_user}</span>
         </p>
       )}
@@ -513,7 +523,7 @@ export default function DomainFilesPage() {
             </svg>
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm">
-                Loading… <span className="font-mono">{bulkUpload.activeIndex + 1} / {bulkUpload.total}</span>
+                Uploading... <span className="font-mono">{bulkUpload.activeIndex + 1} / {bulkUpload.total}</span>
               </div>
               <div className="text-xs text-sky-700/90 truncate">{bulkUpload.activeFile}</div>
             </div>
@@ -531,7 +541,7 @@ export default function DomainFilesPage() {
           </div>
           {/* Speed and ETA */}
           <div className="flex items-center justify-between mt-1 text-[11px] font-mono text-sky-700/80">
-            <span>{bulkUpload.speedBps > 0 ? formatSpeed(bulkUpload.speedBps) : '—'}</span>
+            <span>{bulkUpload.speedBps > 0 ? formatSpeed(bulkUpload.speedBps) : '-'}</span>
             <span>{bulkUpload.etaSeconds > 0 ? `Remaining: ${formatEta(bulkUpload.etaSeconds)}` : ''}</span>
           </div>
         </div>
@@ -581,7 +591,7 @@ export default function DomainFilesPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && search()}
-            placeholder="🔍 Search files…"
+            placeholder="🔍 Search files..."
             className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm w-56 focus:border-brand-500 outline-none"
           />
           {searchResults && (
@@ -613,12 +623,12 @@ export default function DomainFilesPage() {
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       {/* File table */}
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+      <div className={responsiveTableContainerClass}>
         {loading ? (
-          <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div>
+          <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading...</div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
+          <table className={responsiveTableClass}>
+            <thead className={responsiveTableHeadClass}>
               <tr>
                 <th className="px-3 py-2.5 w-10 text-center"><input type="checkbox" checked={content.length > 0 && selectedPaths.size === content.length} ref={ref => { if (ref) ref.indeterminate = selectedPaths.size > 0 && selectedPaths.size < content.length }} onChange={e => selectAllItems(e.target.checked)} className="cursor-pointer" /></th>
                 <th className="text-left px-4 py-2.5">Name</th>
@@ -628,9 +638,9 @@ export default function DomainFilesPage() {
                 <th className="text-right px-4 py-2.5">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className={responsiveTableBodyClass}>
               {path !== '/' && (
-                <tr className="hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 cursor-pointer" onClick={goUp}>
+                <tr className={responsiveTableRowClass} onClick={goUp}>
                   <td className="px-4 py-2.5 text-sm" colSpan={6}>
                     <span className="text-slate-500 dark:text-slate-500">↑ parent folder</span>
                   </td>
@@ -647,14 +657,14 @@ export default function DomainFilesPage() {
                   onTouchStart={(ev) => touchStart(ev, e)}
                   onTouchEnd={touchEnd}
                   onTouchMove={touchMove}
-                  className={`hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 transition ${selectedPaths.has(e.path) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
-                  <td className="px-3 py-2.5 text-center">
+                  className={`${responsiveTableRowClass} ${selectedPaths.has(e.path) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
+                  <td data-label="Select" className={responsiveTableCellClass}>
                     <input type="checkbox" checked={selectedPaths.has(e.path)}
                       onChange={() => toggleSelection2(e.path)}
                       onClick={ev => ev.stopPropagation()}
                       className="cursor-pointer" />
                   </td>
-                  <td className="px-4 py-2.5">
+                  <td data-label="Name" className={responsiveTableCellClass}>
                     {e.type === 'folder' ? (
                       <button
                         onClick={() => navigateTo(e.path)}
@@ -674,15 +684,15 @@ export default function DomainFilesPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">
-                    {e.type === 'folder' ? '—' : formatSize(e.size_b)}
+                  <td data-label="Size" className={responsiveTableCodeCellClass}>
+                    {e.type === 'folder' ? '-' : formatSize(e.size_b)}
                   </td>
-                  <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">
+                  <td data-label="Permissions" className={responsiveTableCodeCellClass}>
                     <div>{e.permissions || e.mode}</div>
                     {(e.owner || e.group) && <div className="text-xs text-slate-400 dark:text-slate-500">{e.owner}:{e.group}</div>}
                   </td>
-                  <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500">{formatDate(e.changed)}</td>
-                  <td className="px-2 py-2.5 text-right">
+                  <td data-label="Modified" className={responsiveTableCellClass}>{formatDate(e.changed)}</td>
+                  <td className={responsiveTableActionCellClass}>
                     <button
                       onClick={(ev) => { ev.stopPropagation(); openContext(ev.clientX, ev.clientY, e) }}
                       className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:hover:bg-slate-800 rounded transition"
@@ -768,7 +778,7 @@ export default function DomainFilesPage() {
             </p>
             <ul className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-40 overflow-auto mb-4">
               {Array.from(selectedPaths).slice(0, 8).map(y => <li key={y} className="truncate">{y}</li>)}
-              {selectedPaths.size > 8 && <li className="text-slate-400 dark:text-slate-500 italic">+ {selectedPaths.size - 8} more…</li>}
+              {selectedPaths.size > 8 && <li className="text-slate-400 dark:text-slate-500 italic">+ {selectedPaths.size - 8} more...</li>}
             </ul>
             <div className="flex justify-end gap-2">
               <button onClick={() => setBulkDeleteConfirmOpen(false)} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
@@ -951,7 +961,7 @@ function CopyMoveModal({ type, paths, domainId, onDone, onCancel }:
         <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">{title} ({paths.length} items)</h3>
         <ul className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-32 overflow-auto mb-4">
           {paths.slice(0, 5).map(y => <li key={y} className="truncate">{y}</li>)}
-          {paths.length > 5 && <li className="text-slate-400 dark:text-slate-500 italic">+ {paths.length - 5} more…</li>}
+          {paths.length > 5 && <li className="text-slate-400 dark:text-slate-500 italic">+ {paths.length - 5} more...</li>}
         </ul>
         <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Target directory (under home)</label>
         <input value={target} onChange={e => setTarget(e.target.value)} placeholder="/public_html/backups"

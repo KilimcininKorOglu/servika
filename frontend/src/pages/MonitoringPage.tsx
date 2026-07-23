@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import {
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type CPU = { percent: number; cores: number; load_1m: number; load_5m: number; load_15m: number }
 type Memory = { total_kb: number; used_kb: number; free_kb: number; percent: number }
@@ -34,13 +43,13 @@ const POLL_MS = 5000
 export default function MonitoringPage() {
   const [tab, setTab] = useState<'server' | 'domain' | 'logs'>('server')
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Monitoring' }]} />
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">End-to-End Monitoring</h1>
         <span className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-500">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live · {POLL_MS / 1000} sec refresh
+          Live, {POLL_MS / 1000} sec refresh
         </span>
       </div>
 
@@ -117,14 +126,14 @@ function ServerMonitoring() {
           <Snap title="Memory" value={u.memory.percent.toFixed(1) + '%'}
             alt={`${(u.memory.used_kb/1024).toFixed(0)} / ${(u.memory.total_kb/1024).toFixed(0)} MB`} color="emerald" />
           <Snap title="Load (1 min)" value={u.cpu.load_1m.toFixed(2)}
-            alt={`5 min ${u.cpu.load_5m.toFixed(2)} · 15 min ${u.cpu.load_15m.toFixed(2)}`} color="amber" />
+            alt={`5 min ${u.cpu.load_5m.toFixed(2)}, 15 min ${u.cpu.load_15m.toFixed(2)}`} color="amber" />
           <Snap title="Disk (/)" value={u.disk.percent.toFixed(1) + '%'}
             alt={`${fmtByte(u.disk.used_byte)} / ${fmtByte(u.disk.total_byte)}`} color="violet" />
         </div>
       )}
 
       {/* Multi-series line chart */}
-      <Card title="System Resources" right={`${dataPoints.length}/${MAX_DATA_POINTS} samples · ${(dataPoints.length*POLL_MS/1000/60).toFixed(1)} min`}>
+      <Card title="System Resources" right={`${dataPoints.length}/${MAX_DATA_POINTS} samples, ${(dataPoints.length*POLL_MS/1000/60).toFixed(1)} min`}>
         <div className="flex items-center gap-4 mb-2 text-xs">
           <Legend color="bg-indigo-500" label="CPU" />
           <Legend color="bg-emerald-500" label="Memory" />
@@ -193,31 +202,33 @@ function ServerMonitoring() {
             className={`text-[11px] px-2 py-1 rounded ${procSort === 'mem' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:bg-slate-200'}`}>Memory</button>
         </div>
       }>
-        <table className="w-full text-sm">
-          <thead className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th className="text-left py-2 w-16">PID</th>
-              <th className="text-left py-2">User</th>
-              <th className="text-right py-2 w-16">CPU%</th>
-              <th className="text-right py-2 w-16">MEM%</th>
-              <th className="text-left py-2">Command</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {procs.length === 0 && (
-              <tr><td colSpan={5} className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">Loading…</td></tr>
-            )}
-            {procs.map(p => (
-              <tr key={p.pid} className="hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                <td className="py-1.5 font-mono text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500">{p.pid}</td>
-                <td className="py-1.5 font-mono text-xs text-slate-700 dark:text-slate-300 truncate max-w-[120px]">{p.user}</td>
-                <td className={`py-1.5 text-right font-mono text-xs ${p.cpu_percent >= 50 ? 'text-red-600 dark:text-red-400 font-semibold' : p.cpu_percent >= 20 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400 dark:text-slate-500'}`}>{p.cpu_percent.toFixed(1)}</td>
-                <td className={`py-1.5 text-right font-mono text-xs ${p.mem_percent >= 30 ? 'text-red-600 dark:text-red-400 font-semibold' : p.mem_percent >= 10 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400 dark:text-slate-500'}`}>{p.mem_percent.toFixed(1)}</td>
-                <td className="py-1.5 font-mono text-xs text-slate-800 dark:text-slate-200 truncate max-w-md" title={p.command}>{p.command}</td>
+        <div className={responsiveTableContainerClass}>
+          <table className={responsiveTableClass}>
+            <thead className={responsiveTableHeadClass}>
+              <tr>
+                <th className="text-left font-medium px-4 py-2.5">PID</th>
+                <th className="text-left font-medium px-4 py-2.5">User</th>
+                <th className="text-right font-medium px-4 py-2.5">CPU%</th>
+                <th className="text-right font-medium px-4 py-2.5">MEM%</th>
+                <th className="text-left font-medium px-4 py-2.5">Command</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className={responsiveTableBodyClass}>
+              {procs.length === 0 && (
+                <tr><td colSpan={5} className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">Loading...</td></tr>
+              )}
+              {procs.map(p => (
+                <tr key={p.pid} className={responsiveTableRowClass}>
+                  <td data-label="PID" className={responsiveTableCodeCellClass}>{p.pid}</td>
+                  <td data-label="User" className={responsiveTableCodeCellClass}>{p.user}</td>
+                  <td data-label="CPU%" className={`${responsiveTableCodeCellClass} lg:text-right ${p.cpu_percent >= 50 ? 'text-red-600 dark:text-red-400 font-semibold' : p.cpu_percent >= 20 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{p.cpu_percent.toFixed(1)}</td>
+                  <td data-label="MEM%" className={`${responsiveTableCodeCellClass} lg:text-right ${p.mem_percent >= 30 ? 'text-red-600 dark:text-red-400 font-semibold' : p.mem_percent >= 10 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{p.mem_percent.toFixed(1)}</td>
+                  <td data-label="Command" className={`${responsiveTableCellClass} font-mono text-xs break-all`} title={p.command}>{p.command}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </>
   )
@@ -288,7 +299,7 @@ function DomainMonitoring() {
           {selected && (
             <button onClick={() => probe(selected)} disabled={probingHealth}
               className="text-sm px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 rounded">
-              {probingHealth ? 'Probing…' : '↻ Health Probe'}
+              {probingHealth ? 'Probing...' : '↻ Health Probe'}
             </button>
           )}
           {selectedDomain && (
@@ -314,7 +325,7 @@ function DomainMonitoring() {
         <Card title="Access Log" right={`last ${accessLog.length} lines`}>
           <div ref={accessRef} className="bg-slate-950 text-emerald-300 font-mono text-[11px] p-3 rounded h-80 overflow-auto whitespace-pre">
             {accessLog.length === 0
-              ? <div className="text-slate-500 dark:text-slate-500 italic">No log entries yet…</div>
+              ? <div className="text-slate-500 dark:text-slate-500 italic">No log entries yet...</div>
               : accessLog.join('\n')}
           </div>
         </Card>
@@ -379,7 +390,7 @@ function ServerLogs() {
           ))}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
             className="px-2.5 py-1.5 text-xs w-40 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 outline-none focus:border-brand-500" />
           <select value={lastLineCount} onChange={event => setLastLineCount(Number(event.target.value))}
             className="px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300">
@@ -390,11 +401,11 @@ function ServerLogs() {
       </div>
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
       <div ref={scrollRef} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-auto p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all" style={{ height: 560 }}>
-        {loading ? <div className="text-slate-500 py-4">Loading…</div>
+        {loading ? <div className="text-slate-500 py-4">Loading...</div>
           : visibleLines.length === 0 ? <div className="text-slate-500 py-4">{search ? `"${search}" not found.` : '(no entries)'}</div>
             : visibleLines.map((line, index) => <div key={index} className={logColor(line)}>{line}</div>)}
       </div>
-      <p className="text-xs text-slate-400 mt-2">{search ? `${visibleLines.length} / ${lines.length}` : lines.length} lines · journald · {LOG_SOURCE_LABELS[source] || source}</p>
+      <p className="text-xs text-slate-400 mt-2">{search ? `${visibleLines.length} / ${lines.length}` : lines.length} lines, journald, {LOG_SOURCE_LABELS[source] || source}</p>
     </div>
   )
 }
@@ -444,7 +455,7 @@ function MultiSeriesChart({
   const W = 1000, H = 180, P = 8
   const innerW = W - P * 2, innerH = H - P * 2
   if (dataPoints.length < 2) {
-    return <div className="text-xs text-slate-400 dark:text-slate-500 italic py-12 text-center">Collecting data…</div>
+    return <div className="text-xs text-slate-400 dark:text-slate-500 italic py-12 text-center">Collecting data...</div>
   }
   function path(key: string) {
     return dataPoints.map((n, i) => {
@@ -482,7 +493,7 @@ function HealthCard({ h }: { h: Health }) {
         </span>
       </div>
       <div className="text-3xl font-bold font-mono mt-1">
-        {h.status_code > 0 ? h.status_code : '—'}
+        {h.status_code > 0 ? h.status_code : '-'}
       </div>
       <div className="text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500 mt-1 truncate" title={h.url}>{h.url}</div>
       {h.error && <div className="mt-2 text-[11px] text-red-700 dark:text-red-300 break-words">{h.error}</div>}
@@ -524,7 +535,7 @@ function ResponseCard({ h }: { h: Health }) {
       <div className="text-sm font-semibold mb-2">Response Time</div>
       <div className="text-3xl font-bold text-slate-900 dark:text-slate-100 font-mono">{ms.toFixed(0)}<span className="text-base ml-1 text-slate-500 dark:text-slate-500">ms</span></div>
       <div className="text-[11px] text-slate-500 dark:text-slate-500 mt-1">
-        {ms < 300 ? 'Fast' : ms < 1000 ? 'Acceptable' : 'Slow'} · {h.scheme.toUpperCase()}
+        {ms < 300 ? 'Fast' : ms < 1000 ? 'Acceptable' : 'Slow'}, {h.scheme.toUpperCase()}
       </div>
     </div>
   )

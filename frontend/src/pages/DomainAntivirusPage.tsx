@@ -2,6 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Finding = { file: string; signature: string; engine: string; quarantined: number }
 type Scan = { id: number; status: string; engine: string; scanned: number; infected: number; started_at: string; finished_at: string }
@@ -62,13 +72,13 @@ export default function DomainAntivirusPage() {
     finally { setSignatureLoading(false) }
   }
 
-  if (loading) return <div className="px-6 py-5 text-slate-400">Loading…</div>
-  if (!d) return <div className="px-6 py-5"><div className="text-sm text-red-600">{error || 'Not found'}</div></div>
+  if (loading) return <div className="px-4 py-4 text-slate-400 sm:px-6 sm:py-5">Loading...</div>
+  if (!d) return <div className="px-4 py-4 sm:px-6 sm:py-5"><div className="text-sm text-red-600">{error || 'Not found'}</div></div>
 
   const activeFindings = d.findings.filter(finding => !finding.quarantined)
 
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <div className="max-w-4xl mx-auto">
         <Breadcrumb items={[
           { label: 'Home', href: '/' },
@@ -90,24 +100,24 @@ export default function DomainAntivirusPage() {
                 <span className={`w-2 h-2 rounded-full ${d.clamav ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                 <span className="text-slate-700 dark:text-slate-200">Engine: <span className="font-medium">{d.clamav ? 'ClamAV + Heuristics' : 'Heuristics Only'}</span></span>
               </div>
-              {d.clamav && <div className="text-xs text-slate-400 ml-4">Signature database: {d.signature_date || '—'}</div>}
+              {d.clamav && <div className="text-xs text-slate-400 ml-4">Signature database: {d.signature_date || '-'}</div>}
               {d.last_scan && <div className="text-xs text-slate-400 ml-4">
-                Latest scan: {d.last_scan.finished_at || d.last_scan.started_at} · {d.last_scan.scanned} files · {d.last_scan.infected} findings
+                Latest scan: {d.last_scan.finished_at || d.last_scan.started_at}. {d.last_scan.scanned} files. {d.last_scan.infected} findings
               </div>}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               {d.clamav && <button onClick={updateSignature} disabled={signatureLoading || scanning}
                 className="px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50">
-                {signatureLoading ? 'Updating…' : 'Update Signatures'}</button>}
+                {signatureLoading ? 'Updating...' : 'Update Signatures'}</button>}
               <button onClick={scan} disabled={scanning}
                 className="px-4 py-2 text-sm font-medium bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-lg disabled:opacity-50">
-                {scanning ? 'Scanning…' : 'Scan Now'}</button>
+                {scanning ? 'Scanning...' : 'Scan Now'}</button>
             </div>
           </div>
           {scanning && (
             <div className="mt-3 flex items-center gap-2 text-sm text-brand-600 dark:text-brand-400">
               <span className="inline-block w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-              Scan in progress… Large sites may take several minutes.
+              Scan in progress. Large sites may take several minutes.
             </div>
           )}
         </div>
@@ -115,7 +125,7 @@ export default function DomainAntivirusPage() {
         {/* Findings */}
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
           <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
-            Findings {d.last_scan && <span className="text-xs font-normal text-slate-400">— from the latest scan</span>}
+            Findings {d.last_scan && <span className="text-xs font-normal text-slate-400">from the latest scan</span>}
           </h3>
           {!d.last_scan ? (
             <div className="text-center py-8 text-sm text-slate-500 dark:text-slate-400">No scans yet. Select “Scan Now” to begin.</div>
@@ -125,24 +135,28 @@ export default function DomainAntivirusPage() {
               <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Clean. No malware found.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-slate-400 border-b border-slate-100 dark:border-slate-700">
-                    <th className="py-2 pr-3">File</th><th className="py-2 pr-3">Signature</th><th className="py-2 pr-3">Engine</th><th className="py-2 pr-3">Status</th><th></th>
+            <div className={responsiveTableContainerClass}>
+              <table className={responsiveTableClass}>
+                <thead className={responsiveTableHeadClass}>
+                  <tr>
+                    <th className="py-2 pr-3 text-left">File</th>
+                    <th className="py-2 pr-3 text-left">Signature</th>
+                    <th className="py-2 pr-3 text-left">Engine</th>
+                    <th className="py-2 pr-3 text-left">Status</th>
+                    <th></th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className={responsiveTableBodyClass}>
                   {d.findings.map((b, i) => (
-                    <tr key={i} className="border-b border-slate-50 dark:border-slate-800">
-                      <td className="py-2 pr-3 font-mono text-xs text-slate-600 dark:text-slate-300 break-all max-w-xs">{b.file}</td>
-                      <td className="py-2 pr-3 text-slate-700 dark:text-slate-200">{b.signature}</td>
-                      <td className="py-2 pr-3"><span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500">{b.engine}</span></td>
-                      <td className="py-2 pr-3">
+                    <tr key={i} className={responsiveTableRowClass}>
+                      <td data-label="File" className={`${responsiveTableCodeCellClass} break-all`}>{b.file}</td>
+                      <td data-label="Signature" className={responsiveTableCellClass}>{b.signature}</td>
+                      <td data-label="Engine" className={responsiveTableCellClass}><span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500">{b.engine}</span></td>
+                      <td data-label="Status" className={responsiveTableCellClass}>
                         {b.quarantined ? <span className="text-xs text-amber-600 dark:text-amber-400">🔒 Quarantined</span>
                           : <span className="text-xs text-red-600 dark:text-red-400">⚠ Active</span>}
                       </td>
-                      <td className="py-2 text-right">
+                      <td className={responsiveTableActionCellClass}>
                         {!b.quarantined && <button onClick={() => quarantineFinding(b)} className="text-xs text-red-600 dark:text-red-400 hover:underline whitespace-nowrap">Quarantine</button>}
                       </td>
                     </tr>

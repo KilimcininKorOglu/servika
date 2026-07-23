@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Plan = {
   id: number; name: string; description: string
@@ -81,8 +91,8 @@ export default function PackageDetailPage() {
     setPlan({ ...plan, [key]: value })
   }
 
-  if (loading) return <div className="px-6 py-5 text-slate-400">Loading…</div>
-  if (!plan) return <div className="px-6 py-5"><div className="text-sm text-red-600">{error || 'Plan not found'}</div></div>
+  if (loading) return <div className="px-4 py-4 text-slate-400 sm:px-6 sm:py-5">Loading...</div>
+  if (!plan) return <div className="px-4 py-4 sm:px-6 sm:py-5"><div className="text-sm text-red-600">{error || 'Plan not found'}</div></div>
 
   // Include installed PHP versions and the plan's current value even when it is not installed.
   const phpOptions = Array.from(new Set([
@@ -92,7 +102,7 @@ export default function PackageDetailPage() {
   ].filter(Boolean)))
 
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <div className="max-w-5xl mx-auto">
         <Breadcrumb items={[
           { label: 'Home', href: '/' },
@@ -109,12 +119,12 @@ export default function PackageDetailPage() {
               {plan.is_default && <span className="shrink-0 text-[10px] uppercase font-semibold tracking-wider bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-1.5 py-0.5 rounded">Default</span>}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-              {plan.description || 'No description'} · Used by <span className="font-mono">{domainCount}</span> domains
+              {plan.description || 'No description'}, Used by <span className="font-mono">{domainCount}</span> domains
             </p>
           </div>
           <button onClick={save} disabled={processing}
             className="shrink-0 px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-lg shadow-sm">
-            {processing ? 'Saving…' : 'Save Changes'}
+            {processing ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
 
@@ -258,9 +268,9 @@ export default function PackageDetailPage() {
           {domains.length === 0 ? (
             <div className="text-sm text-slate-400 py-6 text-center">No domains are assigned to this plan yet.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+            <div className={responsiveTableContainerClass}>
+              <table className={responsiveTableClass}>
+                <thead className={responsiveTableHeadClass}>
                   <tr>
                     <th className="text-left py-2">Domain</th>
                     <th className="text-left">System User</th>
@@ -269,18 +279,18 @@ export default function PackageDetailPage() {
                     <th className="text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className={responsiveTableBodyClass}>
                   {domains.map(domain => (
-                    <tr key={domain.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                      <td className="py-2"><Link to={`/subscriptions/${domain.id}`} className="text-brand-600 dark:text-brand-400 font-medium">{domain.domain_name}</Link></td>
-                      <td className="font-mono text-xs">{domain.system_user}</td>
-                      <td>
+                    <tr key={domain.id} className={responsiveTableRowClass}>
+                      <td data-label="Domain" className={responsiveTableCellClass}><Link to={`/subscriptions/${domain.id}`} className="text-brand-600 dark:text-brand-400 font-medium">{domain.domain_name}</Link></td>
+                      <td data-label="System User" className={responsiveTableCodeCellClass}>{domain.system_user}</td>
+                      <td data-label="Status" className={responsiveTableCellClass}>
                         <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-semibold ${
                           domain.status === 'active' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
                         }`}>{domain.status}</span>
                       </td>
-                      <td className="font-mono text-xs text-slate-500">{domain.created_at}</td>
-                      <td className="text-right">
+                      <td data-label="Created" className={responsiveTableCodeCellClass}>{domain.created_at}</td>
+                      <td className={responsiveTableActionCellClass}>
                         <button onClick={() => reapplyForDomain(domain.id)} disabled={processing}
                           className="text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800">
                           Reapply

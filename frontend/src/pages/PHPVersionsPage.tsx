@@ -9,8 +9,8 @@ type Version = {
   real_version?: string; module_count?: number; description?: string
 }
 
-// Detached job (systemd-run transient unit) — install/remove runs in background
-// under PID 1; survives tab close. Status + log polled for live progress.
+// Detached job runs in a background systemd transient unit under PID 1.
+// It survives tab close. Status and log polling show live progress.
 type ActiveOp = { version: string; resource: string; action: 'install' | 'remove' }
 type OpStatus = { running: boolean; version?: string; resource?: string; action?: 'install' | 'remove'; status?: string }
 type LogResponse = { log: string; running: boolean; version?: string; resource?: string; action?: 'install' | 'remove' }
@@ -48,10 +48,11 @@ export default function PHPVersionsPage() {
           })
         }
       })
-      .catch(() => { /* transient — ignore */ })
+      .catch(() => { // Ignore transient failures while resuming jobs.
+      })
   }, [load])
 
-  // Poll active job every 2s — live log streaming; on completion refresh list.
+  // Poll active job every two seconds. Refresh the version list when the job completes.
   useEffect(() => {
     if (!activeOp) return
     let done = false
@@ -66,7 +67,9 @@ export default function PHPVersionsPage() {
           setActiveOp(null)
           load()
         }
-      } catch { /* transient network error — keep polling */ }
+      } catch {
+        // Keep polling through transient network failures.
+      }
     }
     const id = window.setInterval(tick, 2000)
     tick()
@@ -76,12 +79,12 @@ export default function PHPVersionsPage() {
   useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight }) }, [opLog])
 
   async function install(v: Version) {
-    if (activeOp) { alert('A PHP operation is already in progress — wait for it to finish.'); return }
+    if (activeOp) { alert('A PHP operation is already in progress. Wait for it to finish.'); return }
     if (!confirm(`Fourteen packages will be installed for PHP ${v.version} (${v.resource}). Continue?`)) return
     setError(null); setSuccess(null); setOpLog('')
     try {
       await api.post('/php-versions/install', { version: v.version, resource: v.resource })
-      setOpLog(`PHP ${v.version} installation started…\n`)
+      setOpLog(`PHP ${v.version} installation started...\n`)
       setActiveOp({ version: v.version, resource: v.resource, action: 'install' })
     } catch (e) { setError(apiError(e, 'Could not start installation')) }
   }
@@ -91,12 +94,13 @@ export default function PHPVersionsPage() {
       alert('AppStream PHP is the system default and cannot be removed.')
       return
     }
-    if (activeOp) { alert('A PHP operation is already in progress — wait for it to finish.'); return }
+    if (activeOp) { alert('A PHP operation is already in progress. Wait for it to finish.'); return }
     if (!confirm(`PHP ${v.version} (Remi) and ALL its extensions will be REMOVED.\nThe operation will be rejected if a domain uses this version. Continue?`)) return
     setError(null); setSuccess(null); setOpLog('')
     try {
       await api.post('/php-versions/remove', { version: v.version, resource: v.resource })
-      setOpLog(`PHP ${v.version} removal started…\n`)
+      setOpLog(`PHP ${v.version} removal started...\n`)
+
       setActiveOp({ version: v.version, resource: v.resource, action: 'remove' })
     } catch (e) { setError(apiError(e, 'Could not start removal')) }
   }
@@ -127,16 +131,16 @@ export default function PHPVersionsPage() {
       {error && <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-900/15 dark:text-red-300">{error}</div>}
       {success && <div className="mb-3 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-900/15 dark:text-emerald-300">{success}</div>}
 
-      {/* Active operation — inline live log */}
+      {/* Active operation, inline live log */}
       {activeOp && (
         <div className="mb-4 rounded-2xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-900/50 dark:bg-brand-900/15">
           <div className="mb-2 flex items-center gap-2">
             <span className="h-3 w-3 animate-spin rounded-full border-2 border-brand-400 border-t-transparent" />
             <span className="text-sm font-semibold text-brand-700 dark:text-brand-300">
-              PHP {activeOp.version} {activeOp.action === 'remove' ? 'removal' : 'installation'} in progress…
+              PHP {activeOp.version} {activeOp.action === 'remove' ? 'removal' : 'installation'} in progress...
             </span>
           </div>
-          <pre ref={logRef} className="max-h-48 overflow-auto rounded-xl bg-slate-900 p-3 font-mono text-xs text-slate-100">{opLog || 'Waiting for output…'}</pre>
+          <pre ref={logRef} className="max-h-48 overflow-auto rounded-xl bg-slate-900 p-3 font-mono text-xs text-slate-100">{opLog || 'Waiting for output...'}</pre>
         </div>
       )}
 
@@ -153,7 +157,7 @@ export default function PHPVersionsPage() {
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-12 text-sm text-slate-400">
           <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-transparent dark:border-slate-600 dark:border-t-transparent" />
-          Loading…
+          Loading...
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -196,13 +200,13 @@ export default function PHPVersionsPage() {
                   ) : (
                     <button onClick={() => remove(v)} disabled={!!activeOp}
                       className="w-full rounded-xl bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40">
-                      {activeOp?.version === v.version ? 'In progress…' : 'Remove'}
+                      {activeOp?.version === v.version ? 'In progress...' : 'Remove'}
                     </button>
                   )
                 ) : (
                   <button onClick={() => install(v)} disabled={!!activeOp}
                     className="w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
-                    {activeOp?.version === v.version ? 'In progress…' : 'Install'}
+                    {activeOp?.version === v.version ? 'In progress...' : 'Install'}
                   </button>
                 )}
               </div>

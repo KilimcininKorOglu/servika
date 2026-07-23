@@ -25,6 +25,27 @@ html.dark {
   color-scheme: dark;
 }
 
+/* Prevent mobile bottom navigation from covering the last screen content. */
+@media (max-width: 1023px) {
+  main {
+    scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
+  .responsive-table td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 8rem;
+    color: #64748b;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .responsive-table td[data-label] > * {
+    max-width: 100%;
+  }
+}
+
 /* Keep the focus ring visible for accessibility. */
 :focus-visible {
   outline: 2px solid #ea580c;

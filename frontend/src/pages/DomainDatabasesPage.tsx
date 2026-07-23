@@ -4,6 +4,16 @@ import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import Modal from '@/components/Modal'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableCodeCellClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type Domain = { id: number; domain_name: string; system_user: string }
 type DB = {
@@ -64,7 +74,7 @@ export default function DomainDatabasesPage() {
   )
 
   return (
-    <div className="px-6 py-5 max-w-[1300px]">
+    <div className="px-4 py-4 sm:px-6 sm:py-5 max-w-[1300px]">
       <Breadcrumb items={[
         { label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' },
         { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },
@@ -74,19 +84,19 @@ export default function DomainDatabasesPage() {
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Databases</h1>
       {domain && <p className="text-sm text-slate-500 dark:text-slate-500 mb-5"><Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link></p>}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center">
         <button onClick={() => setAddOpen(true)} className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-md">+ New Database</button>
         <button onClick={load} className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md">↻ Refresh</button>
-        <span className="ml-auto text-sm text-slate-500 dark:text-slate-500">{databases.length} databases</span>
+        <span className="text-sm text-slate-500 dark:text-slate-500 sm:ml-auto">{databases.length} databases</span>
       </div>
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
-        {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div> :
+      <div className={responsiveTableContainerClass}>
+        {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading...</div> :
          databases.length === 0 ? <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-500">No databases yet</div> :
-        <table className="w-full">
-          <thead className="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
+        <table className={responsiveTableClass}>
+          <thead className={responsiveTableHeadClass}>
             <tr>
               <th className="text-left px-4 py-2.5">Database</th>
               <th className="text-left px-4 py-2.5">Username</th>
@@ -96,13 +106,13 @@ export default function DomainDatabasesPage() {
               <th className="text-right px-4 py-2.5">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className={responsiveTableBodyClass}>
             {databases.map(d => (
-              <tr key={d.id} className="hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                <td className="px-4 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200">{d.db_name}</td>
-                <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">{d.db_user}</td>
-                <td className="px-4 py-2.5 text-sm font-mono text-slate-600 dark:text-slate-400 dark:text-slate-500">{d.db_host}:3306</td>
-                <td className="px-4 py-2.5 text-sm">
+              <tr key={d.id} className={responsiveTableRowClass}>
+                <td data-label="Database" className={responsiveTableCodeCellClass}>{d.db_name}</td>
+                <td data-label="Username" className={responsiveTableCodeCellClass}>{d.db_user}</td>
+                <td data-label="Host" className={responsiveTableCodeCellClass}>{d.db_host}:3306</td>
+                <td data-label="Password" className={responsiveTableCellClass}>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setPasswordVisibility({ ...passwordVisibility, [d.id]: !passwordVisibility[d.id] })}
@@ -118,8 +128,8 @@ export default function DomainDatabasesPage() {
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500">{d.created_at}</td>
-                <td className="px-4 py-2.5 text-right space-x-1">
+                <td data-label="Created" className={responsiveTableCellClass}>{d.created_at}</td>
+                <td className={responsiveTableActionCellClass}>
                   <button onClick={() => openPma(d)} className="text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded" title="Open phpMyAdmin in a new tab">🔓 phpMyAdmin</button>
                   <button onClick={() => setPwResetFor(d)} className="text-sm text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 px-2 py-1 rounded">🔑 Reset Password</button>
                   <button onClick={() => setDatabaseToDelete(d)} className="text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 px-2 py-1 rounded">Delete</button>
@@ -194,8 +204,8 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<{ db_name: string; db_user: string; db_pass: string } | null>(null)
 
-  const dbNamePreview = prefix + (dbSuffix || '…')
-  const userPreview = prefix + (userSuffix || '…')
+  const dbNamePreview = prefix + (dbSuffix || '...')
+  const userPreview = prefix + (userSuffix || '...')
   const passwordStrengthIssue =
     password !== '' && (password.length < 12 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password))
 
@@ -258,7 +268,7 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} className="h-4 w-4 accent-brand-600" />
             <span className="text-sm text-slate-700 dark:text-slate-300">
-              <strong className="font-medium">Automatic</strong> — let the panel generate the database name, user, and password
+              <strong className="font-medium">Automatic</strong>, let the panel generate the database name, user, and password
             </span>
           </label>
 
@@ -270,7 +280,7 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
                   <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-mono select-none">{prefix}</span>
                   <input value={dbSuffix} onChange={e => setDbSuffix(e.target.value.toLowerCase())} placeholder="blog" className={inputCls + ' rounded-l-none'} />
                 </div>
-                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-mono">→ {dbNamePreview}</p>
+                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-mono">{dbNamePreview}</p>
               </div>
 
               <div>
@@ -292,7 +302,7 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
                       <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-mono select-none">{prefix}</span>
                       <input value={userSuffix} onChange={e => setUserSuffix(e.target.value.toLowerCase())} placeholder="bloguser" className={inputCls + ' rounded-l-none'} />
                     </div>
-                    <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-mono">→ {userPreview}</p>
+                    <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-mono">{userPreview}</p>
                   </>
                 ) : (
                   <select value={existingUser} onChange={e => setExistingUser(e.target.value)} className={inputCls}>
@@ -318,7 +328,7 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
 
           <div className="flex justify-end gap-2 pt-1">
             <button onClick={onClose} disabled={processing} className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md text-sm">Cancel</button>
-            <button onClick={create} disabled={processing} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">{processing ? 'Creating…' : 'Create'}</button>
+            <button onClick={create} disabled={processing} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">{processing ? 'Creating...' : 'Create'}</button>
           </div>
         </div>
       )}
@@ -361,7 +371,7 @@ function PwResetModal({ db, onClose, onDone }: { db: DB; onClose: () => void; on
   }
 
   return (
-    <Modal open={true} title={`Reset Password — ${db.db_name}`} onClose={newPassword ? onDone : onClose} width="md">
+    <Modal open={true} title={`Reset Password: ${db.db_name}`} onClose={newPassword ? onDone : onClose} width="md">
       {!newPassword ? (
         <div className="space-y-4">
           <div className="text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500">
@@ -381,7 +391,7 @@ function PwResetModal({ db, onClose, onDone }: { db: DB; onClose: () => void; on
           <div className="flex justify-end gap-2 pt-2">
             <button onClick={onClose} disabled={processing} className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-md text-sm">Cancel</button>
             <button onClick={() => reset(false)} disabled={processing || !customPassword} className="px-4 py-2 bg-white dark:bg-slate-800 border border-brand-600 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 disabled:opacity-50 rounded-md text-sm">Use This Password</button>
-            <button onClick={() => reset(true)} disabled={processing} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">{processing ? 'Resetting…' : 'Generate Random Password'}</button>
+            <button onClick={() => reset(true)} disabled={processing} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">{processing ? 'Resetting...' : 'Generate Random Password'}</button>
           </div>
         </div>
       ) : (

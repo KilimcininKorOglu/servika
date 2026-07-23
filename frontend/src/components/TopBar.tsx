@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import { getTheme, setTheme, type Theme } from '@/lib/theme'
 
-export default function TopBar() {
+type TopBarProps = {
+  onMenuClick?: () => void
+}
+
+export default function TopBar({ onMenuClick }: TopBarProps) {
   const username = useAuth((s) => s.username)
   const logout = useAuth((s) => s.logout)
   const navigate = useNavigate()
@@ -11,9 +15,9 @@ export default function TopBar() {
   const [theme, setCurrentTheme] = useState<Theme>(getTheme())
 
   useEffect(() => {
-    const h = (e: Event) => setCurrentTheme((e as CustomEvent<Theme>).detail)
-    window.addEventListener('servika:theme-change', h)
-    return () => window.removeEventListener('servika:theme-change', h)
+    const handler = (event: Event) => setCurrentTheme((event as CustomEvent<Theme>).detail)
+    window.addEventListener('servika:theme-change', handler)
+    return () => window.removeEventListener('servika:theme-change', handler)
   }, [])
 
   function cycleTheme() {
@@ -28,13 +32,24 @@ export default function TopBar() {
   }
 
   return (
-    <header className="h-14 bg-white dark:bg-slate-800 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 dark:border-slate-800 flex items-center px-4 sticky top-0 z-30 gap-4">
+    <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-3 sm:px-4 sticky top-0 z-30 gap-3">
+      <button
+        type="button"
+        onClick={onMenuClick}
+        className="lg:hidden p-2 rounded-md text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        aria-label="Open navigation"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
       <div className="flex-1" />
 
-      <div className="flex-1 flex items-center justify-end gap-1">
+      <div className="flex items-center justify-end gap-1">
         <button onClick={cycleTheme}
-          className="p-2 text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 dark:text-slate-400 dark:text-slate-500 dark:hover:text-slate-200 dark:hover:bg-slate-800 rounded-md transition"
-          title={`Theme: ${theme} — click to change`}>
+          className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
+          title={`Theme: ${theme}, click to change`}>
           {theme === 'dark' ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -49,7 +64,7 @@ export default function TopBar() {
             </svg>
           )}
         </button>
-        <button className="p-2 text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 dark:text-slate-400 dark:text-slate-500 dark:hover:text-slate-200 dark:hover:bg-slate-800 rounded-md transition" title="Notifications">
+        <button className="hidden sm:inline-flex p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition" title="Notifications">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
@@ -57,13 +72,13 @@ export default function TopBar() {
 
         <div className="relative">
           <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 rounded-md transition"
+            onClick={() => setMenuOpen((value) => !value)}
+            className="flex items-center gap-2 px-1.5 sm:px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
           >
             <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-semibold text-xs flex items-center justify-center">
               {(username?.full_name || username?.name || '?').slice(0, 1).toUpperCase()}
             </div>
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{username?.full_name || username?.name}</span>
+            <span className="hidden sm:inline text-sm font-medium text-slate-700 dark:text-slate-300 max-w-[180px] truncate">{username?.full_name || username?.name}</span>
             <svg className="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
@@ -79,14 +94,14 @@ export default function TopBar() {
                 </div>
                 <button
                   onClick={() => { setMenuOpen(false); navigate('/profile') }}
-                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Profile and Preferences
                 </button>
                 <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20"
+                  className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                 >
                   Log Out
                 </button>

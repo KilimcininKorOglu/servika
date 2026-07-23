@@ -111,7 +111,7 @@ export default function PackagesPage() {
       setSuccess(`${pkg} ${currentlyInstalled ? 'removed' : 'installed'}`)
       setGroupStatus(prev => ({ ...prev, [pkg]: !currentlyInstalled }))
       setOutputModal({
-        title: `${currentlyInstalled ? 'Removal' : 'Installation'} output — ${pkg}`,
+        title: `${currentlyInstalled ? 'Removal' : 'Installation'} output: ${pkg}`,
         output: r.data.output || '',
       })
       setTimeout(() => setSuccess(null), 3500)
@@ -128,7 +128,7 @@ export default function PackagesPage() {
     try {
       const r = await api.post('/packages/install', { package: pkg })
       setSuccess(`${pkg} installed`)
-      setOutputModal({ title: `Installation output — ${pkg}`, output: r.data.output || '' })
+      setOutputModal({ title: `Installation output: ${pkg}`, output: r.data.output || '' })
       setTimeout(() => setSuccess(null), 4000)
       if (tab === 'search') search()
     } catch (e) { setError(apiError(e, 'Installation failed')) }
@@ -140,7 +140,7 @@ export default function PackagesPage() {
     try {
       const r = await api.post('/packages/remove', { package: pkg })
       setSuccess(`${pkg} removed`)
-      setOutputModal({ title: `Removal output — ${pkg}`, output: r.data.output || '' })
+      setOutputModal({ title: `Removal output: ${pkg}`, output: r.data.output || '' })
       setTimeout(() => setSuccess(null), 4000)
       search()
     } catch (e) { setError(apiError(e, 'Removal failed')) }
@@ -167,7 +167,7 @@ export default function PackagesPage() {
   )
 
   return (
-    <div className="px-6 py-5">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: 'Tools and Settings', href: '/tools-settings' },
@@ -236,7 +236,7 @@ export default function PackagesPage() {
                             className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ${
                               isInstalled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
                             } ${pending ? 'cursor-wait opacity-50' : ''}`}
-                            title={pending ? 'Processing…' : (isInstalled ? 'Remove' : 'Install')}>
+                            title={pending ? 'Processing...' : (isInstalled ? 'Remove' : 'Install')}>
                             <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition dark:bg-slate-800 ${isInstalled ? 'translate-x-5' : 'translate-x-1'}`} />
                           </button>
                         </div>
@@ -265,14 +265,14 @@ export default function PackagesPage() {
           </button>
         </div>
 
-        <div className="mb-4 flex gap-2">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row">
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && search()}
             placeholder={tab === 'search' ? 'e.g. mongodb, redis, nodejs, gcc, htop' : 'installed package name or description'}
             className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-mono placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-100" />
           <button onClick={search} disabled={loading || !query.trim()}
-            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
-            {loading ? 'Searching…' : 'Search'}
+            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 sm:w-auto">
+            {loading ? 'Searching...' : 'Search'}
           </button>
         </div>
 
@@ -285,10 +285,10 @@ export default function PackagesPage() {
             <div className="mb-2 text-xs text-slate-400 dark:text-slate-500">{results.length} results</div>
             {results.map(p => (
               <div key={p.name}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 ${
+                className={`flex flex-col gap-3 rounded-xl px-3 py-2 sm:flex-row sm:items-center ${
                   p.installed ? 'border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' : 'border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/40'}`}>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex flex-wrap items-baseline gap-2">
                     <span className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100">{p.name}</span>
                     {p.version && <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">{p.version}</span>}
                     {p.installed && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">INSTALLED</span>}
@@ -299,14 +299,14 @@ export default function PackagesPage() {
                 {p.installed ? (
                   <button onClick={() => removePackage(p.name)}
                     disabled={p.protected || processing === p.name}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-900/20">
-                    {processing === p.name ? 'Removing…' : 'Remove'}
+                    className="w-full rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-900/20 sm:w-auto">
+                    {processing === p.name ? 'Removing...' : 'Remove'}
                   </button>
                 ) : (
                   <button onClick={() => installPackage(p.name)}
                     disabled={processing === p.name}
-                    className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
-                    {processing === p.name ? 'Installing…' : 'Install'}
+                    className="w-full rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 sm:w-auto">
+                    {processing === p.name ? 'Installing...' : 'Install'}
                   </button>
                 )}
               </div>
@@ -317,7 +317,7 @@ export default function PackagesPage() {
 
       {outputModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setOutputModal(null)}>
-          <div className="flex max-h-[80vh] w-full flex-col rounded-2xl bg-white shadow-xl dark:bg-slate-800" onClick={e => e.stopPropagation()}>
+          <div className="flex max-h-[80vh] w-full max-w-4xl flex-col rounded-2xl bg-white shadow-xl dark:bg-slate-800" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{outputModal.title}</h3>
               <button onClick={() => setOutputModal(null)} className="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300">✕</button>

@@ -106,6 +106,7 @@ func main() {
 	// all tenants are silently skipped — never a hard error. Runs in a background goroutine so
 	// panel boot is not blocked.
 	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
+	go system.StartVersionCheck(version)
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
 	authH := &auth.Handlers{DB: d, Secret: cfg.JWTSecret, LifetimeSec: cfg.JWTLifetime}
@@ -198,6 +199,8 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/system/update", system.UpdateStatus)
 			r.With(middleware.AdminOnly).Post("/system/update/start", system.StartUpdate)
 			r.With(middleware.AdminOnly).Get("/system/update/log", system.UpdateLog)
+			r.With(middleware.AdminOnly).Get("/system/version-check", system.VersionCheckStatus)
+			r.With(middleware.AdminOnly).Post("/system/version-check/refresh", system.VersionCheckRefresh)
 			r.With(middleware.AdminOnly).Get("/system/optimize", system.OptimizeStatus)
 			r.With(middleware.AdminOnly).Post("/system/optimize/start", system.OptimizeStart)
 			r.With(middleware.AdminOnly).Get("/system/optimize/log", system.OptimizeLog)

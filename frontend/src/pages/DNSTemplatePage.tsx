@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import Breadcrumb from '@/components/Breadcrumb'
 import { api, apiError } from '@/lib/api'
+import {
+  responsiveTableActionCellClass,
+  responsiveTableBodyClass,
+  responsiveTableCellClass,
+  responsiveTableClass,
+  responsiveTableContainerClass,
+  responsiveTableHeadClass,
+  responsiveTableRowClass,
+} from '@/lib/table'
 
 type TemplateRow = {
   id?: number
@@ -82,7 +91,7 @@ export default function DNSTemplatePage() {
   }
 
   return (
-    <div className="px-6 md:px-8 py-6">
+    <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: 'Tools and Settings', href: '/tools-settings' },
@@ -98,19 +107,19 @@ export default function DNSTemplatePage() {
 
       <div className="mb-4 px-3.5 py-2.5 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg text-xs text-brand-800 dark:text-brand-200">
         <strong>Placeholders:</strong>{' '}
-        <code className="font-mono">{'{DOMAIN}'}</code> domain name ·{' '}
-        <code className="font-mono">{'{IP}'}</code> server IP ·{' '}
-        <code className="font-mono">{'{SELECTOR}'}</code> DKIM selector ·{' '}
+        <code className="font-mono">{'{DOMAIN}'}</code> domain name,{' '}
+        <code className="font-mono">{'{IP}'}</code> server IP,{' '}
+        <code className="font-mono">{'{SELECTOR}'}</code> DKIM selector,{' '}
         <code className="font-mono">{'{DKIM}'}</code> generated DKIM public record
       </div>
 
       {loading ? (
-        <div className="py-14 text-center text-sm text-slate-400">Loading…</div>
+        <div className="py-14 text-center text-sm text-slate-400">Loading...</div>
       ) : !meta ? null : (
         <>
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-x-auto mb-5">
-            <table className="w-full min-w-[940px] text-left">
-              <thead className="bg-slate-50 dark:bg-slate-900/50 text-[11px] uppercase tracking-wide text-slate-500">
+          <div className={`${responsiveTableContainerClass} mb-5`}>
+            <table className={responsiveTableClass}>
+              <thead className={responsiveTableHeadClass}>
                 <tr>
                   <th className="px-3 py-2.5 w-36">Name</th>
                   <th className="px-3 py-2.5 w-28">Type</th>
@@ -122,25 +131,25 @@ export default function DNSTemplatePage() {
                   <th className="px-3 py-2.5 w-12"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className={responsiveTableBodyClass}>
                 {records.map((record, index) => (
-                  <tr key={record.id ?? index} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                    <td className="px-3 py-2"><input value={record.name} onChange={event => updateRecord(index, { name: event.target.value })} className={`${INPUT_CLASS} font-mono`} /></td>
-                    <td className="px-3 py-2">
+                  <tr key={record.id ?? index} className={responsiveTableRowClass}>
+                    <td data-label="Name" className={responsiveTableCellClass}><input value={record.name} onChange={event => updateRecord(index, { name: event.target.value })} className={`${INPUT_CLASS} font-mono`} /></td>
+                    <td data-label="Type" className={responsiveTableCellClass}>
                       <select value={record.type} onChange={event => updateRecord(index, { type: event.target.value })} className={`${INPUT_CLASS} font-mono`}>
                         {RECORD_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
                       </select>
                     </td>
-                    <td className="px-3 py-2"><input value={record.value} onChange={event => updateRecord(index, { value: event.target.value })} className={`${INPUT_CLASS} font-mono`} /></td>
-                    <td className="px-3 py-2"><input type="number" min={1} value={record.ttl} onChange={event => updateRecord(index, { ttl: Number(event.target.value) || 3600 })} className={`${INPUT_CLASS} font-mono`} /></td>
-                    <td className="px-3 py-2">
+                    <td data-label="Value" className={responsiveTableCellClass}><input value={record.value} onChange={event => updateRecord(index, { value: event.target.value })} className={`${INPUT_CLASS} font-mono`} /></td>
+                    <td data-label="TTL" className={responsiveTableCellClass}><input type="number" min={1} value={record.ttl} onChange={event => updateRecord(index, { ttl: Number(event.target.value) || 3600 })} className={`${INPUT_CLASS} font-mono`} /></td>
+                    <td data-label="Priority" className={responsiveTableCellClass}>
                       {record.type === 'MX' || record.type === 'SRV'
                         ? <input type="number" min={0} value={record.priority} onChange={event => updateRecord(index, { priority: Number(event.target.value) || 0 })} className={`${INPUT_CLASS} font-mono`} />
-                        : <span className="pl-2 text-slate-300 dark:text-slate-600">—</span>}
+                        : <span className="pl-2 text-slate-300 dark:text-slate-600">None</span>}
                     </td>
-                    <td className="px-3 py-2"><input type="number" value={record.sort_order} onChange={event => updateRecord(index, { sort_order: Number(event.target.value) || 0 })} className={`${INPUT_CLASS} font-mono`} /></td>
-                    <td className="px-3 py-2 text-center"><input type="checkbox" checked={record.enabled} onChange={event => updateRecord(index, { enabled: event.target.checked })} className="w-4 h-4 accent-brand-600" /></td>
-                    <td className="px-3 py-2 text-center"><button type="button" onClick={() => setRecords(current => current.filter((_, recordIndex) => recordIndex !== index))} title="Delete record" className="p-1 text-red-500 hover:text-red-700">×</button></td>
+                    <td data-label="Order" className={responsiveTableCellClass}><input type="number" value={record.sort_order} onChange={event => updateRecord(index, { sort_order: Number(event.target.value) || 0 })} className={`${INPUT_CLASS} font-mono`} /></td>
+                    <td data-label="Enabled" className={responsiveTableCellClass}><input type="checkbox" checked={record.enabled} onChange={event => updateRecord(index, { enabled: event.target.checked })} className="w-4 h-4 accent-brand-600" /></td>
+                    <td className={responsiveTableActionCellClass}><button type="button" onClick={() => setRecords(current => current.filter((_, recordIndex) => recordIndex !== index))} title="Delete record" className="p-1 text-red-500 hover:text-red-700">×</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -176,7 +185,7 @@ export default function DNSTemplatePage() {
 
           <div className="flex justify-end gap-2">
             <button type="button" onClick={loadTemplate} disabled={saving} className="px-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50">Discard changes</button>
-            <button type="button" onClick={saveTemplate} disabled={saving} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-50">{saving ? 'Saving…' : 'Save template'}</button>
+            <button type="button" onClick={saveTemplate} disabled={saving} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-50">{saving ? 'Saving...' : 'Save template'}</button>
           </div>
         </>
       )}
