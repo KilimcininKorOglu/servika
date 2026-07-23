@@ -335,9 +335,9 @@ function DashboardTabContent({ domain }: { domain: Domain }) {
 function HostingTab({ domain }: { domain: Domain }) {
   return (
     <Group title="Hosting Services">
-      <ToolCard label="Hosting Settings" description="Document root and options" icon={ICONS.service} color="indigo" />
+      <ToolCard label="Hosting Settings" description="Document root and options" icon={ICONS.service} color="indigo" to={`/subscriptions/${domain.id}/web-server`} />
       <ToolCard label="Apache and nginx" description="Security headers and additional directives" icon={ICONS.apache} color="orange" to={`/subscriptions/${domain.id}/web-server`} />
-      <ToolCard label="DNS Settings" description="A, CNAME, MX" icon={ICONS.dns} color="emerald" />
+      <ToolCard label="DNS Settings" description="A, CNAME, MX" icon={ICONS.dns} color="emerald" to={`/subscriptions/${domain.id}/dns`} />
     </Group>
   )
 }
