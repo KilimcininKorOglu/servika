@@ -35,6 +35,7 @@ import (
 	"servika/internal/monitor"
 	"servika/internal/nginxset"
 	"servika/internal/packages"
+	"servika/internal/panelsettings"
 	"servika/internal/passwordprotect"
 	"servika/internal/performance"
 	"servika/internal/php"
@@ -144,6 +145,7 @@ func main() {
 	sshaccess.EnsureInfra()
 	phpExtH := &phpext.Handlers{DB: d}
 	packagesH := &packages.Handlers{DB: d}
+	panelSettingsH := &panelsettings.Handlers{DB: d, ServerIPv4: ipv4}
 	phpVersionH := &phpversion.Handlers{DB: d}
 	// PERF: move PHP availability discovery (dnf) to a background sweeper so request-path
 	// callers like /php/versions never block on a slow or locked dnf.
@@ -198,6 +200,10 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/system/usage", system.Handler)
 			r.With(middleware.AdminOnly).Get("/system/services", system.ServiceStatuses)
 			r.With(middleware.AdminOnly).Post("/system/service-action", system.ServiceAction)
+			r.With(middleware.AdminOnly).Post("/system/reboot", system.Reboot)
+			r.With(middleware.AdminOnly).Get("/system/panel-domain", panelSettingsH.Status)
+			r.With(middleware.AdminOnly).Post("/system/panel-domain", panelSettingsH.Save)
+			r.With(middleware.AdminOnly).Delete("/system/panel-domain", panelSettingsH.Delete)
 			r.With(middleware.AdminOnly).Get("/system/update", system.UpdateStatus)
 			r.With(middleware.AdminOnly).Post("/system/update/start", system.StartUpdate)
 			r.With(middleware.AdminOnly).Get("/system/update/log", system.UpdateLog)

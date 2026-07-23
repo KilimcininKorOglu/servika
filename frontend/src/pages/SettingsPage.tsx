@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, apiError } from '@/lib/api'
+import PanelDomain from '@/components/PanelDomain'
+import ServerRebootButton from '@/components/ServerRebootButton'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useAuth } from '@/store/auth'
 import { setTheme as applyThemePreference, type Theme } from '@/lib/theme'
@@ -126,6 +128,9 @@ export default function SettingsPage() {
       {loadError && <div className="mb-4"><Alert type="err" message={loadError} /></div>}
 
       <div className="space-y-5">
+        <PanelDomain />
+        <ServerRebootButton />
+
         {/* 1. Account information */}
         <Card title="Account Information" description="Edit your full name and email address."
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
