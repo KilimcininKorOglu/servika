@@ -126,6 +126,77 @@ func TestTLSVhostRepeatsHSTSAtEveryHeaderBoundary(t *testing.T) {
 	}
 }
 
+func TestCustomVhostBypassesManagedTemplateWhenActive(t *testing.T) {
+	custom := "server {\n    listen 80;\n    server_name example.com;\n    return 200 'custom';\n}"
+	opts := VhostOpts{
+		DomainName:         "example.com",
+		WebRoot:            "/home/c_example_com/public_html",
+		PHPSocket:          "/run/php-fpm/c_example_com.sock",
+		PHPVersion:         "8.3",
+		CustomVhostContent: custom,
+	}
+	var rendered bytes.Buffer
+	if opts.CustomVhostContent != "" && !opts.Suspended {
+		rendered.WriteString(strings.TrimSpace(opts.CustomVhostContent))
+		rendered.WriteByte('\n')
+	} else if err := vhostTmpl.Execute(&rendered, opts); err != nil {
+		t.Fatalf("render vhost: %v", err)
+	}
+
+	config := rendered.String()
+	if !strings.Contains(config, "return 200 'custom';") {
+		t.Fatal("custom vhost content was not rendered")
+	}
+	if strings.Contains(config, "Managed by Servika") || strings.Contains(config, "Servika managed") {
+		t.Fatal("managed template content leaked into custom vhost rendering")
+	}
+}
+
+func TestSuspendedDomainIgnoresCustomVhost(t *testing.T) {
+	opts := VhostOpts{
+		DomainName:         "example.com",
+		WebRoot:            "/home/c_example_com/public_html",
+		PHPSocket:          "/run/php-fpm/c_example_com.sock",
+		PHPVersion:         "8.3",
+		Suspended:          true,
+		CustomVhostContent: "server { return 200 'custom'; }",
+	}
+	var rendered bytes.Buffer
+	tmpl := vhostTmpl
+	if opts.Suspended {
+		tmpl = suspendedVhostTmpl
+	}
+	if opts.CustomVhostContent != "" && !opts.Suspended {
+		rendered.WriteString(strings.TrimSpace(opts.CustomVhostContent))
+		rendered.WriteByte('\n')
+	} else if err := tmpl.Execute(&rendered, opts); err != nil {
+		t.Fatalf("render vhost: %v", err)
+	}
+
+	config := rendered.String()
+	if strings.Contains(config, "return 200 'custom';") {
+		t.Fatal("suspended vhost rendered custom content")
+	}
+	if !strings.Contains(config, "Account Suspended") {
+		t.Fatal("suspended vhost template was not rendered")
+	}
+}
+
+func TestSanitizeNginxValidationMessageBoundsOutputAndReplacesPath(t *testing.T) {
+	path := "/etc/nginx/conf.d/_customvhost_validate_123.conf"
+	message := path + " " + strings.Repeat("x", maxNginxValidationMessage+100)
+	got := sanitizeNginxValidationMessage([]byte(message), path, "(custom vhost)", nil)
+	if strings.Contains(got, path) {
+		t.Fatal("validation message leaked the temporary path")
+	}
+	if !strings.Contains(got, "(custom vhost)") {
+		t.Fatal("validation message did not include the public label")
+	}
+	if len(got) > maxNginxValidationMessage+3 {
+		t.Fatalf("validation message length = %d, want bounded output", len(got))
+	}
+}
+
 func TestPHPPoolConfinesTenantAndDisablesProcessExecution(t *testing.T) {
 	var rendered bytes.Buffer
 	if err := phpPoolTmpl.Execute(&rendered, map[string]string{

@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
+import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
+import CodeEditor from '@/components/CodeEditor'
 
 type Settings = {
   hdr_x_content_type: boolean
@@ -23,6 +25,7 @@ type Settings = {
 
 type Response = { domain_name: string; settings: Settings }
 type WebRootResponse = { web_root: string; subdirectory: string; candidates: string[] }
+type CustomVhostResponse = { enabled: boolean; content: string; domain_name: string }
 
 const BACKEND_INFO: Record<string, { name: string; icon: string; description: string; color: string }> = {
   'php-fpm': {
@@ -60,12 +63,20 @@ const HEADERS = [
 
 export default function DomainWebServerPage() {
   const { id } = useParams()
+  const user = useAuth(state => state.username)
+  const isAdmin = user?.role === 'admin'
   const [response, setResponse] = useState<Response | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+
+  const [customVhost, setCustomVhost] = useState<CustomVhostResponse | null>(null)
+  const [customVhostEnabled, setCustomVhostEnabled] = useState(false)
+  const [customVhostContent, setCustomVhostContent] = useState('')
+  const [customVhostChanging, setCustomVhostChanging] = useState(false)
+  const [customVhostEditorOpen, setCustomVhostEditorOpen] = useState(false)
 
   const [backend, setBackend] = useState<string>('php-fpm')
   const [backendChanging, setBackendChanging] = useState(false)
@@ -81,16 +92,22 @@ export default function DomainWebServerPage() {
       api.get<Response>(`/domains/${id}/nginx-settings`),
       api.get<{backend: string}>(`/domains/${id}/web-backend`),
       api.get<WebRootResponse>(`/domains/${id}/web-root`),
-    ]).then(([settingsResponse, backendResponse, webRootResponse]) => {
+      isAdmin ? api.get<CustomVhostResponse>(`/domains/${id}/custom-vhost`) : Promise.resolve(null),
+    ]).then(([settingsResponse, backendResponse, webRootResponse, customVhostResponse]) => {
       setResponse(settingsResponse.data); setSettings(settingsResponse.data.settings)
       setBackend(backendResponse.data.backend)
       setWebRootPath(webRootResponse.data.web_root)
       setWebRootSubdirectory(webRootResponse.data.subdirectory)
       setWebRootCandidates(webRootResponse.data.candidates || [])
+      if (customVhostResponse) {
+        setCustomVhost(customVhostResponse.data)
+        setCustomVhostEnabled(customVhostResponse.data.enabled)
+        setCustomVhostContent(customVhostResponse.data.content)
+      }
     }).catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
   }
-  useEffect(load, [id])
+  useEffect(load, [id, isAdmin])
 
   async function saveBackend(newBackend: string) {
     if (newBackend === backend || backendChanging) return
@@ -134,6 +151,27 @@ export default function DomainWebServerPage() {
       setError(apiError(error, 'Could not save settings'))
     } finally {
       setProcessing(false)
+    }
+  }
+
+  async function saveCustomVhost() {
+    if (!isAdmin) return
+    setCustomVhostChanging(true); setError(null); setSuccess(null)
+    try {
+      const response = await api.put<CustomVhostResponse>(`/domains/${id}/custom-vhost`, {
+        enabled: customVhostEnabled,
+        content: customVhostContent,
+      })
+      setCustomVhost(response.data)
+      setCustomVhostEnabled(response.data.enabled)
+      setCustomVhostContent(response.data.content)
+      setSuccess(response.data.enabled ? '✓ Custom vhost applied and nginx reloaded' : '✓ Managed vhost restored and nginx reloaded')
+      setTimeout(() => setSuccess(null), 4000)
+    } catch (error) {
+      setError(apiError(error, 'Could not save custom vhost'))
+      throw error
+    } finally {
+      setCustomVhostChanging(false)
     }
   }
 
@@ -341,6 +379,51 @@ export default function DomainWebServerPage() {
             </div>
           </Card>
 
+          {isAdmin && (
+            <Card title="Raw Custom nginx Vhost">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-500">
+                      This advanced mode replaces the generated domain vhost with raw nginx configuration. Use it only for administrator-managed overrides.
+                    </p>
+                    {customVhost && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Current mode: {customVhost.enabled ? 'custom raw vhost' : 'managed vhost'}</p>}
+                  </div>
+                  {customVhostChanging && <span className="text-xs text-slate-400 dark:text-slate-500">Applying…</span>}
+                </div>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={customVhostEnabled}
+                    onChange={event => setCustomVhostEnabled(event.target.checked)}
+                    className="mt-1 cursor-pointer"
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Enable raw custom vhost</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-500">When enabled, Servika writes this content directly to the domain nginx vhost file after validation.</div>
+                  </div>
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCustomVhostEditorOpen(true)}
+                    className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                  >
+                    Edit Raw Vhost
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveCustomVhost}
+                    disabled={customVhostChanging}
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-900 text-white dark:bg-white dark:text-slate-900 disabled:opacity-50"
+                  >
+                    {customVhostChanging ? 'Applying…' : 'Save Custom Vhost'}
+                  </button>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {/* Additional directives */}
           <Card title="Additional nginx Directives">
             <p className="text-xs text-slate-500 dark:text-slate-500 mb-2">
@@ -364,10 +447,18 @@ export default function DomainWebServerPage() {
           </div>
         </>
       )}
+      {customVhostEditorOpen && (
+        <CodeEditor
+          path={`${response?.domain_name || 'domain'}.conf`}
+          content={customVhostContent}
+          onChange={setCustomVhostContent}
+          onSave={saveCustomVhost}
+          onClose={() => setCustomVhostEditorOpen(false)}
+        />
+      )}
     </div>
   )
 }
-
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-4">

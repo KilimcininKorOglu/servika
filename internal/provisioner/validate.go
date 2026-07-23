@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const maxNginxValidationMessage = 4000
+
 // ValidateNginxDirectives validates custom nginx directives entered at the plan or domain level
 // without disrupting the live configuration:
 //   - It embeds the directives in a temporary server{} block under /etc/nginx/conf.d.
@@ -58,15 +60,55 @@ server {
 
 	out, err := exec.Command("nginx", "-t").CombinedOutput()
 	if err != nil {
-		msg := strings.TrimSpace(string(out))
-		// Simplify the temporary file path in the user-facing message.
-		msg = strings.ReplaceAll(msg, finalPath, "(directives)")
-		if msg == "" {
-			msg = err.Error()
-		}
-		return fmt.Errorf("%s", msg)
+		return fmt.Errorf("%s", sanitizeNginxValidationMessage(out, finalPath, "(directives)", err))
 	}
 	return nil
+}
+
+// ValidateCustomVhost validates a full raw nginx vhost before it is persisted and activated.
+func ValidateCustomVhost(content string) error {
+	c := strings.TrimSpace(content)
+	if c == "" {
+		return fmt.Errorf("custom vhost content cannot be empty")
+	}
+
+	tmp, err := os.CreateTemp("/etc/nginx/conf.d", "_customvhost_validate_*.conf.tmp")
+	if err != nil {
+		return fmt.Errorf("temporary validation file could not be created")
+	}
+	tmpPath := tmp.Name()
+	finalPath := strings.TrimSuffix(tmpPath, ".tmp")
+
+	if _, err := tmp.WriteString(c + "\n"); err != nil {
+		_ = tmp.Close()
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("temporary validation file could not be written")
+	}
+	_ = tmp.Close()
+
+	if err := os.Rename(tmpPath, finalPath); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("temporary validation file could not be prepared")
+	}
+	defer func() { _ = os.Remove(finalPath) }()
+
+	out, err := exec.Command("nginx", "-t").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s", sanitizeNginxValidationMessage(out, finalPath, "(custom vhost)", err))
+	}
+	return nil
+}
+
+func sanitizeNginxValidationMessage(output []byte, path, label string, fallback error) string {
+	message := strings.TrimSpace(string(output))
+	message = strings.ReplaceAll(message, path, label)
+	if message == "" && fallback != nil {
+		message = fallback.Error()
+	}
+	if len(message) > maxNginxValidationMessage {
+		message = message[:maxNginxValidationMessage] + "..."
+	}
+	return message
 }
 
 var forbiddenNginxDirectives = map[string]bool{
@@ -82,7 +124,7 @@ var forbiddenNginxDirectives = map[string]bool{
 // DangerousNginxDirective returns the first forbidden custom directive name.
 func DangerousNginxDirective(directives string) string {
 	var uncommented strings.Builder
-	for _, line := range strings.Split(directives, "\n") {
+	for line := range strings.SplitSeq(directives, "\n") {
 		if index := strings.IndexByte(line, '#'); index >= 0 {
 			line = line[:index]
 		}
@@ -91,7 +133,7 @@ func DangerousNginxDirective(directives string) string {
 	}
 
 	replacer := strings.NewReplacer("{", "\n", "}", "\n", ";", "\n")
-	for _, statement := range strings.Split(replacer.Replace(uncommented.String()), "\n") {
+	for statement := range strings.SplitSeq(replacer.Replace(uncommented.String()), "\n") {
 		fields := strings.Fields(statement)
 		if len(fields) == 0 {
 			continue

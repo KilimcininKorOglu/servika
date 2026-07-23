@@ -386,6 +386,8 @@ func main() {
 				r.With(middleware.CustomerScope).Put("/domains/{id}/waf", wafH.Save)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/nginx-settings", nginxsetH.Show)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/nginx-settings", nginxsetH.Save)
+				r.With(middleware.AdminOnly).Get("/domains/{id}/custom-vhost", nginxsetH.ShowCustomVhost)
+				r.With(middleware.AdminOnly).Put("/domains/{id}/custom-vhost", nginxsetH.SaveCustomVhost)
 				r.With(middleware.AdminOnly).Get("/php-extensions", phpExtH.List)
 				r.With(middleware.AdminOnly).Put("/php-extensions/toggle", phpExtH.Toggle)
 				r.With(middleware.AdminOnly).Post("/php-extensions/pecl-install", phpExtH.PECLInstall)

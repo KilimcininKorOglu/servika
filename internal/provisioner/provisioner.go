@@ -885,6 +885,9 @@ type VhostOpts struct {
 	// User-provided extra directives.
 	ExtraDirectives string
 
+	// Full raw custom vhost, enabled only for administrator-managed domains.
+	CustomVhostContent string
+
 	// Web server backend: "php-fpm" by default, "apache", or "static".
 	Backend string
 
@@ -987,7 +990,10 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 		tmpl = suspendedVhostTmpl
 	}
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, opts); err != nil {
+	if opts.CustomVhostContent != "" && !opts.Suspended {
+		buf.WriteString(strings.TrimSpace(opts.CustomVhostContent))
+		buf.WriteByte('\n')
+	} else if err := tmpl.Execute(&buf, opts); err != nil {
 		return fmt.Errorf("template render: %w", err)
 	}
 	cfgPath := "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
@@ -1552,13 +1558,15 @@ func ApplyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string) 
 }
 
 func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, certPathOverride, keyPathOverride *string) error {
-	var domainName, systemUser, certPath, keyPath, sslSource, backend, webRoot string
-	var suspended int
+	var domainName, systemUser, certPath, keyPath, sslSource, backend, webRoot, customVhostContent string
+	var suspended, customVhostEnabled int
 	if err := db.QueryRow(
 		`SELECT domain_name, system_user, COALESCE(cert_path,''), COALESCE(key_path,''), COALESCE(ssl_source,''),
-		        COALESCE(web_backend,'php-fpm'), COALESCE(web_root,''), COALESCE(suspended,0)
+		        COALESCE(web_backend,'php-fpm'), COALESCE(web_root,''), COALESCE(suspended,0),
+		        COALESCE(custom_vhost_enabled,0), COALESCE(custom_vhost_content,'')
 		 FROM domains WHERE id=?`, domainID).
-		Scan(&domainName, &systemUser, &certPath, &keyPath, &sslSource, &backend, &webRoot, &suspended); err != nil {
+		Scan(&domainName, &systemUser, &certPath, &keyPath, &sslSource, &backend, &webRoot, &suspended,
+			&customVhostEnabled, &customVhostContent); err != nil {
 		return fmt.Errorf("read domain details: %w", err)
 	}
 	if certPathOverride != nil && keyPathOverride != nil {
@@ -1583,6 +1591,9 @@ func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, 
 		HdrXContentType: true, HdrXXSS: true, HdrReferrer: true,
 		HdrPermissions: true, HdrCSPUpgrade: true, HdrHSTS: true,
 		HSTSMaxAge: 31536000, HSTSSubdomains: true, HSTSPreload: false,
+	}
+	if customVhostEnabled == 1 {
+		opts.CustomVhostContent = customVhostContent
 	}
 	// Disable FastCGI cache and enable a 30-day browser cache by default.
 	opts.FastCgiCache = false

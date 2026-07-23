@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -119,6 +120,99 @@ func Save(ctx context.Context, db *sql.DB, domainID int64, s Settings) error {
 // Handlers provides HTTP handlers for nginx settings.
 type Handlers struct {
 	DB *sql.DB
+}
+
+type customVhostResponse struct {
+	Enabled    bool   `json:"enabled"`
+	Content    string `json:"content"`
+	DomainName string `json:"domain_name"`
+}
+
+type setCustomVhostRequest struct {
+	Enabled bool   `json:"enabled"`
+	Content string `json:"content"`
+}
+
+// ShowCustomVhost returns the raw custom vhost settings for a domain.
+func (h *Handlers) ShowCustomVhost(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	var domainName string
+	var enabled int
+	var content string
+	err := h.DB.QueryRowContext(r.Context(),
+		`SELECT domain_name, COALESCE(custom_vhost_enabled,0), COALESCE(custom_vhost_content,'') FROM domains WHERE id=?`, id).
+		Scan(&domainName, &enabled, &content)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to load custom vhost")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, customVhostResponse{
+		Enabled:    enabled == 1,
+		Content:    content,
+		DomainName: domainName,
+	})
+}
+
+// SaveCustomVhost persists and applies the raw custom vhost for a domain.
+func (h *Handlers) SaveCustomVhost(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	var req setCustomVhostRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	var previousEnabled int
+	var previousContent, domainName, systemUser, phpVersion string
+	err := h.DB.QueryRowContext(r.Context(),
+		`SELECT domain_name, system_user, php_version, COALESCE(custom_vhost_enabled,0), COALESCE(custom_vhost_content,'') FROM domains WHERE id=?`, id).
+		Scan(&domainName, &systemUser, &phpVersion, &previousEnabled, &previousContent)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to load domain")
+		return
+	}
+
+	if req.Enabled {
+		if err := provisioner.ValidateCustomVhost(req.Content); err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, "invalid custom vhost: "+err.Error())
+			return
+		}
+	}
+
+	if _, err := h.DB.ExecContext(r.Context(),
+		`UPDATE domains SET custom_vhost_enabled=?, custom_vhost_content=? WHERE id=?`,
+		b2i(req.Enabled), req.Content, id); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to save custom vhost")
+		return
+	}
+
+	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)
+	if err != nil {
+		socket = "/run/php-fpm/" + systemUser + ".sock"
+	}
+	if err := provisioner.ApplyVhostForDomain(h.DB, id, socket, phpVersion); err != nil {
+		if _, rollbackErr := h.DB.ExecContext(r.Context(),
+			`UPDATE domains SET custom_vhost_enabled=?, custom_vhost_content=? WHERE id=?`,
+			previousEnabled, previousContent, id); rollbackErr != nil {
+			log.Printf("custom vhost rollback failed for domain %d: %v", id, rollbackErr)
+		}
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to apply custom vhost")
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, customVhostResponse{
+		Enabled:    req.Enabled,
+		Content:    req.Content,
+		DomainName: domainName,
+	})
 }
 
 // Show returns nginx settings for a domain.
