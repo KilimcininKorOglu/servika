@@ -120,7 +120,7 @@ func runOneBackup(db *sql.DB, d dueDomain) error {
 		return fmt.Errorf("unsafe system user: %s", d.SystemUser)
 	}
 	stamp := time.Now().UTC().Format("20060102-150405")
-	dir := filepath.Join(BackupRoot, d.SystemUser)
+	dir := filepath.Join(backupRoot(), d.SystemUser)
 	_ = os.MkdirAll(dir, 0700)
 	file := fmt.Sprintf("%s-auto-%s.tar.gz", d.SystemUser, stamp)
 	abs := filepath.Join(dir, file)
@@ -191,7 +191,7 @@ func pruneOld(db *sql.DB, domainID int64, systemUser string, retention int) erro
 	old := all[retention:]
 	sort.Slice(old, func(i, j int) bool { return old[i].ID < old[j].ID })
 	for _, it := range old {
-		path := filepath.Join(BackupRoot, systemUser, it.File)
+		path := filepath.Join(backupRoot(), systemUser, it.File)
 		_ = os.Remove(path)
 		_, _ = db.Exec(`DELETE FROM backups WHERE id=?`, it.ID)
 	}

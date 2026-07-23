@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 	"servika/internal/phpversion"
 )
@@ -33,10 +34,10 @@ func Versions() []Version {
 		}
 		seen[ds.Version] = true
 		iniDir := "/etc/php.d"
-		peclBin := "/usr/bin/pecl"
+		peclBin := config.PECLBin()
 		if ds.Resource == "remi" {
 			iniDir = "/etc/opt/remi/php" + ds.Code + "/php.d"
-			peclBin = "/opt/remi/php" + ds.Code + "/root/usr/bin/pecl"
+			peclBin = filepath.Join(config.RemiPECLRoot(), "php"+ds.Code, "root/usr/bin/pecl")
 		}
 		out = append(out, Version{
 			Version: ds.Version,

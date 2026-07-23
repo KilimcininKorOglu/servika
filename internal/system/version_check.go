@@ -14,15 +14,13 @@ import (
 	"sync"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 )
 
 const (
-	versionEndpointDefault = "https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/version.json"
-	installationIDPath     = "/etc/servika/installation-id"
-	versionCachePath       = "/opt/servika/version-cache.json"
-	versionCheckPeriod     = 24 * time.Hour
-	versionBodyLimit       = 64 << 10
+	versionCheckPeriod = 24 * time.Hour
+	versionBodyLimit   = 64 << 10
 )
 
 // VersionManifest is the public update and announcement manifest schema.
@@ -53,10 +51,7 @@ func versionCheckEnabled() bool {
 }
 
 func versionEndpoint() string {
-	if value := strings.TrimSpace(os.Getenv("SERVIKA_VERSION_ENDPOINT")); value != "" {
-		return value
-	}
-	return versionEndpointDefault
+	return config.VersionEndpoint()
 }
 
 func versionRequestURL() string {
@@ -79,7 +74,8 @@ func versionRequestURLFor(rawEndpoint, installationID, current string) string {
 
 // InstallationID returns a persistent anonymous installation identifier.
 func InstallationID() string {
-	if content, err := os.ReadFile(installationIDPath); err == nil {
+	path := config.InstallationIDPath()
+	if content, err := os.ReadFile(path); err == nil {
 		if value := strings.TrimSpace(string(content)); len(value) >= 16 {
 			return value
 		}
@@ -90,8 +86,8 @@ func InstallationID() string {
 		return ""
 	}
 	id := hex.EncodeToString(raw)
-	_ = os.MkdirAll(filepath.Dir(installationIDPath), 0o755)
-	_ = os.WriteFile(installationIDPath, []byte(id+"\n"), 0o600)
+	_ = os.MkdirAll(filepath.Dir(path), 0o755)
+	_ = os.WriteFile(path, []byte(id+"\n"), 0o600)
 	return id
 }
 
@@ -192,12 +188,13 @@ func saveVersionCache() {
 	if err != nil {
 		return
 	}
-	_ = os.MkdirAll(filepath.Dir(versionCachePath), 0o755)
-	_ = os.WriteFile(versionCachePath, content, 0o644)
+	path := config.VersionCachePath()
+	_ = os.MkdirAll(filepath.Dir(path), 0o755)
+	_ = os.WriteFile(path, content, 0o644)
 }
 
 func loadVersionCache() {
-	content, err := os.ReadFile(versionCachePath)
+	content, err := os.ReadFile(config.VersionCachePath())
 	if err != nil {
 		return
 	}

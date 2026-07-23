@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -36,7 +37,11 @@ func adminPass() string { return os.Getenv("SERVIKA_REDIS_ADMIN_PASS") }
 // cli runs valkey-cli with the admin password in REDISCLI_AUTH rather than argv.
 func cli(args ...string) (string, error) {
 	cmd := exec.Command("valkey-cli", args...)
-	cmd.Env = append(os.Environ(), "REDISCLI_AUTH="+adminPass())
+	cmd.Env = []string{
+		"REDISCLI_AUTH=" + adminPass(),
+		"LANG=C",
+		"LC_ALL=C",
+	}
 	out, err := cmd.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
 }
@@ -70,11 +75,11 @@ func disableUser(systemUser string) {
 
 // ---- Automatic WordPress connection through wp-cli as the domain user ----
 
-const wpBin = "/usr/local/bin/wp"
+func wpBin() string { return config.WPCLIBin() }
 
 func runWPCommand(systemUser string, args ...string) ([]byte, error) {
 	full := append([]string{"-u", systemUser, "--", "env", "HOME=/home/" + systemUser,
-		"/usr/bin/php", "-d", "memory_limit=512M", wpBin}, args...)
+		"/usr/bin/php", "-d", "memory_limit=512M", wpBin()}, args...)
 	return exec.Command("runuser", full...).CombinedOutput()
 }
 

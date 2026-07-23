@@ -47,7 +47,7 @@ func TestManagedCacheZoneMatchesVhostUsage(t *testing.T) {
 	if usage := "fastcgi_cache " + cacheZoneName + ";"; !strings.Contains(rendered.String(), usage) {
 		t.Fatalf("vhost does not use managed cache zone %q", cacheZoneName)
 	}
-	if definition := "keys_zone=" + cacheZoneName + ":"; !strings.Contains(cacheZoneBody, definition) {
+	if definition := "keys_zone=" + cacheZoneName + ":"; !strings.Contains(cacheZoneBody(), definition) {
 		t.Fatalf("managed configuration does not define cache zone %q", cacheZoneName)
 	}
 }
@@ -176,7 +176,7 @@ func TestPMASignonAssetMatchesStartupRepairContent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read phpMyAdmin signon asset: %v", err)
 	}
-	if string(asset) != pmaSignonPHP {
+	if string(asset) != pmaSignonPHP() {
 		t.Fatal("phpMyAdmin signon asset differs from startup repair content")
 	}
 }

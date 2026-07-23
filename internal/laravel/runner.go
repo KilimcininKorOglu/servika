@@ -14,21 +14,24 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"servika/internal/config"
 )
 
 const (
-	composerBin  = "/usr/local/bin/composer"
 	outputLimit  = 64 << 10
 	shortTimeout = 120 * time.Second
 	systemPath   = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 	cronDir      = "/etc/cron.d"
 	logSubdir    = "logs"
-	logRootDir   = "/var/log/servika-laravel"
 )
+
+func composerBin() string { return config.ComposerBin() }
+func logRootDir() string  { return config.LaravelLogDir() }
 
 const badURLChars = "\"'`$();|&<>\\"
 
-func ensureLogRoot() { _ = os.MkdirAll(logRootDir, 0755) }
+func ensureLogRoot() { _ = os.MkdirAll(logRootDir(), 0755) }
 
 var execSem sync.Map
 

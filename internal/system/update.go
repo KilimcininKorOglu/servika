@@ -6,18 +6,21 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 )
 
-const (
-	updateScript  = "/usr/local/bin/servika-update"
-	updateRawURL  = "https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update"
-	updateLogPath = "/opt/servika/logs/update.log"
-	updateUnit    = "servika-update"
-)
+const updateUnit = "servika-update"
+
+func updateScript() string { return config.OpsTool("servika-update") }
+
+func updateRawURL() string { return config.UpdateBootstrapURL() }
+
+func updateLogPath() string { return config.UpdateLog() }
 
 func updateRunning() bool {
 	output, _ := exec.Command("systemctl", "is-active", updateUnit).CombinedOutput()
@@ -27,7 +30,7 @@ func updateRunning() bool {
 
 // UpdateStatus reports whether the update tool exists and an update is running.
 func UpdateStatus(w http.ResponseWriter, _ *http.Request) {
-	_, statError := os.Stat(updateScript)
+	_, statError := os.Stat(updateScript())
 	running := updateRunning()
 	status := "idle"
 	if running {
@@ -41,8 +44,9 @@ func UpdateStatus(w http.ResponseWriter, _ *http.Request) {
 }
 
 func downloadUpdateTool() error {
+	scriptPath := updateScript()
 	client := &http.Client{Timeout: 30 * time.Second}
-	response, err := client.Get(updateRawURL)
+	response, err := client.Get(updateRawURL())
 	if err != nil {
 		return fmt.Errorf("download update tool: %w", err)
 	}
@@ -58,7 +62,7 @@ func downloadUpdateTool() error {
 		return fmt.Errorf("download update tool: unexpected content")
 	}
 
-	temporaryPath := updateScript + ".tmp"
+	temporaryPath := scriptPath + ".tmp"
 	if err := os.WriteFile(temporaryPath, body, 0o755); err != nil {
 		return fmt.Errorf("write update tool: %w", err)
 	}
@@ -66,7 +70,7 @@ func downloadUpdateTool() error {
 		_ = os.Remove(temporaryPath)
 		return fmt.Errorf("make update tool executable: %w", err)
 	}
-	if err := os.Rename(temporaryPath, updateScript); err != nil {
+	if err := os.Rename(temporaryPath, scriptPath); err != nil {
 		_ = os.Remove(temporaryPath)
 		return fmt.Errorf("install update tool: %w", err)
 	}
@@ -81,7 +85,7 @@ func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	toolDownloaded := false
-	if _, err := os.Stat(updateScript); err != nil {
+	if _, err := os.Stat(updateScript()); err != nil {
 		if err := downloadUpdateTool(); err != nil {
 			httpx.WriteError(w, http.StatusBadGateway, "the update tool could not be downloaded")
 			return
@@ -89,7 +93,8 @@ func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 		toolDownloaded = true
 	}
 
-	if err := os.MkdirAll("/opt/servika/logs", 0o750); err != nil {
+	logPath := updateLogPath()
+	if err := os.MkdirAll(filepath.Dir(logPath), 0o750); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "the update log could not be prepared")
 		return
 	}
@@ -97,7 +102,7 @@ func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 	if toolDownloaded {
 		logHeader += "(The missing update tool was downloaded.)\n"
 	}
-	if err := os.WriteFile(updateLogPath, []byte(logHeader), 0o640); err != nil {
+	if err := os.WriteFile(logPath, []byte(logHeader), 0o640); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "the update log could not be prepared")
 		return
 	}
@@ -106,7 +111,7 @@ func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 		"--collect",
 		"--unit", updateUnit,
 		"--description", "Servika update",
-		"/bin/bash", "-lc", fmt.Sprintf("%s >>%s 2>&1", updateScript, updateLogPath))
+		"/bin/bash", "-lc", fmt.Sprintf("%s >>%s 2>&1", config.ShellQuote(updateScript()), config.ShellQuote(logPath)))
 	if _, err := command.CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "the update could not be started")
 		return
@@ -119,7 +124,7 @@ func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 
 // UpdateLog returns the tail of the update log and the normalized execution state.
 func UpdateLog(w http.ResponseWriter, _ *http.Request) {
-	body, err := os.ReadFile(updateLogPath)
+	body, err := os.ReadFile(updateLogPath())
 	if err != nil {
 		body = nil
 	}

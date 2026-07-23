@@ -15,13 +15,14 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
 )
 
-// BackupRoot is the root directory for domain backup archives.
-const BackupRoot = "/var/backups/servika"
+// backupRoot returns the root directory for domain backup archives.
+func backupRoot() string { return config.BackupRoot() }
 
 var systemUserPattern = regexp.MustCompile(`^c_[A-Za-z0-9_]+$`)
 
@@ -35,8 +36,8 @@ func RemoveDomainBackups(systemUser string) error {
 	if !validSystemUser(systemUser) {
 		return fmt.Errorf("invalid system user: %q", systemUser)
 	}
-	dir := filepath.Join(BackupRoot, systemUser)
-	if dir == BackupRoot || !strings.HasPrefix(dir, BackupRoot+"/") {
+	dir := filepath.Join(backupRoot(), systemUser)
+	if dir == backupRoot() || !strings.HasPrefix(dir, backupRoot()+"/") {
 		return fmt.Errorf("unsafe backup path: %q", dir)
 	}
 	return os.RemoveAll(dir)
@@ -118,7 +119,7 @@ func (h *Handlers) Summary(w http.ResponseWriter, r *http.Request) {
 		}
 		s := SummaryRow{DomainID: id, DomainName: domainName}
 		var latestModification time.Time
-		if entries, e := os.ReadDir(filepath.Join(BackupRoot, systemUser)); e == nil {
+		if entries, e := os.ReadDir(filepath.Join(backupRoot(), systemUser)); e == nil {
 			for _, en := range entries {
 				if en.IsDir() || !strings.HasSuffix(en.Name(), ".tar.gz") {
 					continue
@@ -174,7 +175,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	stamp := time.Now().UTC().Format("20060102-150405")
-	dir := filepath.Join(BackupRoot, systemUser)
+	dir := filepath.Join(backupRoot(), systemUser)
 	_ = os.MkdirAll(dir, 0700)
 	file := fmt.Sprintf("%s-%s.tar.gz", systemUser, stamp)
 	abs := filepath.Join(dir, file)
@@ -238,7 +239,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err == nil {
-		_ = os.Remove(filepath.Join(BackupRoot, systemUser, file))
+		_ = os.Remove(filepath.Join(backupRoot(), systemUser, file))
 	}
 	_, _ = h.DB.ExecContext(r.Context(), `DELETE FROM backups WHERE id=?`, backupID)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
@@ -257,7 +258,7 @@ func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "backup not found")
 		return
 	}
-	abs := filepath.Join(BackupRoot, systemUser, file)
+	abs := filepath.Join(backupRoot(), systemUser, file)
 	f, err := os.Open(abs)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")

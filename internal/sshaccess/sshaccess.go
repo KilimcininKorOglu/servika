@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 
+	"servika/internal/config"
 	"servika/internal/credentials"
 	"servika/internal/httpx"
 
@@ -27,6 +28,8 @@ const (
 	disabledShell = "/usr/sbin/nologin"
 	sshPort       = 22
 )
+
+func servikaJailBin() string { return config.OpsTool("servika-jail") }
 
 // Handlers provides HTTP handlers for per-domain SSH access.
 type Handlers struct {
@@ -142,13 +145,13 @@ func (h *Handlers) Configure(w http.ResponseWriter, r *http.Request) {
 		// Synchronize the SSH password with the FTP password.
 		_ = credentials.SyncSSHPassword(h.DB, systemUser)
 		// Configure the chroot jail and add the user to the restricted SSH access group.
-		_ = exec.Command("/usr/local/bin/servika-jail", "setup", systemUser).Run()
+		_ = exec.Command(servikaJailBin(), "setup", systemUser).Run()
 		_ = exec.Command("groupadd", "-f", "servika-ssh").Run()
 		_ = exec.Command("gpasswd", "-a", systemUser, "servika-ssh").Run()
 	} else {
 		// When disabling SSH, remove the group membership and jail, then lock the password.
 		_ = exec.Command("gpasswd", "-d", systemUser, "servika-ssh").Run()
-		_ = exec.Command("/usr/local/bin/servika-jail", "teardown", systemUser).Run()
+		_ = exec.Command(servikaJailBin(), "teardown", systemUser).Run()
 		_ = credentials.LockSSHPassword(systemUser)
 	}
 	if _, err := h.DB.ExecContext(r.Context(),
@@ -186,7 +189,7 @@ func (h *Handlers) SaveKey(w http.ResponseWriter, r *http.Request) {
 	key := strings.TrimSpace(req.Key)
 	// Each non-comment line must start with ssh-, ecdsa-, or sk-. Empty input clears all keys.
 	if key != "" {
-		for _, line := range strings.Split(key, "\n") {
+		for line := range strings.SplitSeq(key, "\n") {
 			l := strings.TrimSpace(line)
 			if l == "" || strings.HasPrefix(l, "#") {
 				continue
@@ -232,8 +235,8 @@ func EnsureInfra() {
 	const srcDir = "/opt/servika/src/scripts"
 	// Install the jail script.
 	if data, err := os.ReadFile(srcDir + "/servika-jail"); err == nil {
-		if e := os.WriteFile("/usr/local/bin/servika-jail", data, 0o755); e == nil {
-			_ = os.Chmod("/usr/local/bin/servika-jail", 0o755)
+		if e := os.WriteFile(servikaJailBin(), data, 0o755); e == nil {
+			_ = os.Chmod(servikaJailBin(), 0o755)
 		}
 	}
 	// Create the restricted SSH access group.

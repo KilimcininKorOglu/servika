@@ -35,10 +35,15 @@ panel_db_password() {
 }
 
 load_servika_env
+BACKUP_ROOT="${SERVIKA_BACKUP_ROOT:-/var/backups/servika}"
+case "$BACKUP_ROOT" in
+  /*) ;;
+  *) logger -t servika-backup "SERVIKA_BACKUP_ROOT must be an absolute path: $BACKUP_ROOT"; exit 1 ;;
+esac
 DB_PASS=$(panel_db_password) || exit 0
 [ -z "$DB_PASS" ] && exit 0
 
-find /var/backups/servika -type f -name '*.tar.gz' -mtime +14 -delete 2>/dev/null
+find "$BACKUP_ROOT" -type f -name '*.tar.gz' -mtime +14 -delete 2>/dev/null
 
 mysql -h 127.0.0.1 -u panel -p"$DB_PASS" panel --batch --raw --skip-column-names -e \
   "SELECT id, domain_name, system_user FROM domains WHERE is_demo=0" 2>/dev/null | \
@@ -46,7 +51,7 @@ while IFS=$'\t' read -r id domain_name system_user; do
   [[ "$id" =~ ^[0-9]+$ ]] || continue
   [[ "$system_user" =~ ^[a-z0-9_]{1,32}$ ]] || continue
   STAMP=$(date -u +%Y%m%d-%H%M%S)
-  DIR="/var/backups/servika/$system_user"
+  DIR="$BACKUP_ROOT/$system_user"
   mkdir -p "$DIR"; chmod 700 "$DIR"
   FILE="${system_user}-${STAMP}-scheduled.tar.gz"
   DB_NAME="${system_user}_main"

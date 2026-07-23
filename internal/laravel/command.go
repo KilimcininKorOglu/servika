@@ -91,7 +91,7 @@ func (h *Handlers) Composer(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusForbidden, "composer cannot be run for demo subscriptions")
 		return
 	}
-	if _, err := os.Stat(composerBin); err != nil {
+	if _, err := os.Stat(composerBin()); err != nil {
 		httpx.WriteError(w, http.StatusServiceUnavailable, "composer is not installed")
 		return
 	}
@@ -112,7 +112,7 @@ func (h *Handlers) Composer(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid application directory")
 		return
 	}
-	argv := []string{composerBin, req.Command, "--no-interaction", "--no-ansi", "-d", appDir}
+	argv := []string{composerBin(), req.Command, "--no-interaction", "--no-ansi", "-d", appDir}
 	if req.Command == "install" || req.Command == "update" {
 		argv = append(argv, "--prefer-dist")
 	}

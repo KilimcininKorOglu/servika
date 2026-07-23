@@ -58,7 +58,7 @@ func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	abs := filepath.Join(BackupRoot, systemUser, file)
+	abs := filepath.Join(backupRoot(), systemUser, file)
 	archiveType := archivex.DetectType(abs)
 	if archiveType == archivex.TypeUnknown || archiveType == archivex.TypeRAR {
 		httpx.WriteError(w, http.StatusBadRequest, "unsupported backup archive")

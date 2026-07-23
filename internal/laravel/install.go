@@ -15,7 +15,7 @@ import (
 )
 
 func setupUnit(id int64) string       { return fmt.Sprintf("servika-laravel-install-%d", id) }
-func setupLog(id int64) string        { return fmt.Sprintf("%s/install-%d.log", logRootDir, id) }
+func setupLog(id int64) string        { return fmt.Sprintf("%s/install-%d.log", logRootDir(), id) }
 func setupScriptPath(id int64) string { return fmt.Sprintf("/run/servika-laravel-install-%d.sh", id) }
 
 func mkdirTenant(systemUser, dir string) error {
@@ -148,7 +148,7 @@ func detachedInstall(id int64, systemUser, appDir, logPath, script string) error
 }
 
 func scaffoldInstallScript(appDir, php, tmp string) string {
-	cp := php + " " + composerBin + " create-project --no-interaction --prefer-dist"
+	cp := php + " " + shellQuote(composerBin()) + " create-project --no-interaction --prefer-dist"
 	return "#!/bin/bash\nset -e\n" +
 		"DEST=" + shellQuote(appDir) + "\nTMP=" + shellQuote(tmp) + "\n" +
 		"if [ -z \"$(ls -A \"$DEST\" 2>/dev/null)\" ]; then\n" +
@@ -174,7 +174,7 @@ func remoteInstallScript(appDir, repoURL, branch, php, tmp string) string {
 		"rm -rf \"$TMP\"\n" +
 		"cd \"$DEST\"\n" +
 		"[ -f .env ] || { [ -f .env.example ] && cp .env.example .env; }\n" +
-		php + " " + composerBin + " install --no-interaction --prefer-dist || true\n" +
+		php + " " + shellQuote(composerBin()) + " install --no-interaction --prefer-dist || true\n" +
 		"[ -f artisan ] && " + php + " artisan key:generate --force || true\n"
 }
 

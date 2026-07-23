@@ -40,11 +40,16 @@ if ! [[ "$SYSTEM_USER" =~ ^[a-z0-9_]{1,32}$ ]]; then echo "invalid user name: $S
 [ "$(id -u)" = 0 ] || { echo "root is required"; exit 1; }
 load_servika_env
 ADMIN=${SERVIKA_REDIS_ADMIN_PASS:-}
+WPCLI_BIN="${SERVIKA_WPCLI_BIN:-/usr/local/bin/wp}"
+case "$WPCLI_BIN" in
+  /*) ;;
+  *) echo "SERVIKA_WPCLI_BIN must be an absolute path: $WPCLI_BIN"; exit 1 ;;
+esac
 [ -z "$ADMIN" ] && { echo "SERVIKA_REDIS_ADMIN_PASS is absent; run servika-redis-setup first"; exit 1; }
 id "$SYSTEM_USER" >/dev/null 2>&1 || { echo "system user not found: $SYSTEM_USER"; exit 1; }
 
 vc(){ REDISCLI_AUTH="$ADMIN" valkey-cli "$@"; }
-wpc(){ runuser -u "$SYSTEM_USER" -- env HOME="/home/$SYSTEM_USER" /usr/bin/php -d memory_limit=512M /usr/local/bin/wp "$@"; }
+wpc(){ runuser -u "$SYSTEM_USER" -- env HOME="/home/$SYSTEM_USER" /usr/bin/php -d memory_limit=512M "$WPCLI_BIN" "$@"; }
 say(){ printf '  %s\n' "$*"; }
 
 # Resolve domain_id for the panel database record.

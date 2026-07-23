@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
 
@@ -34,9 +35,9 @@ func randomHex(n int) (string, error) {
 }
 
 // internalAuthToken returns the static token used by signon.php to call the panel.
-// It reads /etc/servika/pma-internal.token and denies access when unavailable.
+// It denies access when the token file is unavailable.
 func internalAuthToken() string {
-	b, err := os.ReadFile("/etc/servika/pma-internal.token")
+	b, err := os.ReadFile(config.PMATokenPath())
 	if err != nil {
 		return ""
 	}

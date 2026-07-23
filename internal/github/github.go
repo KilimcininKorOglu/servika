@@ -16,13 +16,14 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 )
 
-const apiBase = "https://api.github.com"
+func apiBase() string { return config.GitHubAPI() }
 
 type Handlers struct {
 	DB *sql.DB
@@ -83,7 +84,7 @@ func ghCall(ctx context.Context, method, path, token string, body any) ([]byte, 
 		b, _ := json.Marshal(body)
 		rdr = bytes.NewReader(b)
 	}
-	req, err := http.NewRequestWithContext(ctx, method, apiBase+path, rdr)
+	req, err := http.NewRequestWithContext(ctx, method, apiBase()+path, rdr)
 	if err != nil {
 		return nil, 0, err
 	}

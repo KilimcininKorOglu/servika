@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"servika/internal/config"
 )
 
 // ---------------------------------------------------------------------------
@@ -36,7 +38,7 @@ import (
 // for a domain. RSA issuance uses "<domain>", ECC issuance uses "<domain>_ecc"; both
 // are returned as candidates.
 func acmeStoreCandidates(domain string) [][2]string {
-	base := "/root/.acme.sh"
+	base := config.ACMEHome()
 	var out [][2]string
 	for _, d := range []string{
 		filepath.Join(base, domain),

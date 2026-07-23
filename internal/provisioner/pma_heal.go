@@ -10,23 +10,29 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"servika/internal/config"
 )
 
 const (
-	pmaSignonDir  = "/opt/servika/pma-signon"
-	pmaSignonPath = pmaSignonDir + "/pma-signon.php"
-	pmaTokenPath  = "/etc/servika/pma-internal.token"
 	pmaPoolPath   = "/etc/php-fpm.d/phpmyadmin.conf"
-	pmaConfigPath = "/opt/phpmyadmin/config.inc.php"
 	pmaSocketPath = "/var/lib/mysql/mysql.sock"
 )
+
+func pmaSignonDir() string { return config.PMASignonDir() }
+
+func pmaSignonPath() string { return filepath.Join(pmaSignonDir(), "pma-signon.php") }
+
+func pmaTokenPath() string { return config.PMATokenPath() }
+
+func pmaConfigPath() string { return config.PHPMyAdminConfig() }
 
 var (
 	pmaTokenPattern = regexp.MustCompile(`^[a-f0-9]{64}$`)
 	pmaConfigHost   = regexp.MustCompile(`(?m)(\$cfg\['Servers'\]\[\$i\]\['host'\]\s*=\s*)'[^']*';`)
 )
 
-const pmaSignonPHP = `<?php
+const pmaSignonPHPTemplate = `<?php
 /**
  * Exchanges a short-lived Servika token for phpMyAdmin signon credentials.
  */
@@ -42,7 +48,7 @@ if (!preg_match('/^[a-f0-9]{16,128}$/', $token)) {
     exit('Invalid signon token. Open phpMyAdmin from Servika.');
 }
 
-$internalToken = trim((string) @file_get_contents('/etc/servika/pma-internal.token'));
+$internalToken = trim((string) @file_get_contents('{{PMA_TOKEN_PATH}}'));
 if ($internalToken === '') {
     http_response_code(500);
     exit('phpMyAdmin signon is not configured.');
@@ -96,6 +102,15 @@ header('Location: /pma/', true, 302);
 exit;
 `
 
+func pmaSignonPHP() string {
+	return strings.ReplaceAll(pmaSignonPHPTemplate, "{{PMA_TOKEN_PATH}}", addcslashes(pmaTokenPath()))
+}
+
+func addcslashes(value string) string {
+	value = strings.ReplaceAll(value, `\`, `\\`)
+	return strings.ReplaceAll(value, `'`, `\'`)
+}
+
 func ensurePMAStartup() {
 	ensurePMASignon()
 	ensurePMAToken()
@@ -104,26 +119,30 @@ func ensurePMAStartup() {
 }
 
 func ensurePMASignon() {
-	if err := os.MkdirAll(pmaSignonDir, 0755); err != nil {
+	signonDir := pmaSignonDir()
+	signonPath := pmaSignonPath()
+	signonPHP := pmaSignonPHP()
+	if err := os.MkdirAll(signonDir, 0755); err != nil {
 		log.Printf("phpMyAdmin repair: could not create signon directory: %v", err)
 		return
 	}
-	current, err := os.ReadFile(pmaSignonPath)
-	if err == nil && string(current) == pmaSignonPHP {
+	current, err := os.ReadFile(signonPath)
+	if err == nil && string(current) == signonPHP {
 		return
 	}
-	if err := os.WriteFile(pmaSignonPath, []byte(pmaSignonPHP), 0644); err != nil {
+	if err := os.WriteFile(signonPath, []byte(signonPHP), 0644); err != nil {
 		log.Printf("phpMyAdmin repair: could not write signon endpoint: %v", err)
 		return
 	}
-	_, _ = tenantCommand("restorecon", pmaSignonPath).CombinedOutput()
+	_, _ = tenantCommand("restorecon", signonPath).CombinedOutput()
 }
 
 func ensurePMAToken() {
-	current, err := os.ReadFile(pmaTokenPath)
+	tokenPath := pmaTokenPath()
+	current, err := os.ReadFile(tokenPath)
 	token := strings.TrimSpace(string(current))
 	if err != nil || !pmaTokenPattern.MatchString(token) {
-		if err := os.MkdirAll(filepath.Dir(pmaTokenPath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(tokenPath), 0755); err != nil {
 			log.Printf("phpMyAdmin repair: could not create token directory: %v", err)
 			return
 		}
@@ -132,7 +151,7 @@ func ensurePMAToken() {
 			log.Printf("phpMyAdmin repair: could not generate internal token: %v", err)
 			return
 		}
-		if err := os.WriteFile(pmaTokenPath, []byte(hex.EncodeToString(raw)+"\n"), 0600); err != nil {
+		if err := os.WriteFile(tokenPath, []byte(hex.EncodeToString(raw)+"\n"), 0600); err != nil {
 			log.Printf("phpMyAdmin repair: could not write internal token: %v", err)
 			return
 		}
@@ -140,8 +159,8 @@ func ensurePMAToken() {
 
 	group, err := user.LookupGroup("apache")
 	if err != nil {
-		_ = os.Chown(pmaTokenPath, 0, 0)
-		_ = os.Chmod(pmaTokenPath, 0600)
+		_ = os.Chown(tokenPath, 0, 0)
+		_ = os.Chmod(tokenPath, 0600)
 		log.Printf("phpMyAdmin repair: apache group unavailable, internal token remains root-only")
 		return
 	}
@@ -150,11 +169,11 @@ func ensurePMAToken() {
 		log.Printf("phpMyAdmin repair: invalid apache group ID")
 		return
 	}
-	if err := os.Chown(pmaTokenPath, 0, gid); err != nil {
+	if err := os.Chown(tokenPath, 0, gid); err != nil {
 		log.Printf("phpMyAdmin repair: could not set internal token ownership: %v", err)
 		return
 	}
-	if err := os.Chmod(pmaTokenPath, 0640); err != nil {
+	if err := os.Chmod(tokenPath, 0640); err != nil {
 		log.Printf("phpMyAdmin repair: could not set internal token permissions: %v", err)
 	}
 }
@@ -191,7 +210,8 @@ func ensurePMAPoolSocket() {
 }
 
 func ensurePMAConfigHost() {
-	current, err := os.ReadFile(pmaConfigPath)
+	configPath := pmaConfigPath()
+	current, err := os.ReadFile(configPath)
 	if err != nil {
 		return
 	}
@@ -199,7 +219,7 @@ func ensurePMAConfigHost() {
 	if updated == string(current) {
 		return
 	}
-	if err := os.WriteFile(pmaConfigPath, []byte(updated), 0644); err != nil {
+	if err := os.WriteFile(configPath, []byte(updated), 0644); err != nil {
 		log.Printf("phpMyAdmin repair: could not update database host: %v", err)
 	}
 }

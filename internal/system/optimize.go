@@ -6,17 +6,19 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 )
 
-const (
-	optimizeUnit    = "servika-optimize-run"
-	optimizeLogPath = "/opt/servika/logs/optimize.log"
-	optimizeWrapper = "/opt/servika/optimize-run.sh"
-)
+const optimizeUnit = "servika-optimize-run"
+
+func optimizeLogPath() string { return filepath.Join(config.LogDir(), "optimize.log") }
+
+func optimizeWrapper() string { return filepath.Join(config.LogDir(), "optimize-run.sh") }
 
 // optimizeWrapperContent is a FIXED wrapper script. No user input enters argv.
 // dnf/yum -y update + servika-optimize. Each step is idempotent and safe.
@@ -59,11 +61,12 @@ func runOutput(name string, args ...string) string {
 
 // writeOptimizeWrapper atomically writes the wrapper script (0700).
 func writeOptimizeWrapper() error {
-	tmp := optimizeWrapper + ".tmp"
+	wrapper := optimizeWrapper()
+	tmp := wrapper + ".tmp"
 	if err := os.WriteFile(tmp, []byte(optimizeWrapperContent), 0o700); err != nil {
 		return err
 	}
-	return os.Rename(tmp, optimizeWrapper)
+	return os.Rename(tmp, wrapper)
 }
 
 // OptimizeStatus returns GET /system/optimize.
@@ -86,8 +89,14 @@ func OptimizeStart(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to write wrapper: "+err.Error())
 		return
 	}
+	logPath := optimizeLogPath()
+	wrapper := optimizeWrapper()
+	if err := os.MkdirAll(filepath.Dir(logPath), 0o750); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to prepare log directory: "+err.Error())
+		return
+	}
 	header := fmt.Sprintf("=== Optimization started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
-	if err := os.WriteFile(optimizeLogPath, []byte(header), 0o640); err != nil {
+	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to open log: "+err.Error())
 		return
 	}
@@ -96,9 +105,9 @@ func OptimizeStart(w http.ResponseWriter, r *http.Request) {
 		"--collect",
 		"--unit", optimizeUnit,
 		"--description", "Servika server optimization",
-		"-p", "StandardOutput=append:"+optimizeLogPath,
-		"-p", "StandardError=append:"+optimizeLogPath,
-		optimizeWrapper)
+		"-p", "StandardOutput=append:"+logPath,
+		"-p", "StandardError=append:"+logPath,
+		wrapper)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to start: "+strings.TrimSpace(string(out)))
 		return
@@ -108,7 +117,7 @@ func OptimizeStart(w http.ResponseWriter, r *http.Request) {
 
 // OptimizeLog returns GET /system/optimize/log.
 func OptimizeLog(w http.ResponseWriter, r *http.Request) {
-	b, err := os.ReadFile(optimizeLogPath)
+	b, err := os.ReadFile(optimizeLogPath())
 	if err != nil {
 		b = nil
 	}

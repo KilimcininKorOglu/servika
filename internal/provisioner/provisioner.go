@@ -17,6 +17,8 @@ import (
 	"sync"
 	"syscall"
 	"text/template"
+
+	"servika/internal/config"
 )
 
 var (
@@ -28,22 +30,33 @@ var (
 
 const (
 	cacheZoneName          = "servikacache"
-	cacheZoneDir           = "/var/cache/nginx/servikacache"
-	cacheZoneConf          = "/etc/nginx/conf.d/servikacache.conf"
-	cacheZoneTempConf      = "/etc/nginx/conf.d/00-servikacache-temporary.conf"
-	certSystemBaseDir      = "/etc/pki/servika"
 	maxCertificateFileSize = 1 << 20
-	cacheZoneBody          = `# Managed automatically by Servika. DO NOT EDIT.
+	cacheLogFormatName     = "servika_cache_status"
+)
+
+func cacheZoneDir() string { return config.NginxCacheDir() }
+
+func cacheZoneConf() string { return config.NginxCacheConf() }
+
+func cacheZoneTempConf() string { return config.NginxCacheTempConf() }
+
+func certSystemBaseDir() string { return config.CertRoot() }
+
+func cacheZoneBody() string {
+	return `# Managed automatically by Servika. DO NOT EDIT.
 # Vhosts use "fastcgi_cache servikacache"; this file provides the matching zone definition.
-fastcgi_cache_path ` + cacheZoneDir + ` levels=1:2 keys_zone=` + cacheZoneName + `:100m max_size=1g inactive=60m use_temp_path=off;
+fastcgi_cache_path ` + cacheZoneDir() + ` levels=1:2 keys_zone=` + cacheZoneName + `:100m max_size=1g inactive=60m use_temp_path=off;
 `
-	cacheLogFormatName = "servika_cache_status"
-	cacheLogFormatConf = "/etc/nginx/conf.d/00-servika-cache-log.conf"
-	cacheLogFormatBody = `# Managed automatically by Servika. DO NOT EDIT.
+}
+
+func cacheLogFormatConf() string { return config.NginxCacheLogConf() }
+
+func cacheLogFormatBody() string {
+	return `# Managed automatically by Servika. DO NOT EDIT.
 # Provides a minimal log format that records only the upstream cache status for FastCGI cache hit-rate metrics.
 log_format ` + cacheLogFormatName + ` '$upstream_cache_status';
 `
-)
+}
 
 // PublicHTML returns the default tenant document root.
 func PublicHTML(systemUser string) string {
@@ -174,26 +187,30 @@ func healCacheZoneOnStartup() {
 
 func ensureCacheZone() (bool, error) {
 	changed := false
-	if err := os.MkdirAll(cacheZoneDir, 0700); err != nil {
+	zoneDir := cacheZoneDir()
+	zoneConf := cacheZoneConf()
+	tempConf := cacheZoneTempConf()
+	zoneBody := cacheZoneBody()
+	if err := os.MkdirAll(zoneDir, 0700); err != nil {
 		return false, fmt.Errorf("create cache directory: %w", err)
 	}
 	if uid, gid, err := uidGid("nginx"); err == nil {
-		if err := os.Chown(cacheZoneDir, uid, gid); err != nil {
+		if err := os.Chown(zoneDir, uid, gid); err != nil {
 			return false, fmt.Errorf("set cache directory ownership: %w", err)
 		}
 	}
-	_, _ = exec.Command("restorecon", "-R", cacheZoneDir).CombinedOutput()
+	_, _ = exec.Command("restorecon", "-R", zoneDir).CombinedOutput()
 
-	if _, err := os.Stat(cacheZoneTempConf); err == nil {
-		if err := os.Remove(cacheZoneTempConf); err != nil {
+	if _, err := os.Stat(tempConf); err == nil {
+		if err := os.Remove(tempConf); err != nil {
 			return false, fmt.Errorf("remove temporary cache zone configuration: %w", err)
 		}
 		changed = true
 	}
 
 	if cacheZoneDefinedElsewhere() {
-		if _, err := os.Stat(cacheZoneConf); err == nil {
-			if err := os.Remove(cacheZoneConf); err != nil {
+		if _, err := os.Stat(zoneConf); err == nil {
+			if err := os.Remove(zoneConf); err != nil {
 				return false, fmt.Errorf("remove duplicate managed cache zone configuration: %w", err)
 			}
 			changed = true
@@ -201,14 +218,14 @@ func ensureCacheZone() (bool, error) {
 		return changed, nil
 	}
 
-	if current, err := os.ReadFile(cacheZoneConf); err == nil && string(current) == cacheZoneBody {
+	if current, err := os.ReadFile(zoneConf); err == nil && string(current) == zoneBody {
 		// Zone body unchanged; still ensure the log format file exists.
 		return ensureCacheLogFormat(), nil
 	}
-	if err := os.WriteFile(cacheZoneConf, []byte(cacheZoneBody), 0644); err != nil {
+	if err := os.WriteFile(zoneConf, []byte(zoneBody), 0644); err != nil {
 		return false, fmt.Errorf("write cache zone configuration: %w", err)
 	}
-	_, _ = exec.Command("restorecon", cacheZoneConf).CombinedOutput()
+	_, _ = exec.Command("restorecon", zoneConf).CombinedOutput()
 	return ensureCacheLogFormat() || true, nil
 }
 
@@ -216,14 +233,16 @@ func ensureCacheZone() (bool, error) {
 // so that nginx vhosts can reference the servika_cache_status format. The file
 // is prefixed 00- to load before any domain vhost in alphabetical glob order.
 func ensureCacheLogFormat() bool {
-	if current, err := os.ReadFile(cacheLogFormatConf); err == nil && string(current) == cacheLogFormatBody {
+	logFormatConf := cacheLogFormatConf()
+	logFormatBody := cacheLogFormatBody()
+	if current, err := os.ReadFile(logFormatConf); err == nil && string(current) == logFormatBody {
 		return false
 	}
-	if err := os.WriteFile(cacheLogFormatConf, []byte(cacheLogFormatBody), 0644); err != nil {
+	if err := os.WriteFile(logFormatConf, []byte(logFormatBody), 0644); err != nil {
 		log.Printf("servikacache repair: could not write cache log format: %v", err)
 		return false
 	}
-	_, _ = exec.Command("restorecon", cacheLogFormatConf).CombinedOutput()
+	_, _ = exec.Command("restorecon", logFormatConf).CombinedOutput()
 	return true
 }
 
@@ -231,7 +250,7 @@ func ensureCacheLogFormat() bool {
 // cache TTL and enable/disable changes take effect immediately on
 // the next request instead of serving stale cached content.
 func purgeFastCGICache(systemUser string) {
-	dir := cacheZoneDir
+	dir := cacheZoneDir()
 	if _, err := os.Stat(dir); err != nil {
 		return
 	}
@@ -271,7 +290,7 @@ func cacheZoneDefinedElsewhere() bool {
 		files = append(files, extra...)
 	}
 	for _, filename := range files {
-		if filename == cacheZoneConf {
+		if filename == cacheZoneConf() {
 			continue
 		}
 		body, err := os.ReadFile(filename)
@@ -315,7 +334,7 @@ func ValidateDomain(d string) error {
 }
 
 func certSystemDir(domainName string) string {
-	return filepath.Join(certSystemBaseDir, domainName)
+	return filepath.Join(certSystemBaseDir(), domainName)
 }
 
 func prepareCertificateDir(domainName string) (string, error) {
@@ -1456,8 +1475,8 @@ func tenantCommand(name string, args ...string) *exec.Cmd {
 }
 
 func acmeCommand(args ...string) *exec.Cmd {
-	command := tenantCommand("/root/.acme.sh/acme.sh", args...)
-	command.Env = append(command.Env, "HOME=/root")
+	command := tenantCommand(config.ACMEBin(), args...)
+	command.Env = append(command.Env, "HOME="+config.ACMEHome())
 	return command
 }
 

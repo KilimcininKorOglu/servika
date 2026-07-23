@@ -15,13 +15,14 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 )
 
-const bundleRoot = "/opt/servika/plugins"
+func bundleRoot() string { return config.PluginRoot() }
 
 // Handlers provides plugin registry, bundle, proxy, and health endpoints.
 type Handlers struct{ DB *sql.DB }
@@ -97,7 +98,7 @@ func (h *Handlers) Bundle(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	path := filepath.Join(bundleRoot, name, "app.js")
+	path := filepath.Join(bundleRoot(), name, "app.js")
 	if _, err := os.Stat(path); err != nil {
 		http.NotFound(w, r)
 		return

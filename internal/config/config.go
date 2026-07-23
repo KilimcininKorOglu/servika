@@ -28,6 +28,9 @@ func Load() (*Config, error) {
 	if len(secret) < 32 {
 		return nil, fmt.Errorf("SERVIKA_JWT_SECRET must be at least 32 characters (current: %d)", len(secret))
 	}
+	if err := ValidateRuntimePaths(); err != nil {
+		return nil, err
+	}
 	c.JWTSecret = []byte(secret)
 	return c, nil
 }

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -20,9 +21,9 @@ type Handlers struct {
 	DB *sql.DB
 }
 
-const composerBin = "/usr/local/bin/composer"
-
 var rePkg = regexp.MustCompile(`^[a-z0-9]([a-z0-9._-]*)/[a-z0-9]([a-z0-9._-]*)(:[\^~<>=0-9.* |,-]+)?$`)
+
+func composerBin() string { return config.ComposerBin() }
 
 func (h *Handlers) load(r *http.Request) (id int64, systemUser string, demo bool, ok bool) {
 	id, _ = strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
@@ -43,7 +44,7 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 	}
 	var version string
 	installed := false
-	vc := exec.Command(composerBin, "--version", "--no-ansi")
+	vc := exec.Command(composerBin(), "--version", "--no-ansi")
 	vc.Env = []string{
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 		"HOME=/tmp",
@@ -78,7 +79,7 @@ func (h *Handlers) Run(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid user")
 		return
 	}
-	if _, err := os.Stat(composerBin); err != nil {
+	if _, err := os.Stat(composerBin()); err != nil {
 		httpx.WriteError(w, http.StatusServiceUnavailable, "composer is not installed on the server")
 		return
 	}
@@ -97,7 +98,7 @@ func (h *Handlers) Run(w http.ResponseWriter, r *http.Request) {
 	}
 	directory := "/home/" + systemUser + "/public_html"
 	// Pass arguments explicitly without a shell to prevent command injection.
-	args := []string{"-u", systemUser, "--", composerBin, req.Command, "--no-interaction", "--no-ansi", "-d", directory}
+	args := []string{"-u", systemUser, "--", composerBin(), req.Command, "--no-interaction", "--no-ansi", "-d", directory}
 	if req.Command == "install" || req.Command == "update" {
 		args = append(args, "--no-scripts", "--no-plugins")
 	}

@@ -13,10 +13,11 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 )
 
-const IonCubeURL = "https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz"
+func ionCubeURL() string { return config.IonCubeURL() }
 
 type ioncubeReq struct {
 	Version string `json:"version"`
@@ -58,7 +59,7 @@ func (h *Handlers) IonCubeInstall(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { _ = os.RemoveAll(tmpDir) }()
 	tarPath := filepath.Join(tmpDir, "ioncube.tar.gz")
-	if err := download(ctx, IonCubeURL, tarPath); err != nil {
+	if err := download(ctx, ionCubeURL(), tarPath); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to download IonCube Loader")
 		return
 	}

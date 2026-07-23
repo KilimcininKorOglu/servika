@@ -76,6 +76,40 @@ warn() { echo -e "  ${c_y}!${c_0} $*"; }
 die()  { echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
 step() { echo -e "${c_b}══ $* ══${c_0}"; }
 
+require_abs_path() {
+  local name="$1"
+  local value="$2"
+  [ -n "$value" ] || die "$name must not be empty"
+  case "$value" in
+    /*) ;;
+    *) die "$name must be an absolute path: $value" ;;
+  esac
+}
+
+require_url() {
+  local name="$1"
+  local value="$2"
+  case "$value" in
+    http://*|https://*) ;;
+    *) die "$name must be an http or https URL: $value" ;;
+  esac
+}
+
+validate_paths() {
+  require_abs_path SERVIKA_PREFIX "$PREFIX"
+  require_abs_path SERVIKA_BIN "$BIN"
+  require_abs_path SERVIKA_SEED "$SEED"
+  require_abs_path SERVIKA_FDIST "$FDIST"
+  require_abs_path SERVIKA_MIGR "$MIGR"
+  require_abs_path SERVIKA_SCRIPTS "$SCRIPTS"
+  require_abs_path SERVIKA_OPSBIN "$OPSBIN"
+  require_abs_path SERVIKA_DBBK "$DB_BACKUP"
+  require_abs_path SERVIKA_DBDIR "$DB_BACKUP_DIR"
+  require_url SERVIKA_HEALTH "$HEALTH"
+}
+
+validate_paths
+
 version() { curl -fsS "$HEALTH" 2>/dev/null | grep -oE '"version":"[^"]*"' | cut -d'"' -f4; }
 
 [ "$(id -u)" = 0 ] || die "root is required (sudo servika-update)"

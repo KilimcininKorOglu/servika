@@ -15,17 +15,19 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 )
 
-const (
-	kcUnit    = "servika-kernelcare-update"
-	kcLogPath = "/opt/servika/logs/kernelcare-update.log"
-	kcWrapper = "/opt/servika/kernelcare-update.sh"
-)
+const kcUnit = "servika-kernelcare-update"
+
+func kcLogPath() string { return config.KernelCareLog() }
+
+func kcWrapper() string { return config.KernelCareWrapper() }
 
 // KcStatus describes the KernelCare agent state (embedded in CVE summary).
 type KcStatus struct {
@@ -119,11 +121,12 @@ echo "════════ ✓ Live patch complete ════════"
 `
 
 func kcWriteWrapper() error {
-	tmp := kcWrapper + ".tmp"
+	wrapper := kcWrapper()
+	tmp := wrapper + ".tmp"
 	if err := os.WriteFile(tmp, []byte(kcWrapperContent), 0o700); err != nil {
 		return err
 	}
-	return os.Rename(tmp, kcWrapper)
+	return os.Rename(tmp, wrapper)
 }
 
 // KernelcarePatch — POST /system/kernelcare/patch : run kcarectl --update in background
@@ -137,13 +140,15 @@ func KernelcarePatch(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusConflict, "live patching is already in progress")
 		return
 	}
-	_ = os.MkdirAll("/opt/servika/logs", 0o750)
+	logPath := kcLogPath()
+	_ = os.MkdirAll(filepath.Dir(logPath), 0o750)
 	if err := kcWriteWrapper(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare: "+err.Error())
 		return
 	}
 	header := fmt.Sprintf("=== KernelCare live patch started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
-	if err := os.WriteFile(kcLogPath, []byte(header), 0o640); err != nil {
+	wrapper := kcWrapper()
+	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not open log: "+err.Error())
 		return
 	}
@@ -151,9 +156,9 @@ func KernelcarePatch(w http.ResponseWriter, r *http.Request) {
 		"--collect",
 		"--unit", kcUnit,
 		"--description", "Servika KernelCare live kernel patching",
-		"-p", "StandardOutput=append:"+kcLogPath,
-		"-p", "StandardError=append:"+kcLogPath,
-		kcWrapper)
+		"-p", "StandardOutput=append:"+logPath,
+		"-p", "StandardError=append:"+logPath,
+		wrapper)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not start: "+strings.TrimSpace(string(out)))
 		return

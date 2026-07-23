@@ -26,6 +26,10 @@ load_servika_env() {
 
 load_servika_env
 BACKUP_DIR="${SERVIKA_DBDIR:-/var/backups/servika/db}"
+case "$BACKUP_DIR" in
+  /*) ;;
+  *) echo "SERVIKA_DBDIR must be an absolute path: $BACKUP_DIR" >&2; exit 1 ;;
+esac
 RETENTION_DAYS=14
 mkdir -p "$BACKUP_DIR"
 chmod 700 "$BACKUP_DIR"

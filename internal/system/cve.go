@@ -14,19 +14,21 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 )
 
-const (
-	cveUnit    = "servika-cve-update"
-	cveLogPath = "/opt/servika/logs/cve-update.log"
-	cveWrapper = "/opt/servika/cve-update.sh"
-)
+const cveUnit = "servika-cve-update"
+
+func cveLogPath() string { return config.CVELog() }
+
+const cveWrapper = "/opt/servika/cve-update.sh"
 
 // CveEntry represents a single CVE advisory.
 type CveEntry struct {
@@ -37,17 +39,17 @@ type CveEntry struct {
 
 // CveSummary is the full CVE status payload for the dashboard widget.
 type CveSummary struct {
-	Critical       int        `json:"critical"`
-	Important      int        `json:"important"`
-	Moderate       int        `json:"moderate"`
-	Low            int        `json:"low"`
-	TotalCves      int        `json:"total_cves"`
-	TotalAdvisories int       `json:"total_advisories"`
-	LastScan       string     `json:"last_scan"`
-	TopCves        []CveEntry `json:"top_cves"`
-	UpdateRunning  bool       `json:"update_running"`
-	RebootRequired bool       `json:"reboot_required"`
-	KernelCare     KcStatus   `json:"kernelcare"`
+	Critical        int        `json:"critical"`
+	Important       int        `json:"important"`
+	Moderate        int        `json:"moderate"`
+	Low             int        `json:"low"`
+	TotalCves       int        `json:"total_cves"`
+	TotalAdvisories int        `json:"total_advisories"`
+	LastScan        string     `json:"last_scan"`
+	TopCves         []CveEntry `json:"top_cves"`
+	UpdateRunning   bool       `json:"update_running"`
+	RebootRequired  bool       `json:"reboot_required"`
+	KernelCare      KcStatus   `json:"kernelcare"`
 }
 
 var (
@@ -80,7 +82,7 @@ func rebootRequired() bool {
 		return false
 	}
 	// rpm -q --last kernel: most recently installed kernel is the first line.
-	for _, ln := range strings.Split(runOutput("rpm", "-q", "--last", "kernel"), "\n") {
+	for ln := range strings.SplitSeq(runOutput("rpm", "-q", "--last", "kernel"), "\n") {
 		f := strings.Fields(ln)
 		if len(f) == 0 {
 			continue
@@ -116,7 +118,7 @@ func cveScan() *CveSummary {
 	// CVE list line: "CVE-2025-68724  Important/Sec. kernel-...x86_64"
 	sevOf := map[string]string{} // cveID → highest severity label
 	pkgOf := map[string]string{} // cveID → example package at that severity
-	for _, ln := range strings.Split(cveRunShell(150*time.Second, "-q", "updateinfo", "list", "cves"), "\n") {
+	for ln := range strings.SplitSeq(cveRunShell(150*time.Second, "-q", "updateinfo", "list", "cves"), "\n") {
 		f := strings.Fields(ln)
 		if len(f) < 3 || !strings.HasPrefix(f[0], "CVE-") {
 			continue
@@ -157,7 +159,7 @@ func cveScan() *CveSummary {
 		s.TopCves = append(s.TopCves, CveEntry{ID: id, Severity: sevOf[id], Package: pkgOf[id]})
 	}
 	// Total advisory count (summary): "    15 Security notice(s)"
-	for _, ln := range strings.Split(cveRunShell(60*time.Second, "-q", "updateinfo", "--summary"), "\n") {
+	for ln := range strings.SplitSeq(cveRunShell(60*time.Second, "-q", "updateinfo", "--summary"), "\n") {
 		t := strings.TrimSpace(ln)
 		if strings.HasSuffix(t, "Security notice(s)") &&
 			!strings.Contains(t, "Critical") && !strings.Contains(t, "Important") &&
@@ -239,13 +241,14 @@ func CveUpdate(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusConflict, "panel update is in progress — try again when it finishes")
 		return
 	}
-	_ = os.MkdirAll("/opt/servika/logs", 0o750)
+	logPath := cveLogPath()
+	_ = os.MkdirAll(filepath.Dir(logPath), 0o750)
 	if err := cveWriteWrapper(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare: "+err.Error())
 		return
 	}
 	header := fmt.Sprintf("=== Security update started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
-	if err := os.WriteFile(cveLogPath, []byte(header), 0o640); err != nil {
+	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not open log: "+err.Error())
 		return
 	}
@@ -253,8 +256,8 @@ func CveUpdate(w http.ResponseWriter, r *http.Request) {
 		"--collect",
 		"--unit", cveUnit,
 		"--description", "Servika security updates",
-		"-p", "StandardOutput=append:"+cveLogPath,
-		"-p", "StandardError=append:"+cveLogPath,
+		"-p", "StandardOutput=append:"+logPath,
+		"-p", "StandardError=append:"+logPath,
 		cveWrapper)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not start: "+strings.TrimSpace(string(out)))
@@ -269,7 +272,7 @@ func CveUpdate(w http.ResponseWriter, r *http.Request) {
 
 // CveLog — GET /system/cve/log : update log tail + status.
 func CveLog(w http.ResponseWriter, r *http.Request) {
-	b, _ := os.ReadFile(cveLogPath)
+	b, _ := os.ReadFile(cveLogPath())
 	s := string(b)
 	if len(s) > 60000 {
 		s = s[len(s)-60000:]

@@ -19,17 +19,20 @@ import (
 	"sync/atomic"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
 )
 
-const clamBin = "/usr/bin/clamscan"
+func clamBin() string { return config.ClamScanBin() }
+
+func freshclamBin() string { return config.FreshclamBin() }
 
 type Handlers struct{ DB *sql.DB }
 
-// scanning: 0=idle 1=scan in progress. Single slot for the ENTIRE server (ClamAV DB ~1.5G RAM → concurrent scan OOM risk).
-var scanning int32
+// scanning is a server-wide lock. A single slot prevents ClamAV database memory pressure.
+var scanning atomic.Int32
 
 var errCap = errors.New("file-limit-reached")
 
@@ -80,7 +83,7 @@ func newestClamDB() string {
 }
 
 func engineName() string {
-	if _, err := os.Stat(clamBin); err == nil {
+	if _, err := os.Stat(clamBin()); err == nil {
 		return "clamav+heuristic"
 	}
 	return "heuristic"
@@ -93,7 +96,7 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	_, clamErr := os.Stat(clamBin)
+	_, clamErr := os.Stat(clamBin())
 	resp := map[string]any{
 		"clamav":         clamErr == nil,
 		"signature_date": newestClamDB(),
@@ -155,19 +158,19 @@ func (h *Handlers) Scan(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "public_html not found")
 		return
 	}
-	if !atomic.CompareAndSwapInt32(&scanning, 0, 1) {
+	if !scanning.CompareAndSwap(0, 1) {
 		httpx.WriteError(w, http.StatusConflict, "another server scan is in progress; please wait")
 		return
 	}
 	res, err := h.DB.Exec(`INSERT INTO av_scans (domain_id, status, engine) VALUES (?,?,?)`, id, "running", engineName())
 	if err != nil {
-		atomic.StoreInt32(&scanning, 0)
+		scanning.Store(0)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create scan record")
 		return
 	}
 	sid, _ := res.LastInsertId()
 	go func() {
-		defer atomic.StoreInt32(&scanning, 0)
+		defer scanning.Store(0)
 		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 		defer cancel()
 		scanned, findings := runScan(ctx, root)
@@ -257,18 +260,18 @@ func (h *Handlers) Quarantine(w http.ResponseWriter, r *http.Request) {
 
 // POST /domains/{id}/antivirus/update-signature  → freshclam
 func (h *Handlers) UpdateSignature(w http.ResponseWriter, r *http.Request) {
-	if _, err := os.Stat("/usr/bin/freshclam"); err != nil {
+	if _, err := os.Stat(freshclamBin()); err != nil {
 		httpx.WriteError(w, http.StatusServiceUnavailable, "freshclam is not installed")
 		return
 	}
-	if !atomic.CompareAndSwapInt32(&scanning, 0, 1) {
+	if !scanning.CompareAndSwap(0, 1) {
 		httpx.WriteError(w, http.StatusConflict, "another operation is in progress; please wait")
 		return
 	}
-	defer atomic.StoreInt32(&scanning, 0)
+	defer scanning.Store(0)
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, "/usr/bin/freshclam").CombinedOutput()
+	out, err := exec.CommandContext(ctx, freshclamBin()).CombinedOutput()
 	output := string(out)
 	if len(output) > 4000 {
 		output = output[len(output)-4000:]
@@ -284,11 +287,11 @@ func runScan(ctx context.Context, root string) (int, []Finding) {
 	seen := map[string]bool{}
 
 	// 1) ClamAV
-	if _, err := os.Stat(clamBin); err == nil {
-		cmd := exec.CommandContext(ctx, clamBin, "-r", "-i", "--no-summary", "--stdout",
+	if _, err := os.Stat(clamBin()); err == nil {
+		cmd := exec.CommandContext(ctx, clamBin(), "-r", "-i", "--no-summary", "--stdout",
 			"--max-filesize=25M", "--max-scansize=500M", root)
 		out, _ := cmd.CombinedOutput()
-		for _, line := range strings.Split(string(out), "\n") {
+		for line := range strings.SplitSeq(string(out), "\n") {
 			line = strings.TrimSpace(line)
 			if strings.HasSuffix(line, " FOUND") {
 				if i := strings.LastIndex(line, ": "); i > 0 {

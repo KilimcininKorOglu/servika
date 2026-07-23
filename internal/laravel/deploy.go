@@ -12,7 +12,7 @@ import (
 )
 
 func deployUnit(id int64) string       { return fmt.Sprintf("servika-laravel-deploy-%d", id) }
-func deployLog(id int64) string        { return fmt.Sprintf("%s/deploy-%d.log", logRootDir, id) }
+func deployLog(id int64) string        { return fmt.Sprintf("%s/deploy-%d.log", logRootDir(), id) }
 func deployScriptPath(id int64) string { return fmt.Sprintf("/run/servika-laravel-deploy-%d.sh", id) }
 
 func deployScript(appDir, php, nodeDir string, migrate, npmBuild bool) string {
@@ -25,7 +25,7 @@ func deployScript(appDir, php, nodeDir string, migrate, npmBuild bool) string {
 	b.WriteString("echo '== git pull =='\n")
 	b.WriteString("if [ -d .git ]; then git pull --ff-only 2>&1 || git pull 2>&1 || true; else echo '(not a git repository, skipped)'; fi\n")
 	b.WriteString("echo '== composer install (--no-dev) =='\n")
-	fmt.Fprintf(&b, "%s %s install --no-interaction --prefer-dist --no-dev 2>&1 || true\n", php, composerBin)
+	fmt.Fprintf(&b, "%s %s install --no-interaction --prefer-dist --no-dev 2>&1 || true\n", php, shellQuote(composerBin()))
 	if npmBuild {
 		b.WriteString("echo '== npm ci + build =='\n")
 		fmt.Fprintf(&b, "%s/npm ci --prefix %s --no-fund --no-audit 2>&1 || %s/npm install --prefix %s 2>&1 || true\n", nodeDir, shellQuote(appDir), nodeDir, shellQuote(appDir))

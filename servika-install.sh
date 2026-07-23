@@ -174,6 +174,36 @@ SERVIKA_HEALTH=http://127.0.0.1:8080/healthz
 SERVIKA_DBBK=/usr/local/bin/servika-db-backup
 SERVIKA_DBDIR=/var/backups/servika/db
 SERVIKA_ASSETS_OVERRIDE=
+SERVIKA_COMPOSER_BIN=/usr/local/bin/composer
+SERVIKA_WPCLI_BIN=/usr/local/bin/wp
+SERVIKA_CLAMSCAN_BIN=/usr/bin/clamscan
+SERVIKA_FRESHCLAM_BIN=/usr/bin/freshclam
+SERVIKA_PECL_BIN=/usr/bin/pecl
+SERVIKA_REMI_PECL_ROOT=/opt/remi
+SERVIKA_ACME_HOME=/root/.acme.sh
+SERVIKA_ACME_BIN=/root/.acme.sh/acme.sh
+SERVIKA_BACKUP_ROOT=/var/backups/servika
+SERVIKA_LARAVEL_LOG_DIR=/var/log/servika-laravel
+SERVIKA_PLUGIN_ROOT=/opt/servika/plugins
+SERVIKA_LOG_DIR=/opt/servika/logs
+SERVIKA_UPDATE_LOG=/opt/servika/logs/update.log
+SERVIKA_KERNELCARE_LOG=/opt/servika/logs/kernelcare-update.log
+SERVIKA_KERNELCARE_WRAPPER=/opt/servika/kernelcare-update.sh
+SERVIKA_CVE_LOG=/opt/servika/logs/cve-update.log
+SERVIKA_INSTALLATION_ID=/etc/servika/installation-id
+SERVIKA_VERSION_CACHE=/opt/servika/version-cache.json
+SERVIKA_PMA_TOKEN=/etc/servika/pma-internal.token
+SERVIKA_PMA_SIGNON_DIR=/opt/servika/pma-signon
+SERVIKA_PHPMYADMIN_ROOT=/opt/phpmyadmin
+SERVIKA_PHPMYADMIN_CONFIG=/opt/phpmyadmin/config.inc.php
+SERVIKA_CERT_ROOT=/etc/pki/servika
+SERVIKA_NGINX_CACHE_DIR=/var/cache/nginx/servikacache
+SERVIKA_NGINX_CACHE_CONF=/etc/nginx/conf.d/servikacache.conf
+SERVIKA_NGINX_CACHE_TEMP_CONF=/etc/nginx/conf.d/00-servikacache-temporary.conf
+SERVIKA_NGINX_CACHE_LOG_CONF=/etc/nginx/conf.d/00-servika-cache-log.conf
+SERVIKA_GITHUB_API=https://api.github.com
+SERVIKA_IONCUBE_URL=https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+SERVIKA_UPDATE_BOOTSTRAP_URL=https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update
 ENV
 chmod 600 /etc/servika/env
 ok "/etc/servika/env (production runtime and operations environment generated)"

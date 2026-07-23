@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"servika/internal/config"
 	"servika/internal/credentials"
 	"servika/internal/httpx"
 
@@ -29,7 +30,7 @@ import (
 
 type Handlers struct{ DB *sql.DB }
 
-const wpBin = "/usr/local/bin/wp"
+func wpBin() string { return config.WPCLIBin() }
 
 var (
 	subdirectoryPattern = regexp.MustCompile(`^[a-z0-9]([a-z0-9_-]{0,30}[a-z0-9])?$`)
@@ -63,7 +64,7 @@ func (h *Handlers) domain(r *http.Request) (id int64, systemUser, domainName str
 // WP_CLI_PHP_ARGS and archive extraction can exceed the default 128 MB limit.
 func runWP(systemUser string, args ...string) ([]byte, error) {
 	full := append([]string{"-u", systemUser, "--", "env", "HOME=/home/" + systemUser,
-		"/usr/bin/php", "-d", "memory_limit=512M", wpBin}, args...)
+		"/usr/bin/php", "-d", "memory_limit=512M", wpBin()}, args...)
 	cmd := exec.Command("runuser", full...)
 	return cmd.CombinedOutput()
 }
@@ -239,7 +240,7 @@ func (h *Handlers) inspectInstallation(ctx context.Context, a wpCandidate) AllIn
 // Discarding stderr prevents deprecation warnings from corrupting JSON output.
 func wpStdout(ctx context.Context, systemUser string, args ...string) ([]byte, error) {
 	full := append([]string{"-u", systemUser, "--", "env", "HOME=/home/" + systemUser,
-		"/usr/bin/php", "-d", "memory_limit=512M", wpBin}, args...)
+		"/usr/bin/php", "-d", "memory_limit=512M", wpBin()}, args...)
 	cmd := exec.CommandContext(ctx, "runuser", full...)
 	var out bytes.Buffer
 	cmd.Stdout = &out

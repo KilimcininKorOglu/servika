@@ -149,6 +149,52 @@ The installer writes every persistent production setting it owns into `/etc/serv
 | `SERVIKA_DBDIR` | `/var/backups/servika/db` | `servika-update`, `servika-restore`, `servika-db-backup` | Panel database dump directory. |
 | `SERVIKA_ASSETS_OVERRIDE` | empty | `servika-restore` | Local assets directory for isolated or offline restore tests. |
 
+### Binary and tool path variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `SERVIKA_COMPOSER_BIN` | `/usr/local/bin/composer` | Composer binary used by Composer and Laravel features. |
+| `SERVIKA_WPCLI_BIN` | `/usr/local/bin/wp` | WP-CLI binary used by WordPress and Redis integration features. |
+| `SERVIKA_CLAMSCAN_BIN` | `/usr/bin/clamscan` | ClamAV scan binary used by antivirus operations. |
+| `SERVIKA_FRESHCLAM_BIN` | `/usr/bin/freshclam` | ClamAV signature updater binary. |
+| `SERVIKA_PECL_BIN` | `/usr/bin/pecl` | Default PECL binary for PHP extension management. |
+| `SERVIKA_REMI_PECL_ROOT` | `/opt/remi` | Root used to resolve Remi per-version PECL binaries. |
+| `SERVIKA_ACME_HOME` | `/root/.acme.sh` | acme.sh home directory used for certificate storage and renewal. |
+| `SERVIKA_ACME_BIN` | `/root/.acme.sh/acme.sh` | acme.sh binary used for certificate issuance and installation. |
+
+### Application path variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `SERVIKA_BACKUP_ROOT` | `/var/backups/servika` | Root directory for customer domain backup archives. |
+| `SERVIKA_LARAVEL_LOG_DIR` | `/var/log/servika-laravel` | Laravel install and deploy log directory. |
+| `SERVIKA_PLUGIN_ROOT` | `/opt/servika/plugins` | Plugin bundle root. |
+| `SERVIKA_LOG_DIR` | `/opt/servika/logs` | Shared panel operations log directory. |
+| `SERVIKA_UPDATE_LOG` | `/opt/servika/logs/update.log` | Panel update log path. |
+| `SERVIKA_KERNELCARE_LOG` | `/opt/servika/logs/kernelcare-update.log` | KernelCare update log path. |
+| `SERVIKA_KERNELCARE_WRAPPER` | `/opt/servika/kernelcare-update.sh` | KernelCare systemd wrapper path. |
+| `SERVIKA_CVE_LOG` | `/opt/servika/logs/cve-update.log` | Security update log path. |
+| `SERVIKA_INSTALLATION_ID` | `/etc/servika/installation-id` | Random installation ID storage path for version checks. |
+| `SERVIKA_VERSION_CACHE` | `/opt/servika/version-cache.json` | Cached version manifest path. |
+| `SERVIKA_PMA_TOKEN` | `/etc/servika/pma-internal.token` | Internal phpMyAdmin signon token path. |
+| `SERVIKA_PMA_SIGNON_DIR` | `/opt/servika/pma-signon` | phpMyAdmin signon bridge directory. |
+| `SERVIKA_PHPMYADMIN_ROOT` | `/opt/phpmyadmin` | phpMyAdmin installation root. |
+| `SERVIKA_PHPMYADMIN_CONFIG` | `/opt/phpmyadmin/config.inc.php` | phpMyAdmin config file path. |
+| `SERVIKA_CERT_ROOT` | `/etc/pki/servika` | Domain certificate storage root. |
+| `SERVIKA_NGINX_CACHE_DIR` | `/var/cache/nginx/servikacache` | nginx FastCGI cache data directory. |
+| `SERVIKA_NGINX_CACHE_CONF` | `/etc/nginx/conf.d/servikacache.conf` | nginx FastCGI cache zone config path. |
+| `SERVIKA_NGINX_CACHE_TEMP_CONF` | `/etc/nginx/conf.d/00-servikacache-temporary.conf` | Temporary nginx cache bypass config path. |
+| `SERVIKA_NGINX_CACHE_LOG_CONF` | `/etc/nginx/conf.d/00-servika-cache-log.conf` | nginx cache log format config path. |
+
+### External URL variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `SERVIKA_GITHUB_API` | `https://api.github.com` | GitHub API base URL used by repository integrations. |
+| `SERVIKA_IONCUBE_URL` | ionCube Linux x86-64 loader archive URL | ionCube loader download URL. |
+| `SERVIKA_UPDATE_BOOTSTRAP_URL` | public `servika-update` raw URL | Update tool bootstrap URL used when the panel has to download the updater. |
+| `SERVIKA_VERSION_ENDPOINT` | public version manifest URL | Version manifest endpoint used by the update checker. |
+
 Disable external version checks:
 
 ```bash
@@ -172,7 +218,7 @@ servika-update
 
 ## Panel database backups
 
-The `servika-db-backup.timer` unit runs daily at 03:30 with a randomized delay of up to five minutes. Backups are stored under `/var/backups/servika/db` with directory mode `0700` and file mode `0600`. Dumps are retained for 14 days and receive their final filename only after gzip integrity and minimum-size checks pass.
+The `servika-db-backup.timer` unit runs daily at 03:30 with a randomized delay of up to five minutes. Backups are stored under `SERVIKA_DBDIR`, default `/var/backups/servika/db`, with directory mode `0700` and file mode `0600`. Dumps are retained for 14 days and receive their final filename only after gzip integrity and minimum-size checks pass.
 
 Create a backup manually:
 
@@ -188,7 +234,7 @@ gunzip -c /var/backups/servika/db/panel-YYYY-MM-DD-HHMMSS.sql.gz | mysql
 systemctl start servika
 ```
 
-Panel database backups are separate from customer site and database backups managed by `servika-backup-all`.
+Panel database backups are separate from customer site and database backups managed by `servika-backup-all`. Customer backup archives are stored under `SERVIKA_BACKUP_ROOT`, default `/var/backups/servika`.
 
 ## Core repair
 

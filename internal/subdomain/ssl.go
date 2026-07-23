@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 	"servika/internal/provisioner"
 
@@ -184,11 +185,11 @@ func issueLetsEncrypt(fqdn, certPath, keyPath string) error {
 		return err
 	}
 	_ = exec.Command("restorecon", "-R", "/var/www/_acme").Run()
-	if err := exec.Command("/root/.acme.sh/acme.sh", "--issue", "--webroot", "/var/www/_acme",
+	if err := exec.Command(config.ACMEBin(), "--issue", "--webroot", "/var/www/_acme",
 		"-d", fqdn, "--keylength", "ec-256").Run(); err != nil {
 		return err
 	}
-	return exec.Command("/root/.acme.sh/acme.sh", "--install-cert", "-d", fqdn, "--ecc",
+	return exec.Command(config.ACMEBin(), "--install-cert", "-d", fqdn, "--ecc",
 		"--key-file", keyPath, "--fullchain-file", certPath).Run()
 }
 
