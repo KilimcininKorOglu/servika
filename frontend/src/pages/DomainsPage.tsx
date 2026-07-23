@@ -43,6 +43,7 @@ export default function DomainsPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [processing, setProcessing] = useState(false)
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
 
   const [plans, setPlans] = useState<Plan[]>([])
   const [phpVersions, setPhpVersions] = useState<PHPVer[]>([])
@@ -159,7 +160,7 @@ export default function DomainsPage() {
   }
 
   async function bulkDelete() {
-    setDeleteConfirmationOpen(false); setProcessing(true); setError(null)
+    setDeleteConfirmationOpen(false); setDeleteConfirmationText(''); setProcessing(true); setError(null)
     const ids = Array.from(selected); let successCount = 0
     for (const id of ids) {
       try { await api.delete(`/domains/${id}`); successCount++ } catch {}
@@ -218,7 +219,7 @@ export default function DomainsPage() {
             className="text-xs px-3 py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded">
             ⏸ Deactivate
           </button>
-          <button onClick={() => setDeleteConfirmationOpen(true)} disabled={processing}
+          <button onClick={() => { setDeleteConfirmationText(''); setDeleteConfirmationOpen(true) }} disabled={processing}
             className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-medium">
             🗑 Delete ({selected.size})
           </button>
@@ -420,31 +421,51 @@ export default function DomainsPage() {
       )}
 
       {/* Bulk deletion confirmation */}
-      {deleteConfirmationOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setDeleteConfirmationOpen(false)}>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-red-700 dark:text-red-300 mb-2">⚠ Bulk Domain Deletion</h3>
-            <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
-              <span className="font-semibold">{selected.size}</span> domains and all dependent resources (Linux users, home directories, databases, FTP accounts, vhosts, and DNS zones) will be <strong>permanently</strong> deleted.
-            </p>
-            <ul className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-40 overflow-auto mb-4">
-              {Array.from(selected).slice(0, 8).map(id => {
-                const d = items.find(x => x.id === id)
-                return <li key={id} className="truncate">{d?.domain_name || '?'}</li>
-              })}
-              {selected.size > 8 && <li className="text-slate-400 dark:text-slate-500 italic">+ {selected.size - 8} more...</li>}
-            </ul>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setDeleteConfirmationOpen(false)}
-                className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
-              <button onClick={bulkDelete} disabled={processing}
-                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded font-medium">
-                Yes, Delete
-              </button>
+      {deleteConfirmationOpen && (() => {
+        const selectedId = selected.size === 1 ? Array.from(selected)[0] : undefined
+        const selectedDomain = selectedId !== undefined ? items.find(x => x.id === selectedId)?.domain_name : undefined
+        const expectedConfirmationText = selectedDomain || 'DELETE'
+        const deletionConfirmed = deleteConfirmationText === expectedConfirmationText
+        return (
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setDeleteConfirmationOpen(false)}>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
+              <h3 className="text-base font-semibold text-red-700 dark:text-red-300 mb-2">⚠ Bulk Domain Deletion</h3>
+              <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
+                <span className="font-semibold">{selected.size}</span> domains and all dependent resources (Linux users, home directories, databases, FTP accounts, vhosts, and DNS zones) will be <strong>permanently</strong> deleted.
+              </p>
+              <ul className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-40 overflow-auto mb-4">
+                {Array.from(selected).slice(0, 8).map(id => {
+                  const d = items.find(x => x.id === id)
+                  return <li key={id} className="truncate">{d?.domain_name || '?'}</li>
+                })}
+                {selected.size > 8 && <li className="text-slate-400 dark:text-slate-500 italic">+ {selected.size - 8} more...</li>}
+              </ul>
+              <label className="block text-xs text-slate-500 dark:text-slate-500 mb-1.5">
+                Type <span className="font-mono font-semibold text-red-700 dark:text-red-300">{expectedConfirmationText}</span> to confirm:
+              </label>
+              <input
+                type="text"
+                autoFocus
+                value={deleteConfirmationText}
+                onChange={e => setDeleteConfirmationText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && deletionConfirmed && !processing) bulkDelete() }}
+                placeholder={expectedConfirmationText}
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 mb-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setDeleteConfirmationOpen(false)}
+                  className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
+                <button onClick={bulkDelete} disabled={processing || !deletionConfirmed}
+                  className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded font-medium">
+                  Yes, Delete
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
