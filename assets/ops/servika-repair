@@ -4,7 +4,7 @@
 #
 # Usage:
 #   servika-repair [--dry-run] [--deep] [--only <sections>] [--quiet]
-#   sections: phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon (default: all)
+#   sections: phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon,firewall (default: all)
 #   --dry-run : Show proposed repairs without applying changes
 #   --deep    : Recursively repair ownership in domain homes, which can be slow
 #
@@ -25,7 +25,7 @@ if [ "${1:-}" = "restore" ]; then
   echo "servika-restore not found (core content repair tool is not installed)" >&2; exit 127
 fi
 
-DRY=0; DEEP=0; QUIET=0; ONLY="phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon"
+DRY=0; DEEP=0; QUIET=0; ONLY="phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon,firewall"
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY=1 ;;
@@ -146,6 +146,26 @@ sec_signon() {
   ensure_context "$S" httpd_sys_content_t -R
 }
 
+sec_firewall() {
+  want firewall || return 0
+  head_ "firewall (firewalld handoff)"
+  # Servika owns the nftables firewall table. firewalld can install terminal drop rules
+  # that conflict with Servika-managed accepts for web, DNS, FTP, and panel ports.
+  if ! systemctl cat firewalld.service >/dev/null 2>&1; then
+    ok "firewalld is not installed (Servika nftables is the single firewall)"
+    return 0
+  fi
+  if [ "$(systemctl is-enabled firewalld 2>/dev/null)" = "masked" ]; then
+    ok "firewalld is already masked"
+    return 0
+  fi
+  act "stop and mask firewalld so Servika owns nftables"
+  if [ $DRY -eq 0 ]; then
+    systemctl disable --now firewalld >/dev/null 2>&1 || true
+    systemctl mask firewalld >/dev/null 2>&1 || true
+  fi
+}
+
 sec_frontend() {
   want frontend || return 0
   head_ "frontend-dist"
@@ -235,6 +255,7 @@ sec_binary
 sec_clamav
 sec_frontend
 sec_signon
+sec_firewall
 
 # Validate nginx after changing htpasswd permissions or SELinux contexts.
 if want htpasswd && [ $DRY -eq 0 ]; then
