@@ -89,9 +89,9 @@ The update can also be started from **Tools and Settings > Panel Update**. If `s
 
 ## Version check and privacy
 
-Servika checks a public version manifest to show update and announcement information in **Tools and Settings > Panel Update**. The check is a plain HTTPS `GET` request. It has no query string and no request body. It does not send domains, hostnames, IP addresses, customer data, email addresses, database content, or license data.
+Servika checks a public version manifest to show update and announcement information in **Tools and Settings > Panel Update**. The check is an HTTPS `GET` request with two query values: anonymous installation ID (`id`) and current panel version (`v`). The installation ID is random. It is not derived from hostname, IP address, MAC address, customer data, email address, database content, or license data.
 
-Only the `User-Agent` header includes the current panel version. Servika also creates a local anonymous installation ID at `/etc/servika/installation-id`, but the version check does not send that ID.
+The request has no body. The `User-Agent` header also includes the current panel version. These values support aggregate active-installation counting when the selected endpoint counts distinct random IDs, not customer identification.
 
 Disable external version checks:
 

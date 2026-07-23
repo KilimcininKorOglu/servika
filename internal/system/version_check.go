@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,6 +57,24 @@ func versionEndpoint() string {
 		return value
 	}
 	return versionEndpointDefault
+}
+
+func versionRequestURL() string {
+	return versionRequestURLFor(versionEndpoint(), InstallationID(), currentVersion())
+}
+
+func versionRequestURLFor(rawEndpoint, installationID, current string) string {
+	parsed, err := url.Parse(rawEndpoint)
+	if err != nil {
+		return rawEndpoint
+	}
+	query := parsed.Query()
+	if installationID != "" {
+		query.Set("id", installationID)
+	}
+	query.Set("v", current)
+	parsed.RawQuery = query.Encode()
+	return parsed.String()
 }
 
 // InstallationID returns a persistent anonymous installation identifier.
@@ -112,7 +131,7 @@ func versionRandomDuration(minimum, maximum time.Duration) time.Duration {
 
 func fetchVersionManifest() {
 	client := &http.Client{Timeout: 20 * time.Second}
-	request, err := http.NewRequest(http.MethodGet, versionEndpoint(), nil)
+	request, err := http.NewRequest(http.MethodGet, versionRequestURL(), nil)
 	if err != nil {
 		setVersionError("version check request could not be prepared")
 		return
