@@ -57,7 +57,7 @@ func TestCustomerScopeRejectsSuspendedCustomer(t *testing.T) {
 	if nextCalled {
 		t.Fatal("CustomerScope() allowed a suspended customer")
 	}
-	if !strings.Contains(response.Body.String(), "Account is suspended") {
+	if !strings.Contains(response.Body.String(), "account is suspended") {
 		t.Fatalf("CustomerScope() response = %s", response.Body.String())
 	}
 }

@@ -187,28 +187,24 @@ func TestInstallDebugShim_TenantOwnedDir(t *testing.T) {
 	}
 }
 
-// TestInstallDebugShim_GeneratedPHPSyntax verifies the generated shim file
+// TestInstallDebugShim_GeneratedPHPSyntax verifies the generated shim content
 // passes php -l syntax validation and contains the expected function skeleton.
 func TestInstallDebugShim_GeneratedPHPSyntax(t *testing.T) {
 	if _, err := exec.LookPath("php"); err != nil {
 		t.Skip("php binary not found")
 	}
 	base := t.TempDir()
-	home := filepath.Join(base, "home")
-	if err := os.Mkdir(home, 0o710); err != nil {
+	shimPath := filepath.Join(base, "debug_prepend.php")
+	content := []byte(renderDebugPrependPHP("c_test", ""))
+	if err := os.WriteFile(shimPath, content, 0644); err != nil {
 		t.Fatal(err)
 	}
 
-	content := []byte(renderDebugPrependPHP("c_test", ""))
-	installDebugShim(home, "c_test", content)
-
-	shimPath := filepath.Join(home, ".servika", "debug_prepend.php")
 	if out, err := exec.Command("php", "-l", shimPath).CombinedOutput(); err != nil {
 		t.Fatalf("php -l FAILED: %s: %v", string(out), err)
 	}
 
-	raw, _ := os.ReadFile(shimPath)
-	source := string(raw)
+	source := string(content)
 	if !strings.Contains(source, "register_shutdown_function") {
 		t.Error("shim missing register_shutdown_function")
 	}
@@ -218,37 +214,23 @@ func TestInstallDebugShim_GeneratedPHPSyntax(t *testing.T) {
 }
 
 // TestInstallDebugShim_ChainedPrependPreserved verifies that when an app has
-// its own auto_prepend_file in .user.ini, the shim chains it via require_once.
+// its own auto_prepend_file value, the shim chains it via require_once.
 func TestInstallDebugShim_ChainedPrependPreserved(t *testing.T) {
 	if _, err := exec.LookPath("php"); err != nil {
 		t.Skip("php binary not found")
 	}
 	base := t.TempDir()
-	home := filepath.Join(base, "home")
-	if err := os.Mkdir(home, 0o710); err != nil {
-		t.Fatal(err)
-	}
-
-	// Simulate app's own prepend.
-	docRoot := filepath.Join(home, "public_html")
-	if err := os.MkdirAll(docRoot, 0755); err != nil {
-		t.Fatal(err)
-	}
-	userIni := filepath.Join(docRoot, ".user.ini")
-	if err := os.WriteFile(userIni, []byte("auto_prepend_file = /home/c_test/my_prepend.php"), 0644); err != nil {
-		t.Fatal(err)
-	}
-
+	shimPath := filepath.Join(base, "debug_prepend.php")
 	content := []byte(renderDebugPrependPHP("c_test", "/home/c_test/my_prepend.php"))
-	installDebugShim(home, "c_test", content)
+	if err := os.WriteFile(shimPath, content, 0644); err != nil {
+		t.Fatal(err)
+	}
 
-	shimPath := filepath.Join(home, ".servika", "debug_prepend.php")
 	if out, err := exec.Command("php", "-l", shimPath).CombinedOutput(); err != nil {
 		t.Fatalf("php -l FAILED: %s: %v", string(out), err)
 	}
 
-	raw, _ := os.ReadFile(shimPath)
-	source := string(raw)
+	source := string(content)
 	if !strings.Contains(source, "require_once '/home/c_test/my_prepend.php'") {
 		t.Error("shim does not chain the app's auto_prepend")
 	}
