@@ -397,6 +397,7 @@ func main() {
 
 	monitor.StartLoadSampler(d, 60*time.Second) // dashboard load-history sampler
 	stats.StartTrafficAggregator(d, 5*time.Minute)
+	firewall.TakeOverFirewalld()
 	if err := firewall.Reapply(d); err != nil {
 		log.Printf("firewall reapply warn: %v", err)
 	}

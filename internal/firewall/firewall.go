@@ -14,6 +14,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -351,6 +352,21 @@ func (h *Handlers) rebuild() error {
 func Reapply(db *sql.DB) error {
 	h := &Handlers{DB: db}
 	return h.rebuild()
+}
+
+// TakeOverFirewalld disables the default AlmaLinux/RHEL firewalld service.
+// Servika manages its own nftables table, and firewalld can install terminal
+// drop rules that conflict with panel-managed accepts for web, DNS, FTP, and panel ports.
+func TakeOverFirewalld() {
+	if exec.Command("systemctl", "cat", "firewalld.service").Run() != nil {
+		return
+	}
+	if output, _ := exec.Command("systemctl", "is-enabled", "firewalld").Output(); strings.TrimSpace(string(output)) == "masked" {
+		return
+	}
+	_ = exec.Command("systemctl", "disable", "--now", "firewalld").Run()
+	_ = exec.Command("systemctl", "mask", "firewalld").Run()
+	log.Printf("firewall: firewalld stopped and masked; Servika nftables is the active firewall")
 }
 
 // --- Helpers ---

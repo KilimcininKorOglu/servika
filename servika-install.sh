@@ -90,6 +90,16 @@ else
   warn "Disk quota requires a SINGLE reboot to become active (root filesystem cannot be remounted with quota)."
 fi
 
+# ============ 2c) FIREWALL, disable firewalld so Servika owns nftables ============
+step "2c) Firewall (disable firewalld, Servika takes over)"
+if systemctl cat firewalld.service >/dev/null 2>&1; then
+  systemctl disable --now firewalld >/dev/null 2>&1 || true
+  systemctl mask firewalld >/dev/null 2>&1 || true
+  ok "firewalld stopped and masked (single firewall = Servika nftables)"
+else
+  ok "firewalld is not installed (Servika nftables is the single firewall)"
+fi
+
 # ============ 3) PHP (8 versions + base + wp-cli) ============
 step "3) PHP versions (8 Remi + base) + wp-cli"
 # Disable dnf automatic timers before batch install to prevent lock contention.
