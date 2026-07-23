@@ -10,15 +10,36 @@
 #   WordPress with phpredis, selective flush, array credentials, and a copied drop-in
 set -uo pipefail
 
+ENV_FILE=/etc/servika/env
+
+load_servika_env() {
+  [ -f "$ENV_FILE" ] || return 0
+  [ "$(stat -c %u "$ENV_FILE" 2>/dev/null)" = 0 ] || { echo "insecure environment file owner" >&2; exit 1; }
+  mode=$(stat -c %a "$ENV_FILE" 2>/dev/null) || { echo "could not read environment file mode" >&2; exit 1; }
+  [ $((8#$mode & 077)) -eq 0 ] || { echo "insecure environment file mode" >&2; exit 1; }
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    [[ "$line" =~ ^[[:space:]]*(SERVIKA_[A-Za-z0-9_]*)=(.*)$ ]] || continue
+    key=${BASH_REMATCH[1]}
+    value=${BASH_REMATCH[2]%$'\r'}
+    if [[ "$value" == \"*\" && "$value" == *\" ]]; then value=${value:1:${#value}-2}; fi
+    if [[ "$value" == \'*\' && "$value" == *\' ]]; then value=${value:1:${#value}-2}; fi
+    if [ -z "${!key+x}" ]; then
+      printf -v "$key" '%s' "$value"
+      export "${key?}"
+    fi
+  done < "$ENV_FILE"
+}
+
 SYSTEM_USER="${1:?usage: $0 <system_user> [off]}"
 ACTION="${2:-on}"
 HOST=127.0.0.1; PORT=6379
-ENV=/etc/servika/env
 
 # --- Guards ---
 if ! [[ "$SYSTEM_USER" =~ ^[a-z0-9_]{1,32}$ ]]; then echo "invalid user name: $SYSTEM_USER"; exit 1; fi
 [ "$(id -u)" = 0 ] || { echo "root is required"; exit 1; }
-ADMIN=$(grep -oP '^SERVIKA_REDIS_ADMIN_PASS=\K.*' "$ENV" 2>/dev/null)
+load_servika_env
+ADMIN=${SERVIKA_REDIS_ADMIN_PASS:-}
 [ -z "$ADMIN" ] && { echo "SERVIKA_REDIS_ADMIN_PASS is absent; run servika-redis-setup first"; exit 1; }
 id "$SYSTEM_USER" >/dev/null 2>&1 || { echo "system user not found: $SYSTEM_USER"; exit 1; }
 
@@ -28,6 +49,7 @@ say(){ printf '  %s\n' "$*"; }
 
 # Resolve domain_id for the panel database record.
 DID=$(mysql -u root panel -N -e "SELECT id FROM domains WHERE system_user='$SYSTEM_USER' LIMIT 1;" 2>/dev/null)
+[[ "$DID" =~ ^[0-9]+$ ]] || DID=""
 
 # Find WordPress installations in public_html and one level below.
 DIRS=()
@@ -57,8 +79,11 @@ echo "==== Attaching Redis: $SYSTEM_USER ===="
 [ ${#DIRS[@]} -eq 0 ] && { echo "  WARNING: no WordPress installation found under /home/$SYSTEM_USER/public_html"; }
 
 # Reuse the password from the database record or generate a new one.
-PASS=$(mysql -u root panel -N -e "SELECT redis_pass FROM domain_redis WHERE domain_id='${DID:-0}' AND enabled=1;" 2>/dev/null)
-[ -z "$PASS" ] && PASS=$(openssl rand -hex 18)
+PASS=""
+if [ -n "$DID" ]; then
+  PASS=$(mysql -u root panel --batch --raw --skip-column-names -e "SELECT redis_pass FROM domain_redis WHERE domain_id=$DID AND enabled=1;" 2>/dev/null)
+fi
+[[ "$PASS" =~ ^[a-f0-9]{36}$ ]] || PASS=$(openssl rand -hex 18)
 
 # 1) Isolated ACL user with @dangerous disabled and read-only diagnostics enabled
 vc ACL SETUSER "$SYSTEM_USER" on ">$PASS" resetkeys "~$SYSTEM_USER:*" resetchannels "&$SYSTEM_USER:*" \
@@ -68,8 +93,11 @@ say "ACL user ready: $SYSTEM_USER (~$SYSTEM_USER:*)"
 
 # 2) Panel database record used to report the feature as active
 if [ -n "$DID" ]; then
-  mysql -u root panel -e "INSERT INTO domain_redis (domain_id, system_user, redis_pass, enabled) VALUES ($DID,'$SYSTEM_USER','$PASS',1)
-    ON DUPLICATE KEY UPDATE system_user=VALUES(system_user), redis_pass=VALUES(redis_pass), enabled=1;" 2>/dev/null && say "panel database record updated (domain #$DID)"
+  mysql -u root panel 2>/dev/null <<SQL
+INSERT INTO domain_redis (domain_id, system_user, redis_pass, enabled) VALUES ($DID,'$SYSTEM_USER','$PASS',1)
+  ON DUPLICATE KEY UPDATE system_user=VALUES(system_user), redis_pass=VALUES(redis_pass), enabled=1;
+SQL
+  say "panel database record updated (domain #$DID)"
 fi
 
 # 3) Configure each WordPress installation.

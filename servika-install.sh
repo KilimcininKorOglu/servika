@@ -154,10 +154,26 @@ SERVIKA_ENV=production
 SERVIKA_DB_DSN=panel:${DBPASS}@tcp(127.0.0.1:3306)/panel?parseTime=true&charset=utf8mb4&collation=utf8mb4_unicode_ci
 SERVIKA_JWT_SECRET=${JWT}
 SERVIKA_JWT_LIFETIME_SEC=43200
+SERVIKA_PUBLIC_IPV4=
+SERVIKA_MAINTENANCE_MODE=
+SERVIKA_VERSION_CHECK=1
+SERVIKA_VERSION_ENDPOINT=https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/version.json
 SERVIKA_REDIS_ADMIN_PASS=${RADMIN}
+SERVIKA_REPO=KilimcininKorOglu/servika
+SERVIKA_PREFIX=/opt/servika
+SERVIKA_BIN=/opt/servika/bin/servika-server
+SERVIKA_SEED=/opt/servika/bin/servika-seed-admin
+SERVIKA_FDIST=/opt/servika/frontend-dist
+SERVIKA_MIGR=/opt/servika/src/migrations
+SERVIKA_SCRIPTS=/opt/servika/src/scripts
+SERVIKA_OPSBIN=/usr/local/bin
+SERVIKA_SVC=servika
+SERVIKA_HEALTH=http://127.0.0.1:8080/healthz
+SERVIKA_DBBK=/usr/local/bin/servika-db-backup
+SERVIKA_DBDIR=/var/backups/servika/db
 ENV
 chmod 600 /etc/servika/env
-ok "/etc/servika/env (JWT + DB DSN + Redis administrator generated)"
+ok "/etc/servika/env (production runtime and operations environment generated)"
 
 # ============ 6) ARTIFACT DEPLOYMENT ============
 step "6) Panel binary + frontend + migrations"

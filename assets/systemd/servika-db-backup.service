@@ -3,4 +3,5 @@ Description=Servika panel database backup
 
 [Service]
 Type=oneshot
+EnvironmentFile=/etc/servika/env
 ExecStart=/usr/local/bin/servika-db-backup

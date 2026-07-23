@@ -2,7 +2,50 @@
 # servika-redis-setup installs isolated per-tenant Redis infrastructure using Valkey.
 # It is idempotent, runs during installation, and supports the panel's Redis Cache feature.
 set -uo pipefail
+
+ENV_FILE=/etc/servika/env
+
+load_servika_env() {
+  [ -f "$ENV_FILE" ] || return 0
+  [ "$(stat -c %u "$ENV_FILE" 2>/dev/null)" = 0 ] || { echo "insecure environment file owner" >&2; exit 1; }
+  mode=$(stat -c %a "$ENV_FILE" 2>/dev/null) || { echo "could not read environment file mode" >&2; exit 1; }
+  [ $((8#$mode & 077)) -eq 0 ] || { echo "insecure environment file mode" >&2; exit 1; }
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    [[ "$line" =~ ^[[:space:]]*(SERVIKA_[A-Za-z0-9_]*)=(.*)$ ]] || continue
+    key=${BASH_REMATCH[1]}
+    value=${BASH_REMATCH[2]%$'\r'}
+    if [[ "$value" == \"*\" && "$value" == *\" ]]; then value=${value:1:${#value}-2}; fi
+    if [[ "$value" == \'*\' && "$value" == *\' ]]; then value=${value:1:${#value}-2}; fi
+    if [ -z "${!key+x}" ]; then
+      printf -v "$key" '%s' "$value"
+      export "${key?}"
+    fi
+  done < "$ENV_FILE"
+}
+
+ensure_env_file() {
+  mkdir -p "$(dirname "$ENV_FILE")"
+  touch "$ENV_FILE"
+  chown root:root "$ENV_FILE" 2>/dev/null || true
+  chmod 600 "$ENV_FILE"
+}
+
+set_env_value() {
+  key=$1
+  value=$2
+  ensure_env_file
+  tmp=$(mktemp)
+  if [ -f "$ENV_FILE" ]; then
+    grep -v -E "^${key}=" "$ENV_FILE" > "$tmp" 2>/dev/null || true
+  fi
+  printf '%s=%s\n' "$key" "$value" >> "$tmp"
+  install -m 600 -o root -g root "$tmp" "$ENV_FILE"
+  rm -f "$tmp"
+}
+
 log(){ printf '  %s\n' "$*"; }
+load_servika_env
 
 echo "════ Valkey + php-redis installation ════"
 PHP_REDIS_PKGS=""
@@ -13,11 +56,11 @@ dnf install -y valkey php-pecl-redis6 $PHP_REDIS_PKGS >/tmp/redis-setup.log 2>&1
   && log "valkey + php-redis installed" || { log "installation warning (some packages may already be installed)"; }
 
 echo "════ Administrator password + ACL file ════"
-ENV=/etc/servika/env
-ADMIN=$(grep -oP '^SERVIKA_REDIS_ADMIN_PASS=\K.*' "$ENV" 2>/dev/null)
+ADMIN=${SERVIKA_REDIS_ADMIN_PASS:-}
 if [ -z "$ADMIN" ]; then
   ADMIN=$(openssl rand -hex 24)
-  echo "SERVIKA_REDIS_ADMIN_PASS=${ADMIN}" >> "$ENV"
+  set_env_value SERVIKA_REDIS_ADMIN_PASS "$ADMIN"
+  export SERVIKA_REDIS_ADMIN_PASS="$ADMIN"
   log "administrator password generated and added to the environment file"
 fi
 # Add the default administrator entry when absent while preserving tenant ACLs.
@@ -44,7 +87,7 @@ VK
 fi
 sed -i '/^requirepass /d' "$CONF"   # requirepass conflicts with aclfile.
 
-echo "════ SELinux (php-fpm → redis TCP) ════"
+echo "════ SELinux (php-fpm -> redis TCP) ════"
 setsebool -P httpd_can_network_connect 1 2>/dev/null && log "httpd_can_network_connect=1"
 
 echo "════ valkey enable + (re)start ════"

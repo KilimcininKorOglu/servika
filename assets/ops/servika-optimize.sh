@@ -8,6 +8,29 @@
 #   servika-optimize --dry-run      # Display only the calculated values
 set -uo pipefail
 
+ENV_FILE=/etc/servika/env
+
+load_servika_env() {
+  [ -f "$ENV_FILE" ] || return 0
+  [ "$(stat -c %u "$ENV_FILE" 2>/dev/null)" = 0 ] || { echo "insecure environment file owner" >&2; exit 1; }
+  mode=$(stat -c %a "$ENV_FILE" 2>/dev/null) || { echo "could not read environment file mode" >&2; exit 1; }
+  [ $((8#$mode & 077)) -eq 0 ] || { echo "insecure environment file mode" >&2; exit 1; }
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    [[ "$line" =~ ^[[:space:]]*(SERVIKA_[A-Za-z0-9_]*)=(.*)$ ]] || continue
+    key=${BASH_REMATCH[1]}
+    value=${BASH_REMATCH[2]%$'\r'}
+    if [[ "$value" == \"*\" && "$value" == *\" ]]; then value=${value:1:${#value}-2}; fi
+    if [[ "$value" == \'*\' && "$value" == *\' ]]; then value=${value:1:${#value}-2}; fi
+    if [ -z "${!key+x}" ]; then
+      printf -v "$key" '%s' "$value"
+      export "${key?}"
+    fi
+  done < "$ENV_FILE"
+}
+
+load_servika_env
+
 NO_RESTART=0; DRY=0
 for a in "$@"; do case "$a" in --no-restart) NO_RESTART=1;; --dry-run) DRY=1;; esac; done
 
