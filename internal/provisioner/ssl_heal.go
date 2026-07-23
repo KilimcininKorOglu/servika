@@ -113,7 +113,7 @@ func certValid(certPath, keyPath string, minDays int, hosts ...string) bool {
 }
 
 // bestCertificate selects the best valid certificate (matching key, valid for minDays,
-// covering domain+www) among acme.sh store and /etc/pki candidates. Priority: a real CA
+// covering the required hostnames) among acme.sh store and /etc/pki candidates. Priority: a real CA
 // (Let's Encrypt) beats self-signed; within the same class, the later notAfter wins.
 // realCA reports whether the chosen certificate is real-CA-signed (not self-signed).
 func bestCertificate(domain string, minDays int) (certPath, keyPath string, realCA bool) {
@@ -132,7 +132,7 @@ func bestCertificate(domain string, minDays int) (certPath, keyPath string, real
 	var bestReal bool
 	var bestNotAfter time.Time
 	for _, c := range candidates {
-		if !certValid(c.cert, c.key, minDays, domain, "www."+domain) {
+		if !certValid(c.cert, c.key, minDays, wwwHostNames(domain)...) {
 			continue
 		}
 		leaf, ok := loadLeaf(c.cert, c.key)
@@ -176,7 +176,7 @@ func installToPKI(domain, srcCert, srcKey string) (certPath, keyPath string, err
 }
 
 // generateSelfSigned produces a 1-year self-signed certificate in
-// /etc/pki/servika/<domain>/ (SAN: domain + www.domain). It does NOT render the vhost;
+// /etc/pki/servika/<domain>/ with the same SANs used by nginx and ACME. It does NOT render the vhost;
 // the caller wires it up with writeSSLVhost.
 func generateSelfSigned(domain string) (certPath, keyPath string, err error) {
 	if verr := ValidateDomain(domain); verr != nil {
@@ -189,6 +189,11 @@ func generateSelfSigned(domain string) (certPath, keyPath string, err error) {
 	certPath = filepath.Join(sslDir, domain+".crt")
 	keyPath = filepath.Join(sslDir, domain+".key")
 	subj := fmt.Sprintf("/C=TR/ST=Local/L=Servika/O=%s/CN=%s", domain, domain)
+	sanHosts := wwwHostNames(domain)
+	sanNames := make([]string, 0, len(sanHosts))
+	for _, host := range sanHosts {
+		sanNames = append(sanNames, "DNS:"+host)
+	}
 	args := []string{
 		"req", "-x509", "-nodes",
 		"-newkey", "rsa:2048",
@@ -196,7 +201,7 @@ func generateSelfSigned(domain string) (certPath, keyPath string, err error) {
 		"-out", certPath,
 		"-days", "365",
 		"-subj", subj,
-		"-addext", "subjectAltName=DNS:" + domain + ",DNS:www." + domain,
+		"-addext", "subjectAltName=" + strings.Join(sanNames, ","),
 	}
 	if out, e := exec.Command("openssl", args...).CombinedOutput(); e != nil {
 		return "", "", fmt.Errorf("openssl: %s: %w", strings.TrimSpace(string(out)), e)
@@ -227,9 +232,9 @@ func writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPat
 
 // sslFailSafe keeps 443 alive when LE issuance fails (including 429) — it never drops
 // the vhost to HTTP-only. When a valid certificate (acme store or /etc/pki, not expired,
-// domain+www, matching key) exists it deploys it; when none exists it generates a
+// matching the required hostnames and key) exists it deploys it; when none exists it generates a
 // self-signed one. In both cases the vhost is rendered with SSL (443 listens).
-func sslFailSafe(domainName, systemUser, phpVersion, backend, reason string) (certPath, keyPath string, err error) {
+func sslFailSafe(domainName, systemUser, phpVersion, backend, reason string) (certPath, keyPath string, real bool, err error) {
 	if src, srcKey, real := bestCertificate(domainName, 0); src != "" {
 		if cp, kp, e := installToPKI(domainName, src, srcKey); e == nil {
 			source := "self-signed"
@@ -237,22 +242,22 @@ func sslFailSafe(domainName, systemUser, phpVersion, backend, reason string) (ce
 				source = "letsencrypt"
 			}
 			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, source); e != nil {
-				return "", "", e
+				return "", "", false, e
 			}
 			log.Printf("ssl fail-safe: %s LE issuance failed (%s); 443 kept alive with existing %s certificate", domainName, reason, source)
-			return cp, kp, nil
+			return cp, kp, real, nil
 		}
 	}
 	// No valid certificate -> self-signed fallback (443 still listens, no teardown).
 	cp, kp, e := generateSelfSigned(domainName)
 	if e != nil {
-		return "", "", fmt.Errorf("%s + self-signed fallback: %w", reason, e)
+		return "", "", false, fmt.Errorf("%s + self-signed fallback: %w", reason, e)
 	}
 	if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, "self-signed"); e != nil {
-		return "", "", e
+		return "", "", false, e
 	}
 	log.Printf("ssl fail-safe: %s LE issuance failed (%s); self-signed generated, 443 kept alive", domainName, reason)
-	return cp, kp, nil
+	return cp, kp, false, nil
 }
 
 // HealSSLVhost443OnStartup verifies that every SSL-enabled (ssl_enabled=1) domain's

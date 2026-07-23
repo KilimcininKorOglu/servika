@@ -76,42 +76,51 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isDemo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "sSL cannot be installed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "SSL cannot be installed for demo subscriptions")
 		return
 	}
 
 	var certPath, keyPath string
+	actualType := req.Type
 	switch req.Type {
 	case "self-signed":
 		certPath, keyPath, err = provisioner.EnableSelfSigned(domainName, systemUser, phpVersion, backend)
 	case "letsencrypt":
-		certPath, keyPath, err = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
+		var real bool
+		certPath, keyPath, real, err = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
+		if !real {
+			actualType = "self-signed"
+		}
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "sSL installation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "SSL installation failed")
 		return
 	}
 
 	expiresAt := time.Now().Add(365 * 24 * time.Hour)
-	if req.Type == "letsencrypt" {
+	if actualType == "letsencrypt" {
 		expiresAt = time.Now().Add(90 * 24 * time.Hour)
 	}
 
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE domains SET ssl_enabled=1, ssl_source=?, cert_path=?, key_path=?, ssl_expiry=?
-		 WHERE id=?`, req.Type, certPath, keyPath, expiresAt, id); err != nil {
+		 WHERE id=?`, actualType, certPath, keyPath, expiresAt, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
 		return
 	}
 
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+	response := map[string]any{
 		"ok":         true,
 		"id":         id,
-		"type":       req.Type,
+		"type":       actualType,
 		"cert":       certPath,
 		"key":        keyPath,
 		"expires_at": expiresAt.Format("2006-01-02"),
-	})
+	}
+	if req.Type == "letsencrypt" && actualType != "letsencrypt" {
+		response["warning"] = "Let's Encrypt certificate issuance failed; the site is temporarily protected with a self-signed certificate. Fix DNS and try again."
+	}
+	httpx.WriteJSON(w, http.StatusOK, response)
 }
 
 func (h *Handlers) SSLDisable(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +139,7 @@ func (h *Handlers) SSLDisable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := provisioner.DisableSSL(domainName, systemUser, phpVersion, backend); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "sSL disable failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "SSL disable failed")
 		return
 	}
 	if _, err := h.DB.ExecContext(r.Context(),

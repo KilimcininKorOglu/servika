@@ -565,7 +565,7 @@ var vhostTmpl = template.Must(template.New("v").Parse(`{{- if .SSL -}}
 server {
     listen 80;
     listen [::]:80;
-    server_name {{.DomainName}} www.{{.DomainName}};
+    server_name {{.ServerNames}};
 
     location /.well-known/acme-challenge/ {
         root /var/www/_acme;
@@ -582,7 +582,7 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;
-    server_name {{.DomainName}} www.{{.DomainName}};
+    server_name {{.ServerNames}};
 
     ssl_certificate     {{.CertPath}};
     ssl_certificate_key {{.KeyPath}};
@@ -667,7 +667,7 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name {{.DomainName}} www.{{.DomainName}};
+    server_name {{.ServerNames}};
 
     root {{.WebRoot}};
     index index.php index.html index.htm;
@@ -791,7 +791,7 @@ var suspendedVhostTmpl = template.Must(template.New("suspended").Parse(`# {{.Dom
 server {
     listen 80;
     listen [::]:80;
-    server_name {{.DomainName}} www.{{.DomainName}};
+    server_name {{.ServerNames}};
 
     location /.well-known/acme-challenge/ {
         root /var/www/_acme;
@@ -815,7 +815,7 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;
-    server_name {{.DomainName}} www.{{.DomainName}};
+    server_name {{.ServerNames}};
 
     ssl_certificate {{.CertPath}};
     ssl_certificate_key {{.KeyPath}};
@@ -900,6 +900,19 @@ type VhostOpts struct {
 
 func (o VhostOpts) SSL() bool {
 	return o.CertPath != "" && o.KeyPath != ""
+}
+
+// ServerNames returns the nginx server_name list for the domain.
+func (o VhostOpts) ServerNames() string {
+	return strings.Join(wwwHostNames(o.DomainName), " ")
+}
+
+// wwwHostNames returns the canonical certificate and vhost hostnames for a domain.
+func wwwHostNames(domain string) []string {
+	if strings.HasPrefix(strings.ToLower(domain), "www.") {
+		return []string{domain}
+	}
+	return []string{domain, "www." + domain}
 }
 
 type Result struct {
@@ -1197,21 +1210,22 @@ func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certP
 // EnableLetsEncrypt obtains a certificate with acme.sh and re-renders the vhost with SSL.
 //
 // Rate-limit resilience (teardown fix — see ssl_heal.go):
-//  1. REUSE-BEFORE-ISSUE: when a valid certificate (notAfter > now+30d, covers domain+www,
-//     matching key) exists in the acme store or /etc/pki, deploy it and SKIP issuance.
+//  1. REUSE-BEFORE-ISSUE: when a valid certificate (notAfter > now+30d, covers
+//     the required hostnames, matching key) exists in the acme store or /etc/pki,
+//     deploy it and SKIP issuance.
 //     This never triggers a re-issue with the same SAN set (LE 429 rate-limit).
 //  2. FAIL-SAFE: when issuance fails (including 429), sslFailSafe keeps 443 alive with the
 //     existing/self-signed certificate. The vhost is never dropped to HTTP-only.
-func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, err error) {
+func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, real bool, err error) {
 	if err := ValidateDomain(domainName); err != nil {
-		return "", "", err
+		return "", "", false, err
 	}
 	domainName = strings.ToLower(strings.TrimSpace(domainName))
 	phpVersion = normalizePHP(phpVersion)
 
 	sslDir, err := prepareCertificateDir(domainName)
 	if err != nil {
-		return "", "", err
+		return "", "", false, err
 	}
 	certPath = filepath.Join(sslDir, domainName+".crt")
 	keyPath = filepath.Join(sslDir, domainName+".key")
@@ -1224,11 +1238,11 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 				source = "letsencrypt"
 			}
 			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, source); e != nil {
-				return "", "", e
+				return "", "", false, e
 			}
 			removeHomeCertificate(systemUser, domainName)
 			log.Printf("ssl reuse: %s valid %s certificate found; fresh LE issuance skipped (rate-limit protection)", domainName, source)
-			return cp, kp, nil
+			return cp, kp, real, nil
 		}
 	}
 
@@ -1241,10 +1255,11 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	args := []string{
 		"--issue",
 		"--webroot", "/var/www/_acme",
-		"-d", domainName,
-		"-d", "www." + domainName,
-		"--keylength", "2048",
 	}
+	for _, host := range wwwHostNames(domainName) {
+		args = append(args, "-d", host)
+	}
+	args = append(args, "--keylength", "2048")
 	if out, e := acmeCommand(args...).CombinedOutput(); e != nil {
 		// FAIL-SAFE (no teardown): keep 443 alive with the existing/self-signed cert.
 		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme issue: "+strings.TrimSpace(string(out)))
@@ -1263,13 +1278,13 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme install-cert: "+strings.TrimSpace(string(out)))
 	}
 	if err := applyCertificatePermissions(sslDir, certPath, keyPath); err != nil {
-		return "", "", err
+		return "", "", false, err
 	}
 	if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPath, "letsencrypt"); e != nil {
-		return "", "", e
+		return "", "", false, e
 	}
 	removeHomeCertificate(systemUser, domainName)
-	return certPath, keyPath, nil
+	return certPath, keyPath, true, nil
 }
 
 // DisableSSL re-renders the vhost without SSL while retaining certificate files for reuse.
