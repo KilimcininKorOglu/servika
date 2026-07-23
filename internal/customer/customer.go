@@ -3,6 +3,7 @@
 package customer
 
 import (
+	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -38,6 +39,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "username and password are required")
 		return
 	}
+	ip := httpx.ClientIP(r)
 
 	// Validate the credentials against ftp_accounts.
 	var ftpID, domainID int64
@@ -49,6 +51,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		 WHERE fa.username = ?`, req.Username).
 		Scan(&ftpID, &domainID, &storedPassword, &status, &domainName)
 	if errors.Is(err, sql.ErrNoRows) {
+		auth.WriteAudit(h.DB, 0, req.Username, ip, "customer.login", req.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
@@ -57,14 +60,16 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if status != "active" {
-		httpx.WriteError(w, http.StatusForbidden, "fTP account is suspended")
+		httpx.WriteError(w, http.StatusForbidden, "FTP account is suspended")
 		return
 	}
-	// Plain text comparison (Pure-FTPd MYSQLCrypt cleartext)
-	if req.Password != storedPassword {
+	// Pure-FTPd stores cleartext passwords; compare equal-length values in constant time.
+	if len(req.Password) != len(storedPassword) || subtle.ConstantTimeCompare([]byte(req.Password), []byte(storedPassword)) != 1 {
+		auth.WriteAudit(h.DB, 0, req.Username, ip, "customer.login", req.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
+	auth.WriteAudit(h.DB, 0, req.Username, ip, "customer.login", req.Username, true)
 
 	// Generate a customer JWT scoped to the domain.
 	c := auth.CustomerClaims{

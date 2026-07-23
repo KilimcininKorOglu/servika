@@ -7,9 +7,71 @@ import (
 	"strings"
 )
 
-const panelIndexNoCacheSentinel = "# SERVIKA-PANEL-INDEX-NO-CACHE v1"
+const (
+	panelIndexNoCacheSentinel   = "# SERVIKA-PANEL-INDEX-NO-CACHE v1"
+	panelLoginRateLimitSentinel = "# SERVIKA-LOGIN-RATELIMIT v1"
+)
 
 var panelIndexLocationPattern = regexp.MustCompile(`(?m)    location / \{\s*\n\s*try_files \$uri \$uri/ /index\.html;\s*\n\s*\}`)
+
+const panelLoginRateLimitHTTPBlock = `# SERVIKA-LOGIN-RATELIMIT v1
+# Login endpoint defense at the nginx layer. The application also enforces
+# a per-IP failed-login lockout in middleware.LoginRateLimit.
+limit_req_zone $binary_remote_addr zone=servika_login:10m rate=20r/m;
+`
+
+const panelLoginRateLimitLocations = `    location = /api/v1/auth/login {
+        limit_req zone=servika_login burst=8 nodelay;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600s;
+    }
+
+    location = /api/v1/customer/login {
+        limit_req zone=servika_login burst=8 nodelay;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600s;
+    }
+`
+
+func healPanelLoginRateLimitOnStartup() {
+	original, err := os.ReadFile(panelVhostPath)
+	if err != nil {
+		return
+	}
+	content := string(original)
+	if strings.Contains(content, panelLoginRateLimitSentinel) {
+		return
+	}
+	apiAnchor := "    location /api/ {"
+	apiIndex := strings.Index(content, apiAnchor)
+	if apiIndex < 0 {
+		log.Printf("panel login rate limit repair: canonical API location was not found")
+		return
+	}
+	updated := panelLoginRateLimitHTTPBlock + "\n" + content[:apiIndex] + panelLoginRateLimitLocations + "\n" + content[apiIndex:]
+	if err := os.WriteFile(panelVhostPath, []byte(updated), 0644); err != nil {
+		log.Printf("panel login rate limit repair: could not write vhost: %v", err)
+		return
+	}
+	if output, err := tenantCommand("nginx", "-t").CombinedOutput(); err != nil {
+		_ = os.WriteFile(panelVhostPath, original, 0644)
+		log.Printf("panel login rate limit repair: nginx configuration failed, vhost restored: %s", strings.TrimSpace(string(output)))
+		return
+	}
+	if output, err := tenantCommand("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
+		log.Printf("panel login rate limit repair: nginx reload failed: %s", strings.TrimSpace(string(output)))
+	}
+}
 
 func healPanelIndexNoCacheOnStartup() {
 	original, err := os.ReadFile(panelVhostPath)

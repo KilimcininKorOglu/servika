@@ -153,6 +153,7 @@ func Init(db *sql.DB) {
 	ensureArchiveTools()
 	healCacheZoneOnStartup()
 	healPanelVhostHeadersOnStartup()
+	healPanelLoginRateLimitOnStartup()
 	healPanelIndexNoCacheOnStartup()
 	ensurePMAStartup()
 	healVhostsOnStartup()

@@ -80,7 +80,7 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !verifyRootPassword(b.Current) {
-		writeAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", false)
+		WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", false)
 		httpx.WriteError(w, http.StatusUnauthorized, "current password is incorrect")
 		return
 	}
@@ -94,7 +94,7 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "password change failed")
 		return
 	}
-	writeAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", true)
+	WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", true)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -148,7 +148,7 @@ func (h *Handlers) TwoFAEnable(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "2FA settings could not be saved")
 		return
 	}
-	writeAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.2fa.enable", "root", true)
+	WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.2fa.enable", "root", true)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -176,6 +176,6 @@ func (h *Handlers) TwoFADisable(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "2FA could not be disabled")
 		return
 	}
-	writeAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.2fa.disable", "root", true)
+	WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.2fa.disable", "root", true)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }

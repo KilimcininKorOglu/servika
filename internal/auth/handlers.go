@@ -46,7 +46,7 @@ func rootShadowHash() string {
 	if err != nil {
 		return ""
 	}
-	for _, line := range strings.Split(string(data), "\n") {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		if strings.HasPrefix(line, "root:") {
 			parts := strings.Split(line, ":")
 			if len(parts) >= 2 {
@@ -113,12 +113,12 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.Username != "root" {
-		writeAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
+		WriteAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
 	if !verifyRootPassword(req.Password) {
-		writeAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
+		WriteAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
@@ -145,7 +145,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 			}
 			step, ok := TOTPVerifyStep(sec, req.Code, lastStep)
 			if !ok {
-				writeAudit(h.DB, 1, "root", httpx.ClientIP(r), "auth.2fa", "root", false)
+				WriteAudit(h.DB, 1, "root", httpx.ClientIP(r), "auth.2fa", "root", false)
 				httpx.WriteError(w, http.StatusUnauthorized, "invalid or reused 2FA code")
 				return
 			}
@@ -159,7 +159,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
 		return
 	}
-	writeAudit(h.DB, adminUID, "root", httpx.ClientIP(r), "auth.login", "root", true)
+	WriteAudit(h.DB, adminUID, "root", httpx.ClientIP(r), "auth.login", "root", true)
 
 	resp := loginResp{Token: tok, ExpiresAt: time.Now().Add(time.Duration(h.LifetimeSec) * time.Second).Unix()}
 	resp.User.ID = adminUID
@@ -171,7 +171,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, resp)
 }
 
-func writeAudit(db *sql.DB, uid int64, username, ip, action, target string, ok bool) {
+func WriteAudit(db *sql.DB, uid int64, username, ip, action, target string, ok bool) {
 	var uidVal any
 	if uid > 0 {
 		uidVal = uid
