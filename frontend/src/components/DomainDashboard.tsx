@@ -21,6 +21,7 @@ const ICONS = {
   imunify:   'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622',
   ssh:       'M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
   wordpress: 'M12 21a9 9 0 100-18 9 9 0 000 18zm0 0c2.5-2.5 3-6 3-9s-.5-6.5-3-9m0 18c-2.5-2.5-3-6-3-9s.5-6.5 3-9M3.6 9h16.8M3.6 15h16.8',
+  laravel:   'M12 3l8 4v10l-8 4-8-4V7l8-4zm0 2.2L6 8.2v7.6l6 3 6-3V8.2l-6-3zM8 9h2v5h4v2H8V9z',
   subdomain: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064',
   dns:       'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01',
   redis:     'M13 10V3L4 14h7v7l9-11h-7z',
@@ -42,6 +43,7 @@ export default function DomainDashboard({ domain }: { domain: Domain }) {
     <div>
       <Group title="Applications">
         <ToolCard label="WordPress" description="One-click installation · management" icon={ICONS.wordpress} color="sky" onClick={navigateTo('wordpress')} />
+        <ToolCard label="Laravel Toolkit" description="Install · deploy · queue" icon={ICONS.laravel} color="emerald" onClick={navigateTo('laravel')} />
       </Group>
 
       <Group title="Domain and DNS">

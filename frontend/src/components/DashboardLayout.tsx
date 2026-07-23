@@ -168,6 +168,7 @@ export default function DashboardLayout() {
       { to: `/subscriptions/${customerDomainID}/ssl`, label: 'SSL/TLS', icon: ICONS.lock },
       { to: `/subscriptions/${customerDomainID}/cron`, label: 'Scheduled Tasks', icon: ICONS.monitoring },
       { to: `/subscriptions/${customerDomainID}/git`, label: 'Git Deploy', icon: ICONS.extensions },
+      { to: `/subscriptions/${customerDomainID}/laravel`, label: 'Laravel Toolkit', icon: ICONS.extensions },
       { to: `/subscriptions/${customerDomainID}/logs`, label: 'Logs', icon: ICONS.stats },
       { to: `/subscriptions/${customerDomainID}/backups`, label: 'Backups', icon: ICONS.tools },
     ]},

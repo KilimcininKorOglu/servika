@@ -45,6 +45,90 @@ log_format ` + cacheLogFormatName + ` '$upstream_cache_status';
 `
 )
 
+// PublicHTML returns the default tenant document root.
+func PublicHTML(systemUser string) string {
+	return filepath.Join("/home", systemUser, "public_html")
+}
+
+// SafeWebRootSubdirectory validates a document-root path relative to public_html.
+func SafeWebRootSubdirectory(subdirectory string) (string, error) {
+	rel := strings.Trim(strings.TrimSpace(subdirectory), "/")
+	if rel == "" || rel == "." {
+		return "", nil
+	}
+	if strings.Contains(rel, "..") || !regexp.MustCompile(`^[A-Za-z0-9._/-]+$`).MatchString(rel) {
+		return "", fmt.Errorf("invalid web root")
+	}
+	return rel, nil
+}
+
+// AbsoluteWebRoot resolves a public_html-relative document root and rejects symlink escapes.
+func AbsoluteWebRoot(systemUser, subdirectory string) (string, error) {
+	if !tenantUserPattern.MatchString(systemUser) {
+		return "", fmt.Errorf("invalid system user")
+	}
+	rel, err := SafeWebRootSubdirectory(subdirectory)
+	if err != nil {
+		return "", err
+	}
+	base := PublicHTML(systemUser)
+	abs := base
+	if rel != "" {
+		abs = filepath.Clean(filepath.Join(base, rel))
+	}
+	if abs != base && !strings.HasPrefix(abs, base+string(os.PathSeparator)) {
+		return "", fmt.Errorf("web root cannot leave public_html")
+	}
+	check := abs
+	for check == base || strings.HasPrefix(check, base+string(os.PathSeparator)) {
+		if real, err := filepath.EvalSymlinks(check); err == nil {
+			if real != base && !strings.HasPrefix(real, base+string(os.PathSeparator)) {
+				return "", fmt.Errorf("web root cannot leave public_html through a symlink")
+			}
+			break
+		}
+		if check == base {
+			break
+		}
+		check = filepath.Dir(check)
+	}
+	return abs, nil
+}
+
+// WebRootSubdirectory returns the public_html-relative subdirectory for a stored web root.
+func WebRootSubdirectory(systemUser, webRoot string) string {
+	base := PublicHTML(systemUser)
+	clean := filepath.Clean(strings.TrimSpace(webRoot))
+	if clean == "." || clean == "" || clean == base {
+		return ""
+	}
+	if rel, ok := strings.CutPrefix(clean, base+string(os.PathSeparator)); ok {
+		return rel
+	}
+	return ""
+}
+
+// SafeWebRoot returns a safe absolute document root, falling back to public_html.
+func SafeWebRoot(systemUser, webRoot string) string {
+	sub := WebRootSubdirectory(systemUser, webRoot)
+	abs, err := AbsoluteWebRoot(systemUser, sub)
+	if err != nil {
+		return PublicHTML(systemUser)
+	}
+	return abs
+}
+
+func currentWebRoot(systemUser string) string {
+	if packageDB == nil {
+		return PublicHTML(systemUser)
+	}
+	var webRoot string
+	if err := packageDB.QueryRow(`SELECT COALESCE(web_root,'') FROM domains WHERE system_user=? LIMIT 1`, systemUser).Scan(&webRoot); err != nil {
+		return PublicHTML(systemUser)
+	}
+	return webRoot
+}
+
 var cacheZoneDefinitionPattern = regexp.MustCompile(`keys_zone\s*=\s*` + regexp.QuoteMeta(cacheZoneName) + `\s*:`)
 
 // Init configures database-backed state and repairs managed server configuration.
@@ -985,7 +1069,7 @@ func Provision(domainName, phpVersion string) (*Result, error) {
 	// Create the initial vhost without SSL.
 	if err := renderAndReload(VhostOpts{
 		DomainName: domainName,
-		WebRoot:    filepath.Join(home, "public_html"),
+		WebRoot:    PublicHTML(systemUser),
 		PHPSocket:  socket,
 		PHPVersion: phpVersion,
 	}, systemUser); err != nil {
@@ -994,7 +1078,7 @@ func Provision(domainName, phpVersion string) (*Result, error) {
 
 	return &Result{
 		SystemUser: systemUser,
-		WebRoot:    filepath.Join(home, "public_html"),
+		WebRoot:    PublicHTML(systemUser),
 		FTPHost:    domainName, // The handler stores h.IPv4, the server IP, in the ftp_host database column.
 		PHPVersion: phpVersion,
 		PHPSocket:  socket,
@@ -1036,7 +1120,7 @@ func Deprovision(domainName, systemUser string) error {
 	return nil
 }
 
-func SetPHPVersion(domainName, systemUser, newVersion, certPath, keyPath, sslSource, backend string) (string, error) {
+func SetPHPVersion(domainName, systemUser, newVersion, certPath, keyPath, sslSource, backend, webRoot string) (string, error) {
 	newVersion = normalizePHP(newVersion)
 	for _, config := range phpMap {
 		p := filepath.Join(config.PoolDir, systemUser+".conf")
@@ -1051,10 +1135,9 @@ func SetPHPVersion(domainName, systemUser, newVersion, certPath, keyPath, sslSou
 		return "", err
 	}
 
-	home := "/home/" + systemUser
 	if err := renderAndReload(VhostOpts{
 		DomainName: domainName,
-		WebRoot:    filepath.Join(home, "public_html"),
+		WebRoot:    SafeWebRoot(systemUser, webRoot),
 		PHPSocket:  socket,
 		PHPVersion: newVersion,
 		CertPath:   certPath,
@@ -1166,11 +1249,10 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 // DisableSSL re-renders the vhost without SSL while retaining certificate files for reuse.
 func DisableSSL(domainName, systemUser, phpVersion, backend string) error {
 	phpVersion = normalizePHP(phpVersion)
-	home := "/home/" + systemUser
 	_, socket, _ := phpPoolPath(systemUser, phpVersion)
 	return renderAndReload(VhostOpts{
 		DomainName: domainName,
-		WebRoot:    filepath.Join(home, "public_html"),
+		WebRoot:    SafeWebRoot(systemUser, currentWebRoot(systemUser)),
 		PHPSocket:  socket,
 		PHPVersion: phpVersion,
 		Backend:    backend,
@@ -1451,13 +1533,13 @@ func ApplyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string) 
 }
 
 func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, certPathOverride, keyPathOverride *string) error {
-	var domainName, systemUser, certPath, keyPath, sslSource, backend string
+	var domainName, systemUser, certPath, keyPath, sslSource, backend, webRoot string
 	var suspended int
 	if err := db.QueryRow(
 		`SELECT domain_name, system_user, COALESCE(cert_path,''), COALESCE(key_path,''), COALESCE(ssl_source,''),
-		        COALESCE(web_backend,'php-fpm'), COALESCE(suspended,0)
+		        COALESCE(web_backend,'php-fpm'), COALESCE(web_root,''), COALESCE(suspended,0)
 		 FROM domains WHERE id=?`, domainID).
-		Scan(&domainName, &systemUser, &certPath, &keyPath, &sslSource, &backend, &suspended); err != nil {
+		Scan(&domainName, &systemUser, &certPath, &keyPath, &sslSource, &backend, &webRoot, &suspended); err != nil {
 		return fmt.Errorf("read domain details: %w", err)
 	}
 	if certPathOverride != nil && keyPathOverride != nil {
@@ -1467,12 +1549,11 @@ func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, 
 	if TenantFPMActive(systemUser) {
 		socket = tenantSocket(systemUser)
 	}
-	home := "/home/" + systemUser
 
 	// Default nginx settings to enabled when no row exists.
 	opts := VhostOpts{
 		DomainName:      domainName,
-		WebRoot:         filepath.Join(home, "public_html"),
+		WebRoot:         SafeWebRoot(systemUser, webRoot),
 		PHPSocket:       socket,
 		PHPVersion:      phpVersion,
 		CertPath:        certPath,

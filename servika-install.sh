@@ -54,8 +54,8 @@ step "2) Base packages"
 dnf install -y nginx httpd mariadb-server valkey certbot python3-certbot-nginx \
   clamav clamav-update httpd-tools mod_proxy_html tar openssl policycoreutils-python-utils \
   setools-console jq bind bind-utils nftables unzip zip cronie xfsprogs sudo \
-  acl libarchive bubblewrap rsync git curl >/dev/null 2>&1 \
-  && ok "nginx, httpd, mariadb, valkey, certbot, clamav, bind, nftables, archives, ACL, bubblewrap, utilities" || die "base package installation"
+  acl libarchive bubblewrap rsync git curl nodejs npm >/dev/null 2>&1 \
+  && ok "nginx, httpd, mariadb, valkey, certbot, clamav, bind, nftables, archives, ACL, bubblewrap, git, nodejs, npm, utilities" || die "base package installation"
 command -v unar >/dev/null 2>&1 || dnf install -y unar >/dev/null 2>&1 || warn "unar could not be installed; RAR support will use bsdtar when available"
 
 # ============ 2b) Disk quota (XFS user quota - CloudLinux parity) ============

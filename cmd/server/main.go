@@ -29,6 +29,7 @@ import (
 	"servika/internal/git"
 	githubpkg "servika/internal/github"
 	"servika/internal/httpx"
+	"servika/internal/laravel"
 	"servika/internal/logs"
 	"servika/internal/middleware"
 	"servika/internal/monitor"
@@ -131,6 +132,7 @@ func main() {
 	statH := &stats.Handlers{DB: d}
 	perfH := &performance.Handlers{DB: d}
 	compH := &composer.Handlers{DB: d}
+	laravelH := &laravel.Handlers{DB: d}
 	protectionH := &passwordprotect.Handlers{DB: d}
 	avH := &antivirus.Handlers{DB: d}
 	copyH := &sitecopy.Handlers{DB: d}
@@ -231,6 +233,23 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/performance", perfH.Show)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/composer", compH.Status)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/composer", compH.Run)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/laravel", laravelH.Status)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/laravel/install", laravelH.Install)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/laravel/install/status", laravelH.InstallStatus)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/laravel/artisan", laravelH.Artisan)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/laravel/composer", laravelH.Composer)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/laravel/npm", laravelH.Npm)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/laravel/node", laravelH.NodeVersions)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/laravel/env", laravelH.EnvRead)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/laravel/env", laravelH.EnvWrite)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/laravel/maintenance", laravelH.Maintenance)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/laravel/deploy", laravelH.Deploy)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/laravel/deploy/status", laravelH.DeployStatus)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/laravel/app-candidates", laravelH.AppCandidates)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/laravel/app-root", laravelH.SetAppRoot)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/laravel/schedule", laravelH.Schedule)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/laravel/queue", laravelH.Queue)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/laravel/queue/status", laravelH.QueueStatus)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/redis", redisH.Status)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/redis", redisH.Open)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/redis", redisH.Close)
@@ -273,6 +292,8 @@ func main() {
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/subdomain/{sid}/ssl", subH.SSLRemove)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/web-backend", domainsH.GetWebBackend)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/web-backend", domainsH.SetWebBackend)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/web-root", domainsH.GetWebRoot)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/web-root", domainsH.SetWebRoot)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/ftp/password", domainsH.SetFTPPassword)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/ftp/password-show", domainsH.ShowFTPPassword)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/databases", domainsH.ListDatabases)

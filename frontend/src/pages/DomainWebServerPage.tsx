@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -21,6 +22,7 @@ type Settings = {
 }
 
 type Response = { domain_name: string; settings: Settings }
+type WebRootResponse = { web_root: string; subdirectory: string; candidates: string[] }
 
 const BACKEND_INFO: Record<string, { name: string; icon: string; description: string; color: string }> = {
   'php-fpm': {
@@ -67,6 +69,10 @@ export default function DomainWebServerPage() {
 
   const [backend, setBackend] = useState<string>('php-fpm')
   const [backendChanging, setBackendChanging] = useState(false)
+  const [webRootPath, setWebRootPath] = useState('')
+  const [webRootSubdirectory, setWebRootSubdirectory] = useState('')
+  const [webRootCandidates, setWebRootCandidates] = useState<string[]>([])
+  const [webRootChanging, setWebRootChanging] = useState(false)
 
   function load() {
     if (!id) return
@@ -74,9 +80,13 @@ export default function DomainWebServerPage() {
     Promise.all([
       api.get<Response>(`/domains/${id}/nginx-settings`),
       api.get<{backend: string}>(`/domains/${id}/web-backend`),
-    ]).then(([settingsResponse, backendResponse]) => {
+      api.get<WebRootResponse>(`/domains/${id}/web-root`),
+    ]).then(([settingsResponse, backendResponse, webRootResponse]) => {
       setResponse(settingsResponse.data); setSettings(settingsResponse.data.settings)
       setBackend(backendResponse.data.backend)
+      setWebRootPath(webRootResponse.data.web_root)
+      setWebRootSubdirectory(webRootResponse.data.subdirectory)
+      setWebRootCandidates(webRootResponse.data.candidates || [])
     }).catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
   }
@@ -94,6 +104,22 @@ export default function DomainWebServerPage() {
       setError(apiError(error, 'Could not change backend'))
     } finally {
       setBackendChanging(false)
+    }
+  }
+
+  async function saveWebRoot() {
+    setWebRootChanging(true); setError(null); setSuccess(null)
+    try {
+      const response = await api.put<WebRootResponse>(`/domains/${id}/web-root`, { subdirectory: webRootSubdirectory })
+      setWebRootPath(response.data.web_root)
+      setWebRootSubdirectory(response.data.subdirectory)
+      setWebRootCandidates(response.data.candidates || [])
+      setSuccess('✓ Document root updated and nginx reloaded')
+      setTimeout(() => setSuccess(null), 4000)
+    } catch (error) {
+      setError(apiError(error, 'Could not update document root'))
+    } finally {
+      setWebRootChanging(false)
     }
   }
 
@@ -169,6 +195,40 @@ export default function DomainWebServerPage() {
             )
           })}
         </div>
+      </div>
+
+      <div className="mb-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Document Root</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
+              Choose which public_html subdirectory nginx serves. Laravel applications usually use the public directory.
+            </p>
+          </div>
+          {webRootChanging && <span className="text-xs text-slate-400 dark:text-slate-500">Applying…</span>}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 items-end">
+          <label className="block text-sm">
+            <span className="block mb-1 text-slate-600 dark:text-slate-400">Subdirectory under public_html</span>
+            <input
+              list="web-root-candidates"
+              value={webRootSubdirectory}
+              onChange={event => setWebRootSubdirectory(event.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none"
+              placeholder="public"
+            />
+            <datalist id="web-root-candidates">
+              {webRootCandidates.map(candidate => <option key={candidate || 'public_html'} value={candidate} />)}
+            </datalist>
+          </label>
+          <button onClick={saveWebRoot} disabled={webRootChanging}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-900 text-white dark:bg-white dark:text-slate-900 disabled:opacity-50">
+            Save Document Root
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
+          Current document root: <code className="font-mono text-slate-700 dark:text-slate-300 break-all">{webRootPath || 'public_html'}</code>
+        </p>
       </div>
 
       <div className="mb-5 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
@@ -308,7 +368,7 @@ export default function DomainWebServerPage() {
   )
 }
 
-function Card({ title, children }: { title: string; children: any }) {
+function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-4">
       <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3 pb-2 border-b border-slate-100 dark:border-slate-800">{title}</h3>

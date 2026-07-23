@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"os/user"
 	"strconv"
 	"strings"
@@ -333,11 +334,11 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "php_version is required")
 		return
 	}
-	var domainName, sk, backend, certPath, keyPath, sslSource string
+	var domainName, sk, backend, certPath, keyPath, sslSource, webRoot string
 	var isDemo int
 	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT domain_name, system_user, is_demo, COALESCE(web_backend,'php-fpm'), COALESCE(cert_path,''), COALESCE(key_path,''), COALESCE(ssl_source,'') FROM domains WHERE id=?`, id).
-		Scan(&domainName, &sk, &isDemo, &backend, &certPath, &keyPath, &sslSource)
+		`SELECT domain_name, system_user, is_demo, COALESCE(web_backend,'php-fpm'), COALESCE(cert_path,''), COALESCE(key_path,''), COALESCE(ssl_source,''), COALESCE(web_root,'') FROM domains WHERE id=?`, id).
+		Scan(&domainName, &sk, &isDemo, &backend, &certPath, &keyPath, &sslSource, &webRoot)
 	if errors.Is(err, sql.ErrNoRows) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -350,7 +351,7 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusForbidden, "pHP versions cannot be changed for demo subscriptions")
 		return
 	}
-	socket, err := provisioner.SetPHPVersion(domainName, sk, req.PHPVersion, certPath, keyPath, sslSource, backend)
+	socket, err := provisioner.SetPHPVersion(domainName, sk, req.PHPVersion, certPath, keyPath, sslSource, backend, webRoot)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "pHP version change failed")
 		return
@@ -362,6 +363,100 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"ok": true, "id": id, "php_version": req.PHPVersion, "socket": socket,
+	})
+}
+
+type setWebRootReq struct {
+	Subdirectory string `json:"subdirectory"`
+}
+
+type webRootResp struct {
+	WebRoot      string   `json:"web_root"`
+	Subdirectory string   `json:"subdirectory"`
+	Candidates   []string `json:"candidates"`
+}
+
+func webRootCandidates(systemUser string) []string {
+	base := provisioner.PublicHTML(systemUser)
+	candidates := []string{""}
+	entries, err := os.ReadDir(base)
+	if err != nil {
+		return candidates
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() || strings.HasPrefix(entry.Name(), ".") {
+			continue
+		}
+		if sub, err := provisioner.SafeWebRootSubdirectory(entry.Name()); err == nil && sub != "" {
+			candidates = append(candidates, sub)
+		}
+	}
+	return candidates
+}
+
+func (h *Handlers) GetWebRoot(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	var systemUser, webRoot string
+	err := h.DB.QueryRowContext(r.Context(),
+		`SELECT system_user, COALESCE(web_root,'') FROM domains WHERE id=?`, id).
+		Scan(&systemUser, &webRoot)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
+		return
+	}
+	subdirectory := provisioner.WebRootSubdirectory(systemUser, webRoot)
+	httpx.WriteJSON(w, http.StatusOK, webRootResp{
+		WebRoot:      provisioner.SafeWebRoot(systemUser, webRoot),
+		Subdirectory: subdirectory,
+		Candidates:   webRootCandidates(systemUser),
+	})
+}
+
+func (h *Handlers) SetWebRoot(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	var req setWebRootReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	var systemUser string
+	var isDemo int
+	err := h.DB.QueryRowContext(r.Context(),
+		`SELECT system_user, is_demo FROM domains WHERE id=?`, id).
+		Scan(&systemUser, &isDemo)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
+		return
+	}
+	if isDemo == 1 {
+		httpx.WriteError(w, http.StatusForbidden, "web root cannot be changed for demo subscriptions")
+		return
+	}
+	abs, err := provisioner.AbsoluteWebRoot(systemUser, req.Subdirectory)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid web root")
+		return
+	}
+	if _, err := h.DB.ExecContext(r.Context(), `UPDATE domains SET web_root=? WHERE id=?`, abs, id); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
+		return
+	}
+	if err := provisioner.RerenderVhost(h.DB, id); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "virtual host update failed")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, webRootResp{
+		WebRoot:      abs,
+		Subdirectory: provisioner.WebRootSubdirectory(systemUser, abs),
+		Candidates:   webRootCandidates(systemUser),
 	})
 }
 

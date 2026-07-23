@@ -211,10 +211,9 @@ func generateSelfSigned(domain string) (certPath, keyPath string, err error) {
 // renderAndReload.
 func writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPath, source string) error {
 	_, socket, _ := phpPoolPath(systemUser, phpVersion)
-	home := "/home/" + systemUser
 	return renderAndReload(VhostOpts{
 		DomainName: domainName,
-		WebRoot:    filepath.Join(home, "public_html"),
+		WebRoot:    SafeWebRoot(systemUser, currentWebRoot(systemUser)),
 		PHPSocket:  socket,
 		PHPVersion: phpVersion,
 		CertPath:   certPath,

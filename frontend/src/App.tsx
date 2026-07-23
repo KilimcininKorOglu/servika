@@ -30,6 +30,7 @@ import DomainPHPPage from '@/pages/DomainPHPPage'
 import DomainBackupsPage from '@/pages/DomainBackupsPage'
 import DomainGitPage from '@/pages/DomainGitPage'
 import DomainWebServerPage from '@/pages/DomainWebServerPage'
+import DomainLaravelPage from '@/pages/DomainLaravelPage'
 import DomainWafPage from '@/pages/DomainWafPage'
 import PHPExtensionsPage from '@/pages/PHPExtensionsPage'
 import PackagesPage from '@/pages/PackagesPage'
@@ -96,6 +97,7 @@ export default function App() {
         <Route path="subscriptions/:id/redis"         element={<RedisPage />} />
         <Route path="subscriptions/:id/backups"      element={<DomainBackupsPage />} />
         <Route path="subscriptions/:id/git"           element={<DomainGitPage />} />
+        <Route path="subscriptions/:id/laravel"       element={<DomainLaravelPage />} />
         <Route path="subscriptions/:id/web-server"    element={<DomainWebServerPage />} />
         <Route path="subscriptions/:id/waf"           element={<DomainWafPage />} />
         <Route path="system/php-modules"           element={<PHPExtensionsPage />} />
