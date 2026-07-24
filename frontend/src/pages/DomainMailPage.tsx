@@ -6,12 +6,14 @@ import Breadcrumb from '@/components/Breadcrumb'
 type Domain = { id: number; domain_name: string }
 type Mailbox = { id: number; local_part: string; email: string; status: string; created_at: string }
 type MailStatus = { enabled: boolean; dkim_selector?: string }
+type Alias = { id: number; source: string; destination: string; catch_all: boolean; status: string; created_at: string }
 
 export default function DomainMailPage() {
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [status, setStatus] = useState<MailStatus | null>(null)
   const [mailboxes, setMailboxes] = useState<Mailbox[]>([])
+  const [aliases, setAliases] = useState<Alias[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -19,6 +21,10 @@ export default function DomainMailPage() {
   const [password, setPassword] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState<{ email: string; password: string } | null>(null)
+  const [aliasLocalPart, setAliasLocalPart] = useState('')
+  const [aliasDestination, setAliasDestination] = useState('')
+  const [aliasCatchAll, setAliasCatchAll] = useState(false)
+  const [isSavingAlias, setIsSavingAlias] = useState(false)
 
   function loadMail() {
     if (!id) return
@@ -26,10 +32,12 @@ export default function DomainMailPage() {
     Promise.all([
       api.get<MailStatus>(`/domains/${id}/mail/status`),
       api.get<Mailbox[]>(`/domains/${id}/mail`),
+      api.get<Alias[]>(`/domains/${id}/mail/aliases`),
     ])
-      .then(([statusResponse, mailboxesResponse]) => {
+      .then(([statusResponse, mailboxesResponse, aliasesResponse]) => {
         setStatus(statusResponse.data)
         setMailboxes(mailboxesResponse.data || [])
+        setAliases(aliasesResponse.data || [])
       })
       .catch(cause => setError(apiError(cause)))
       .finally(() => setLoading(false))
@@ -77,6 +85,28 @@ export default function DomainMailPage() {
     }
   }
 
+  async function addAlias(event: React.FormEvent) {
+    event.preventDefault()
+    setError(null)
+    setSuccess(null)
+    setIsSavingAlias(true)
+    try {
+      await api.post(`/domains/${id}/mail/aliases`, {
+        local_part: aliasCatchAll ? '' : aliasLocalPart,
+        destination: aliasDestination,
+      })
+      setAliasLocalPart('')
+      setAliasDestination('')
+      setAliasCatchAll(false)
+      setSuccess('Mail forwarder has been added.')
+      loadMail()
+    } catch (cause) {
+      setError(apiError(cause, 'Could not add the mail forwarder'))
+    } finally {
+      setIsSavingAlias(false)
+    }
+  }
+
   async function removeMailbox(mailbox: Mailbox) {
     if (!confirm(`Delete the mailbox "${mailbox.email}"? The Maildir will remain on disk, and only the account row will be removed.`)) return
     setError(null)
@@ -89,6 +119,18 @@ export default function DomainMailPage() {
     }
   }
 
+  async function removeAlias(alias: Alias) {
+    if (!confirm(`Delete the forwarder "${alias.source}"?`)) return
+    setError(null)
+    setSuccess(null)
+    try {
+      await api.delete(`/domains/${id}/mail/aliases/${alias.id}`)
+      loadMail()
+    } catch (cause) {
+      setError(apiError(cause, 'Could not delete the mail forwarder'))
+    }
+  }
+
   async function resetPassword(mailbox: Mailbox) {
     setError(null)
     setSuccess(null)
@@ -98,6 +140,17 @@ export default function DomainMailPage() {
       setGeneratedPassword({ email: mailbox.email, password: response.data.password })
     } catch (cause) {
       setError(apiError(cause, 'Could not reset the password'))
+    }
+  }
+
+  async function toggleAliasStatus(alias: Alias) {
+    setError(null)
+    setSuccess(null)
+    try {
+      await api.post(`/domains/${id}/mail/aliases/${alias.id}/status`, { status: alias.status === 'active' ? 'suspended' : 'active' })
+      loadMail()
+    } catch (cause) {
+      setError(apiError(cause, 'Could not update the mail forwarder'))
     }
   }
 
@@ -176,6 +229,67 @@ export default function DomainMailPage() {
                       <div className="flex items-center gap-3">
                         <button type="button" onClick={() => resetPassword(mailbox)} className="text-xs text-slate-600 dark:text-slate-300 hover:underline">Reset password</button>
                         <button type="button" onClick={() => removeMailbox(mailbox)} className="text-xs text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">Forwarders and Catch-All</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                Forward incoming mail to one or more destination addresses without creating a mailbox. Catch-all forwards mail for undefined addresses on this domain.
+              </p>
+              <form onSubmit={addAlias} className="mb-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  {aliasCatchAll ? (
+                    <span className="flex-1 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-500 dark:text-slate-400 font-mono">*@{domain?.domain_name}</span>
+                  ) : (
+                    <>
+                      <input value={aliasLocalPart} onChange={event => setAliasLocalPart(event.target.value)} required={!aliasCatchAll} placeholder="support"
+                        className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
+                      <span className="text-slate-500 dark:text-slate-400 text-sm">@{domain?.domain_name}</span>
+                    </>
+                  )}
+                </div>
+                <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                  <input type="checkbox" checked={aliasCatchAll} onChange={event => setAliasCatchAll(event.target.checked)} />
+                  Forward all undefined addresses on this domain
+                </label>
+                <div className="flex items-center gap-2">
+                  <input value={aliasDestination} onChange={event => setAliasDestination(event.target.value)} required placeholder="target1@example.com, target2@example.com"
+                    className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
+                  <button disabled={isSavingAlias || !aliasDestination || (!aliasCatchAll && !aliasLocalPart)}
+                    className="px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
+                    {isSavingAlias ? 'Adding…' : 'Add'}
+                  </button>
+                </div>
+              </form>
+
+              {aliases.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No forwarders yet.</p>
+                </div>
+              ) : (
+                <ul className="divide-y divide-slate-50 dark:divide-slate-700/50">
+                  {aliases.map(alias => (
+                    <li key={alias.id} className="flex items-center justify-between py-2.5">
+                      <div>
+                        <span className="text-sm font-mono text-slate-800 dark:text-slate-200">
+                          {alias.catch_all ? `*@${domain?.domain_name}` : alias.source}
+                        </span>
+                        <span className="mx-1.5 text-slate-400">→</span>
+                        <span className="text-sm font-mono text-slate-600 dark:text-slate-400">{alias.destination}</span>
+                        {alias.status !== 'active' && (
+                          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">suspended</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button type="button" onClick={() => toggleAliasStatus(alias)} className="text-xs text-slate-600 dark:text-slate-300 hover:underline">
+                          {alias.status === 'active' ? 'Suspend' : 'Activate'}
+                        </button>
+                        <button type="button" onClick={() => removeAlias(alias)} className="text-xs text-red-600 dark:text-red-400 hover:underline">Delete</button>
                       </div>
                     </li>
                   ))}
