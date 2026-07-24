@@ -182,7 +182,10 @@ func main() {
 	r.Use(middleware.MaintenanceMode)
 	r.Use(middleware.BodyLimit)
 
-	r.Post("/api/v1/git-webhook/{secret}", gitH.Webhook)
+	// Public webhook: throttle per IP so a leaked URL cannot drive unbounded
+	// repository pulls or unauthenticated DB lookups on invalid secrets.
+	r.With(middleware.RateLimit("git-webhook", 30, time.Minute)).
+		Post("/api/v1/git-webhook/{secret}", gitH.Webhook)
 	r.Post("/api/v1/internal/pma-redeem", pmaH.Redeem)
 	r.Get("/api/v1/plugin-bundle/{name}/app.js", pluginH.Bundle)
 

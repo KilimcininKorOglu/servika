@@ -126,6 +126,71 @@ func (s *statusWriter) WriteHeader(c int) {
 	s.ResponseWriter.WriteHeader(c)
 }
 
+// ---- General per-IP request rate limiter (for public non-login endpoints) ----
+
+type ipWindow struct {
+	hits []time.Time
+}
+
+var (
+	genMu  sync.Mutex
+	genMap = map[string]*ipWindow{} // key: limiter-name|ip
+)
+
+func init() { go genReaper() }
+
+// genReaper drops IP windows whose newest hit is older than 30 minutes.
+func genReaper() {
+	t := time.NewTicker(10 * time.Minute)
+	defer t.Stop()
+	for range t.C {
+		cutoff := time.Now().Add(-30 * time.Minute)
+		genMu.Lock()
+		for key, w := range genMap {
+			if len(w.hits) == 0 || w.hits[len(w.hits)-1].Before(cutoff) {
+				delete(genMap, key)
+			}
+		}
+		genMu.Unlock()
+	}
+}
+
+// RateLimit returns a per-IP fixed-window limiter allowing max requests per window.
+// name namespaces the counter so multiple limiters do not share state. The client IP
+// comes from httpx.ClientIP, which trusts proxy headers only from the local nginx peer.
+func RateLimit(name string, maxRequests int, window time.Duration) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			key := name + "|" + httpx.ClientIP(r)
+			now := time.Now()
+			cutoff := now.Add(-window)
+			genMu.Lock()
+			rec := genMap[key]
+			if rec == nil {
+				rec = &ipWindow{}
+				genMap[key] = rec
+			}
+			kept := rec.hits[:0]
+			for _, t := range rec.hits {
+				if t.After(cutoff) {
+					kept = append(kept, t)
+				}
+			}
+			rec.hits = kept
+			if len(rec.hits) >= maxRequests {
+				retry := int(rec.hits[0].Add(window).Sub(now).Seconds()) + 1
+				genMu.Unlock()
+				w.Header().Set("Retry-After", strconv.Itoa(retry))
+				httpx.WriteError(w, http.StatusTooManyRequests, "rate limit exceeded — try again later")
+				return
+			}
+			rec.hits = append(rec.hits, now)
+			genMu.Unlock()
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // LoginRateLimit provides brute-force protection on authentication endpoints
 // (counts 401 responses per IP).
 func LoginRateLimit(next http.Handler) http.Handler {
