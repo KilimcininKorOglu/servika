@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Resolve version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Build Go release binaries
+        run: bash scripts/build-assets.sh "$VERSION"
+
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+        working-directory: frontend
+
+      - name: Package frontend and migrations archives
+        run: |
+          tar -czf release/frontend-dist.tar.gz -C frontend/dist .
+          tar -czf release/migrations.tar.gz -C migrations .
+
+      - name: Assemble per-architecture release bundles
+        run: |
+          for ARCH in linux_amd64 linux_arm64; do
+            BUNDLE="$(mktemp -d)"
+            cp servika-install.sh "$BUNDLE/"
+            mkdir -p "$BUNDLE/assets/$ARCH"
+            cp "release/$ARCH/servika-server" "release/$ARCH/servika-seed-admin" "$BUNDLE/assets/$ARCH/"
+            cp release/frontend-dist.tar.gz release/migrations.tar.gz "$BUNDLE/assets/"
+            cp -r assets/ops assets/nginx assets/php-fpm assets/phpmyadmin assets/systemd assets/mail "$BUNDLE/assets/"
+            tar -czf "release/servika-${VERSION}-${ARCH}.tar.gz" -C "$BUNDLE" .
+            rm -rf "$BUNDLE"
+          done
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Servika $VERSION" \
+            --generate-notes \
+            "release/servika-${VERSION}-linux_amd64.tar.gz" \
+            "release/servika-${VERSION}-linux_arm64.tar.gz"
