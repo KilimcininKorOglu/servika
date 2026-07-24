@@ -10,6 +10,11 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { error }
   }
 
+  componentDidCatch(error: Error) {
+    // Keep technical details in the console for debugging without showing them to users.
+    console.error('ErrorBoundary caught an error:', error)
+  }
+
   render() {
     if (this.state.error) {
       return (
@@ -19,9 +24,12 @@ export default class ErrorBoundary extends Component<Props, State> {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
               The application encountered an unexpected error. Please try refreshing the page.
             </p>
-            <pre className="text-xs text-left text-rose-600 bg-rose-50 dark:bg-rose-950 dark:text-rose-400 rounded-lg p-3 mb-4 overflow-auto max-h-32">
-              {this.state.error.message}
-            </pre>
+            {/* Raw exception text is shown only in development, never to end users. */}
+            {import.meta.env.DEV && (
+              <pre className="text-xs text-left text-rose-600 bg-rose-50 dark:bg-rose-950 dark:text-rose-400 rounded-lg p-3 mb-4 overflow-auto max-h-32">
+                {this.state.error.message}
+              </pre>
+            )}
             <button
               onClick={() => window.location.reload()}
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors"
