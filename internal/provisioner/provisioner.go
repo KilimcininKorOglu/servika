@@ -1230,19 +1230,15 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	certPath = filepath.Join(sslDir, domainName+".crt")
 	keyPath = filepath.Join(sslDir, domainName+".key")
 
-	// (1) Reuse-before-issue: skip a fresh issuance when a valid certificate exists.
-	if src, srcKey, real := bestCertificate(domainName, 30); src != "" {
+	// (1) Reuse-before-issue: skip a fresh issuance only when a valid real CA certificate exists.
+	if src, srcKey := reusableLetsEncryptCertificate(domainName, 30); src != "" {
 		if cp, kp, e := installToPKI(domainName, src, srcKey); e == nil {
-			source := "self-signed"
-			if real {
-				source = "letsencrypt"
-			}
-			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, source); e != nil {
+			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, "letsencrypt"); e != nil {
 				return "", "", false, e
 			}
 			removeHomeCertificate(systemUser, domainName)
-			log.Printf("ssl reuse: %s valid %s certificate found; fresh LE issuance skipped (rate-limit protection)", domainName, source)
-			return cp, kp, real, nil
+			log.Printf("ssl reuse: %s valid letsencrypt certificate found; fresh LE issuance skipped (rate-limit protection)", domainName)
+			return cp, kp, true, nil
 		}
 	}
 

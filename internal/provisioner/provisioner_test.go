@@ -2,10 +2,17 @@ package provisioner
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	"math/big"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestDangerousNginxDirectiveRejectsPrivilegedOperations(t *testing.T) {
@@ -265,6 +272,99 @@ func TestCertificateSystemDirUsesServikaPKIPath(t *testing.T) {
 	if got := certSystemDir("example.com"); got != "/etc/pki/servika/example.com" {
 		t.Fatalf("certSystemDir() = %q, want %q", got, "/etc/pki/servika/example.com")
 	}
+}
+
+func TestReusableLetsEncryptCertificateSkipsSelfSignedCertificate(t *testing.T) {
+	domain := "example.com"
+	certRoot := t.TempDir()
+	t.Setenv("SERVIKA_CERT_ROOT", certRoot)
+	t.Setenv("SERVIKA_ACME_HOME", t.TempDir())
+
+	certPath := filepath.Join(certRoot, domain, domain+".crt")
+	keyPath := filepath.Join(certRoot, domain, domain+".key")
+	writeCertificateFixture(t, certPath, keyPath, domain, true)
+
+	cert, key := reusableLetsEncryptCertificate(domain, 30)
+	if cert != "" || key != "" {
+		t.Fatalf("reusableLetsEncryptCertificate() = %q, %q, want no reusable certificate", cert, key)
+	}
+}
+
+func TestReusableLetsEncryptCertificateAcceptsRealCACertificate(t *testing.T) {
+	domain := "example.com"
+	acmeHome := t.TempDir()
+	t.Setenv("SERVIKA_ACME_HOME", acmeHome)
+	t.Setenv("SERVIKA_CERT_ROOT", t.TempDir())
+
+	certPath := filepath.Join(acmeHome, domain, "fullchain.cer")
+	keyPath := filepath.Join(acmeHome, domain, domain+".key")
+	writeCertificateFixture(t, certPath, keyPath, domain, false)
+
+	cert, key := reusableLetsEncryptCertificate(domain, 30)
+	if cert != certPath || key != keyPath {
+		t.Fatalf("reusableLetsEncryptCertificate() = %q, %q, want %q, %q", cert, key, certPath, keyPath)
+	}
+}
+
+func writeCertificateFixture(t *testing.T, certPath, keyPath, domain string, selfSigned bool) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(certPath), 0755); err != nil {
+		t.Fatalf("create certificate directory: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(keyPath), 0755); err != nil {
+		t.Fatalf("create key directory: %v", err)
+	}
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("generate key: %v", err)
+	}
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(2),
+		Subject:      pkix.Name{CommonName: domain},
+		DNSNames:     wwwHostNames(domain),
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(90 * 24 * time.Hour),
+		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+	}
+	issuer := template
+	issuerKey := key
+	if !selfSigned {
+		caKey, caCert := certificateAuthorityFixture(t)
+		issuer = caCert
+		issuerKey = caKey
+	}
+	certDER, err := x509.CreateCertificate(rand.Reader, template, issuer, &key.PublicKey, issuerKey)
+	if err != nil {
+		t.Fatalf("create certificate: %v", err)
+	}
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
+	if err := os.WriteFile(certPath, certPEM, 0644); err != nil {
+		t.Fatalf("write certificate: %v", err)
+	}
+	if err := os.WriteFile(keyPath, keyPEM, 0600); err != nil {
+		t.Fatalf("write key: %v", err)
+	}
+}
+
+func certificateAuthorityFixture(t *testing.T) (*rsa.PrivateKey, *x509.Certificate) {
+	t.Helper()
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("generate CA key: %v", err)
+	}
+	cert := &x509.Certificate{
+		SerialNumber:          big.NewInt(1),
+		Subject:               pkix.Name{CommonName: "Test CA"},
+		NotBefore:             time.Now().Add(-time.Hour),
+		NotAfter:              time.Now().Add(365 * 24 * time.Hour),
+		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
+		BasicConstraintsValid: true,
+		IsCA:                  true,
+	}
+	return key, cert
 }
 
 func TestReadTenantCertificateAcceptsOwnedRegularFile(t *testing.T) {

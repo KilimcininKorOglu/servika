@@ -149,6 +149,15 @@ func bestCertificate(domain string, minDays int) (certPath, keyPath string, real
 	return bestCert, bestKey, bestReal
 }
 
+// reusableLetsEncryptCertificate returns only real CA certificates for pre-issue reuse.
+func reusableLetsEncryptCertificate(domain string, minDays int) (certPath, keyPath string) {
+	certPath, keyPath, real := bestCertificate(domain, minDays)
+	if !real {
+		return "", ""
+	}
+	return certPath, keyPath
+}
+
 // installToPKI copies srcCert/srcKey into /etc/pki/servika/<domain>/ (cert 0644,
 // key 0600, root-owned, restorecon -> cert_t). When the source is already the target,
 // only permissions/context are applied (idempotent). Returns the target cert/key paths.
