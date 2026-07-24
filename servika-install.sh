@@ -145,7 +145,7 @@ ok "panel DB + user (panel@127.0.0.1)"
 # ============ 5) DIRECTORIES + ENV ============
 step "5) Directories + environment"
 mkdir -p /opt/servika/bin /opt/servika/frontend-dist /opt/servika/src/migrations \
-         /opt/servika/src/mail-templates /opt/servika/pma-signon /etc/servika /etc/ssl/servika
+         /opt/servika/src/mail-templates /opt/servika/src/scripts /opt/servika/pma-signon /etc/servika /etc/ssl/servika
 JWT=$(openssl rand -hex 32); RADMIN=$(openssl rand -hex 24)
 cat > /etc/servika/env <<ENV
 SERVIKA_LISTEN=127.0.0.1:8080

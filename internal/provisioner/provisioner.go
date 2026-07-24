@@ -215,6 +215,9 @@ func ensureCacheZone() (bool, error) {
 	if err := os.MkdirAll(zoneDir, 0700); err != nil {
 		return false, fmt.Errorf("create cache directory: %w", err)
 	}
+	if err := os.Chmod(filepath.Dir(zoneDir), 0o755); err != nil {
+		return false, fmt.Errorf("set cache parent permissions: %w", err)
+	}
 	if uid, gid, err := uidGid("nginx"); err == nil {
 		if err := os.Chown(zoneDir, uid, gid); err != nil {
 			return false, fmt.Errorf("set cache directory ownership: %w", err)
