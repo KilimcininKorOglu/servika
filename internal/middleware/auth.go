@@ -150,6 +150,27 @@ func DomainOwnedBy(r *http.Request, domainID int64) bool {
 	return false
 }
 
+// EnforceCustomerNotSuspended applies the same suspended-domain gate as CustomerScope
+// for handlers that cannot use the CustomerScope middleware because their route is not
+// keyed by the "id" parameter (for example the pma-token route keyed by dbId).
+// Administrators bypass the check, mirroring CustomerScope. It writes the HTTP error and
+// returns false when access must be denied; callers must stop on false.
+func EnforceCustomerNotSuspended(w http.ResponseWriter, r *http.Request, domainID int64) bool {
+	if ClaimsFrom(r) != nil {
+		return true // Administrator.
+	}
+	suspended, err := suspendedDomainLookup(r.Context(), domainID)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not verify account status")
+		return false
+	}
+	if suspended {
+		httpx.WriteError(w, http.StatusForbidden, "account is suspended")
+		return false
+	}
+	return true
+}
+
 func ClaimsFrom(r *http.Request) *auth.Claims {
 	v := r.Context().Value(claimsKey)
 	if v == nil {

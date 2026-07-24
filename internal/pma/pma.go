@@ -69,6 +69,12 @@ func (h *Handlers) RequestToken(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "database not found")
 		return
 	}
+	// This route is keyed by dbId, so CustomerScope (which reads "id") cannot gate it.
+	// Apply the same suspended-domain check here so a suspended customer cannot mint a
+	// phpMyAdmin signon token that bypasses the suspension boundary.
+	if !middleware.EnforceCustomerNotSuspended(w, r, domainID) {
+		return
+	}
 	if demo == 1 {
 		httpx.WriteError(w, http.StatusForbidden, "phpMyAdmin is unavailable for demo subscriptions")
 		return
