@@ -334,6 +334,14 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	if _, err := h.DB.ExecContext(r.Context(), `DELETE FROM domain_traffic_cursor WHERE domain_id=?`, id); err != nil {
 		log.Printf("domain traffic cursor cleanup warn (%d): %v", id, err)
 	}
+	// These domain-owned tables have a domain_id index but no ON DELETE CASCADE, so
+	// their rows would be orphaned after the domain is deleted. Remove them explicitly.
+	for _, table := range []string{"protected_directories", "av_findings", "av_scans", "subdomains"} {
+		if _, err := h.DB.ExecContext(r.Context(),
+			"DELETE FROM "+table+" WHERE domain_id=?", id); err != nil {
+			log.Printf("%s cleanup warn (%d): %v", table, id, err)
+		}
+	}
 
 	if _, err := h.DB.ExecContext(r.Context(), `DELETE FROM domains WHERE id=?`, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "domain deletion failed")
