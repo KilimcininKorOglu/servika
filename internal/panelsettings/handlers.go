@@ -154,7 +154,9 @@ func issuePanelCertificate(domain string) error {
 	issue := exec.Command(config.ACMEBin(), "--issue", "--webroot", acmeWebroot, "-d", domain, "--keylength", "2048")
 	issue.Env = acmeEnv()
 	if out, err := issue.CombinedOutput(); err != nil {
-		return fmt.Errorf("acme issue failed: %s", strings.TrimSpace(string(out)))
+		if !isACMERenewSkip(err) {
+			return fmt.Errorf("acme issue failed: %s", strings.TrimSpace(string(out)))
+		}
 	}
 	install := exec.Command(config.ACMEBin(), "--install-cert", "-d", domain, "--cert-file", panelCertPath, "--key-file", panelKeyPath, "--fullchain-file", panelCertPath, "--reloadcmd", "systemctl reload nginx")
 	install.Env = acmeEnv()
@@ -168,6 +170,11 @@ func issuePanelCertificate(domain string) error {
 		return fmt.Errorf("set panel certificate permissions: %w", err)
 	}
 	return nil
+}
+
+func isACMERenewSkip(err error) bool {
+	var exitErr *exec.ExitError
+	return errors.As(err, &exitErr) && exitErr.ExitCode() == 2
 }
 
 func acmeEnv() []string {
