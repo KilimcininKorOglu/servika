@@ -149,7 +149,13 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 				httpx.WriteError(w, http.StatusUnauthorized, "invalid or reused 2FA code")
 				return
 			}
-			_, _ = h.DB.Exec(`UPDATE users SET totp_last_step=? WHERE id=1`, step) // replay protection
+			// Persist the accepted step for replay protection. FAIL-CLOSED: if this
+			// write fails the code would remain replayable within its validity window,
+			// so deny the login rather than issuing a token on unguaranteed protection.
+			if _, err := h.DB.Exec(`UPDATE users SET totp_last_step=? WHERE id=1`, step); err != nil {
+				httpx.WriteError(w, http.StatusInternalServerError, "could not update 2FA state")
+				return
+			}
 		}
 	}
 
