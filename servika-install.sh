@@ -132,7 +132,15 @@ systemctl restart mariadb >/dev/null 2>&1; sleep 2
 systemctl is-active --quiet mariadb || die "MariaDB (after security hardening) did not start"
 ok "MariaDB security: 3306 bound to loopback + local-infile disabled"
 
-DBPASS=$(openssl rand -hex 16)
+if [ -s /etc/servika/env ]; then
+  DBPASS=$(sed -n 's/^SERVIKA_DB_PASS=//p' /etc/servika/env | tail -n 1)
+  [ -n "${DBPASS:-}" ] || DBPASS=$(sed -n 's/^SERVIKA_DB_DSN=panel:\([^@]*\)@.*/\1/p' /etc/servika/env | tail -n 1)
+  JWT=$(sed -n 's/^SERVIKA_JWT_SECRET=//p' /etc/servika/env | tail -n 1)
+  RADMIN=$(sed -n 's/^SERVIKA_REDIS_ADMIN_PASS=//p' /etc/servika/env | tail -n 1)
+fi
+[ -n "${DBPASS:-}" ] || DBPASS=$(openssl rand -hex 16)
+[ -n "${JWT:-}" ] || JWT=$(openssl rand -hex 32)
+[ -n "${RADMIN:-}" ] || RADMIN=$(openssl rand -hex 24)
 mysql -u root <<SQL
 CREATE DATABASE IF NOT EXISTS panel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'panel'@'127.0.0.1' IDENTIFIED BY '$DBPASS';
@@ -146,7 +154,6 @@ ok "panel DB + user (panel@127.0.0.1)"
 step "5) Directories + environment"
 mkdir -p /opt/servika/bin /opt/servika/frontend-dist /opt/servika/src/migrations \
          /opt/servika/src/mail-templates /opt/servika/src/scripts /opt/servika/pma-signon /etc/servika /etc/ssl/servika
-JWT=$(openssl rand -hex 32); RADMIN=$(openssl rand -hex 24)
 cat > /etc/servika/env <<ENV
 SERVIKA_LISTEN=127.0.0.1:8080
 SERVIKA_ENV=production
@@ -208,7 +215,7 @@ SERVIKA_IONCUBE_URL=https://downloads.ioncube.com/loader_downloads/ioncube_loade
 SERVIKA_UPDATE_BOOTSTRAP_URL=https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update
 ENV
 chmod 600 /etc/servika/env
-ok "/etc/servika/env (production runtime and operations environment generated)"
+ok "/etc/servika/env (production runtime and operations environment preserved or generated)"
 
 # ============ 6) ARTIFACT DEPLOYMENT ============
 step "6) Panel binary + frontend + migrations"
