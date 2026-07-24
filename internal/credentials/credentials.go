@@ -225,14 +225,24 @@ func MySQLDropAllForDomain(db *sql.DB, domainID int64) error {
 		return err
 	}
 	defer func() { _ = rows.Close() }()
+	// Continue past a single failure so remaining accounts are still dropped, but
+	// accumulate errors: a swallowed drop leaves a live MySQL user/GRANT after the
+	// domain is gone (credential not revoked), so the caller must be able to react.
+	var errs []error
 	for rows.Next() {
 		var dbName, dbUser string
 		if err := rows.Scan(&dbName, &dbUser); err != nil {
+			errs = append(errs, err)
 			continue
 		}
-		_ = MySQLDropDB(db, dbName, dbUser)
+		if err := MySQLDropDB(db, dbName, dbUser); err != nil {
+			errs = append(errs, fmt.Errorf("drop %s/%s: %w", dbName, dbUser, err))
+		}
 	}
-	return nil
+	if err := rows.Err(); err != nil {
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
 }
 
 // SyncSSHPassword synchronizes the system account password with the FTP password.

@@ -8,6 +8,9 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -68,9 +71,14 @@ func enableUser(systemUser, password string) error {
 	return err
 }
 
-func disableUser(systemUser string) {
-	_, _ = cli("ACL", "DELUSER", systemUser)
-	_, _ = cli("ACL", "SAVE")
+func disableUser(systemUser string) error {
+	// A swallowed DELUSER leaves the ACL user active with a still-valid password
+	// after the panel believes it revoked; surface the error to the caller.
+	if _, err := cli("ACL", "DELUSER", systemUser); err != nil {
+		return err
+	}
+	_, err := cli("ACL", "SAVE")
+	return err
 }
 
 // ---- Automatic WordPress connection through wp-cli as the domain user ----
@@ -231,7 +239,9 @@ func (h *Handlers) Open(w http.ResponseWriter, r *http.Request) {
 		`INSERT INTO domain_redis (domain_id, system_user, redis_pass, enabled) VALUES (?,?,?,1)
 		 ON DUPLICATE KEY UPDATE system_user=VALUES(system_user), redis_pass=VALUES(redis_pass), enabled=1`,
 		id, systemUser, password); err != nil {
-		disableUser(systemUser) // Roll back the ACL if the database write fails.
+		if err := disableUser(systemUser); err != nil { // Roll back the ACL if the database write fails.
+			log.Printf("redis enable rollback ACL user %s: %v", systemUser, err)
+		}
 		httpx.WriteError(w, http.StatusInternalServerError, "redis settings could not be saved")
 		return
 	}
@@ -251,16 +261,30 @@ func (h *Handlers) Close(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	disconnectWordPress(systemUser) // Remove the WordPress drop-in while the credentials are still valid.
-	disableUser(systemUser)
-	_, _ = h.DB.ExecContext(r.Context(), `DELETE FROM domain_redis WHERE domain_id=?`, id)
+	if err := disableUser(systemUser); err != nil {
+		log.Printf("redis disable ACL user %s: %v", systemUser, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not revoke Redis credentials")
+		return
+	}
+	if _, err := h.DB.ExecContext(r.Context(), `DELETE FROM domain_redis WHERE domain_id=?`, id); err != nil {
+		log.Printf("redis delete domain_redis row %d: %v", id, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not update Redis state")
+		return
+	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
 // CloseDomain removes the WordPress drop-in, Valkey ACL user, and domain_redis row when
 // domains.Delete removes a domain. Explicit cleanup is required because domain_redis lacks
 // an ON DELETE CASCADE foreign key and would otherwise retain an orphaned row.
-func CloseDomain(db *sql.DB, id int64, systemUser string) {
+func CloseDomain(db *sql.DB, id int64, systemUser string) error {
 	disconnectWordPress(systemUser)
-	disableUser(systemUser)
-	_, _ = db.Exec(`DELETE FROM domain_redis WHERE domain_id=?`, id)
+	var errs []error
+	if err := disableUser(systemUser); err != nil {
+		errs = append(errs, fmt.Errorf("disable ACL user %s: %w", systemUser, err))
+	}
+	if _, err := db.Exec(`DELETE FROM domain_redis WHERE domain_id=?`, id); err != nil {
+		errs = append(errs, fmt.Errorf("delete domain_redis row %d: %w", id, err))
+	}
+	return errors.Join(errs...)
 }

@@ -407,7 +407,10 @@ func (h *Handlers) Pull(w http.ResponseWriter, r *http.Request) {
 // Delete removes the repository record but leaves the deploy key on disk.
 func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	_, _ = h.DB.ExecContext(r.Context(), `DELETE FROM git_repos WHERE domain_id=?`, id)
+	if _, err := h.DB.ExecContext(r.Context(), `DELETE FROM git_repos WHERE domain_id=?`, id); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not delete repository connection")
+		return
+	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
