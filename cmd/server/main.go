@@ -183,7 +183,19 @@ func main() {
 	r.Post("/api/v1/internal/pma-redeem", pmaH.Redeem)
 	r.Get("/api/v1/plugin-bundle/{name}/app.js", pluginH.Bundle)
 
-	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+	r.Get("/healthz", func(w http.ResponseWriter, req *http.Request) {
+		// Readiness, not just liveness: verify the database dependency so update and
+		// restore automation cannot mark a release healthy while DB-backed routes fail.
+		ctx, cancel := context.WithTimeout(req.Context(), 3*time.Second)
+		defer cancel()
+		if err := d.PingContext(ctx); err != nil {
+			httpx.WriteJSON(w, http.StatusServiceUnavailable, map[string]any{
+				"status":  "down",
+				"version": version,
+				"time":    time.Now().UTC().Format(time.RFC3339),
+			})
+			return
+		}
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{
 			"status":  "up",
 			"version": version,
