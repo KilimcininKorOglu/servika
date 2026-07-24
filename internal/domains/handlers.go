@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/addondomains"
 	"servika/internal/credentials"
 	"servika/internal/dns"
 	"servika/internal/httpx"
@@ -252,9 +253,10 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var domainName, sk string
 	var isDemo int
+	var parentDomainID sql.NullInt64
 	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT domain_name, system_user, is_demo FROM domains WHERE id=?`, id).
-		Scan(&domainName, &sk, &isDemo)
+		`SELECT domain_name, system_user, is_demo, parent_domain_id FROM domains WHERE id=?`, id).
+		Scan(&domainName, &sk, &isDemo, &parentDomainID)
 	if errors.Is(err, sql.ErrNoRows) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -262,6 +264,36 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
 		return
+	}
+
+	if parentDomainID.Valid {
+		deleted, err := addondomains.Cleanup(r.Context(), h.DB, id)
+		if err != nil {
+			log.Printf("addon domain delete warn (%d): %v", id, err)
+			httpx.WriteError(w, http.StatusInternalServerError, "addon domain deletion failed")
+			return
+		}
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{
+			"ok":      true,
+			"deleted": map[string]string{"domain_name": deleted, "system_user": sk},
+		})
+		return
+	}
+
+	if childRows, err := h.DB.QueryContext(r.Context(), `SELECT id FROM domains WHERE parent_domain_id=?`, id); err == nil {
+		childIDs := make([]int64, 0)
+		for childRows.Next() {
+			var childID int64
+			if childRows.Scan(&childID) == nil {
+				childIDs = append(childIDs, childID)
+			}
+		}
+		_ = childRows.Close()
+		for _, childID := range childIDs {
+			if _, err := addondomains.Cleanup(r.Context(), h.DB, childID); err != nil {
+				log.Printf("addon domain cleanup warn (parent=%d, child=%d): %v", id, childID, err)
+			}
+		}
 	}
 
 	if isDemo == 0 {

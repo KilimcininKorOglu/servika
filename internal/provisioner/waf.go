@@ -65,7 +65,7 @@ func WAFEffective(db *sql.DB, sk string) (active bool, engine string, paranoia i
 		`SELECT d.waf_enabled, d.waf_mode, d.waf_paranoia,
 		        COALESCE(p.waf_enabled,0), COALESCE(p.waf_mode,'on'), COALESCE(p.waf_paranoia,1)
 		 FROM domains d LEFT JOIN service_plans p ON p.id = d.plan_id
-		 WHERE d.system_user = ?`, sk).
+		 WHERE d.system_user = ? AND d.parent_domain_id IS NULL`, sk).
 		Scan(&dEn, &dMode, &dPL, &pEn, &pMode, &pPL)
 	if err != nil {
 		return false, "", paranoia
@@ -179,7 +179,7 @@ func HealWAFOnStartup() {
 	}
 	_ = os.MkdirAll(wafDomainsDir, 0755)
 	module := WAFModuleLoaded()
-	rows, err := packageDB.Query(`SELECT system_user FROM domains WHERE COALESCE(suspended,0)=0`)
+	rows, err := packageDB.Query(`SELECT DISTINCT system_user FROM domains WHERE COALESCE(suspended,0)=0 AND parent_domain_id IS NULL`)
 	if err != nil {
 		return
 	}

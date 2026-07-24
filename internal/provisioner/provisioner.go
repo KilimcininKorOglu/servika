@@ -131,12 +131,32 @@ func SafeWebRoot(systemUser, webRoot string) string {
 	return abs
 }
 
+func AddonWebRoot(systemUser, domainName string) string {
+	return filepath.Join("/home", systemUser, "domains", strings.ToLower(strings.TrimSpace(domainName)))
+}
+
+func addonVhostConfigPath(systemUser, domainName string) string {
+	safeDomain := strings.ToLower(strings.TrimSpace(domainName))
+	safeDomain = slugSan.ReplaceAllString(safeDomain, "_")
+	safeDomain = strings.Trim(safeDomain, "_")
+	return "/etc/nginx/conf.d/addon_" + systemUser + "_" + safeDomain + ".conf"
+}
+
+func safeAddonWebRoot(systemUser, domainName, webRoot string) string {
+	base := filepath.Join("/home", systemUser, "domains")
+	clean := filepath.Clean(strings.TrimSpace(webRoot))
+	if clean != "" && clean != "." && strings.HasPrefix(clean, base+string(os.PathSeparator)) {
+		return clean
+	}
+	return AddonWebRoot(systemUser, domainName)
+}
+
 func currentWebRoot(systemUser string) string {
 	if packageDB == nil {
 		return PublicHTML(systemUser)
 	}
 	var webRoot string
-	if err := packageDB.QueryRow(`SELECT COALESCE(web_root,'') FROM domains WHERE system_user=? LIMIT 1`, systemUser).Scan(&webRoot); err != nil {
+	if err := packageDB.QueryRow(`SELECT COALESCE(web_root,'') FROM domains WHERE system_user=? AND parent_domain_id IS NULL LIMIT 1`, systemUser).Scan(&webRoot); err != nil {
 		return PublicHTML(systemUser)
 	}
 	return webRoot
@@ -835,6 +855,46 @@ server {
 }
 {{end}}`))
 
+var redirectVhostTmpl = template.Must(template.New("redirect").Parse(`# {{.DomainName}} redirect managed by Servika
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{.ServerNames}};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/_acme;
+        auth_basic off;
+        try_files $uri =404;
+    }
+
+    access_log /var/log/nginx/{{.DomainName}}.access.log;
+    error_log /var/log/nginx/{{.DomainName}}.error.log warn;
+
+    location / {
+        return {{.RedirectCode}} {{.RedirectTarget}}$request_uri;
+    }
+}
+{{if .SSL}}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name {{.ServerNames}};
+
+    ssl_certificate {{.CertPath}};
+    ssl_certificate_key {{.KeyPath}};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    access_log /var/log/nginx/{{.DomainName}}.access.log;
+    error_log /var/log/nginx/{{.DomainName}}.error.log warn;
+
+    location / {
+        return {{.RedirectCode}} {{.RedirectTarget}}$request_uri;
+    }
+}
+{{end}}`))
+
 var phpPoolTmpl = template.Must(template.New("p").Parse(`[{{.User}}]
 user = {{.User}}
 group = {{.User}}
@@ -865,6 +925,7 @@ type VhostOpts struct {
 	KeyPath    string
 	SSLSource  string // "self-signed" | "letsencrypt" | ""
 	Suspended  bool
+	ConfigPath string
 
 	// nginx security header toggles, enabled by default.
 	HdrXContentType bool
@@ -888,6 +949,10 @@ type VhostOpts struct {
 
 	// Full raw custom vhost, enabled only for administrator-managed domains.
 	CustomVhostContent string
+
+	// Whole-domain redirect, enabled when no suspension or custom vhost is active.
+	RedirectTarget string
+	RedirectCode   int
 
 	// Web server backend: "php-fpm" by default, "apache", or "static".
 	Backend string
@@ -984,7 +1049,7 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 	if !opts.Suspended && packageDB != nil {
 		var suspended int
 		_ = packageDB.QueryRow(
-			`SELECT COALESCE(suspended,0) FROM domains WHERE system_user=?`, systemUser).
+			`SELECT COALESCE(suspended,0) FROM domains WHERE system_user=? AND parent_domain_id IS NULL LIMIT 1`, systemUser).
 			Scan(&suspended)
 		opts.Suspended = suspended == 1
 	}
@@ -999,9 +1064,22 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 		opts.ModSec = buildModSec(systemUser)
 	}
 
+	if !opts.Suspended && opts.CustomVhostContent == "" && packageDB != nil {
+		var target string
+		var code int
+		if err := packageDB.QueryRow(
+			`SELECT target_url, status_code FROM domain_redirects WHERE domain_id=(SELECT id FROM domains WHERE domain_name=? LIMIT 1)`, opts.DomainName).
+			Scan(&target, &code); err == nil && strings.TrimSpace(target) != "" {
+			opts.RedirectTarget = target
+			opts.RedirectCode = code
+		}
+	}
+
 	tmpl := vhostTmpl
 	if opts.Suspended {
 		tmpl = suspendedVhostTmpl
+	} else if opts.RedirectTarget != "" {
+		tmpl = redirectVhostTmpl
 	}
 	var buf bytes.Buffer
 	if opts.CustomVhostContent != "" && !opts.Suspended {
@@ -1010,7 +1088,10 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 	} else if err := tmpl.Execute(&buf, opts); err != nil {
 		return fmt.Errorf("template render: %w", err)
 	}
-	cfgPath := "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
+	cfgPath := opts.ConfigPath
+	if cfgPath == "" {
+		cfgPath = "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
+	}
 	previousConfig, readErr := os.ReadFile(cfgPath)
 	hadPreviousConfig := readErr == nil
 	if err := os.WriteFile(cfgPath, buf.Bytes(), 0644); err != nil {
@@ -1122,6 +1203,23 @@ func Provision(domainName, phpVersion string) (*Result, error) {
 		PHPVersion: phpVersion,
 		PHPSocket:  socket,
 	}, nil
+}
+
+func DeprovisionAddonDomain(domainName, systemUser, webRoot string, parked bool) error {
+	if domainName != "" && ValidateDomain(domainName) == nil {
+		_ = os.Remove(addonVhostConfigPath(systemUser, domainName))
+		_ = os.RemoveAll(certSystemDir(strings.ToLower(strings.TrimSpace(domainName))))
+	}
+	if !parked {
+		docroot := safeAddonWebRoot(systemUser, domainName, webRoot)
+		base := filepath.Join("/home", systemUser, "domains")
+		if strings.HasPrefix(docroot, base+string(os.PathSeparator)) && filepath.Clean(docroot) != filepath.Clean(base) {
+			_ = os.RemoveAll(docroot)
+		}
+	}
+	_, _ = exec.Command("systemctl", "reload", "nginx").CombinedOutput()
+	purgeFastCGICache(systemUser)
+	return nil
 }
 
 func Deprovision(domainName, systemUser string) error {
@@ -1572,13 +1670,14 @@ func ApplyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string) 
 func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, certPathOverride, keyPathOverride *string) error {
 	var domainName, systemUser, certPath, keyPath, sslSource, backend, webRoot, customVhostContent string
 	var suspended, customVhostEnabled int
+	var parentDomainID sql.NullInt64
 	if err := db.QueryRow(
 		`SELECT domain_name, system_user, COALESCE(cert_path,''), COALESCE(key_path,''), COALESCE(ssl_source,''),
 		        COALESCE(web_backend,'php-fpm'), COALESCE(web_root,''), COALESCE(suspended,0),
-		        COALESCE(custom_vhost_enabled,0), COALESCE(custom_vhost_content,'')
+		        COALESCE(custom_vhost_enabled,0), COALESCE(custom_vhost_content,''), parent_domain_id
 		 FROM domains WHERE id=?`, domainID).
 		Scan(&domainName, &systemUser, &certPath, &keyPath, &sslSource, &backend, &webRoot, &suspended,
-			&customVhostEnabled, &customVhostContent); err != nil {
+			&customVhostEnabled, &customVhostContent, &parentDomainID); err != nil {
 		return fmt.Errorf("read domain details: %w", err)
 	}
 	if certPathOverride != nil && keyPathOverride != nil {
@@ -1589,8 +1688,15 @@ func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, 
 		socket = tenantSocket(systemUser)
 	}
 
+	configPath := "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
+	if parentDomainID.Valid {
+		configPath = addonVhostConfigPath(systemUser, domainName)
+		webRoot = safeAddonWebRoot(systemUser, domainName, webRoot)
+	}
+
 	// Default nginx settings to enabled when no row exists.
 	opts := VhostOpts{
+		ConfigPath:      configPath,
 		DomainName:      domainName,
 		WebRoot:         SafeWebRoot(systemUser, webRoot),
 		PHPSocket:       socket,

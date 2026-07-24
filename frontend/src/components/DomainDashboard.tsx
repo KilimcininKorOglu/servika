@@ -23,6 +23,7 @@ const ICONS = {
   wordpress: 'M12 21a9 9 0 100-18 9 9 0 000 18zm0 0c2.5-2.5 3-6 3-9s-.5-6.5-3-9m0 18c-2.5-2.5-3-6-3-9s.5-6.5 3-9M3.6 9h16.8M3.6 15h16.8',
   laravel:   'M12 3l8 4v10l-8 4-8-4V7l8-4zm0 2.2L6 8.2v7.6l6 3 6-3V8.2l-6-3zM8 9h2v5h4v2H8V9z',
   subdomain: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064',
+  addonDomain: 'M4 5a2 2 0 012-2h5l2 2h5a2 2 0 012 2v3M4 5v12a2 2 0 002 2h5m9-9v7a2 2 0 01-2 2h-5m0 0l3-3m-3 3l3 3',
   dns:       'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01',
   redis:     'M13 10V3L4 14h7v7l9-11h-7z',
 }
@@ -49,6 +50,7 @@ export default function DomainDashboard({ domain }: { domain: Domain }) {
       <Group title="Domain and DNS">
         <ToolCard label="DNS Management"          description="A, MX, TXT, CNAME records" icon={ICONS.dns}       color="sky"  onClick={navigateTo('dns')} />
         <ToolCard label="Subdomains"          description="Subdomains"   icon={ICONS.subdomain} color="teal" onClick={navigateTo('subdomains')} />
+        <ToolCard label="Addon Domains" description="Addon and parked domains · redirects" icon={ICONS.addonDomain} color="indigo" onClick={navigateTo('addon-domains')} />
       </Group>
 
       <Group title="Files and Databases">

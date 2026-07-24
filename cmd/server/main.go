@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"servika/internal/accounts"
+	"servika/internal/addondomains"
 	"servika/internal/antivirus"
 	"servika/internal/auth"
 	"servika/internal/backups"
@@ -142,6 +143,7 @@ func main() {
 	wafH := &waf.Handlers{DB: d}
 	redisH := &redis.Handlers{DB: d}
 	subH := &subdomain.Handlers{DB: d, IPv4: ipv4}
+	addonH := &addondomains.Handlers{DB: d, IPv4: ipv4}
 	sshaccess.EnsureInfra()
 	phpExtH := &phpext.Handlers{DB: d}
 	packagesH := &packages.Handlers{DB: d}
@@ -296,6 +298,12 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}/ssl", subH.SSLStatus)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/subdomain/{sid}/ssl", subH.SSLIssue)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/subdomain/{sid}/ssl", subH.SSLRemove)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/addon-domains", addonH.List)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/addon-domains", addonH.Create)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/addon-domains/{addonID}", addonH.Delete)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/redirect", domainsH.RedirectStatus)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/redirect", domainsH.SetRedirect)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/redirect", domainsH.DeleteRedirect)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/web-backend", domainsH.GetWebBackend)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/web-backend", domainsH.SetWebBackend)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/web-root", domainsH.GetWebRoot)
