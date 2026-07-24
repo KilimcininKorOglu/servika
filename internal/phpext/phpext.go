@@ -4,6 +4,7 @@ package phpext
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -307,12 +308,22 @@ func (h *Handlers) PECLInstall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create the ini file.
+	// Create the ini file. A swallowed write error would report a successful
+	// install while the extension never loads, so surface it.
 	iniPath := filepath.Join(s.IniDir, "50-"+req.Package+".ini")
 	if _, err := os.Stat(iniPath); err != nil {
-		_ = os.WriteFile(iniPath, []byte("extension="+req.Package+".so\n"), 0644)
+		if werr := os.WriteFile(iniPath, []byte("extension="+req.Package+".so\n"), 0644); werr != nil {
+			httpx.WriteError(w, http.StatusInternalServerError,
+				"extension built but its configuration could not be written")
+			return
+		}
 	}
-	_, _ = exec.Command("systemctl", "reload-or-restart", s.Service).CombinedOutput()
+	if out, err := exec.Command("systemctl", "reload-or-restart", s.Service).CombinedOutput(); err != nil {
+		log.Printf("php-fpm reload after PECL install %s: %v: %s", req.Package, err, strings.TrimSpace(string(out)))
+		httpx.WriteError(w, http.StatusInternalServerError,
+			"extension installed but PHP-FPM reload failed; it will load after the next restart")
+		return
+	}
 
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
 		"ok":      true,

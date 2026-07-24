@@ -5,6 +5,7 @@ package subdomain
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -158,7 +159,14 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	_ = exec.Command("systemctl", "reload", "nginx").Run()
+	if out, err := exec.Command("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
+		// Config validated with `nginx -t` above but reload failed: the vhost is on
+		// disk yet not live. Remove it and report failure rather than a false success.
+		_ = os.Remove(conf)
+		log.Printf("nginx reload after subdomain create %s: %v: %s", fqdn, err, strings.TrimSpace(string(out)))
+		httpx.WriteError(w, http.StatusInternalServerError, "subdomain configured but nginx reload failed")
+		return
+	}
 
 	if _, err := h.DB.Exec(`INSERT INTO subdomains (domain_id, subdomain, fqdn, php_version) VALUES (?,?,?,?)`,
 		id, subdomainName, fqdn, phpVersion); err != nil {
@@ -198,6 +206,16 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
 		return
 	}
+	// Delete the DB rows FIRST so a DB failure aborts before the filesystem is
+	// touched; otherwise a swallowed delete leaves a dangling record pointing at a
+	// removed vhost.
+	if _, err := h.DB.Exec(`DELETE FROM subdomains WHERE id=? AND domain_id=?`, sid, id); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not delete subdomain")
+		return
+	}
+	if _, err := h.DB.Exec(`DELETE FROM dns_records WHERE domain_id=? AND name=? AND type='A'`, id, subdomainName); err != nil {
+		log.Printf("delete subdomain DNS record %s: %v", subdomainName, err)
+	}
 	_ = os.Remove(confPath(systemUser, subdomainName))
 	_ = exec.Command("systemctl", "reload", "nginx").Run()
 	// Remove the document root only when it remains under subdomains and matches the FQDN.
@@ -206,9 +224,9 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(docroot, base) && filepath.Clean(docroot) != filepath.Clean(base) {
 		_ = os.RemoveAll(docroot)
 	}
-	_, _ = h.DB.Exec(`DELETE FROM subdomains WHERE id=? AND domain_id=?`, sid, id)
-	_, _ = h.DB.Exec(`DELETE FROM dns_records WHERE domain_id=? AND name=? AND type='A'`, id, subdomainName)
-	_ = dns.WriteZone(r.Context(), h.DB, id)
+	if err := dns.WriteZone(r.Context(), h.DB, id); err != nil {
+		log.Printf("write DNS zone after subdomain delete %s: %v", subdomainName, err)
+	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 

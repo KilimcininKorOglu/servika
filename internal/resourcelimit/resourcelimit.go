@@ -233,8 +233,14 @@ func DeleteSystemdSlice(systemUser string) error {
 	if _, err := os.Stat(p); os.IsNotExist(err) {
 		return nil
 	}
-	_ = os.Remove(p)
-	_, _ = resourceCommand("systemctl", "daemon-reload").CombinedOutput()
+	// A swallowed removal leaves the old slice enforcing stale CPU/Memory/IO limits
+	// after the plan was removed; return the error so the caller can react.
+	if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("remove slice %s: %w", p, err)
+	}
+	if out, err := resourceCommand("systemctl", "daemon-reload").CombinedOutput(); err != nil {
+		return fmt.Errorf("daemon-reload after slice removal: %v: %s", err, strings.TrimSpace(string(out)))
+	}
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -94,7 +95,13 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	php := phpBin(phpVersion)
 	logPath := setupLog(id)
 	tmp := "/home/" + systemUser + "/.laravel-skeleton-" + fmt.Sprint(id)
-	_ = h.upsertBase(r.Context(), id, appRoot, req.Mode, phpVersion, "")
+	// The base row must exist before the status updates below target it; abort if
+	// it cannot be written rather than proceeding with broken status tracking.
+	if err := h.upsertBase(r.Context(), id, appRoot, req.Mode, phpVersion, ""); err != nil {
+		log.Printf("laravel upsertBase domain %d: %v", id, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not initialize Laravel app record")
+		return
+	}
 	_, _ = h.DB.ExecContext(r.Context(), `UPDATE cp_laravel_apps SET last_deploy_status='installing' WHERE domain_id=?`, id)
 
 	switch req.Mode {
@@ -106,7 +113,9 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		}
 		_, _ = h.DB.ExecContext(r.Context(), `UPDATE cp_laravel_apps SET last_deploy_status=? WHERE domain_id=?`, status, id)
 		if _, err := os.Stat(filepath.Join(appDir, "public")); err == nil {
-			_ = h.setDocroot(r.Context(), id, systemUser, publicSubdirectory(appRoot))
+			if err := h.setDocroot(r.Context(), id, systemUser, publicSubdirectory(appRoot)); err != nil {
+				log.Printf("laravel setDocroot domain %d: %v (docroot may still serve project root)", id, err)
+			}
 		}
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": gitOK, "async": false, "output": out, "message": "Empty git repository created. Push code and deploy from the Deploy tab."})
 		return
@@ -198,7 +207,9 @@ func (h *Handlers) InstallStatus(w http.ResponseWriter, r *http.Request) {
 		if artisan {
 			newStatus = "ready"
 			if _, err := os.Stat(filepath.Join(appDir, "public")); err == nil {
-				_ = h.setDocroot(r.Context(), id, systemUser, publicSubdirectory(rec.AppRoot))
+				if err := h.setDocroot(r.Context(), id, systemUser, publicSubdirectory(rec.AppRoot)); err != nil {
+					log.Printf("laravel setDocroot domain %d: %v (docroot may still serve project root)", id, err)
+				}
 			}
 		}
 		_, _ = h.DB.ExecContext(r.Context(), `UPDATE cp_laravel_apps SET last_deploy_status=? WHERE domain_id=?`, newStatus, id)

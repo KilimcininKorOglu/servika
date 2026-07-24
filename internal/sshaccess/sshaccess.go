@@ -143,11 +143,27 @@ func (h *Handlers) Configure(w http.ResponseWriter, r *http.Request) {
 		_ = exec.Command("chown", "-R", systemUser+":"+systemUser, dir).Run()
 		_ = exec.Command("restorecon", "-R", dir).Run()
 		// Synchronize the SSH password with the FTP password.
-		_ = credentials.SyncSSHPassword(h.DB, systemUser)
-		// Configure the chroot jail and add the user to the restricted SSH access group.
-		_ = exec.Command(servikaJailBin(), "setup", systemUser).Run()
+		if err := credentials.SyncSSHPassword(h.DB, systemUser); err != nil {
+			log.Printf("ssh enable: password sync %s: %v", systemUser, err)
+		}
+		// Configure the chroot jail and the restricted SSH group. These are the
+		// confinement controls (sshd Match keys on servika-ssh membership).
+		// FAIL-CLOSED: if confinement cannot be established, revert the login shell
+		// and do NOT persist ssh_access=1, so we never leave SSH on but unconfined.
 		_ = exec.Command("groupadd", "-f", "servika-ssh").Run()
-		_ = exec.Command("gpasswd", "-a", systemUser, "servika-ssh").Run()
+		if out, err := exec.Command(servikaJailBin(), "setup", systemUser).CombinedOutput(); err != nil {
+			log.Printf("ssh enable: jail setup %s: %v: %s", systemUser, err, strings.TrimSpace(string(out)))
+			_, _ = exec.Command("usermod", "-s", disabledShell, systemUser).CombinedOutput()
+			httpx.WriteError(w, http.StatusInternalServerError, "SSH jail could not be configured")
+			return
+		}
+		if out, err := exec.Command("gpasswd", "-a", systemUser, "servika-ssh").CombinedOutput(); err != nil {
+			log.Printf("ssh enable: group add %s: %v: %s", systemUser, err, strings.TrimSpace(string(out)))
+			_, _ = exec.Command(servikaJailBin(), "teardown", systemUser).CombinedOutput()
+			_, _ = exec.Command("usermod", "-s", disabledShell, systemUser).CombinedOutput()
+			httpx.WriteError(w, http.StatusInternalServerError, "SSH access group could not be configured")
+			return
+		}
 	} else {
 		// When disabling SSH, remove the group membership and jail, then lock the password.
 		_ = exec.Command("gpasswd", "-d", systemUser, "servika-ssh").Run()
