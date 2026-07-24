@@ -93,13 +93,17 @@ func (h *Handlers) Save(w http.ResponseWriter, r *http.Request) {
 	}
 	response := map[string]any{"ok": true, "custom_domain": domain, "ssl_status": sslStatus}
 	if sslStatus != "active" {
+		removePortlessPanelVhost()
 		response["warning"] = "The domain was saved, but Let's Encrypt certificate issuance failed. The panel remains available with the existing certificate."
+	} else if err := writePortlessPanelVhost(domain); err != nil {
+		response["warning"] = "The certificate was installed, but portless panel access could not be configured. The panel remains available on port 8443."
 	}
 	httpx.WriteJSON(w, http.StatusOK, response)
 }
 
 func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	restorePanelSelfSigned()
+	removePortlessPanelVhost()
 	if _, err := h.DB.ExecContext(r.Context(), `UPDATE panel_settings SET custom_domain=NULL, ssl_status='none', ssl_error=NULL, ssl_expires=NULL WHERE id=1`); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "panel settings could not be reset")
 		return

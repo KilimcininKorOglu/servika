@@ -40,8 +40,8 @@ export default function PanelDomain() {
     setError('')
     setSaving(true)
     try {
-      const response = await api.post<{ custom_domain: string; ssl_status: string; warning?: string }>('/system/panel-domain', { domain })
-      setMessage(response.data.warning || 'Panel domain saved.')
+      const response = await api.post<{ custom_domain: string; ssl_status: string; warning?: string }>('/system/panel-domain', { domain: domain.trim() })
+      setMessage(response.data.warning || `Panel domain saved. You can open https://${domain.trim()} without port 8443.`)
       await load()
     } catch (caughtError) {
       setError(apiError(caughtError, 'Could not save panel domain'))
@@ -73,7 +73,7 @@ export default function PanelDomain() {
         </div>
         <div>
           <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Panel Domain</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">Point an A record to this server before requesting a Let&apos;s Encrypt certificate.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">Point an A record to this server before requesting a Let&apos;s Encrypt certificate. After issuance, the domain opens the panel without port 8443.</p>
         </div>
       </div>
 
@@ -87,6 +87,7 @@ export default function PanelDomain() {
           <div className="text-xs text-slate-500 dark:text-slate-400 rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-900">
             <div>Server IPv4: <span className="font-mono text-slate-800 dark:text-slate-100">{status?.server_ipv4 || 'Unknown'}</span></div>
             <div>SSL status: <span className="font-semibold text-slate-800 dark:text-slate-100">{status?.ssl_status || 'none'}</span></div>
+            {status?.ssl_status === 'active' && status.custom_domain && <div>Portless URL: <span className="font-mono text-slate-800 dark:text-slate-100">https://{status.custom_domain}</span></div>}
             {status?.ssl_expires && <div>Expires: <span className="font-mono text-slate-800 dark:text-slate-100">{status.ssl_expires}</span></div>}
           </div>
         </div>

@@ -239,9 +239,10 @@ step "8) nginx (panel vhost + phpMyAdmin + perf)"
 # in 00-perf.conf, and defining it here would make nginx -t report a duplicate directive.
 grep -q "client_max_body_size 10240m" /etc/nginx/nginx.conf || \
   sed -i '/^http {/a\    client_max_body_size 10240m;' /etc/nginx/nginx.conf
-cp "$A/nginx/_panel.conf"    /etc/nginx/conf.d/_panel.conf
-cp "$A/nginx/_default80.conf" /etc/nginx/conf.d/_default80.conf
-cp "$A/nginx/php-fpm.conf"    /etc/nginx/conf.d/php-fpm.conf 2>/dev/null
+cp "$A/nginx/_panel.conf"      /etc/nginx/conf.d/_panel.conf
+cp "$A/nginx/_default80.conf"  /etc/nginx/conf.d/_default80.conf
+cp "$A/nginx/_default443.conf" /etc/nginx/conf.d/_default443.conf
+cp "$A/nginx/php-fpm.conf"     /etc/nginx/conf.d/php-fpm.conf 2>/dev/null
 # Suppress the default server block shipped by AlmaLinux nginx.rpm (conflicts with _default80.conf).
 if grep -q "^\s*server_name\s*_;\s*$" /etc/nginx/nginx.conf; then
   line=$(grep -n "^\s*server_name\s*_;\s*$" /etc/nginx/nginx.conf | cut -d: -f1 | head -1)
