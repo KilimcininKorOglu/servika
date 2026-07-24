@@ -114,7 +114,6 @@ func InstallationIDPath() string {
 func VersionCachePath() string { return mustAbsPath("SERVIKA_VERSION_CACHE", DefaultVersionCache) }
 func PMATokenPath() string     { return mustAbsPath("SERVIKA_PMA_TOKEN", DefaultPMAToken) }
 func PMASignonDir() string     { return mustAbsPath("SERVIKA_PMA_SIGNON_DIR", DefaultPMASignonDir) }
-func PHPMyAdminRoot() string   { return mustAbsPath("SERVIKA_PHPMYADMIN_ROOT", DefaultPHPMyAdminRoot) }
 func PHPMyAdminConfig() string {
 	return mustAbsPath("SERVIKA_PHPMYADMIN_CONFIG", DefaultPHPMyAdminConfig)
 }
