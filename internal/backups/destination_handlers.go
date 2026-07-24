@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"servika/internal/httpx"
+	"servika/internal/secret"
 )
 
 // GetDestination returns a domain's backup destination with its password hidden.
@@ -101,6 +102,17 @@ func (h *Handlers) PutDestination(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "password is required for a new destination")
 		return
 	}
+	// If the caller kept the existing password it is already encrypted; only a
+	// freshly supplied plaintext password needs encrypting before storage.
+	storedPassword := req.Password
+	if req.Password != existingPassword {
+		enc, encErr := secret.Encrypt(req.Password)
+		if encErr != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "could not save backup destination")
+			return
+		}
+		storedPassword = enc
+	}
 	enabled := 0
 	if req.Enabled {
 		enabled = 1
@@ -113,7 +125,7 @@ func (h *Handlers) PutDestination(w http.ResponseWriter, r *http.Request) {
 		   username=VALUES(username), password=VALUES(password),
 		   remote_dir=VALUES(remote_dir), enabled=VALUES(enabled),
 		   last_status='', last_error=''`,
-		id, req.Type, req.Host, req.Port, req.Username, req.Password, req.RemoteDir, enabled)
+		id, req.Type, req.Host, req.Port, req.Username, storedPassword, req.RemoteDir, enabled)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not save backup destination")
 		return
@@ -164,7 +176,13 @@ func (h *Handlers) TestDestination(w http.ResponseWriter, r *http.Request) {
 		_ = h.DB.QueryRowContext(r.Context(),
 			`SELECT COALESCE(password,'') FROM backup_destinations WHERE domain_id=?`, id).Scan(&existingPassword)
 		if request.Password == "" {
-			request.Password = existingPassword
+			// The stored value is encrypted; decrypt before the connection test uses it.
+			dec, decErr := secret.Decrypt(existingPassword)
+			if decErr != nil {
+				httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
+				return
+			}
+			request.Password = dec
 		}
 		port := request.Port
 		if port == 0 {

@@ -50,6 +50,7 @@ import (
 	"servika/internal/redis"
 	"servika/internal/resource"
 	"servika/internal/resourcelimit"
+	"servika/internal/secret"
 	"servika/internal/sitecopy"
 	"servika/internal/sshaccess"
 	"servika/internal/stats"
@@ -76,6 +77,9 @@ func main() {
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("config: %v", err)
+	}
+	if err := secret.Init(cfg.SecretKey); err != nil {
+		log.Fatalf("secret: %v", err)
 	}
 	d, err := db.Open(cfg.DBDsn)
 	if err != nil {

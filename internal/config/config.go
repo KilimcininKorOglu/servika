@@ -12,6 +12,7 @@ type Config struct {
 	ListenAddr  string
 	DBDsn       string
 	JWTSecret   []byte
+	SecretKey   []byte
 	JWTLifetime int // Lifetime in seconds.
 	Env         string
 }
@@ -28,10 +29,15 @@ func Load() (*Config, error) {
 	if len(secret) < 32 {
 		return nil, fmt.Errorf("SERVIKA_JWT_SECRET must be at least 32 characters (current: %d)", len(secret))
 	}
+	secretKey := strings.TrimSpace(os.Getenv("SERVIKA_SECRET_KEY"))
+	if len(secretKey) < 32 {
+		return nil, fmt.Errorf("SERVIKA_SECRET_KEY must be at least 32 characters (current: %d)", len(secretKey))
+	}
 	if err := ValidateRuntimePaths(); err != nil {
 		return nil, err
 	}
 	c.JWTSecret = []byte(secret)
+	c.SecretKey = []byte(secretKey)
 	return c, nil
 }
 

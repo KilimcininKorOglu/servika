@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"servika/internal/netguard"
+	"servika/internal/secret"
 )
 
 // Destination describes a remote backup upload destination.
@@ -54,6 +55,14 @@ func readDestination(ctx context.Context, db *sql.DB, domainID int64) (*Destinat
 	if lastUpload.Valid {
 		d.LastUpload = lastUpload.String
 	}
+	// Stored password is encrypted at rest; decrypt so runtime consumers
+	// (upload, connection test) receive the usable plaintext. Legacy plaintext
+	// rows pass through unchanged.
+	pw, err := secret.Decrypt(d.Password)
+	if err != nil {
+		return nil, err
+	}
+	d.Password = pw
 	return d, nil
 }
 

@@ -306,6 +306,20 @@ elif [ "$QROOTFS" = "xfs" ]; then
   [ -f "$QSENTINEL" ] && rm -f "$QSENTINEL" 2>/dev/null && ok "disk quota active — reboot sentinel cleared" || ok "disk quota active (root XFS user quota)"
 fi
 
+# Backfill SERVIKA_SECRET_KEY for installs that predate at-rest secret
+# encryption. The server now requires it at boot, so it must exist before the
+# restart below or the updated binary fails to start.
+if ! grep -q '^SERVIKA_SECRET_KEY=' "$ENV_FILE" 2>/dev/null; then
+  step "Provisioning at-rest encryption key"
+  NEWKEY=$(openssl rand -hex 32)
+  tmp=$(mktemp)
+  cp -a "$ENV_FILE" "$tmp"
+  printf 'SERVIKA_SECRET_KEY=%s\n' "$NEWKEY" >> "$tmp"
+  install -m 600 -o root -g root "$tmp" "$ENV_FILE"
+  rm -f "$tmp"
+  ok "SERVIKA_SECRET_KEY generated"
+fi
+
 step "Restarting"
 systemctl restart "$SVC"
 HEALTHY=0

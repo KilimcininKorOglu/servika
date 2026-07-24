@@ -137,10 +137,12 @@ if [ -s /etc/servika/env ]; then
   [ -n "${DBPASS:-}" ] || DBPASS=$(sed -n 's/^SERVIKA_DB_DSN=panel:\([^@]*\)@.*/\1/p' /etc/servika/env | tail -n 1)
   JWT=$(sed -n 's/^SERVIKA_JWT_SECRET=//p' /etc/servika/env | tail -n 1)
   RADMIN=$(sed -n 's/^SERVIKA_REDIS_ADMIN_PASS=//p' /etc/servika/env | tail -n 1)
+  SECRETKEY=$(sed -n 's/^SERVIKA_SECRET_KEY=//p' /etc/servika/env | tail -n 1)
 fi
 [ -n "${DBPASS:-}" ] || DBPASS=$(openssl rand -hex 16)
 [ -n "${JWT:-}" ] || JWT=$(openssl rand -hex 32)
 [ -n "${RADMIN:-}" ] || RADMIN=$(openssl rand -hex 24)
+[ -n "${SECRETKEY:-}" ] || SECRETKEY=$(openssl rand -hex 32)
 mysql -u root <<SQL
 CREATE DATABASE IF NOT EXISTS panel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'panel'@'127.0.0.1' IDENTIFIED BY '$DBPASS';
@@ -160,6 +162,7 @@ SERVIKA_ENV=production
 SERVIKA_DB_DSN=panel:${DBPASS}@tcp(127.0.0.1:3306)/panel?parseTime=true&charset=utf8mb4&collation=utf8mb4_unicode_ci
 SERVIKA_DB_PASS=${DBPASS}
 SERVIKA_JWT_SECRET=${JWT}
+SERVIKA_SECRET_KEY=${SECRETKEY}
 SERVIKA_JWT_LIFETIME_SEC=43200
 SERVIKA_PUBLIC_IPV4=
 SERVIKA_MAINTENANCE_MODE=
