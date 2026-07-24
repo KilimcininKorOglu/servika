@@ -25,10 +25,6 @@ const (
 	// MaxUploadBytes is the maximum accepted multipart request body size.
 	MaxUploadBytes     = 10 * 1024 * 1024 * 1024
 	maxMultipartMemory = 32 * 1024 * 1024
-
-	// uploadBlockedExts lists file extensions that are rejected on upload
-	// to prevent arbitrary code execution via the web root.
-	uploadBlockedExts = ".php|.pht|.phtml|.php3|.php4|.php5|.php7|.php8|.shtml|.cgi|.pl|.py|.rb|.sh|.asp|.aspx|.jsp|.war|.dll|.so|.exe"
 )
 
 var errUploadTooLarge = errors.New("upload exceeds the size limit")
@@ -294,13 +290,6 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 	if fh.Size > MaxUploadBytes {
 		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "file is too large (maximum 10 GiB)")
 		return
-	}
-	ext := strings.ToLower(filepath.Ext(fh.Filename))
-	for blocked := range strings.SplitSeq(uploadBlockedExts, "|") {
-		if ext == blocked {
-			httpx.WriteError(w, http.StatusForbidden, "file type not allowed")
-			return
-		}
 	}
 	uploadPath := filepath.Join(rel, fh.Filename)
 	written, err := copyStreamBeneath(home, uploadPath, file, systemUser)
