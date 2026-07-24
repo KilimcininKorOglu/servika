@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,6 +25,7 @@ import (
 	"servika/internal/config"
 	"servika/internal/credentials"
 	"servika/internal/httpx"
+	"servika/internal/quota"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -342,12 +344,29 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, target).Run()
 	_ = exec.Command("restorecon", "-R", target).Run()
 
-	// Create the database.
+	// Enforce the plan database quota at this point of use, matching the normal
+	// database endpoint. Without this, repeated WordPress installs in different
+	// subdirectories bypass the customer's max_db limit. A per-customer lock held
+	// across the check and the database creation makes the pair atomic against
+	// concurrent installs and concurrent normal database creation.
 	slug := randSlug()
 	dbName := "wp_" + slug
 	dbUser := "wpu_" + slug
 	dbPass := credentials.RandomPassword(24)
-	if err := credentials.MySQLCreateDB(h.DB, id, dbName, dbUser, dbPass); err != nil {
+	dbErr := func() error {
+		unlock := quota.LockCustomerForDomain(r.Context(), h.DB, id)
+		defer unlock()
+		if err := quota.CheckDatabaseAllowed(r.Context(), h.DB, id); err != nil {
+			return err
+		}
+		return credentials.MySQLCreateDB(h.DB, id, dbName, dbUser, dbPass)
+	}()
+	if dbErr != nil {
+		var limitErr *quota.LimitError
+		if errors.As(dbErr, &limitErr) {
+			httpx.WriteError(w, http.StatusForbidden, limitErr.Message)
+			return
+		}
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}

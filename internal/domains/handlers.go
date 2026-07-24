@@ -726,6 +726,11 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusForbidden, "databases cannot be added to demo subscriptions")
 		return
 	}
+	// Hold a per-customer lock across the quota check AND the database creation below
+	// so concurrent requests cannot each pass the count check before either insert
+	// lands and exceed the plan limit.
+	unlock := quota.LockCustomerForDomain(r.Context(), h.DB, id)
+	defer unlock()
 	if err := quota.CheckDatabaseAllowed(r.Context(), h.DB, id); err != nil {
 		var le *quota.LimitError
 		if errors.As(err, &le) {

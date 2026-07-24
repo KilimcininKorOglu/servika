@@ -5,7 +5,32 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sync"
 )
+
+// customerMu serializes quota-check-then-create sequences per customer within this
+// single-process panel. Without it, concurrent create requests can each pass the count
+// check before any insert lands and exceed a plan limit (a check/insert race). Callers
+// hold the lock across both the CheckDatabaseAllowed call and the account creation.
+var customerMu sync.Map // customerID (int64) -> *sync.Mutex
+
+// LockCustomerForDomain resolves the domain's customer and locks a per-customer mutex,
+// returning an unlock function. Admin-owned domains (no customer) return a no-op unlock.
+// Use it to make a quota check and the subsequent resource creation atomic:
+//
+//	unlock := quota.LockCustomerForDomain(ctx, db, domainID)
+//	defer unlock()
+//	// ... CheckDatabaseAllowed + create ...
+func LockCustomerForDomain(ctx context.Context, db *sql.DB, domainID int64) func() {
+	var customerID *int64
+	if err := db.QueryRowContext(ctx, `SELECT customer_id FROM domains WHERE id=?`, domainID).Scan(&customerID); err != nil || customerID == nil {
+		return func() {} // No customer (admin) or lookup failed: the quota check itself will fail closed.
+	}
+	actual, _ := customerMu.LoadOrStore(*customerID, &sync.Mutex{})
+	mu := actual.(*sync.Mutex)
+	mu.Lock()
+	return mu.Unlock
+}
 
 // LimitError reports that a plan quota has been reached.
 type LimitError struct {
