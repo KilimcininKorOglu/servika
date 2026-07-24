@@ -45,6 +45,7 @@ function Alert({ type, message }: { type: 'ok' | 'err'; message: string }) {
 
 export default function SettingsPage() {
   const updateName = useAuth((state) => state.updateName)
+  const logout = useAuth((state) => state.logout)
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [loadError, setLoadError] = useState('')
 
@@ -88,6 +89,14 @@ export default function SettingsPage() {
       setPasswordSuccess('Password changed. (The server root password was updated.)')
       setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setTimeout(() => setPasswordSuccess(''), 5000)
     } catch (error) { setPasswordError(apiError(error, 'Could not change the password')) } finally { setIsPasswordLoading(false) }
+  }
+
+  const revokeSessions = async () => {
+    setPasswordError(''); setPasswordSuccess('')
+    try {
+      await api.post('/me/sessions/revoke')
+      logout()
+    } catch (error) { setPasswordError(apiError(error, 'Could not sign out all sessions')) }
   }
 
   async function startTwoFactorSetup() {
@@ -167,6 +176,7 @@ export default function SettingsPage() {
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 <button type="submit" disabled={isPasswordLoading || !currentPassword || !newPassword} className={buttonClasses}>{isPasswordLoading ? 'Changing…' : 'Change Password'}</button>
+                <button type="button" onClick={revokeSessions} className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sign out all sessions</button>
                 <Alert type="ok" message={passwordSuccess} /><Alert type="err" message={passwordError} />
               </div>
             </form>

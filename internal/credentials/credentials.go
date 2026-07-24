@@ -41,10 +41,11 @@ func FTPCreate(db *sql.DB, domainID int64, systemUser, password string, uidN, gi
 	return err
 }
 
-// FTPUpdatePassword updates an existing FTP account password.
+// FTPUpdatePassword updates an existing FTP account password. Bumping
+// token_version revokes any customer JWT that was issued with the old password.
 func FTPUpdatePassword(db *sql.DB, systemUser, password string) error {
 	_, err := db.Exec(
-		`UPDATE ftp_accounts SET password_md5=? WHERE username=?`,
+		`UPDATE ftp_accounts SET password_md5=?, token_version=token_version+1 WHERE username=?`,
 		password, systemUser)
 	return err
 }

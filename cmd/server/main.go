@@ -225,6 +225,7 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/dashboard-layout", authH.DashboardLayoutGet)
 			r.With(middleware.AdminOnly).Put("/dashboard-layout", authH.DashboardLayoutSave)
 			r.With(middleware.AdminOnly).Post("/me/password", authH.ChangePassword)
+			r.With(middleware.AdminOnly).Post("/me/sessions/revoke", authH.RevokeSessions)
 			r.With(middleware.AdminOnly).Get("/me/2fa/setup", authH.TwoFASetup)
 			r.With(middleware.AdminOnly).Post("/me/2fa/enable", authH.TwoFAEnable)
 			r.With(middleware.AdminOnly).Post("/me/2fa/disable", authH.TwoFADisable)

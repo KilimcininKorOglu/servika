@@ -98,6 +98,22 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
+// POST /me/sessions/revoke — invalidate every admin JWT by bumping token_version.
+// The caller's own token is included, so the client must re-authenticate after this.
+func (h *Handlers) RevokeSessions(w http.ResponseWriter, r *http.Request) {
+	c := h.claims(r)
+	if c == nil {
+		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
+		return
+	}
+	if _, err := h.DB.Exec(`UPDATE users SET token_version=token_version+1 WHERE id=?`, c.UserID); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not revoke sessions")
+		return
+	}
+	WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.sessions.revoke", "root", true)
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
 // GET /me/2fa/setup — generate a new secret (not yet activated), return otpauth URI
 func (h *Handlers) TwoFASetup(w http.ResponseWriter, r *http.Request) {
 	if h.claims(r) == nil {

@@ -160,7 +160,12 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	const adminUID = int64(1)
-	tok, err := Issue(h.Secret, h.LifetimeSec, adminUID, "root", "admin")
+	var tokenVersion int64
+	if err := h.DB.QueryRow(`SELECT token_version FROM users WHERE id=?`, adminUID).Scan(&tokenVersion); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
+		return
+	}
+	tok, err := Issue(h.Secret, h.LifetimeSec, adminUID, "root", "admin", tokenVersion)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
 		return

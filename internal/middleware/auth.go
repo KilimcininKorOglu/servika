@@ -32,6 +32,25 @@ func Init(db *sql.DB) {
 	scopeDB = db
 }
 
+// tokenVersionMatches reports whether the token's embedded version still equals
+// the identity's current version in the given table. A mismatch means the
+// session was revoked (the version was bumped). It fails closed: a real query
+// error returns (false, err) so the caller denies access. When scopeDB is unset
+// (tests) it accepts, so token-only tests keep working. The table argument is a
+// fixed internal literal, never user input.
+func tokenVersionMatches(ctx context.Context, table string, id, claimVersion int64) (bool, error) {
+	if scopeDB == nil {
+		return true, nil
+	}
+	var current int64
+	err := scopeDB.QueryRowContext(ctx,
+		"SELECT token_version FROM "+table+" WHERE id=?", id).Scan(&current)
+	if err != nil {
+		return false, err
+	}
+	return current == claimVersion, nil
+}
+
 type ctxKey int
 
 const (
@@ -58,12 +77,30 @@ func RequireAuth(secret []byte) func(http.Handler) http.Handler {
 
 			// Try administrator claims first.
 			if c, err := auth.Parse(secret, tokenRaw); err == nil {
+				ok, verr := tokenVersionMatches(r.Context(), "users", c.UserID, c.TokenVersion)
+				if verr != nil {
+					httpx.WriteError(w, http.StatusInternalServerError, "could not verify session")
+					return
+				}
+				if !ok {
+					httpx.WriteError(w, http.StatusUnauthorized, "session has been revoked")
+					return
+				}
 				ctx := context.WithValue(r.Context(), claimsKey, c)
 				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
 			// Then try customer claims.
 			if mc, err := auth.ParseCustomer(secret, tokenRaw); err == nil {
+				ok, verr := tokenVersionMatches(r.Context(), "ftp_accounts", mc.FTPAccountID, mc.TokenVersion)
+				if verr != nil {
+					httpx.WriteError(w, http.StatusInternalServerError, "could not verify session")
+					return
+				}
+				if !ok {
+					httpx.WriteError(w, http.StatusUnauthorized, "session has been revoked")
+					return
+				}
 				ctx := context.WithValue(r.Context(), customerClaimsKey, mc)
 				next.ServeHTTP(w, r.WithContext(ctx))
 				return

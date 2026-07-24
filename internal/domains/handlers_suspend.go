@@ -73,11 +73,14 @@ func (h *Handlers) setSuspended(w http.ResponseWriter, r *http.Request, suspende
 	}
 
 	ftpStatus := "active"
+	// Suspending bumps token_version so any active customer JWT is revoked at once;
+	// resuming only restores status and leaves the version untouched.
+	ftpQuery := `UPDATE ftp_accounts SET status=? WHERE domain_id=?`
 	if suspended {
 		ftpStatus = "suspended"
+		ftpQuery = `UPDATE ftp_accounts SET status=?, token_version=token_version+1 WHERE domain_id=?`
 	}
-	if _, err := h.DB.ExecContext(r.Context(),
-		`UPDATE ftp_accounts SET status=? WHERE domain_id=?`, ftpStatus, id); err != nil {
+	if _, err := h.DB.ExecContext(r.Context(), ftpQuery, ftpStatus, id); err != nil {
 		log.Printf("update FTP account suspension state for domain %d: %v", id, err)
 	}
 	mailStatus := "active"

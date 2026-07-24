@@ -42,14 +42,14 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	ip := httpx.ClientIP(r)
 
 	// Validate the credentials against ftp_accounts.
-	var ftpID, domainID int64
+	var ftpID, domainID, tokenVersion int64
 	var storedPassword, domainName, status string
 	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT fa.id, fa.domain_id, fa.password_md5, fa.status, d.domain_name
+		`SELECT fa.id, fa.domain_id, fa.password_md5, fa.status, fa.token_version, d.domain_name
 		 FROM ftp_accounts fa
 		 JOIN domains d ON d.id = fa.domain_id
 		 WHERE fa.username = ?`, req.Username).
-		Scan(&ftpID, &domainID, &storedPassword, &status, &domainName)
+		Scan(&ftpID, &domainID, &storedPassword, &status, &tokenVersion, &domainName)
 	if errors.Is(err, sql.ErrNoRows) {
 		auth.WriteAudit(h.DB, 0, req.Username, ip, "customer.login", req.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
@@ -77,6 +77,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		DomainID:     domainID,
 		Username:     req.Username,
 		DomainName:   domainName,
+		TokenVersion: tokenVersion,
 	}
 	tok, exp, err := auth.GenerateCustomer(h.Secret, c, 24*3600)
 	if err != nil {

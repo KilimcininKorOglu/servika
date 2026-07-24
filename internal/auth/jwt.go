@@ -8,18 +8,20 @@ import (
 )
 
 type Claims struct {
-	UserID   int64  `json:"uid"`
-	Username string `json:"usr"`
-	Role     string `json:"role"`
+	UserID       int64  `json:"uid"`
+	Username     string `json:"usr"`
+	Role         string `json:"role"`
+	TokenVersion int64  `json:"tv"`
 	jwt.RegisteredClaims
 }
 
-func Issue(secret []byte, lifetimeSec int, uid int64, username, role string) (string, error) {
+func Issue(secret []byte, lifetimeSec int, uid int64, username, role string, tokenVersion int64) (string, error) {
 	now := time.Now()
 	c := Claims{
-		UserID:   uid,
-		Username: username,
-		Role:     role,
+		UserID:       uid,
+		Username:     username,
+		Role:         role,
+		TokenVersion: tokenVersion,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(lifetimeSec) * time.Second)),
@@ -58,6 +60,7 @@ type CustomerClaims struct {
 	Username     string `json:"usr"`
 	DomainName   string `json:"domain"`
 	Type         string `json:"type"` // "customer"
+	TokenVersion int64  `json:"tv"`
 	jwt.RegisteredClaims
 }
 
