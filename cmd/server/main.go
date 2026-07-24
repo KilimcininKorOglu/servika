@@ -168,6 +168,9 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
+	// Echo the request ID into the X-Request-Id response header so every response,
+	// including error responses, carries a correlation ID for support and log matching.
+	r.Use(middleware.RequestIDHeader)
 	// NOTE: chimw.RealIP is NOT used — it blindly writes spoofable X-Forwarded-For /
 	// X-Real-IP / True-Client-IP headers into r.RemoteAddr without a trusted-proxy check,
 	// which would bypass login rate-limiting. The real client IP is obtained via

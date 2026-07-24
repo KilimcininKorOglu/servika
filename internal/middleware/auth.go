@@ -11,6 +11,7 @@ import (
 	"servika/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
+	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
 var scopeDB *sql.DB
@@ -136,6 +137,19 @@ func CustomerScopeParam(param string) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// RequestIDHeader echoes the chi RequestID from the request context into the
+// X-Request-Id response header, so every response (including error responses that
+// use httpx.WriteError) carries a correlation ID without touching each call site.
+// Mount it after chimw.RequestID, which populates the context value.
+func RequestIDHeader(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if id := chimw.GetReqID(r.Context()); id != "" {
+			w.Header().Set("X-Request-Id", id)
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // DomainOwnedBy reports whether the authenticated identity may access a domain.
