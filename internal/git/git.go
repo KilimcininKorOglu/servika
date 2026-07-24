@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -51,7 +52,26 @@ func scan(rs interface{ Scan(...any) error }) (Repo, error) {
 	var r Repo
 	err := rs.Scan(&r.ID, &r.DomainID, &r.RepoURL, &r.Branch, &r.TargetDir,
 		&r.DeployKeyPub, &r.WebhookSecret, &r.LastSync, &r.LastCommit, &r.LastStatus, &r.CreatedAt)
+	// Redact any embedded credentials (e.g. a GitHub PAT in https://<pat>@github.com/...)
+	// before the Repo is serialized to an API response. The DB keeps the full URL for
+	// cloning; only the response value is scrubbed.
+	r.RepoURL = redactURLCredentials(r.RepoURL)
 	return r, err
+}
+
+// redactURLCredentials removes the userinfo component from an http(s) or ssh URL so a
+// stored access token is never returned in an API response. Non-URL forms (git@host:path)
+// and plain URLs are returned unchanged.
+func redactURLCredentials(raw string) string {
+	if raw == "" {
+		return raw
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.User == nil {
+		return raw
+	}
+	u.User = nil
+	return u.String()
 }
 
 func (h *Handlers) lookupDomain(r *http.Request) (id int64, systemUser string, demo bool, err error) {
