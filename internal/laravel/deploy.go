@@ -20,27 +20,34 @@ func deployScript(appDir, php, nodeDir string, migrate, npmBuild bool) string {
 	b.WriteString("#!/bin/bash\n")
 	fmt.Fprintf(&b, "export PATH=%s:%s\n", nodeDir, systemPath)
 	fmt.Fprintf(&b, "cd %s || exit 1\n", shellQuote(appDir))
+	// FAILED records the first required step that fails. Critical steps no longer use
+	// "|| true"; instead a failure is recorded and later steps still run so maintenance
+	// mode is always lifted, but the final status reflects the first failure.
+	b.WriteString("FAILED=\"\"\n")
+	b.WriteString("fail() { [ -z \"$FAILED\" ] && FAILED=\"$1\"; echo \"!! step failed: $1\"; }\n")
 	b.WriteString("echo '== enable maintenance mode =='\n")
-	fmt.Fprintf(&b, "%s artisan down || true\n", php)
+	fmt.Fprintf(&b, "%s artisan down || true\n", php) // non-critical: ok if not installed yet
 	b.WriteString("echo '== git pull =='\n")
-	b.WriteString("if [ -d .git ]; then git pull --ff-only 2>&1 || git pull 2>&1 || true; else echo '(not a git repository, skipped)'; fi\n")
+	b.WriteString("if [ -d .git ]; then git pull --ff-only 2>&1 || git pull 2>&1 || fail 'git pull'; else echo '(not a git repository, skipped)'; fi\n")
 	b.WriteString("echo '== composer install (--no-dev) =='\n")
-	fmt.Fprintf(&b, "%s %s install --no-interaction --prefer-dist --no-dev 2>&1 || true\n", php, shellQuote(composerBin()))
+	fmt.Fprintf(&b, "%s %s install --no-interaction --prefer-dist --no-dev 2>&1 || fail 'composer install'\n", php, shellQuote(composerBin()))
 	if npmBuild {
 		b.WriteString("echo '== npm ci + build =='\n")
-		fmt.Fprintf(&b, "%s/npm ci --prefix %s --no-fund --no-audit 2>&1 || %s/npm install --prefix %s 2>&1 || true\n", nodeDir, shellQuote(appDir), nodeDir, shellQuote(appDir))
-		fmt.Fprintf(&b, "%s/npm run build --prefix %s 2>&1 || true\n", nodeDir, shellQuote(appDir))
+		fmt.Fprintf(&b, "{ %s/npm ci --prefix %s --no-fund --no-audit 2>&1 || %s/npm install --prefix %s 2>&1; } || fail 'npm install'\n", nodeDir, shellQuote(appDir), nodeDir, shellQuote(appDir))
+		fmt.Fprintf(&b, "%s/npm run build --prefix %s 2>&1 || fail 'npm build'\n", nodeDir, shellQuote(appDir))
 	}
 	if migrate {
 		b.WriteString("echo '== migrate --force =='\n")
-		fmt.Fprintf(&b, "%s artisan migrate --force 2>&1 || true\n", php)
+		fmt.Fprintf(&b, "%s artisan migrate --force 2>&1 || fail 'migrate'\n", php)
 	}
 	b.WriteString("echo '== cache =='\n")
-	fmt.Fprintf(&b, "%s artisan config:cache 2>&1 || true\n", php)
-	fmt.Fprintf(&b, "%s artisan route:cache 2>&1 || true\n", php)
+	fmt.Fprintf(&b, "%s artisan config:cache 2>&1 || fail 'config:cache'\n", php)
+	fmt.Fprintf(&b, "%s artisan route:cache 2>&1 || fail 'route:cache'\n", php)
 	b.WriteString("echo '== disable maintenance mode =='\n")
-	fmt.Fprintf(&b, "%s artisan up || true\n", php)
-	b.WriteString("echo '== DEPLOY COMPLETE =='\n")
+	fmt.Fprintf(&b, "%s artisan up || true\n", php) // always lift maintenance, even after a failure
+	// Emit COMPLETE only when no required step failed; otherwise emit a FAILED marker
+	// that the status handler treats as a failed deploy.
+	b.WriteString("if [ -z \"$FAILED\" ]; then echo '== DEPLOY COMPLETE =='; else echo \"== DEPLOY FAILED: $FAILED ==\"; exit 1; fi\n")
 	return b.String()
 }
 
