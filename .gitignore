@@ -36,3 +36,5 @@ id_ed25519*
 .vscode/
 *.swp
 __pycache__/
+
+release/
