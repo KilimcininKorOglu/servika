@@ -55,12 +55,28 @@ jobs:
             rm -rf "$BUNDLE"
           done
 
+      - name: Extract release notes from CHANGELOG
+        run: |
+          awk -v ver="$VERSION" '
+            index($0, "## [" ver "]") == 1 {p=1; print; next}
+            p && /^## \[/ {exit}
+            p {print}
+          ' CHANGELOG.md > release/RELEASE_NOTES.md
+          if [ ! -s release/RELEASE_NOTES.md ]; then
+            echo "no CHANGELOG section for $VERSION; falling back to auto-generated notes" >&2
+          fi
+
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if [ -s release/RELEASE_NOTES.md ]; then
+            NOTES_ARG=(--notes-file release/RELEASE_NOTES.md)
+          else
+            NOTES_ARG=(--generate-notes)
+          fi
           gh release create "$GITHUB_REF_NAME" \
             --title "Servika $VERSION" \
-            --generate-notes \
+            "${NOTES_ARG[@]}" \
             "release/servika-${VERSION}-linux_amd64.tar.gz" \
             "release/servika-${VERSION}-linux_arm64.tar.gz"
