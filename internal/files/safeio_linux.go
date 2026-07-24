@@ -63,7 +63,7 @@ func openAt2Beneath(home, rel string, flags int, mode uint32) (*os.File, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = unix.Close(hf) }()
+	defer func() { _ = unix.Close(hf) }() // dir fd release: Close error not actionable
 	p := relClean(rel)
 	if p == "" {
 		p = "."
@@ -87,7 +87,7 @@ func isDirBeneath(home, rel string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer func() { _ = f.Close() }()
+	defer func() { _ = f.Close() }() // read-only stat probe; Close error not actionable
 	st, err := f.Stat()
 	if err != nil {
 		return false, err
@@ -107,7 +107,7 @@ func safeParentFd(home, rel string) (parentFd int, leaf string, err error) {
 		return -1, "", err
 	}
 	fd, err := unix.Dup(int(f.Fd()))
-	_ = f.Close()
+	_ = f.Close() // dup taken above; releasing original fd, Close error not actionable
 	if err != nil {
 		return -1, "", err
 	}
@@ -170,21 +170,27 @@ func chmodBeneath(home, rel string, mode uint32) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = f.Close() }()
+	defer func() { _ = f.Close() }() // Fchmod result is the outcome; fd release Close not actionable
 	return unix.Fchmod(int(f.Fd()), mode)
 }
 
 // writeBeneath is a symlink-safe file write (create/truncate). An existing file's
 // permissions are preserved (open won't touch mode outside create); a new file gets
 // createMode. The fd is then chowned to the tenant + restorecon'd.
-func writeBeneath(home, rel string, data []byte, createMode uint32, sk string) error {
+func writeBeneath(home, rel string, data []byte, createMode uint32, sk string) (err error) {
 	f, err := openAt2Beneath(home, rel, unix.O_WRONLY|unix.O_CREAT|unix.O_TRUNC, createMode)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = f.Close() }()
-	if _, err := f.Write(data); err != nil {
-		return err
+	// Write path: a Close error signals a failed flush (e.g. ENOSPC) — surface it
+	// instead of reporting a successful write for data that never reached disk.
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+	if _, werr := f.Write(data); werr != nil {
+		return werr
 	}
 	fchownRestoreFd(home, f, sk)
 	return nil
@@ -202,13 +208,19 @@ func createExclBeneath(home, rel, sk string) error {
 }
 
 // copyStreamBeneath is a symlink-safe streaming write (upload). Copies from src to fd.
-func copyStreamBeneath(home, rel string, src io.Reader, sk string) (int64, error) {
+func copyStreamBeneath(home, rel string, src io.Reader, sk string) (n int64, err error) {
 	f, err := openAt2Beneath(home, rel, unix.O_WRONLY|unix.O_CREAT|unix.O_TRUNC, 0644)
 	if err != nil {
 		return 0, err
 	}
-	defer func() { _ = f.Close() }()
-	n, err := io.Copy(f, src)
+	// Write path: a Close error signals a failed flush (e.g. ENOSPC) — surface it
+	// instead of reporting a successful upload for data that never reached disk.
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+	n, err = io.Copy(f, src)
 	if err != nil {
 		return n, err
 	}
@@ -226,7 +238,7 @@ func mkdirAllBeneath(home, rel, sk string) error {
 		return err
 	}
 	if p == "" || p == "." {
-		_ = unix.Close(hf)
+		_ = unix.Close(hf) // dir fd release: Close error not actionable
 		return nil
 	}
 	dirfd := hf
@@ -239,11 +251,11 @@ func mkdirAllBeneath(home, rel, sk string) error {
 		if err := unix.Mkdirat(dirfd, part, 0755); err == nil {
 			created = true
 		} else if err != unix.EEXIST {
-			_ = unix.Close(dirfd)
+			_ = unix.Close(dirfd) // dir fd release: Close error not actionable
 			return err
 		}
 		nfd, err := unix.Openat(dirfd, part, dirOpenFlags, 0)
-		_ = unix.Close(dirfd)
+		_ = unix.Close(dirfd) // walk to child: parent dir fd release, not actionable
 		if err != nil {
 			return err
 		}
@@ -252,7 +264,7 @@ func mkdirAllBeneath(home, rel, sk string) error {
 			_ = unix.Fchown(dirfd, uid, gid)
 		}
 	}
-	_ = unix.Close(dirfd)
+	_ = unix.Close(dirfd) // dir fd release: Close error not actionable
 	return nil
 }
 
@@ -267,12 +279,12 @@ func renameBeneath(home, oldRel, newRel, sk string) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = unix.Close(of) }()
+	defer func() { _ = unix.Close(of) }() // pinned parent dir fd release: Close error not actionable
 	nf, nleaf, err := safeParentFd(home, newRel)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = unix.Close(nf) }()
+	defer func() { _ = unix.Close(nf) }() // pinned parent dir fd release: Close error not actionable
 	return unix.Renameat(of, oleaf, nf, nleaf)
 }
 
@@ -284,7 +296,7 @@ func removeAllBeneath(home, rel string) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = unix.Close(pfd) }()
+	defer func() { _ = unix.Close(pfd) }() // pinned parent dir fd release: Close error not actionable
 	return removeAt(pfd, leaf)
 }
 
@@ -304,7 +316,7 @@ func removeAt(dirfd int, name string) error {
 	}
 	names, rerr := readdirnamesFd(cfd)
 	if rerr != nil {
-		_ = unix.Close(cfd)
+		_ = unix.Close(cfd) // dir fd release: Close error not actionable
 		return rerr
 	}
 	for _, n := range names {
@@ -312,11 +324,11 @@ func removeAt(dirfd int, name string) error {
 			continue
 		}
 		if e := removeAt(cfd, n); e != nil {
-			_ = unix.Close(cfd)
+			_ = unix.Close(cfd) // dir fd release: Close error not actionable
 			return e
 		}
 	}
-	_ = unix.Close(cfd)
+	_ = unix.Close(cfd) // dir fd release: Close error not actionable
 	return unix.Unlinkat(dirfd, name, unix.AT_REMOVEDIR)
 }
 
@@ -329,7 +341,7 @@ func readdirnamesFd(dirfd int) ([]string, error) {
 	}
 	f := os.NewFile(uintptr(dup), "dir")
 	names, err := f.Readdirnames(-1)
-	_ = f.Close()
+	_ = f.Close() // read-only dir listing dup; Close error not actionable
 	return names, err
 }
 
@@ -345,12 +357,12 @@ func copyTreeBeneath(home, srcRel, dstRel, sk string) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = unix.Close(sfd) }()
+	defer func() { _ = unix.Close(sfd) }() // pinned parent dir fd release: Close error not actionable
 	dfd, dleaf, err := safeParentFd(home, dstRel)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = unix.Close(dfd) }()
+	defer func() { _ = unix.Close(dfd) }() // pinned parent dir fd release: Close error not actionable
 	uid, gid, haveIDs := tenantIDs(sk)
 	return copyEntryAt(sfd, sleaf, dfd, dleaf, uid, gid, haveIDs)
 }
@@ -369,7 +381,7 @@ func copyEntryAt(sdir int, sname string, ddir int, dname string, uid, gid int, h
 		if err != nil {
 			return err
 		}
-		defer func() { _ = unix.Close(ncd) }()
+		defer func() { _ = unix.Close(ncd) }() // dest dir fd release: Close error not actionable
 		if haveIDs {
 			_ = unix.Fchown(ncd, uid, gid)
 		}
@@ -377,7 +389,7 @@ func copyEntryAt(sdir int, sname string, ddir int, dname string, uid, gid int, h
 		if err != nil {
 			return err
 		}
-		defer func() { _ = unix.Close(nsd) }()
+		defer func() { _ = unix.Close(nsd) }() // src dir fd release: Close error not actionable
 		names, rerr := readdirnamesFd(nsd)
 		if rerr != nil {
 			return rerr
@@ -414,21 +426,28 @@ func readlinkAt(dirfd int, name string) (string, error) {
 	return string(buf[:n]), nil
 }
 
-func copyRegAt(sdir int, sname string, ddir int, dname string, perm uint32, uid, gid int, haveIDs bool) error {
+func copyRegAt(sdir int, sname string, ddir int, dname string, perm uint32, uid, gid int, haveIDs bool) (err error) {
 	sf, err := unix.Openat(sdir, sname, unix.O_RDONLY|unix.O_NOFOLLOW|unix.O_CLOEXEC|unix.O_NONBLOCK, 0)
 	if err != nil {
 		return err
 	}
 	in := os.NewFile(uintptr(sf), sname)
+	// Read fd: releasing it cannot lose data, so a Close error is not actionable.
 	defer func() { _ = in.Close() }()
 	df, err := unix.Openat(ddir, dname, unix.O_WRONLY|unix.O_CREAT|unix.O_TRUNC|unix.O_NOFOLLOW|unix.O_CLOEXEC, perm)
 	if err != nil {
 		return err
 	}
 	out := os.NewFile(uintptr(df), dname)
-	defer func() { _ = out.Close() }()
-	if _, err := io.Copy(out, in); err != nil {
-		return err
+	// Write path: a Close error signals a failed flush (e.g. ENOSPC) — surface it
+	// instead of reporting a successful copy for data that never reached disk.
+	defer func() {
+		if cerr := out.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+	if _, cerr := io.Copy(out, in); cerr != nil {
+		return cerr
 	}
 	if haveIDs {
 		_ = unix.Fchown(df, uid, gid)
