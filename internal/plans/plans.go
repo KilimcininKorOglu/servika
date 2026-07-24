@@ -304,7 +304,12 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var n int
 	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT COUNT(*) FROM domains WHERE plan_id=?`, id).Scan(&n); err == nil && n > 0 {
+		`SELECT COUNT(*) FROM domains WHERE plan_id=?`, id).Scan(&n); err != nil {
+		// FAIL-CLOSED: a count error must not bypass the "plan in use" guard and
+		// delete a plan that live subscriptions still reference.
+		httpx.WriteError(w, http.StatusInternalServerError, "plan operation failed")
+		return
+	} else if n > 0 {
 		httpx.WriteError(w, http.StatusConflict,
 			"this plan cannot be deleted because it is used by "+strconv.Itoa(n)+" subscriptions")
 		return

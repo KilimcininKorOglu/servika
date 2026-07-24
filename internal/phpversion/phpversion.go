@@ -471,10 +471,14 @@ func (h *Handlers) Remove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check whether any domain uses this version.
+	// Check whether any domain uses this version. FAIL-CLOSED: a count error must
+	// not bypass this guard and let dnf remove a PHP still serving live tenants.
 	var count int
-	_ = h.DB.QueryRowContext(r.Context(),
-		`SELECT COUNT(*) FROM domains WHERE php_version=?`, req.Version).Scan(&count)
+	if err := h.DB.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM domains WHERE php_version=?`, req.Version).Scan(&count); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not verify version usage")
+		return
+	}
 	if count > 0 {
 		httpx.WriteError(w, http.StatusConflict,
 			fmt.Sprintf("%d domains use this version; migrate them to another version first", count))

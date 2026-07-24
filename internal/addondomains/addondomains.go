@@ -147,7 +147,13 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := quota.CheckDomainAllowed(r.Context(), h.DB, parent.CustomerID); err != nil {
-		httpx.WriteError(w, http.StatusForbidden, "plan limit exceeded")
+		var le *quota.LimitError
+		if errors.As(err, &le) {
+			httpx.WriteError(w, http.StatusForbidden, le.Message)
+			return
+		}
+		log.Printf("addon domain quota check failed: %v", err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not verify plan limit")
 		return
 	}
 	var existing int64

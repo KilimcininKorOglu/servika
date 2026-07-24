@@ -174,7 +174,13 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 
 	// 1) Linux user + nginx + PHP pool
 	if err := quota.CheckDomainAllowed(r.Context(), h.DB, nil); err != nil {
-		httpx.WriteError(w, http.StatusForbidden, "plan limit exceeded")
+		var le *quota.LimitError
+		if errors.As(err, &le) {
+			httpx.WriteError(w, http.StatusForbidden, le.Message)
+			return
+		}
+		log.Printf("domain quota check failed: %v", err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not verify plan limit")
 		return
 	}
 	pr, err := provisioner.Provision(req.DomainName, req.PHPVersion)
@@ -299,7 +305,9 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 
 	if isDemo == 0 {
 		// Remove the real DBs in MariaDB (CASCADE FK only deletes the panel DB metadata)
-		_ = credentials.MySQLDropAllForDomain(h.DB, id)
+		if err := credentials.MySQLDropAllForDomain(h.DB, id); err != nil {
+			log.Printf("mysql drop-all warn (%s): %v", domainName, err)
+		}
 		// nginx vhost + PHP pool + Linux user
 		if err := provisioner.Deprovision(domainName, sk); err != nil {
 			log.Printf("deprovision warn (%s): %v", domainName, err)
@@ -309,7 +317,9 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		}
 		// Redis tenant cache: Valkey ACL user + WP drop-in + domain_redis row.
 		// Since domain_redis has no CASCADE FK, the row was orphaned when the domain was deleted.
-		redis.CloseDomain(h.DB, id, sk)
+		if err := redis.CloseDomain(h.DB, id, sk); err != nil {
+			log.Printf("redis close-domain warn (%s): %v", sk, err)
+		}
 		// Mail metadata uses cascading foreign keys. The hook keeps domain deletion extensible.
 		mail.CleanupDomain(h.DB, id, sk)
 		// NOTE: Preserve /var/backups/servika/<sk>/ intentionally.
@@ -607,7 +617,16 @@ func (h *Handlers) SetFTPPassword(w http.ResponseWriter, r *http.Request) {
 	var sshOn int
 	_ = h.DB.QueryRowContext(r.Context(), `SELECT ssh_access FROM domains WHERE id=?`, id).Scan(&sshOn)
 	if sshOn == 1 {
-		_ = credentials.SyncSSHPassword(h.DB, sk)
+		if err := credentials.SyncSSHPassword(h.DB, sk); err != nil {
+			// SSH password stayed at its old value; the returned password only works
+			// for FTP. Report a degraded result rather than implying SSH is in sync.
+			log.Printf("ssh password sync warn (%s): %v", sk, err)
+			httpx.WriteJSON(w, http.StatusOK, map[string]any{
+				"ok": true, "id": id, "username": sk, "password": req.Password,
+				"ssh_sync_failed": true,
+			})
+			return
+		}
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"ok": true, "id": id, "username": sk, "password": req.Password,
@@ -708,7 +727,13 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := quota.CheckDatabaseAllowed(r.Context(), h.DB, id); err != nil {
-		httpx.WriteError(w, http.StatusForbidden, "plan limit exceeded")
+		var le *quota.LimitError
+		if errors.As(err, &le) {
+			httpx.WriteError(w, http.StatusForbidden, le.Message)
+			return
+		}
+		log.Printf("database quota check for domain %d: %v", id, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not verify plan limit")
 		return
 	}
 

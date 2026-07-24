@@ -189,7 +189,13 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := quota.CheckMailboxAllowed(r.Context(), h.DB, id); err != nil {
-		httpx.WriteError(w, http.StatusForbidden, err.Error())
+		var le *quota.LimitError
+		if errors.As(err, &le) {
+			httpx.WriteError(w, http.StatusForbidden, le.Message)
+			return
+		}
+		log.Printf("mailbox quota check for domain %d: %v", id, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not verify plan limit")
 		return
 	}
 
