@@ -42,13 +42,6 @@ func userLookup(name string) (usrInfo, error) {
 
 const dirOpenFlags = unix.O_DIRECTORY | unix.O_NOFOLLOW | unix.O_RDONLY | unix.O_CLOEXEC | unix.O_NONBLOCK
 
-// relClean reduces a user-supplied path to a home-relative, '..'-cleaned path.
-// A "/" prefix is added and Clean is applied to lexically dissolve any '..' entries;
-// the real enforcement is still handled by openat2's RESOLVE_BENEATH flag.
-func relClean(userPath string) string {
-	return strings.TrimPrefix(filepath.Clean("/"+userPath), "/")
-}
-
 // openHomeFd opens the home directory O_DIRECTORY. home (/home/c_<slug>) is created
 // by root; /home is owned by root → the tenant cannot swap the home DIRECTORY ENTRY
 // with a symlink, so opening home directly is safe. Sub-components are protected by openat2.
@@ -78,6 +71,60 @@ func openAt2Beneath(home, rel string, flags int, mode uint32) (*os.File, error) 
 		return nil, err
 	}
 	return os.NewFile(uintptr(fd), filepath.Join(home, p)), nil
+}
+
+// statBeneath returns FileInfo for rel under home via a symlink-safe fd (openat2
+// rejects any symlink component), so a tenant cannot race a symlink swap between a
+// path check and the stat performed as root.
+func statBeneath(home, rel string) (os.FileInfo, error) {
+	f, err := openAt2Beneath(home, rel, unix.O_RDONLY|unix.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }() // read-only stat probe; Close error not actionable
+	return f.Stat()
+}
+
+// readDirBeneath lists rel under home through a symlink-safe directory fd.
+func readDirBeneath(home, rel string) ([]os.DirEntry, error) {
+	f, err := openAt2Beneath(home, rel, unix.O_DIRECTORY|unix.O_RDONLY|unix.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }() // read-only dir listing; Close error not actionable
+	return f.ReadDir(-1)
+}
+
+// readFileBeneath reads at most maxBytes of rel under home through a symlink-safe fd.
+// It returns the file's FileInfo so callers can enforce size limits without a second,
+// race-prone stat. A non-regular file is rejected.
+func readFileBeneath(home, rel string, maxBytes int64) ([]byte, os.FileInfo, error) {
+	f, err := openAt2Beneath(home, rel, unix.O_RDONLY|unix.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer func() { _ = f.Close() }() // read fd release: Close error not actionable
+	st, err := f.Stat()
+	if err != nil {
+		return nil, nil, err
+	}
+	if !st.Mode().IsRegular() {
+		return nil, st, errNotRegular
+	}
+	if maxBytes > 0 && st.Size() > maxBytes {
+		return nil, st, errTooLarge
+	}
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return nil, st, err
+	}
+	return data, st, nil
+}
+
+// openReadBeneath opens rel under home read-only through a symlink-safe fd for
+// streaming (download). The caller must Close the returned file.
+func openReadBeneath(home, rel string) (*os.File, error) {
+	return openAt2Beneath(home, rel, unix.O_RDONLY|unix.O_NONBLOCK, 0)
 }
 
 // isDirBeneath reports whether rel is a DIRECTORY under home (symlink-safe; errors on

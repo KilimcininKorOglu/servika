@@ -59,9 +59,11 @@ func (h *Handlers) home(r *http.Request) (string, string, error) {
 }
 
 var (
-	errDemo    = errors.New("files cannot be managed for a demo subscription")
-	errBadUser = errors.New("security: invalid system user")
-	errEscape  = errors.New("security: escape from home directory blocked")
+	errDemo       = errors.New("files cannot be managed for a demo subscription")
+	errBadUser    = errors.New("security: invalid system user")
+	errEscape     = errors.New("security: escape from home directory blocked")
+	errNotRegular = errors.New("not a regular file")
+	errTooLarge   = errors.New("file exceeds the size limit")
 )
 
 type Entry struct {
@@ -105,12 +107,9 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	if rel == "" {
 		rel = "/"
 	}
-	abs, err := jailJoinStrict(home, rel)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	dir, err := os.ReadDir(abs)
+	// Symlink-safe listing: openat2 rejects any symlink component, so a tenant cannot
+	// race a directory into a symlink between validation and the root-side read.
+	dir, err := readDirBeneath(home, rel)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
@@ -163,26 +162,23 @@ func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rel := r.URL.Query().Get("path")
-	abs, err := jailJoinStrict(home, rel)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	info, err := os.Stat(abs)
+	// Symlink-safe open: the fd is resolved beneath home following no symlinks, so a
+	// tenant cannot race the path into a symlink and have root read a host file.
+	f, err := openReadBeneath(home, rel)
 	if err != nil {
 		httpx.WriteError(w, http.StatusNotFound, "not found")
+		return
+	}
+	defer func() { _ = f.Close() }()
+	info, err := f.Stat()
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
 	if info.IsDir() {
 		httpx.WriteError(w, http.StatusBadRequest, "directories cannot be downloaded")
 		return
 	}
-	f, err := os.Open(abs)
-	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
-		return
-	}
-	defer func() { _ = f.Close() }()
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", "attachment; filename=\""+info.Name()+"\"")
 	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
@@ -197,23 +193,19 @@ func (h *Handlers) Read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rel := r.URL.Query().Get("path")
-	abs, err := jailJoinStrict(home, rel)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	info, err := os.Stat(abs)
-	if err != nil {
-		httpx.WriteError(w, http.StatusNotFound, "not found")
-		return
-	}
-	if info.Size() > 2*1024*1024 {
+	// Symlink-safe read with an inline 2 MB cap (single fd, no separate racy stat).
+	const maxEditBytes = 2 * 1024 * 1024
+	data, info, err := readFileBeneath(home, rel, maxEditBytes)
+	if errors.Is(err, errTooLarge) {
 		httpx.WriteError(w, http.StatusBadRequest, "file exceeds 2 MB and cannot be edited")
 		return
 	}
-	data, err := os.ReadFile(abs)
+	if errors.Is(err, errNotRegular) {
+		httpx.WriteError(w, http.StatusBadRequest, "not a regular file")
+		return
+	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		httpx.WriteError(w, http.StatusNotFound, "not found")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{

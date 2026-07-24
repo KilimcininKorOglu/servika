@@ -18,6 +18,13 @@ import (
 	"servika/internal/httpx"
 )
 
+// relClean reduces a user-supplied path to a home-relative, '..'-cleaned path.
+// A "/" prefix is added and Clean is applied to lexically dissolve any '..' entries;
+// on Linux the real enforcement is still handled by openat2's RESOLVE_BENEATH flag.
+func relClean(userPath string) string {
+	return strings.TrimPrefix(filepath.Clean("/"+userPath), "/")
+}
+
 // jailJoinStrict is symlink-aware. It resolves the parent directory with EvalSymlinks,
 // then joins the leaf and prevents escape through symlinks.
 func jailJoinStrict(home, rel string) (string, error) {
@@ -194,12 +201,9 @@ func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	abs, err := jailJoinStrict(home, req.Path)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	info, err := os.Lstat(abs)
+	// Symlink-safe stat of the archive: reject non-regular files without a racy
+	// path-based os.Lstat that a tenant could redirect via an intermediate symlink.
+	info, err := statBeneath(home, req.Path)
 	if err != nil || !info.Mode().IsRegular() {
 		httpx.WriteError(w, http.StatusBadRequest, "file not found or path is not a regular file")
 		return
@@ -209,39 +213,54 @@ func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 	if target == "" {
 		target = filepath.Dir(req.Path)
 	}
-	targetAbs, err := jailJoinStrict(home, target)
+	// Create the target directory symlink-safe (rejects symlink components and chowns
+	// new directories to the tenant), replacing the racy os.MkdirAll + chown on a
+	// resolved string that a tenant could swap for a symlink escaping home.
+	if err := mkdirAllBeneath(home, target, systemUser); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	// Pin the target directory through a symlink-safe fd. Its kernel-resolved
+	// /proc/self/fd path is used for the tenant extraction and the final restorecon,
+	// so intermediate components can no longer be raced after this point.
+	targetFd, err := openReadBeneath(home, target)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	if err := os.MkdirAll(targetAbs, 0755); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
-		return
-	}
-	if _, err := newFileCommand(r.Context(), "chown", systemUser+":"+systemUser, targetAbs).CombinedOutput(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
-		return
-	}
+	defer func() { _ = targetFd.Close() }()
+	targetPinned := "/proc/self/fd/" + strconv.Itoa(int(targetFd.Fd()))
 
-	lowerPath := strings.ToLower(abs)
+	// Resolve the archive through a symlink-safe fd and use its pinned path so the
+	// external decompressors read the validated inode, not a raced one.
+	archiveFd, err := openReadBeneath(home, req.Path)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	defer func() { _ = archiveFd.Close() }()
+	archivePinned := "/proc/self/fd/" + strconv.Itoa(int(archiveFd.Fd()))
+
+	lowerPath := strings.ToLower(req.Path)
 	if strings.HasSuffix(lowerPath, ".gz") && archivex.DetectType(lowerPath) == archivex.TypeUnknown {
-		gzipRelative := filepath.Join(target, strings.TrimSuffix(filepath.Base(abs), ".gz"))
-		gzipTarget, err := jailJoinStrict(home, gzipRelative)
-		if err != nil {
-			httpx.WriteError(w, http.StatusBadRequest, "invalid extraction target")
-			return
-		}
-		gzipOutput, err := os.OpenFile(gzipTarget, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|syscall.O_NOFOLLOW, 0644)
+		gzipLeaf := strings.TrimSuffix(filepath.Base(req.Path), ".gz")
+		// Create the gzip output symlink-safe beneath the pinned target directory.
+		gzipRelative := filepath.Join(target, gzipLeaf)
+		gzipOutput, err := openAt2Beneath(home, gzipRelative, syscall.O_CREAT|syscall.O_WRONLY|syscall.O_TRUNC, 0644)
 		if err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 			return
 		}
-		command := newFileCommand(r.Context(), "gunzip", "-k", "-c", abs)
+		command := newFileCommand(r.Context(), "gunzip", "-k", "-c", archivePinned)
 		command.Stdout = gzipOutput
 		runErr := command.Run()
+		if runErr == nil {
+			// Chown the decompressed file to the tenant on the pinned inode.
+			fchownRestoreFd(home, gzipOutput, systemUser)
+		}
 		closeErr := gzipOutput.Close()
 		if runErr != nil || closeErr != nil {
-			_ = os.Remove(gzipTarget)
+			_ = removeAllBeneath(home, gzipRelative)
 			httpx.WriteError(w, http.StatusBadRequest, "invalid gzip file")
 			return
 		}
@@ -250,17 +269,17 @@ func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, http.StatusBadRequest, "unsupported format (zip, rar, tar, tar.gz/tgz, tar.bz2, tar.xz, gz)")
 			return
 		}
-		if _, err := archivex.Extract(r.Context(), abs, targetAbs, systemUser); err != nil {
+		// Extract as the tenant into the pinned target directory. Extraction runs
+		// under the tenant uid, so it cannot escalate; the pinned target prevents a
+		// raced symlink from redirecting the destination the panel selected.
+		if _, err := archivex.Extract(r.Context(), archivePinned, targetPinned, systemUser); err != nil {
 			httpx.WriteError(w, http.StatusBadRequest, "invalid archive")
 			return
 		}
 	}
 
-	if _, err := newFileCommand(r.Context(), "chown", "-R", systemUser+":"+systemUser, targetAbs).CombinedOutput(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
-		return
-	}
-	if _, err := newFileCommand(r.Context(), "restorecon", "-R", targetAbs).CombinedOutput(); err != nil {
+	// Relabel SELinux contexts on the pinned target path (kernel-resolved, under home).
+	if _, err := newFileCommand(r.Context(), "restorecon", "-R", targetPinned).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
@@ -442,12 +461,16 @@ func (h *Handlers) CalculateSize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rel := r.URL.Query().Get("path")
-	abs, err := jailJoinStrict(home, rel)
+	// Pin the target through a symlink-safe fd, then run du on the kernel-resolved
+	// /proc/self/fd path so an intermediate symlink cannot redirect du outside home.
+	pinned, err := openReadBeneath(home, rel)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	out, err := newFileCommand(r.Context(), "du", "-sb", abs).CombinedOutput()
+	defer func() { _ = pinned.Close() }()
+	fdPath := "/proc/self/fd/" + strconv.Itoa(int(pinned.Fd()))
+	out, err := newFileCommand(r.Context(), "du", "-sbL", fdPath).CombinedOutput()
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
@@ -487,18 +510,25 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 	if rel == "" {
 		rel = "/"
 	}
-	baseAbs, err := jailJoinStrict(home, rel)
+	// Pin the search base through a symlink-safe fd and run find on its kernel-resolved
+	// /proc/self/fd path, so the base and its ancestors cannot be swapped for symlinks
+	// pointing outside home between validation and the walk.
+	baseFd, err := openReadBeneath(home, rel)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
+	defer func() { _ = baseFd.Close() }()
+	fdBase := "/proc/self/fd/" + strconv.Itoa(int(baseFd.Fd()))
 
 	// Security: q is only a file-name pattern. Use iname without a shell to prevent injection.
 	q = strings.ReplaceAll(q, "*", "")
 	q = strings.ReplaceAll(q, "?", "")
 	pattern := "*" + q + "*"
 
-	out, _ := newFileCommand(r.Context(), "find", baseAbs, "-iname", pattern, "-printf", "%p\t%s\t%y\t%T@\n").Output()
+	// -L follows the /proc/self/fd symlink into the real base directory.
+	out, _ := newFileCommand(r.Context(), "find", "-L", fdBase, "-iname", pattern, "-printf", "%p\t%s\t%y\t%T@\n").Output()
+	relBase := "/" + strings.Trim(relClean(rel), "/")
 	results := []Entry{}
 	for _, ln := range strings.Split(string(out), "\n") {
 		if ln == "" {
@@ -523,8 +553,9 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 		case "l":
 			ftype = "symlink"
 		}
-		// Make the path relative to home.
-		relativePath := strings.TrimPrefix(absp, home)
+		// Rebase the /proc/self/fd/N-prefixed path back to a home-relative path.
+		suffix := strings.TrimPrefix(absp, fdBase)
+		relativePath := filepath.Clean(relBase + "/" + strings.TrimPrefix(suffix, "/"))
 		if relativePath == "" {
 			relativePath = "/"
 		}

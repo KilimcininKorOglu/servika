@@ -53,3 +53,21 @@ func copyTreeBeneath(_, _, _, _ string) error {
 func isDirBeneath(_, _ string) (bool, error) {
 	return false, errSafeIOLinuxOnly
 }
+
+func statBeneath(_, _ string) (os.FileInfo, error) {
+	return nil, errSafeIOLinuxOnly
+}
+
+func readDirBeneath(_, _ string) ([]os.DirEntry, error) {
+	return nil, errSafeIOLinuxOnly
+}
+
+func readFileBeneath(_, _ string, _ int64) ([]byte, os.FileInfo, error) {
+	return nil, nil, errSafeIOLinuxOnly
+}
+
+func openReadBeneath(_, _ string) (*os.File, error) {
+	return nil, errSafeIOLinuxOnly
+}
+
+func fchownRestoreFd(_ string, _ *os.File, _ string) {}
