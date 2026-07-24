@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"servika/internal/archivex"
 	"servika/internal/httpx"
@@ -111,24 +113,44 @@ func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Import the database dump without a shell or inherited panel secrets.
-	dumpPath := filepath.Join(tmpDir, "dump.sql")
+	// Canonical name is dump.sql. Fall back to the legacy "<file>.sql" name used by
+	// older backups so existing archives remain restorable.
 	dbName := systemUser + "_main"
 	databaseImport := "not_present"
-	if dumpInfo, err := os.Lstat(dumpPath); err == nil && dumpInfo.Mode().IsRegular() {
+	dumpPath := filepath.Join(tmpDir, "dump.sql")
+	if info, statErr := os.Lstat(dumpPath); statErr != nil || !info.Mode().IsRegular() {
+		legacy := filepath.Join(tmpDir, file+".sql")
+		if info, statErr := os.Lstat(legacy); statErr == nil && info.Mode().IsRegular() {
+			dumpPath = legacy
+		} else {
+			dumpPath = ""
+		}
+	}
+	if dumpPath != "" {
 		dump, err := os.Open(dumpPath)
 		if err != nil {
 			databaseImport = "failed"
 		} else {
 			command := newRestoreCommand(r.Context(), "mysql", dbName)
 			command.Stdin = dump
-			_, commandErr := command.CombinedOutput()
+			out, commandErr := command.CombinedOutput()
 			_ = dump.Close()
 			if commandErr != nil {
+				log.Printf("restore db import failed for %s: %v: %s", dbName, commandErr, strings.TrimSpace(string(out)))
 				databaseImport = "failed"
 			} else {
 				databaseImport = "successful"
 			}
 		}
+	}
+
+	// Fail closed: a present-but-failed database import must not report success,
+	// otherwise an operator believes recovery succeeded while the database was not
+	// restored. Files are already restored at this point, so report a partial state.
+	if databaseImport == "failed" {
+		httpx.WriteError(w, http.StatusInternalServerError,
+			"files were restored but the database import failed; the restore is incomplete")
+		return
 	}
 
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{

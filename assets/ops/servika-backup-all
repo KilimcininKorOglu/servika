@@ -55,9 +55,16 @@ while IFS=$'\t' read -r id domain_name system_user; do
   mkdir -p "$DIR"; chmod 700 "$DIR"
   FILE="${system_user}-${STAMP}-scheduled.tar.gz"
   DB_NAME="${system_user}_main"
-  mysqldump --single-transaction "$DB_NAME" > "$DIR/dump.sql" 2>/dev/null || echo "-- skipped" > "$DIR/dump.sql"
-  tar czf "$DIR/$FILE" -C /home "$system_user" -C "$DIR" dump.sql 2>/dev/null
-  rm -f "$DIR/dump.sql"
+  # Dump into a private temp dir. Fail closed: if mysqldump fails, skip this
+  # domain instead of archiving a placeholder that restore cannot use.
+  DUMP_DIR=$(mktemp -d) || continue
+  if ! mysqldump --single-transaction "$DB_NAME" > "$DUMP_DIR/dump.sql" 2>/dev/null; then
+    logger -t servika-backup "SKIP $domain_name: mysqldump failed for $DB_NAME"
+    rm -rf "$DUMP_DIR"
+    continue
+  fi
+  tar czf "$DIR/$FILE" -C /home "$system_user" -C "$DUMP_DIR" dump.sql 2>/dev/null
+  rm -rf "$DUMP_DIR"
   if [ -f "$DIR/$FILE" ]; then
     SIZE=$(stat -c %s "$DIR/$FILE")
     [[ "$SIZE" =~ ^[0-9]+$ ]] || continue

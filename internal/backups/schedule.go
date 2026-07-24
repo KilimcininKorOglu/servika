@@ -124,23 +124,27 @@ func runOneBackup(db *sql.DB, d dueDomain) error {
 	_ = os.MkdirAll(dir, 0700)
 	file := fmt.Sprintf("%s-auto-%s.tar.gz", d.SystemUser, stamp)
 	abs := filepath.Join(dir, file)
-	sqlDump := filepath.Join(dir, file+".sql")
 
 	// Dump stdout only (no stderr into the .sql) and drop "|| true" so a failed dump
 	// aborts the scheduled backup instead of archiving a corrupt/empty dump as success.
+	// Archive the dump under the canonical name "dump.sql" (in a unique temp dir to
+	// avoid concurrent-backup collisions) so the restore path can find and import it.
 	dbName := d.SystemUser + "_main"
+	dumpDir, err := os.MkdirTemp("", "servika-dump-*")
+	if err != nil {
+		return fmt.Errorf("prepare dump dir: %w", err)
+	}
+	defer func() { _ = os.RemoveAll(dumpDir) }()
+	sqlDump := filepath.Join(dumpDir, "dump.sql")
 	if out, err := exec.Command("bash", "-c",
 		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); err != nil {
-		_ = os.Remove(sqlDump)
 		return fmt.Errorf("mysqldump %s: %s: %w", dbName, strings.TrimSpace(string(out)), err)
 	}
 
-	args := []string{"czf", abs, "-C", "/home", d.SystemUser, "-C", dir, file + ".sql"}
+	args := []string{"czf", abs, "-C", "/home", d.SystemUser, "-C", dumpDir, "dump.sql"}
 	if out, err := exec.Command("tar", args...).CombinedOutput(); err != nil {
-		_ = os.Remove(sqlDump)
 		return fmt.Errorf("tar: %s: %w", strings.TrimSpace(string(out)), err)
 	}
-	_ = os.Remove(sqlDump)
 
 	st, _ := os.Stat(abs)
 	var sizeBytes int64

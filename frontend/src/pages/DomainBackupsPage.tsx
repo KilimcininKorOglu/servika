@@ -161,7 +161,7 @@ export default function DomainBackupsPage() {
     setProcessing(true); setError(null); setSuccess(null)
     try {
       const { data } = await api.post(`/domains/${id}/backups/${restoreBackup.id}/restore`)
-      setSuccess(`Restored: ${data.domain_name}, ${data.db_import || ''}`)
+      setSuccess(`Restored: ${data.domain_name}, database: ${data.database_import || 'unknown'}`)
       setRestoreBackup(null)
     } catch (e) {
       setError(apiError(e, 'Restore failed'))

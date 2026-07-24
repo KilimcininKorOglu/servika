@@ -185,11 +185,19 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	// the .sql, and drop "|| true" so a failed dump surfaces its real exit status.
 	// A swallowed failure here would archive a truncated/empty dump and report a
 	// successful backup that cannot be restored (silent data loss).
+	// The dump is written to a unique temp directory and archived as the canonical
+	// name "dump.sql" so the restore path (which looks for dump.sql) can import it.
+	// A per-backup temp dir avoids a fixed-name collision between concurrent backups.
 	dbName := systemUser + "_main"
-	sqlDump := filepath.Join(dir, file+".sql")
+	dumpDir, derr := os.MkdirTemp("", "servika-dump-*")
+	if derr != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare database dump")
+		return
+	}
+	defer func() { _ = os.RemoveAll(dumpDir) }()
+	sqlDump := filepath.Join(dumpDir, "dump.sql")
 	if out, derr := exec.Command("bash", "-c",
 		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); derr != nil {
-		_ = os.Remove(sqlDump)
 		log.Printf("backup mysqldump failed for %s: %v: %s", dbName, derr, strings.TrimSpace(string(out)))
 		httpx.WriteError(w, http.StatusInternalServerError, "could not dump database for backup")
 		return
@@ -199,14 +207,12 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	args := []string{
 		"czf", abs,
 		"-C", "/home", systemUser,
-		"-C", dir, file + ".sql",
+		"-C", dumpDir, "dump.sql",
 	}
 	if _, tarErr := exec.Command("tar", args...).CombinedOutput(); tarErr != nil {
-		_ = os.Remove(sqlDump)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create backup archive")
 		return
 	}
-	_ = os.Remove(sqlDump)
 
 	st, _ := os.Stat(abs)
 	var sizeBytes int64
