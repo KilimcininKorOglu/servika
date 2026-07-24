@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"servika/internal/config"
@@ -59,6 +60,11 @@ type Backup struct {
 type Handlers struct {
 	DB *sql.DB
 }
+
+// backupInProgress guards against concurrent manual backups for the same domain.
+// A full backup runs mysqldump + tar over the whole tenant tree; two at once for
+// one domain waste CPU/disk/IO and can race the shared dump directory.
+var backupInProgress sync.Map // domainID (int64) -> struct{}
 
 func (h *Handlers) lookupDomain(r *http.Request) (id int64, domainName, systemUser string, demo bool, err error) {
 	id, _ = strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
@@ -174,6 +180,14 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid system user")
 		return
 	}
+
+	// Reject a second concurrent backup for the same domain instead of running
+	// duplicate dump+archive work over the same data.
+	if _, loaded := backupInProgress.LoadOrStore(id, struct{}{}); loaded {
+		httpx.WriteError(w, http.StatusConflict, "a backup is already running for this domain")
+		return
+	}
+	defer backupInProgress.Delete(id)
 
 	stamp := time.Now().UTC().Format("20060102-150405")
 	dir := filepath.Join(backupRoot(), systemUser)
