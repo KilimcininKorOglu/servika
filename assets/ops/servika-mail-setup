@@ -183,9 +183,10 @@ if [ ! -f /etc/opendkim/TrustedHosts ]; then
   printf '127.0.0.1\nlocalhost\n' > /etc/opendkim/TrustedHosts
 fi
 chown -R opendkim:opendkim /etc/opendkim
-cp "$TMPL/opendkim/opendkim.conf.tmpl" /etc/opendkim/opendkim.conf
-chown root:opendkim /etc/opendkim/opendkim.conf
-log "opendkim.conf and table files installed"
+cp "$TMPL/opendkim/opendkim.conf.tmpl" /etc/opendkim.conf
+chown root:opendkim /etc/opendkim.conf
+chmod 640 /etc/opendkim.conf
+log "/etc/opendkim.conf and table files installed"
 
 echo "════ Maildir roots for active domains ════"
 mysql -u root -N -e "SELECT system_user FROM panel.mail_domains WHERE status='active'" 2>/dev/null | while read -r system_user; do

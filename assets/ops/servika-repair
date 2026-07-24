@@ -290,8 +290,9 @@ sec_mail() {
   if [ -d /etc/opendkim ]; then
     ensure_owner /etc/opendkim "opendkim:opendkim" -R
     ensure_mode /etc/opendkim 750
-    [ -f /etc/opendkim/opendkim.conf ] && ensure_owner /etc/opendkim/opendkim.conf "root:opendkim"
-    [ -f /etc/opendkim/opendkim.conf ] && ensure_mode /etc/opendkim/opendkim.conf 640
+    [ -f /etc/opendkim.conf ] && ensure_owner /etc/opendkim.conf "root:opendkim"
+    [ -f /etc/opendkim.conf ] && ensure_mode /etc/opendkim.conf 640
+    [ -f /etc/opendkim/opendkim.conf ] && warn "/etc/opendkim/opendkim.conf is ignored by AlmaLinux OpenDKIM; use /etc/opendkim.conf"
     local key
     while IFS= read -r key; do
       [ -n "$key" ] || continue
