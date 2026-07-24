@@ -1,0 +1,27 @@
+<?php
+declare(strict_types=1);
+
+$config = [];
+
+// Roundcube stores address books and preferences in this database.
+// Mailbox authentication stays delegated to Dovecot IMAP.
+$config['db_dsnw'] = 'mysql://roundcube:__SERVIKA_ROUNDCUBE_DB_PASS__@localhost/roundcube';
+
+// IMAP and SMTP stay on loopback. Users sign in with their mailbox address and password.
+$config['default_host'] = 'localhost';
+$config['default_port'] = 143;
+$config['smtp_server']  = 'localhost';
+$config['smtp_port']    = 587;
+$config['smtp_user']    = '%u';
+$config['smtp_pass']    = '%p';
+
+$config['support_url']  = '';
+$config['product_name'] = 'Servika Webmail';
+$config['des_key']      = '__SERVIKA_ROUNDCUBE_DES_KEY__';
+$config['plugins']      = ['archive'];
+$config['skin']         = 'elastic';
+$config['language']     = 'tr_TR';
+$config['temp_dir']     = '/var/lib/roundcube/temp';
+
+$config['session_lifetime'] = 60;
+$config['login_autocomplete'] = 0;

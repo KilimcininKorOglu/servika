@@ -138,7 +138,7 @@ echo "  current version: $CURVER"
 RELHASH=$( { sha256sum "$NEWBIN" | cut -d' ' -f1
   [ -f "$A/frontend-dist.tar.gz" ] && sha256sum "$A/frontend-dist.tar.gz" | cut -d' ' -f1
   [ -f "$A/migrations.tar.gz" ] && sha256sum "$A/migrations.tar.gz" | cut -d' ' -f1
-  find "$A/ops" "$A/systemd" "$A/mail" -type f 2>/dev/null | LC_ALL=C sort \
+  find "$A/ops" "$A/systemd" "$A/mail" "$A/php-fpm" "$A/nginx" -type f 2>/dev/null | LC_ALL=C sort \
     | xargs -r sha256sum 2>/dev/null | cut -d' ' -f1
   true; } | sha256sum | cut -d' ' -f1)
 MARKER="$PREFIX/.release_hash"
@@ -155,6 +155,7 @@ if [ "$DRY" = 1 ]; then
   echo "  • $MIGR/"
   echo "  • $OPSBIN operations tools and $SCRIPTS"
   echo "  • mail templates under $PREFIX/src/mail-templates"
+  echo "  • nginx and PHP-FPM panel integration files"
   echo "  • $DB_BACKUP and /etc/systemd/system/servika-db-backup.{service,timer}"
   echo "  • full panel database dump before migrations: $DB_BACKUP_DIR (not created during dry run)"
   echo "  • systemctl restart servika"
@@ -246,6 +247,17 @@ if [ -d "$A/mail" ]; then
   cp -a "$A/mail/." "$MAIL_TMPL/"
   ok "mail templates updated"
 fi
+if [ -f "$A/nginx/_panel.conf" ]; then
+  cp "$A/nginx/_panel.conf" /etc/nginx/conf.d/_panel.conf
+  ok "panel nginx vhost updated"
+fi
+if [ -f "$A/php-fpm/roundcube.conf" ]; then
+  cp "$A/php-fpm/roundcube.conf" /etc/php-fpm.d/roundcube.conf
+  mkdir -p /var/lib/roundcube/{temp,sessions}
+  chown -R apache:apache /var/lib/roundcube 2>/dev/null || true
+  command -v restorecon >/dev/null && restorecon -R /var/lib/roundcube >/dev/null 2>&1 || true
+  ok "roundcube PHP-FPM pool updated"
+fi
 
 if [ -d "$A/ops" ]; then
   for t in "$A"/ops/*; do bn=$(basename "$t"); install -m 0755 "$t" "$OPSBIN/${bn%.sh}" 2>/dev/null || true; done
@@ -304,7 +316,7 @@ done
 
 if [ "$HEALTHY" = 1 ]; then
   if command -v servika-mail-setup >/dev/null 2>&1; then
-    servika-mail-setup >/dev/null 2>&1 && ok "mail infrastructure synchronized (Postfix+Dovecot+OpenDKIM)" || warn "mail-setup skipped"
+    servika-mail-setup >/dev/null 2>&1 && ok "mail infrastructure synchronized (Postfix+Dovecot+OpenDKIM+Roundcube)" || warn "mail-setup skipped"
   fi
   systemctl reload nginx >/dev/null 2>&1 || true
   echo "$RELHASH" > "$MARKER" 2>/dev/null || true

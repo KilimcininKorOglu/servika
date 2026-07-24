@@ -190,6 +190,7 @@ if [ "$DRY" = 1 ]; then
   echo "  • $MIGR/   → new .sql files ADDED (existing preserved)"
   echo "  • $OPSBIN + $SCRIPTS → ops-tools synced"
   echo "  • mail templates under $PREFIX/src/mail-templates"
+  echo "  • nginx and PHP-FPM panel integration files"
   echo "  • PRESERVED: /etc/servika/env · panel DB · /home/c_* · /var/backups/servika/*"
   [ $DODB = 1 ] && echo "  • pre-restart FAIL-CLOSED DB dump → $DBDIR (NOT taken in DRY-RUN)"
   [ $DORESTART = 1 ] && echo "  • systemctl restart $SVC + /healthz (binary+DB rollback on failure)"
@@ -278,6 +279,17 @@ if [ -d "$A/mail" ]; then
   cp -a "$A/mail/." "$MAIL_TMPL/"
   ok "mail templates synced"
 fi
+if [ -f "$A/nginx/_panel.conf" ]; then
+  cp "$A/nginx/_panel.conf" /etc/nginx/conf.d/_panel.conf
+  ok "panel nginx vhost synced"
+fi
+if [ -f "$A/php-fpm/roundcube.conf" ]; then
+  cp "$A/php-fpm/roundcube.conf" /etc/php-fpm.d/roundcube.conf
+  mkdir -p /var/lib/roundcube/{temp,sessions}
+  chown -R apache:apache /var/lib/roundcube 2>/dev/null || true
+  command -v restorecon >/dev/null && restorecon -R /var/lib/roundcube >/dev/null 2>&1 || true
+  ok "roundcube PHP-FPM pool synced"
+fi
 command -v restorecon >/dev/null && restorecon -R "$(dirname "$BIN")" "$FDIST" >/dev/null 2>&1 || true
 
 # ───────────────────────────────────────────────────────────────────────────
@@ -313,7 +325,7 @@ done
 
 if [ "$HEALTHY" = 1 ]; then
   if command -v servika-mail-setup >/dev/null 2>&1; then
-    servika-mail-setup >/dev/null 2>&1 && ok "mail infrastructure synchronized (Postfix+Dovecot+OpenDKIM)" || warn "mail-setup skipped"
+    servika-mail-setup >/dev/null 2>&1 && ok "mail infrastructure synchronized (Postfix+Dovecot+OpenDKIM+Roundcube)" || warn "mail-setup skipped"
   fi
   systemctl reload nginx >/dev/null 2>&1 || true
   ok "panel ACTIVE + /healthz OK"

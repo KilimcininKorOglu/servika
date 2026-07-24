@@ -104,7 +104,7 @@ step "3) PHP versions (8 Remi + base) + wp-cli"
 # Disable dnf automatic timers before batch install to prevent lock contention.
 # Managed panel updates handle patching on their own schedule.
 systemctl disable --now dnf-automatic.timer dnf-makecache.timer >/dev/null 2>&1 || true
-BASE_PKGS="php php-fpm php-cli php-mysqlnd php-mbstring php-json php-pecl-zip php-pecl-redis6"
+BASE_PKGS="php php-fpm php-cli php-mysqlnd php-mbstring php-json php-intl php-xml php-gd php-pecl-zip php-pecl-redis6"
 dnf install -y $BASE_PKGS >/dev/null 2>&1 && ok "base php + php-redis"
 for v in $PHP_VERS; do
   pkgs=""; for e in $PHP_EXT; do pkgs="$pkgs php$v-php-$e"; done
@@ -160,6 +160,8 @@ SERVIKA_VERSION_CHECK=1
 SERVIKA_VERSION_ENDPOINT=https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/version.json
 SERVIKA_REDIS_ADMIN_PASS=${RADMIN}
 SERVIKA_MAIL_DB_PASS=
+SERVIKA_ROUNDCUBE_DB_PASS=
+SERVIKA_ROUNDCUBE_DES_KEY=
 SERVIKA_SEED_PASSWORD=
 SERVIKA_REPO=KilimcininKorOglu/servika
 SERVIKA_PREFIX=/opt/servika
@@ -217,7 +219,7 @@ tar xzf "$A/migrations.tar.gz" -C /opt/servika/src/migrations && ok "migrations 
 if [ -d "$A/mail" ]; then
   rm -rf /opt/servika/src/mail-templates/*
   cp -a "$A/mail/." /opt/servika/src/mail-templates/
-  ok "mail templates"
+  ok "mail templates (postfix, dovecot, opendkim, roundcube)"
 fi
 # Operations tools and phpMyAdmin signon
 for t in "$A"/ops/*; do
@@ -300,11 +302,13 @@ openssl rand -hex 32 > /etc/servika/pma-internal.token
 chown root:apache /etc/servika/pma-internal.token
 chmod 0640 /etc/servika/pma-internal.token
 cp "$A/php-fpm/phpmyadmin.conf" /etc/php-fpm.d/phpmyadmin.conf
-mkdir -p /var/lib/phpmyadmin/{tmp,sessions}
+[ -f "$A/php-fpm/roundcube.conf" ] && cp "$A/php-fpm/roundcube.conf" /etc/php-fpm.d/roundcube.conf
+mkdir -p /var/lib/phpmyadmin/{tmp,sessions} /var/lib/roundcube/{temp,sessions}
 chown -R nginx:nginx /opt/phpmyadmin /var/lib/phpmyadmin 2>/dev/null
-restorecon -R /opt/phpmyadmin /var/lib/phpmyadmin >/dev/null 2>&1
+chown -R apache:apache /var/lib/roundcube 2>/dev/null
+restorecon -R /opt/phpmyadmin /var/lib/phpmyadmin /var/lib/roundcube >/dev/null 2>&1
 setsebool -P httpd_can_network_connect_db 1 >/dev/null 2>&1
-ok "phpMyAdmin pool + configuration + permissions"
+ok "phpMyAdmin and Roundcube pools + phpMyAdmin configuration + permissions"
 
 # ============ 10) systemd + services ============
 step "10) systemd + services"

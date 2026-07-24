@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# servika-mail-setup installs or repairs Postfix, Dovecot, and OpenDKIM for virtual mailboxes.
+# servika-mail-setup installs or repairs Postfix, Dovecot, OpenDKIM, and Roundcube for virtual mailboxes.
 # It reads mail_domains, mailboxes, and mail_aliases through live MySQL maps.
+# Roundcube authenticates through Dovecot IMAP and stores only webmail preferences in its own database.
 set -uo pipefail
 
 ENV_FILE=/etc/servika/env
@@ -31,6 +32,66 @@ ensure_env_file() {
   chmod 600 "$ENV_FILE"
 }
 
+ensure_panel_webmail_location() {
+  panel_conf=/etc/nginx/conf.d/_panel.conf
+  [ -f "$panel_conf" ] || return 0
+  grep -q 'location \^~ /webmail/' "$panel_conf" && return 0
+  tmp=$(mktemp)
+  if ! awk '
+    BEGIN { inserted = 0 }
+    /^}$/ && inserted == 0 {
+      print ""
+      print "# Roundcube webmail within the panel port 8443 virtual host."
+      print "# Users sign in with their mailbox address and password. SSO is intentionally not used."
+      print "location ^~ /webmail/ {"
+      print "    alias /opt/roundcube/;"
+      print "    index index.php;"
+      print ""
+      print "    location ~ ^/webmail/(config|temp|logs|SQL|bin|tests)/ {"
+      print "        deny all;"
+      print "        return 404;"
+      print "    }"
+      print ""
+      print "    location ~ ^/webmail/(.+\\.php)$ {"
+      print "        alias /opt/roundcube/$1;"
+      print "        fastcgi_pass unix:/run/php-fpm/roundcube.sock;"
+      print "        fastcgi_param SCRIPT_FILENAME /opt/roundcube/$1;"
+      print "        fastcgi_param SCRIPT_NAME /webmail/$1;"
+      print "        include fastcgi_params;"
+      print "        fastcgi_read_timeout 60s;"
+      print "    }"
+      print ""
+      print "    location ~ ^/webmail/(.+\\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt|svg|woff2?|map))$ {"
+      print "        alias /opt/roundcube/$1;"
+      print "        expires 7d;"
+      print "        add_header Cache-Control \"public, immutable\";"
+      print "        add_header X-Content-Type-Options \"nosniff\" always;"
+      print "        add_header X-Frame-Options \"SAMEORIGIN\" always;"
+      print "        add_header Referrer-Policy \"strict-origin-when-cross-origin\" always;"
+      print "        add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;"
+      print "    }"
+      print "}"
+      print ""
+      inserted = 1
+    }
+    { print }
+  ' "$panel_conf" > "$tmp"; then
+    rm -f "$tmp"
+    log "roundcube nginx location could not be generated"
+    return 0
+  fi
+  cp -a "$panel_conf" "${panel_conf}.servika-webmail-bak" 2>/dev/null || true
+  cp "$tmp" "$panel_conf"
+  rm -f "$tmp"
+  if nginx -t >/tmp/servika-mail-nginx-check.log 2>&1; then
+    systemctl reload nginx >/dev/null 2>&1 || true
+    log "roundcube nginx location added"
+  else
+    cp "${panel_conf}.servika-webmail-bak" "$panel_conf" 2>/dev/null || true
+    log "roundcube nginx location was not added; see /tmp/servika-mail-nginx-check.log"
+  fi
+}
+
 set_env_value() {
   key=$1
   value=$2
@@ -59,7 +120,7 @@ if [ ! -d "$TMPL" ]; then
 fi
 [ -d "$TMPL" ] || fail "mail template directory was not found ($TMPL)"
 
-for dir in postfix dovecot opendkim; do
+for dir in postfix dovecot opendkim roundcube; do
   [ -d "$TMPL/$dir" ] || fail "mail template directory is incomplete: $TMPL/$dir"
 done
 
@@ -168,4 +229,70 @@ if [ "$OK" = 1 ]; then
 else
   exit 1
 fi
+
+echo "════ Roundcube webmail (/webmail/) ════"
+RCVER=1.7.2
+mkdir -p /opt/roundcube
+if [ ! -f /opt/roundcube/index.php ]; then
+  RCTMP=$(mktemp -d)
+  if curl -fsSL -o "$RCTMP/roundcube.tar.gz" \
+       "https://github.com/roundcube/roundcubemail/releases/download/${RCVER}/roundcubemail-${RCVER}-complete.tar.gz" \
+     && tar xzf "$RCTMP/roundcube.tar.gz" -C /opt/roundcube --strip-components=1; then
+    log "roundcube ${RCVER} downloaded and extracted"
+  else
+    log "✗ roundcube could not be downloaded; webmail skipped without affecting mail transport"
+  fi
+  rm -rf "$RCTMP"
+fi
+
+if [ -f /opt/roundcube/index.php ]; then
+  RCDBPASS=${SERVIKA_ROUNDCUBE_DB_PASS:-}
+  if [ -n "$RCDBPASS" ] && ! [[ "$RCDBPASS" =~ ^[A-Za-z0-9._%+=-]{16,128}$ ]]; then
+    fail "SERVIKA_ROUNDCUBE_DB_PASS contains unsupported characters or has an invalid length"
+  fi
+  if [ -z "$RCDBPASS" ]; then
+    RCDBPASS=$(openssl rand -hex 24)
+    set_env_value SERVIKA_ROUNDCUBE_DB_PASS "$RCDBPASS"
+    export SERVIKA_ROUNDCUBE_DB_PASS="$RCDBPASS"
+    log "roundcube database password generated and added to the environment file"
+  fi
+
+  RCDESKEY=${SERVIKA_ROUNDCUBE_DES_KEY:-}
+  if [ -n "$RCDESKEY" ] && ! [[ "$RCDESKEY" =~ ^[A-Za-z0-9._%+=:@-]{16,128}$ ]]; then
+    fail "SERVIKA_ROUNDCUBE_DES_KEY contains unsupported characters or has an invalid length"
+  fi
+  if [ -z "$RCDESKEY" ]; then
+    RCDESKEY=$(openssl rand -hex 16)
+    set_env_value SERVIKA_ROUNDCUBE_DES_KEY "$RCDESKEY"
+    export SERVIKA_ROUNDCUBE_DES_KEY="$RCDESKEY"
+    log "roundcube encryption key generated and added to the environment file"
+  fi
+
+  mysql -u root <<SQL 2>/dev/null || fail "roundcube database or grants could not be created"
+CREATE DATABASE IF NOT EXISTS roundcube CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'roundcube'@'localhost' IDENTIFIED BY '${RCDBPASS}';
+ALTER USER 'roundcube'@'localhost' IDENTIFIED BY '${RCDBPASS}';
+GRANT ALL PRIVILEGES ON roundcube.* TO 'roundcube'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+
+  RCTBL=$(mysql -u root -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='roundcube'" 2>/dev/null)
+  if [ "${RCTBL:-0}" = "0" ] && [ -f /opt/roundcube/SQL/mysql.initial.sql ]; then
+    mysql -u root roundcube < /opt/roundcube/SQL/mysql.initial.sql 2>/dev/null && log "roundcube database schema applied"
+  fi
+
+  mkdir -p /opt/roundcube/config
+  sed -e "s/__SERVIKA_ROUNDCUBE_DB_PASS__/${RCDBPASS}/" -e "s/__SERVIKA_ROUNDCUBE_DES_KEY__/${RCDESKEY}/" \
+    "$TMPL/roundcube/config.inc.php.tmpl" > /opt/roundcube/config/config.inc.php
+  chown root:apache /opt/roundcube/config/config.inc.php
+  chmod 640 /opt/roundcube/config/config.inc.php
+
+  mkdir -p /var/lib/roundcube/sessions /var/lib/roundcube/temp
+  chown -R apache:apache /opt/roundcube /var/lib/roundcube
+  restorecon -R /opt/roundcube /var/lib/roundcube >/dev/null 2>&1
+  ensure_panel_webmail_location
+  systemctl reload php-fpm >/dev/null 2>&1 || systemctl restart php-fpm >/dev/null 2>&1
+  log "✓ roundcube configured at /webmail/"
+fi
+
 echo "════════ ✓ Mail infrastructure ready ════════"
