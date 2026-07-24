@@ -80,6 +80,18 @@ func (h *Handlers) setSuspended(w http.ResponseWriter, r *http.Request, suspende
 		`UPDATE ftp_accounts SET status=? WHERE domain_id=?`, ftpStatus, id); err != nil {
 		log.Printf("update FTP account suspension state for domain %d: %v", id, err)
 	}
+	mailStatus := "active"
+	if suspended {
+		mailStatus = "suspended"
+	}
+	if _, err := h.DB.ExecContext(r.Context(),
+		`UPDATE mail_domains SET status=? WHERE domain_id=?`, mailStatus, id); err != nil {
+		log.Printf("update mail domain suspension state for domain %d: %v", id, err)
+	}
+	if _, err := h.DB.ExecContext(r.Context(),
+		`UPDATE mailboxes SET status=? WHERE domain_id=?`, mailStatus, id); err != nil {
+		log.Printf("update mailbox suspension state for domain %d: %v", id, err)
+	}
 	if systemUser != "" {
 		provisioner.SuspendUserRuntime(systemUser, suspended)
 	}

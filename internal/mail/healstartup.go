@@ -1,0 +1,43 @@
+// Package mail manages domain-scoped virtual mailboxes for Postfix and Dovecot.
+package mail
+
+import (
+	"context"
+	"database/sql"
+	"log"
+	"os"
+)
+
+// HealMailOnStartup checks mail service SQL-map prerequisites and repairs active Maildir roots.
+func HealMailOnStartup(ctx context.Context, db *sql.DB) {
+	required := []string{
+		"/etc/postfix/mysql-virtual-domains.cf",
+		"/etc/dovecot/dovecot-sql.conf.ext",
+	}
+	for _, path := range required {
+		if _, err := os.Stat(path); err != nil {
+			log.Printf("mail heal: %s is missing; mail service setup may not have run", path)
+		}
+	}
+
+	rows, err := db.QueryContext(ctx,
+		`SELECT system_user, uid_n, gid_n, maildir_root FROM mail_domains WHERE status='active'`)
+	if err != nil {
+		return
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var systemUser, root string
+		var uid, gid int
+		if err := rows.Scan(&systemUser, &uid, &gid, &root); err != nil {
+			continue
+		}
+		if _, err := os.Stat(root); err != nil {
+			_ = os.MkdirAll(root, 0o750)
+			_ = os.Chown(root, uid, gid)
+		}
+	}
+}
+
+// EnsureInfra is kept as a boot-time extension point for mail infrastructure checks.
+func EnsureInfra() {}

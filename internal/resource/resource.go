@@ -168,8 +168,8 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 	_ = h.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM ftp_accounts WHERE domain_id=?`, id).Scan(&o.FTPCount.Usage)
 	o.FTPCount.Limit = maxFTP
 
-	// Report zero email accounts until the email module is available.
-	o.EmailCount.Usage = 0
+	// Count mailboxes.
+	_ = h.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM mailboxes WHERE domain_id=?`, id).Scan(&o.EmailCount.Usage)
 	o.EmailCount.Limit = maxEmail
 
 	// The primary domain counts as one. Subdomains should eventually be included in the subscription count.
@@ -182,7 +182,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 
 	// Count jobs in the user's host crontab.
 	if out, err := exec.Command("crontab", "-u", o.SystemUser, "-l").CombinedOutput(); err == nil {
-		for _, ln := range strings.Split(string(out), "\n") {
+		for ln := range strings.SplitSeq(string(out), "\n") {
 			s := strings.TrimSpace(ln)
 			if s != "" && !strings.HasPrefix(s, "#") {
 				o.CronJobCount++

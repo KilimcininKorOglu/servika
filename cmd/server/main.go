@@ -32,6 +32,7 @@ import (
 	"servika/internal/httpx"
 	"servika/internal/laravel"
 	"servika/internal/logs"
+	"servika/internal/mail"
 	"servika/internal/middleware"
 	"servika/internal/monitor"
 	"servika/internal/nginxset"
@@ -109,6 +110,7 @@ func main() {
 	// all tenants are silently skipped — never a hard error. Runs in a background goroutine so
 	// panel boot is not blocked.
 	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
+	mail.HealMailOnStartup(context.Background(), d)
 	go system.StartVersionCheck(version)
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
@@ -144,7 +146,9 @@ func main() {
 	redisH := &redis.Handlers{DB: d}
 	subH := &subdomain.Handlers{DB: d, IPv4: ipv4}
 	addonH := &addondomains.Handlers{DB: d, IPv4: ipv4}
+	mailH := &mail.Handlers{DB: d}
 	sshaccess.EnsureInfra()
+	mail.EnsureInfra()
 	phpExtH := &phpext.Handlers{DB: d}
 	packagesH := &packages.Handlers{DB: d}
 	panelSettingsH := &panelsettings.Handlers{DB: d, ServerIPv4: ipv4}
@@ -261,6 +265,14 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/redis", redisH.Status)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/redis", redisH.Open)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/redis", redisH.Close)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/status", mailH.MailStatus)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/enable", mailH.Enable)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/enable", mailH.Disable)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail", mailH.List)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/mail", mailH.Create)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/{mid}", mailH.Delete)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/password", mailH.ResetPassword)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/status", mailH.SetStatus)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/protection", protectionH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/protection", protectionH.Add)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/protection/{kid}", protectionH.Delete)

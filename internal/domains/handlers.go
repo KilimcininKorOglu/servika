@@ -17,6 +17,7 @@ import (
 	"servika/internal/credentials"
 	"servika/internal/dns"
 	"servika/internal/httpx"
+	"servika/internal/mail"
 	"servika/internal/provisioner"
 	"servika/internal/quota"
 	"servika/internal/redis"
@@ -309,6 +310,8 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		// Redis tenant cache: Valkey ACL user + WP drop-in + domain_redis row.
 		// Since domain_redis has no CASCADE FK, the row was orphaned when the domain was deleted.
 		redis.CloseDomain(h.DB, id, sk)
+		// Mail metadata uses cascading foreign keys. The hook keeps domain deletion extensible.
+		mail.CleanupDomain(h.DB, id, sk)
 		// NOTE: Preserve /var/backups/servika/<sk>/ intentionally.
 		// The customer may have deleted the domain by accident, so backups are kept for recovery.
 		// (backups.RemoveDomainBackups is available for manual cleanup.)
