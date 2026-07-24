@@ -364,13 +364,17 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/files/write", filesH.Write)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/files/rename", filesH.Rename)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/files/chmod", filesH.Chmod)
-				r.With(middleware.CustomerScope).Post("/domains/{id}/files/extract", filesH.Extract)
-				r.With(middleware.CustomerScope).Post("/domains/{id}/files/copy", filesH.Copy)
-				r.With(middleware.CustomerScope).Post("/domains/{id}/files/move", filesH.Move)
-				r.With(middleware.CustomerScope).Post("/domains/{id}/files/archive", filesH.Archive)
+				// Expensive file operations (recursive walks, archive extraction/creation,
+				// du, find) are throttled per IP so a customer cannot exhaust CPU/disk/IO
+				// by launching them in a tight loop. new-file stays unthrottled (cheap).
+				fileHeavy := middleware.RateLimit("files-heavy", 60, time.Minute)
+				r.With(middleware.CustomerScope, fileHeavy).Post("/domains/{id}/files/extract", filesH.Extract)
+				r.With(middleware.CustomerScope, fileHeavy).Post("/domains/{id}/files/copy", filesH.Copy)
+				r.With(middleware.CustomerScope, fileHeavy).Post("/domains/{id}/files/move", filesH.Move)
+				r.With(middleware.CustomerScope, fileHeavy).Post("/domains/{id}/files/archive", filesH.Archive)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/files/new-file", filesH.NewFile)
-				r.With(middleware.CustomerScope).Get("/domains/{id}/files/size", filesH.CalculateSize)
-				r.With(middleware.CustomerScope).Get("/domains/{id}/files/search", filesH.Search)
+				r.With(middleware.CustomerScope, fileHeavy).Get("/domains/{id}/files/size", filesH.CalculateSize)
+				r.With(middleware.CustomerScope, fileHeavy).Get("/domains/{id}/files/search", filesH.Search)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/ssl", domainsH.SSLStatus)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/ssl/issue", domainsH.SSLIssue)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/ssl", domainsH.SSLDisable)
