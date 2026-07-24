@@ -126,9 +126,14 @@ func runOneBackup(db *sql.DB, d dueDomain) error {
 	abs := filepath.Join(dir, file)
 	sqlDump := filepath.Join(dir, file+".sql")
 
+	// Dump stdout only (no stderr into the .sql) and drop "|| true" so a failed dump
+	// aborts the scheduled backup instead of archiving a corrupt/empty dump as success.
 	dbName := d.SystemUser + "_main"
-	_ = exec.Command("bash", "-c",
-		fmt.Sprintf("mysqldump --single-transaction %s > %s 2>&1 || true", dbName, sqlDump)).Run()
+	if out, err := exec.Command("bash", "-c",
+		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); err != nil {
+		_ = os.Remove(sqlDump)
+		return fmt.Errorf("mysqldump %s: %s: %w", dbName, strings.TrimSpace(string(out)), err)
+	}
 
 	args := []string{"czf", abs, "-C", "/home", d.SystemUser, "-C", dir, file + ".sql"}
 	if out, err := exec.Command("tar", args...).CombinedOutput(); err != nil {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -180,12 +181,18 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	file := fmt.Sprintf("%s-%s.tar.gz", systemUser, stamp)
 	abs := filepath.Join(dir, file)
 
-	// DB dump
+	// DB dump. Redirect ONLY stdout to the dump file so stderr is not written into
+	// the .sql, and drop "|| true" so a failed dump surfaces its real exit status.
+	// A swallowed failure here would archive a truncated/empty dump and report a
+	// successful backup that cannot be restored (silent data loss).
 	dbName := systemUser + "_main"
 	sqlDump := filepath.Join(dir, file+".sql")
 	if out, derr := exec.Command("bash", "-c",
-		fmt.Sprintf("mysqldump --single-transaction %s > %s 2>&1 || true", dbName, sqlDump)).CombinedOutput(); derr != nil {
-		_ = os.WriteFile(sqlDump+".err", out, 0600)
+		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); derr != nil {
+		_ = os.Remove(sqlDump)
+		log.Printf("backup mysqldump failed for %s: %v: %s", dbName, derr, strings.TrimSpace(string(out)))
+		httpx.WriteError(w, http.StatusInternalServerError, "could not dump database for backup")
+		return
 	}
 
 	// Archive the home directory and database dump together.
