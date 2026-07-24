@@ -63,7 +63,10 @@ import (
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
-const version = "0.3.0-f2"
+// version is the panel's reported current version. Release builds override it at
+// build time via ldflags (see scripts/build-assets.sh: -X main.version=...). It
+// keeps this fallback value when built manually with `go build`.
+var version = "0.3.0-f2"
 
 // buildDate is embedded at build time via ldflags (see scripts/build-assets.sh:
 // -X main.buildDate=...). It stays "development" when built manually with `go build`.

@@ -1,21 +1,32 @@
 #!/usr/bin/env bash
 # Builds Linux release binaries for amd64 and arm64.
+#
+#   build-assets.sh <version>   # e.g. build-assets.sh 0.3.0-f2
+#
+# The version is required and embedded into the binary via ldflags. It is not
+# written to version.json; update that separately when publishing a release.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
+VERSION="${1:-}"
+if [ -z "$VERSION" ]; then
+  printf 'Error: version argument is required (usage: %s <version>)\n' "$(basename "$0")" >&2
+  exit 1
+fi
+
 export CGO_ENABLED=0
 export GOOS=linux
 
 BUILD_DATE="$(date -u +%Y-%m-%d)"
-LDFLAGS="-X main.buildDate=$BUILD_DATE"
+LDFLAGS="-X main.version=$VERSION -X main.buildDate=$BUILD_DATE"
 
 # ── linux/amd64 ──────────────────────────────────────────────────────────
 export GOARCH=amd64
 export GOAMD64=v1
 
-printf 'Building servika-server (linux/amd64, GOAMD64=%s, build_date=%s)\n' "$GOAMD64" "$BUILD_DATE"
+printf 'Building servika-server (linux/amd64, GOAMD64=%s, version=%s, build_date=%s)\n' "$GOAMD64" "$VERSION" "$BUILD_DATE"
 mkdir -p assets/linux_amd64
 go build -trimpath -ldflags "$LDFLAGS" -o assets/linux_amd64/servika-server ./cmd/server
 
@@ -34,7 +45,7 @@ printf 'Release binaries built and verified for linux/amd64 (GOAMD64=v1).\n'
 export GOARCH=arm64
 unset GOAMD64
 
-printf '\nBuilding servika-server (linux/arm64, build_date=%s)\n' "$BUILD_DATE"
+printf '\nBuilding servika-server (linux/arm64, version=%s, build_date=%s)\n' "$VERSION" "$BUILD_DATE"
 mkdir -p assets/linux_arm64
 go build -trimpath -ldflags "$LDFLAGS" -o assets/linux_arm64/servika-server ./cmd/server
 
