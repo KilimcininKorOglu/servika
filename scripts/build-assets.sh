@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds Linux release binaries for amd64 and arm64.
 #
-#   build-assets.sh <version>   # e.g. build-assets.sh 0.3.0-f2
+#   build-assets.sh <version>   # e.g. build-assets.sh 1.0.0
 #
 # The version is required and embedded into the binary via ldflags. It is not
 # written to version.json; update that separately when publishing a release.

@@ -97,7 +97,7 @@ The manifest format is:
 
 ```json
 {
-  "latest": "0.3.0-f2",
+  "latest": "1.0.0",
   "announcement": "",
   "critical": false,
   "release_date": ""
