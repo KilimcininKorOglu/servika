@@ -30,11 +30,13 @@ id_ed25519*
 /logs/
 /backups/
 
+# --- Release build outputs (produced by scripts/build-assets.sh and CI) ---
+release/
+*.tar.gz
+
 # --- Editor / OS ---
 .DS_Store
 .idea/
 .vscode/
 *.swp
 __pycache__/
-
-release/
