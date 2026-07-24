@@ -1,0 +1,12 @@
+ALTER TABLE domains ADD COLUMN IF NOT EXISTS hotlink_enabled TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE domains ADD COLUMN IF NOT EXISTS hotlink_allowed TEXT NULL;
+ALTER TABLE domains ADD COLUMN IF NOT EXISTS ip_access_mode ENUM('off','block','allow') NOT NULL DEFAULT 'off';
+
+CREATE TABLE IF NOT EXISTS domain_ip_rules (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  domain_id BIGINT UNSIGNED NOT NULL,
+  ip_cidr VARCHAR(43) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_domain_ip_rules (domain_id, ip_cidr),
+  CONSTRAINT fk_domain_ip_rules_domain FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

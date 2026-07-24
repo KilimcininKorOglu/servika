@@ -46,6 +46,7 @@ import BackupManagementPage from '@/pages/BackupManagementPage'
 import DomainWordPressPage from '@/pages/DomainWordPressPage'
 import DomainSubdomainsPage from '@/pages/DomainSubdomainsPage'
 import DomainAddonDomainsPage from '@/pages/DomainAddonDomainsPage'
+import DomainAccessControlPage from '@/pages/DomainAccessControlPage'
 import CustomerLoginPage from '@/pages/CustomerLoginPage'
 import StatisticsPage from '@/pages/StatisticsPage'
 import MonitoringPage from '@/pages/MonitoringPage'
@@ -93,6 +94,7 @@ export default function App() {
         <Route path="subscriptions/:id/wordpress"     element={<DomainWordPressPage />} />
         <Route path="subscriptions/:id/subdomains"  element={<DomainSubdomainsPage />} />
         <Route path="subscriptions/:id/addon-domains" element={<DomainAddonDomainsPage />} />
+        <Route path="subscriptions/:id/access-control" element={<DomainAccessControlPage />} />
         <Route path="subscriptions/:id/cron"          element={<DomainCronPage />} />
         <Route path="subscriptions/:id/logs"     element={<DomainLogsPage />} />
         <Route path="subscriptions/:id/dns"           element={<DomainDNSPage />} />

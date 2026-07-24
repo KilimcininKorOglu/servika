@@ -24,6 +24,7 @@ const ICONS = {
   laravel:   'M12 3l8 4v10l-8 4-8-4V7l8-4zm0 2.2L6 8.2v7.6l6 3 6-3V8.2l-6-3zM8 9h2v5h4v2H8V9z',
   subdomain: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064',
   addonDomain: 'M4 5a2 2 0 012-2h5l2 2h5a2 2 0 012 2v3M4 5v12a2 2 0 002 2h5m9-9v7a2 2 0 01-2 2h-5m0 0l3-3m-3 3l3 3',
+  accessControl: 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z',
   dns:       'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01',
   redis:     'M13 10V3L4 14h7v7l9-11h-7z',
 }
@@ -84,6 +85,7 @@ export default function DomainDashboard({ domain }: { domain: Domain }) {
         />
         <ToolCard label="Password-Protected Directories" description=".htpasswd"       icon={ICONS.lock}      color="amber" phase="F7" onClick={navigateTo('password-protection')} />
         <ToolCard label="Statistics"            description="Traffic analysis"  icon={ICONS.stats} color="indigo" phase="F10" onClick={navigateTo('stats')} />
+        <ToolCard label="Access Control" description="Hotlink protection · IP allow/block" icon={ICONS.accessControl} color="rose" onClick={navigateTo('access-control')} />
         <ToolCard label="Imunify"                  description="Antivirus"        icon={ICONS.imunify}    color="emerald" onClick={navigateTo('imunify')} />
         <ToolCard
           label="SSH Access"

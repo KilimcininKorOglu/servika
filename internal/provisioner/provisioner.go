@@ -618,7 +618,7 @@ server {
 
     # ---- Security headers (managed by the panel) ----
 {{.SecHeaders}}
-{{.ModSec}}{{.DenyBlocks}}
+{{.ModSec}}{{.IPRules}}{{.DenyBlocks}}{{.HotlinkLocation}}
 
     access_log /var/log/nginx/{{.DomainName}}.access.log;
     error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
@@ -704,7 +704,8 @@ server {
         try_files $uri =404;
     }
 
-{{.DenyBlocks}}
+{{.IPRules}}{{.DenyBlocks}}{{.HotlinkLocation}}
+
 {{if eq .Backend "apache"}}    # ---- Backend: Apache (127.0.0.1:10080 proxy) ----
     location / {
         proxy_pass http://127.0.0.1:10080;
@@ -958,9 +959,11 @@ type VhostOpts struct {
 	Backend string
 
 	// Render-time security blocks that are not persisted in the database.
-	SecHeaders string
-	DenyBlocks string
-	ModSec     string // WAF (ModSecurity) server-context directive block; empty when WAF is off or module absent
+	SecHeaders      string
+	DenyBlocks      string
+	ModSec          string // WAF (ModSecurity) server-context directive block; empty when WAF is off or module absent
+	IPRules         string // IP allow/deny directives; empty when access control is off
+	HotlinkLocation string // valid_referers image location; empty when hotlink protection is off
 }
 
 func (o VhostOpts) SSL() bool {
@@ -1062,6 +1065,8 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 	// when active it also refreshes the per-domain modsec conf — single source, self-healing.
 	if !opts.Suspended {
 		opts.ModSec = buildModSec(systemUser)
+		opts.IPRules = buildIPRules(opts.DomainName)
+		opts.HotlinkLocation = buildHotlink(opts.DomainName)
 	}
 
 	if !opts.Suspended && opts.CustomVhostContent == "" && packageDB != nil {
@@ -1688,6 +1693,7 @@ func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, 
 		socket = tenantSocket(systemUser)
 	}
 
+	webRoot = SafeWebRoot(systemUser, webRoot)
 	configPath := "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
 	if parentDomainID.Valid {
 		configPath = addonVhostConfigPath(systemUser, domainName)
@@ -1698,7 +1704,7 @@ func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, 
 	opts := VhostOpts{
 		ConfigPath:      configPath,
 		DomainName:      domainName,
-		WebRoot:         SafeWebRoot(systemUser, webRoot),
+		WebRoot:         webRoot,
 		PHPSocket:       socket,
 		PHPVersion:      phpVersion,
 		CertPath:        certPath,
