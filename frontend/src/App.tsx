@@ -26,6 +26,7 @@ import RedisPage from '@/pages/RedisPage'
 import DomainConnectionPage from '@/pages/DomainConnectionPage'
 import DomainDatabasesPage from '@/pages/DomainDatabasesPage'
 import DomainFTPPage from '@/pages/DomainFTPPage'
+import DomainMailPage from '@/pages/DomainMailPage'
 import DomainPHPPage from '@/pages/DomainPHPPage'
 import DomainBackupsPage from '@/pages/DomainBackupsPage'
 import DomainGitPage from '@/pages/DomainGitPage'
@@ -99,6 +100,7 @@ export default function App() {
         <Route path="subscriptions/:id/logs"     element={<DomainLogsPage />} />
         <Route path="subscriptions/:id/dns"           element={<DomainDNSPage />} />
         <Route path="subscriptions/:id/redis"         element={<RedisPage />} />
+        <Route path="subscriptions/:id/mail"          element={<DomainMailPage />} />
         <Route path="subscriptions/:id/backups"      element={<DomainBackupsPage />} />
         <Route path="subscriptions/:id/git"           element={<DomainGitPage />} />
         <Route path="subscriptions/:id/laravel"       element={<DomainLaravelPage />} />

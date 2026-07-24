@@ -27,6 +27,7 @@ const ICONS = {
   accessControl: 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z',
   dns:       'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01',
   redis:     'M13 10V3L4 14h7v7l9-11h-7z',
+  mail:      'M3 8l9 6 9-6m-9 6V4m0 0v16',
 }
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
@@ -52,6 +53,10 @@ export default function DomainDashboard({ domain }: { domain: Domain }) {
         <ToolCard label="DNS Management"          description="A, MX, TXT, CNAME records" icon={ICONS.dns}       color="sky"  onClick={navigateTo('dns')} />
         <ToolCard label="Subdomains"          description="Subdomains"   icon={ICONS.subdomain} color="teal" onClick={navigateTo('subdomains')} />
         <ToolCard label="Addon Domains" description="Addon and parked domains · redirects" icon={ICONS.addonDomain} color="indigo" onClick={navigateTo('addon-domains')} />
+      </Group>
+
+      <Group title="Email">
+        <ToolCard label="Email Accounts" description="Postfix and Dovecot mailboxes · SMTP" icon={ICONS.mail} color="indigo" onClick={navigateTo('mail')} />
       </Group>
 
       <Group title="Files and Databases">
