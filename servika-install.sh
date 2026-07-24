@@ -443,7 +443,7 @@ if systemctl is-active --quiet servika; then ok "servika ACTIVE"; else journalct
 sleep 2
 command -v servika-ftp-setup >/dev/null 2>&1 && servika-ftp-setup >/dev/null 2>&1 && ok "servika-ftp-setup (Pure-FTPd, MySQL backend)" || warn "ftp-setup skipped"
 # Mail setup needs the mail tables created by startup migrations.
-command -v servika-mail-setup >/dev/null 2>&1 && servika-mail-setup >/dev/null 2>&1 && ok "servika-mail-setup (Postfix, Dovecot, OpenDKIM)" || warn "mail-setup skipped"
+command -v servika-mail-setup >/dev/null 2>&1 && servika-mail-setup >/dev/null 2>&1 && ok "servika-mail-setup (Postfix, Dovecot, OpenDKIM, Roundcube)" || warn "mail-setup skipped"
 
 # ============ 13) ADMINISTRATOR ACCESS ============
 # Panel administrator login authenticates the server's root account through PAM and shadow.

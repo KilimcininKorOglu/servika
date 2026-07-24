@@ -1,5 +1,6 @@
 
 # ===== servika-mail =====
+inet_interfaces = all
 mydestination = localhost
 virtual_mailbox_domains = mysql:/etc/postfix/mysql-virtual-domains.cf
 virtual_mailbox_maps    = mysql:/etc/postfix/mysql-virtual-mailboxes.cf

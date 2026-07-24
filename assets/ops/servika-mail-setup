@@ -35,16 +35,19 @@ ensure_env_file() {
 ensure_panel_webmail_location() {
   panel_conf=/etc/nginx/conf.d/_panel.conf
   [ -f "$panel_conf" ] || return 0
-  grep -q 'location \^~ /webmail/' "$panel_conf" && return 0
   tmp=$(mktemp)
   if ! awk '
-    BEGIN { inserted = 0 }
-    /^}$/ && inserted == 0 {
+    function brace_delta(s, opens, closes) {
+      opens = gsub(/\{/, "&", s)
+      closes = gsub(/\}/, "&", s)
+      return opens - closes
+    }
+    function emit_webmail() {
       print ""
       print "# Roundcube webmail within the panel port 8443 virtual host."
       print "# Users sign in with their mailbox address and password. SSO is intentionally not used."
       print "location ^~ /webmail/ {"
-      print "    alias /opt/roundcube/;"
+      print "    alias /opt/roundcube/public_html/;"
       print "    index index.php;"
       print ""
       print "    location ~ ^/webmail/(config|temp|logs|SQL|bin|tests)/ {"
@@ -52,17 +55,26 @@ ensure_panel_webmail_location() {
       print "        return 404;"
       print "    }"
       print ""
-      print "    location ~ ^/webmail/(.+\\.php)$ {"
-      print "        alias /opt/roundcube/$1;"
+      print "    location ~ ^/webmail/static\\.php(/.+)$ {"
       print "        fastcgi_pass unix:/run/php-fpm/roundcube.sock;"
-      print "        fastcgi_param SCRIPT_FILENAME /opt/roundcube/$1;"
+      print "        fastcgi_param SCRIPT_FILENAME /opt/roundcube/public_html/static.php;"
+      print "        fastcgi_param PATH_INFO $1;"
+      print "        fastcgi_param SCRIPT_NAME /webmail/static.php;"
+      print "        include fastcgi_params;"
+      print "        fastcgi_read_timeout 60s;"
+      print "    }"
+      print ""
+      print "    location ~ ^/webmail/(.+\\.php)$ {"
+      print "        alias /opt/roundcube/public_html/$1;"
+      print "        fastcgi_pass unix:/run/php-fpm/roundcube.sock;"
+      print "        fastcgi_param SCRIPT_FILENAME /opt/roundcube/public_html/$1;"
       print "        fastcgi_param SCRIPT_NAME /webmail/$1;"
       print "        include fastcgi_params;"
       print "        fastcgi_read_timeout 60s;"
       print "    }"
       print ""
       print "    location ~ ^/webmail/(.+\\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt|svg|woff2?|map))$ {"
-      print "        alias /opt/roundcube/$1;"
+      print "        alias /opt/roundcube/public_html/$1;"
       print "        expires 7d;"
       print "        add_header Cache-Control \"public, immutable\";"
       print "        add_header X-Content-Type-Options \"nosniff\" always;"
@@ -72,12 +84,35 @@ ensure_panel_webmail_location() {
       print "    }"
       print "}"
       print ""
-      inserted = 1
     }
-    { print }
+    /^[[:space:]]*location[[:space:]]+\^~[[:space:]]+\/webmail\/[[:space:]]*\{/ {
+      skip = brace_delta($0)
+      if (skip <= 0) skip = 1
+      next
+    }
+    skip > 0 {
+      skip += brace_delta($0)
+      if (skip <= 0) skip = 0
+      next
+    }
+    { lines[++n] = $0 }
+    END {
+      last = 0
+      for (i = 1; i <= n; i++) {
+        if (lines[i] == "}") last = i
+      }
+      for (i = 1; i <= n; i++) {
+        if (i == last) emit_webmail()
+        print lines[i]
+      }
+    }
   ' "$panel_conf" > "$tmp"; then
     rm -f "$tmp"
     log "roundcube nginx location could not be generated"
+    return 0
+  fi
+  if cmp -s "$tmp" "$panel_conf"; then
+    rm -f "$tmp"
     return 0
   fi
   cp -a "$panel_conf" "${panel_conf}.servika-webmail-bak" 2>/dev/null || true
@@ -85,10 +120,10 @@ ensure_panel_webmail_location() {
   rm -f "$tmp"
   if nginx -t >/tmp/servika-mail-nginx-check.log 2>&1; then
     systemctl reload nginx >/dev/null 2>&1 || true
-    log "roundcube nginx location added"
+    log "roundcube nginx location updated"
   else
     cp "${panel_conf}.servika-webmail-bak" "$panel_conf" 2>/dev/null || true
-    log "roundcube nginx location was not added; see /tmp/servika-mail-nginx-check.log"
+    log "roundcube nginx location was not updated; see /tmp/servika-mail-nginx-check.log"
   fi
 }
 
@@ -164,6 +199,12 @@ if ! grep -q 'servika-mail' /etc/postfix/main.cf; then
   cat "$TMPL/postfix/main.cf.append" >> /etc/postfix/main.cf
   log "servika-mail block added to main.cf"
 fi
+postconf -e 'inet_interfaces = all' 2>/dev/null || {
+  grep -qE '^inet_interfaces[[:space:]]*=' /etc/postfix/main.cf 2>/dev/null \
+    && sed -i 's/^inet_interfaces[[:space:]]*=.*/inet_interfaces = all/' /etc/postfix/main.cf \
+    || printf '\ninet_interfaces = all\n' >> /etc/postfix/main.cf
+}
+log "postfix listens on all interfaces"
 if ! grep -qE '^submission[[:space:]]+inet' /etc/postfix/master.cf; then
   cat "$TMPL/postfix/master.cf.append" >> /etc/postfix/master.cf
   log "submission service added to master.cf"
@@ -232,6 +273,8 @@ else
 fi
 
 echo "════ Roundcube webmail (/webmail/) ════"
+dnf install -y php-intl >/dev/null 2>&1 \
+  && log "php-intl installed for Roundcube" || log "php-intl could not be installed; webmail login may fail"
 RCVER=1.7.2
 mkdir -p /opt/roundcube
 if [ ! -f /opt/roundcube/index.php ]; then
