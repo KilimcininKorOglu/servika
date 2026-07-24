@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"os/user"
@@ -180,7 +181,13 @@ func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Header().Set("Content-Disposition", "attachment; filename=\""+info.Name()+"\"")
+	// Encode the tenant-controlled filename safely so quotes or semicolons cannot
+	// inject additional Content-Disposition parameters.
+	disposition := mime.FormatMediaType("attachment", map[string]string{"filename": info.Name()})
+	if disposition == "" {
+		disposition = "attachment"
+	}
+	w.Header().Set("Content-Disposition", disposition)
 	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
 	_, _ = io.Copy(w, f)
 }
