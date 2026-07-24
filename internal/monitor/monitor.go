@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"errors"
+	"net"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"servika/internal/httpx"
+	"servika/internal/netguard"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -128,8 +130,13 @@ func probe(targetURL string) DomainHealth {
 	res := DomainHealth{URL: targetURL}
 
 	tlsCfg := &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS12}
+	// DialControl rejects connections to internal addresses at dial time, so the
+	// initial request and every followed redirect are checked (and DNS rebinding
+	// is defeated because the check runs on the concrete resolved IP).
+	dialer := &net.Dialer{Timeout: 6 * time.Second, Control: netguard.DialControl}
 	tr := &http.Transport{
 		TLSClientConfig:       tlsCfg,
+		DialContext:           dialer.DialContext,
 		DisableKeepAlives:     true,
 		ResponseHeaderTimeout: 6 * time.Second,
 	}

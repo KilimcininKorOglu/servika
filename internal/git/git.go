@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"servika/internal/httpx"
+	"servika/internal/netguard"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -195,6 +196,9 @@ func gitClone(systemUser, repoURL, branch, targetDir string) (sha string, log st
 	if !validRepoURL(repoURL) {
 		return "", "", errors.New("invalid repository URL")
 	}
+	if err := netguard.CheckGitURL(repoURL); err != nil {
+		return "", "", fmt.Errorf("repository host not permitted: %w", err)
+	}
 	if !validBranch(branch) {
 		return "", "", errors.New("invalid branch")
 	}
@@ -306,6 +310,10 @@ func (h *Handlers) Connect(w http.ResponseWriter, r *http.Request) {
 	}
 	if !validRepoURL(req.RepoURL) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid repo_url")
+		return
+	}
+	if err := netguard.CheckGitURL(req.RepoURL); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "repository host is not permitted")
 		return
 	}
 	if !validBranch(req.Branch) {

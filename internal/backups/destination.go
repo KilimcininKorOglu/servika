@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"servika/internal/netguard"
 )
 
 // Destination describes a remote backup upload destination.
@@ -69,6 +71,9 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 	if !d.Enabled {
 		return nil // Skip disabled destinations.
 	}
+	if err := netguard.CheckHost(d.Host); err != nil {
+		return fmt.Errorf("destination host not permitted: %w", err)
+	}
 	url := lftpURL(d)
 	// with cmd:fail-exit, lftp exits non-zero if any command fails
 	script := fmt.Sprintf(
@@ -126,6 +131,9 @@ func validHost(h string) bool {
 // testConnection verifies the destination credentials.
 // sshpass+ssh for SFTP, curl for FTP; both return an auth-specific exit code.
 func testConnection(ctx context.Context, d *Destination) error {
+	if err := netguard.CheckHost(d.Host); err != nil {
+		return fmt.Errorf("destination host not permitted: %w", err)
+	}
 	if d.Type == "sftp" {
 		// Force password authentication through sshpass and disable public-key fallback.
 		// This ensures the supplied user password is actually valid.
