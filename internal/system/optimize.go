@@ -3,6 +3,7 @@ package system
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -86,18 +87,21 @@ func OptimizeStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := writeOptimizeWrapper(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "failed to write wrapper: "+err.Error())
+		log.Printf("optimize: write wrapper: %v", err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start optimization")
 		return
 	}
 	logPath := optimizeLogPath()
 	wrapper := optimizeWrapper()
 	if err := os.MkdirAll(filepath.Dir(logPath), 0o750); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "failed to prepare log directory: "+err.Error())
+		log.Printf("optimize: prepare log directory %s: %v", filepath.Dir(logPath), err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start optimization")
 		return
 	}
 	header := fmt.Sprintf("=== Optimization started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
 	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "failed to open log: "+err.Error())
+		log.Printf("optimize: open log %s: %v", logPath, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start optimization")
 		return
 	}
 	// systemd-run: transient unit under PID 1; output via append: to log file.
@@ -109,7 +113,8 @@ func OptimizeStart(w http.ResponseWriter, r *http.Request) {
 		"-p", "StandardError=append:"+logPath,
 		wrapper)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "failed to start: "+strings.TrimSpace(string(out)))
+		log.Printf("optimize: systemd-run start: %v: %s", err, strings.TrimSpace(string(out)))
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start optimization")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{"started": true})

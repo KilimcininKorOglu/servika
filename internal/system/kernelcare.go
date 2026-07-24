@@ -12,6 +12,7 @@ package system
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -143,13 +144,15 @@ func KernelcarePatch(w http.ResponseWriter, r *http.Request) {
 	logPath := kcLogPath()
 	_ = os.MkdirAll(filepath.Dir(logPath), 0o750)
 	if err := kcWriteWrapper(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare: "+err.Error())
+		log.Printf("kernelcare: prepare wrapper: %v", err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start live patching")
 		return
 	}
 	header := fmt.Sprintf("=== KernelCare live patch started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
 	wrapper := kcWrapper()
 	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not open log: "+err.Error())
+		log.Printf("kernelcare: open log %s: %v", logPath, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start live patching")
 		return
 	}
 	cmd := exec.Command("systemd-run",
@@ -160,7 +163,8 @@ func KernelcarePatch(w http.ResponseWriter, r *http.Request) {
 		"-p", "StandardError=append:"+logPath,
 		wrapper)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not start: "+strings.TrimSpace(string(out)))
+		log.Printf("kernelcare: systemd-run start: %v: %s", err, strings.TrimSpace(string(out)))
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start live patching")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{"started": true})

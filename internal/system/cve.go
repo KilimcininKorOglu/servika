@@ -11,6 +11,7 @@ package system
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -244,12 +245,14 @@ func CveUpdate(w http.ResponseWriter, r *http.Request) {
 	logPath := cveLogPath()
 	_ = os.MkdirAll(filepath.Dir(logPath), 0o750)
 	if err := cveWriteWrapper(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare: "+err.Error())
+		log.Printf("cve update: prepare wrapper: %v", err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start security update")
 		return
 	}
 	header := fmt.Sprintf("=== Security update started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
 	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not open log: "+err.Error())
+		log.Printf("cve update: open log %s: %v", logPath, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start security update")
 		return
 	}
 	cmd := exec.Command("systemd-run",
@@ -260,7 +263,8 @@ func CveUpdate(w http.ResponseWriter, r *http.Request) {
 		"-p", "StandardError=append:"+logPath,
 		cveWrapper)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not start: "+strings.TrimSpace(string(out)))
+		log.Printf("cve update: systemd-run start: %v: %s", err, strings.TrimSpace(string(out)))
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start security update")
 		return
 	}
 	// Reset cache — post-update re-scan refreshes.
