@@ -37,12 +37,13 @@ type versionCache struct {
 }
 
 var (
-	versionMu       sync.RWMutex
-	versionCurrent  string
-	versionManifest VersionManifest
-	versionLast     time.Time
-	versionError    string
-	versionEnabled  bool
+	versionMu        sync.RWMutex
+	versionCurrent   string
+	versionBuildDate string
+	versionManifest  VersionManifest
+	versionLast      time.Time
+	versionError     string
+	versionEnabled   bool
 )
 
 func versionCheckEnabled() bool {
@@ -92,9 +93,10 @@ func InstallationID() string {
 }
 
 // StartVersionCheck starts the background version check loop.
-func StartVersionCheck(current string) {
+func StartVersionCheck(current, buildDate string) {
 	versionMu.Lock()
 	versionCurrent = current
+	versionBuildDate = buildDate
 	versionEnabled = versionCheckEnabled()
 	versionMu.Unlock()
 
@@ -222,6 +224,7 @@ func VersionCheckRefresh(w http.ResponseWriter, r *http.Request) {
 func VersionCheckStatus(w http.ResponseWriter, _ *http.Request) {
 	versionMu.RLock()
 	current := versionCurrent
+	buildDate := versionBuildDate
 	manifest := versionManifest
 	lastCheck := versionLast
 	message := versionError
@@ -232,6 +235,7 @@ func VersionCheckStatus(w http.ResponseWriter, _ *http.Request) {
 	response := map[string]any{
 		"enabled":          enabled,
 		"current":          current,
+		"build_date":       buildDate,
 		"latest":           manifest.Latest,
 		"update_available": updateAvailable,
 		"announcement":     manifest.Announcement,

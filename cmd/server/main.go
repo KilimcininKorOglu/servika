@@ -65,6 +65,10 @@ import (
 
 const version = "0.3.0-f2"
 
+// buildDate is embedded at build time via ldflags (see scripts/build-assets.sh:
+// -X main.buildDate=...). It stays "development" when built manually with `go build`.
+var buildDate = "development"
+
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -111,7 +115,7 @@ func main() {
 	// panel boot is not blocked.
 	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
 	mail.HealMailOnStartup(context.Background(), d)
-	go system.StartVersionCheck(version)
+	go system.StartVersionCheck(version, buildDate)
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
 	authH := &auth.Handlers{DB: d, Secret: cfg.JWTSecret, LifetimeSec: cfg.JWTLifetime}

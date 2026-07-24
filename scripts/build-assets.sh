@@ -8,13 +8,16 @@ cd "$REPO_ROOT"
 export CGO_ENABLED=0
 export GOOS=linux
 
+BUILD_DATE="$(date -u +%Y-%m-%d)"
+LDFLAGS="-X main.buildDate=$BUILD_DATE"
+
 # ── linux/amd64 ──────────────────────────────────────────────────────────
 export GOARCH=amd64
 export GOAMD64=v1
 
-printf 'Building servika-server (linux/amd64, GOAMD64=%s)\n' "$GOAMD64"
+printf 'Building servika-server (linux/amd64, GOAMD64=%s, build_date=%s)\n' "$GOAMD64" "$BUILD_DATE"
 mkdir -p assets/linux_amd64
-go build -trimpath -o assets/linux_amd64/servika-server ./cmd/server
+go build -trimpath -ldflags "$LDFLAGS" -o assets/linux_amd64/servika-server ./cmd/server
 
 printf 'Building servika-seed-admin (linux/amd64, GOAMD64=%s)\n' "$GOAMD64"
 go build -trimpath -o assets/linux_amd64/servika-seed-admin scripts/seed_admin.go
@@ -31,9 +34,9 @@ printf 'Release binaries built and verified for linux/amd64 (GOAMD64=v1).\n'
 export GOARCH=arm64
 unset GOAMD64
 
-printf '\nBuilding servika-server (linux/arm64)\n'
+printf '\nBuilding servika-server (linux/arm64, build_date=%s)\n' "$BUILD_DATE"
 mkdir -p assets/linux_arm64
-go build -trimpath -o assets/linux_arm64/servika-server ./cmd/server
+go build -trimpath -ldflags "$LDFLAGS" -o assets/linux_arm64/servika-server ./cmd/server
 
 printf 'Building servika-seed-admin (linux/arm64)\n'
 go build -trimpath -o assets/linux_arm64/servika-seed-admin scripts/seed_admin.go

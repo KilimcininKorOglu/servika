@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import MobileNavBar from './MobileNavBar'
 import TopBar from './TopBar'
+import { api } from '@/lib/api'
+
+type VersionFooter = { current?: string; build_date?: string }
 
 type NavItem = { to: string; label: string; icon: string }
 type NavGroup = { title?: string; items: NavItem[] }
@@ -129,7 +132,14 @@ export default function DashboardLayout() {
   const isCustomer = typeof window !== 'undefined' && localStorage.getItem('servika.customer') === '1'
   const customerDomainID = typeof window !== 'undefined' ? localStorage.getItem('servika.customer.domain_id') || '' : ''
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [footer, setFooter] = useState<VersionFooter | null>(null)
   const location = useLocation()
+
+  useEffect(() => {
+    api.get<VersionFooter>('/system/version-check')
+      .then((response) => setFooter(response.data))
+      .catch(() => {})
+  }, [])
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'Hosting Services': true,
@@ -209,8 +219,14 @@ export default function DashboardLayout() {
 
       <div className="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
         <TopBar onMenuClick={() => setMobileOpen(true)} />
-        <main className="flex-1 min-w-0">
-          <Outlet />
+        <main className="flex-1 min-w-0 flex flex-col">
+          <div className="flex-1 min-w-0">
+            <Outlet />
+          </div>
+          <footer className="py-4 text-center text-xs text-slate-400 dark:text-slate-600">
+            Servika{footer?.current ? ` v${footer.current}` : ''}
+            {footer?.build_date ? ` · Build: ${footer.build_date}` : ''}
+          </footer>
         </main>
       </div>
 
