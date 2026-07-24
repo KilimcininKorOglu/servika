@@ -4,6 +4,7 @@ package monitor
 
 import (
 	"database/sql"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -18,7 +19,11 @@ import (
 // It retains seven days of data, prunes approximately hourly, and recovers from panics.
 func StartLoadSampler(db *sql.DB, every time.Duration) {
 	go func() {
-		defer func() { _ = recover() }()
+		defer func() {
+			if rec := recover(); rec != nil {
+				log.Printf("load sampler panic: %v", rec)
+			}
+		}()
 		sampleLoad(db) // Record one sample immediately at startup.
 		t := time.NewTicker(every)
 		defer t.Stop()
@@ -26,7 +31,9 @@ func StartLoadSampler(db *sql.DB, every time.Duration) {
 		for range t.C {
 			sampleLoad(db)
 			if n++; n%60 == 0 {
-				_, _ = db.Exec(`DELETE FROM system_load WHERE ts < NOW() - INTERVAL 7 DAY`)
+				if _, err := db.Exec(`DELETE FROM system_load WHERE ts < NOW() - INTERVAL 7 DAY`); err != nil {
+					log.Printf("load sampler prune: %v", err)
+				}
 			}
 		}
 	}()
@@ -35,12 +42,15 @@ func StartLoadSampler(db *sql.DB, every time.Duration) {
 func sampleLoad(db *sql.DB) {
 	load1, load5, load15 := readLoad()
 	memory := readMemoryPercent()
-	_, _ = db.Exec(`INSERT INTO system_load (load1, load5, load15, mem_percent) VALUES (?,?,?,?)`, load1, load5, load15, memory)
+	if _, err := db.Exec(`INSERT INTO system_load (load1, load5, load15, mem_percent) VALUES (?,?,?,?)`, load1, load5, load15, memory); err != nil {
+		log.Printf("load sampler insert: %v", err)
+	}
 }
 
 func readLoad() (float64, float64, float64) {
 	b, err := os.ReadFile("/proc/loadavg")
 	if err != nil {
+		log.Printf("load sampler: read /proc/loadavg: %v", err)
 		return 0, 0, 0
 	}
 	f := strings.Fields(string(b))
@@ -56,6 +66,7 @@ func readLoad() (float64, float64, float64) {
 func readMemoryPercent() float64 {
 	b, err := os.ReadFile("/proc/meminfo")
 	if err != nil {
+		log.Printf("load sampler: read /proc/meminfo: %v", err)
 		return 0
 	}
 	var total, avail float64
