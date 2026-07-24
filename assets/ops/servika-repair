@@ -4,7 +4,7 @@
 #
 # Usage:
 #   servika-repair [--dry-run] [--deep] [--only <sections>] [--quiet]
-#   sections: phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon,firewall (default: all)
+#   sections: phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon,firewall,mail (default: all)
 #   --dry-run : Show proposed repairs without applying changes
 #   --deep    : Recursively repair ownership in domain homes, which can be slow
 #
@@ -48,7 +48,7 @@ if [ "${1:-}" = "restore" ]; then
   echo "servika-restore not found (core content repair tool is not installed)" >&2; exit 127
 fi
 
-DRY=0; DEEP=0; QUIET=0; ONLY="phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon,firewall"
+DRY=0; DEEP=0; QUIET=0; ONLY="phpmyadmin,domains,htpasswd,binary,clamav,frontend,signon,firewall,mail"
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY=1 ;;
@@ -269,6 +269,50 @@ sec_domains() {
   done
 }
 
+sec_mail() {
+  want mail || return 0
+  head_ "mail infrastructure"
+
+  local f
+  for f in /etc/postfix/mysql-virtual-domains.cf /etc/postfix/mysql-virtual-mailboxes.cf /etc/postfix/mysql-virtual-uid.cf /etc/postfix/mysql-virtual-gid.cf /etc/postfix/mysql-virtual-aliases.cf; do
+    [ -f "$f" ] || { warn "$f absent"; continue; }
+    ensure_owner "$f" "root:postfix"
+    ensure_mode "$f" 640
+  done
+
+  if [ -f /etc/dovecot/dovecot-sql.conf.ext ]; then
+    ensure_owner /etc/dovecot/dovecot-sql.conf.ext "root:dovecot"
+    ensure_mode /etc/dovecot/dovecot-sql.conf.ext 640
+  else
+    warn "/etc/dovecot/dovecot-sql.conf.ext absent"
+  fi
+
+  if [ -d /etc/opendkim ]; then
+    ensure_owner /etc/opendkim "opendkim:opendkim" -R
+    ensure_mode /etc/opendkim 750
+    [ -f /etc/opendkim/opendkim.conf ] && ensure_owner /etc/opendkim/opendkim.conf "root:opendkim"
+    [ -f /etc/opendkim/opendkim.conf ] && ensure_mode /etc/opendkim/opendkim.conf 640
+    local key
+    while IFS= read -r key; do
+      [ -n "$key" ] || continue
+      ensure_owner "$key" "opendkim:opendkim"
+      ensure_mode "$key" 600
+    done < <(find /etc/opendkim/keys -type f -name '*.private' 2>/dev/null)
+  else
+    warn "/etc/opendkim absent"
+  fi
+
+  if command -v mysql >/dev/null 2>&1; then
+    mysql -u root -N -e "SELECT system_user FROM panel.mail_domains WHERE status='active'" 2>/dev/null | while read -r system_user; do
+      [ -n "$system_user" ] || continue
+      getent passwd "$system_user" >/dev/null || continue
+      ensure_dir "/home/${system_user}/mail" 750 "${system_user}:${system_user}"
+    done
+  else
+    warn "mysql client absent, skipping Maildir roots"
+  fi
+}
+
 # ================= RUN =================
 say "${c_b}Servika Repair${c_0}  ($([ $DRY -eq 1 ] && echo 'DRY-RUN; no changes' || echo 'live') | SELinux:$([ $SEL -eq 1 ] && echo on || echo off) | semanage:$([ $HAVE_SEMANAGE -eq 1 ] && echo available || echo absent))"
 sec_phpmyadmin
@@ -279,6 +323,7 @@ sec_clamav
 sec_frontend
 sec_signon
 sec_firewall
+sec_mail
 
 # Validate nginx after changing htpasswd permissions or SELinux contexts.
 if want htpasswd && [ $DRY -eq 0 ]; then

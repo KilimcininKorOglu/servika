@@ -1,0 +1,5 @@
+hosts = 127.0.0.1
+user = mailro
+password = __SERVIKA_MAIL_DB_PASS__
+dbname = panel
+query = SELECT 1 FROM mail_domains WHERE domain_name='%s' AND status='active'

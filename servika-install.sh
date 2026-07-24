@@ -5,10 +5,9 @@
 #   ./servika-install.sh [--admin-password <password>] [--admin-email <email>]
 #
 # The assets directory must be located next to this script:
-# The assets directory must be located next to this script:
 #   linux_amd64/servika-server  linux_amd64/servika-seed-admin
 #   linux_arm64/servika-server  linux_arm64/servika-seed-admin
-#   frontend-dist.tar.gz  migrations.tar.gz  nginx/*  php-fpm/*  phpmyadmin/*  systemd/*  ops/*
+#   frontend-dist.tar.gz  migrations.tar.gz  nginx/*  php-fpm/*  phpmyadmin/*  systemd/*  ops/*  mail/*
 set -uo pipefail
 
 # Detect host architecture for binary selection.
@@ -146,7 +145,7 @@ ok "panel DB + user (panel@127.0.0.1)"
 # ============ 5) DIRECTORIES + ENV ============
 step "5) Directories + environment"
 mkdir -p /opt/servika/bin /opt/servika/frontend-dist /opt/servika/src/migrations \
-         /opt/servika/pma-signon /etc/servika /etc/ssl/servika
+         /opt/servika/src/mail-templates /opt/servika/pma-signon /etc/servika /etc/ssl/servika
 JWT=$(openssl rand -hex 32); RADMIN=$(openssl rand -hex 24)
 cat > /etc/servika/env <<ENV
 SERVIKA_LISTEN=127.0.0.1:8080
@@ -160,6 +159,7 @@ SERVIKA_MAINTENANCE_MODE=
 SERVIKA_VERSION_CHECK=1
 SERVIKA_VERSION_ENDPOINT=https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/version.json
 SERVIKA_REDIS_ADMIN_PASS=${RADMIN}
+SERVIKA_MAIL_DB_PASS=
 SERVIKA_SEED_PASSWORD=
 SERVIKA_REPO=KilimcininKorOglu/servika
 SERVIKA_PREFIX=/opt/servika
@@ -214,13 +214,18 @@ install -m 0755 "$A/$ARCH/servika-server" /opt/servika/bin/servika-server
 [ -f "$A/$ARCH/servika-seed-admin" ] && install -m 0755 "$A/$ARCH/servika-seed-admin" /opt/servika/bin/servika-seed-admin
 tar xzf "$A/frontend-dist.tar.gz" -C /opt/servika/frontend-dist && ok "frontend-dist"
 tar xzf "$A/migrations.tar.gz" -C /opt/servika/src/migrations && ok "migrations ($(ls /opt/servika/src/migrations/*.sql 2>/dev/null | wc -l) SQL)"
+if [ -d "$A/mail" ]; then
+  rm -rf /opt/servika/src/mail-templates/*
+  cp -a "$A/mail/." /opt/servika/src/mail-templates/
+  ok "mail templates"
+fi
 # Operations tools and phpMyAdmin signon
 for t in "$A"/ops/*; do
   bn=$(basename "$t"); nm="${bn%.sh}"
   install -m 0755 "$t" "/usr/local/bin/$nm" 2>/dev/null
 done
 cp "$A/ops/"* /opt/servika/src/scripts/ 2>/dev/null
-ok "operations tools (/usr/local/bin: update, db-backup, optimize, redis-setup, ftp-setup, backup-all, repair, jail, wp-redis)"
+ok "operations tools (/usr/local/bin: update, db-backup, optimize, redis-setup, ftp-setup, mail-setup, backup-all, repair, jail, wp-redis)"
 
 # ============ 7) PANEL SSL (self-signed) ============
 step "7) Panel SSL (:8443 self-signed)"
@@ -433,6 +438,8 @@ if systemctl is-active --quiet servika; then ok "servika ACTIVE"; else journalct
 # Running this in step 11 would make GRANT SELECT fail because the table does not exist yet.
 sleep 2
 command -v servika-ftp-setup >/dev/null 2>&1 && servika-ftp-setup >/dev/null 2>&1 && ok "servika-ftp-setup (Pure-FTPd, MySQL backend)" || warn "ftp-setup skipped"
+# Mail setup needs the mail tables created by startup migrations.
+command -v servika-mail-setup >/dev/null 2>&1 && servika-mail-setup >/dev/null 2>&1 && ok "servika-mail-setup (Postfix, Dovecot, OpenDKIM)" || warn "mail-setup skipped"
 
 # ============ 13) ADMINISTRATOR ACCESS ============
 # Panel administrator login authenticates the server's root account through PAM and shadow.
@@ -461,8 +468,8 @@ step "15) Verification"
 IP=$(hostname -I 2>/dev/null | awk '{print $1}')
 CODE=$(curl -sk -o /dev/null -w '%{http_code}' https://127.0.0.1:8443/ 2>/dev/null)
 API=$(curl -sk -o /dev/null -w '%{http_code}' https://127.0.0.1:8443/api/v1/domains 2>/dev/null)
-echo -e "  services: $(systemctl is-active mariadb nginx valkey php-fpm named pure-ftpd servika crond | tr '\n' ' ')"
-echo -e "  panel :8443 → HTTP $CODE   ·   API (auth) → HTTP $API   ·   DNS :53 → $(systemctl is-active named)   ·   FTP :21 → $(systemctl is-active pure-ftpd)"
+echo -e "  services: $(systemctl is-active mariadb nginx valkey php-fpm named pure-ftpd postfix dovecot opendkim servika crond | tr '\n' ' ')"
+echo -e "  panel :8443 → HTTP $CODE   ·   API (auth) → HTTP $API   ·   DNS :53 → $(systemctl is-active named)   ·   FTP :21 → $(systemctl is-active pure-ftpd)   ·   mail SMTP/IMAP → $(systemctl is-active postfix)/$(systemctl is-active dovecot)"
 echo -e "  utilities: SSL/acme.sh $([ -x /root/.acme.sh/acme.sh ] && echo ✓ || echo ✗)   ·   firewall/nft $(command -v nft >/dev/null && echo ✓ || echo ✗)   ·   unzip/zip $(command -v unzip >/dev/null && command -v zip >/dev/null && echo ✓ || echo ✗)   ·   composer $(command -v composer >/dev/null && echo ✓ || echo ✗)   ·   apache/httpd $(systemctl is-active httpd)"
 echo -e "  isolation: plan-driven cgroup limits + per-tenant PHP-FPM ready   ·   bubblewrap $(command -v bwrap >/dev/null && echo ✓ || echo ✗)"
 echo
