@@ -46,6 +46,9 @@ func cacheZoneBody() string {
 	return `# Managed automatically by Servika. DO NOT EDIT.
 # Vhosts use "fastcgi_cache servikacache"; this file provides the matching zone definition.
 fastcgi_cache_path ` + cacheZoneDir() + ` levels=1:2 keys_zone=` + cacheZoneName + `:100m max_size=1g inactive=60m use_temp_path=off;
+# Cache key defined once at http context so every vhost using the zone shares it.
+# Separates scheme, method, host, and full request URI so distinct responses never collide.
+fastcgi_cache_key "$scheme$request_method$host$request_uri";
 `
 }
 
