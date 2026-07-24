@@ -88,9 +88,10 @@ type Usage struct {
 	Services      []ServiceStat `json:"services"`
 	UptimeSeconds int64         `json:"uptime_sec"`
 
-	// QuotaRebootRequired is true when disk quota enforcement is INACTIVE (fs noquota /
-	// uqnoenforce). A yellow warning banner on the dashboard reads this flag.
+	// QuotaRebootRequired is true when disk quota enforcement is INACTIVE on a compatible XFS mount.
 	QuotaRebootRequired bool `json:"quota_reboot_required"`
+	// QuotaFSUnsupported is true when the quota mount is not XFS, so XFS quota cannot be enabled by reboot.
+	QuotaFSUnsupported bool `json:"quota_fs_unsupported"`
 }
 
 type cpuStat struct{ total, idle uint64 }
@@ -486,7 +487,7 @@ func ReadInfo() SystemInfo {
 		info.Kernel = strings.TrimSpace(string(output))
 	}
 	if data, err := os.ReadFile("/etc/os-release"); err == nil {
-		for _, line := range strings.Split(string(data), "\n") {
+		for line := range strings.SplitSeq(string(data), "\n") {
 			if v, found := strings.CutPrefix(line, "PRETTY_NAME="); found {
 				v = strings.Trim(v, "\"'")
 				info.OSName = v
@@ -526,7 +527,6 @@ var serviceList = []struct{ name, label string }{
 	{"php83-php-fpm", "PHP 8.3-FPM"},
 	{"php84-php-fpm", "PHP 8.4-FPM"},
 	{"php85-php-fpm", "PHP 8.5-FPM"},
-	{"php86-php-fpm", "PHP 8.6-FPM"},
 	{"crond", "Cron"},
 	{"sshd", "SSH"},
 	{"firewalld", "Firewalld"},
@@ -577,15 +577,17 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	var info SystemInfo
 
 	var quotaReboot bool
+	var quotaFSUnsupported bool
 
 	var wg sync.WaitGroup
-	wg.Add(6)
+	wg.Add(7)
 	go func() { defer wg.Done(); disks = ReadDisks() }()
 	go func() { defer wg.Done(); network = ReadNetwork() }()
 	go func() { defer wg.Done(); services = ReadServices() }()
 	go func() { defer wg.Done(); swap = ReadSwap() }()
 	go func() { defer wg.Done(); info = ReadInfo() }()
 	go func() { defer wg.Done(); quotaReboot = resourcelimit.QuotaRebootRequired() }()
+	go func() { defer wg.Done(); quotaFSUnsupported = !resourcelimit.QuotaFSCompatible() }()
 	wg.Wait()
 
 	httpx.WriteJSON(w, http.StatusOK, Usage{
@@ -593,5 +595,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		Disk: disk, Disks: disks, Network: network,
 		Services: services, UptimeSeconds: ReadUptime(),
 		QuotaRebootRequired: quotaReboot,
+		QuotaFSUnsupported:  quotaFSUnsupported,
 	})
 }

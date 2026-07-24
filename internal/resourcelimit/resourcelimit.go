@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"servika/internal/provisioner"
+
+	"golang.org/x/sys/unix"
 )
 
 // Limits contains active resource values loaded from a service plan.
@@ -216,7 +218,7 @@ func clearKernelIOLimits(systemUser string, l Limits) {
 		return
 	}
 	suffix := " " + strings.Join(clears, " ")
-	for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(data)), "\n") {
 		fields := strings.Fields(line)
 		if len(fields) == 0 {
 			continue
@@ -253,6 +255,18 @@ func DeleteSystemdSlice(systemUser string) error {
 // /home is not a separate mount, so the root is used.
 const quotaMount = "/"
 
+const xfsSuperMagic = 0x58465342
+
+// QuotaFSCompatible reports whether the quota mount uses XFS.
+// If Statfs fails, it returns true so transient host read errors do not raise a false warning.
+func QuotaFSCompatible() bool {
+	var st unix.Statfs_t
+	if err := unix.Statfs(quotaMount, &st); err != nil {
+		return true
+	}
+	return int64(st.Type) == xfsSuperMagic
+}
+
 // Plan-less tenant defaults (CloudLinux parity — don't leave unlimited).
 const (
 	defaultDiskMB = 5120   // 5 GB
@@ -272,7 +286,7 @@ func mountQuotaActive() (accounting, enforcement bool) {
 	if err != nil {
 		return false, false
 	}
-	for _, ln := range strings.Split(string(out), "\n") {
+	for ln := range strings.SplitSeq(string(out), "\n") {
 		t := strings.TrimSpace(ln)
 		switch {
 		case strings.HasPrefix(t, "Accounting:"):
@@ -316,11 +330,14 @@ func quotaSentinelDelete() {
 	}
 }
 
-// QuotaRebootRequired reports whether disk quota enforcement is INACTIVE (a single
-// reboot is pending). Checks the sentinel file first (HealQuotaOnStartup writes it at
+// QuotaRebootRequired reports whether disk quota enforcement is INACTIVE on a compatible
+// XFS quota mount. Checks the sentinel file first (HealQuotaOnStartup writes it at
 // boot) to avoid exec; falls back to live XFS enforcement check. The status endpoint
 // uses this to feed the quota_reboot_required UI flag.
 func QuotaRebootRequired() bool {
+	if !QuotaFSCompatible() {
+		return false
+	}
 	if _, err := os.Stat(quotaRebootSentinel); err == nil {
 		return true
 	}
@@ -434,7 +451,7 @@ func quotaReportRow(metric, sk string) (used, hard int) {
 	if err != nil {
 		return 0, 0
 	}
-	for _, ln := range strings.Split(string(out), "\n") {
+	for ln := range strings.SplitSeq(string(out), "\n") {
 		f := strings.Fields(ln)
 		if len(f) < 4 || f[0] != sk {
 			continue
@@ -500,7 +517,7 @@ func mysqlLimitSQL(user, host string, l Limits) (string, error) {
 
 func parseMySQLAccountHosts(output string) map[string][]string {
 	hosts := make(map[string][]string)
-	for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(output), "\n") {
 		fields := strings.SplitN(line, "\t", 2)
 		if len(fields) != 2 {
 			continue
@@ -617,8 +634,8 @@ func governorScanOnce(ctx context.Context, db *sql.DB) {
 	if err != nil {
 		return
 	}
-	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
-		fields := strings.Split(line, "\t")
+	for line := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
+		fields := strings.Fields(line)
 		if len(fields) < 3 {
 			continue
 		}
@@ -866,6 +883,14 @@ func HealTenantFPM(ctx context.Context, db *sql.DB) {
 // every restart. Log: "quota heal: N tenants / M skipped [ (fs noquota)]".
 func HealQuotaOnStartup(ctx context.Context, db *sql.DB) {
 	if db == nil {
+		return
+	}
+	if !QuotaFSCompatible() {
+		quotaSentinelDelete()
+		var total int
+		_ = db.QueryRowContext(ctx,
+			`SELECT COUNT(*) FROM domains WHERE system_user LIKE 'c\_%'`).Scan(&total)
+		log.Printf("quota heal: 0 tenants / %d skipped (root filesystem is not XFS; XFS user quota unavailable)", total)
 		return
 	}
 	// Quota enforcement is off: write the reboot-required sentinel (UI visibility) +

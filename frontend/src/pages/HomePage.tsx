@@ -29,6 +29,8 @@ type SystemUsage = {
   swap_pct: number; swap_used_gb: number; swap_total_gb: number
   services: ServiceInfo[]
   isolation_losses: number
+  quota_reboot_required?: boolean
+  quota_fs_unsupported?: boolean
 }
 type Domain = { id: number; domain_name: string; ssl: boolean; status: string }
 
@@ -68,6 +70,7 @@ const WIDGET_NAME: Record<string, string> = {
   'cve-security': 'Security Advisories (CVE)', 'services': 'Services', 'domains': 'Domains', 'server-info': 'Server Info',
   'health': 'System Health', 'live-resources': 'Live Resources', 'subscriptions': 'My Subscriptions', 'network': 'Network Traffic',
 }
+const QUOTA_WARNING_DISMISSED_KEY = 'servika-quota-fs-warning-dismissed'
 
 function mergeLayout(saved: unknown): Layout {
   const src = (saved as { columns?: unknown })?.columns
@@ -114,6 +117,10 @@ export default function HomePage() {
   const [optimize, setOptimize] = useState<OptimizeStatus | null>(null)
   const [backup, setBackup] = useState<BackupSummary | null>(null)
   const [wp, setWp] = useState<WpInstall[] | null>(null)
+  const [quotaWarningDismissed, setQuotaWarningDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.localStorage.getItem(QUOTA_WARNING_DISMISSED_KEY) === '1'
+  })
 
   const [layout, setLayout] = useState<Layout>(DEFAULT_LAYOUT)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -199,6 +206,19 @@ export default function HomePage() {
 
   const displayName = (user?.full_name || user?.name || '').trim()
   const health = calcHealth(s, svcDown, isoCount)
+  const quotaWarning = s?.quota_fs_unsupported
+    ? {
+        title: 'Disk quota is unavailable on this filesystem',
+        body: 'Servika needs an XFS root filesystem for per-tenant disk quota. A reboot will not enable quota on the current filesystem.',
+        dismissible: true,
+      }
+    : s?.quota_reboot_required
+      ? {
+          title: 'Disk quota will be enabled after reboot',
+          body: 'XFS user quota is configured, but enforcement is inactive. Reboot the server once to activate per-tenant disk quota.',
+          dismissible: false,
+        }
+      : null
 
   const lastBackup = backup?.domains?.reduce((a, r) => (r.last_backup > a ? r.last_backup : a), '') || ''
   const backedUpDomains = backup?.domains?.filter((r) => r.count > 0).length ?? 0
@@ -215,6 +235,13 @@ export default function HomePage() {
   )
 
   const onDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id))
+
+  const dismissQuotaWarning = () => {
+    setQuotaWarningDismissed(true)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(QUOTA_WARNING_DISMISSED_KEY, '1')
+    }
+  }
 
   const onDragOver = (e: DragOverEvent) => {
     const { active, over } = e
@@ -566,6 +593,23 @@ export default function HomePage() {
           <button onClick={resetLayout} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Reset Layout</button>
         </div>
       </div>
+
+      {quotaWarning && (!quotaWarning.dismissible || !quotaWarningDismissed) && (
+        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-800/50 dark:bg-amber-900/20 dark:text-amber-200">
+          <div className="flex items-start gap-3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="mt-0.5 h-5 w-5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M10.36 3.6 2.26 17.66A1.5 1.5 0 0 0 3.56 19.9h16.88a1.5 1.5 0 0 0 1.3-2.25L13.64 3.6a1.5 1.5 0 0 0-2.6 0Z" /></svg>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold">{quotaWarning.title}</div>
+              <div className="mt-1 text-xs leading-relaxed text-amber-700 dark:text-amber-300">{quotaWarning.body}</div>
+            </div>
+            {quotaWarning.dismissible && (
+              <button type="button" onClick={dismissQuotaWarning} className="text-xs font-medium text-amber-700 underline-offset-2 hover:underline dark:text-amber-300">
+                Dismiss
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Drag-and-drop grid */}
       <DndContext sensors={sensors} collisionDetection={closestCorners}
