@@ -22,6 +22,7 @@ import (
 
 	"servika/internal/httpx"
 	"servika/internal/netguard"
+	"servika/internal/secret"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -191,7 +192,63 @@ func generateDeployKey(systemUser string) (pubKey string, err error) {
 }
 
 // runAsUserArgs executes a command without a shell as the system user.
-func runAsUserArgs(systemUser, cwd, name string, commandArgs ...string) (string, error) {
+// askpassPath is the GIT_ASKPASS helper. It contains NO secret: it echoes the
+// username for a "Username" prompt and the SERVIKA_GH_TOKEN env value otherwise.
+const askpassPath = "/usr/local/bin/servika-git-askpass"
+
+// ensureGitAskpass writes the GIT_ASKPASS helper once (idempotent). The token is
+// supplied through the environment at call time, so the file itself is safe to
+// keep on disk world-readable.
+func ensureGitAskpass() error {
+	const script = "#!/bin/sh\n" +
+		"# Servika GIT_ASKPASS helper. Reads the token from SERVIKA_GH_TOKEN.\n" +
+		"case \"$1\" in\n" +
+		"*sername*) echo \"x-access-token\" ;;\n" +
+		"*) printf '%s' \"$SERVIKA_GH_TOKEN\" ;;\n" +
+		"esac\n"
+	if b, err := os.ReadFile(askpassPath); err == nil && string(b) == script {
+		return nil
+	}
+	return os.WriteFile(askpassPath, []byte(script), 0o755)
+}
+
+// gitAuthEnv returns the extra environment that authenticates HTTPS git
+// operations with a GitHub token. Empty token => no auth env (deploy-key or
+// public repository path). GIT_TERMINAL_PROMPT=0 prevents an interactive hang.
+func gitAuthEnv(token string) ([]string, error) {
+	if token == "" {
+		return nil, nil
+	}
+	if err := ensureGitAskpass(); err != nil {
+		return nil, err
+	}
+	return []string{
+		"GIT_ASKPASS=" + askpassPath,
+		"SERVIKA_GH_TOKEN=" + token,
+		"GIT_TERMINAL_PROMPT=0",
+	}, nil
+}
+
+// githubTokenFor returns the decrypted GitHub PAT for a domain, or "" when no
+// connection/token exists (public repo or deploy-key flow).
+func githubTokenFor(db *sql.DB, domainID int64) string {
+	var enc string
+	if err := db.QueryRow(`SELECT pat FROM github_connections WHERE domain_id=?`, domainID).Scan(&enc); err != nil {
+		return ""
+	}
+	plain, err := secret.Decrypt(enc)
+	if err != nil {
+		return ""
+	}
+	return plain
+}
+
+// runAsUserArgs runs a command as the tenant system user. extraEnv holds
+// additional KEY=VALUE pairs (for example GIT_ASKPASS and SERVIKA_GH_TOKEN);
+// values are passed via the child environment, never on the command line, so a
+// token is not exposed in the process listing. sudo needs --preserve-env for the
+// specific keys so it forwards them across the privilege drop.
+func runAsUserArgs(systemUser, cwd string, extraEnv []string, name string, commandArgs ...string) (string, error) {
 	if !strings.HasPrefix(systemUser, "c_") {
 		return "", errors.New("invalid system user")
 	}
@@ -199,7 +256,21 @@ func runAsUserArgs(systemUser, cwd, name string, commandArgs ...string) (string,
 		"HOME=/home/" + systemUser,
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 	}
-	sudoArgs := append([]string{"-u", systemUser, "-H", "--", name}, commandArgs...)
+	environment = append(environment, extraEnv...)
+	preserve := ""
+	for _, kv := range extraEnv {
+		if k, _, ok := strings.Cut(kv, "="); ok {
+			if preserve != "" {
+				preserve += ","
+			}
+			preserve += k
+		}
+	}
+	sudoArgs := []string{"-u", systemUser, "-H"}
+	if preserve != "" {
+		sudoArgs = append(sudoArgs, "--preserve-env="+preserve)
+	}
+	sudoArgs = append(append(sudoArgs, "--", name), commandArgs...)
 	cmd := exec.Command("sudo", sudoArgs...)
 	cmd.Dir = cwd
 	cmd.Env = environment
@@ -215,7 +286,8 @@ func runAsUserArgs(systemUser, cwd, name string, commandArgs ...string) (string,
 }
 
 // gitClone performs the initial clone and replaces an existing target directory.
-func gitClone(systemUser, repoURL, branch, targetDir string) (sha string, log string, err error) {
+// token authenticates a private HTTPS repository (empty => public/deploy-key).
+func gitClone(systemUser, repoURL, branch, targetDir, token string) (sha string, log string, err error) {
 	if !validRepoURL(repoURL) {
 		return "", "", errors.New("invalid repository URL")
 	}
@@ -239,19 +311,24 @@ func gitClone(systemUser, repoURL, branch, targetDir string) (sha string, log st
 	}
 	_, _ = exec.Command("chown", systemUser+":"+systemUser, dst).CombinedOutput()
 
-	out, err := runAsUserArgs(systemUser, home, "git", "clone", "--depth", "1", "--branch", branch, "--", repoURL, dst)
+	authEnv, err := gitAuthEnv(token)
+	if err != nil {
+		return "", "", errors.New("could not prepare git credentials")
+	}
+	out, err := runAsUserArgs(systemUser, home, authEnv, "git", "clone", "--depth", "1", "--branch", branch, "--", repoURL, dst)
 	log = out
 	if err != nil {
 		return "", out, err
 	}
-	shaOut, _ := runAsUserArgs(systemUser, dst, "git", "-C", dst, "rev-parse", "HEAD")
+	shaOut, _ := runAsUserArgs(systemUser, dst, nil, "git", "-C", dst, "rev-parse", "HEAD")
 	sha = strings.TrimSpace(shaOut)
 	_, _ = exec.Command("restorecon", "-R", dst).CombinedOutput()
 	return sha, log, nil
 }
 
 // gitPull updates an existing repository.
-func gitPull(systemUser, targetDir, branch string) (sha string, log string, err error) {
+// token authenticates a private HTTPS repository (empty => public/deploy-key).
+func gitPull(systemUser, targetDir, branch, token string) (sha string, log string, err error) {
 	if !validTargetDir(targetDir) {
 		return "", "", errors.New("invalid target directory")
 	}
@@ -263,9 +340,13 @@ func gitPull(systemUser, targetDir, branch string) (sha string, log string, err 
 	if _, err := os.Stat(filepath.Join(dst, ".git")); err != nil {
 		return "", "", errors.New("target directory is not a Git repository; clone it first")
 	}
-	out, err := runAsUserArgs(systemUser, dst, "git", "-C", dst, "fetch", "origin", branch)
+	authEnv, err := gitAuthEnv(token)
+	if err != nil {
+		return "", "", errors.New("could not prepare git credentials")
+	}
+	out, err := runAsUserArgs(systemUser, dst, authEnv, "git", "-C", dst, "fetch", "origin", branch)
 	if err == nil {
-		resetOutput, resetErr := runAsUserArgs(systemUser, dst, "git", "-C", dst, "reset", "--hard", "origin/"+branch)
+		resetOutput, resetErr := runAsUserArgs(systemUser, dst, nil, "git", "-C", dst, "reset", "--hard", "origin/"+branch)
 		out += resetOutput
 		err = resetErr
 	}
@@ -273,7 +354,7 @@ func gitPull(systemUser, targetDir, branch string) (sha string, log string, err 
 	if err != nil {
 		return "", out, err
 	}
-	shaOut, _ := runAsUserArgs(systemUser, dst, "git", "-C", dst, "rev-parse", "HEAD")
+	shaOut, _ := runAsUserArgs(systemUser, dst, nil, "git", "-C", dst, "rev-parse", "HEAD")
 	sha = strings.TrimSpace(shaOut)
 	_, _ = exec.Command("restorecon", "-R", dst).CombinedOutput()
 	return sha, log, nil
@@ -385,7 +466,7 @@ func (h *Handlers) Clone(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "connect a repository first")
 		return
 	}
-	sha, log, err := gitClone(systemUser, repoURL, branch, targetDir)
+	sha, log, err := gitClone(systemUser, repoURL, branch, targetDir, githubTokenFor(h.DB, id))
 	status := "successful"
 	if err != nil {
 		status = "error"
@@ -418,7 +499,7 @@ func (h *Handlers) Pull(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "repository not found")
 		return
 	}
-	sha, log, err := gitPull(systemUser, targetDir, branch)
+	sha, log, err := gitPull(systemUser, targetDir, branch, githubTokenFor(h.DB, id))
 	status := "successful"
 	if err != nil {
 		status = "error"
@@ -488,7 +569,7 @@ func (h *Handlers) Webhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sha, _, perr := gitPull(systemUser, targetDir, branch)
+	sha, _, perr := gitPull(systemUser, targetDir, branch, githubTokenFor(h.DB, domainID))
 	status := "successful"
 	if perr != nil {
 		status = "error-webhook"

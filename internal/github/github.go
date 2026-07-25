@@ -19,6 +19,7 @@ import (
 	"servika/internal/config"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
+	"servika/internal/secret"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -193,12 +194,17 @@ func (h *Handlers) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	encToken, err := secret.Encrypt(req.Token)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
 	_, err = h.DB.ExecContext(r.Context(),
 		`INSERT INTO github_connections(domain_id, pat, login, full_name, avatar_url)
 		 VALUES(?,?,?,?,?)
 		 ON DUPLICATE KEY UPDATE pat=VALUES(pat), login=VALUES(login),
 		   full_name=VALUES(full_name), avatar_url=VALUES(avatar_url)`,
-		id, req.Token, u.Login, u.Name, u.AvatarURL)
+		id, encToken, u.Login, u.Name, u.AvatarURL)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
@@ -248,6 +254,11 @@ func (h *Handlers) Disconnect(w http.ResponseWriter, r *http.Request) {
 	_ = h.DB.QueryRowContext(r.Context(),
 		`SELECT pat, selected_repo, webhook_id FROM github_connections WHERE domain_id=?`, id).
 		Scan(&pat, &repo, &hookID)
+	if plain, derr := secret.Decrypt(pat); derr == nil {
+		pat = plain
+	} else {
+		pat = ""
+	}
 	if pat != "" && repo != "" && hookID > 0 {
 		_, _, _ = ghCall(r.Context(), "DELETE", fmt.Sprintf("/repos/%s/hooks/%d", repo, hookID), pat, nil)
 	}
@@ -372,7 +383,9 @@ func (h *Handlers) Use(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cloneURL := fmt.Sprintf("https://%s@github.com/%s.git", pat, req.Repo)
+	// Store the repo URL without the token; the token is supplied at git time via
+	// GIT_ASKPASS (see internal/git), so it never lands in .git/config.
+	cloneURL := fmt.Sprintf("https://github.com/%s.git", req.Repo)
 
 	// Create or update the git_repos record.
 	var existingSecret string
@@ -464,7 +477,11 @@ func (h *Handlers) readConnection(ctx context.Context, domainID int64) (*Connect
 func (h *Handlers) tokenOf(ctx context.Context, domainID int64) string {
 	var pat string
 	_ = h.DB.QueryRowContext(ctx, `SELECT pat FROM github_connections WHERE domain_id=?`, domainID).Scan(&pat)
-	return pat
+	plain, err := secret.Decrypt(pat)
+	if err != nil {
+		return ""
+	}
+	return plain
 }
 
 func randomHex(n int) string {
