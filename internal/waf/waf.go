@@ -47,6 +47,32 @@ type effectiveInfo struct {
 	Paranoia int    `json:"paranoia"`
 }
 
+// mapWAFMode maps an API mode string to the (waf_enabled, waf_mode) column values.
+// A nil pair means NULL (inherit from plan). ok is false for an unrecognized mode.
+func mapWAFMode(mode string) (enabled, wafMode any, ok bool) {
+	switch strings.ToLower(strings.TrimSpace(mode)) {
+	case "inherit", "":
+		return nil, nil, true
+	case "off":
+		return 0, "off", true
+	case "block":
+		return 1, "on", true
+	case "detect":
+		return 1, "detect", true
+	default:
+		return nil, nil, false
+	}
+}
+
+// mapWAFParanoia clamps a paranoia level to the persisted column value.
+// Levels 1..4 are kept; anything else becomes nil (NULL = inherit from plan).
+func mapWAFParanoia(paranoia int) any {
+	if paranoia >= 1 && paranoia <= 4 {
+		return paranoia
+	}
+	return nil
+}
+
 // GET /domains/{id}/waf
 func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
@@ -140,26 +166,12 @@ func (h *Handlers) Save(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// mode → (waf_enabled, waf_mode); nil = NULL = inherit from plan
-	var enVal, modeVal interface{}
-	switch strings.ToLower(strings.TrimSpace(req.Settings.Mode)) {
-	case "inherit", "":
-		enVal, modeVal = nil, nil
-	case "off":
-		enVal, modeVal = 0, "off"
-	case "block":
-		enVal, modeVal = 1, "on"
-	case "detect":
-		enVal, modeVal = 1, "detect"
-	default:
+	enVal, modeVal, ok := mapWAFMode(req.Settings.Mode)
+	if !ok {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid mode (inherit|off|block|detect)")
 		return
 	}
-	var plVal interface{}
-	if req.Settings.Paranoia >= 1 && req.Settings.Paranoia <= 4 {
-		plVal = req.Settings.Paranoia
-	} else {
-		plVal = nil // inherit
-	}
+	plVal := mapWAFParanoia(req.Settings.Paranoia)
 
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE domains SET waf_enabled=?, waf_mode=?, waf_paranoia=? WHERE id=?`,
