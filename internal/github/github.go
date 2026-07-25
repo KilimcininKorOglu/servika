@@ -27,9 +27,27 @@ func apiBase() string { return config.GitHubAPI() }
 
 type Handlers struct {
 	DB *sql.DB
-	// WebhookBase is the public URL prefix registered with GitHub, for example "https://203.0.113.10:8443".
-	// When empty, webhook registration is skipped and only information is returned.
+	// WebhookBase is the IP-based public URL prefix, for example "https://203.0.113.10:8443".
+	// It is retained for reference only; webhook registration uses trustedWebhookBase,
+	// which requires a panel domain with a valid TLS certificate.
 	WebhookBase string
+}
+
+// trustedWebhookBase returns the HTTPS base URL for webhook delivery only when
+// the panel is served on a custom domain with an active (Let's Encrypt) TLS
+// certificate. GitHub verifies the certificate on delivery, so an IP-based or
+// self-signed endpoint is not trusted and (base, false) is returned.
+func (h *Handlers) trustedWebhookBase(ctx context.Context) (string, bool) {
+	var domain, sslStatus sql.NullString
+	err := h.DB.QueryRowContext(ctx,
+		`SELECT custom_domain, ssl_status FROM panel_settings WHERE id=1`).Scan(&domain, &sslStatus)
+	if err != nil {
+		return "", false
+	}
+	if strings.TrimSpace(domain.String) == "" || sslStatus.String != "active" {
+		return "", false
+	}
+	return "https://" + strings.TrimSpace(domain.String), true
 }
 
 type Connection struct {
@@ -384,8 +402,15 @@ func (h *Handlers) Use(w http.ResponseWriter, r *http.Request) {
 
 	// Configure the automatic webhook.
 	resp := map[string]any{"ok": true, "repo": req.Repo, "branch": req.Branch, "auto_deploy": req.AutoDeploy}
-	if req.AutoDeploy && h.WebhookBase != "" {
-		hookURL := strings.TrimRight(h.WebhookBase, "/") + "/api/v1/git-webhook/" + secret
+	webhookBase, trusted := h.trustedWebhookBase(r.Context())
+	if req.AutoDeploy && !trusted {
+		// GitHub verifies the panel TLS certificate on delivery. The default
+		// IP-based endpoint cannot obtain a trusted certificate, so refuse to
+		// register an insecure webhook and tell the operator how to enable it.
+		resp["webhook_ok"] = false
+		resp["webhook_error"] = "configure a panel domain with a valid TLS certificate before enabling auto-deploy"
+	} else if req.AutoDeploy {
+		hookURL := strings.TrimRight(webhookBase, "/") + "/api/v1/git-webhook/" + secret
 		// Remove the previous webhook first.
 		var oldID int64
 		_ = h.DB.QueryRowContext(r.Context(),
@@ -398,7 +423,7 @@ func (h *Handlers) Use(w http.ResponseWriter, r *http.Request) {
 		hook.Config.URL = hookURL
 		hook.Config.ContentType = "json"
 		hook.Config.Secret = secret
-		hook.Config.InsecureSSL = "1" // Allow a self-signed certificate.
+		hook.Config.InsecureSSL = "0" // Require GitHub to verify the panel TLS certificate.
 		body, st, err := ghCall(r.Context(), "POST", "/repos/"+req.Repo+"/hooks", pat, hook)
 		if err != nil || (st != 201 && st != 200) {
 			resp["webhook_ok"] = false
