@@ -76,6 +76,49 @@ warn() { echo -e "  ${c_y}!${c_0} $*"; }
 die()  { echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
 step() { echo -e "${c_b}══ $* ══${c_0}"; }
 
+# restore_release_assets undoes every pre-restart asset swap from snapshots taken
+# during this run. Each step is existence-guarded and best-effort so a missing
+# snapshot for one asset never blocks the restore of the others. Called only on
+# the rollback path, before the previous binary is restarted.
+restore_release_assets() {
+  # Frontend: reuse the atomic ${FDIST}.old kept by the verified swap.
+  if [ -d "${FDIST}.old" ]; then
+    rm -rf "${FDIST}.new-failed" 2>/dev/null || true
+    [ -d "$FDIST" ] && mv "$FDIST" "${FDIST}.new-failed" 2>/dev/null || true
+    mv "${FDIST}.old" "$FDIST" 2>/dev/null || true
+    rm -rf "${FDIST}.new-failed" 2>/dev/null || true
+    command -v restorecon >/dev/null && restorecon -R "$FDIST" >/dev/null 2>&1 || true
+    ok "frontend restored to previous release"
+  fi
+  # Migrations: replace the on-disk set with the snapshot so the old binary does
+  # not re-run new migrations against the restored (older) schema.
+  if [ -d "$ROLLBACK_DIR/migrations" ]; then
+    if rm -rf "$MIGR" 2>/dev/null && cp -a "$ROLLBACK_DIR/migrations" "$MIGR" 2>/dev/null; then
+      ok "migrations restored to previous release"
+    else
+      warn "migrations restore incomplete"
+    fi
+  fi
+  # Mail templates.
+  if [ -d "$ROLLBACK_DIR/mail-templates" ]; then
+    MAIL_TMPL="$PREFIX/src/mail-templates"
+    rm -rf "$MAIL_TMPL" 2>/dev/null && cp -a "$ROLLBACK_DIR/mail-templates" "$MAIL_TMPL" 2>/dev/null || true
+  fi
+  # Config files.
+  [ -f "$ROLLBACK_DIR/_panel.conf" ] && cp -a "$ROLLBACK_DIR/_panel.conf" /etc/nginx/conf.d/_panel.conf 2>/dev/null || true
+  [ -f "$ROLLBACK_DIR/roundcube.conf" ] && cp -a "$ROLLBACK_DIR/roundcube.conf" /etc/php-fpm.d/roundcube.conf 2>/dev/null || true
+  # Ops tools + scripts.
+  if [ -d "$ROLLBACK_DIR/opsbin" ]; then
+    for t in "$ROLLBACK_DIR"/opsbin/*; do
+      [ -f "$t" ] && install -m 0755 "$t" "$OPSBIN/$(basename "$t")" 2>/dev/null || true
+    done
+  fi
+  if [ -d "$ROLLBACK_DIR/scripts" ]; then
+    rm -rf "$SCRIPTS" 2>/dev/null && cp -a "$ROLLBACK_DIR/scripts" "$SCRIPTS" 2>/dev/null || true
+  fi
+  ok "release-owned assets restored to previous version"
+}
+
 require_abs_path() {
   local name="$1"
   local value="$2"
@@ -119,7 +162,12 @@ command -v tar  >/dev/null || die "tar is required"
 
 step "Servika update (github.com/$REPO@$BRANCH)"
 
-TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
+# Rollback staging: snapshots of every release-owned asset are taken here just
+# before each pre-restart swap, so a failed health check can restore the complete
+# previous release, not only the binary and database.
+ROLLBACK_DIR="$PREFIX/.update-rollback.$$"
+TMP=$(mktemp -d); trap 'rm -rf "$TMP" "$ROLLBACK_DIR"' EXIT
+mkdir -p "$ROLLBACK_DIR"
 echo "  downloading..."
 curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar xz -C "$TMP" \
   || die "download failed; verify that the repository is public and branch '$BRANCH' exists"
@@ -236,22 +284,29 @@ if [ -f "$A/frontend-dist.tar.gz" ]; then
 fi
 
 if [ -f "$A/migrations.tar.gz" ]; then
+  # Snapshot the current migrations so a rollback removes any file the failed
+  # release added; otherwise the restored old binary would re-run new migrations
+  # against the restored (older) schema.
+  [ -d "$MIGR" ] && cp -a "$MIGR" "$ROLLBACK_DIR/migrations" 2>/dev/null || true
   mkdir -p "$MIGR"; tar xzf "$A/migrations.tar.gz" -C "$MIGR"
   ok "migrations synchronized ($(ls "$MIGR"/*.sql 2>/dev/null | wc -l) SQL files)"
 fi
 
 if [ -d "$A/mail" ]; then
   MAIL_TMPL="$PREFIX/src/mail-templates"
+  [ -d "$MAIL_TMPL" ] && cp -a "$MAIL_TMPL" "$ROLLBACK_DIR/mail-templates" 2>/dev/null || true
   mkdir -p "$MAIL_TMPL"
   rm -rf "${MAIL_TMPL:?}/"*
   cp -a "$A/mail/." "$MAIL_TMPL/"
   ok "mail templates updated"
 fi
 if [ -f "$A/nginx/_panel.conf" ]; then
+  [ -f /etc/nginx/conf.d/_panel.conf ] && cp -a /etc/nginx/conf.d/_panel.conf "$ROLLBACK_DIR/_panel.conf" 2>/dev/null || true
   cp "$A/nginx/_panel.conf" /etc/nginx/conf.d/_panel.conf
   ok "panel nginx vhost updated"
 fi
 if [ -f "$A/php-fpm/roundcube.conf" ]; then
+  [ -f /etc/php-fpm.d/roundcube.conf ] && cp -a /etc/php-fpm.d/roundcube.conf "$ROLLBACK_DIR/roundcube.conf" 2>/dev/null || true
   cp "$A/php-fpm/roundcube.conf" /etc/php-fpm.d/roundcube.conf
   mkdir -p /var/lib/roundcube/{temp,sessions}
   chown -R apache:apache /var/lib/roundcube 2>/dev/null || true
@@ -260,6 +315,15 @@ if [ -f "$A/php-fpm/roundcube.conf" ]; then
 fi
 
 if [ -d "$A/ops" ]; then
+  # Snapshot each currently-installed ops tool the release is about to overwrite,
+  # plus the scripts source dir, so a failed release does not leave new ops code
+  # in place after the binary rolls back.
+  mkdir -p "$ROLLBACK_DIR/opsbin"
+  for t in "$A"/ops/*; do
+    bn=$(basename "$t"); dest="$OPSBIN/${bn%.sh}"
+    [ -f "$dest" ] && cp -a "$dest" "$ROLLBACK_DIR/opsbin/${bn%.sh}" 2>/dev/null || true
+  done
+  [ -d "$SCRIPTS" ] && cp -a "$SCRIPTS" "$ROLLBACK_DIR/scripts" 2>/dev/null || true
   for t in "$A"/ops/*; do bn=$(basename "$t"); install -m 0755 "$t" "$OPSBIN/${bn%.sh}" 2>/dev/null || true; done
   mkdir -p "$SCRIPTS"; cp "$A"/ops/* "$SCRIPTS/" 2>/dev/null || true
   ok "operations tools updated"
@@ -333,16 +397,20 @@ if [ "$HEALTHY" = 1 ]; then
     servika-mail-setup >/dev/null 2>&1 && ok "mail infrastructure synchronized (Postfix+Dovecot+OpenDKIM+Roundcube)" || warn "mail-setup skipped"
   fi
   systemctl reload nginx >/dev/null 2>&1 || true
+  rm -rf "$ROLLBACK_DIR" 2>/dev/null || true
   echo "$RELHASH" > "$MARKER" 2>/dev/null || true
   NEWVER=$(version); [ -n "$NEWVER" ] || NEWVER="?"
   ok "panel active and health check passed"
   ok "resource limits applied from plans + existing sites are being safely migrated to per-tenant PHP-FPM isolation (self-check + auto-rollback, in the background)"
   echo -e "${c_g}══ Update complete ($CURVER to $NEWVER); environment, database, and sites preserved ══${c_0}"
 else
-  warn "the new release failed its health check; restoring the previous binary and database"
+  warn "the new release failed its health check; restoring the previous release"
   install -m 0755 "$BIN.bak" "$BIN"
   [ -f "$SEED.bak" ] && install -m 0755 "$SEED.bak" "$SEED" 2>/dev/null || true
   command -v restorecon >/dev/null && restorecon "$BIN" >/dev/null 2>&1 || true
+  # Restore every other release-owned asset (frontend, migrations, mail, nginx,
+  # roundcube, ops tools) so the old binary does not run against new assets.
+  restore_release_assets
 
   # Stop all panel writes, verify the recovery point again, then restore the pre-update schema
   # and data before starting the previous binary.
