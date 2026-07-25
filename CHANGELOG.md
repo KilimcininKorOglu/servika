@@ -4,6 +4,62 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-07-25
+
+### Added
+- Optional offsite upload for panel database backups over FTP/SFTP with remote retention.
+- RED (Rate, Errors, Duration) metrics instrumentation for the HTTP API.
+
+### Changed
+- Release packaging is now gated on the full validation suite via a reusable CI workflow.
+- Added unit-test coverage for validation helpers across critical backend modules.
+- Metrics handler now checks response-writer write results.
+- Removed the unused phpMyAdmin root accessor.
+- Release notes are sourced from the matching CHANGELOG section.
+
+### Fixed
+- Update and restore now deploy immutable tagged release bundles instead of mutable branch snapshots.
+- Scheduled domain backups run through a single authoritative runner, no longer duplicated by a root cron.
+- Laravel install and deploy jobs are finalized server-side without depending on client polling.
+- Subscription deletion now requires administrator authorization.
+- Archive extraction enforces decompression-bomb size and member limits.
+- Domain HTTPS health probes verify the TLS certificate chain and hostname.
+- The build requires a patched Go toolchain and gates releases on a vulnerability scan.
+- phpMyAdmin signon tokens are exchanged in a POST body instead of a URL query string.
+- Request lifecycle logging added to the API middleware stack.
+- Customer FTP passwords are no longer stored as cleartext at rest.
+- Installer verifies third-party downloads before use.
+- Panel CSP tightened to `script-src 'self'`, isolating phpMyAdmin and webmail.
+- Session tokens are delivered via an HttpOnly cookie instead of localStorage.
+- Update rollback restores every release-owned asset, not only the binary and database.
+- Stored GitHub access tokens are encrypted at rest and kept out of repository URLs.
+- Auto-registered GitHub webhooks require TLS verification.
+- GitHub webhook HMAC signatures are verified before pulling.
+- Migrations apply once each inside a transaction.
+- Server-side JWT session revocation is supported.
+- Remote backup destination credentials are encrypted at rest.
+- CORS reflects only the same origin instead of a wildcard.
+- Manual backup creation is rate-limited and serialized per domain.
+- Expensive file-manager operations are throttled per IP.
+- The public Git webhook endpoint is throttled.
+- Every response carries a request id for error correlation.
+- Raw exception details are hidden from end users.
+- Load sampler failures are logged instead of discarded.
+- The readiness probe verifies the database dependency.
+- Laravel deploy jobs fail when a critical step fails.
+- Orphaned tenant metadata is deleted on domain removal.
+- File uploads are exempt from the JSON body limit.
+- System operation error details are redacted from API responses.
+- Download filenames are safely encoded in Content-Disposition.
+- Repository credentials are redacted from API responses.
+- Database plan limits are enforced atomically, including during WordPress install.
+- Tenant file reads and archive extraction resolve through symlink-safe file descriptors.
+- SSRF to internal targets from customer-controlled hosts is blocked.
+- Suspension is enforced on phpMyAdmin signon token creation.
+- A FastCGI cache key is defined for tenant vhosts.
+- Restores fail when the database import fails.
+- The inconsistent upload extension block was removed.
+
 ## [1.0.2] - 2026-07-24
 
 ### Changed
