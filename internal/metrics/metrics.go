@@ -113,8 +113,10 @@ func Handler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 
 	// Request counter (RED: Rate + Errors, since status is a label).
-	fmt.Fprintln(w, "# HELP servika_http_requests_total Total HTTP requests by method, route, and status.")
-	fmt.Fprintln(w, "# TYPE servika_http_requests_total counter")
+	// Response body write errors are not actionable: the metrics scrape simply
+	// fails on a dropped connection, and headers are already sent.
+	_, _ = fmt.Fprintln(w, "# HELP servika_http_requests_total Total HTTP requests by method, route, and status.")
+	_, _ = fmt.Fprintln(w, "# TYPE servika_http_requests_total counter")
 	ckeys := make([]counterKey, 0, len(reg.counters))
 	for k := range reg.counters {
 		ckeys = append(ckeys, k)
@@ -129,13 +131,13 @@ func Handler(w http.ResponseWriter, _ *http.Request) {
 		return ckeys[i].status < ckeys[j].status
 	})
 	for _, k := range ckeys {
-		fmt.Fprintf(w, "servika_http_requests_total{method=%q,route=%q,status=%q} %d\n",
+		_, _ = fmt.Fprintf(w, "servika_http_requests_total{method=%q,route=%q,status=%q} %d\n",
 			escapeLabel(k.method), escapeLabel(k.route), strconv.Itoa(k.status), reg.counters[k])
 	}
 
 	// Latency histogram (RED: Duration).
-	fmt.Fprintln(w, "# HELP servika_http_request_duration_seconds HTTP request latency by method and route.")
-	fmt.Fprintln(w, "# TYPE servika_http_request_duration_seconds histogram")
+	_, _ = fmt.Fprintln(w, "# HELP servika_http_request_duration_seconds HTTP request latency by method and route.")
+	_, _ = fmt.Fprintln(w, "# TYPE servika_http_request_duration_seconds histogram")
 	hkeys := make([]histKey, 0, len(reg.histgrams))
 	for k := range reg.histgrams {
 		hkeys = append(hkeys, k)
@@ -150,12 +152,12 @@ func Handler(w http.ResponseWriter, _ *http.Request) {
 		h := reg.histgrams[k]
 		m, rt := escapeLabel(k.method), escapeLabel(k.route)
 		for i, b := range buckets {
-			fmt.Fprintf(w, "servika_http_request_duration_seconds_bucket{method=%q,route=%q,le=%q} %d\n",
+			_, _ = fmt.Fprintf(w, "servika_http_request_duration_seconds_bucket{method=%q,route=%q,le=%q} %d\n",
 				m, rt, strconv.FormatFloat(b, 'g', -1, 64), h.counts[i])
 		}
-		fmt.Fprintf(w, "servika_http_request_duration_seconds_bucket{method=%q,route=%q,le=\"+Inf\"} %d\n", m, rt, h.count)
-		fmt.Fprintf(w, "servika_http_request_duration_seconds_sum{method=%q,route=%q} %s\n",
+		_, _ = fmt.Fprintf(w, "servika_http_request_duration_seconds_bucket{method=%q,route=%q,le=\"+Inf\"} %d\n", m, rt, h.count)
+		_, _ = fmt.Fprintf(w, "servika_http_request_duration_seconds_sum{method=%q,route=%q} %s\n",
 			m, rt, strconv.FormatFloat(h.sum, 'g', -1, 64))
-		fmt.Fprintf(w, "servika_http_request_duration_seconds_count{method=%q,route=%q} %d\n", m, rt, h.count)
+		_, _ = fmt.Fprintf(w, "servika_http_request_duration_seconds_count{method=%q,route=%q} %d\n", m, rt, h.count)
 	}
 }
