@@ -283,7 +283,10 @@ func main() {
 				r.With(middleware.AdminOnly).Post("/domains", domainsH.Create)
 				r.With(middleware.AdminOnly).Post("/domains/{id}/suspend", domainsH.Suspend)
 				r.With(middleware.AdminOnly).Post("/domains/{id}/resume", domainsH.Resume)
-				r.With(middleware.CustomerScope).Delete("/domains/{id}", domainsH.Delete)
+				// Deleting a whole subscription is destructive and irreversible, so it
+				// requires an administrator; a customer token must not delete its own
+				// domain, databases, Linux user, and service state without admin mediation.
+				r.With(middleware.AdminOnly).Delete("/domains/{id}", domainsH.Delete)
 				r.With(middleware.AdminOnly).Post("/domains/bulk/owner", domainsH.BulkOwner)
 				r.With(middleware.AdminOnly).Post("/domains/bulk/status", domainsH.BulkStatus)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/php", domainsH.SetPHP)
