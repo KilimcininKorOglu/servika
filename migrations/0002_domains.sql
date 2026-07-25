@@ -1,7 +1,7 @@
 -- 0002 — domains table (persistent, test data loaded as seed)
 -- NOTE: ssl_enabled instead of ssl (MariaDB reserved word)
 
-CREATE TABLE IF NOT EXISTS domains (
+CREATE TABLE domains (
   id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_name         VARCHAR(253) NOT NULL UNIQUE,
   system_user VARCHAR(64)  NOT NULL,

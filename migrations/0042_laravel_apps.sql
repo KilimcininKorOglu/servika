@@ -1,5 +1,5 @@
 -- 0042_laravel_apps.sql, per-domain Laravel Toolkit metadata.
-CREATE TABLE IF NOT EXISTS cp_laravel_apps (
+CREATE TABLE cp_laravel_apps (
   id                 BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   domain_id          BIGINT UNSIGNED NOT NULL,
   app_root           VARCHAR(255) NOT NULL DEFAULT 'public_html',

@@ -1,5 +1,5 @@
 -- 0006 - service_plans (service packages) + domains.plan_id
-CREATE TABLE IF NOT EXISTS service_plans (
+CREATE TABLE service_plans (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(64) NOT NULL UNIQUE,
   description VARCHAR(255) NOT NULL DEFAULT '',
@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS service_plans (
 ) ENGINE=InnoDB;
 
 ALTER TABLE domains
-  ADD COLUMN IF NOT EXISTS plan_id BIGINT UNSIGNED NULL,
-  ADD KEY IF NOT EXISTS ix_domains_plan (plan_id);
+  ADD COLUMN plan_id BIGINT UNSIGNED NULL,
+  ADD KEY ix_domains_plan (plan_id);

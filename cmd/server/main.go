@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sort"
 	"strings"
 	"syscall"
 	"time"
@@ -516,6 +517,10 @@ func main() {
 	}
 }
 
+// runMigrations applies each migration file exactly once, tracked in the
+// schema_migrations table. Each file runs inside a transaction: any statement
+// error rolls the file back and stops startup (log.Fatalf) so the database can
+// never reach a partially migrated state. Already-applied files are skipped.
 func runMigrations(d *sql.DB) {
 	dir := "/opt/servika/src/migrations"
 	entries, err := os.ReadDir(dir)
@@ -523,34 +528,79 @@ func runMigrations(d *sql.DB) {
 		log.Printf("migration directory could not be read: %v", err)
 		return
 	}
+	if _, err := d.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+		filename VARCHAR(255) NOT NULL PRIMARY KEY,
+		applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`); err != nil {
+		log.Fatalf("migrations: could not create schema_migrations: %v", err)
+	}
+	applied := map[string]bool{}
+	rows, err := d.Query(`SELECT filename FROM schema_migrations`)
+	if err != nil {
+		log.Fatalf("migrations: could not read schema_migrations: %v", err)
+	}
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			log.Fatalf("migrations: scan applied row: %v", err)
+		}
+		applied[name] = true
+	}
+	_ = rows.Close()
+
+	names := make([]string, 0, len(entries))
 	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".sql") {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), ".sql") {
+			names = append(names, e.Name())
+		}
+	}
+	sort.Strings(names)
+
+	for _, name := range names {
+		if applied[name] {
 			continue
 		}
-		body, err := os.ReadFile(dir + "/" + e.Name())
+		body, err := os.ReadFile(dir + "/" + name)
 		if err != nil {
+			log.Fatalf("migrations: could not read %s: %v", name, err)
+		}
+		log.Printf("migration: %s", name)
+		applyMigration(d, name, string(body))
+	}
+}
+
+// applyMigration runs one migration file's statements in a single transaction
+// and records it as applied. Any error is fatal: the transaction is rolled back
+// and startup stops so no later migration runs on a half-applied schema.
+func applyMigration(d *sql.DB, name, body string) {
+	var cleaned []string
+	for line := range strings.SplitSeq(body, "\n") {
+		t := strings.TrimSpace(line)
+		if t == "" || strings.HasPrefix(t, "--") {
 			continue
 		}
-		log.Printf("migration: %s", e.Name())
-		// Strip comment lines first
-		var cleaned []string
-		for line := range strings.SplitSeq(string(body), "\n") {
-			t := strings.TrimSpace(line)
-			if t == "" || strings.HasPrefix(t, "--") {
-				continue
-			}
-			cleaned = append(cleaned, line)
+		cleaned = append(cleaned, line)
+	}
+	tx, err := d.Begin()
+	if err != nil {
+		log.Fatalf("migrations: begin %s: %v", name, err)
+	}
+	for stmt := range strings.SplitSeq(strings.Join(cleaned, "\n"), ";") {
+		s := strings.TrimSpace(stmt)
+		if s == "" {
+			continue
 		}
-		sqlBody := strings.Join(cleaned, "\n")
-		for stmt := range strings.SplitSeq(sqlBody, ";") {
-			s := strings.TrimSpace(stmt)
-			if s == "" {
-				continue
-			}
-			if _, err := d.Exec(s); err != nil {
-				log.Printf("  - error (%s): %v", e.Name(), err)
-			}
+		if _, err := tx.Exec(s); err != nil {
+			_ = tx.Rollback()
+			log.Fatalf("migrations: %s failed, rolled back: %v", name, err)
 		}
+	}
+	if _, err := tx.Exec(`INSERT INTO schema_migrations(filename) VALUES(?)`, name); err != nil {
+		_ = tx.Rollback()
+		log.Fatalf("migrations: record %s: %v", name, err)
+	}
+	if err := tx.Commit(); err != nil {
+		log.Fatalf("migrations: commit %s: %v", name, err)
 	}
 }
 

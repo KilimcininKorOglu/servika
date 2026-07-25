@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS dns_template (
+CREATE TABLE dns_template (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(253) NOT NULL,
   type VARCHAR(16) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS dns_template (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS dns_template_meta (
+CREATE TABLE dns_template_meta (
   id TINYINT UNSIGNED NOT NULL PRIMARY KEY DEFAULT 1,
   soa_refresh INT NOT NULL DEFAULT 3600,
   soa_retry INT NOT NULL DEFAULT 900,
@@ -21,11 +21,9 @@ CREATE TABLE IF NOT EXISTS dns_template_meta (
   dkim_enabled TINYINT(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO dns_template_meta (id)
-SELECT 1 FROM DUAL
-WHERE NOT EXISTS (SELECT 1 FROM dns_template_meta);
+INSERT INTO dns_template_meta (id) VALUES (1);
 
-CREATE TABLE IF NOT EXISTS dkim_keys (
+CREATE TABLE dkim_keys (
   domain_id BIGINT UNSIGNED NOT NULL,
   selector VARCHAR(63) NOT NULL DEFAULT 'default',
   private_key MEDIUMTEXT NOT NULL,

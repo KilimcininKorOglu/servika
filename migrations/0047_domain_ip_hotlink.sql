@@ -1,8 +1,8 @@
-ALTER TABLE domains ADD COLUMN IF NOT EXISTS hotlink_enabled TINYINT(1) NOT NULL DEFAULT 0;
-ALTER TABLE domains ADD COLUMN IF NOT EXISTS hotlink_allowed TEXT NULL;
-ALTER TABLE domains ADD COLUMN IF NOT EXISTS ip_access_mode ENUM('off','block','allow') NOT NULL DEFAULT 'off';
+ALTER TABLE domains ADD COLUMN hotlink_enabled TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE domains ADD COLUMN hotlink_allowed TEXT NULL;
+ALTER TABLE domains ADD COLUMN ip_access_mode ENUM('off','block','allow') NOT NULL DEFAULT 'off';
 
-CREATE TABLE IF NOT EXISTS domain_ip_rules (
+CREATE TABLE domain_ip_rules (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   ip_cidr VARCHAR(43) NOT NULL,

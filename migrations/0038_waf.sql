@@ -17,14 +17,14 @@
 --
 -- Effective value = domain override (non-NULL/non-0) > plan value > (no plan) off.
 --
--- Idempotent: MariaDB 10.5+ supports ADD COLUMN IF NOT EXISTS; safe on every startup.
+-- Applied exactly once, tracked in schema_migrations.
 
 ALTER TABLE service_plans
-  ADD COLUMN IF NOT EXISTS waf_enabled  TINYINT     NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS waf_mode     VARCHAR(10) NOT NULL DEFAULT 'on',
-  ADD COLUMN IF NOT EXISTS waf_paranoia TINYINT     NOT NULL DEFAULT 1;
+  ADD COLUMN waf_enabled  TINYINT     NOT NULL DEFAULT 0,
+  ADD COLUMN waf_mode     VARCHAR(10) NOT NULL DEFAULT 'on',
+  ADD COLUMN waf_paranoia TINYINT     NOT NULL DEFAULT 1;
 
 ALTER TABLE domains
-  ADD COLUMN IF NOT EXISTS waf_enabled  TINYINT     NULL DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS waf_mode     VARCHAR(10) NULL DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS waf_paranoia TINYINT     NULL DEFAULT NULL;
+  ADD COLUMN waf_enabled  TINYINT     NULL DEFAULT NULL,
+  ADD COLUMN waf_mode     VARCHAR(10) NULL DEFAULT NULL,
+  ADD COLUMN waf_paranoia TINYINT     NULL DEFAULT NULL;

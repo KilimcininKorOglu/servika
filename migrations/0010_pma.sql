@@ -1,5 +1,5 @@
 -- 0010 - phpMyAdmin single-use SSO tokens
-CREATE TABLE IF NOT EXISTS pma_tokens (
+CREATE TABLE pma_tokens (
   token VARCHAR(64) NOT NULL PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   db_user VARCHAR(80) NOT NULL,

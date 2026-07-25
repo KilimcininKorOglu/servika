@@ -1,5 +1,5 @@
 -- 0009 - Git integration (per-domain repo + deploy key + webhook)
-CREATE TABLE IF NOT EXISTS git_repos (
+CREATE TABLE git_repos (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   repo_url VARCHAR(512) NOT NULL,

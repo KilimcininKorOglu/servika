@@ -1,5 +1,5 @@
 -- 0011 - PHP per-domain settings (Plesk-like)
-CREATE TABLE IF NOT EXISTS php_settings (
+CREATE TABLE php_settings (
   domain_id BIGINT UNSIGNED PRIMARY KEY,
 
   -- Performance & Security

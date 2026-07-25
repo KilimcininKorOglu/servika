@@ -1,6 +1,6 @@
 -- Plugin registry for out-of-process services connected through Unix sockets.
 
-CREATE TABLE IF NOT EXISTS plugins (
+CREATE TABLE plugins (
   id           INT AUTO_INCREMENT PRIMARY KEY,
   name         VARCHAR(64)  NOT NULL,
   label        VARCHAR(128) NOT NULL,

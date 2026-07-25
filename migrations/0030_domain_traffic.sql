@@ -1,6 +1,6 @@
 -- 0030 - domain traffic accounting (reserved-word safe)
 
-CREATE TABLE IF NOT EXISTS domain_traffic (
+CREATE TABLE domain_traffic (
   domain_id BIGINT UNSIGNED NOT NULL,
   `year_month` CHAR(7) NOT NULL,
   bytes BIGINT NOT NULL DEFAULT 0,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS domain_traffic (
   KEY ix_domain_traffic_month (`year_month`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS domain_traffic_cursor (
+CREATE TABLE domain_traffic_cursor (
   domain_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
   `offset` BIGINT NOT NULL DEFAULT 0,
   `size` BIGINT NOT NULL DEFAULT 0,

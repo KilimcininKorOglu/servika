@@ -1,5 +1,5 @@
 -- Password-protected directories (.htpasswd / nginx auth_basic)
-CREATE TABLE IF NOT EXISTS protected_directories (
+CREATE TABLE protected_directories (
   id INT AUTO_INCREMENT PRIMARY KEY,
   domain_id INT NOT NULL,
   path VARCHAR(255) NOT NULL,

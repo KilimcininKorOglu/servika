@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS domain_redis (
+CREATE TABLE domain_redis (
   domain_id BIGINT NOT NULL PRIMARY KEY,
   sk VARCHAR(32) NOT NULL,
   redis_pass VARCHAR(64) NOT NULL,

@@ -1,5 +1,5 @@
 -- 0007 - DNS records (per-domain zone template)
-CREATE TABLE IF NOT EXISTS dns_records (
+CREATE TABLE dns_records (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   name VARCHAR(253) NOT NULL,             -- "@", "www", "mail" etc. (record name)

@@ -1,17 +1,16 @@
 -- 0024_schema_drift_fix.sql
 -- Adds schema elements that were previously introduced without a migration.
--- Idempotent: CREATE TABLE IF NOT EXISTS + ADD COLUMN IF NOT EXISTS (MariaDB).
--- No-op when every required schema element already exists.
+-- Applied exactly once, tracked in schema_migrations.
 
 -- ── domains: web backend + backup settings ──
-ALTER TABLE domains ADD COLUMN IF NOT EXISTS web_backend      varchar(32)  NOT NULL DEFAULT 'php-fpm';
-ALTER TABLE domains ADD COLUMN IF NOT EXISTS backup_freq      varchar(16)  NOT NULL DEFAULT 'none';
-ALTER TABLE domains ADD COLUMN IF NOT EXISTS backup_hour      tinyint(4)   NOT NULL DEFAULT 3;
-ALTER TABLE domains ADD COLUMN IF NOT EXISTS backup_retention tinyint(4)   NOT NULL DEFAULT 7;
-ALTER TABLE domains ADD COLUMN IF NOT EXISTS last_backup_at   timestamp    NULL DEFAULT NULL;
+ALTER TABLE domains ADD COLUMN web_backend      varchar(32)  NOT NULL DEFAULT 'php-fpm';
+ALTER TABLE domains ADD COLUMN backup_freq      varchar(16)  NOT NULL DEFAULT 'none';
+ALTER TABLE domains ADD COLUMN backup_hour      tinyint(4)   NOT NULL DEFAULT 3;
+ALTER TABLE domains ADD COLUMN backup_retention tinyint(4)   NOT NULL DEFAULT 7;
+ALTER TABLE domains ADD COLUMN last_backup_at   timestamp    NULL DEFAULT NULL;
 
 -- ── backup_destinations (remote backup targets: sftp/ftp) ──
-CREATE TABLE IF NOT EXISTS backup_destinations (
+CREATE TABLE backup_destinations (
   id          bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   domain_id   bigint(20) unsigned NOT NULL,
   type         varchar(8)   NOT NULL DEFAULT 'sftp',
@@ -32,7 +31,7 @@ CREATE TABLE IF NOT EXISTS backup_destinations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── github_connections (Git deploy: PAT + repo/branch + webhook) ──
-CREATE TABLE IF NOT EXISTS github_connections (
+CREATE TABLE github_connections (
   id            bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   domain_id     bigint(20) unsigned NOT NULL,
   pat           varchar(255) NOT NULL,

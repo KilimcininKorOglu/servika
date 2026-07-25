@@ -1,5 +1,5 @@
 -- 0013 - nginx security headers per-domain toggle
-CREATE TABLE IF NOT EXISTS nginx_settings (
+CREATE TABLE nginx_settings (
   domain_id BIGINT UNSIGNED PRIMARY KEY,
   hdr_x_content_type TINYINT(1) NOT NULL DEFAULT 1,
   hdr_x_xss          TINYINT(1) NOT NULL DEFAULT 1,

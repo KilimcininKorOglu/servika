@@ -8,8 +8,8 @@
 -- (no override). Effective quota = domain override (>0) > plan value > (no plan)
 -- default 5120 MB / 500000 inodes.
 --
--- Idempotent: MariaDB 10.5+ supports ADD COLUMN IF NOT EXISTS; safe on every startup.
+-- Applied exactly once, tracked in schema_migrations.
 
 ALTER TABLE domains
-  ADD COLUMN IF NOT EXISTS disk_quota_mb INT NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS inode_quota   INT NOT NULL DEFAULT 0;
+  ADD COLUMN disk_quota_mb INT NOT NULL DEFAULT 0,
+  ADD COLUMN inode_quota   INT NOT NULL DEFAULT 0;

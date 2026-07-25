@@ -14,8 +14,5 @@
 --   debug_mode 0 = off (display_errors=off, error_reporting = user setting)
 --   debug_mode 1 = on  (display_errors=on + error_reporting=E_ALL + auto_prepend shim)
 
-SET @exist := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='php_settings' AND COLUMN_NAME='debug_mode');
-SET @sqlstmt := IF(@exist = 0, 'ALTER TABLE php_settings ADD COLUMN debug_mode TINYINT(1) NOT NULL DEFAULT 0 AFTER error_reporting', 'SELECT 1');
-PREPARE stmt FROM @sqlstmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+-- Runs exactly once (tracked in schema_migrations), so a plain ADD COLUMN is safe.
+ALTER TABLE php_settings ADD COLUMN debug_mode TINYINT(1) NOT NULL DEFAULT 0 AFTER error_reporting;

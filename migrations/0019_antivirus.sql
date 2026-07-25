@@ -1,5 +1,5 @@
 -- Antivirus / malware scan results
-CREATE TABLE IF NOT EXISTS av_scans (
+CREATE TABLE av_scans (
   id INT AUTO_INCREMENT PRIMARY KEY,
   domain_id INT NOT NULL,
   started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS av_scans (
   engine VARCHAR(48) NOT NULL DEFAULT '',
   KEY ix_antivirus_scan_domain (domain_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS av_findings (
+CREATE TABLE av_findings (
   id INT AUTO_INCREMENT PRIMARY KEY,
   scan_id INT NOT NULL,
   domain_id INT NOT NULL,

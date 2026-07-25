@@ -3,7 +3,7 @@
 -- Postfix and Dovecot can read these rows through live SQL maps, so mailbox
 -- create, suspend, and delete operations do not require generated config files.
 
-CREATE TABLE IF NOT EXISTS mail_domains (
+CREATE TABLE mail_domains (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL UNIQUE,
   domain_name VARCHAR(253) NOT NULL UNIQUE,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS mail_domains (
   CONSTRAINT fk_mail_domains_domain FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS mailboxes (
+CREATE TABLE mailboxes (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   mail_domain_id BIGINT UNSIGNED NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS mailboxes (
   CONSTRAINT fk_mailbox_maildomain FOREIGN KEY (mail_domain_id) REFERENCES mail_domains(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS mail_aliases (
+CREATE TABLE mail_aliases (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   source VARCHAR(320) NOT NULL UNIQUE,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS mail_aliases (
   CONSTRAINT fk_alias_domain FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS mail_send_log (
+CREATE TABLE mail_send_log (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   mailbox_id BIGINT UNSIGNED NOT NULL,
   domain_id BIGINT UNSIGNED NOT NULL,
@@ -58,4 +58,4 @@ CREATE TABLE IF NOT EXISTS mail_send_log (
   CONSTRAINT fk_sendlog_domain FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-ALTER TABLE service_plans ADD COLUMN IF NOT EXISTS mailbox_quota_mb INT NOT NULL DEFAULT 0;
+ALTER TABLE service_plans ADD COLUMN mailbox_quota_mb INT NOT NULL DEFAULT 0;

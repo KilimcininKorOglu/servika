@@ -2,5 +2,5 @@
 -- db_user UNIQUE constraint. In the "New Database" modal the customer can select an EXISTING
 -- user and attach a new database to it (cPanel/Plesk model: one user to many databases).
 -- db_name UNIQUE is preserved (every database name stays unique). GRANT and the db_accounts row
--- are per-database. Idempotent: MariaDB 10.5+ supports "DROP INDEX IF EXISTS"; no-op when absent.
-ALTER TABLE db_accounts DROP INDEX IF EXISTS db_user;
+-- are per-database. Applied exactly once, tracked in schema_migrations.
+ALTER TABLE db_accounts DROP INDEX db_user;

@@ -1,5 +1,5 @@
 -- Per-domain configurable Start of Authority settings.
-CREATE TABLE IF NOT EXISTS dns_soa (
+CREATE TABLE dns_soa (
   domain_id   BIGINT UNSIGNED NOT NULL PRIMARY KEY,
   primary_ns  VARCHAR(255) NOT NULL DEFAULT '',
   hostmaster  VARCHAR(255) NOT NULL DEFAULT '',

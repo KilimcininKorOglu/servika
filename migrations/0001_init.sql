@@ -1,12 +1,8 @@
 -- Servika — F1 initial schema
 -- charset utf8mb4 / collation utf8mb4_unicode_ci (full Unicode support)
+-- The panel database is created by the installer and selected via the DSN.
 
-CREATE DATABASE IF NOT EXISTS panel
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-USE panel;
-
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   username        VARCHAR(64)  NOT NULL UNIQUE,
   email           VARCHAR(255) NOT NULL DEFAULT '',
@@ -25,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (reseller_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS audit_log (
+CREATE TABLE audit_log (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   ts              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   actor_user_id   BIGINT UNSIGNED NULL,

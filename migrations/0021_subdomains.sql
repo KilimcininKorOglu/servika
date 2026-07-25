@@ -1,5 +1,5 @@
 -- Subdomains — separate docroot + vhost under the parent domain's user
-CREATE TABLE IF NOT EXISTS subdomains (
+CREATE TABLE subdomains (
   id INT AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   subdomain VARCHAR(63) NOT NULL,

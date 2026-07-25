@@ -1,5 +1,5 @@
 -- 0004 - db_accounts table (MySQL database + user metadata per domain)
-CREATE TABLE IF NOT EXISTS db_accounts (
+CREATE TABLE db_accounts (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   db_name VARCHAR(64) NOT NULL UNIQUE,

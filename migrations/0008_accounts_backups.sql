@@ -1,6 +1,6 @@
 -- 0008 - Customers + domains.customer_id + backups
 -- NOTE: resellers structure removed in 0012 (see sprint note).
-CREATE TABLE IF NOT EXISTS customers (
+CREATE TABLE customers (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(128) NOT NULL,
   email VARCHAR(255) NOT NULL,
@@ -12,10 +12,10 @@ CREATE TABLE IF NOT EXISTS customers (
 ) ENGINE=InnoDB;
 
 ALTER TABLE domains
-  ADD COLUMN IF NOT EXISTS customer_id BIGINT UNSIGNED NULL,
-  ADD KEY IF NOT EXISTS ix_domains_customer (customer_id);
+  ADD COLUMN customer_id BIGINT UNSIGNED NULL,
+  ADD KEY ix_domains_customer (customer_id);
 
-CREATE TABLE IF NOT EXISTS backups (
+CREATE TABLE backups (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   domain_id BIGINT UNSIGNED NOT NULL,
   type VARCHAR(16) NOT NULL DEFAULT 'full',
