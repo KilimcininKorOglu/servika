@@ -171,8 +171,8 @@ export default function DomainBackupsPage() {
   }
 
   function download(y: Backup) {
-    const tok = localStorage.getItem('servika.token') || ''
-    fetch(`/api/v1/domains/${id}/backups/${y.id}/download`, { headers: { Authorization: `Bearer ${tok}` } })
+    // Auth via the HttpOnly session cookie (same-origin); no bearer header.
+    fetch(`/api/v1/domains/${id}/backups/${y.id}/download`, { credentials: 'include' })
       .then(r => r.blob())
       .then(blob => {
         const a = document.createElement('a')

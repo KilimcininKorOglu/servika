@@ -441,10 +441,9 @@ export default function DomainFilesPage() {
   }
 
   function download(e: Entry) {
-    const tok = localStorage.getItem('servika.token') || ''
     const url = `/api/v1/domains/${id}/files/download?path=${encodeURIComponent(e.path)}`
-    // Use fetch and a blob because the browser request needs an authorization header.
-    fetch(url, { headers: { Authorization: `Bearer ${tok}` } })
+    // Use fetch + blob; auth via the HttpOnly session cookie (same-origin).
+    fetch(url, { credentials: 'include' })
       .then(r => r.blob())
       .then(blob => {
         const a = document.createElement('a')

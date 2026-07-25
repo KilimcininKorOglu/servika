@@ -85,8 +85,10 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Deliver the token only in the HttpOnly session cookie, never in the body.
+	httpx.SetSessionCookie(w, r, tok, 24*3600)
+
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
-		"token":       tok,
 		"expires_at":  exp,
 		"domain_id":   domainID,
 		"domain_name": domainName,

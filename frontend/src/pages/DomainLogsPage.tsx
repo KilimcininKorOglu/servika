@@ -69,12 +69,12 @@ export default function DomainLogsPage() {
     setLines([]) // The live tail sends its own initial 200 lines.
     const ctrl = new AbortController()
     abortRef.current = ctrl
-    const tok = localStorage.getItem('servika.token') || ''
 
     ;(async () => {
       try {
+        // Auth via the HttpOnly session cookie (same-origin); no bearer header.
         const res = await fetch(`/api/v1/domains/${id}/logs/live?file=${activeFile}`, {
-          headers: { Authorization: `Bearer ${tok}` },
+          credentials: 'include',
           signal: ctrl.signal,
         })
         if (!res.ok || !res.body) {

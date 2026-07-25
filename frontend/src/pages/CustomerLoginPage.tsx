@@ -15,10 +15,11 @@ export default function CustomerLoginPage() {
     e.preventDefault()
     setLoading(true); setError(null)
     try {
-      const r = await axios.post('/api/v1/customer/login', { username, password })
-      const { token, expires_at, domain_id, domain_name } = r.data
-      // This atomic update stores both the token and the customer flags.
-      useAuth.getState().loginCustomer(token, expires_at, domain_id, domain_name, username)
+      // withCredentials lets the browser store the Set-Cookie session cookie.
+      const r = await axios.post('/api/v1/customer/login', { username, password }, { withCredentials: true })
+      const { expires_at, domain_id, domain_name } = r.data
+      // Token lives in the HttpOnly cookie; store only the customer session flags.
+      useAuth.getState().loginCustomer(expires_at, domain_id, domain_name, username)
       navigate('/subscriptions/' + domain_id, { replace: true })
       setTimeout(() => window.location.reload(), 100)
     } catch (e) {

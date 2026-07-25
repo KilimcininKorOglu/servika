@@ -6,15 +6,9 @@ const baseURL = (import.meta.env.VITE_API_BASE as string) || '/api/v1'
 export const api = axios.create({
   baseURL,
   timeout: 30_000,
-})
-
-api.interceptors.request.use((cfg) => {
-  const tok = useAuth.getState().token
-  if (tok) {
-    cfg.headers = cfg.headers || {}
-    cfg.headers.Authorization = `Bearer ${tok}`
-  }
-  return cfg
+  // The session is carried by the HttpOnly servika_session cookie; send it on
+  // every request (same-origin in production, proxied same-origin in dev).
+  withCredentials: true,
 })
 
 api.interceptors.response.use(
@@ -22,7 +16,7 @@ api.interceptors.response.use(
   (err: AxiosError<{ error?: string }>) => {
     if (err.response?.status === 401) {
       const s = useAuth.getState()
-      if (s.token) s.logout()
+      if (s.username) s.logout()
     }
     return Promise.reject(err)
   },

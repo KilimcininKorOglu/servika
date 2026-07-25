@@ -218,6 +218,9 @@ func main() {
 		// Brute-force protection: login endpoints are IP rate-limited (see middleware.LoginRateLimit)
 		r.With(middleware.LoginRateLimit).Post("/auth/login", authH.Login)
 		r.With(middleware.LoginRateLimit).Post("/customer/login", customerH.Login)
+		// Logout only clears the HttpOnly session cookie; it needs no auth and must
+		// succeed even for an already-invalid session.
+		r.With(middleware.LoginRateLimit).Post("/auth/logout", authH.Logout)
 
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAuth(cfg.JWTSecret))

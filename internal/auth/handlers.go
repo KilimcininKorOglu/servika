@@ -30,8 +30,10 @@ type loginReq struct {
 }
 
 type loginResp struct {
-	Token     string `json:"token"`
-	ExpiresAt int64  `json:"expires_at"`
+	// Token is intentionally omitted: the session JWT is delivered only via the
+	// HttpOnly servika_session cookie (see httpx.SetSessionCookie) so JavaScript
+	// cannot read it. The body carries only non-secret session metadata.
+	ExpiresAt int64 `json:"expires_at"`
 	User      struct {
 		ID       int64  `json:"id"`
 		Name     string `json:"name"`
@@ -172,7 +174,10 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	WriteAudit(h.DB, adminUID, "root", httpx.ClientIP(r), "auth.login", "root", true)
 
-	resp := loginResp{Token: tok, ExpiresAt: time.Now().Add(time.Duration(h.LifetimeSec) * time.Second).Unix()}
+	// Deliver the token only in the HttpOnly session cookie, never in the body.
+	httpx.SetSessionCookie(w, r, tok, h.LifetimeSec)
+
+	resp := loginResp{ExpiresAt: time.Now().Add(time.Duration(h.LifetimeSec) * time.Second).Unix()}
 	resp.User.ID = adminUID
 	resp.User.Name = "root"
 	resp.User.Role = "admin"
@@ -180,6 +185,15 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	_ = h.DB.QueryRow(`SELECT full_name FROM users WHERE id=1`).Scan(&fullName)
 	resp.User.FullName = fullName
 	httpx.WriteJSON(w, http.StatusOK, resp)
+}
+
+// Logout clears the session cookie. It is a public endpoint: expiring a cookie
+// requires no authentication and must succeed even when the token is already
+// invalid. Server-side revocation for admins is handled separately by
+// RevokeSessions (token_version bump).
+func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
+	httpx.ClearSessionCookie(w, r)
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
 func WriteAudit(db *sql.DB, uid int64, username, ip, action, target string, ok bool) {

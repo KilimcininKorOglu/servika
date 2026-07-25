@@ -9,6 +9,51 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+// SessionCookie is the name of the HttpOnly cookie that carries the session JWT
+// for both administrators and customers. The token is never exposed to
+// JavaScript (no localStorage), so an XSS in the SPA cannot exfiltrate it.
+const SessionCookie = "servika_session"
+
+// isHTTPS reports whether the original client request used TLS. nginx terminates
+// TLS and forwards X-Forwarded-Proto; a direct connection sets r.TLS. When true
+// the session cookie is marked Secure. Dev-over-http (no proxy, no TLS) keeps it
+// unset so the cookie is still stored by the browser on localhost.
+func isHTTPS(r *http.Request) bool {
+	if r.TLS != nil {
+		return true
+	}
+	return strings.EqualFold(strings.TrimSpace(r.Header.Get("X-Forwarded-Proto")), "https")
+}
+
+// SetSessionCookie issues the session cookie carrying the signed JWT. It is
+// HttpOnly (JS-unreadable), Secure on HTTPS, and SameSite=Strict so the browser
+// never attaches it to cross-site requests — this is the CSRF defense.
+func SetSessionCookie(w http.ResponseWriter, r *http.Request, token string, maxAgeSec int) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     SessionCookie,
+		Value:    token,
+		Path:     "/",
+		MaxAge:   maxAgeSec,
+		HttpOnly: true,
+		Secure:   isHTTPS(r),
+		SameSite: http.SameSiteStrictMode,
+	})
+}
+
+// ClearSessionCookie expires the session cookie on logout. Attributes mirror
+// SetSessionCookie so the browser reliably matches and removes it.
+func ClearSessionCookie(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     SessionCookie,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   isHTTPS(r),
+		SameSite: http.SameSiteStrictMode,
+	})
+}
+
 // ErrorBody is the standard HTTP API error response.
 type ErrorBody struct {
 	Error     string `json:"error"`

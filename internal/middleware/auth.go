@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"servika/internal/auth"
 	"servika/internal/httpx"
@@ -63,13 +62,15 @@ const (
 func RequireAuth(secret []byte) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw := strings.TrimSpace(r.Header.Get("Authorization"))
-			const p = "Bearer "
-			if !strings.HasPrefix(raw, p) {
+			// The session JWT is carried only by the HttpOnly servika_session
+			// cookie; it is never read from the Authorization header so a stolen
+			// bearer value (e.g. from JS/localStorage) cannot be replayed.
+			ck, err := r.Cookie(httpx.SessionCookie)
+			if err != nil || ck.Value == "" {
 				httpx.WriteError(w, http.StatusUnauthorized, "authorization required")
 				return
 			}
-			tokenRaw := raw[len(p):]
+			tokenRaw := ck.Value
 			if len(tokenRaw) > 8192 {
 				httpx.WriteError(w, http.StatusUnauthorized, "invalid session")
 				return

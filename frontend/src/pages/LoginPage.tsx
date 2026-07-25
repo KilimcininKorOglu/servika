@@ -4,7 +4,7 @@ import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 
 type LoginResponse = {
-  token?: string
+  // No token here: it is delivered via the HttpOnly servika_session cookie.
   expires_at?: number
   user?: { id: number; name: string; role: 'admin' | 'reseller' | 'user'; full_name?: string }
   two_factor_required?: boolean
@@ -29,7 +29,7 @@ export default function LoginPage() {
         setRequiresTwoFactor(true); setLoading(false)
         return
       }
-      login(data.token!, data.user!, data.expires_at!)
+      login(data.user!, data.expires_at!)
       navigate('/', { replace: true })
     } catch (caughtError) {
       setError(apiError(caughtError, 'Login failed'))

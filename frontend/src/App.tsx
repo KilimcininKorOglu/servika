@@ -55,8 +55,11 @@ import ServicesPage from '@/pages/ServicesPage'
 import ComingSoonPage from '@/pages/ComingSoonPage'
 
 function GuardedRoute({ children }: { children: React.ReactNode }) {
-  const token = useAuth((s) => s.token)
-  if (!token) return <Navigate to="/login" replace />
+  // The token is in an HttpOnly cookie the SPA cannot read; a stored non-expired
+  // user (set at login) is the synchronous "authenticated" signal. If the cookie
+  // is actually gone, the first API call 401s and the interceptor logs out.
+  const username = useAuth((s) => s.username)
+  if (!username) return <Navigate to="/login" replace />
   return <>{children}</>
 }
 
