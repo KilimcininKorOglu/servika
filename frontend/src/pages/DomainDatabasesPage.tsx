@@ -43,8 +43,21 @@ export default function DomainDatabasesPage() {
   }
   async function openPma(d: DB) {
     try {
-      const { data } = await api.post<{ signon_url: string }>(`/databases/${d.id}/pma-token`)
-      window.open(data.signon_url, '_blank', 'noopener')
+      const { data } = await api.post<{ token: string }>(`/databases/${d.id}/pma-token`)
+      // Deliver the one-time token in a POST body (never a URL) so it cannot leak
+      // through browser history, proxy logs, or Referer headers.
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = '/pma-signon.php'
+      form.target = '_blank'
+      const input = document.createElement('input')
+      input.type = 'hidden'
+      input.name = 't'
+      input.value = data.token
+      form.appendChild(input)
+      document.body.appendChild(form)
+      form.submit()
+      form.remove()
     } catch (e) {
       alert(apiError(e, 'Could not obtain phpMyAdmin token'))
     }

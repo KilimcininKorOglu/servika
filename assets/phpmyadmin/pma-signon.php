@@ -8,7 +8,12 @@ session_name('pma_signon');
 ini_set('session.cookie_path', '/');
 session_start();
 
-$token = isset($_GET['t']) ? (string) $_GET['t'] : '';
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+    http_response_code(405);
+    exit('Open phpMyAdmin from Servika.');
+}
+
+$token = isset($_POST['t']) ? (string) $_POST['t'] : '';
 if (!preg_match('/^[a-f0-9]{16,128}$/', $token)) {
     http_response_code(400);
     exit('Invalid signon token. Open phpMyAdmin from Servika.');

@@ -100,9 +100,10 @@ func (h *Handlers) RequestToken(w http.ResponseWriter, r *http.Request) {
 	_, _ = h.DB.ExecContext(r.Context(),
 		`DELETE FROM pma_tokens WHERE expires_at < NOW() OR used=1`)
 
+	// The token is delivered to pma-signon.php in a POST body, never in a URL, so it
+	// cannot leak through browser history, proxy access logs, or Referer headers.
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
 		"token":            token,
-		"signon_url":       "/pma-signon.php?t=" + token,
 		"expires_at":       expires.Format(time.RFC3339),
 		"validity_seconds": 120,
 	})
