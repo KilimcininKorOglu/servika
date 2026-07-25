@@ -35,6 +35,7 @@ import (
 	"servika/internal/laravel"
 	"servika/internal/logs"
 	"servika/internal/mail"
+	"servika/internal/metrics"
 	"servika/internal/middleware"
 	"servika/internal/monitor"
 	"servika/internal/nginxset"
@@ -187,6 +188,8 @@ func main() {
 	// Access logging: record request ID, route, status, latency, and client IP
 	// for every request so incidents can be diagnosed from backend logs.
 	r.Use(middleware.AccessLog)
+	// RED metrics: record request rate, errors, and latency for every request.
+	r.Use(metrics.Middleware)
 	// NOTE: chimw.RealIP is NOT used — it blindly writes spoofable X-Forwarded-For /
 	// X-Real-IP / True-Client-IP headers into r.RemoteAddr without a trusted-proxy check,
 	// which would bypass login rate-limiting. The real client IP is obtained via
@@ -249,6 +252,7 @@ func main() {
 			r.With(middleware.AdminOnly).Put("/dns-template", dnsH.PutTemplate)
 			r.With(middleware.CustomerScope).Get("/domains/{id}", domainsH.Get)
 			r.With(middleware.AdminOnly).Get("/system/usage", system.Handler)
+			r.With(middleware.AdminOnly).Get("/system/metrics", metrics.Handler)
 			r.With(middleware.AdminOnly).Get("/system/services", system.ServiceStatuses)
 			r.With(middleware.AdminOnly).Post("/system/service-action", system.ServiceAction)
 			r.With(middleware.AdminOnly).Post("/system/reboot", system.Reboot)
