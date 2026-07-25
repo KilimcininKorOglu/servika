@@ -3,10 +3,12 @@ package monitor
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"database/sql"
 	"errors"
 	"net"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -82,6 +84,7 @@ type SSLInfo struct {
 	RemainingDays int    `json:"remaining_days"`
 	Issuer        string `json:"issuer,omitempty"`
 	SubjectName   string `json:"subject,omitempty"`
+	CertError     string `json:"cert_error,omitempty"`
 }
 
 type DomainHealth struct {
@@ -129,6 +132,13 @@ func (h *Handlers) Health(w http.ResponseWriter, r *http.Request) {
 func probe(targetURL string) DomainHealth {
 	res := DomainHealth{URL: targetURL}
 
+	// Host to verify the certificate against: the domain the operator asked about,
+	// not a redirected host. Parsed from the original probe URL.
+	var host string
+	if u, err := url.Parse(targetURL); err == nil {
+		host = u.Hostname()
+	}
+
 	tlsCfg := &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS12}
 	// DialControl rejects connections to internal addresses at dial time, so the
 	// initial request and every followed redirect are checked (and DNS rebinding
@@ -168,18 +178,46 @@ func probe(targetURL string) DomainHealth {
 	res.Server = resp.Header.Get("Server")
 	res.Size = resp.ContentLength
 
-	// Read SSL certificate information when a TLS connection exists.
+	// Read SSL certificate information when a TLS connection exists. Verify the
+	// presented chain and hostname against the system roots so a self-signed,
+	// wrong-host, or MITM certificate is reported as invalid rather than trusted
+	// from its dates alone. Verification runs out-of-band (the transport keeps
+	// InsecureSkipVerify) so a broken certificate still reports HTTP reachability.
 	if resp.TLS != nil && len(resp.TLS.PeerCertificates) > 0 {
 		c := resp.TLS.PeerCertificates[0]
 		now := time.Now()
 		remainingDays := int(c.NotAfter.Sub(now).Hours() / 24)
+		valid, certErr := verifyLeaf(c, resp.TLS.PeerCertificates[1:], host, nil)
 		res.SSL = &SSLInfo{
-			Valid:         now.Before(c.NotAfter) && now.After(c.NotBefore),
+			Valid:         valid,
 			EndDate:       c.NotAfter.Format("2006-01-02"),
 			RemainingDays: remainingDays,
 			Issuer:        c.Issuer.CommonName,
 			SubjectName:   c.Subject.CommonName,
+			CertError:     certErr,
 		}
 	}
 	return res
+}
+
+// verifyLeaf verifies the leaf certificate against the given intermediates and
+// hostname. roots is the trusted root pool; a nil pool uses the host's system
+// roots. It returns whether the certificate is trusted and, on failure, a short
+// error reason suitable for an operator-facing health response.
+func verifyLeaf(leaf *x509.Certificate, intermediates []*x509.Certificate, host string, roots *x509.CertPool) (bool, string) {
+	var pool *x509.CertPool
+	if len(intermediates) > 0 {
+		pool = x509.NewCertPool()
+		for _, ic := range intermediates {
+			pool.AddCert(ic)
+		}
+	}
+	if _, err := leaf.Verify(x509.VerifyOptions{
+		DNSName:       host,
+		Roots:         roots,
+		Intermediates: pool,
+	}); err != nil {
+		return false, "certificate chain or hostname verification failed"
+	}
+	return true, ""
 }
