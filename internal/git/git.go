@@ -2,12 +2,15 @@
 package git
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -452,11 +455,11 @@ func (h *Handlers) Webhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var gid, domainID int64
-	var systemUser, branch, targetDir string
+	var systemUser, branch, targetDir, webhookSecret string
 	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT g.id, g.domain_id, d.system_user, g.branch, g.target_dir
+		`SELECT g.id, g.domain_id, d.system_user, g.branch, g.target_dir, g.webhook_secret
 		 FROM git_repos g JOIN domains d ON d.id=g.domain_id
-		 WHERE g.webhook_secret=? LIMIT 1`, secret).Scan(&gid, &domainID, &systemUser, &branch, &targetDir)
+		 WHERE g.webhook_secret=? LIMIT 1`, secret).Scan(&gid, &domainID, &systemUser, &branch, &targetDir, &webhookSecret)
 	if errors.Is(err, sql.ErrNoRows) {
 		httpx.WriteError(w, http.StatusNotFound, "secret did not match")
 		return
@@ -465,6 +468,26 @@ func (h *Handlers) Webhook(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
+
+	// Verify the GitHub HMAC-SHA256 signature before running any pull. The URL
+	// secret only locates the repo; the signature proves the request came from
+	// GitHub (which signs the body with the same secret set at hook creation).
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20) // webhook body over 1MB is abuse
+	body, rerr := io.ReadAll(r.Body)
+	if rerr != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "could not read request body")
+		return
+	}
+	sig := r.Header.Get("X-Hub-Signature-256")
+	if sig == "" {
+		httpx.WriteError(w, http.StatusUnauthorized, "signature required")
+		return
+	}
+	if !validGitHubSignature(webhookSecret, body, sig) {
+		httpx.WriteError(w, http.StatusUnauthorized, "signature verification failed")
+		return
+	}
+
 	sha, _, perr := gitPull(systemUser, targetDir, branch)
 	status := "successful"
 	if perr != nil {
@@ -480,4 +503,13 @@ func (h *Handlers) Webhook(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"ok": true, "commit": sha,
 	})
+}
+
+// validGitHubSignature reports whether sig is the GitHub HMAC-SHA256 signature
+// ("sha256=<hex>") of body under secret, compared in constant time.
+func validGitHubSignature(secret string, body []byte, sig string) bool {
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(body)
+	expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+	return hmac.Equal([]byte(sig), []byte(expected))
 }
