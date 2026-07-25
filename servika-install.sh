@@ -33,6 +33,9 @@ step(){ echo -e "\n${c_b}══ $* ══${c_0}"; }
 ok(){ echo -e "  ${c_g}✓${c_0} $*"; }
 warn(){ echo -e "  ${c_y}!${c_0} $*"; }
 die(){ echo -e "  ${c_r}✗ $*${c_0}"; exit 1; }
+# verify_sha256 <file> <expected_hex>: succeeds only when the file's sha256 matches.
+# Used to gate every third-party download before it is executed or extracted.
+verify_sha256(){ [ "$(sha256sum "$1" 2>/dev/null | awk '{print $1}')" = "$2" ]; }
 
 [ "$(id -u)" = 0 ] || die "root is required"
 [ -d "$A" ] || die "assets/ was not found ($A)"
@@ -110,9 +113,18 @@ for v in $PHP_VERS; do
   pkgs=""; for e in $PHP_EXT; do pkgs="$pkgs php$v-php-$e"; done
   dnf install -y $pkgs php$v-php-pecl-redis6 >/dev/null 2>&1 && ok "php$v (+redis)" || warn "some php$v packages were skipped"
 done
+# wp-cli is pinned to a fixed release and verified against its published sha256
+# before it is made executable, so a compromised CDN cannot place arbitrary PHP
+# on a root-run path. Bump WP_CLI_VER + WP_CLI_SHA256 together to upgrade.
+WP_CLI_VER="2.12.0"
+WP_CLI_SHA256="ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c"
 if [ ! -x /usr/local/bin/wp ]; then
-  curl -fsSL -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar 2>/dev/null \
-    && chmod +x /usr/local/bin/wp && ok "wp-cli" || warn "wp-cli could not be downloaded (required for WordPress features)"
+  TMP=$(mktemp -d)
+  if curl -fsSL -o "$TMP/wp.phar" "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VER}/wp-cli-${WP_CLI_VER}.phar" 2>/dev/null \
+     && verify_sha256 "$TMP/wp.phar" "$WP_CLI_SHA256"; then
+    install -m 0755 "$TMP/wp.phar" /usr/local/bin/wp && ok "wp-cli $WP_CLI_VER (sha256 verified)"
+  else warn "wp-cli download failed or checksum mismatch (required for WordPress features)"; fi
+  rm -rf "$TMP"
 else ok "wp-cli (existing)"; fi
 
 # ============ 4) MARIADB ============
@@ -282,12 +294,18 @@ nginx -t >/dev/null 2>&1 && ok "nginx -t OK" || { nginx -t; die "nginx configura
 # ============ 9) phpMyAdmin ============
 step "9) phpMyAdmin"
 mkdir -p /opt/phpmyadmin   # Create this first so extraction with strip-components succeeds.
+# phpMyAdmin is pinned to a fixed release and verified against its published
+# sha256 before extraction; a moving "latest" tarball or compromised CDN cannot
+# inject arbitrary PHP into the panel origin. Bump PMA_VER + PMA_SHA256 together.
+PMA_VER="5.2.2"
+PMA_SHA256="8551c8bf3b166f232d5cf64bac877472e9d0cb8f2fe1858fab24f975e7d765b6"
 if [ ! -f /opt/phpmyadmin/index.php ]; then
   TMP=$(mktemp -d)
-  if curl -fsSL -o "$TMP/pma.tar.gz" https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz \
+  if curl -fsSL -o "$TMP/pma.tar.gz" "https://files.phpmyadmin.net/phpMyAdmin/${PMA_VER}/phpMyAdmin-${PMA_VER}-all-languages.tar.gz" \
+     && verify_sha256 "$TMP/pma.tar.gz" "$PMA_SHA256" \
      && tar xzf "$TMP/pma.tar.gz" -C /opt/phpmyadmin --strip-components=1; then
-    ok "phpMyAdmin downloaded + extracted"
-  else warn "phpMyAdmin could not be downloaded (network issue?), run servika-repair manually later"; fi
+    ok "phpMyAdmin $PMA_VER (sha256 verified + extracted)"
+  else warn "phpMyAdmin download failed or checksum mismatch, run servika-repair manually later"; fi
   rm -rf "$TMP"
 fi
 if [ -f "$A/phpmyadmin/config.inc.php" ]; then
@@ -367,9 +385,18 @@ fi
 # ---- acme.sh for Let's Encrypt SSL; the panel invokes /root/.acme.sh/acme.sh ----
 # Let's Encrypt requires a valid email address; register without contact information otherwise.
 AEMAIL="$ADMIN_EMAIL"; echo "$AEMAIL" | grep -qE '@[^@]+\.[^@]+$' || AEMAIL=""
+# acme.sh is installed from a pinned git tag over TLS instead of piping the
+# mutable get.acme.sh endpoint straight into a root shell. Cloning a fixed tag
+# gives a reproducible, reviewable source tree; the installer then runs offline
+# from that checkout. Bump ACME_VER to upgrade.
+ACME_VER="3.1.4"
 if [ ! -x /root/.acme.sh/acme.sh ]; then
-  if [ -n "$AEMAIL" ]; then curl -fsSL https://get.acme.sh 2>/dev/null | sh -s email="$AEMAIL" >/dev/null 2>&1 || true
-  else curl -fsSL https://get.acme.sh 2>/dev/null | sh >/dev/null 2>&1 || true; fi
+  TMP=$(mktemp -d)
+  if git clone --depth 1 --branch "$ACME_VER" https://github.com/acmesh-official/acme.sh.git "$TMP/acme" >/dev/null 2>&1; then
+    if [ -n "$AEMAIL" ]; then (cd "$TMP/acme" && ./acme.sh --install -m "$AEMAIL" >/dev/null 2>&1) || true
+    else (cd "$TMP/acme" && ./acme.sh --install >/dev/null 2>&1) || true; fi
+  else warn "acme.sh $ACME_VER could not be cloned"; fi
+  rm -rf "$TMP"
 fi
 if [ -x /root/.acme.sh/acme.sh ]; then
   /root/.acme.sh/acme.sh --set-default-ca --server letsencrypt >/dev/null 2>&1
@@ -398,8 +425,19 @@ if [ -f /etc/httpd/conf/httpd.conf ]; then
 fi
 
 # ---- Composer for per-domain PHP dependency management ----
+# Composer is installed via its official signature-verified path: the installer
+# is downloaded to disk and its sha384 is compared against the signature
+# published on composer.github.io (a different host than getcomposer.org) before
+# it is ever executed, instead of piping the network straight into php.
 if [ ! -x /usr/local/bin/composer ]; then
-  curl -sS https://getcomposer.org/installer 2>/dev/null | php -- --install-dir=/usr/local/bin --filename=composer >/dev/null 2>&1
+  TMP=$(mktemp -d)
+  EXPECTED=$(curl -fsSL https://composer.github.io/installer.sig 2>/dev/null | tr -d '[:space:]')
+  if curl -fsSL -o "$TMP/composer-setup.php" https://getcomposer.org/installer 2>/dev/null \
+     && [ -n "$EXPECTED" ] \
+     && [ "$(php -r "echo hash_file('sha384', '$TMP/composer-setup.php');" 2>/dev/null)" = "$EXPECTED" ]; then
+    php "$TMP/composer-setup.php" --install-dir=/usr/local/bin --filename=composer >/dev/null 2>&1
+  else warn "composer installer signature mismatch, skipped"; fi
+  rm -rf "$TMP"
 fi
 [ -x /usr/local/bin/composer ] && ok "composer ($(/usr/local/bin/composer --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1))" || warn "composer could not be installed"
 
