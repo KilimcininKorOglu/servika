@@ -16,6 +16,19 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
+# ── vulnerability gate ───────────────────────────────────────────────────
+# Fail the release before packaging if a known vulnerability is reachable from
+# our code. Combined with the `toolchain` directive in go.mod, this runs against
+# the pinned patched standard library. govulncheck is pinned for reproducibility
+# and invoked module-agnostically, so it does not modify go.mod/go.sum.
+GOVULNCHECK_VERSION="v1.6.0"
+printf 'Scanning for known vulnerabilities (govulncheck %s)...\n' "$GOVULNCHECK_VERSION"
+if ! go run "golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION}" ./...; then
+  printf 'Error: govulncheck reported a reachable vulnerability; refusing to build release assets.\n' >&2
+  exit 1
+fi
+printf 'No reachable vulnerabilities found.\n\n'
+
 export CGO_ENABLED=0
 export GOOS=linux
 
