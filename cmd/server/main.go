@@ -515,6 +515,7 @@ func main() {
 
 	monitor.StartLoadSampler(d, 60*time.Second) // dashboard load-history sampler
 	stats.StartTrafficAggregator(d, 5*time.Minute)
+	laravel.StartJobReconciler(d, time.Minute) // finalize stuck async jobs without client polling
 	firewall.TakeOverFirewalld()
 	if err := firewall.Reapply(d); err != nil {
 		log.Printf("firewall reapply warn: %v", err)

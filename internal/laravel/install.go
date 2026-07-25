@@ -189,6 +189,45 @@ func remoteInstallScript(appDir, repoURL, branch, php, tmp string) string {
 
 func shellQuote(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'" }
 
+// finalizeInstall transitions a stopped install job to its terminal status. It is a
+// no-op while the unit is still running or the record is not in the installing state,
+// so it is safe to call from both the status handler and the background reconciler.
+// The DB write is a single-winner conditional UPDATE: only the caller that flips the
+// row out of 'installing' performs the one-time side effects (docroot, unit cleanup).
+func (h *Handlers) finalizeInstall(ctx context.Context, id int64, systemUser string, rec record) record {
+	unit := setupUnit(id) + ".service"
+	status := unitStatus(unit)
+	running := status == "activating" || status == "active" || status == "reloading"
+	if running || rec.LastDeployStatus != "installing" {
+		return rec
+	}
+	appDir, _ := safeAppDir(systemUser, rec.AppRoot)
+	artisan, _ := laravelInstalled(appDir)
+	newStatus := "failed"
+	if artisan {
+		newStatus = "ready"
+	}
+	result, err := h.DB.ExecContext(ctx,
+		`UPDATE cp_laravel_apps SET last_deploy_status=? WHERE domain_id=? AND last_deploy_status='installing'`,
+		newStatus, id)
+	if err != nil {
+		return rec
+	}
+	if affected, _ := result.RowsAffected(); affected == 1 {
+		if artisan {
+			if _, statErr := os.Stat(filepath.Join(appDir, "public")); statErr == nil {
+				if err := h.setDocroot(ctx, id, systemUser, publicSubdirectory(rec.AppRoot)); err != nil {
+					log.Printf("laravel setDocroot domain %d: %v (docroot may still serve project root)", id, err)
+				}
+			}
+		}
+		_ = exec.Command("systemctl", "reset-failed", unit).Run()
+		_ = os.Remove(setupScriptPath(id))
+	}
+	rec.LastDeployStatus = newStatus
+	return rec
+}
+
 func (h *Handlers) InstallStatus(w http.ResponseWriter, r *http.Request) {
 	id, systemUser, _, _, ok := h.lookup(r)
 	if !ok {
@@ -199,23 +238,6 @@ func (h *Handlers) InstallStatus(w http.ResponseWriter, r *http.Request) {
 	status := unitStatus(unit)
 	running := status == "activating" || status == "active" || status == "reloading"
 	logTail := fileTail(setupLog(id), 8<<10)
-	rec := h.getRecord(r.Context(), id)
-	appDir, _ := safeAppDir(systemUser, rec.AppRoot)
-	if !running && rec.LastDeployStatus == "installing" {
-		artisan, _ := laravelInstalled(appDir)
-		newStatus := "failed"
-		if artisan {
-			newStatus = "ready"
-			if _, err := os.Stat(filepath.Join(appDir, "public")); err == nil {
-				if err := h.setDocroot(r.Context(), id, systemUser, publicSubdirectory(rec.AppRoot)); err != nil {
-					log.Printf("laravel setDocroot domain %d: %v (docroot may still serve project root)", id, err)
-				}
-			}
-		}
-		_, _ = h.DB.ExecContext(r.Context(), `UPDATE cp_laravel_apps SET last_deploy_status=? WHERE domain_id=?`, newStatus, id)
-		_ = exec.Command("systemctl", "reset-failed", unit).Run()
-		_ = os.Remove(setupScriptPath(id))
-		rec.LastDeployStatus = newStatus
-	}
+	rec := h.finalizeInstall(r.Context(), id, systemUser, h.getRecord(r.Context(), id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"running": running, "status": rec.LastDeployStatus, "log": logTail})
 }

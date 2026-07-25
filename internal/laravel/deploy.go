@@ -1,6 +1,7 @@
 package laravel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -102,6 +103,48 @@ func (h *Handlers) Deploy(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "unit": deployUnit(id)})
 }
 
+// deployTerminalStatus maps a deploy log tail to its terminal status: "successful"
+// only when the completion marker is present, otherwise "failed".
+func deployTerminalStatus(logTail string) string {
+	if strings.Contains(logTail, "DEPLOY COMPLETE") {
+		return "successful"
+	}
+	return "failed"
+}
+
+// finalizeDeploy transitions a stopped deploy job to its terminal status. It is a
+// no-op while the unit is still running or the record is not in the running state,
+// so it is safe to call from both the status handler and the background reconciler.
+// The DB write is a single-winner conditional UPDATE: only the caller that flips the
+// row out of 'running' performs the one-time side effects (unit cleanup, script removal).
+func (h *Handlers) finalizeDeploy(ctx context.Context, id int64, systemUser string, rec record) record {
+	unit := deployUnit(id) + ".service"
+	status := unitStatus(unit)
+	running := status == "activating" || status == "active" || status == "reloading"
+	if running || rec.LastDeployStatus != "running" {
+		return rec
+	}
+	newStatus := deployTerminalStatus(fileTail(deployLog(id), 16<<10))
+	appDir, _ := safeAppDir(systemUser, rec.AppRoot)
+	lastCommit := ""
+	if out, ok := TenantExec(ctx, systemUser, appDir, "/usr/bin/git", "-C", appDir, "rev-parse", "--short", "HEAD"); ok {
+		lastCommit = strings.TrimSpace(out)
+	}
+	result, err := h.DB.ExecContext(ctx,
+		`UPDATE cp_laravel_apps SET last_deploy_status=?, last_commit=? WHERE domain_id=? AND last_deploy_status='running'`,
+		newStatus, lastCommit, id)
+	if err != nil {
+		return rec
+	}
+	if affected, _ := result.RowsAffected(); affected == 1 {
+		_ = exec.Command("systemctl", "reset-failed", unit).Run()
+		_ = os.Remove(deployScriptPath(id))
+	}
+	rec.LastDeployStatus = newStatus
+	rec.LastCommit = lastCommit
+	return rec
+}
+
 func (h *Handlers) DeployStatus(w http.ResponseWriter, r *http.Request) {
 	id, systemUser, _, _, ok := h.lookup(r)
 	if !ok {
@@ -112,22 +155,6 @@ func (h *Handlers) DeployStatus(w http.ResponseWriter, r *http.Request) {
 	status := unitStatus(unit)
 	running := status == "activating" || status == "active" || status == "reloading"
 	logTail := fileTail(deployLog(id), 16<<10)
-	rec := h.getRecord(r.Context(), id)
-	if !running && rec.LastDeployStatus == "running" {
-		newStatus := "successful"
-		if !strings.Contains(logTail, "DEPLOY COMPLETE") {
-			newStatus = "failed"
-		}
-		appDir, _ := safeAppDir(systemUser, rec.AppRoot)
-		lastCommit := ""
-		if out, ok := TenantExec(r.Context(), systemUser, appDir, "/usr/bin/git", "-C", appDir, "rev-parse", "--short", "HEAD"); ok {
-			lastCommit = strings.TrimSpace(out)
-		}
-		_, _ = h.DB.ExecContext(r.Context(), `UPDATE cp_laravel_apps SET last_deploy_status=?, last_commit=? WHERE domain_id=?`, newStatus, lastCommit, id)
-		_ = exec.Command("systemctl", "reset-failed", unit).Run()
-		_ = os.Remove(deployScriptPath(id))
-		rec.LastDeployStatus = newStatus
-		rec.LastCommit = lastCommit
-	}
+	rec := h.finalizeDeploy(r.Context(), id, systemUser, h.getRecord(r.Context(), id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"running": running, "status": rec.LastDeployStatus, "last_commit": rec.LastCommit, "log": logTail})
 }

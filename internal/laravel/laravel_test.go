@@ -78,6 +78,26 @@ func TestPublicSubdirectory(t *testing.T) {
 	}
 }
 
+func TestDeployTerminalStatus(t *testing.T) {
+	tests := []struct {
+		name    string
+		logTail string
+		want    string
+	}{
+		{name: "complete marker present", logTail: "== git pull ==\n== DEPLOY COMPLETE ==\n", want: "successful"},
+		{name: "failed marker", logTail: "!! step failed: composer install\n== DEPLOY FAILED: composer install ==\n", want: "failed"},
+		{name: "no marker (killed mid-run)", logTail: "== composer install ==\n", want: "failed"},
+		{name: "empty log", logTail: "", want: "failed"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := deployTerminalStatus(test.logTail); got != test.want {
+				t.Fatalf("deployTerminalStatus(%q) = %q, want %q", test.logTail, got, test.want)
+			}
+		})
+	}
+}
+
 func TestArtisanAndNpmScriptPatterns(t *testing.T) {
 	if !reArtisanArg.MatchString("--force") || !reArtisanArg.MatchString("migrate:fresh") {
 		t.Fatal("reArtisanArg rejected a valid argument")
