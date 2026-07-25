@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -62,6 +63,63 @@ func writeTAR(t *testing.T, header tar.Header) string {
 	return archivePath
 }
 
+// writeZIPMembers writes count members each carrying a payload of payloadBytes.
+func writeZIPMembers(t *testing.T, count, payloadBytes int) string {
+	t.Helper()
+	archivePath := filepath.Join(t.TempDir(), "archive.zip")
+	file, err := os.Create(archivePath)
+	if err != nil {
+		t.Fatalf("create ZIP archive: %v", err)
+	}
+	writer := zip.NewWriter(file)
+	payload := make([]byte, payloadBytes)
+	for i := 0; i < count; i++ {
+		header := &zip.FileHeader{Name: "public_html/file" + strconv.Itoa(i) + ".txt", Method: zip.Store}
+		header.SetMode(0644)
+		member, err := writer.CreateHeader(header)
+		if err != nil {
+			t.Fatalf("create ZIP member: %v", err)
+		}
+		if _, err := member.Write(payload); err != nil {
+			t.Fatalf("write ZIP member: %v", err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatalf("close ZIP writer: %v", err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatalf("close ZIP archive: %v", err)
+	}
+	return archivePath
+}
+
+func TestScanEnforcesZIPLimits(t *testing.T) {
+	t.Run("total size exceeded", func(t *testing.T) {
+		path := writeZIPMembers(t, 3, 100)
+		if err := Scan(context.Background(), path, TypeZIP, Limits{MaxTotalBytes: 200}); !errors.Is(err, ErrArchiveTooLarge) {
+			t.Fatalf("Scan() error = %v, want ErrArchiveTooLarge", err)
+		}
+	})
+	t.Run("member count exceeded", func(t *testing.T) {
+		path := writeZIPMembers(t, 5, 1)
+		if err := Scan(context.Background(), path, TypeZIP, Limits{MaxMembers: 3}); !errors.Is(err, ErrTooManyMembers) {
+			t.Fatalf("Scan() error = %v, want ErrTooManyMembers", err)
+		}
+	})
+	t.Run("within limits", func(t *testing.T) {
+		path := writeZIPMembers(t, 3, 100)
+		if err := Scan(context.Background(), path, TypeZIP, Limits{MaxTotalBytes: 10000, MaxMembers: 100}); err != nil {
+			t.Fatalf("Scan() unexpected error: %v", err)
+		}
+	})
+	t.Run("unlimited accepts large archive", func(t *testing.T) {
+		path := writeZIPMembers(t, 10, 1000)
+		if err := Scan(context.Background(), path, TypeZIP, Limits{}); err != nil {
+			t.Fatalf("Scan() unexpected error: %v", err)
+		}
+	})
+}
+
 func TestScanRejectsUnsafeZIPMembers(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -78,7 +136,7 @@ func TestScanRejectsUnsafeZIPMembers(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			archivePath := writeZIP(t, test.memberName, test.mode)
-			if err := Scan(context.Background(), archivePath, TypeZIP); !errors.Is(err, test.want) {
+			if err := Scan(context.Background(), archivePath, TypeZIP, Limits{}); !errors.Is(err, test.want) {
 				t.Fatalf("Scan() error = %v, want %v", err, test.want)
 			}
 		})
@@ -100,16 +158,67 @@ func TestScanRejectsUnsafeTARMembers(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			archivePath := writeTAR(t, test.header)
-			if err := Scan(context.Background(), archivePath, TypeTAR); !errors.Is(err, test.want) {
+			if err := Scan(context.Background(), archivePath, TypeTAR, Limits{}); !errors.Is(err, test.want) {
 				t.Fatalf("Scan() error = %v, want %v", err, test.want)
 			}
 		})
 	}
 }
 
+// writeTARMembers writes count regular members each declaring a size of sizeEach.
+func writeTARMembers(t *testing.T, count int, sizeEach int64) string {
+	t.Helper()
+	archivePath := filepath.Join(t.TempDir(), "archive.tar")
+	file, err := os.Create(archivePath)
+	if err != nil {
+		t.Fatalf("create TAR archive: %v", err)
+	}
+	writer := tar.NewWriter(file)
+	payload := make([]byte, sizeEach)
+	for i := 0; i < count; i++ {
+		header := tar.Header{Name: "public_html/file" + strconv.Itoa(i) + ".txt", Mode: 0644, Size: sizeEach, Typeflag: tar.TypeReg}
+		if err := writer.WriteHeader(&header); err != nil {
+			t.Fatalf("write TAR header: %v", err)
+		}
+		if sizeEach > 0 {
+			if _, err := writer.Write(payload); err != nil {
+				t.Fatalf("write TAR member: %v", err)
+			}
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatalf("close TAR writer: %v", err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatalf("close TAR archive: %v", err)
+	}
+	return archivePath
+}
+
+func TestScanEnforcesTARLimits(t *testing.T) {
+	t.Run("total size exceeded", func(t *testing.T) {
+		path := writeTARMembers(t, 3, 100)
+		if err := Scan(context.Background(), path, TypeTAR, Limits{MaxTotalBytes: 200}); !errors.Is(err, ErrArchiveTooLarge) {
+			t.Fatalf("Scan() error = %v, want ErrArchiveTooLarge", err)
+		}
+	})
+	t.Run("member count exceeded", func(t *testing.T) {
+		path := writeTARMembers(t, 5, 1)
+		if err := Scan(context.Background(), path, TypeTAR, Limits{MaxMembers: 3}); !errors.Is(err, ErrTooManyMembers) {
+			t.Fatalf("Scan() error = %v, want ErrTooManyMembers", err)
+		}
+	})
+	t.Run("within limits", func(t *testing.T) {
+		path := writeTARMembers(t, 3, 100)
+		if err := Scan(context.Background(), path, TypeTAR, Limits{MaxTotalBytes: 10000, MaxMembers: 100}); err != nil {
+			t.Fatalf("Scan() unexpected error: %v", err)
+		}
+	})
+}
+
 func TestScanAcceptsRegularArchiveMembers(t *testing.T) {
 	archivePath := writeTAR(t, tar.Header{Name: "public_html/index.html", Mode: 0644, Size: 7, Typeflag: tar.TypeReg})
-	if err := Scan(context.Background(), archivePath, TypeTAR); err != nil {
+	if err := Scan(context.Background(), archivePath, TypeTAR, Limits{}); err != nil {
 		t.Fatalf("Scan() returned an unexpected error: %v", err)
 	}
 }
@@ -127,7 +236,7 @@ func TestValidateBSDTarListingsRejectsUnsafeRARMembers(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := validateBSDTarListings([]byte(test.names), []byte(test.verbose))
+			err := validateBSDTarListings([]byte(test.names), []byte(test.verbose), Limits{})
 			if !errors.Is(err, test.want) {
 				t.Fatalf("validateBSDTarListings() error = %v, want %v", err, test.want)
 			}
@@ -137,18 +246,20 @@ func TestValidateBSDTarListingsRejectsUnsafeRARMembers(t *testing.T) {
 
 func TestValidateLSARListingRejectsUnsafeRARMembers(t *testing.T) {
 	tests := []struct {
-		name string
-		json string
-		want error
+		name   string
+		json   string
+		want   error
+		limits Limits
 	}{
 		{name: "parent traversal", json: `{"lsarContents":[{"XADFileName":"../escape","XADFileType":"Regular"}]}`, want: ErrUnsafePath},
 		{name: "symbolic link", json: `{"lsarContents":[{"XADFileName":"link","XADFileType":"Symbolic Link","XADLinkDestination":"/etc"}]}`, want: ErrUnsafeMember},
 		{name: "regular file", json: `{"lsarContents":[{"XADFileName":"public/index.html","XADFileType":"Regular"}]}`},
 		{name: "invalid listing", json: `{}`, want: ErrInvalidArchive},
+		{name: "oversized member", json: `{"lsarContents":[{"XADFileName":"big.bin","XADFileType":"Regular","XADFileSize":5000}]}`, want: ErrArchiveTooLarge, limits: Limits{MaxTotalBytes: 1000}},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := validateLSARListing([]byte(test.json))
+			err := validateLSARListing([]byte(test.json), test.limits)
 			if !errors.Is(err, test.want) {
 				t.Fatalf("validateLSARListing() error = %v, want %v", err, test.want)
 			}

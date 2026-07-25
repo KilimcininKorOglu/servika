@@ -31,7 +31,30 @@ var (
 	ErrRARUnavailable = errors.New("RAR extraction is unavailable")
 	// ErrInvalidArchive indicates that an archive listing could not be validated.
 	ErrInvalidArchive = errors.New("archive could not be validated")
+	// ErrArchiveTooLarge indicates that the declared uncompressed size exceeds the limit.
+	ErrArchiveTooLarge = errors.New("archive expands beyond the allowed size")
+	// ErrTooManyMembers indicates that the archive contains more members than allowed.
+	ErrTooManyMembers = errors.New("archive contains too many members")
 )
+
+// Limits bounds an archive's declared expansion to defend against decompression
+// bombs. A zero field imposes no limit for that dimension.
+type Limits struct {
+	// MaxTotalBytes caps the sum of declared uncompressed member sizes.
+	MaxTotalBytes int64
+	// MaxMembers caps the number of members.
+	MaxMembers int
+}
+
+// exceedsBytes reports whether total is over a positive MaxTotalBytes.
+func (l Limits) exceedsBytes(total int64) bool {
+	return l.MaxTotalBytes > 0 && total > l.MaxTotalBytes
+}
+
+// exceedsMembers reports whether count is over a positive MaxMembers.
+func (l Limits) exceedsMembers(count int) bool {
+	return l.MaxMembers > 0 && count > l.MaxMembers
+}
 
 // Type identifies a supported archive format.
 type Type uint8
@@ -84,15 +107,16 @@ func unsafeMemberName(name string) bool {
 	return slices.Contains(strings.Split(name, "/"), "..")
 }
 
-// Scan validates every archive member without writing files.
-func Scan(ctx context.Context, archivePath string, archiveType Type) error {
+// Scan validates every archive member without writing files. limits bounds the
+// declared expansion (zero fields = unbounded) to reject decompression bombs.
+func Scan(ctx context.Context, archivePath string, archiveType Type, limits Limits) error {
 	switch archiveType {
 	case TypeZIP:
-		return scanZIP(ctx, archivePath)
+		return scanZIP(ctx, archivePath, limits)
 	case TypeTAR, TypeTARGzip, TypeTARBzip2, TypeTARXz:
-		return scanTAR(ctx, archivePath, archiveType)
+		return scanTAR(ctx, archivePath, archiveType, limits)
 	case TypeRAR:
-		return scanRAR(ctx, archivePath)
+		return scanRAR(ctx, archivePath, limits)
 	default:
 		return ErrUnsupported
 	}
@@ -103,6 +127,7 @@ type lsarListing struct {
 		Name            string `json:"XADFileName"`
 		Type            string `json:"XADFileType"`
 		LinkDestination string `json:"XADLinkDestination"`
+		Size            int64  `json:"XADFileSize"`
 	} `json:"lsarContents"`
 }
 
@@ -124,18 +149,18 @@ func rarTool() (string, bool) {
 	return "", false
 }
 
-func scanRAR(ctx context.Context, archivePath string) error {
+func scanRAR(ctx context.Context, archivePath string, limits Limits) error {
 	tool, ok := rarTool()
 	if !ok {
 		return ErrRARUnavailable
 	}
 	if tool == "bsdtar" {
-		return scanRARWithBSDTar(ctx, archivePath)
+		return scanRARWithBSDTar(ctx, archivePath, limits)
 	}
-	return scanRARWithLSAR(ctx, archivePath)
+	return scanRARWithLSAR(ctx, archivePath, limits)
 }
 
-func scanRARWithBSDTar(ctx context.Context, archivePath string) error {
+func scanRARWithBSDTar(ctx context.Context, archivePath string, limits Limits) error {
 	namesOutput, err := safeCommand(ctx, "bsdtar", "-tf", archivePath).Output()
 	if err != nil {
 		return ErrInvalidArchive
@@ -144,14 +169,22 @@ func scanRARWithBSDTar(ctx context.Context, archivePath string) error {
 	if err != nil {
 		return ErrInvalidArchive
 	}
-	return validateBSDTarListings(namesOutput, verboseOutput)
+	return validateBSDTarListings(namesOutput, verboseOutput, limits)
 }
 
-func validateBSDTarListings(namesOutput, verboseOutput []byte) error {
+func validateBSDTarListings(namesOutput, verboseOutput []byte, limits Limits) error {
+	members := 0
 	for _, line := range strings.Split(string(namesOutput), "\n") {
 		name := strings.TrimSuffix(line, "\r")
-		if name != "" && unsafeMemberName(name) {
+		if name == "" {
+			continue
+		}
+		if unsafeMemberName(name) {
 			return ErrUnsafePath
+		}
+		members++
+		if limits.exceedsMembers(members) {
+			return ErrTooManyMembers
 		}
 	}
 	for _, line := range strings.Split(string(verboseOutput), "\n") {
@@ -166,19 +199,23 @@ func validateBSDTarListings(namesOutput, verboseOutput []byte) error {
 	return nil
 }
 
-func scanRARWithLSAR(ctx context.Context, archivePath string) error {
+func scanRARWithLSAR(ctx context.Context, archivePath string, limits Limits) error {
 	output, err := safeCommand(ctx, "lsar", "-json", archivePath).Output()
 	if err != nil {
 		return ErrInvalidArchive
 	}
-	return validateLSARListing(output)
+	return validateLSARListing(output, limits)
 }
 
-func validateLSARListing(output []byte) error {
+func validateLSARListing(output []byte, limits Limits) error {
 	var listing lsarListing
 	if err := json.Unmarshal(output, &listing); err != nil || len(listing.Contents) == 0 {
 		return ErrInvalidArchive
 	}
+	if limits.exceedsMembers(len(listing.Contents)) {
+		return ErrTooManyMembers
+	}
+	var total int64
 	for _, member := range listing.Contents {
 		if unsafeMemberName(member.Name) {
 			return ErrUnsafePath
@@ -186,17 +223,25 @@ func validateLSARListing(output []byte) error {
 		if member.LinkDestination != "" || (member.Type != "Regular" && member.Type != "Directory") {
 			return ErrUnsafeMember
 		}
+		total += member.Size
+		if limits.exceedsBytes(total) {
+			return ErrArchiveTooLarge
+		}
 	}
 	return nil
 }
 
-func scanZIP(ctx context.Context, archivePath string) error {
+func scanZIP(ctx context.Context, archivePath string, limits Limits) error {
 	reader, err := zip.OpenReader(archivePath)
 	if err != nil {
 		return fmt.Errorf("open ZIP archive: %w", err)
 	}
 	defer func() { _ = reader.Close() }()
 
+	if limits.exceedsMembers(len(reader.File)) {
+		return ErrTooManyMembers
+	}
+	var total int64
 	for _, member := range reader.File {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -208,11 +253,15 @@ func scanZIP(ctx context.Context, archivePath string) error {
 		if unsafeMemberName(member.Name) {
 			return ErrUnsafePath
 		}
+		total += int64(member.UncompressedSize64)
+		if limits.exceedsBytes(total) {
+			return ErrArchiveTooLarge
+		}
 	}
 	return nil
 }
 
-func scanTAR(ctx context.Context, archivePath string, archiveType Type) error {
+func scanTAR(ctx context.Context, archivePath string, archiveType Type, limits Limits) error {
 	file, err := os.Open(archivePath)
 	if err != nil {
 		return fmt.Errorf("open archive: %w", err)
@@ -256,6 +305,8 @@ func scanTAR(ctx context.Context, archivePath string, archiveType Type) error {
 	}
 
 	tarReader := tar.NewReader(reader)
+	var total int64
+	members := 0
 	for {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -273,6 +324,14 @@ func scanTAR(ctx context.Context, archivePath string, archiveType Type) error {
 		}
 		if unsafeMemberName(header.Name) {
 			return ErrUnsafePath
+		}
+		members++
+		if limits.exceedsMembers(members) {
+			return ErrTooManyMembers
+		}
+		total += header.Size
+		if limits.exceedsBytes(total) {
+			return ErrArchiveTooLarge
 		}
 	}
 
@@ -299,7 +358,8 @@ func tenantCommand(ctx context.Context, systemUser string, arguments ...string) 
 }
 
 // Extract validates an archive and extracts it as the owning tenant user.
-func Extract(ctx context.Context, archivePath, destination, systemUser string) (string, error) {
+// limits bounds the declared expansion (zero fields = unbounded) to reject bombs.
+func Extract(ctx context.Context, archivePath, destination, systemUser string, limits Limits) (string, error) {
 	archiveType := DetectType(archivePath)
 	if archiveType == TypeUnknown {
 		return "", ErrUnsupported
@@ -312,7 +372,7 @@ func Extract(ctx context.Context, archivePath, destination, systemUser string) (
 			return "", ErrInvalidTenant
 		}
 	}
-	if err := Scan(ctx, archivePath, archiveType); err != nil {
+	if err := Scan(ctx, archivePath, archiveType, limits); err != nil {
 		return "", err
 	}
 

@@ -83,7 +83,9 @@ func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare backup restore")
 		return
 	}
-	if _, err := archivex.Extract(r.Context(), abs, tmpDir, systemUser); err != nil {
+	// Panel-created backups are trusted and bounded by the tenant's own quota, so
+	// no decompression-bomb limits are imposed (zero-value Limits = unbounded).
+	if _, err := archivex.Extract(r.Context(), abs, tmpDir, systemUser, archivex.Limits{}); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid backup archive")
 		return
 	}

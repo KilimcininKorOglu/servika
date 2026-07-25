@@ -6,6 +6,7 @@ package files
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"os/exec"
@@ -16,6 +17,13 @@ import (
 
 	"servika/internal/archivex"
 	"servika/internal/httpx"
+)
+
+// Decompression-bomb defense for tenant-uploaded archives: cap the declared
+// uncompressed size and member count before invoking the extractor.
+const (
+	maxExtractBytes   = 10 << 30 // 10 GiB, matching the upload size cap.
+	maxExtractMembers = 200000
 )
 
 // relClean reduces a user-supplied path to a home-relative, '..'-cleaned path.
@@ -271,8 +279,14 @@ func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 		}
 		// Extract as the tenant into the pinned target directory. Extraction runs
 		// under the tenant uid, so it cannot escalate; the pinned target prevents a
-		// raced symlink from redirecting the destination the panel selected.
-		if _, err := archivex.Extract(r.Context(), archivePinned, targetPinned, systemUser); err != nil {
+		// raced symlink from redirecting the destination the panel selected. Limits
+		// reject a decompression bomb before the extractor runs.
+		limits := archivex.Limits{MaxTotalBytes: maxExtractBytes, MaxMembers: maxExtractMembers}
+		if _, err := archivex.Extract(r.Context(), archivePinned, targetPinned, systemUser, limits); err != nil {
+			if errors.Is(err, archivex.ErrArchiveTooLarge) || errors.Is(err, archivex.ErrTooManyMembers) {
+				httpx.WriteError(w, http.StatusBadRequest, "archive is too large to extract")
+				return
+			}
 			httpx.WriteError(w, http.StatusBadRequest, "invalid archive")
 			return
 		}
