@@ -35,7 +35,7 @@ load_servika_env() {
 load_servika_env
 
 REPO="${SERVIKA_REPO:-KilimcininKorOglu/servika}"
-BRANCH="main"; DRY=0; FORCE=0
+BRANCH="main"; DRY=0; FORCE=0; BRANCH_EXPLICIT=0
 PREFIX="${SERVIKA_PREFIX:-/opt/servika}"
 BIN="${SERVIKA_BIN:-$PREFIX/bin/servika-server}"
 SEED="${SERVIKA_SEED:-$PREFIX/bin/servika-seed-admin}"
@@ -61,8 +61,8 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY=1 ;;
     --force) FORCE=1 ;;
-    --branch) BRANCH="$2"; shift ;;
-    --branch=*) BRANCH="${1#*=}" ;;
+    --branch) BRANCH="$2"; BRANCH_EXPLICIT=1; shift ;;
+    --branch=*) BRANCH="${1#*=}"; BRANCH_EXPLICIT=1 ;;
     -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
@@ -75,6 +75,19 @@ ok()   { echo -e "  ${c_g}✓${c_0} $*"; }
 warn() { echo -e "  ${c_y}!${c_0} $*"; }
 die()  { echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
 step() { echo -e "${c_b}══ $* ══${c_0}"; }
+
+# resolve_release_tag prints the release tag to deploy, or nothing if none can be
+# determined. SERVIKA_RELEASE_TAG pins an exact release; otherwise the latest
+# published GitHub release is queried. Mirrors install.sh so update deploys the
+# same immutable, reviewed artifact the installer does.
+resolve_release_tag() {
+  local tag="${SERVIKA_RELEASE_TAG:-}"
+  if [ -z "$tag" ]; then
+    tag=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null \
+      | grep '"tag_name"' | head -1 | cut -d'"' -f4)
+  fi
+  printf '%s' "$tag"
+}
 
 # restore_release_assets undoes every pre-restart asset swap from snapshots taken
 # during this run. Each step is existence-guarded and best-effort so a missing
@@ -160,19 +173,42 @@ version() { curl -fsS "$HEALTH" 2>/dev/null | grep -oE '"version":"[^"]*"' | cut
 command -v curl >/dev/null || die "curl is required"
 command -v tar  >/dev/null || die "tar is required"
 
-step "Servika update (github.com/$REPO@$BRANCH)"
-
 # Rollback staging: snapshots of every release-owned asset are taken here just
 # before each pre-restart swap, so a failed health check can restore the complete
 # previous release, not only the binary and database.
 ROLLBACK_DIR="$PREFIX/.update-rollback.$$"
 TMP=$(mktemp -d); trap 'rm -rf "$TMP" "$ROLLBACK_DIR"' EXIT
 mkdir -p "$ROLLBACK_DIR"
-echo "  downloading..."
-curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar xz -C "$TMP" \
-  || die "download failed; verify that the repository is public and branch '$BRANCH' exists"
-SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
-A="$SRC/assets"
+
+# Source resolution: prefer the immutable tagged release bundle (same artifact as
+# install.sh). An explicit --branch opts into the mutable branch tarball; a failed
+# tag resolution or bundle download falls back to it with a warning.
+A=""
+if [ "$BRANCH_EXPLICIT" = 0 ]; then
+  TAG=$(resolve_release_tag)
+  if [ -n "$TAG" ]; then
+    VERSION_TAG="${TAG#v}"
+    BUNDLE_URL="https://github.com/$REPO/releases/download/$TAG/servika-${VERSION_TAG}-${ARCH}.tar.gz"
+    step "Servika update (release $TAG, $ARCH)"
+    echo "  downloading release bundle..."
+    if curl -fsSL "$BUNDLE_URL" | tar xz -C "$TMP"; then
+      A="$TMP/assets"
+    else
+      warn "release bundle download failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
+      rm -rf "${TMP:?}/"* 2>/dev/null || true
+    fi
+  else
+    warn "could not resolve a release tag; falling back to branch '$BRANCH'"
+  fi
+fi
+if [ -z "$A" ]; then
+  step "Servika update (github.com/$REPO@$BRANCH)"
+  echo "  downloading..."
+  curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar xz -C "$TMP" \
+    || die "download failed; verify that the repository is public and branch '$BRANCH' exists"
+  SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
+  A="$SRC/assets"
+fi
 NEWBIN="$A/$ARCH/servika-server"
 [ -f "$NEWBIN" ] || die "$A/$ARCH/servika-server is missing"
 

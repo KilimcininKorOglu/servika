@@ -51,7 +51,7 @@ load_servika_env() {
 load_servika_env
 
 REPO="${SERVIKA_REPO:-KilimcininKorOglu/servika}"
-BRANCH="main"; DRY=0; DODB=1; DORESTART=1
+BRANCH="main"; DRY=0; DODB=1; DORESTART=1; BRANCH_EXPLICIT=0
 
 # Paths are overridable via env (for isolated testing). Production defaults apply.
 PREFIX="${SERVIKA_PREFIX:-/opt/servika}"
@@ -78,8 +78,8 @@ esac
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY=1 ;;
-    --branch) BRANCH="$2"; shift ;;
-    --branch=*) BRANCH="${1#*=}" ;;
+    --branch) BRANCH="$2"; BRANCH_EXPLICIT=1; shift ;;
+    --branch=*) BRANCH="${1#*=}"; BRANCH_EXPLICIT=1 ;;
     --no-db-dump) DODB=0 ;;
     --no-restart) DORESTART=0 ;;
     -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
@@ -94,6 +94,19 @@ ok()   { echo -e "  ${c_g}✓${c_0} $*"; }
 warn() { echo -e "  ${c_y}!${c_0} $*"; }
 die()  { echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
 step() { echo -e "${c_b}══ $* ══${c_0}"; }
+
+# resolve_release_tag prints the release tag to restore from, or nothing if none
+# can be determined. SERVIKA_RELEASE_TAG pins an exact release; otherwise the
+# latest published GitHub release is queried. Mirrors install.sh so restore
+# repairs against the same immutable, reviewed artifact the installer deploys.
+resolve_release_tag() {
+  local tag="${SERVIKA_RELEASE_TAG:-}"
+  if [ -z "$tag" ]; then
+    tag=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null \
+      | grep '"tag_name"' | head -1 | cut -d'"' -f4)
+  fi
+  printf '%s' "$tag"
+}
 
 require_abs_path() {
   local name="$1"
@@ -135,24 +148,46 @@ is_elf() { head -c4 "$1" 2>/dev/null | grep -q $'\x7fELF'; }
 command -v curl >/dev/null || die "curl required"
 command -v tar  >/dev/null || die "tar required"
 
-step "Servika core repair (github.com/$REPO@$BRANCH)$([ $DRY = 1 ] && echo '  [DRY-RUN]')"
+step "Servika core repair (github.com/$REPO)$([ $DRY = 1 ] && echo '  [DRY-RUN]')"
 
 # ───────────────────────────────────────────────────────────────────────────
 # a) Fetch the canonical release → $A (assets directory).
 #    SERVIKA_ASSETS_OVERRIDE skips the download (isolated/offline test).
+#    Default: the immutable tagged release bundle (same artifact as install.sh).
+#    --branch opts into the mutable branch tarball; a failed tag resolution or
+#    bundle download falls back to the branch tarball with a warning.
 # ───────────────────────────────────────────────────────────────────────────
 if [ -n "${SERVIKA_ASSETS_OVERRIDE:-}" ]; then
   A="$SERVIKA_ASSETS_OVERRIDE"
   [ -d "$A" ] || die "SERVIKA_ASSETS_OVERRIDE directory not found: $A"
   warn "TEST/OFFLINE: download skipped, local assets used ($A)"
 else
-  echo "  downloading…"
   TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
-  curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar xz -C "$TMP" \
-    || die "download failed — is the repo public and branch '$BRANCH' available?"
-  SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
-  [ -n "$SRC" ] || die "downloaded archive is empty or has an unexpected structure — repair cancelled"
-  A="$SRC/assets"
+  A=""
+  if [ "$BRANCH_EXPLICIT" = 0 ]; then
+    TAG=$(resolve_release_tag)
+    if [ -n "$TAG" ]; then
+      VERSION_TAG="${TAG#v}"
+      BUNDLE_URL="https://github.com/$REPO/releases/download/$TAG/servika-${VERSION_TAG}-${ARCH}.tar.gz"
+      echo "  downloading release bundle ($TAG, $ARCH)…"
+      if curl -fsSL "$BUNDLE_URL" | tar xz -C "$TMP"; then
+        A="$TMP/assets"
+      else
+        warn "release bundle download failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
+        rm -rf "${TMP:?}/"* 2>/dev/null || true
+      fi
+    else
+      warn "could not resolve a release tag; falling back to branch '$BRANCH'"
+    fi
+  fi
+  if [ -z "$A" ]; then
+    echo "  downloading…"
+    curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar xz -C "$TMP" \
+      || die "download failed — is the repo public and branch '$BRANCH' available?"
+    SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
+    [ -n "$SRC" ] || die "downloaded archive is empty or has an unexpected structure — repair cancelled"
+    A="$SRC/assets"
+  fi
 fi
 [ -d "$A" ] || die "assets/ not found ($A) — repo structure differs from expected"
 NEWBIN="$A/$ARCH/servika-server"
