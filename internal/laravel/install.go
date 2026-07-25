@@ -166,7 +166,9 @@ func scaffoldInstallScript(appDir, php, tmp string) string {
 		"  echo '(directory is not empty, installing to a temporary directory and merging)'\n" +
 		"  rm -rf \"$TMP\"\n" +
 		"  " + cp + " laravel/laravel \"$TMP\" || " + cp + " laravel/laravel:^11 \"$TMP\"\n" +
-		"  cp -a \"$TMP\"/. \"$DEST\"/\n" +
+		// Hardlink the merge within the same filesystem so it does not double the tenant's
+		// inode/file-count quota; fall back to a full copy when hardlinking is unavailable.
+		"  cp -al \"$TMP\"/. \"$DEST\"/ 2>/dev/null || cp -a \"$TMP\"/. \"$DEST\"/\n" +
 		"  rm -rf \"$TMP\"\n" +
 		"fi\n" +
 		"cd \"$DEST\"\n" +
@@ -179,7 +181,9 @@ func remoteInstallScript(appDir, repoURL, branch, php, tmp string) string {
 		"DEST=" + shellQuote(appDir) + "\nTMP=" + shellQuote(tmp) + "\n" +
 		"rm -rf \"$TMP\"\n" +
 		"/usr/bin/git clone --depth 1 --branch " + shellQuote(branch) + " -- " + shellQuote(repoURL) + " \"$TMP\"\n" +
-		"cp -a \"$TMP\"/. \"$DEST\"/\n" +
+		// Hardlink within the same filesystem to preserve the tenant's inode/file-count
+		// quota; fall back to a full copy when hardlinking is unavailable.
+		"cp -al \"$TMP\"/. \"$DEST\"/ 2>/dev/null || cp -a \"$TMP\"/. \"$DEST\"/\n" +
 		"rm -rf \"$TMP\"\n" +
 		"cd \"$DEST\"\n" +
 		"[ -f .env ] || { [ -f .env.example ] && cp .env.example .env; }\n" +
@@ -239,5 +243,13 @@ func (h *Handlers) InstallStatus(w http.ResponseWriter, r *http.Request) {
 	running := status == "activating" || status == "active" || status == "reloading"
 	logTail := fileTail(setupLog(id), 8<<10)
 	rec := h.finalizeInstall(r.Context(), id, systemUser, h.getRecord(r.Context(), id))
+	// When the install unit crashed before writing output (e.g. disk or inode quota
+	// exhaustion, permission errors), the log tail is empty and the operator sees no
+	// cause. Append the unit's recent journal so the real failure reason surfaces.
+	if !running && rec.LastDeployStatus == "failed" && len(strings.TrimSpace(logTail)) < 40 {
+		if out, err := exec.Command("journalctl", "-u", unit, "-n", "30", "--no-pager").Output(); err == nil {
+			logTail += "\n\n[system journal — install unit]\n" + cleanANSI(string(out))
+		}
+	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"running": running, "status": rec.LastDeployStatus, "log": logTail})
 }
