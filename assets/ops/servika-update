@@ -326,6 +326,10 @@ if [ -d "$A/ops" ]; then
   [ -d "$SCRIPTS" ] && cp -a "$SCRIPTS" "$ROLLBACK_DIR/scripts" 2>/dev/null || true
   for t in "$A"/ops/*; do bn=$(basename "$t"); install -m 0755 "$t" "$OPSBIN/${bn%.sh}" 2>/dev/null || true; done
   mkdir -p "$SCRIPTS"; cp "$A"/ops/* "$SCRIPTS/" 2>/dev/null || true
+  # Remove the legacy standalone backup cron and runner. Scheduled domain backups now
+  # run inside the panel process, which honors per-domain frequency, hour, and retention.
+  # Leaving these would back up each domain twice.
+  rm -f /etc/cron.d/servika-backup "$OPSBIN/servika-backup-all" "$SCRIPTS/servika-backup-all" 2>/dev/null || true
   ok "operations tools updated"
 fi
 

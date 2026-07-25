@@ -65,7 +65,6 @@ servika-optimize            # Retune MariaDB, nginx, and PHP-FPM for available s
 servika-redis-setup         # Install or repair the Valkey (Redis) infrastructure
 servika-wp-redis <domain>   # Connect or disconnect Redis cache for a domain's WordPress installations
 servika-ftp-setup           # Install or repair the Pure-FTPd MySQL backend
-servika-backup-all          # Run scheduled backups for all domains (cron: daily at 03:00 UTC)
 servika-jail <user>         # Create a per-user chroot SSH jail with sshd Match group isolation
 servika-repair              # Repair permissions, SELinux contexts, and ownership idempotently
 servika-restore             # Restore core panel files from the canonical release with integrity verification
@@ -237,7 +236,7 @@ gunzip -c /var/backups/servika/db/panel-YYYY-MM-DD-HHMMSS.sql.gz | mysql
 systemctl start servika
 ```
 
-Panel database backups are separate from customer site and database backups managed by `servika-backup-all`. Customer backup archives are stored under `SERVIKA_BACKUP_ROOT`, default `/var/backups/servika`.
+Panel database backups are separate from customer site and database backups, which the panel's built-in scheduler runs per domain according to each domain's configured frequency, hour, and retention. Customer backup archives are stored under `SERVIKA_BACKUP_ROOT`, default `/var/backups/servika`.
 
 ## Core repair
 

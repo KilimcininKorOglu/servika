@@ -249,7 +249,7 @@ for t in "$A"/ops/*; do
   install -m 0755 "$t" "/usr/local/bin/$nm" 2>/dev/null
 done
 cp "$A/ops/"* /opt/servika/src/scripts/ 2>/dev/null
-ok "operations tools (/usr/local/bin: update, db-backup, optimize, redis-setup, ftp-setup, mail-setup, backup-all, repair, jail, wp-redis)"
+ok "operations tools (/usr/local/bin: update, db-backup, optimize, redis-setup, ftp-setup, mail-setup, repair, jail, wp-redis)"
 
 # ============ 7) PANEL SSL (self-signed) ============
 step "7) Panel SSL (:8443 self-signed)"
@@ -441,17 +441,15 @@ if [ ! -x /usr/local/bin/composer ]; then
 fi
 [ -x /usr/local/bin/composer ] && ok "composer ($(/usr/local/bin/composer --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1))" || warn "composer could not be installed"
 
-# ---- Daily backup cron using servika-backup-all at 03:00 UTC ----
-cat > /etc/cron.d/servika-backup <<'CRON'
-# Servika daily scheduled backup at 03:00 UTC
-SHELL=/bin/bash
-PATH=/usr/local/bin:/usr/bin:/bin
-0 3 * * * root /usr/local/bin/servika-backup-all
-CRON
+# ---- crond for tenant cron jobs ----
+# Scheduled domain backups run inside the panel process, which honors each domain's
+# frequency, hour, and retention. Remove any legacy standalone backup cron so a domain
+# is not backed up twice.
+rm -f /etc/cron.d/servika-backup /usr/local/bin/servika-backup-all
 # Enable and start crond now because the AlmaLinux preset does not start it before reboot.
-# The enable --now operation is idempotent and activates backups immediately.
+# crond is required for tenant crontab entries. The enable --now operation is idempotent.
 systemctl enable --now crond >/dev/null 2>&1
-systemctl is-active --quiet crond && ok "daily backup cron + crond ACTIVE (03:00 UTC)" || warn "crond could not be started, the backup cron may not run"
+systemctl is-active --quiet crond && ok "crond ACTIVE (tenant cron jobs)" || warn "crond could not be started, tenant cron jobs may not run"
 
 # SELinux
 setsebool -P httpd_can_network_connect 1 >/dev/null 2>&1 && ok "SELinux httpd_can_network_connect"
