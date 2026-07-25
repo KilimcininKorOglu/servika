@@ -3,7 +3,6 @@
 package customer
 
 import (
-	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"servika/internal/auth"
+	"servika/internal/credentials"
 	"servika/internal/httpx"
 )
 
@@ -63,8 +63,9 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusForbidden, "FTP account is suspended")
 		return
 	}
-	// Pure-FTPd stores cleartext passwords; compare equal-length values in constant time.
-	if len(req.Password) != len(storedPassword) || subtle.ConstantTimeCompare([]byte(req.Password), []byte(storedPassword)) != 1 {
+	// Passwords are stored as SHA-512-crypt ($6$) hashes; verify against the hash.
+	// A legacy cleartext row (not yet backfilled) never verifies, so it cannot log in.
+	if !credentials.VerifyPassword(storedPassword, req.Password) {
 		auth.WriteAudit(h.DB, 0, req.Username, ip, "customer.login", req.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return

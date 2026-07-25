@@ -651,11 +651,13 @@ func (h *Handlers) ShowFTPPassword(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	var pass string
-	err = h.DB.QueryRowContext(r.Context(),
-		`SELECT password_md5 FROM ftp_accounts WHERE username=? AND status='active'`, sk).Scan(&pass)
+	pass, err := credentials.FTPPlainPassword(h.DB, sk)
 	if errors.Is(err, sql.ErrNoRows) {
 		httpx.WriteJSON(w, http.StatusOK, map[string]string{"ftp_pass_plain": ""})
+		return
+	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not read FTP password")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]string{"ftp_pass_plain": pass})

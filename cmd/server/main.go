@@ -21,6 +21,7 @@ import (
 	"servika/internal/backups"
 	"servika/internal/composer"
 	"servika/internal/config"
+	"servika/internal/credentials"
 	"servika/internal/cron"
 	"servika/internal/customer"
 	"servika/internal/db"
@@ -90,6 +91,13 @@ func main() {
 
 	// migrations
 	runMigrations(d)
+	// Hash any FTP passwords still stored as legacy cleartext, so the switch to
+	// Pure-FTPd MYSQLCrypt=crypt does not lock out existing accounts. Idempotent.
+	if n, err := credentials.BackfillCleartextPasswords(d); err != nil {
+		log.Printf("ftp password backfill warn: %v", err)
+	} else if n > 0 {
+		log.Printf("ftp password backfill: hashed %d cleartext account(s)", n)
+	}
 	provisioner.Init(d)
 	middleware.Init(d)
 	if err := dns.SeedTemplateIfEmpty(context.Background(), d); err != nil {

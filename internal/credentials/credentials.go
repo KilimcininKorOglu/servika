@@ -3,12 +3,15 @@ package credentials
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
 	"database/sql"
 	"errors"
 	"fmt"
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"servika/internal/secret"
 )
 
 // RandomPassword returns a URL-safe alphanumeric password, using 20 characters by default.
@@ -30,24 +33,160 @@ func ValidPassword(password string) bool {
 	return !strings.ContainsAny(password, "\r\n\x00")
 }
 
-// FTPCreate inserts an FTP account and stores its password as cleartext for Pure-FTPd MYSQLCrypt.
+// IsHashed reports whether a stored value is already a SHA-512-crypt ($6$) hash
+// rather than legacy cleartext. Used to keep hashing and backfill idempotent.
+func IsHashed(stored string) bool { return strings.HasPrefix(stored, "$6$") }
+
+// HashPassword produces a SHA-512-crypt ($6$) hash with a random salt via
+// `openssl passwd -6`. The password is fed on stdin (never as an argv element,
+// which would leak through /proc and `ps`). Pure-FTPd verifies these hashes
+// natively in MYSQLCrypt=crypt mode, and VerifyPassword checks them in Go, so
+// the ftp_accounts.password_md5 column no longer holds reusable cleartext.
+func HashPassword(password string) (string, error) {
+	cmd := exec.Command("openssl", "passwd", "-6", "-stdin")
+	cmd.Stdin = strings.NewReader(password + "\n")
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("hash password: %w", err)
+	}
+	h := strings.TrimSpace(string(out))
+	if !IsHashed(h) {
+		return "", errors.New("hash password: unexpected openssl output")
+	}
+	return h, nil
+}
+
+// VerifyPassword reports whether password matches a SHA-512-crypt ($6$) stored
+// hash. It re-hashes the input with the stored salt and compares in constant
+// time. Stored values that are not $6$ hashes (legacy cleartext that has not yet
+// been backfilled) never verify, so a cleartext row cannot authenticate.
+func VerifyPassword(stored, password string) bool {
+	if !IsHashed(stored) {
+		return false
+	}
+	// $6$<salt>$<digest> — extract the salt segment (index 2).
+	parts := strings.Split(stored, "$")
+	if len(parts) != 4 || parts[2] == "" {
+		return false
+	}
+	cmd := exec.Command("openssl", "passwd", "-6", "-salt", parts[2], "-stdin")
+	cmd.Stdin = strings.NewReader(password + "\n")
+	out, err := cmd.Output()
+	if err != nil {
+		return false
+	}
+	computed := strings.TrimSpace(string(out))
+	return subtle.ConstantTimeCompare([]byte(computed), []byte(stored)) == 1
+}
+
+// BackfillCleartextPasswords migrates any ftp_accounts row whose password_md5 is
+// still legacy cleartext (not a $6$ hash). While the cleartext is still readable
+// it writes BOTH the SHA-512-crypt ($6$) hash into password_md5 and the
+// AES-256-GCM encrypted copy into ftp_password_enc — the one chance to preserve
+// the reversible value before the cleartext is overwritten by the hash. Runs at
+// startup after migrations so the switch to MYSQLCrypt=crypt does not lock out
+// existing FTP users. Idempotent: already-hashed rows are skipped. Returns the
+// number of rows migrated.
+func BackfillCleartextPasswords(db *sql.DB) (int, error) {
+	rows, err := db.Query(`SELECT id, password_md5 FROM ftp_accounts`)
+	if err != nil {
+		return 0, err
+	}
+	type row struct {
+		id       int64
+		password string
+	}
+	var pending []row
+	for rows.Next() {
+		var r row
+		if err := rows.Scan(&r.id, &r.password); err != nil {
+			_ = rows.Close() // read-only cursor; Close error is not actionable here
+			return 0, err
+		}
+		if !IsHashed(r.password) {
+			pending = append(pending, r)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close() // read-only cursor; Close error is not actionable here
+		return 0, err
+	}
+	if err := rows.Close(); err != nil {
+		return 0, err
+	}
+	n := 0
+	for _, r := range pending {
+		h, err := HashPassword(r.password)
+		if err != nil {
+			return n, err
+		}
+		enc, err := secret.Encrypt(r.password)
+		if err != nil {
+			return n, err
+		}
+		if _, err := db.Exec(`UPDATE ftp_accounts SET password_md5=?, ftp_password_enc=? WHERE id=?`, h, enc, r.id); err != nil {
+			return n, err
+		}
+		n++
+	}
+	return n, nil
+}
+
+// FTPCreate inserts an FTP account. password_md5 stores a SHA-512-crypt ($6$)
+// hash that Pure-FTPd (MYSQLCrypt=crypt) and customer login verify against, so it
+// never holds reusable cleartext. ftp_password_enc stores an AES-256-GCM encrypted
+// copy of the password for the reveal endpoint and the SSH password sync.
 func FTPCreate(db *sql.DB, domainID int64, systemUser, password string, uidN, gidN int) error {
+	hash, err := HashPassword(password)
+	if err != nil {
+		return err
+	}
+	enc, err := secret.Encrypt(password)
+	if err != nil {
+		return err
+	}
 	home := "/home/" + systemUser
-	_, err := db.Exec(
-		`INSERT INTO ftp_accounts(domain_id, username, password_md5, home_dir, uid_n, gid_n, status)
-		 VALUES(?,?,?,?,?,?, 'active')
-		 ON DUPLICATE KEY UPDATE password_md5=VALUES(password_md5), home_dir=VALUES(home_dir), uid_n=VALUES(uid_n), gid_n=VALUES(gid_n), status='active'`,
-		domainID, systemUser, password, home, uidN, gidN)
+	_, err = db.Exec(
+		`INSERT INTO ftp_accounts(domain_id, username, password_md5, ftp_password_enc, home_dir, uid_n, gid_n, status)
+		 VALUES(?,?,?,?,?,?,?, 'active')
+		 ON DUPLICATE KEY UPDATE password_md5=VALUES(password_md5), ftp_password_enc=VALUES(ftp_password_enc), home_dir=VALUES(home_dir), uid_n=VALUES(uid_n), gid_n=VALUES(gid_n), status='active'`,
+		domainID, systemUser, hash, enc, home, uidN, gidN)
 	return err
 }
 
-// FTPUpdatePassword updates an existing FTP account password. Bumping
+// FTPUpdatePassword updates an existing FTP account password, writing both the
+// SHA-512-crypt ($6$) hash and the AES-256-GCM encrypted copy. Bumping
 // token_version revokes any customer JWT that was issued with the old password.
 func FTPUpdatePassword(db *sql.DB, systemUser, password string) error {
-	_, err := db.Exec(
-		`UPDATE ftp_accounts SET password_md5=?, token_version=token_version+1 WHERE username=?`,
-		password, systemUser)
+	hash, err := HashPassword(password)
+	if err != nil {
+		return err
+	}
+	enc, err := secret.Encrypt(password)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(
+		`UPDATE ftp_accounts SET password_md5=?, ftp_password_enc=?, token_version=token_version+1 WHERE username=?`,
+		hash, enc, systemUser)
 	return err
+}
+
+// FTPPlainPassword returns the decrypted cleartext FTP password for a system
+// user, read from ftp_password_enc. Used by the reveal endpoint and SSH sync.
+// Returns "" (no error) when the account exists but has no stored encrypted copy.
+func FTPPlainPassword(db *sql.DB, systemUser string) (string, error) {
+	var enc sql.NullString
+	err := db.QueryRow(
+		`SELECT ftp_password_enc FROM ftp_accounts WHERE username=? AND status='active'`,
+		systemUser).Scan(&enc)
+	if err != nil {
+		return "", err
+	}
+	if !enc.Valid || enc.String == "" {
+		return "", nil
+	}
+	return secret.Decrypt(enc.String)
 }
 
 // FTPDelete explicitly removes an FTP account even though domain deletion cascades.
@@ -247,15 +386,14 @@ func MySQLDropAllForDomain(db *sql.DB, domainID int64) error {
 }
 
 // SyncSSHPassword synchronizes the system account password with the FTP password.
-// The FTP password is kept as cleartext in ftp_accounts.password_md5 for Pure-FTPd MYSQLCrypt.
+// The plaintext is read from the AES-256-GCM encrypted ftp_password_enc column
+// (password_md5 holds only a one-way hash and cannot be used for chpasswd).
 func SyncSSHPassword(db *sql.DB, systemUser string) error {
 	if !strings.HasPrefix(systemUser, "c_") {
 		return fmt.Errorf("security: system user must have the c_ prefix")
 	}
-	var password string
-	if err := db.QueryRow(
-		`SELECT password_md5 FROM ftp_accounts WHERE username=? AND status='active'`,
-		systemUser).Scan(&password); err != nil {
+	password, err := FTPPlainPassword(db, systemUser)
+	if err != nil {
 		return fmt.Errorf("read FTP password: %w", err)
 	}
 	if strings.TrimSpace(password) == "" {
