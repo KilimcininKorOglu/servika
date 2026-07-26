@@ -115,7 +115,7 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 func installedSet() map[string]bool {
 	out, _ := exec.Command("rpm", "-qa", "--qf", "%{NAME}\n").CombinedOutput()
 	set := make(map[string]bool, 600)
-	for _, ln := range strings.Split(string(out), "\n") {
+	for ln := range strings.SplitSeq(string(out), "\n") {
 		ln = strings.TrimSpace(ln)
 		if ln != "" {
 			set[ln] = true
@@ -129,7 +129,7 @@ func (h *Handlers) Installed(w http.ResponseWriter, r *http.Request) {
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
 	out, _ := exec.Command("rpm", "-qa", "--qf", "%{NAME}|%{VERSION}|%{SUMMARY}\n").CombinedOutput()
 	packageList := []Package{}
-	for _, ln := range strings.Split(string(out), "\n") {
+	for ln := range strings.SplitSeq(string(out), "\n") {
 		parts := strings.SplitN(ln, "|", 3)
 		if len(parts) < 3 {
 			continue
@@ -268,7 +268,7 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 	}
 	set := installedSet()
 	res := make(map[string]bool)
-	for _, name := range strings.Split(namesParam, ",") {
+	for name := range strings.SplitSeq(namesParam, ",") {
 		name = strings.TrimSpace(name)
 		if name == "" || !safe(name) {
 			continue

@@ -141,7 +141,7 @@ func dsFromDNSKEY(ctx context.Context, zone string) []string {
 		return nil
 	}
 	var records []string
-	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -162,7 +162,7 @@ func digShort(ctx context.Context, zone, recordType string) []string {
 		return nil
 	}
 	var records []string
-	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
 		if line = strings.TrimSpace(line); line != "" {
 			records = append(records, line)
 		}

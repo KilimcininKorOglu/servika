@@ -290,7 +290,7 @@ func mkdirAllBeneath(home, rel, sk string) error {
 	}
 	dirfd := hf
 	uid, gid, haveIDs := tenantIDs(sk)
-	for _, part := range strings.Split(p, "/") {
+	for part := range strings.SplitSeq(p, "/") {
 		if part == "" || part == "." {
 			continue
 		}

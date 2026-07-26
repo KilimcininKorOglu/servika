@@ -223,7 +223,7 @@ func syncOpenDKIM(domainName, selector, privatePEM, publicKey string) {
 func appendUnique(path, line string) {
 	key, _, _ := strings.Cut(line, " ")
 	body, _ := os.ReadFile(path)
-	for _, existing := range strings.Split(string(body), "\n") {
+	for existing := range strings.SplitSeq(string(body), "\n") {
 		if eKey, _, _ := strings.Cut(existing, " "); eKey == key {
 			return
 		}

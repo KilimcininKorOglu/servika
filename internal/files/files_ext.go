@@ -544,7 +544,7 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 	out, _ := newFileCommand(r.Context(), "find", "-L", fdBase, "-iname", pattern, "-printf", "%p\t%s\t%y\t%T@\n").Output()
 	relBase := "/" + strings.Trim(relClean(rel), "/")
 	results := []Entry{}
-	for _, ln := range strings.Split(string(out), "\n") {
+	for ln := range strings.SplitSeq(string(out), "\n") {
 		if ln == "" {
 			continue
 		}

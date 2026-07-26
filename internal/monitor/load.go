@@ -70,7 +70,7 @@ func readMemoryPercent() float64 {
 		return 0
 	}
 	var total, avail float64
-	for _, line := range strings.Split(string(b), "\n") {
+	for line := range strings.SplitSeq(string(b), "\n") {
 		ff := strings.Fields(line)
 		if len(ff) < 2 {
 			continue

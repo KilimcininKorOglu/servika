@@ -73,7 +73,7 @@ func writeZIPMembers(t *testing.T, count, payloadBytes int) string {
 	}
 	writer := zip.NewWriter(file)
 	payload := make([]byte, payloadBytes)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		header := &zip.FileHeader{Name: "public_html/file" + strconv.Itoa(i) + ".txt", Method: zip.Store}
 		header.SetMode(0644)
 		member, err := writer.CreateHeader(header)
@@ -175,7 +175,7 @@ func writeTARMembers(t *testing.T, count int, sizeEach int64) string {
 	}
 	writer := tar.NewWriter(file)
 	payload := make([]byte, sizeEach)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		header := tar.Header{Name: "public_html/file" + strconv.Itoa(i) + ".txt", Mode: 0644, Size: sizeEach, Typeflag: tar.TypeReg}
 		if err := writer.WriteHeader(&header); err != nil {
 			t.Fatalf("write TAR header: %v", err)

@@ -45,7 +45,7 @@ func TestPackageAvailableCacheOnly(t *testing.T) {
 
 	// Concurrent reads: cache-only, NO dnf calls, NO races.
 	var wg sync.WaitGroup
-	for i := 0; i < 200; i++ {
+	for range 200 {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

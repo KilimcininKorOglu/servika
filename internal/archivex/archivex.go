@@ -174,7 +174,7 @@ func scanRARWithBSDTar(ctx context.Context, archivePath string, limits Limits) e
 
 func validateBSDTarListings(namesOutput, verboseOutput []byte, limits Limits) error {
 	members := 0
-	for _, line := range strings.Split(string(namesOutput), "\n") {
+	for line := range strings.SplitSeq(string(namesOutput), "\n") {
 		name := strings.TrimSuffix(line, "\r")
 		if name == "" {
 			continue
@@ -187,7 +187,7 @@ func validateBSDTarListings(namesOutput, verboseOutput []byte, limits Limits) er
 			return ErrTooManyMembers
 		}
 	}
-	for _, line := range strings.Split(string(verboseOutput), "\n") {
+	for line := range strings.SplitSeq(string(verboseOutput), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
