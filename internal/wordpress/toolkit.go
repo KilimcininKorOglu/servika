@@ -19,13 +19,14 @@ import (
 // reSlug strictly validates plugin and theme slugs to prevent argument injection, including leading hyphens.
 var reSlug = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$`)
 
-// directoryFromQuery converts the GET dir query parameter into a safe absolute path.
-func (h *Handlers) directoryFromQuery(r *http.Request, systemUser string) (string, error) {
+// directoryFromQuery converts the GET dir query parameter into a safe absolute path
+// under root, which is the domain's public_html or a subdomain's document root.
+func (h *Handlers) directoryFromQuery(r *http.Request, root string) (string, error) {
 	d := r.URL.Query().Get("dir")
 	if d == "" {
 		d = "/"
 	}
-	return resolveDirectory(systemUser, d)
+	return resolveDirectory(root, d)
 }
 
 // writeJSONArray forwards a wp-cli JSON array unchanged, returning [] for errors or empty output.
@@ -45,12 +46,12 @@ func writeJSONArray(w http.ResponseWriter, raw []byte, err error) {
 
 // GET /domains/{id}/wordpress/status?dir= returns core version and updates, PHP, database size, and maintenance state.
 func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, _, _, _, ok := h.domain(r)
+	_, systemUser, _, root, _, _, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	dir, err := h.directoryFromQuery(r, systemUser)
+	dir, err := h.directoryFromQuery(r, root)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
@@ -107,12 +108,12 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 
 // GET /domains/{id}/wordpress/plugins?dir= lists plugins.
 func (h *Handlers) Plugins(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, _, _, _, ok := h.domain(r)
+	_, systemUser, _, root, _, _, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	dir, err := h.directoryFromQuery(r, systemUser)
+	dir, err := h.directoryFromQuery(r, root)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
@@ -126,12 +127,12 @@ func (h *Handlers) Plugins(w http.ResponseWriter, r *http.Request) {
 
 // GET /domains/{id}/wordpress/themes?dir= lists themes.
 func (h *Handlers) Themes(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, _, _, _, ok := h.domain(r)
+	_, systemUser, _, root, _, _, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	dir, err := h.directoryFromQuery(r, systemUser)
+	dir, err := h.directoryFromQuery(r, root)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
@@ -145,12 +146,12 @@ func (h *Handlers) Themes(w http.ResponseWriter, r *http.Request) {
 
 // GET /domains/{id}/wordpress/users?dir= lists users.
 func (h *Handlers) Users(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, _, _, _, ok := h.domain(r)
+	_, systemUser, _, root, _, _, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	dir, err := h.directoryFromQuery(r, systemUser)
+	dir, err := h.directoryFromQuery(r, root)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
@@ -165,7 +166,7 @@ func (h *Handlers) Users(w http.ResponseWriter, r *http.Request) {
 // prepareMutation resolves the domain, demo state, and directory for mutations.
 // A false return means the error response has already been written.
 func (h *Handlers) prepareMutation(w http.ResponseWriter, r *http.Request, directory string) (systemUser, dir string, ok bool) {
-	_, systemUser, _, _, demo, found := h.domain(r)
+	_, systemUser, _, root, _, demo, found := h.domain(r)
 	if !found {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return "", "", false
@@ -174,7 +175,7 @@ func (h *Handlers) prepareMutation(w http.ResponseWriter, r *http.Request, direc
 		httpx.WriteError(w, http.StatusForbidden, "not available for demo subscriptions")
 		return "", "", false
 	}
-	d, err := resolveDirectory(systemUser, directory)
+	d, err := resolveDirectory(root, directory)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return "", "", false

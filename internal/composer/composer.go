@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"servika/internal/config"
 	"servika/internal/httpx"
+	"servika/internal/subdomain"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -25,19 +27,34 @@ var rePkg = regexp.MustCompile(`^[a-z0-9]([a-z0-9._-]*)/[a-z0-9]([a-z0-9._-]*)(:
 
 func composerBin() string { return config.ComposerBin() }
 
-func (h *Handlers) load(r *http.Request) (id int64, systemUser string, demo bool, ok bool) {
+// load resolves the domain and the directory composer must run in. A {sid} URL
+// parameter selects that subdomain's document root, so composer acts on the
+// subdomain's own dependencies instead of the parent domain's public_html.
+func (h *Handlers) load(r *http.Request) (id int64, systemUser, directory string, demo bool, ok bool) {
 	id, _ = strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var isDemo int
 	if err := h.DB.QueryRowContext(r.Context(),
 		`SELECT system_user, is_demo FROM domains WHERE id=?`, id).Scan(&systemUser, &isDemo); err != nil {
-		return id, "", false, false
+		return id, "", "", false, false
 	}
-	return id, systemUser, isDemo == 1, true
+	directory = "/home/" + systemUser + "/public_html"
+	if raw := chi.URLParam(r, "sid"); raw != "" {
+		sid, err := strconv.ParseInt(raw, 10, 64)
+		if err != nil {
+			return id, "", "", false, false
+		}
+		scope, scopeOK := subdomain.ResolveScope(r.Context(), h.DB, id, sid)
+		if !scopeOK {
+			return id, "", "", false, false
+		}
+		directory = scope.DocRoot
+	}
+	return id, systemUser, directory, isDemo == 1, true
 }
 
 // GET /domains/{id}/composer, status (is composer installed, does composer.json exist)
 func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, _, ok := h.load(r)
+	_, systemUser, directory, _, ok := h.load(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -54,19 +71,19 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 		installed = true
 		version = strings.TrimSpace(string(out))
 	}
-	_, jErr := os.Stat("/home/" + systemUser + "/public_html/composer.json")
+	_, jErr := os.Stat(filepath.Join(directory, "composer.json"))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"installed":     installed,
 		"version":       version,
 		"composer_json": jErr == nil,
 		"username":      systemUser,
-		"dir":           "/home/" + systemUser + "/public_html",
+		"dir":           directory,
 	})
 }
 
 // POST /domains/{id}/composer  body {"command":"install|update|dump-autoload|validate|require|remove","package":"vendor/pkg"}
 func (h *Handlers) Run(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, demo, ok := h.load(r)
+	_, systemUser, directory, demo, ok := h.load(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -96,7 +113,6 @@ func (h *Handlers) Run(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "command is not allowed")
 		return
 	}
-	directory := "/home/" + systemUser + "/public_html"
 	// Pass arguments explicitly without a shell to prevent command injection.
 	args := []string{"-u", systemUser, "--", composerBin(), req.Command, "--no-interaction", "--no-ansi", "-d", directory}
 	if req.Command == "install" || req.Command == "update" {

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"servika/internal/httpx"
+	"servika/internal/subdomain"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -35,6 +36,9 @@ type LogFile struct {
 
 var errDemoLogsForbidden = errors.New("demo subscription logs cannot be managed")
 
+// lookup resolves the log name for the request. A {sid} URL parameter selects that
+// subdomain, whose vhost logs under its own FQDN, so the returned name addresses the
+// subdomain's files rather than the parent domain's.
 func (h *Handlers) lookup(r *http.Request) (string, string, error) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var domainName, systemUser string
@@ -50,6 +54,17 @@ func (h *Handlers) lookup(r *http.Request) (string, string, error) {
 	}
 	if isDemo == 1 {
 		return "", "", errDemoLogsForbidden
+	}
+	if raw := chi.URLParam(r, "sid"); raw != "" {
+		sid, convErr := strconv.ParseInt(raw, 10, 64)
+		if convErr != nil {
+			return "", "", os.ErrNotExist
+		}
+		scope, ok := subdomain.ResolveScope(r.Context(), h.DB, id, sid)
+		if !ok {
+			return "", "", os.ErrNotExist
+		}
+		return scope.FQDN, systemUser, nil
 	}
 	return domainName, systemUser, nil
 }

@@ -26,6 +26,7 @@ import (
 	"servika/internal/credentials"
 	"servika/internal/httpx"
 	"servika/internal/quota"
+	"servika/internal/subdomain"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -49,16 +50,32 @@ type Installation struct {
 	Version  string `json:"version"`
 }
 
-func (h *Handlers) domain(r *http.Request) (id int64, systemUser, domainName string, ssl, demo, ok bool) {
+// domain resolves the site the request targets. A {sid} URL parameter selects that
+// subdomain, replacing the site name and document root with the subdomain's own, so
+// WordPress is discovered and installed under the subdomain instead of public_html.
+func (h *Handlers) domain(r *http.Request) (id int64, systemUser, domainName, root string, ssl, demo, ok bool) {
 	id, _ = strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var cert string
 	var isDemo int
 	if err := h.DB.QueryRowContext(r.Context(),
 		`SELECT system_user, domain_name, COALESCE(cert_path,''), COALESCE(is_demo,0) FROM domains WHERE id=?`, id).
 		Scan(&systemUser, &domainName, &cert, &isDemo); err != nil {
-		return id, "", "", false, false, false
+		return id, "", "", "", false, false, false
 	}
-	return id, systemUser, domainName, cert != "", isDemo == 1, true
+	root = "/home/" + systemUser + "/public_html"
+	if raw := chi.URLParam(r, "sid"); raw != "" {
+		sid, err := strconv.ParseInt(raw, 10, 64)
+		if err != nil {
+			return id, "", "", "", false, false, false
+		}
+		scope, scopeOK := subdomain.ResolveScope(r.Context(), h.DB, id, sid)
+		if !scopeOK {
+			return id, "", "", "", false, false, false
+		}
+		// A subdomain carries its own certificate state, so SSL comes from the scope.
+		return id, systemUser, scope.FQDN, scope.DocRoot, scope.HasTLS, isDemo == 1, true
+	}
+	return id, systemUser, domainName, root, cert != "", isDemo == 1, true
 }
 
 // runWP runs wp-cli as the domain user with HOME set and without a shell.
@@ -80,12 +97,11 @@ func (h *Handlers) scheme(ssl bool) string {
 
 // GET /domains/{id}/wordpress discovers installations in public_html and one directory level below.
 func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, _, _, _, ok := h.domain(r)
+	_, systemUser, _, root, _, _, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	root := "/home/" + systemUser + "/public_html"
 	out := []Installation{}
 	candidates := []string{root}
 	if entries, err := os.ReadDir(root); err == nil {
@@ -279,7 +295,7 @@ func installAlreadyExists(target string) (string, bool) {
 
 // POST /domains/{id}/wordpress installs WordPress.
 func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
-	id, systemUser, domainName, ssl, demo, ok := h.domain(r)
+	id, systemUser, domainName, root, ssl, demo, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -322,7 +338,6 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid subdirectory (lowercase letters, digits, and hyphens only)")
 		return
 	}
-	root := "/home/" + systemUser + "/public_html"
 	target := root
 	if req.SubDir != "" {
 		target = filepath.Join(root, req.SubDir)
@@ -418,7 +433,7 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 
 // POST /domains/{id}/wordpress/update updates an installation from {dir}.
 func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
-	_, systemUser, _, _, demo, ok := h.domain(r)
+	_, systemUser, _, root, _, demo, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -434,7 +449,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	dir, err := resolveDirectory(systemUser, updateRequest.Dir)
+	dir, err := resolveDirectory(root, updateRequest.Dir)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
@@ -456,7 +471,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /domains/{id}/wordpress removes an installation from {dir, db_delete}.
 func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
-	id, systemUser, _, _, demo, ok := h.domain(r)
+	id, systemUser, _, root, _, demo, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -477,13 +492,12 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	dir, err := resolveDirectory(systemUser, deleteRequest.Dir)
+	dir, err := resolveDirectory(root, deleteRequest.Dir)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	root := "/home/" + systemUser + "/public_html"
-	// Protect the root site by refusing to remove public_html itself.
+	// Protect the site root by refusing to remove the document root itself.
 	if dir == root {
 		httpx.WriteError(w, http.StatusBadRequest, "wordPress in the root directory cannot be removed from the panel because it would delete the entire site; use File Manager")
 		return
@@ -509,9 +523,10 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
-// resolveDirectory converts a directory value into a safe absolute path under public_html containing wp-config.php.
-func resolveDirectory(systemUser, directoryValue string) (string, error) {
-	root := "/home/" + systemUser + "/public_html"
+// resolveDirectory converts a directory value into a safe absolute path under root
+// containing wp-config.php. The caller supplies root so a subdomain request is confined
+// to the subdomain's document root instead of the parent domain's public_html.
+func resolveDirectory(root, directoryValue string) (string, error) {
 	d := strings.TrimPrefix(strings.TrimSpace(directoryValue), "/ (root)")
 	rel := strings.Trim(strings.TrimSpace(d), "/")
 	dir := root

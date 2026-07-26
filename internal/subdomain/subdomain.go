@@ -3,6 +3,7 @@
 package subdomain
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"log"
@@ -49,6 +50,48 @@ func (h *Handlers) parent(r *http.Request) (id int64, systemUser, domainName, ph
 }
 
 func docrootOf(systemUser, fqdn string) string { return "/home/" + systemUser + "/subdomains/" + fqdn }
+
+// Scope describes the document root a request targets. Tools that operate on a
+// site's files (WordPress, Composer) and on its nginx logs use it so a subdomain
+// is acted on in its own root instead of the parent domain's public_html.
+type Scope struct {
+	SubdomainID int64
+	FQDN        string
+	DocRoot     string
+	PHPVersion  string
+	// HasTLS reports whether the subdomain's certificate pair is installed, so callers
+	// can build a site URL with the scheme nginx actually serves.
+	HasTLS bool
+}
+
+// ResolveScope loads the scope for a subdomain that belongs to domainID. It returns
+// ok=false when the subdomain does not exist or belongs to another domain, so a
+// tenant cannot reach another domain's files by guessing an id.
+func ResolveScope(ctx context.Context, db *sql.DB, domainID, subdomainID int64) (Scope, bool) {
+	if subdomainID <= 0 {
+		return Scope{}, false
+	}
+	var systemUser, name, fqdn, phpVersion string
+	if err := db.QueryRowContext(ctx,
+		`SELECT d.system_user, s.subdomain, s.fqdn, COALESCE(s.php_version,'8.3')
+		   FROM subdomains s JOIN domains d ON d.id = s.domain_id
+		  WHERE s.id=? AND s.domain_id=?`, subdomainID, domainID).
+		Scan(&systemUser, &name, &fqdn, &phpVersion); err != nil {
+		return Scope{}, false
+	}
+	// Re-validate the stored values before they reach a filesystem path.
+	if !subdomainPattern.MatchString(name) || provisioner.ValidateDomain(fqdn) != nil {
+		return Scope{}, false
+	}
+	certPath, keyPath := certificatePaths(systemUser, fqdn)
+	return Scope{
+		SubdomainID: subdomainID,
+		FQDN:        fqdn,
+		DocRoot:     docrootOf(systemUser, fqdn),
+		PHPVersion:  phpVersion,
+		HasTLS:      fileExists(certPath) && fileExists(keyPath),
+	}, true
+}
 func confPath(systemUser, subdomainName string) string {
 	return "/etc/nginx/conf.d/sub_" + systemUser + "_" + subdomainName + ".conf"
 }
