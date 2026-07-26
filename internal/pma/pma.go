@@ -85,12 +85,15 @@ func (h *Handlers) RequestToken(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to create a secure signon token")
 		return
 	}
-	expires := time.Now().Add(2 * time.Minute) // Two-minute validity window.
+	expires := time.Now().Add(2 * time.Minute) // Two-minute validity window, for the response only.
 
+	// Write expires_at with the MySQL clock. A Go-side time.Now() (UTC in the driver) mixed
+	// with a server-local NOW() makes a fresh token look already expired on hosts whose MySQL
+	// session timezone is not UTC, so the cleanup below deletes it instantly and redeem 404s.
 	_, err = h.DB.ExecContext(r.Context(),
 		`INSERT INTO pma_tokens(token, domain_id, db_user, db_pass, db_name, expires_at)
-		 VALUES(?,?,?,?,?,?)`,
-		token, domainID, dbUser, dbPassword, dbName, expires)
+		 VALUES(?,?,?,?,?, DATE_ADD(NOW(), INTERVAL 120 SECOND))`,
+		token, domainID, dbUser, dbPassword, dbName)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
 		return
@@ -128,12 +131,13 @@ func (h *Handlers) Redeem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var dbUser, dbPassword, dbName string
-	var expiresAt time.Time
-	var used int
+	var used, expired int
+	// Evaluate expiry with the MySQL clock so it matches how expires_at was written and how
+	// the consume UPDATE below compares it. A Go-side comparison can reject a valid token.
 	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT db_user, db_pass, db_name, expires_at, used
+		`SELECT db_user, db_pass, db_name, used, (expires_at < NOW())
 		 FROM pma_tokens WHERE token=?`, req.Token).
-		Scan(&dbUser, &dbPassword, &dbName, &expiresAt, &used)
+		Scan(&dbUser, &dbPassword, &dbName, &used, &expired)
 	if errors.Is(err, sql.ErrNoRows) {
 		httpx.WriteError(w, http.StatusNotFound, "token not found")
 		return
@@ -146,7 +150,7 @@ func (h *Handlers) Redeem(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusGone, "token has already been used")
 		return
 	}
-	if time.Now().After(expiresAt) {
+	if expired == 1 {
 		httpx.WriteError(w, http.StatusGone, "token has expired")
 		return
 	}
