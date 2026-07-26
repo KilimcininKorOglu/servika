@@ -148,7 +148,8 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Write the nginx server block.
 	conf := confPath(systemUser, subdomainName)
-	if err := os.WriteFile(conf, []byte(vhost(fqdn, docroot, socket)), 0o644); err != nil {
+	// A newly created subdomain has no protected directories yet.
+	if err := os.WriteFile(conf, []byte(vhost(fqdn, docroot, socket, "")), 0o644); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not write virtual host configuration")
 		return
 	}
@@ -230,7 +231,9 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
-func vhost(fqdn, docroot, socket string) string {
+// vhost renders the plain HTTP server block. protected carries the auth_basic
+// blocks for this subdomain's protected directories and is empty when none exist.
+func vhost(fqdn, docroot, socket, protected string) string {
 	return `server {
     listen 80;
     listen [::]:80;
@@ -245,7 +248,9 @@ func vhost(fqdn, docroot, socket string) string {
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
 
+` + protected + `
     location /.well-known/acme-challenge/ {
+        auth_basic off;
         root /var/www/_acme;
         try_files $uri =404;
     }

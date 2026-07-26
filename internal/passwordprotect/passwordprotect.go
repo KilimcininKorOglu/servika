@@ -16,6 +16,7 @@ import (
 
 	"servika/internal/httpx"
 	"servika/internal/provisioner"
+	"servika/internal/subdomain"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -51,15 +52,41 @@ func (h *Handlers) domain(r *http.Request) (id int64, systemUser, version string
 	return id, systemUser, version, isDemo == 1, true
 }
 
-// GET /domains/{id}/password-protection
+// scope resolves which document root the request targets. A {sid} URL parameter
+// selects that subdomain, and 0 means the domain's own root. The subdomain must
+// belong to the domain in the URL, so a tenant cannot address another domain's
+// subdomain by guessing its id.
+func (h *Handlers) scope(r *http.Request, domainID int64) (subdomainID int64, ok bool) {
+	raw := chi.URLParam(r, "sid")
+	if raw == "" {
+		return 0, true
+	}
+	sid, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil || sid <= 0 {
+		return 0, false
+	}
+	var found int64
+	if err := h.DB.QueryRowContext(r.Context(),
+		`SELECT id FROM subdomains WHERE id=? AND domain_id=?`, sid, domainID).Scan(&found); err != nil {
+		return 0, false
+	}
+	return found, true
+}
+
+// GET /domains/{id}/password-protection and the /subdomain/{sid} variant.
 func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	id, _, _, _, ok := h.domain(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
+	subdomainID, ok := h.scope(r, id)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
+		return
+	}
 	rows, err := h.DB.QueryContext(r.Context(),
-		`SELECT id, path, username, created_at FROM protected_directories WHERE domain_id=? ORDER BY path, username`, id)
+		`SELECT id, path, username, created_at FROM protected_directories WHERE domain_id=? AND subdomain_id=? ORDER BY path, username`, id, subdomainID)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not list records")
 		return
@@ -94,6 +121,11 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid user")
 		return
 	}
+	subdomainID, ok := h.scope(r, id)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
+		return
+	}
 	var req struct {
 		Path     string `json:"path"`
 		Username string `json:"username"`
@@ -120,7 +152,7 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create htpasswd directory")
 		return
 	}
-	file := htpasswdDir + "/d" + strconv.FormatInt(id, 10) + "_" + sanitize(path)
+	file := htpasswdFile(id, subdomainID, path)
 	flag := "-bB"
 	if _, e := os.Stat(file); e != nil {
 		flag = "-cbB" // Create a new file.
@@ -134,21 +166,21 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 	_ = os.Chmod(file, 0o644)
 
 	if _, err := h.DB.Exec(
-		`INSERT INTO protected_directories (domain_id, path, username, htpasswd_file) VALUES (?,?,?,?)
+		`INSERT INTO protected_directories (domain_id, subdomain_id, path, username, htpasswd_file) VALUES (?,?,?,?,?)
 		 ON DUPLICATE KEY UPDATE htpasswd_file=VALUES(htpasswd_file)`,
-		id, path, req.Username, file); err != nil {
+		id, subdomainID, path, req.Username, file); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not add record")
 		return
 	}
 
-	if err := h.reRender(id, systemUser, version); err != nil {
+	if err := h.render(id, subdomainID, systemUser, version); err != nil {
 		// Roll back the record and htpasswd entry when vhost validation fails, then render again.
-		_, _ = h.DB.Exec(`DELETE FROM protected_directories WHERE domain_id=? AND path=? AND username=?`, id, path, req.Username)
+		_, _ = h.DB.Exec(`DELETE FROM protected_directories WHERE domain_id=? AND subdomain_id=? AND path=? AND username=?`, id, subdomainID, path, req.Username)
 		_ = exec.Command("htpasswd", "-D", file, req.Username).Run()
-		if remaining := h.userCount(id, path); remaining == 0 {
+		if remaining := h.userCount(id, subdomainID, path); remaining == 0 {
 			_ = os.Remove(file)
 		}
-		_ = h.reRender(id, systemUser, version)
+		_ = h.render(id, subdomainID, systemUser, version)
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
@@ -162,33 +194,57 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
+	subdomainID, ok := h.scope(r, id)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
+		return
+	}
 	kid, _ := strconv.ParseInt(chi.URLParam(r, "kid"), 10, 64)
 	var path, username, file string
 	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT path, username, htpasswd_file FROM protected_directories WHERE id=? AND domain_id=?`, kid, id).
+		`SELECT path, username, htpasswd_file FROM protected_directories WHERE id=? AND domain_id=? AND subdomain_id=?`, kid, id, subdomainID).
 		Scan(&path, &username, &file); err != nil {
 		httpx.WriteError(w, http.StatusNotFound, "record not found")
 		return
 	}
-	if _, err := h.DB.Exec(`DELETE FROM protected_directories WHERE id=? AND domain_id=?`, kid, id); err != nil {
+	if _, err := h.DB.Exec(`DELETE FROM protected_directories WHERE id=? AND domain_id=? AND subdomain_id=?`, kid, id, subdomainID); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not delete record")
 		return
 	}
 	_ = exec.Command("htpasswd", "-D", file, username).Run()
-	if h.userCount(id, path) == 0 {
+	if h.userCount(id, subdomainID, path) == 0 {
 		_ = os.Remove(file) // Remove the location block when no user remains for this path.
 	}
-	if err := h.reRender(id, systemUser, version); err != nil {
+	if err := h.render(id, subdomainID, systemUser, version); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
-func (h *Handlers) userCount(id int64, path string) int {
+// htpasswdFile names the password file per scope, so the same path protected on a
+// domain and on one of its subdomains cannot share, and overwrite, one file.
+func htpasswdFile(domainID, subdomainID int64, path string) string {
+	if subdomainID > 0 {
+		return htpasswdDir + "/d" + strconv.FormatInt(domainID, 10) +
+			"_s" + strconv.FormatInt(subdomainID, 10) + "_" + sanitize(path)
+	}
+	return htpasswdDir + "/d" + strconv.FormatInt(domainID, 10) + "_" + sanitize(path)
+}
+
+func (h *Handlers) userCount(id, subdomainID int64, path string) int {
 	var n int
-	_ = h.DB.QueryRow(`SELECT COUNT(*) FROM protected_directories WHERE domain_id=? AND path=?`, id, path).Scan(&n)
+	_ = h.DB.QueryRow(`SELECT COUNT(*) FROM protected_directories WHERE domain_id=? AND subdomain_id=? AND path=?`, id, subdomainID, path).Scan(&n)
 	return n
+}
+
+// render publishes the protection change to the vhost that owns the scope: the
+// subdomain's own server block, or the parent domain's.
+func (h *Handlers) render(domainID, subdomainID int64, systemUser, version string) error {
+	if subdomainID > 0 {
+		return subdomain.ReRender(h.DB, subdomainID)
+	}
+	return h.reRender(domainID, systemUser, version)
 }
 
 // reRender rebuilds the vhost and restores the backup when nginx validation fails.

@@ -1758,7 +1758,7 @@ func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, 
 		opts.BrowserCacheDays = browserCacheDays
 	}
 	// Add protected-directory .htpasswd blocks regardless of whether nginx_settings has a row.
-	if pb := buildProtectedBlocks(db, domainID, socket); pb != "" {
+	if pb := buildProtectedBlocks(db, domainID, 0, socket); pb != "" {
 		if opts.ExtraDirectives != "" {
 			opts.ExtraDirectives += "\n"
 		}
@@ -1808,10 +1808,21 @@ func sharedSocketPath(systemUser, phpVersion string) (string, error) {
 	return "", fmt.Errorf("unsupported or uninstalled version: %s", phpVersion)
 }
 
+// ProtectedBlocks generates the nginx auth_basic blocks for one document root.
+// subdomainID 0 selects the domain's own root; a non-zero value selects that
+// subdomain's root. Callers outside this package use this to render a vhost with
+// exactly the protection rows that belong to the scope they are rendering.
+func ProtectedBlocks(db *sql.DB, domainID, subdomainID int64, socket string) string {
+	return buildProtectedBlocks(db, domainID, subdomainID, socket)
+}
+
 // buildProtectedBlocks generates nginx auth_basic location blocks from protected_directories.
 // Each protected path receives an outer prefix location and a nested .php location that prevents PHP source disclosure.
-func buildProtectedBlocks(db *sql.DB, domainID int64, socket string) string {
-	rows, err := db.Query(`SELECT DISTINCT path, htpasswd_file FROM protected_directories WHERE domain_id=? ORDER BY path`, domainID)
+// The subdomain_id filter is what keeps the scopes separate: a subdomain's rows must
+// never leak into the parent domain's vhost, so the domain scope matches 0 exactly
+// rather than selecting every row for the domain.
+func buildProtectedBlocks(db *sql.DB, domainID, subdomainID int64, socket string) string {
+	rows, err := db.Query(`SELECT DISTINCT path, htpasswd_file FROM protected_directories WHERE domain_id=? AND subdomain_id=? ORDER BY path`, domainID, subdomainID)
 	if err != nil {
 		return ""
 	}

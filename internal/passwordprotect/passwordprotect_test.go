@@ -81,3 +81,46 @@ func TestReUser(t *testing.T) {
 		}
 	}
 }
+
+func TestHtpasswdFileSeparatesScopes(t *testing.T) {
+	tests := []struct {
+		name        string
+		domainID    int64
+		subdomainID int64
+		path        string
+		want        string
+	}{
+		{
+			name: "domain scope keeps the legacy name", domainID: 7, subdomainID: 0,
+			path: "/private", want: "/etc/nginx/htpasswd/d7_private",
+		},
+		{
+			name: "subdomain scope gets its own name", domainID: 7, subdomainID: 3,
+			path: "/private", want: "/etc/nginx/htpasswd/d7_s3_private",
+		},
+		{
+			name: "root path is sanitized", domainID: 1, subdomainID: 0,
+			path: "/", want: "/etc/nginx/htpasswd/d1_root",
+		},
+		{
+			name: "nested path is flattened", domainID: 2, subdomainID: 9,
+			path: "/a/b", want: "/etc/nginx/htpasswd/d2_s9_a_b",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := htpasswdFile(test.domainID, test.subdomainID, test.path); got != test.want {
+				t.Fatalf("htpasswdFile(%d, %d, %q) = %q, want %q",
+					test.domainID, test.subdomainID, test.path, got, test.want)
+			}
+		})
+	}
+}
+
+// The same path on a domain and on one of its subdomains must never resolve to one
+// file, otherwise adding a user to the subdomain would change the domain's password.
+func TestHtpasswdFileDomainAndSubdomainDiffer(t *testing.T) {
+	if htpasswdFile(4, 0, "/private") == htpasswdFile(4, 1, "/private") {
+		t.Fatal("domain and subdomain scopes resolved to the same htpasswd file")
+	}
+}

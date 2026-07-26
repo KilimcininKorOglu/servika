@@ -29,21 +29,21 @@ func certificatePaths(systemUser, fqdn string) (string, string) {
 	return filepath.Join(directory, fqdn+".crt"), filepath.Join(directory, fqdn+".key")
 }
 
-func (h *Handlers) subInfo(r *http.Request, domainID int64, parentDomain string) (string, string, string, bool) {
+func (h *Handlers) subInfo(r *http.Request, domainID int64, parentDomain string) (int64, string, string, string, bool) {
 	subdomainID, err := strconv.ParseInt(chi.URLParam(r, "sid"), 10, 64)
 	if err != nil || subdomainID <= 0 {
-		return "", "", "", false
+		return 0, "", "", "", false
 	}
 	var name, fqdn, phpVersion string
 	if err := h.DB.QueryRowContext(r.Context(),
 		`SELECT subdomain, fqdn, COALESCE(php_version,'8.3') FROM subdomains WHERE id=? AND domain_id=?`,
 		subdomainID, domainID).Scan(&name, &fqdn, &phpVersion); err != nil {
-		return "", "", "", false
+		return 0, "", "", "", false
 	}
 	if !subdomainPattern.MatchString(name) || fqdn != name+"."+parentDomain || provisioner.ValidateDomain(fqdn) != nil {
-		return "", "", "", false
+		return 0, "", "", "", false
 	}
-	return name, fqdn, phpVersion, true
+	return subdomainID, name, fqdn, phpVersion, true
 }
 
 func validSSLType(value string) (string, bool) {
@@ -65,7 +65,7 @@ func (h *Handlers) SSLStatus(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "invalid domain configuration")
 		return
 	}
-	name, fqdn, _, ok := h.subInfo(r, domainID, parentDomain)
+	_, name, fqdn, _, ok := h.subInfo(r, domainID, parentDomain)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
 		return
@@ -91,7 +91,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "invalid domain configuration")
 		return
 	}
-	name, fqdn, phpVersion, ok := h.subInfo(r, domainID, parentDomain)
+	subdomainID, name, fqdn, phpVersion, ok := h.subInfo(r, domainID, parentDomain)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
 		return
@@ -132,7 +132,8 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, sslDirectory(systemUser)).Run()
 	_ = exec.Command("restorecon", "-R", sslDirectory(systemUser)).Run()
 
-	config := vhostSSL(fqdn, docrootOf(systemUser, fqdn), socket, certPath, keyPath)
+	protected := provisioner.ProtectedBlocks(h.DB, domainID, subdomainID, socket)
+	config := vhostSSL(fqdn, docrootOf(systemUser, fqdn), socket, certPath, keyPath, protected)
 	if err := applyVhost(confPath(systemUser, name), config); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "sSL installation failed")
 		return
@@ -155,7 +156,7 @@ func (h *Handlers) SSLRemove(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "invalid domain configuration")
 		return
 	}
-	name, fqdn, phpVersion, ok := h.subInfo(r, domainID, parentDomain)
+	subdomainID, name, fqdn, phpVersion, ok := h.subInfo(r, domainID, parentDomain)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
 		return
@@ -165,7 +166,8 @@ func (h *Handlers) SSLRemove(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "pHP version is not installed on the server")
 		return
 	}
-	if err := applyVhost(confPath(systemUser, name), vhost(fqdn, docrootOf(systemUser, fqdn), socket)); err != nil {
+	protected := provisioner.ProtectedBlocks(h.DB, domainID, subdomainID, socket)
+	if err := applyVhost(confPath(systemUser, name), vhost(fqdn, docrootOf(systemUser, fqdn), socket, protected)); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not disable SSL")
 		return
 	}
@@ -223,12 +225,15 @@ func fileExists(path string) bool {
 	return err == nil
 }
 
-func vhostSSL(fqdn, docroot, socket, certPath, keyPath string) string {
+// vhostSSL renders the HTTPS server block. protected carries the auth_basic blocks
+// for this subdomain's protected directories and is empty when none exist. The acme
+// challenge location stays exempt so certificate issuance and renewal keep working.
+func vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected string) string {
 	return fmt.Sprintf(`server {
     listen 80;
     listen [::]:80;
     server_name %[1]s;
-    location /.well-known/acme-challenge/ { root /var/www/_acme; try_files $uri =404; }
+    location /.well-known/acme-challenge/ { auth_basic off; root /var/www/_acme; try_files $uri =404; }
     location / { return 301 https://$host$request_uri; }
 }
 server {
@@ -248,6 +253,8 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
 
+%[6]s
+    location /.well-known/acme-challenge/ { auth_basic off; root /var/www/_acme; try_files $uri =404; }
     location / { try_files $uri $uri/ /index.php?$query_string; }
     location ~ \.php$ {
         try_files $uri =404;
@@ -265,5 +272,5 @@ server {
     }
     location ~ /\.(?!well-known) { deny all; }
 }
-`, fqdn, docroot, socket, certPath, keyPath)
+`, fqdn, docroot, socket, certPath, keyPath, protected)
 }

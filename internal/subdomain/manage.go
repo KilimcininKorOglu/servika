@@ -1,6 +1,7 @@
 package subdomain
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"os/exec"
@@ -87,10 +88,11 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	docroot := docrootOf(systemUser, fqdn)
+	protected := provisioner.ProtectedBlocks(h.DB, id, sid, socket)
 	certPath, keyPath := certificatePaths(systemUser, fqdn)
-	config := vhost(fqdn, docroot, socket)
+	config := vhost(fqdn, docroot, socket, protected)
 	if fileExists(certPath) && fileExists(keyPath) {
-		config = vhostSSL(fqdn, docroot, socket, certPath, keyPath)
+		config = vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected)
 	}
 	if err := applyVhost(confPath(systemUser, subdomainName), config); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "nginx rejected the configuration")
@@ -102,6 +104,33 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "php_version": phpVersion})
+}
+
+// ReRender rewrites one subdomain's vhost from its current database state,
+// including its own auth_basic blocks. It is TLS-aware, so an existing certificate
+// keeps the HTTPS vhost. Callers that change a subdomain's protected directories
+// use this to publish the change without duplicating the nginx apply sequence.
+func ReRender(db *sql.DB, subdomainID int64) error {
+	var domainID int64
+	var systemUser, subdomainName, fqdn, phpVersion string
+	if err := db.QueryRow(
+		`SELECT s.domain_id, d.system_user, s.subdomain, s.fqdn, s.php_version
+		   FROM subdomains s JOIN domains d ON d.id = s.domain_id WHERE s.id=?`, subdomainID).
+		Scan(&domainID, &systemUser, &subdomainName, &fqdn, &phpVersion); err != nil {
+		return err
+	}
+	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)
+	if err != nil {
+		return err
+	}
+	docroot := docrootOf(systemUser, fqdn)
+	protected := provisioner.ProtectedBlocks(db, domainID, subdomainID, socket)
+	certPath, keyPath := certificatePaths(systemUser, fqdn)
+	config := vhost(fqdn, docroot, socket, protected)
+	if fileExists(certPath) && fileExists(keyPath) {
+		config = vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected)
+	}
+	return applyVhost(confPath(systemUser, subdomainName), config)
 }
 
 // docrootDiskKB reports the document root size in kilobytes. It is best effort:
