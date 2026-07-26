@@ -364,6 +364,7 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/subdomain", subH.Create)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/subdomain/{sid}", subH.Delete)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}", subH.Detail)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/subdomain/{sid}/php", subH.SetPHP)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}/ssl", subH.SSLStatus)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/subdomain/{sid}/ssl", subH.SSLIssue)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/subdomain/{sid}/ssl", subH.SSLRemove)
