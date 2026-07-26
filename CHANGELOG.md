@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-26
+
+### Added
+- Subdomain management pages and a nested subdomain list under each domain.
+- WordPress, Composer, and log tooling scoped to individual subdomains.
+- Subdomain traffic aggregated into the parent domain statistics.
+- Password-protected directories scoped to subdomains.
+- Global subdomain list endpoint.
+- Subdomain detail endpoint.
+- Per-subdomain PHP version switching.
+
+### Changed
+- Adopted `SplitSeq` and integer range loops.
+- Updated the installation and configuration guide.
+
+### Fixed
+- acme.sh now recovers from a rejected account contact address, which previously
+  blocked certificate issuance for every domain on the host permanently.
+- phpMyAdmin signon token expiry is evaluated with the MySQL clock, so tokens are
+  no longer discarded instantly on hosts whose database timezone is not UTC.
+- Laravel installs preserve the tenant inode quota and surface install failures.
+
 ## [1.0.3] - 2026-07-25
 
 ### Added
