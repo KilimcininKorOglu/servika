@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import { useResourceScope } from '@/lib/scope'
 
 type KeyValue = { name: string; count: number }
 type Day = { date: string; request: number }
@@ -13,7 +14,7 @@ type Summary = {
 }
 
 export default function DomainStatsPage() {
-  const { id } = useParams()
+  const { id, base, isSubdomain, backHref, backLabel } = useResourceScope()
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -21,12 +22,12 @@ export default function DomainStatsPage() {
   function load() {
     if (!id) return
     setLoading(true); setError(null)
-    api.get<Summary>(`/domains/${id}/statistics`)
+    api.get<Summary>(`${base}/statistics`)
       .then(response => setSummary(response.data))
       .catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
   }
-  useEffect(load, [id])
+  useEffect(load, [base])
 
   if (loading) return <div className="px-6 py-5 text-slate-400">Loading…</div>
   if (!summary) return <div className="px-6 py-5"><div className="text-sm text-red-600">{error || 'Not found'}</div></div>
@@ -47,7 +48,8 @@ export default function DomainStatsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Traffic Statistics</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1"><span className="font-mono">{summary.domain_name}</span>, nginx access log analysis.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1"><span className="font-mono">{summary.domain_name}</span>, nginx access log analysis.
+              {!isSubdomain && ' Subdomain traffic is included in these totals.'}</p>
           </div>
           <button onClick={load} className="text-sm px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">↻ Refresh</button>
         </div>
@@ -123,7 +125,7 @@ export default function DomainStatsPage() {
           </>
         )}
 
-        <div className="mt-4"><Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">← Back to subscription</Link></div>
+        <div className="mt-4"><Link to={backHref} className="text-sm text-brand-600 dark:text-brand-400">{backLabel}</Link></div>
       </div>
     </div>
   )

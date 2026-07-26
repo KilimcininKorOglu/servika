@@ -98,6 +98,10 @@ export default function DomainSubdomainsPage() {
                     <div className="text-[11px] text-slate-400 font-mono truncate">{subdomain.docroot} · PHP {subdomain.php_version}</div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
+                    <Link to={`/domains/${id}/subdomain/${subdomain.id}`} title="Manage this subdomain"
+                      className="text-xs px-2.5 py-1 border border-brand-300 dark:border-brand-800 text-brand-600 dark:text-brand-400 rounded-md hover:bg-brand-50 dark:hover:bg-brand-900/20">
+                      Manage
+                    </Link>
                     <button onClick={() => issueSSL(subdomain, 'letsencrypt')} disabled={sslBusy === subdomain.id} title="Install Let's Encrypt SSL"
                       className="text-xs px-2.5 py-1 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50">
                       {sslBusy === subdomain.id ? '…' : "🔒 Let's Encrypt"}

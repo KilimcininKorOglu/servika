@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -20,6 +20,11 @@ type Domain = {
   php_version?: string; is_demo?: boolean
   created_at?: string; plan_id?: number; plan_name?: string
 }
+type Subdomain = {
+  id: number; subdomain: string; fqdn: string
+  parent_id: number; parent_name: string; system_user: string
+  php_version: string; docroot: string; created_at: string
+}
 type Plan = { id: number; name: string; disk_quota_mb?: number }
 type PHPVer = { version: string; description?: string }
 type CreateResult = {
@@ -36,6 +41,7 @@ function fmtKB(kb: number) {
 
 export default function DomainsPage() {
   const [items, setItems] = useState<Domain[]>([])
+  const [subdomains, setSubdomains] = useState<Subdomain[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -65,6 +71,11 @@ export default function DomainsPage() {
       .then(r => setItems(r.data))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
+    // Subdomains render nested under their parent. The endpoint is administrator-only,
+    // so a customer session simply shows no nested rows instead of an error.
+    api.get<Subdomain[]>('/subdomains')
+      .then(r => setSubdomains(r.data))
+      .catch(() => setSubdomains([]))
   }
   useEffect(load, [])
 
@@ -141,11 +152,30 @@ export default function DomainsPage() {
     return false
   }
 
+  // Subdomains grouped by parent domain id so each domain row can render its own
+  // nested children without rescanning the flat list for every row.
+  const subdomainsByParent = useMemo(() => {
+    const grouped = new Map<number, Subdomain[]>()
+    for (const sub of subdomains) {
+      const bucket = grouped.get(sub.parent_id)
+      if (bucket) bucket.push(sub)
+      else grouped.set(sub.parent_id, [sub])
+    }
+    return grouped
+  }, [subdomains])
+
+  // A domain stays visible when its own name or user matches, or when any of its
+  // subdomains match, so searching for a subdomain still reveals it in place.
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
     if (!normalizedQuery) return items
-    return items.filter(domain => domain.domain_name.toLowerCase().includes(normalizedQuery) || domain.system_user.toLowerCase().includes(normalizedQuery))
-  }, [items, query])
+    const parentsWithMatchingSubdomain = new Set(
+      subdomains.filter(sub => sub.fqdn.toLowerCase().includes(normalizedQuery)).map(sub => sub.parent_id),
+    )
+    return items.filter(domain => domain.domain_name.toLowerCase().includes(normalizedQuery)
+      || domain.system_user.toLowerCase().includes(normalizedQuery)
+      || parentsWithMatchingSubdomain.has(domain.id))
+  }, [items, subdomains, query])
 
   function toggleSelection(id: number) {
     setSelected(prev => {
@@ -260,8 +290,10 @@ export default function DomainsPage() {
             </thead>
             <tbody className={responsiveTableBodyClass}>
               {filtered.map(d => {
+                const children = subdomainsByParent.get(d.id) || []
                 return (
-                  <tr key={d.id} className={`${responsiveTableRowClass} ${selected.has(d.id) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
+                  <Fragment key={d.id}>
+                  <tr className={`${responsiveTableRowClass} ${selected.has(d.id) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
                     <td data-label="Select" className={responsiveTableCellClass}>
                       <input type="checkbox" checked={selected.has(d.id)}
                         onChange={() => toggleSelection(d.id)} className="cursor-pointer" />
@@ -291,6 +323,34 @@ export default function DomainsPage() {
                       <Link to={`/subscriptions/${d.id}`} className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300">Manage</Link>
                     </td>
                   </tr>
+                  {children.map(sub => (
+                    <tr key={`s${sub.id}`} className={`${responsiveTableRowClass} bg-slate-50/60 dark:bg-slate-900/30`}>
+                      <td data-label="Select" className={responsiveTableCellClass}></td>
+                      <td data-label="Domain Name" className={responsiveTableCellClass}>
+                        <div className="text-right lg:text-left lg:pl-5">
+                          <span className="text-slate-300 dark:text-slate-600 mr-1 hidden lg:inline">└</span>
+                          <Link to={`/domains/${d.id}/subdomain/${sub.id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300">
+                            {sub.fqdn}
+                          </Link>
+                          <span className="ml-2 text-[10px] uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded">SUB</span>
+                        </div>
+                      </td>
+                      <td data-label="System User" className={responsiveTableCodeCellClass}>{sub.system_user}</td>
+                      <td data-label="Plan" className={responsiveTableCellClass}>
+                        <span className="text-slate-400 dark:text-slate-500 italic">Parent</span>
+                      </td>
+                      <td data-label="PHP" className={responsiveTableCodeCellClass}>{sub.php_version || '-'}</td>
+                      <td data-label="Disk" className={responsiveTableCodeCellClass}>-</td>
+                      <td data-label="Status" className={responsiveTableCellClass}>
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">subdomain</span>
+                      </td>
+                      <td data-label="Created" className={responsiveTableCodeCellClass}>{sub.created_at || '-'}</td>
+                      <td className={responsiveTableActionCellClass}>
+                        <Link to={`/domains/${d.id}/subdomain/${sub.id}`} className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300">Manage</Link>
+                      </td>
+                    </tr>
+                  ))}
+                  </Fragment>
                 )
               })}
             </tbody>

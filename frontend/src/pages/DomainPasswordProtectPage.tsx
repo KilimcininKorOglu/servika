@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import { useResourceScope } from '@/lib/scope'
 
 type Protection = { id: number; path: string; username: string; created_at: string }
 
 export default function DomainPasswordProtectPage() {
-  const { id } = useParams()
+  const { id, base, backHref, backLabel } = useResourceScope()
   const [protections, setProtections] = useState<Protection[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -19,16 +20,16 @@ export default function DomainPasswordProtectPage() {
   function load() {
     if (!id) return
     setLoading(true)
-    api.get<Protection[]>(`/domains/${id}/protection`)
+    api.get<Protection[]>(`${base}/protection`)
       .then(r => setProtections(r.data || [])).catch(e => setError(apiError(e))).finally(() => setLoading(false))
   }
-  useEffect(load, [id])
+  useEffect(load, [base])
 
   async function add(e: React.FormEvent) {
     e.preventDefault()
     setError(null); setSuccess(null); setIsSaving(true)
     try {
-      await api.post(`/domains/${id}/protection`, { path, username, password })
+      await api.post(`${base}/protection`, { path, username, password })
       setSuccess(`${path} is now protected with the user "${username}".`)
       setPassword('')
       load()
@@ -41,7 +42,7 @@ export default function DomainPasswordProtectPage() {
     if (!confirm(`Remove user "${k.username}" from the protection on ${k.path}?`)) return
     setError(null); setSuccess(null)
     try {
-      await api.delete(`/domains/${id}/protection/${k.id}`)
+      await api.delete(`${base}/protection/${k.id}`)
       load()
     } catch (err) { setError(apiError(err, 'Could not remove protection')) }
   }
@@ -124,7 +125,7 @@ export default function DomainPasswordProtectPage() {
           )}
         </div>
 
-        <div className="mt-4"><Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">← Back to subscription</Link></div>
+        <div className="mt-4"><Link to={backHref} className="text-sm text-brand-600 dark:text-brand-400">{backLabel}</Link></div>
       </div>
     </div>
   )

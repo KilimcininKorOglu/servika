@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import { useResourceScope } from '@/lib/scope'
 import {
   responsiveTableBodyClass,
   responsiveTableCellClass,
@@ -18,7 +19,7 @@ type ReadResp = { file: string; path: string; lines: string[]; current: boolean 
 const MAX_WINDOW = 1000
 
 export default function DomainLogsPage() {
-  const { id } = useParams()
+  const { id, base, isSubdomain, backHref } = useResourceScope()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [files, setFiles] = useState<LogFile[]>([])
   const [activeFile, setActive] = useState<string>('access')
@@ -42,15 +43,20 @@ export default function DomainLogsPage() {
 
   useEffect(() => {
     if (!id) return
-    api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
-    api.get<LogFile[]>(`/domains/${id}/logs`).then(r => setFiles(r.data)).catch(e => setError(apiError(e)))
-  }, [id])
+    // A subdomain scope reads its own FQDN from the subdomain detail endpoint so the
+    // header and log paths name the subdomain instead of its parent.
+    const detail = isSubdomain
+      ? api.get<{ fqdn: string }>(base).then(r => ({ data: { domain_name: r.data.fqdn } }))
+      : api.get<Domain>(`/domains/${id}`)
+    detail.then(r => setDomain(r.data as Domain)).catch(() => {})
+    api.get<LogFile[]>(`${base}/logs`).then(r => setFiles(r.data)).catch(e => setError(apiError(e)))
+  }, [base])
 
   // Load the last N lines when the active file changes.
   async function initialLoad() {
     if (!id || !activeFile) return
     try {
-      const { data } = await api.get<ReadResp>(`/domains/${id}/logs/read`, { params: { file: activeFile, last: 200 } })
+      const { data } = await api.get<ReadResp>(`${base}/logs/read`, { params: { file: activeFile, last: 200 } })
       setLines(data.lines || [])
       setError(null)
     } catch (e) {
@@ -61,7 +67,7 @@ export default function DomainLogsPage() {
     setLive(false)
     initialLoad()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFile, id])
+  }, [activeFile, base])
 
   // Start or stop live tailing.
   useEffect(() => {
@@ -73,7 +79,7 @@ export default function DomainLogsPage() {
     ;(async () => {
       try {
         // Auth via the HttpOnly session cookie (same-origin); no bearer header.
-        const res = await fetch(`/api/v1/domains/${id}/logs/live?file=${activeFile}`, {
+        const res = await fetch(`/api/v1${base}/logs/live?file=${activeFile}`, {
           credentials: 'include',
           signal: ctrl.signal,
         })
@@ -122,14 +128,14 @@ export default function DomainLogsPage() {
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: 'Domains', href: '/domains' },
-        { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },
+        { label: domain?.domain_name || '...', href: backHref },
         { label: 'Logs' },
       ]} />
 
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Logs</h1>
       {domain && (
         <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
-          <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
+          <Link to={backHref} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
           {', '}
           <span className="font-mono">/var/log/nginx/{domain.domain_name}.*.log</span>
         </p>

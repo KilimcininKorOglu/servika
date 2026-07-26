@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import { useResourceScope } from '@/lib/scope'
 
 type Status = { installed: boolean; version: string; composer_json: boolean; username: string; dir: string }
 
 export default function DomainComposerPage() {
-  const { id } = useParams()
+  const { id, base, backHref, backLabel } = useResourceScope()
   const [d, setD] = useState<Status | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -17,14 +18,14 @@ export default function DomainComposerPage() {
   function load() {
     if (!id) return
     setLoading(true)
-    api.get<Status>(`/domains/${id}/composer`).then(r => setD(r.data)).catch(e => setError(apiError(e))).finally(() => setLoading(false))
+    api.get<Status>(`${base}/composer`).then(r => setD(r.data)).catch(e => setError(apiError(e))).finally(() => setLoading(false))
   }
-  useEffect(load, [id])
+  useEffect(load, [base])
 
   async function run(command: string, pkt?: string) {
     setRunningCommand(command); setError(null); setOutput(`$ composer ${command}${pkt ? ' ' + pkt : ''}\n\nRunning…`)
     try {
-      const { data } = await api.post(`/domains/${id}/composer`, { command, package: pkt || '' })
+      const { data } = await api.post(`${base}/composer`, { command, package: pkt || '' })
       setOutput(`$ composer ${command}${pkt ? ' ' + pkt : ''}\n\n${data.output || '(no output)'}\n\n${data.ok ? '✓ Completed' : '✗ Failed'}`)
       load()
     } catch (e) {
@@ -90,7 +91,7 @@ export default function DomainComposerPage() {
           </>
         )}
 
-        <div className="mt-4"><Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">← Back to Subscription</Link></div>
+        <div className="mt-4"><Link to={backHref} className="text-sm text-brand-600 dark:text-brand-400">{backLabel}</Link></div>
       </div>
     </div>
   )

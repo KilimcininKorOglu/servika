@@ -46,6 +46,7 @@ import FirewallPage from '@/pages/FirewallPage'
 import BackupManagementPage from '@/pages/BackupManagementPage'
 import DomainWordPressPage from '@/pages/DomainWordPressPage'
 import DomainSubdomainsPage from '@/pages/DomainSubdomainsPage'
+import DomainSubdomainPage from '@/pages/DomainSubdomainPage'
 import DomainAddonDomainsPage from '@/pages/DomainAddonDomainsPage'
 import DomainAccessControlPage from '@/pages/DomainAccessControlPage'
 import CustomerLoginPage from '@/pages/CustomerLoginPage'
@@ -98,6 +99,14 @@ export default function App() {
         <Route path="subscriptions/:id/wordpress"     element={<DomainWordPressPage />} />
         <Route path="subscriptions/:id/subdomains"  element={<DomainSubdomainsPage />} />
         <Route path="subscriptions/:id/addon-domains" element={<DomainAddonDomainsPage />} />
+        {/* Subdomain-scoped tools. The :sid segment switches useResourceScope to the
+            subdomain's own document root, so each page reuses the domain component. */}
+        <Route path="domains/:id/subdomain/:sid"              element={<DomainSubdomainPage />} />
+        <Route path="domains/:id/subdomain/:sid/wordpress"    element={<DomainWordPressPage />} />
+        <Route path="domains/:id/subdomain/:sid/logs"         element={<DomainLogsPage />} />
+        <Route path="domains/:id/subdomain/:sid/composer"     element={<DomainComposerPage />} />
+        <Route path="domains/:id/subdomain/:sid/protection"   element={<DomainPasswordProtectPage />} />
+        <Route path="domains/:id/subdomain/:sid/statistics"   element={<DomainStatsPage />} />
         <Route path="subscriptions/:id/access-control" element={<DomainAccessControlPage />} />
         <Route path="subscriptions/:id/cron"          element={<DomainCronPage />} />
         <Route path="subscriptions/:id/logs"     element={<DomainLogsPage />} />

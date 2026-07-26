@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import { useResourceScope } from '@/lib/scope'
 
 type Install = { dir: string; site_url: string; admin_url: string; version: string }
 type Result = { site_url: string; admin_url: string; admin_user: string; admin_password: string; version: string }
@@ -10,7 +11,7 @@ type Package = { name: string; status: string; version: string; update: string; 
 type User = { ID: number; user_login: string; user_email: string; display_name: string; roles: string }
 
 export default function DomainWordPressPage() {
-  const { id } = useParams()
+  const { id, base, isSubdomain, backHref, backLabel } = useResourceScope()
   const [items, setItems] = useState<Install[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -26,21 +27,23 @@ export default function DomainWordPressPage() {
 
   useEffect(() => {
     if (!id) return
-    api.get<{ domain_name: string }>(`/domains/${id}`).then(r => setDomainName(r.data.domain_name || '')).catch(() => {})
-  }, [id])
+    // A subdomain scope names itself by FQDN so the header does not show the parent domain.
+    api.get<{ domain_name?: string; fqdn?: string }>(isSubdomain ? base : `/domains/${id}`)
+      .then(r => setDomainName(r.data.fqdn || r.data.domain_name || '')).catch(() => {})
+  }, [base])
 
   const list = useCallback(() => {
     if (!id) return
     setLoading(true)
-    api.get<Install[]>(`/domains/${id}/wordpress`).then(r => setItems(r.data || [])).catch(() => setItems([])).finally(() => setLoading(false))
-  }, [id])
+    api.get<Install[]>(`${base}/wordpress`).then(r => setItems(r.data || [])).catch(() => setItems([])).finally(() => setLoading(false))
+  }, [base])
   useEffect(() => { list() }, [list])
 
   async function install(e: React.FormEvent) {
     e.preventDefault()
     setError(null); setResult(null); setInstalling(true)
     try {
-      const { data } = await api.post<Result>(`/domains/${id}/wordpress`, {
+      const { data } = await api.post<Result>(`${base}/wordpress`, {
         sub_dir: subdirectory.trim(), site_title: title.trim(), admin_user: adminUser.trim(), admin_email: adminEmail.trim(),
       })
       setResult(data); setTitle(''); setSubdirectory(''); setFormOpen(false)
@@ -55,7 +58,7 @@ export default function DomainWordPressPage() {
     <div className="px-6 py-6 max-w-5xl">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
-        { label: domainName || 'Subscription', href: `/subscriptions/${id}` },
+        { label: domainName || 'Subscription', href: backHref },
         { label: 'WordPress' },
       ]} />
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
@@ -85,7 +88,7 @@ export default function DomainWordPressPage() {
         </div>
       ) : (
         <div className="space-y-5">
-          {items.map(k => <Toolkit key={k.dir} id={id!} installation={k} onChange={list} />)}
+          {items.map(k => <Toolkit key={k.dir} base={base} installation={k} onChange={list} />)}
         </div>
       )}
 
@@ -97,7 +100,7 @@ export default function DomainWordPressPage() {
         </div>
       )}
 
-      <div className="mt-6"><Link to={`/subscriptions/${id}`} className="text-sm text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition">← Back to subscription</Link></div>
+      <div className="mt-6"><Link to={backHref} className="text-sm text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition">{backLabel}</Link></div>
     </div>
   )
 }
@@ -110,7 +113,7 @@ const TABS: { k: ToolkitTab; name: string }[] = [
   { k: 'themes', name: 'Themes' }, { k: 'users', name: 'Users' },
 ]
 
-function Toolkit({ id, installation, onChange }: { id: string; installation: Install; onChange: () => void }) {
+function Toolkit({ base, installation, onChange }: { base: string; installation: Install; onChange: () => void }) {
   const dir = installation.dir
   const isRoot = dir === '/ (root)'
   const [tab, setTab] = useState<ToolkitTab>('overview')
@@ -127,15 +130,15 @@ function Toolkit({ id, installation, onChange }: { id: string; installation: Ins
   const qp = { params: { dir } }
 
   const loadStatus = useCallback(() => {
-    api.get<Status>(`/domains/${id}/wordpress/status`, qp).then(r => setStatus(r.data)).catch(() => setStatus(null))
+    api.get<Status>(`${base}/wordpress/status`, qp).then(r => setStatus(r.data)).catch(() => setStatus(null))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, dir])
+  }, [base, dir])
   useEffect(() => { loadStatus() }, [loadStatus])
 
   useEffect(() => {
-    if (tab === 'extensions' && extensions === null) api.get<Package[]>(`/domains/${id}/wordpress/plugins`, qp).then(r => setPlugins(r.data || [])).catch(() => setPlugins([]))
-    if (tab === 'themes' && themes === null) api.get<Package[]>(`/domains/${id}/wordpress/themes`, qp).then(r => setThemes(r.data || [])).catch(() => setThemes([]))
-    if (tab === 'users' && users === null) api.get<User[]>(`/domains/${id}/wordpress/users`, qp).then(r => setUsers(r.data || [])).catch(() => setUsers([]))
+    if (tab === 'extensions' && extensions === null) api.get<Package[]>(`${base}/wordpress/plugins`, qp).then(r => setPlugins(r.data || [])).catch(() => setPlugins([]))
+    if (tab === 'themes' && themes === null) api.get<Package[]>(`${base}/wordpress/themes`, qp).then(r => setThemes(r.data || [])).catch(() => setThemes([]))
+    if (tab === 'users' && users === null) api.get<User[]>(`${base}/wordpress/users`, qp).then(r => setUsers(r.data || [])).catch(() => setUsers([]))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab])
 
@@ -150,22 +153,22 @@ function Toolkit({ id, installation, onChange }: { id: string; installation: Ins
     finally { setBusy(null) }
   }
 
-  const updateVersion = () => run('version', async () => (await api.post(`/domains/${id}/wordpress/update`, { dir })).data, 'WordPress core updated.', () => { loadStatus(); onChange() })
-  const updateAll = () => run('all', async () => (await api.post(`/domains/${id}/wordpress/tool`, { dir, action: 'update-all' })).data, 'Core, plugins, and themes updated.', () => { loadStatus(); setPlugins(null); setThemes(null); onChange() })
-  const maintenanceToggle = () => run('maintenance', async () => (await api.post(`/domains/${id}/wordpress/tool`, { dir, action: status?.maintenance ? 'maintenance-off' : 'maintenance-on' })).data, status?.maintenance ? 'Maintenance mode disabled.' : 'Maintenance mode enabled.', loadStatus)
-  const clearCache = () => run('cache', async () => (await api.post(`/domains/${id}/wordpress/tool`, { dir, action: 'cache-clear' })).data, 'Cache cleared.')
-  const repair = () => run('repair', async () => (await api.post(`/domains/${id}/wordpress/repair`, { dir })).data, 'Core repair completed.', loadStatus)
+  const updateVersion = () => run('version', async () => (await api.post(`${base}/wordpress/update`, { dir })).data, 'WordPress core updated.', () => { loadStatus(); onChange() })
+  const updateAll = () => run('all', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: 'update-all' })).data, 'Core, plugins, and themes updated.', () => { loadStatus(); setPlugins(null); setThemes(null); onChange() })
+  const maintenanceToggle = () => run('maintenance', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: status?.maintenance ? 'maintenance-off' : 'maintenance-on' })).data, status?.maintenance ? 'Maintenance mode disabled.' : 'Maintenance mode enabled.', loadStatus)
+  const clearCache = () => run('cache', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: 'cache-clear' })).data, 'Cache cleared.')
+  const repair = () => run('repair', async () => (await api.post(`${base}/wordpress/repair`, { dir })).data, 'Core repair completed.', loadStatus)
 
-  const updatePackage = (type: 'plugin' | 'theme', name: string) => run(`${type}:${name}`, async () => (await api.post(`/domains/${id}/wordpress/${type}`, { dir, action: 'update', name })).data, `${name} updated.`, () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
-  const packageAll = (type: 'plugin' | 'theme') => run(`${type}:all`, async () => (await api.post(`/domains/${id}/wordpress/${type}`, { dir, action: 'update-all' })).data, 'All updates completed.', () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
-  const pluginToggle = (plugin: Package) => run(`plugin:${plugin.name}`, async () => (await api.post(`/domains/${id}/wordpress/plugin`, { dir, action: plugin.status === 'active' ? 'passive' : 'active', name: plugin.name })).data, `${plugin.name} ${plugin.status === 'active' ? 'deactivated' : 'activated'}.`, () => setPlugins(null))
-  const activateTheme = (theme: Package) => run(`theme:${theme.name}`, async () => (await api.post(`/domains/${id}/wordpress/theme`, { dir, action: 'active', name: theme.name })).data, `${theme.name} activated.`, () => setThemes(null))
+  const updatePackage = (type: 'plugin' | 'theme', name: string) => run(`${type}:${name}`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update', name })).data, `${name} updated.`, () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
+  const packageAll = (type: 'plugin' | 'theme') => run(`${type}:all`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update-all' })).data, 'All updates completed.', () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
+  const pluginToggle = (plugin: Package) => run(`plugin:${plugin.name}`, async () => (await api.post(`${base}/wordpress/plugin`, { dir, action: plugin.status === 'active' ? 'passive' : 'active', name: plugin.name })).data, `${plugin.name} ${plugin.status === 'active' ? 'deactivated' : 'activated'}.`, () => setPlugins(null))
+  const activateTheme = (theme: Package) => run(`theme:${theme.name}`, async () => (await api.post(`${base}/wordpress/theme`, { dir, action: 'active', name: theme.name })).data, `${theme.name} activated.`, () => setThemes(null))
 
   async function resetPassword(user: User) {
     if (!confirm(`Generate a new password for "${user.user_login}"?\nThe current password will become invalid.`)) return
     setBusy(`pw:${user.ID}`); setError(null); setSuccess(null)
     try {
-      const { data } = await api.post<{ password: string; username: string }>(`/domains/${id}/wordpress/user-password`, { dir, user_id: user.ID })
+      const { data } = await api.post<{ password: string; username: string }>(`${base}/wordpress/user-password`, { dir, user_id: user.ID })
       setPasswordResult({ username: data.username || user.user_login, password: data.password })
     } catch (error) { setError(apiError(error, 'Could not reset password')) }
     finally { setBusy(null) }
@@ -175,7 +178,7 @@ function Toolkit({ id, installation, onChange }: { id: string; installation: Ins
     if (isRoot) { alert('WordPress installations in the root directory cannot be deleted from the panel.'); return }
     if (!confirm(`Delete the WordPress installation under ${dir}?\nAll files in this directory and its database will be removed. This cannot be undone.`)) return
     setBusy('remove'); setError(null)
-    try { await api.delete(`/domains/${id}/wordpress`, { data: { dir, delete_db: true } }); onChange() }
+    try { await api.delete(`${base}/wordpress`, { data: { dir, delete_db: true } }); onChange() }
     catch (err) { setError(apiError(err, 'Could not remove installation')) }
     finally { setBusy(null) }
   }
