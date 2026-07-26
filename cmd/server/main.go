@@ -294,6 +294,7 @@ func main() {
 				r.With(middleware.AdminOnly).Put("/domains/{id}/ssh", sshH.Configure)
 				r.With(middleware.AdminOnly).Put("/domains/{id}/ssh/key", sshH.SaveKey)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/statistics", statH.Show)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}/statistics", statH.Show)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/performance", perfH.Show)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/composer", compH.Status)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/composer", compH.Run)
