@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"servika/internal/config"
 	"servika/internal/httpx"
 	"servika/internal/provisioner"
 
@@ -187,11 +186,13 @@ func issueLetsEncrypt(fqdn, certPath, keyPath string) error {
 		return err
 	}
 	_ = exec.Command("restorecon", "-R", "/var/www/_acme").Run()
-	if err := exec.Command(config.ACMEBin(), "--issue", "--webroot", "/var/www/_acme",
-		"-d", fqdn, "--keylength", "ec-256").Run(); err != nil {
+	// RunACMEIssue also recovers from an invalidContact account lock-out and sets HOME so
+	// acme.sh finds its own store.
+	if _, err := provisioner.RunACMEIssue("--issue", "--webroot", "/var/www/_acme",
+		"-d", fqdn, "--keylength", "ec-256"); err != nil {
 		return err
 	}
-	return exec.Command(config.ACMEBin(), "--install-cert", "-d", fqdn, "--ecc",
+	return provisioner.ACMECommand("--install-cert", "-d", fqdn, "--ecc",
 		"--key-file", keyPath, "--fullchain-file", certPath).Run()
 }
 

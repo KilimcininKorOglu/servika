@@ -1365,7 +1365,7 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 		args = append(args, "-d", host)
 	}
 	args = append(args, "--keylength", "2048")
-	if out, e := acmeCommand(args...).CombinedOutput(); e != nil {
+	if out, e := RunACMEIssue(args...); e != nil {
 		// FAIL-SAFE (no teardown): keep 443 alive with the existing/self-signed cert.
 		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme issue: "+strings.TrimSpace(string(out)))
 	}

@@ -155,9 +155,9 @@ func issuePanelCertificate(domain string) error {
 		return fmt.Errorf("prepare ACME webroot: %w", err)
 	}
 	_, _ = exec.Command("restorecon", "-R", acmeWebroot).CombinedOutput()
-	issue := exec.Command(config.ACMEBin(), "--issue", "--webroot", acmeWebroot, "-d", domain, "--keylength", "2048")
-	issue.Env = acmeEnv()
-	if out, err := issue.CombinedOutput(); err != nil {
+	// RunACMEIssue also recovers from an invalidContact account lock-out, which otherwise
+	// blocks certificate issuance for every domain on the host, including this panel domain.
+	if out, err := provisioner.RunACMEIssue("--issue", "--webroot", acmeWebroot, "-d", domain, "--keylength", "2048"); err != nil {
 		if !isACMERenewSkip(err) {
 			return fmt.Errorf("acme issue failed: %s", strings.TrimSpace(string(out)))
 		}

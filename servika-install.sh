@@ -401,8 +401,19 @@ fi
 if [ -x /root/.acme.sh/acme.sh ]; then
   /root/.acme.sh/acme.sh --set-default-ca --server letsencrypt >/dev/null 2>&1
   # Register the account now so certificate issuance does not fail later.
-  if [ -n "$AEMAIL" ]; then /root/.acme.sh/acme.sh --register-account -m "$AEMAIL" --server letsencrypt >/dev/null 2>&1
-  else /root/.acme.sh/acme.sh --register-account --server letsencrypt >/dev/null 2>&1; fi
+  # The "@ + dot" check above still accepts addresses Let's Encrypt rejects (admin@test.local
+  # and other non-public-suffix TLDs). acme.sh persists such an address in BOTH
+  # account.conf (ACCOUNT_EMAIL) and ca/*/directory/ca.conf (CA_EMAIL) even when
+  # registration fails, and reads CA_EMAIL first on every later call, so a plain retry
+  # reuses the broken address and the host can never obtain a certificate. When
+  # registration with the address fails, clear both files and retry without a contact.
+  if [ -n "$AEMAIL" ] && ! /root/.acme.sh/acme.sh --register-account -m "$AEMAIL" --server letsencrypt >/dev/null 2>&1; then
+    sed -i "s/^ACCOUNT_EMAIL=.*/ACCOUNT_EMAIL=''/" /root/.acme.sh/account.conf 2>/dev/null || true
+    sed -i "s/^CA_EMAIL=.*/CA_EMAIL=''/" /root/.acme.sh/ca/*/directory/ca.conf 2>/dev/null || true
+    /root/.acme.sh/acme.sh --register-account --server letsencrypt >/dev/null 2>&1
+  elif [ -z "$AEMAIL" ]; then
+    /root/.acme.sh/acme.sh --register-account --server letsencrypt >/dev/null 2>&1
+  fi
   ok "acme.sh (Let's Encrypt CA + account registered + automatic renewal cron)"
 else
   warn "acme.sh could not be installed, install it manually for Let's Encrypt SSL: curl https://get.acme.sh | sh"
