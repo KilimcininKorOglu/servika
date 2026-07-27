@@ -155,7 +155,6 @@ func main() {
 	overviewH := &overview.Handlers{DB: d}
 	accountsH := &accounts.Handlers{DB: d}
 	backupsH := &backups.Handlers{DB: d}
-	transfersH := &transfers.Handlers{DB: d, Domains: domainsH}
 	backups.StartScheduler(d)
 	gitH := &git.Handlers{DB: d}
 	githubH := &githubpkg.Handlers{DB: d, WebhookBase: "https://" + ipv4 + ":8443"}
@@ -179,6 +178,7 @@ func main() {
 	subH := &subdomain.Handlers{DB: d, IPv4: ipv4}
 	addonH := &addondomains.Handlers{DB: d, IPv4: ipv4}
 	mailH := &mail.Handlers{DB: d}
+	transfersH := &transfers.Handlers{DB: d, Domains: domainsH, Mail: mailH}
 	sshaccess.EnsureInfra()
 	mail.EnsureInfra()
 	phpExtH := &phpext.Handlers{DB: d}

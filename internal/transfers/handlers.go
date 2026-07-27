@@ -22,6 +22,7 @@ import (
 	"servika/internal/credentials"
 	"servika/internal/domains"
 	"servika/internal/httpx"
+	"servika/internal/mail"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -42,6 +43,7 @@ func newTransferCommand(ctx context.Context, name string, arguments ...string) *
 type Handlers struct {
 	DB      *sql.DB
 	Domains *domains.Handlers
+	Mail    *mail.Handlers
 }
 
 // Analyze accepts a cPanel full backup and returns an inventory. It never
@@ -79,14 +81,23 @@ func (h *Handlers) Analyze(w http.ResponseWriter, r *http.Request) {
 }
 
 type importResponse struct {
-	OK         bool      `json:"ok"`
-	DomainID   int64     `json:"domain_id"`
-	Domain     string    `json:"domain"`
-	SystemUser string    `json:"system_user"`
-	WebFiles   int       `json:"web_files"`
-	Databases  []DBMap   `json:"databases"`
-	Skipped    []string  `json:"skipped"`
-	Source     Inventory `json:"source"`
+	OK         bool             `json:"ok"`
+	DomainID   int64            `json:"domain_id"`
+	Domain     string           `json:"domain"`
+	SystemUser string           `json:"system_user"`
+	WebFiles   int              `json:"web_files"`
+	Databases  []DBMap          `json:"databases"`
+	Mailboxes  []MailCredential `json:"mailboxes"`
+	Aliases    int              `json:"aliases"`
+	Skipped    []string         `json:"skipped"`
+	Source     Inventory        `json:"source"`
+}
+
+// MailCredential carries a newly provisioned mailbox address and its one-time
+// password back to the client; the source cPanel password hash is never reused.
+type MailCredential struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type DBMap struct {
@@ -171,12 +182,17 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	mailCreds, aliasCount, err := h.importMail(r, tmpPath, inv, created.ID, created.DomainName, created.SystemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer email: "+err.Error())
+		return
+	}
 	committed = true
 	httpx.WriteJSON(w, http.StatusCreated, importResponse{
 		OK: true, DomainID: created.ID, Domain: created.DomainName,
 		SystemUser: created.SystemUser, WebFiles: inv.WebFiles,
-		Databases: dbMaps, Source: inv,
-		Skipped: []string{"Email mailboxes, cron jobs and source SSL certificates were only inventoried in this first release."},
+		Databases: dbMaps, Mailboxes: mailCreds, Aliases: aliasCount, Source: inv,
+		Skipped: []string{"Cron jobs and source SSL certificates were only inventoried in this release."},
 	})
 }
 
@@ -426,4 +442,192 @@ func pipeDumpToMySQL(ctx context.Context, dump io.Reader, targetDB string) error
 		return fmt.Errorf("mysql: %s", strings.TrimSpace(stderr.String()))
 	}
 	return nil
+}
+
+// importMail provisions the domain's mail infrastructure, recreates each source
+// mailbox with a fresh password (the cPanel hash is never reused), restores its
+// Maildir, and recreates forwarders. It runs after the web/database restore so a
+// mail failure still rolls the whole domain back via the caller's deferred
+// rollbackDomain.
+func (h *Handlers) importMail(r *http.Request, archivePath string, inv Inventory, domainID int64, targetDomain, sk string) ([]MailCredential, int, error) {
+	if len(inv.Mailboxes) == 0 && inv.AliasCount == 0 && inv.MailFiles == 0 {
+		return []MailCredential{}, 0, nil
+	}
+	if h.Mail == nil {
+		return nil, 0, errors.New("mail provider is not ready")
+	}
+	if err := mail.EnableDomain(r.Context(), h.DB, domainID); err != nil {
+		return nil, 0, err
+	}
+	creds := make([]MailCredential, 0, len(inv.Mailboxes))
+	for _, local := range inv.Mailboxes {
+		body, _ := json.Marshal(map[string]string{"local_part": local})
+		req := domainRequest(r, http.MethodPost, "/mail", domainID, bytes.NewReader(body))
+		rr := httptest.NewRecorder()
+		h.Mail.Create(rr, req)
+		if rr.Code != http.StatusCreated {
+			return nil, 0, fmt.Errorf("mailbox %s: %s", local, strings.TrimSpace(rr.Body.String()))
+		}
+		var result struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+		if err := json.Unmarshal(rr.Body.Bytes(), &result); err != nil {
+			return nil, 0, err
+		}
+		creds = append(creds, MailCredential{Email: result.Email, Password: result.Password})
+		if inv.PrimaryDomain != "" {
+			if err := h.restoreMailbox(r.Context(), archivePath, inv.ArchiveRoot, inv.PrimaryDomain, local, sk); err != nil {
+				return nil, 0, fmt.Errorf("mailbox %s messages: %w", local, err)
+			}
+		}
+	}
+
+	aliases, err := readAliases(archivePath, inv.ArchiveRoot, inv.PrimaryDomain, targetDomain)
+	if err != nil {
+		return nil, 0, err
+	}
+	created := 0
+	for _, a := range aliases {
+		body, _ := json.Marshal(map[string]string{"local_part": a.Local, "destination": a.Destination})
+		req := domainRequest(r, http.MethodPost, "/mail/aliases", domainID, bytes.NewReader(body))
+		rr := httptest.NewRecorder()
+		h.Mail.CreateAlias(rr, req)
+		if rr.Code == http.StatusCreated {
+			created++
+			continue
+		}
+		return nil, 0, fmt.Errorf("alias %s: %s", a.Local, strings.TrimSpace(rr.Body.String()))
+	}
+	return creds, created, nil
+}
+
+// domainRequest builds an in-process request carrying the chi URL param `id`
+// that the mail handlers read to resolve the target domain.
+func domainRequest(parent *http.Request, method, url string, domainID int64, body io.Reader) *http.Request {
+	rc := chi.NewRouteContext()
+	rc.URLParams.Add("id", strconv.FormatInt(domainID, 10))
+	ctx := context.WithValue(parent.Context(), chi.RouteCtxKey, rc)
+	req := httptest.NewRequest(method, url, body).WithContext(ctx)
+	req.Header.Set("Content-Type", "application/json")
+	return req
+}
+
+// restoreMailbox extracts a single source Maildir into the tenant's mail root as
+// root, then fixes SELinux context. Subprocesses run with a minimal environment.
+func (h *Handlers) restoreMailbox(ctx context.Context, archivePath, root, sourceDomain, local, sk string) error {
+	if !strings.HasPrefix(sk, "c_") || root == "" {
+		return errors.New("unsafe target")
+	}
+	target := "/home/" + sk + "/mail/" + local
+	f, err := os.Open(archivePath)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = f.Close() }()
+	member := root + "/homedir/mail/" + sourceDomain + "/" + local
+	cmd := newTransferCommand(ctx, "tar", "-xz", "-f", "-", "-C", target, "--strip-components=5", member)
+	cmd.Stdin = f
+	if out, err := cmd.CombinedOutput(); err != nil {
+		// A mailbox present only in metadata may have no Maildir in the archive.
+		if strings.Contains(string(out), "Not found in archive") || strings.Contains(string(out), "Not found") {
+			return nil
+		}
+		return fmt.Errorf("tar: %s", strings.TrimSpace(string(out)))
+	}
+	if out, err := newTransferCommand(ctx, "chown", "-R", sk+":"+sk, target).CombinedOutput(); err != nil {
+		return fmt.Errorf("chown: %s", strings.TrimSpace(string(out)))
+	}
+	_, _ = newTransferCommand(ctx, "restorecon", "-RF", target).CombinedOutput()
+	return nil
+}
+
+type aliasImport struct {
+	Local       string
+	Destination string
+}
+
+// readAliases parses the source valias file and rewrites each forwarder onto the
+// target domain, dropping pipe/include destinations that Servika cannot host.
+func readAliases(archivePath, root, sourceDomain, targetDomain string) ([]aliasImport, error) {
+	if sourceDomain == "" {
+		return []aliasImport{}, nil
+	}
+	body, err := readSmallTarMember(archivePath, root+"/va/"+sourceDomain)
+	if errors.Is(err, errMemberNotFound) {
+		return []aliasImport{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	out := []aliasImport{}
+	for _, line := range strings.Split(string(body), "\n") {
+		p := strings.SplitN(strings.TrimSpace(line), ":", 2)
+		if len(p) != 2 {
+			continue
+		}
+		source := strings.TrimSpace(p[0])
+		destRaw := strings.TrimSpace(p[1])
+		if source == "" || destRaw == "" || strings.HasPrefix(destRaw, ":") || strings.HasPrefix(destRaw, "|") {
+			continue
+		}
+		local := strings.TrimSuffix(strings.ToLower(source), "@"+strings.ToLower(sourceDomain))
+		if local == "*" {
+			local = ""
+		}
+		if local != "" && !localPartRE.MatchString(local) {
+			continue
+		}
+		var dests []string
+		for _, d := range strings.Split(destRaw, ",") {
+			d = strings.ToLower(strings.TrimSpace(d))
+			if d == "" {
+				continue
+			}
+			if !strings.Contains(d, "@") && localPartRE.MatchString(d) {
+				d += "@" + targetDomain
+			}
+			d = strings.ReplaceAll(d, "@"+strings.ToLower(sourceDomain), "@"+targetDomain)
+			if strings.Contains(d, "@") {
+				dests = append(dests, d)
+			}
+		}
+		if len(dests) > 0 {
+			out = append(out, aliasImport{Local: local, Destination: strings.Join(dests, ",")})
+		}
+	}
+	return out, nil
+}
+
+var errMemberNotFound = errors.New("archive member not found")
+
+// readSmallTarMember returns a single small metadata member from the archive,
+// guarding against oversized entries.
+func readSmallTarMember(archivePath, want string) ([]byte, error) {
+	f, err := os.Open(archivePath)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = gz.Close() }()
+	tr := tar.NewReader(gz)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			return nil, errMemberNotFound
+		}
+		if err != nil {
+			return nil, err
+		}
+		if path.Clean(hdr.Name) == path.Clean(want) {
+			if hdr.Size > maxMetadataBytes {
+				return nil, ErrArchiveTooLarge
+			}
+			return io.ReadAll(io.LimitReader(tr, maxMetadataBytes))
+		}
+	}
 }

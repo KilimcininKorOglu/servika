@@ -1959,6 +1959,32 @@ func healPanelVhostHeadersOnStartup() {
 	}
 	content := string(original)
 	if strings.Contains(content, panelSecSentinel) {
+		// Older v2 installs hardened the panel before the domain-preview iframe
+		// needed frame-src. Retrofit it even when the sentinel is present. The
+		// match is scoped to the strict SPA CSP (unique `script-src 'self';`) so
+		// the relaxed phpMyAdmin/Roundcube CSPs are left untouched; ReplaceAll
+		// covers both the server-level and `location /` copies at once.
+		const oldStrictCSP = "script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'self'"
+		const newStrictCSP = "script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; frame-src https: http:; frame-ancestors 'self'"
+		patched := strings.ReplaceAll(content, oldStrictCSP, newStrictCSP)
+		if patched == content {
+			return // already current
+		}
+		if err := os.WriteFile(panelVhostPath, []byte(patched), 0644); err != nil {
+			log.Printf("panel security repair: could not update CSP: %v", err)
+			return
+		}
+		if output, err := exec.Command("nginx", "-t").CombinedOutput(); err != nil {
+			_ = os.WriteFile(panelVhostPath, original, 0644)
+			log.Printf("panel security repair: CSP nginx -t failed, vhost restored: %s", strings.TrimSpace(string(output)))
+			return
+		}
+		if output, err := exec.Command("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
+			_ = os.WriteFile(panelVhostPath, original, 0644)
+			log.Printf("panel security repair: CSP nginx reload failed, vhost restored: %s", strings.TrimSpace(string(output)))
+			return
+		}
+		log.Printf("panel security repair: CSP updated for the domain preview + nginx reloaded")
 		return
 	}
 	anchor := "server_name _;"

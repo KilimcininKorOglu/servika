@@ -21,6 +21,7 @@ const (
 )
 
 var domainRE = regexp.MustCompile(`(?i)^[a-z0-9](?:[a-z0-9-]{0,62}\.)+[a-z]{2,63}$`)
+var localPartRE = regexp.MustCompile(`^[a-z0-9]([a-z0-9._-]{0,62}[a-z0-9])?$`)
 
 var (
 	ErrNotCPanel       = errors.New("the archive was not recognized as a cPanel full-account backup")
@@ -40,6 +41,8 @@ type Inventory struct {
 	Databases     []string `json:"databases"`
 	DNSZones      []string `json:"dns_zones"`
 	MailFiles     int      `json:"mail_files"`
+	Mailboxes     []string `json:"mailboxes"`
+	AliasCount    int      `json:"alias_count"`
 	CronPresent   bool     `json:"cron_present"`
 	SSLCerts      int      `json:"ssl_certs"`
 	Warnings      []string `json:"warnings"`
@@ -54,7 +57,7 @@ func AnalyzeCPanel(src io.Reader) (Inventory, error) {
 	defer func() { _ = gz.Close() }()
 
 	tr := tar.NewReader(gz)
-	inv := Inventory{Provider: "cpanel", Databases: []string{}, DNSZones: []string{}, Warnings: []string{}}
+	inv := Inventory{Provider: "cpanel", Databases: []string{}, DNSZones: []string{}, Mailboxes: []string{}, Warnings: []string{}}
 	dbSet := map[string]bool{}
 	dnsSet := map[string]bool{}
 	seenCPanel := false
@@ -119,6 +122,14 @@ func AnalyzeCPanel(src io.Reader) (Inventory, error) {
 				if b, e := io.ReadAll(io.LimitReader(tr, maxMetadataBytes)); e == nil {
 					parseMainMetadata(&inv, string(b), rel)
 				}
+			case strings.HasPrefix(rel, "homedir/etc/") && strings.HasSuffix(rel, "/shadow"):
+				if b, e := io.ReadAll(io.LimitReader(tr, maxMetadataBytes)); e == nil {
+					parseMailboxNames(&inv, string(b))
+				}
+			case strings.HasPrefix(rel, "va/"):
+				if b, e := io.ReadAll(io.LimitReader(tr, maxMetadataBytes)); e == nil {
+					inv.AliasCount += countAliases(string(b))
+				}
 			}
 		}
 	}
@@ -137,6 +148,7 @@ func AnalyzeCPanel(src io.Reader) (Inventory, error) {
 	}
 	sort.Strings(inv.Databases)
 	sort.Strings(inv.DNSZones)
+	sort.Strings(inv.Mailboxes)
 	return inv, nil
 }
 
@@ -186,4 +198,37 @@ func parseMainMetadata(inv *Inventory, body, rel string) {
 			return
 		}
 	}
+}
+
+// parseMailboxNames extracts mailbox local parts from a cPanel per-domain
+// shadow file (homedir/etc/<domain>/shadow), skipping cPanel-internal accounts.
+func parseMailboxNames(inv *Inventory, body string) {
+	seen := make(map[string]bool, len(inv.Mailboxes))
+	for _, v := range inv.Mailboxes {
+		seen[v] = true
+	}
+	for _, line := range strings.Split(body, "\n") {
+		p := strings.SplitN(strings.TrimSpace(line), ":", 2)
+		if len(p) != 2 {
+			continue
+		}
+		local := strings.ToLower(strings.TrimSpace(p[0]))
+		if !localPartRE.MatchString(local) || strings.HasPrefix(local, "__cpanel") || seen[local] {
+			continue
+		}
+		seen[local] = true
+		inv.Mailboxes = append(inv.Mailboxes, local)
+	}
+}
+
+// countAliases counts forwarder entries in a cPanel valias file (va/<domain>).
+func countAliases(body string) int {
+	n := 0
+	for _, line := range strings.Split(body, "\n") {
+		p := strings.SplitN(strings.TrimSpace(line), ":", 2)
+		if len(p) == 2 && strings.TrimSpace(p[0]) != "" && strings.TrimSpace(p[1]) != "" {
+			n++
+		}
+	}
+	return n
 }

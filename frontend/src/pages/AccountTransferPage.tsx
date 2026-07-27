@@ -16,6 +16,8 @@ type Inventory = {
   databases: string[]
   dns_zones: string[]
   mail_files: number
+  mailboxes: string[]
+  alias_count: number
   cron_present: boolean
   ssl_certs: number
   warnings: string[]
@@ -25,6 +27,8 @@ type Plan = { id: number; name: string }
 type ImportResult = {
   domain_id: number; domain: string; system_user: string; web_files: number
   databases: { source: string; target: string; user: string }[]
+  mailboxes: { email: string; password: string }[]
+  aliases: number
   skipped: string[]
 }
 
@@ -156,6 +160,8 @@ export default function AccountTransferPage() {
               ['Expanded size', fmtByte(inventory.expanded_bytes)],
               ['Cron', inventory.cron_present ? 'Present' : 'None'],
               ['SSL files', String(inventory.ssl_certs)],
+              ['Mailboxes', String(inventory.mailboxes.length)],
+              ['Forwarders', String(inventory.alias_count)],
             ]} />
             <div className="space-y-4">
               <List title="Databases" values={inventory.databases} />
@@ -202,6 +208,11 @@ export default function AccountTransferPage() {
             <h2 className="font-semibold text-emerald-800 dark:text-emerald-200">Import complete</h2>
             <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">{result.domain} · {result.web_files} web files · {result.databases.length} database(s)</p>
             {result.databases.map(d => <p key={d.target} className="mt-1 text-xs font-mono text-emerald-700 dark:text-emerald-300">{d.source} → {d.target}</p>)}
+            {result.mailboxes.length > 0 && <div className="mt-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-white/60 dark:bg-slate-900/40 p-3">
+              <p className="text-xs font-semibold text-amber-800 dark:text-amber-200 mb-2">New mailbox passwords — save them now</p>
+              {result.mailboxes.map(m => <p key={m.email} className="text-xs font-mono text-amber-800 dark:text-amber-200">{m.email}: {m.password}</p>)}
+              <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{result.aliases} forwarder(s) transferred.</p>
+            </div>}
             {result.skipped?.map(s => <p key={s} className="mt-1 text-xs text-amber-700 dark:text-amber-300">⚠ {s}</p>)}
             <Link to={`/subscriptions/${result.domain_id}`} className="inline-block mt-3 text-sm font-medium text-brand-700 dark:text-brand-300">Manage domain →</Link>
           </div>}
