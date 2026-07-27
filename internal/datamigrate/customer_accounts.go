@@ -28,13 +28,12 @@ import (
 // Producing one account per domain would create multiple panel accounts for the
 // same system user.
 //
-// MIGRATION BRIDGE: the generated users rows are left with an EMPTY
-// password_hash. An empty hash never matches any password (see
-// auth.PasswordMatches), so these accounts cannot log in yet and existing
-// customers keep using their legacy FTP-identity path — the migration locks no
-// one out. The moment an admin or reseller assigns a password, the new path
-// opens for that customer. This was chosen over generating a random password no
-// one is told: it leaves no "has a password but nobody knows it" accounts.
+// The generated users rows are left with an EMPTY password_hash. An empty hash
+// never matches any password (see auth.PasswordMatches), so these accounts
+// cannot log in until an admin or reseller assigns a password from the Customer
+// Accounts screen. This was chosen over generating a random password no one is
+// told: it leaves no "has a password but nobody knows it" accounts, and the
+// Customer Accounts list flags every passwordless row so none is overlooked.
 func BackfillCustomerAccounts(ctx context.Context, db *sql.DB) {
 	// Tenants that still have domains not linked to a customer record.
 	rows, err := db.QueryContext(ctx, `
@@ -88,7 +87,8 @@ func migrateTenant(ctx context.Context, db *sql.DB, systemUser, domainName strin
 	defer tx.Rollback() //nolint:errcheck // no-op once the commit succeeds
 
 	// users: reuse the row when the username already exists (a prior run may
-	// have been interrupted). The empty password_hash is the migration bridge.
+	// have been interrupted). The empty password_hash means the account cannot
+	// log in until a password is assigned.
 	var userID int64
 	err = tx.QueryRowContext(ctx, `SELECT id FROM users WHERE username=?`, systemUser).Scan(&userID)
 	if err == sql.ErrNoRows {

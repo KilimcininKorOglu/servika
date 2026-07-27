@@ -263,9 +263,9 @@ export default function DashboardLayout() {
   const activeDomainID = domainMatch ? domainMatch[1] : ''
   const domainMode = !isCustomer && activeDomainID !== ''
 
-  // The menu is derived from the role. isCustomer is the flag for legacy
-  // FTP-credential sessions; a customer who logs in with a panel account comes
-  // in as role='user' — both see the same customer menu. A reseller may also
+  // The menu is derived from the role. isCustomer marks a session opened through
+  // the customer portal (/cp); such a session is always role='user', so the two
+  // conditions agree and both land on the customer menu. A reseller may also
   // enter domain mode (its own customer's domain); only the customer stays on
   // its fixed menu.
   const activeNav = isCustomer || role === 'user'

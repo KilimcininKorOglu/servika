@@ -38,17 +38,6 @@ type meResp struct {
 
 // Me returns the authenticated user's profile.
 func (h *Handlers) Me(w http.ResponseWriter, r *http.Request) {
-	// Return a synthetic profile from claims for customer FTP sessions without a database lookup.
-	if customerClaims := middleware.CustomerClaimsFrom(r); customerClaims != nil {
-		httpx.WriteJSON(w, http.StatusOK, meResp{
-			ID:       0,
-			Name:     customerClaims.Username,
-			Role:     "customer",
-			FullName: customerClaims.DomainName,
-			Status:   "active",
-		})
-		return
-	}
 	c := middleware.ClaimsFrom(r)
 	if c == nil {
 		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
@@ -94,6 +83,12 @@ type UserRow struct {
 	LastLogin   string `json:"last_login"`
 	LastLoginIP string `json:"last_login_ip"`
 	CreatedAt   string `json:"created_at"`
+	// Passwordless is true when password_hash is empty — the account exists but
+	// CANNOT log in. Customer accounts produced by the backfill are born this way
+	// (see datamigrate.BackfillCustomerAccounts); the FTP bridge used to cover
+	// for them, and no longer does, so an admin must be able to spot these
+	// accounts in the list. root is exempt (its password lives in /etc/shadow).
+	Passwordless bool `json:"passwordless"`
 }
 
 // authorized reports whether the caller may act on the target user. A target
@@ -128,7 +123,9 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 
 	q := `SELECT id, username, email, full_name, role, status, reseller_id, totp_enabled,
 	             COALESCE(DATE_FORMAT(last_login_at,'%Y-%m-%d %H:%i'),''), last_login_ip,
-	             COALESCE(DATE_FORMAT(created_at,'%Y-%m-%d'),'')
+	             COALESCE(DATE_FORMAT(created_at,'%Y-%m-%d'),''),
+	             CASE WHEN username = 'root' THEN 0
+	                  WHEN COALESCE(password_hash,'') = '' THEN 1 ELSE 0 END
 	      FROM users`
 	var arg []any
 	if c.Role == middleware.RoleReseller {
@@ -147,12 +144,13 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	out := make([]UserRow, 0)
 	for rows.Next() {
 		var s UserRow
-		var twoFA int
+		var twoFA, passwordless int
 		if err := rows.Scan(&s.ID, &s.Username, &s.Email, &s.FullName, &s.Role, &s.Status,
-			&s.ResellerID, &twoFA, &s.LastLogin, &s.LastLoginIP, &s.CreatedAt); err != nil {
+			&s.ResellerID, &twoFA, &s.LastLogin, &s.LastLoginIP, &s.CreatedAt, &passwordless); err != nil {
 			continue
 		}
 		s.TwoFA = twoFA == 1
+		s.Passwordless = passwordless == 1
 		out = append(out, s)
 	}
 	httpx.WriteJSON(w, http.StatusOK, out)

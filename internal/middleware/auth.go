@@ -52,13 +52,15 @@ func tokenVersionMatches(ctx context.Context, table string, id, claimVersion int
 
 type ctxKey int
 
-const (
-	claimsKey         ctxKey = 1
-	customerClaimsKey ctxKey = 2
-)
+const claimsKey ctxKey = 1
 
-// RequireAuth accepts both admin and customer tokens.
-// It stores CustomerClaims for customers and Claims for administrators in the request context.
+// RequireAuth validates the session token and stores the claims in the request
+// context.
+//
+// There is a single token type (auth.Claims); the role distinction lives in the
+// Role claim. A customer-only second token type (auth.CustomerClaims) was
+// removed: it embedded the scope in the token, whereas authorization is now
+// resolved from the ownership chain on every request.
 func RequireAuth(secret []byte) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -76,37 +78,22 @@ func RequireAuth(secret []byte) func(http.Handler) http.Handler {
 				return
 			}
 
-			// Try administrator claims first.
-			if c, err := auth.Parse(secret, tokenRaw); err == nil {
-				ok, verr := tokenVersionMatches(r.Context(), "users", c.UserID, c.TokenVersion)
-				if verr != nil {
-					httpx.WriteError(w, http.StatusInternalServerError, "could not verify session")
-					return
-				}
-				if !ok {
-					httpx.WriteError(w, http.StatusUnauthorized, "session has been revoked")
-					return
-				}
-				ctx := context.WithValue(r.Context(), claimsKey, c)
-				next.ServeHTTP(w, r.WithContext(ctx))
+			c, err := auth.Parse(secret, tokenRaw)
+			if err != nil {
+				httpx.WriteError(w, http.StatusUnauthorized, "invalid session")
 				return
 			}
-			// Then try customer claims.
-			if mc, err := auth.ParseCustomer(secret, tokenRaw); err == nil {
-				ok, verr := tokenVersionMatches(r.Context(), "ftp_accounts", mc.FTPAccountID, mc.TokenVersion)
-				if verr != nil {
-					httpx.WriteError(w, http.StatusInternalServerError, "could not verify session")
-					return
-				}
-				if !ok {
-					httpx.WriteError(w, http.StatusUnauthorized, "session has been revoked")
-					return
-				}
-				ctx := context.WithValue(r.Context(), customerClaimsKey, mc)
-				next.ServeHTTP(w, r.WithContext(ctx))
+			ok, verr := tokenVersionMatches(r.Context(), "users", c.UserID, c.TokenVersion)
+			if verr != nil {
+				httpx.WriteError(w, http.StatusInternalServerError, "could not verify session")
 				return
 			}
-			httpx.WriteError(w, http.StatusUnauthorized, "invalid session")
+			if !ok {
+				httpx.WriteError(w, http.StatusUnauthorized, "session has been revoked")
+				return
+			}
+			ctx := context.WithValue(r.Context(), claimsKey, c)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
@@ -202,10 +189,8 @@ func CustomerScopeParam(param string) func(http.Handler) http.Handler {
 					next.ServeHTTP(w, r)
 					return
 				case RoleUser:
-					// A customer signed in with a panel account (Phase 5C).
-					// Unlike the legacy FTP-identity session it may own several
-					// domains, so the scope is resolved from the chain, not the
-					// token.
+					// A customer may own several domains, so the scope is
+					// resolved from the ownership chain, not the token.
 					urlID, _ := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
 					if !CustomerUserOwnsDomain(r, c.UserID, urlID) {
 						httpx.WriteError(w, http.StatusForbidden, "access to this domain is forbidden")
@@ -227,26 +212,7 @@ func CustomerScopeParam(param string) func(http.Handler) http.Handler {
 					return
 				}
 			}
-			mc := CustomerClaimsFrom(r)
-			if mc == nil {
-				httpx.WriteError(w, http.StatusUnauthorized, "authorization required")
-				return
-			}
-			urlID, _ := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
-			if urlID != mc.DomainID {
-				httpx.WriteError(w, http.StatusForbidden, "access to this domain is forbidden")
-				return
-			}
-			suspended, err := suspendedDomainLookup(r.Context(), mc.DomainID)
-			if err != nil {
-				httpx.WriteError(w, http.StatusInternalServerError, "could not verify account status")
-				return
-			}
-			if suspended {
-				httpx.WriteError(w, http.StatusForbidden, "account is suspended")
-				return
-			}
-			next.ServeHTTP(w, r)
+			httpx.WriteError(w, http.StatusUnauthorized, "authorization required")
 		})
 	}
 }
@@ -267,7 +233,7 @@ func RequestIDHeader(next http.Handler) http.Handler {
 // DomainOwnedBy reports whether the authenticated identity may access a domain.
 //   - Admin token    => always true (accesses every domain).
 //   - Reseller token => true when the domain belongs to a customer the reseller manages.
-//   - Customer token => true only when it matches its own DomainID.
+//   - Customer token => true when the domain belongs to a customer record bound to the account.
 //   - No identity     => false.
 //
 // This is the in-handler counterpart of CustomerScope: on endpoints whose URL
@@ -275,20 +241,17 @@ func RequestIDHeader(next http.Handler) http.Handler {
 // is verified with this function after the resource's domain_id is resolved from
 // the database.
 func DomainOwnedBy(r *http.Request, domainID int64) bool {
-	if c := ClaimsFrom(r); c != nil {
-		if c.Role == RoleAdmin {
-			return true // Administrator: accesses every domain.
-		}
-		if c.Role == RoleReseller {
-			return ResellerOwnsDomain(r, c.UserID, domainID)
-		}
-		if c.Role == RoleUser {
-			return CustomerUserOwnsDomain(r, c.UserID, domainID)
-		}
+	c := ClaimsFrom(r)
+	if c == nil {
 		return false
 	}
-	if claims := CustomerClaimsFrom(r); claims != nil {
-		return claims.DomainID == domainID
+	switch c.Role {
+	case RoleAdmin:
+		return true // Administrator: accesses every domain.
+	case RoleReseller:
+		return ResellerOwnsDomain(r, c.UserID, domainID)
+	case RoleUser:
+		return CustomerUserOwnsDomain(r, c.UserID, domainID)
 	}
 	return false
 }
@@ -318,11 +281,9 @@ func ResellerOwnsDomain(r *http.Request, resellerUserID, domainID int64) bool {
 // CustomerUserOwnsDomain reports whether a domain belongs to the given CUSTOMER
 // account.
 //
-// Chain: users.id -> customers.user_id -> domains.customer_id. In Phase 5C
-// customers moved onto users accounts; the legacy FTP-identity sessions still
-// carry a single DomainID in CustomerClaims (see CustomerScopeParam), but a
-// customer signed in with a users account may own SEVERAL domains — so the
-// scope is resolved from the chain, not the token.
+// Chain: users.id -> customers.user_id -> domains.customer_id. A customer may
+// own SEVERAL domains and ownership can change, so the scope is not embedded in
+// the token; it is resolved from the chain on every request.
 //
 // FAIL-CLOSED: returns false when the database cannot be read.
 func CustomerUserOwnsDomain(r *http.Request, userID, domainID int64) bool {
@@ -361,20 +322,29 @@ func ResellerOwnsCustomer(r *http.Request, resellerUserID, customerID int64) boo
 //	cond, arg := middleware.ScopeSQL(r, "d")
 //	query := "SELECT ... FROM domains d " + cond
 //
-// Returns an empty string for admins (no narrowing). For resellers it returns an
-// EXISTS condition joining customers. For customer/anonymous it returns a
-// condition that matches no row (fail-closed).
+// Returns an empty string for admins (no narrowing). Resellers and customers
+// both narrow through the customers table over the SAME ownership chain; only
+// the matched column differs (owner_user_id / user_id). An anonymous request
+// returns a condition that matches no row (fail-closed).
+//
+// The RoleUser branch is not optional: a customer signed in with a panel
+// account carries auth.Claims like everyone else, so without it the switch
+// would fall through to WHERE 1 = 0 and every scoped list endpoint would return
+// empty for that customer.
 func ScopeSQL(r *http.Request, domainAlias string) (string, []any) {
 	c := ClaimsFrom(r)
-	if c != nil && c.Role == RoleAdmin {
-		return "", nil
+	if c == nil {
+		return " WHERE 1 = 0", nil
 	}
-	if c != nil && c.Role == RoleReseller {
+	switch c.Role {
+	case RoleAdmin:
+		return "", nil
+	case RoleReseller:
 		return " WHERE EXISTS (SELECT 1 FROM customers sc WHERE sc.id = " +
 			domainAlias + ".customer_id AND sc.owner_user_id = ?)", []any{c.UserID}
-	}
-	if mc := CustomerClaimsFrom(r); mc != nil {
-		return " WHERE " + domainAlias + ".id = ?", []any{mc.DomainID}
+	case RoleUser:
+		return " WHERE EXISTS (SELECT 1 FROM customers sc WHERE sc.id = " +
+			domainAlias + ".customer_id AND sc.user_id = ?)", []any{c.UserID}
 	}
 	return " WHERE 1 = 0", nil
 }
@@ -382,11 +352,21 @@ func ScopeSQL(r *http.Request, domainAlias string) (string, []any) {
 // EnforceCustomerNotSuspended applies the same suspended-domain gate as CustomerScope
 // for handlers that cannot use the CustomerScope middleware because their route is not
 // keyed by the "id" parameter (for example the pma-token route keyed by dbId).
-// Administrators bypass the check, mirroring CustomerScope. It writes the HTTP error and
+//
+// Only end customers (role=user) are subject to suspension, mirroring the RoleUser
+// branch of CustomerScope; admins and resellers bypass it. The role must be read
+// explicitly: every authenticated identity now carries auth.Claims, so a bare
+// "ClaimsFrom(r) != nil" would bypass the check for customers too and let a
+// suspended customer mint a phpMyAdmin signon token. It writes the HTTP error and
 // returns false when access must be denied; callers must stop on false.
 func EnforceCustomerNotSuspended(w http.ResponseWriter, r *http.Request, domainID int64) bool {
-	if ClaimsFrom(r) != nil {
-		return true // Administrator.
+	c := ClaimsFrom(r)
+	if c == nil {
+		httpx.WriteError(w, http.StatusUnauthorized, "authorization required")
+		return false
+	}
+	if c.Role != RoleUser {
+		return true // Admin/reseller are not subject to end-customer suspension.
 	}
 	suspended, err := suspendedDomainLookup(r.Context(), domainID)
 	if err != nil {
@@ -406,14 +386,5 @@ func ClaimsFrom(r *http.Request) *auth.Claims {
 		return nil
 	}
 	c, _ := v.(*auth.Claims)
-	return c
-}
-
-func CustomerClaimsFrom(r *http.Request) *auth.CustomerClaims {
-	v := r.Context().Value(customerClaimsKey)
-	if v == nil {
-		return nil
-	}
-	c, _ := v.(*auth.CustomerClaims)
 	return c
 }

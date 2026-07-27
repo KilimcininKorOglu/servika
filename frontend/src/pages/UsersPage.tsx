@@ -25,6 +25,9 @@ type User = {
   last_login: string
   last_login_ip: string
   created_at: string
+  // passwordless: the account has no password and cannot log in until one is
+  // assigned (a customer produced by the backfill starts this way).
+  passwordless: boolean
 }
 
 const ROLE_LABEL: Record<string, string> = {
@@ -249,6 +252,14 @@ export default function UsersPage() {
                     {k.status === 'active'
                       ? <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">Active</span>
                       : <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">Suspended</span>}
+                    {k.passwordless && (
+                      <span
+                        title="No password set — this account cannot log in until you assign one."
+                        className="ml-1.5 px-2 py-0.5 rounded text-xs bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300"
+                      >
+                        No password
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap text-xs">
                     {k.two_fa ? <span className="text-emerald-600 dark:text-emerald-400">On</span> : <span className="text-slate-400">Off</span>}
@@ -366,8 +377,8 @@ export default function UsersPage() {
               New password for <span className="font-mono">{pwTarget.username}</span>.
               {pwTarget.role === 'user' && (
                 <span className="block mt-1.5 text-xs text-slate-500">
-                  This is the customer's panel account password. Once set, the customer can also log in with this
-                  username and password instead of their FTP credentials.
+                  This is the customer's panel account password. The customer signs in at the customer portal with
+                  this username and password; without one the account cannot log in.
                 </span>
               )}
             </p>

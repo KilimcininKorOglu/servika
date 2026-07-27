@@ -31,62 +31,61 @@ func TestRequireAuthRejectsOversizedTokenBeforeParsing(t *testing.T) {
 	}
 }
 
-func TestCustomerScopeRejectsSuspendedCustomer(t *testing.T) {
+// Suspension is enforced through EnforceCustomerNotSuspended (the pma-token path
+// uses it directly; CustomerScope shares the same suspendedDomainLookup seam).
+// Only end customers (role=user) are gated; admin and reseller bypass it.
+func TestEnforceCustomerNotSuspendedBlocksSuspendedCustomer(t *testing.T) {
 	originalLookup := suspendedDomainLookup
 	t.Cleanup(func() { suspendedDomainLookup = originalLookup })
-	suspendedDomainLookup = func(context.Context, int64) (bool, error) {
-		return true, nil
-	}
+	suspendedDomainLookup = func(context.Context, int64) (bool, error) { return true, nil }
 
-	nextCalled := false
-	handler := CustomerScope(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		nextCalled = true
-	}))
-	routeContext := chi.NewRouteContext()
-	routeContext.URLParams.Add("id", "42")
-	requestContext := context.WithValue(context.Background(), chi.RouteCtxKey, routeContext)
-	requestContext = context.WithValue(requestContext, customerClaimsKey, &auth.CustomerClaims{DomainID: 42})
-	request := httptest.NewRequest(http.MethodGet, "/domains/42", nil).WithContext(requestContext)
 	response := httptest.NewRecorder()
-
-	handler.ServeHTTP(response, request)
-
-	if response.Code != http.StatusForbidden {
-		t.Fatalf("CustomerScope() status = %d, want %d", response.Code, http.StatusForbidden)
+	if EnforceCustomerNotSuspended(response, reqRole(RoleUser, 5), 42) {
+		t.Fatal("EnforceCustomerNotSuspended() allowed a suspended customer")
 	}
-	if nextCalled {
-		t.Fatal("CustomerScope() allowed a suspended customer")
+	if response.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusForbidden)
 	}
 	if !strings.Contains(response.Body.String(), "account is suspended") {
-		t.Fatalf("CustomerScope() response = %s", response.Body.String())
+		t.Fatalf("response = %s", response.Body.String())
 	}
 }
 
-func TestCustomerScopeFailsClosedWhenSuspensionCannotBeVerified(t *testing.T) {
+func TestEnforceCustomerNotSuspendedFailsClosedWhenSuspensionCannotBeVerified(t *testing.T) {
 	originalLookup := suspendedDomainLookup
 	t.Cleanup(func() { suspendedDomainLookup = originalLookup })
-	suspendedDomainLookup = func(context.Context, int64) (bool, error) {
-		return false, context.Canceled
-	}
+	suspendedDomainLookup = func(context.Context, int64) (bool, error) { return false, context.Canceled }
 
-	nextCalled := false
-	handler := CustomerScope(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		nextCalled = true
-	}))
-	routeContext := chi.NewRouteContext()
-	routeContext.URLParams.Add("id", "42")
-	requestContext := context.WithValue(context.Background(), chi.RouteCtxKey, routeContext)
-	requestContext = context.WithValue(requestContext, customerClaimsKey, &auth.CustomerClaims{DomainID: 42})
-	request := httptest.NewRequest(http.MethodGet, "/domains/42", nil).WithContext(requestContext)
 	response := httptest.NewRecorder()
-
-	handler.ServeHTTP(response, request)
-
-	if response.Code != http.StatusInternalServerError {
-		t.Fatalf("CustomerScope() status = %d, want %d", response.Code, http.StatusInternalServerError)
+	if EnforceCustomerNotSuspended(response, reqRole(RoleUser, 5), 42) {
+		t.Fatal("EnforceCustomerNotSuspended() allowed access without verifying suspension state")
 	}
-	if nextCalled {
-		t.Fatal("CustomerScope() allowed access without verifying suspension state")
+	if response.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusInternalServerError)
+	}
+}
+
+// Regression guard for the single-token model: every identity now carries
+// auth.Claims, so a bare "ClaimsFrom(r) != nil" bypass would let a suspended
+// customer through. Admin and reseller must bypass; a customer must be gated;
+// an anonymous request must be rejected.
+func TestEnforceCustomerNotSuspendedRoleBehaviour(t *testing.T) {
+	originalLookup := suspendedDomainLookup
+	t.Cleanup(func() { suspendedDomainLookup = originalLookup })
+	suspendedDomainLookup = func(context.Context, int64) (bool, error) { return true, nil }
+
+	for _, role := range []string{RoleAdmin, RoleReseller} {
+		rec := httptest.NewRecorder()
+		if !EnforceCustomerNotSuspended(rec, reqRole(role, 1), 42) {
+			t.Fatalf("%s must bypass end-customer suspension, code=%d", role, rec.Code)
+		}
+	}
+	rec := httptest.NewRecorder()
+	if EnforceCustomerNotSuspended(rec, httptest.NewRequest(http.MethodGet, "/", nil), 42) {
+		t.Fatal("anonymous request must be rejected")
+	}
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("anonymous status = %d, want %d", rec.Code, http.StatusUnauthorized)
 	}
 }
 
@@ -98,8 +97,7 @@ func TestDomainOwnedByEnforcesCustomerDomain(t *testing.T) {
 		allowed  bool
 	}{
 		{name: "administrator may access any domain", context: context.WithValue(context.Background(), claimsKey, &auth.Claims{Role: RoleAdmin}), domainID: 42, allowed: true},
-		{name: "customer may access token domain", context: context.WithValue(context.Background(), customerClaimsKey, &auth.CustomerClaims{DomainID: 42}), domainID: 42, allowed: true},
-		{name: "customer may not access another domain", context: context.WithValue(context.Background(), customerClaimsKey, &auth.CustomerClaims{DomainID: 7}), domainID: 42, allowed: false},
+		{name: "customer without a DB is denied (fail-closed)", context: context.WithValue(context.Background(), claimsKey, &auth.Claims{Role: RoleUser, UserID: 3}), domainID: 42, allowed: false},
 		{name: "missing identity is denied", context: context.Background(), domainID: 42, allowed: false},
 	}
 
@@ -113,16 +111,10 @@ func TestDomainOwnedByEnforcesCustomerDomain(t *testing.T) {
 	}
 }
 
-// reqRole builds a request carrying an admin-type (auth.Claims) token of the given role.
+// reqRole builds a request carrying a session token (auth.Claims) of the given role.
 func reqRole(role string, uid int64) *http.Request {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	return r.WithContext(context.WithValue(r.Context(), claimsKey, &auth.Claims{UserID: uid, Username: "t", Role: role}))
-}
-
-// reqCustomer builds a request carrying a customer (auth.CustomerClaims) token.
-func reqCustomer(domainID int64) *http.Request {
-	r := httptest.NewRequest(http.MethodGet, "/", nil)
-	return r.WithContext(context.WithValue(r.Context(), customerClaimsKey, &auth.CustomerClaims{DomainID: domainID}))
 }
 
 func TestAdminOnly(t *testing.T) {
@@ -144,9 +136,6 @@ func TestAdminOnly(t *testing.T) {
 	}
 	if code := run(reqRole(RoleUser, 3)); code != http.StatusForbidden {
 		t.Errorf("user role should get 403, code=%d", code)
-	}
-	if code := run(reqCustomer(5)); code != http.StatusForbidden {
-		t.Errorf("customer token should get 403, code=%d", code)
 	}
 	if code := run(httptest.NewRequest(http.MethodGet, "/", nil)); code != http.StatusForbidden {
 		t.Errorf("anonymous should get 403, code=%d", code)
@@ -171,9 +160,6 @@ func TestResellerOrAbove(t *testing.T) {
 	if code := run(reqRole(RoleUser, 3)); code != http.StatusForbidden {
 		t.Errorf("user role should get 403, code=%d", code)
 	}
-	if code := run(reqCustomer(5)); code != http.StatusForbidden {
-		t.Errorf("customer token should get 403, code=%d", code)
-	}
 }
 
 func TestScopeSQL(t *testing.T) {
@@ -187,11 +173,19 @@ func TestScopeSQL(t *testing.T) {
 	if cond == "" || len(arg) != 1 || arg[0] != int64(7) {
 		t.Errorf("reseller scope wrong: cond=%q arg=%v", cond, arg)
 	}
+	if !strings.Contains(cond, "owner_user_id") {
+		t.Errorf("reseller scope must match owner_user_id, cond=%q", cond)
+	}
 
-	// Customer: only its own domain.
-	cond, arg = ScopeSQL(reqCustomer(42), "d")
+	// Customer (role=user): the regression this fixes — the old switch had no
+	// RoleUser branch and fell through to WHERE 1 = 0, so every scoped list
+	// returned empty for a customer. It must now narrow over customers.user_id.
+	cond, arg = ScopeSQL(reqRole(RoleUser, 42), "d")
 	if cond == "" || len(arg) != 1 || arg[0] != int64(42) {
 		t.Errorf("customer scope wrong: cond=%q arg=%v", cond, arg)
+	}
+	if !strings.Contains(cond, "sc.user_id") || strings.Contains(cond, "1 = 0") {
+		t.Errorf("customer scope must match user_id, not fail-closed, cond=%q", cond)
 	}
 
 	// Anonymous: fail-closed — no row must match.
@@ -212,12 +206,10 @@ func TestDomainOwnedByFailsClosed(t *testing.T) {
 	if !DomainOwnedBy(reqRole(RoleAdmin, 1), 99) {
 		t.Error("admin should access every domain")
 	}
-	// Customer only its own domain.
-	if !DomainOwnedBy(reqCustomer(99), 99) {
-		t.Error("customer should access its own domain")
-	}
-	if DomainOwnedBy(reqCustomer(98), 99) {
-		t.Error("customer must not access another domain")
+	// Customer (role=user) resolves ownership from the chain, which cannot be read
+	// without a DB, so it must be denied (fail-closed) rather than pass open.
+	if DomainOwnedBy(reqRole(RoleUser, 3), 99) {
+		t.Error("customer access must be denied without a DB (fail-closed)")
 	}
 }
 

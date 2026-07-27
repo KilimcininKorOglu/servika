@@ -18,7 +18,6 @@ import (
 
 	"servika/internal/config"
 	"servika/internal/httpx"
-	"servika/internal/middleware"
 	"servika/internal/secret"
 
 	"github.com/go-chi/chi/v5"
@@ -142,10 +141,8 @@ func patErrorMessage(status int, b []byte) string {
 }
 
 func (h *Handlers) lookupDomain(r *http.Request) (id int64, systemUser string, demo bool, err error) {
-	mc := middleware.CustomerClaimsFrom(r)
 	idStr := chi.URLParam(r, "id")
 	_, _ = fmt.Sscanf(idStr, "%d", &id)
-	_ = mc
 	var dmo int
 	err = h.DB.QueryRowContext(r.Context(),
 		`SELECT system_user, is_demo FROM domains WHERE id=?`, id).

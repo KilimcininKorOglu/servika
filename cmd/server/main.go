@@ -136,10 +136,10 @@ func main() {
 	mail.HealMailOnStartup(context.Background(), d)
 	go system.StartVersionCheck(version, buildDate)
 
-	// Backfill customer panel accounts onto the multi-user model (Phase 5C).
+	// Backfill customer panel accounts onto the multi-user model.
 	// Idempotent: exits silently when there is no tenant to migrate. The
-	// generated accounts have no password, so existing customers keep signing
-	// in with their FTP identity until a password is assigned.
+	// generated accounts have no password and therefore cannot log in until an
+	// admin or reseller assigns one from the Customer Accounts screen.
 	datamigrate.BackfillCustomerAccounts(context.Background(), d)
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
