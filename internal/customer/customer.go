@@ -156,6 +156,17 @@ func (h *Handlers) panelAccountLogin(w http.ResponseWriter, r *http.Request, req
 		WHERE c.user_id = ?
 		ORDER BY d.id LIMIT 1`, uid).Scan(&firstDomainID, &firstDomainName)
 
+	// Account exists but has no service linked yet (e.g. a reseller created it
+	// but has not assigned a domain). Issuing a token would send the UI to
+	// /subscriptions/0 and end in a "domain not found" error; stating the reason
+	// plainly is better.
+	if firstDomainID == 0 {
+		auth.WriteAudit(h.DB, uid, req.Username, ip, "customer.login", req.Username, false)
+		httpx.WriteError(w, http.StatusForbidden,
+			"no service is linked to your account — contact your provider")
+		return true
+	}
+
 	tok, err := auth.Issue(h.Secret, 24*3600, uid, req.Username, role, tokenVersion)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")

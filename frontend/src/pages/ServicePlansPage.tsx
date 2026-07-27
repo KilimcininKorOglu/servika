@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
+import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
 import ListToolbar from '@/components/ListToolbar'
 import EmptyState from '@/components/EmptyState'
@@ -30,6 +31,7 @@ type Plan = {
 type Version = { version: string; description?: string }
 
 export default function ServicePlansPage() {
+  const isAdmin = useAuth((s) => s.username?.role) === 'admin'
   const [items, setItems] = useState<Plan[]>([])
   const [versions, setVersions] = useState<Version[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,7 +71,7 @@ export default function ServicePlansPage() {
       </p>
 
       <ListToolbar
-        primary={{ label: 'Add Plan', onClick: () => setModal({} as Plan) }}
+        primary={isAdmin ? { label: 'Add Plan', onClick: () => setModal({} as Plan) } : undefined}
         buttons={[]}
       />
 
@@ -80,8 +82,8 @@ export default function ServicePlansPage() {
       ) : items.length === 0 ? (
         <EmptyState
           title="No service plans yet"
-          description="Start by defining your first plan."
-          button={{ label: 'Add Plan', onClick: () => setModal({} as Plan) }}
+          description={isAdmin ? 'Start by defining your first plan.' : 'The administrator has not defined a plan yet.'}
+          button={isAdmin ? { label: 'Add Plan', onClick: () => setModal({} as Plan) } : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -106,12 +108,16 @@ export default function ServicePlansPage() {
                 <Row label="FTP" value={formatLimit(plan.max_ftp, 'accounts')} />
               </dl>
 
-              <div className="mt-4 flex gap-2">
-                <Link to={`/tools/packages/${plan.id}`} className="flex-1 text-center text-sm px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-md">
-                  Details & Resource Limits
-                </Link>
-                <button onClick={() => setPlanToDelete(plan)} className="text-sm px-3 py-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 rounded-md">Delete</button>
-              </div>
+              {/* Plan definition is the administrator's product; a reseller only
+                  views them (the /plans write endpoints are AdminOnly too). */}
+              {isAdmin && (
+                <div className="mt-4 flex gap-2">
+                  <Link to={`/tools/packages/${plan.id}`} className="flex-1 text-center text-sm px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-md">
+                    Details & Resource Limits
+                  </Link>
+                  <button onClick={() => setPlanToDelete(plan)} className="text-sm px-3 py-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 rounded-md">Delete</button>
+                </div>
+              )}
             </div>
           ))}
         </div>

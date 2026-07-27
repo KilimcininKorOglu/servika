@@ -58,6 +58,8 @@ import MailOverviewPage from '@/pages/MailOverviewPage'
 import DatabasesOverviewPage from '@/pages/DatabasesOverviewPage'
 import CustomersPage from '@/pages/CustomersPage'
 import AuditLogPage from '@/pages/AuditLogPage'
+import UsersPage from '@/pages/UsersPage'
+import ServerStatusPage from '@/pages/ServerStatusPage'
 import ServicesPage from '@/pages/ServicesPage'
 import ComingSoonPage from '@/pages/ComingSoonPage'
 
@@ -149,6 +151,8 @@ export default function App() {
         <Route path="databases"  element={<DatabasesOverviewPage />} />
         <Route path="customers"  element={<CustomersPage />} />
         <Route path="audit-log"  element={<AuditLogPage />} />
+        <Route path="users"         element={<UsersPage />} />
+        <Route path="server-status" element={<ServerStatusPage />} />
 
         <Route path="profile"          element={<SettingsPage />} />
         <Route path="change-password" element={<Navigate to="/profile" replace />} />

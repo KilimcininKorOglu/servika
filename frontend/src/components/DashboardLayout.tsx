@@ -4,6 +4,7 @@ import MobileNavBar from './MobileNavBar'
 import TopBar from './TopBar'
 import DomainPicker from './DomainPicker'
 import { api } from '@/lib/api'
+import { useAuth } from '@/store/auth'
 
 type VersionFooter = { current?: string; build_date?: string }
 
@@ -53,10 +54,28 @@ const NAV: NavGroup[] = [
     { to: '/wordpress',           label: 'WordPress',          icon: ICONS.wp },
     { to: '/firewall',            label: 'Firewall',    icon: ICONS.firewall },
     { to: '/monitoring',              label: 'Monitoring',             icon: ICONS.monitoring },
+    { to: '/users',                   label: 'Users',                  icon: ICONS.reseller },
     { to: '/audit-log',               label: 'Security Log',           icon: ICONS.audit },
   ]},
   { title: 'My Profile', items: [
     { to: '/profile',              label: 'Profile and Preferences', icon: ICONS.profile },
+  ]},
+]
+
+// Reseller menu — ONLY the places a reseller can actually reach.
+//
+// Reseller permissions are classified endpoint by endpoint: their own accounts
+// plus read-only server status are open; domain/DNS/SSL operations stay closed
+// until the scope filter lands. To avoid putting a link that would 403 into the
+// menu, this list is kept narrow; the Hosting group joins it once scoping ships.
+const RESELLER_NAV: NavGroup[] = [
+  { items: [{ to: '/', label: 'Home', icon: ICONS.home }] },
+  { title: 'My Accounts', items: [
+    { to: '/users',   label: 'My Customers',   icon: ICONS.customer },
+  ]},
+  { title: 'Server', items: [
+    { to: '/server-status',  label: 'Server Status',  icon: ICONS.monitoring },
+    { to: '/service-plans',  label: 'Service Plans',  icon: ICONS.plan },
   ]},
 ]
 
@@ -171,6 +190,7 @@ function SidebarNav({ groups, openGroups, onToggle, onNavigate, topSlot }: {
 export default function DashboardLayout() {
   const isCustomer = typeof window !== 'undefined' && localStorage.getItem('servika.customer') === '1'
   const customerDomainID = typeof window !== 'undefined' ? localStorage.getItem('servika.customer.domain_id') || '' : ''
+  const role = useAuth((s) => s.username?.role)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [footer, setFooter] = useState<VersionFooter | null>(null)
   const location = useLocation()
@@ -188,6 +208,8 @@ export default function DashboardLayout() {
     'My Profile': true,
     'My Domain': true,
     'Domain': true,
+    'My Accounts': true,
+    'Server': true,
   })
 
   useEffect(() => {
@@ -232,7 +254,18 @@ export default function DashboardLayout() {
   const activeDomainID = domainMatch ? domainMatch[1] : ''
   const domainMode = !isCustomer && activeDomainID !== ''
 
-  const activeNav = isCustomer ? customerNav : domainMode ? domainNav(activeDomainID) : NAV
+  // The menu is derived from the role. isCustomer is the flag for legacy
+  // FTP-credential sessions; a customer who logs in with a panel account comes
+  // in as role='user' — both see the same customer menu. A reseller may also
+  // enter domain mode (its own customer's domain); only the customer stays on
+  // its fixed menu.
+  const activeNav = isCustomer || role === 'user'
+    ? customerNav
+    : domainMode
+    ? domainNav(activeDomainID)
+    : role === 'reseller'
+    ? RESELLER_NAV
+    : NAV
   const mobileItems = isCustomer
     ? [
         { to: `/subscriptions/${customerDomainID}`, label: 'Overview', icon: ICONS.home, end: true },
