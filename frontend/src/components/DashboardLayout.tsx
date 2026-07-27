@@ -197,8 +197,8 @@ function SidebarNav({ groups, openGroups, onToggle, onNavigate, topSlot }: {
 }
 
 export default function DashboardLayout() {
-  const isCustomer = typeof window !== 'undefined' && localStorage.getItem('servika.customer') === '1'
-  const customerDomainID = typeof window !== 'undefined' ? localStorage.getItem('servika.customer.domain_id') || '' : ''
+  const isCustomer = useAuth((s) => s.isCustomer)
+  const customerDomainID = useAuth((s) => s.customerDomainID)
   const role = useAuth((s) => s.username?.role)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [footer, setFooter] = useState<VersionFooter | null>(null)

@@ -32,6 +32,7 @@ function copyToClipboard(text: string): boolean {
 export default function TopBar({ onMenuClick }: TopBarProps) {
   const username = useAuth((s) => s.username)
   const logout = useAuth((s) => s.logout)
+  const isCustomer = useAuth((s) => s.isCustomer)
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [theme, setCurrentTheme] = useState<Theme>(getTheme())
@@ -47,12 +48,11 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
   useEffect(() => {
     // The /system/panel-domain endpoint is admin-only; customer sessions would
     // always get a 403, so skip the request entirely for them.
-    const isCustomer = typeof window !== 'undefined' && localStorage.getItem('servika.customer') === '1'
     if (isCustomer) return
     api.get<{ server_ipv4: string }>('/system/panel-domain')
       .then((response) => setServerIp(response.data.server_ipv4 || null))
       .catch(() => {})
-  }, [])
+  }, [isCustomer])
 
   function handleCopyIp() {
     if (!serverIp) return

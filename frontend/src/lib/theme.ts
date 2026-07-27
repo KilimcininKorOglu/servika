@@ -1,15 +1,18 @@
 // Manages the panel's dark, light, and system themes.
-// - localStorage key stores light, dark, or system mode.
+// - A cookie (never localStorage) stores light, dark, or system mode.
 // - system: follows the prefers-color-scheme: dark media query
 // - Class: <html class="dark"> matches Tailwind darkMode: 'class'.
+
+import { getCookie, setCookie } from '@/lib/cookies'
 
 export type Theme = 'light' | 'dark' | 'system'
 
 const KEY = 'servika.theme'
+const ONE_YEAR_SEC = 365 * 24 * 60 * 60 // Theme is a durable preference, not session-scoped.
 
 export function getTheme(): Theme {
   if (typeof window === 'undefined') return 'light'
-  const v = localStorage.getItem(KEY) as Theme | null
+  const v = getCookie(KEY) as Theme | null
   // Default: light — use the light theme until the user selects another option.
   return v === 'dark' || v === 'light' || v === 'system' ? v : 'light'
 }
@@ -29,7 +32,7 @@ export function applyTheme(t: Theme) {
 }
 
 export function setTheme(t: Theme) {
-  localStorage.setItem(KEY, t)
+  setCookie(KEY, t, ONE_YEAR_SEC)
   applyTheme(t)
   window.dispatchEvent(new CustomEvent('servika:theme-change', { detail: t }))
 }

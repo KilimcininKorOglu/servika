@@ -11,6 +11,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { restrictToWindowEdges } from '@dnd-kit/modifiers'
 import { api } from '@/lib/api'
+import { getCookie, setCookie } from '@/lib/cookies'
 import { useAuth } from '@/store/auth'
 import LoadHistoryChart from '@/components/LoadHistoryChart'
 import MemoryHistoryChart from '@/components/MemoryHistoryChart'
@@ -119,7 +120,7 @@ export default function HomePage() {
   const [wp, setWp] = useState<WpInstall[] | null>(null)
   const [quotaWarningDismissed, setQuotaWarningDismissed] = useState(() => {
     if (typeof window === 'undefined') return false
-    return window.localStorage.getItem(QUOTA_WARNING_DISMISSED_KEY) === '1'
+    return getCookie(QUOTA_WARNING_DISMISSED_KEY) === '1'
   })
 
   const [layout, setLayout] = useState<Layout>(DEFAULT_LAYOUT)
@@ -239,7 +240,8 @@ export default function HomePage() {
   const dismissQuotaWarning = () => {
     setQuotaWarningDismissed(true)
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(QUOTA_WARNING_DISMISSED_KEY, '1')
+      // Durable dismissal: keep it for a year rather than the browser session.
+      setCookie(QUOTA_WARNING_DISMISSED_KEY, '1', 365 * 24 * 60 * 60)
     }
   }
 
