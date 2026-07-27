@@ -126,7 +126,7 @@ func readZoneSerial(path string) uint32 {
 		if !strings.Contains(line, "; serial") {
 			continue
 		}
-		for _, field := range strings.Fields(line) {
+		for field := range strings.FieldsSeq(line) {
 			serial, parseErr := strconv.ParseUint(field, 10, 32)
 			if parseErr == nil {
 				return uint32(serial)

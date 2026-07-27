@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"slices"
 	"strings"
 	"syscall"
 )
@@ -62,10 +63,8 @@ func CheckHost(host string) error {
 	if err != nil {
 		return fmt.Errorf("resolve host: %w", err)
 	}
-	for _, ip := range ips {
-		if blocked(ip) {
-			return ErrBlockedTarget
-		}
+	if slices.ContainsFunc(ips, blocked) {
+		return ErrBlockedTarget
 	}
 	return nil
 }

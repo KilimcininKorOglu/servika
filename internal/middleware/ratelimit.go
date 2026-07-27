@@ -205,10 +205,7 @@ func LoginRateLimit(next http.Handler) http.Handler {
 			return
 		}
 		if count > 0 { // graduated slowdown
-			d := time.Duration(count) * 250 * time.Millisecond
-			if d > loginMaxLag {
-				d = loginMaxLag
-			}
+			d := min(time.Duration(count)*250*time.Millisecond, loginMaxLag)
 			time.Sleep(d)
 		}
 		sw := &statusWriter{ResponseWriter: w, code: http.StatusOK}

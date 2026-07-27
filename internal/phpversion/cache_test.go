@@ -20,10 +20,10 @@ func TestPackageAvailableCacheOnly(t *testing.T) {
 	sweeperOnce.Do(func() {})
 	resetAvailabilityCache()
 
-	var probeCalls int64
+	var probeCalls atomic.Int64
 	old := dnfProbe
 	dnfProbe = func(pkg string) (available bool, checked bool) { // fake probe that never calls dnf
-		atomic.AddInt64(&probeCalls, 1)
+		probeCalls.Add(1)
 		return pkg == "php82-php-fpm", true // only php82 installable; all give DEFINITE answer
 	}
 	defer func() { dnfProbe = old }()
@@ -41,22 +41,20 @@ func TestPackageAvailableCacheOnly(t *testing.T) {
 		t.Fatal("appstream should always be available")
 	}
 
-	base := atomic.LoadInt64(&probeCalls)
+	base := probeCalls.Load()
 
 	// Concurrent reads: cache-only, NO dnf calls, NO races.
 	var wg sync.WaitGroup
 	for range 200 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			_ = packageAvailable(VersionMetadata{Version: "8.2", Code: "82", Resource: "remi"})
 			_ = packageAvailable(VersionMetadata{Version: "8.4", Code: "84", Resource: "remi"})
 			_ = AllVersions()
-		}()
+		})
 	}
 	wg.Wait()
 
-	if got := atomic.LoadInt64(&probeCalls); got != base {
+	if got := probeCalls.Load(); got != base {
 		t.Fatalf("request path called dnf: base=%d got=%d (cache-only expected)", base, got)
 	}
 }

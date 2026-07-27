@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
 	"os"
 	"os/exec"
@@ -125,9 +126,7 @@ func sweepOnce() {
 	// Start with a copy of the current cache — entries with checked=false retain their old value.
 	availabilityMu.Lock()
 	fresh := make(map[string]bool, len(availabilityCache))
-	for k, v := range availabilityCache {
-		fresh[k] = v
-	}
+	maps.Copy(fresh, availabilityCache)
 	availabilityMu.Unlock()
 
 	seen := map[string]bool{}
