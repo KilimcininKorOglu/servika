@@ -227,7 +227,7 @@ func generateSelfSigned(domain string) (certPath, keyPath string, err error) {
 // renderAndReload.
 func writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPath, source string) error {
 	_, socket, _ := phpPoolPath(systemUser, phpVersion)
-	return renderAndReload(VhostOpts{
+	opts := VhostOpts{
 		DomainName: domainName,
 		WebRoot:    SafeWebRoot(systemUser, currentWebRoot(systemUser)),
 		PHPSocket:  socket,
@@ -236,7 +236,15 @@ func writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPat
 		KeyPath:    keyPath,
 		SSLSource:  source,
 		Backend:    backend,
-	}, systemUser)
+	}
+	// Addon domains share the parent's system user; without its own ConfigPath and
+	// web root this SSL render would overwrite the parent's dom_<sk>.conf and drop
+	// the parent domain from nginx (see addonDomainInfo).
+	if wr, isAddon := addonDomainInfo(domainName); isAddon {
+		opts.ConfigPath = addonVhostConfigPath(systemUser, domainName)
+		opts.WebRoot = safeAddonWebRoot(systemUser, domainName, wr)
+	}
+	return renderAndReload(opts, systemUser)
 }
 
 // sslFailSafe keeps 443 alive when LE issuance fails (including 429) — it never drops
@@ -306,7 +314,12 @@ func HealSSLVhost443OnStartup() {
 		if x.domainName == "" || ValidateDomain(x.domainName) != nil {
 			continue // path safety
 		}
+		// Addon domains keep their 443 block in their own conf; reading the parent's
+		// dom_<sk>.conf here would misjudge an SSL-enabled addon's health.
 		vpath := "/etc/nginx/conf.d/dom_" + x.systemUser + ".conf"
+		if _, isAddon := addonDomainInfo(x.domainName); isAddon {
+			vpath = addonVhostConfigPath(x.systemUser, x.domainName)
+		}
 		data, rerr := os.ReadFile(vpath)
 		has443 := rerr == nil && strings.Contains(string(data), "listen 443")
 		certPresent := certFileExists(x.cert) && certFileExists(x.key)

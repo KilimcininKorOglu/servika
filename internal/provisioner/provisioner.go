@@ -165,6 +165,31 @@ func currentWebRoot(systemUser string) string {
 	return webRoot
 }
 
+// addonDomainInfo reports whether domainName is an addon/parked domain (its
+// domains row carries a non-null parent_domain_id) and, when it is, returns the
+// addon's own document root. Addon domains share the PARENT's system user, so the
+// SSL writers' default dom_<system_user>.conf path would overwrite the parent
+// domain's vhost and drop it from nginx entirely. Resolving the addon flag here
+// lets every SSL path (issue, disable, startup heal) route an addon to its own
+// addon_<system_user>_<domain>.conf instead.
+//
+// Fail-safe: when the DB is unavailable or the row is not an addon, it returns
+// isAddon=false so behavior stays exactly as before — a false positive here would
+// wrongly divert a real parent domain's vhost.
+func addonDomainInfo(domainName string) (webRoot string, isAddon bool) {
+	if packageDB == nil {
+		return "", false
+	}
+	var parent sql.NullInt64
+	var wr string
+	if err := packageDB.QueryRow(
+		`SELECT parent_domain_id, COALESCE(web_root,'') FROM domains WHERE domain_name=? LIMIT 1`,
+		strings.ToLower(strings.TrimSpace(domainName))).Scan(&parent, &wr); err != nil || !parent.Valid {
+		return "", false
+	}
+	return wr, true
+}
+
 var cacheZoneDefinitionPattern = regexp.MustCompile(`keys_zone\s*=\s*` + regexp.QuoteMeta(cacheZoneName) + `\s*:`)
 
 // Init configures database-backed state and repairs managed server configuration.
@@ -1401,13 +1426,20 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 func DisableSSL(domainName, systemUser, phpVersion, backend string) error {
 	phpVersion = normalizePHP(phpVersion)
 	_, socket, _ := phpPoolPath(systemUser, phpVersion)
-	return renderAndReload(VhostOpts{
+	opts := VhostOpts{
 		DomainName: domainName,
 		WebRoot:    SafeWebRoot(systemUser, currentWebRoot(systemUser)),
 		PHPSocket:  socket,
 		PHPVersion: phpVersion,
 		Backend:    backend,
-	}, systemUser)
+	}
+	// Same addon separation as writeSSLVhost: disabling SSL on an addon domain must
+	// rewrite the addon's own conf, not the parent's dom_<sk>.conf.
+	if wr, isAddon := addonDomainInfo(domainName); isAddon {
+		opts.ConfigPath = addonVhostConfigPath(systemUser, domainName)
+		opts.WebRoot = safeAddonWebRoot(systemUser, domainName, wr)
+	}
+	return renderAndReload(opts, systemUser)
 }
 
 func userExists(username string) bool {

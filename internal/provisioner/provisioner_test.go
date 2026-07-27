@@ -274,6 +274,25 @@ func TestCertificateSystemDirUsesServikaPKIPath(t *testing.T) {
 	}
 }
 
+// TestAddonVhostConfigPathNeverOverwritesParentVhost guards the parked-domain SSL
+// incident: an addon domain shares its parent's system user, so its config file
+// must NEVER resolve to the parent's dom_<system_user>.conf, and two addon domains
+// under the same user must not collide on one file.
+func TestAddonVhostConfigPathNeverOverwritesParentVhost(t *testing.T) {
+	const systemUser = "c_example_com"
+	parentPath := "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
+
+	if got := addonVhostConfigPath(systemUser, "addon.example.net"); got == parentPath {
+		t.Fatal("addon domain resolves to the parent's vhost file; SSL on the addon would drop the parent domain")
+	}
+	if got := addonVhostConfigPath(systemUser, "addon.example.net"); !strings.Contains(got, "addon_example_net") {
+		t.Errorf("config path %q must include the sanitized domain, otherwise addons under one user collide", got)
+	}
+	if addonVhostConfigPath(systemUser, "a.net") == addonVhostConfigPath(systemUser, "b.net") {
+		t.Error("two addon domains under the same system user share one config file")
+	}
+}
+
 func TestReusableLetsEncryptCertificateSkipsSelfSignedCertificate(t *testing.T) {
 	domain := "example.com"
 	certRoot := t.TempDir()
