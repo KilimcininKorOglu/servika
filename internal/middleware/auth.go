@@ -129,11 +129,45 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 	}
 }
 
-// AdminOnly accepts only administrator tokens and returns 403 for customers.
+// Role constants — one-to-one with users.role ENUM('admin','reseller','user').
+const (
+	RoleAdmin    = "admin"
+	RoleReseller = "reseller"
+	RoleUser     = "user"
+)
+
+// AdminOnly accepts only role=admin and returns 403 otherwise.
+//
+// SECURITY: this used to check only whether an admin-type token existed
+// (ClaimsFrom(r) == nil) and never read the role. That was harmless while a
+// single token type was issued (root → role=admin), but the moment reseller
+// accounts are given an auth.Claims token, all 87 admin endpoints — firewall,
+// service restart, package installation included — would open to that reseller.
+// The role check is a PRECONDITION for multi-user support, not a later refinement.
 func AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if ClaimsFrom(r) == nil {
+		c := ClaimsFrom(r)
+		if c == nil || c.Role != RoleAdmin {
 			httpx.WriteError(w, http.StatusForbidden, "administrator access required")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// ResellerOrAbove accepts role=admin or role=reseller.
+//
+// Used on two kinds of endpoint:
+//   - Account operations (domain, customer, DNS, SSL...) where the reseller acts
+//     within ITS OWN scope; the scope narrowing is applied separately via
+//     DomainOwnedBy/ScopeSQL — this middleware answers only "is the role enough".
+//   - Read-only server information (service status, load, version) visible so a
+//     reseller can offer support, while every mutating endpoint stays AdminOnly.
+func ResellerOrAbove(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c := ClaimsFrom(r)
+		if c == nil || (c.Role != RoleAdmin && c.Role != RoleReseller) {
+			httpx.WriteError(w, http.StatusForbidden, "insufficient permissions")
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -149,9 +183,28 @@ func CustomerScope(next http.Handler) http.Handler {
 func CustomerScopeParam(param string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if ClaimsFrom(r) != nil {
-				next.ServeHTTP(w, r) // Administrator.
-				return
+			// SECURITY: this used to be a bare "ClaimsFrom(r) != nil", so EVERY
+			// token carrying auth.Claims was treated as admin and skipped the
+			// scope check. Reseller tokens are auth.Claims too, so that meant
+			// unscoped access to all 141 customer-scoped endpoints — the
+			// wider-surface twin of the same bug in AdminOnly.
+			if c := ClaimsFrom(r); c != nil {
+				switch c.Role {
+				case RoleAdmin:
+					next.ServeHTTP(w, r) // Administrator: all domains.
+					return
+				case RoleReseller:
+					urlID, _ := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
+					if !ResellerOwnsDomain(r, c.UserID, urlID) {
+						httpx.WriteError(w, http.StatusForbidden, "access to this domain is forbidden")
+						return
+					}
+					next.ServeHTTP(w, r)
+					return
+				default:
+					httpx.WriteError(w, http.StatusForbidden, "access to this domain is forbidden")
+					return
+				}
 			}
 			mc := CustomerClaimsFrom(r)
 			if mc == nil {
@@ -191,15 +244,92 @@ func RequestIDHeader(next http.Handler) http.Handler {
 }
 
 // DomainOwnedBy reports whether the authenticated identity may access a domain.
-// Administrators may access every domain; customers may access only their token domain.
+//   - Admin token    => always true (accesses every domain).
+//   - Reseller token => true when the domain belongs to a customer the reseller manages.
+//   - Customer token => true only when it matches its own DomainID.
+//   - No identity     => false.
+//
+// This is the in-handler counterpart of CustomerScope: on endpoints whose URL
+// carries no {id} domain param (e.g. a derived resource like {dbId}), ownership
+// is verified with this function after the resource's domain_id is resolved from
+// the database.
 func DomainOwnedBy(r *http.Request, domainID int64) bool {
-	if ClaimsFrom(r) != nil {
-		return true
+	if c := ClaimsFrom(r); c != nil {
+		if c.Role == RoleAdmin {
+			return true // Administrator: accesses every domain.
+		}
+		if c.Role == RoleReseller {
+			return ResellerOwnsDomain(r, c.UserID, domainID)
+		}
+		return false
 	}
 	if claims := CustomerClaimsFrom(r); claims != nil {
 		return claims.DomainID == domainID
 	}
 	return false
+}
+
+// ResellerOwnsDomain reports whether a domain belongs to a customer managed by
+// the given reseller.
+//
+// The ownership chain is resolved in one place: domains.customer_id ->
+// customers.owner_user_id. The authorization decision is always read from the
+// database, never from a list embedded in the token — when a reseller loses or
+// transfers a customer, its old token must become invalid immediately.
+//
+// FAIL-CLOSED: returns false (access denied) when the database cannot be read.
+func ResellerOwnsDomain(r *http.Request, resellerUserID, domainID int64) bool {
+	if scopeDB == nil || resellerUserID <= 0 {
+		return false
+	}
+	var n int
+	err := scopeDB.QueryRowContext(r.Context(), `
+		SELECT COUNT(*)
+		FROM domains d
+		JOIN customers c ON c.id = d.customer_id
+		WHERE d.id = ? AND c.owner_user_id = ?`, domainID, resellerUserID).Scan(&n)
+	return err == nil && n > 0
+}
+
+// ResellerOwnsCustomer reports whether a customer record belongs to the given
+// reseller (for endpoints operating on customers directly, without going through
+// the domain chain).
+func ResellerOwnsCustomer(r *http.Request, resellerUserID, customerID int64) bool {
+	if scopeDB == nil || resellerUserID <= 0 {
+		return false
+	}
+	var n int
+	err := scopeDB.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM customers WHERE id = ? AND owner_user_id = ?`,
+		customerID, resellerUserID).Scan(&n)
+	return err == nil && n > 0
+}
+
+// ScopeSQL produces the WHERE fragment and argument for list endpoints.
+//
+// On list endpoints verifying ownership row by row does not work — the query
+// itself must be narrowed, otherwise a reseller receives a list showing ALL
+// records. Usage:
+//
+//	cond, arg := middleware.ScopeSQL(r, "d")
+//	query := "SELECT ... FROM domains d " + cond
+//
+// Returns an empty string for admins (no narrowing). For resellers it returns an
+// EXISTS condition joining customers. For customer/anonymous it returns a
+// condition that matches no row (fail-closed).
+func ScopeSQL(r *http.Request, domainAlias string) (string, []any) {
+	c := ClaimsFrom(r)
+	if c != nil && c.Role == RoleAdmin {
+		return "", nil
+	}
+	if c != nil && c.Role == RoleReseller {
+		return " WHERE EXISTS (SELECT 1 FROM customers sc WHERE sc.id = " +
+			domainAlias + ".customer_id AND sc.owner_user_id = ?)", []any{c.UserID}
+	}
+	if mc := CustomerClaimsFrom(r); mc != nil {
+		return " WHERE " + domainAlias + ".id = ?", []any{mc.DomainID}
+	}
+	return " WHERE 1 = 0", nil
 }
 
 // EnforceCustomerNotSuspended applies the same suspended-domain gate as CustomerScope

@@ -241,16 +241,23 @@ func main() {
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAuth(cfg.JWTSecret))
 			r.Get("/me", usersH.Me)
-			r.With(middleware.AdminOnly).Put("/me", authH.UpdateProfile)
-			r.With(middleware.AdminOnly).Get("/dashboard-layout", authH.DashboardLayoutGet)
-			r.With(middleware.AdminOnly).Put("/dashboard-layout", authH.DashboardLayoutSave)
-			r.With(middleware.AdminOnly).Post("/me/password", authH.ChangePassword)
-			r.With(middleware.AdminOnly).Post("/me/sessions/revoke", authH.RevokeSessions)
-			r.With(middleware.AdminOnly).Get("/me/2fa/setup", authH.TwoFASetup)
-			r.With(middleware.AdminOnly).Post("/me/2fa/enable", authH.TwoFAEnable)
-			r.With(middleware.AdminOnly).Post("/me/2fa/disable", authH.TwoFADisable)
+			// Own account — every panel user (admin + reseller) manages its own
+			// profile, password and 2FA. No scope question here: the target is
+			// always the token's own user.
+			r.With(middleware.ResellerOrAbove).Put("/me", authH.UpdateProfile)
+			r.With(middleware.ResellerOrAbove).Get("/dashboard-layout", authH.DashboardLayoutGet)
+			r.With(middleware.ResellerOrAbove).Put("/dashboard-layout", authH.DashboardLayoutSave)
+			r.With(middleware.ResellerOrAbove).Post("/me/password", authH.ChangePassword)
+			r.With(middleware.ResellerOrAbove).Post("/me/sessions/revoke", authH.RevokeSessions)
+			r.With(middleware.ResellerOrAbove).Get("/me/2fa/setup", authH.TwoFASetup)
+			r.With(middleware.ResellerOrAbove).Post("/me/2fa/enable", authH.TwoFAEnable)
+			r.With(middleware.ResellerOrAbove).Post("/me/2fa/disable", authH.TwoFADisable)
+			// NOTE: /domains can be opened to resellers only after the scope filter
+			// (Phase 5D) lands — opening it unfiltered would show every domain.
 			r.With(middleware.AdminOnly).Get("/domains", domainsH.List)
-			r.With(middleware.AdminOnly).Get("/dns-template", dnsH.GetTemplate)
+			// Central DNS template read is open to resellers (to assign it when
+			// adding a customer domain); editing the template is admin's product config.
+			r.With(middleware.ResellerOrAbove).Get("/dns-template", dnsH.GetTemplate)
 			r.With(middleware.AdminOnly).Put("/dns-template", dnsH.PutTemplate)
 			// Server-wide read-only overview lists — the sidebar's DNS / SSL /
 			// Mail / Databases pages read these. Editing still happens on the
@@ -260,20 +267,22 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/overview/mail", overviewH.Mail)
 			r.With(middleware.AdminOnly).Get("/overview/databases", overviewH.Databases)
 			r.With(middleware.CustomerScope).Get("/domains/{id}", domainsH.Get)
-			r.With(middleware.AdminOnly).Get("/system/usage", system.Handler)
-			r.With(middleware.AdminOnly).Get("/system/metrics", metrics.Handler)
-			r.With(middleware.AdminOnly).Get("/system/services", system.ServiceStatuses)
+			// Read-only server status — visible so a reseller can offer support
+			// (user decision, Phase 5 plan); mutating endpoints stay AdminOnly.
+			r.With(middleware.ResellerOrAbove).Get("/system/usage", system.Handler)
+			r.With(middleware.ResellerOrAbove).Get("/system/metrics", metrics.Handler)
+			r.With(middleware.ResellerOrAbove).Get("/system/services", system.ServiceStatuses)
 			r.With(middleware.AdminOnly).Post("/system/service-action", system.ServiceAction)
 			r.With(middleware.AdminOnly).Post("/system/reboot", system.Reboot)
 			r.With(middleware.AdminOnly).Get("/system/panel-domain", panelSettingsH.Status)
 			r.With(middleware.AdminOnly).Post("/system/panel-domain", panelSettingsH.Save)
 			r.With(middleware.AdminOnly).Delete("/system/panel-domain", panelSettingsH.Delete)
-			r.With(middleware.AdminOnly).Get("/system/update", system.UpdateStatus)
+			r.With(middleware.ResellerOrAbove).Get("/system/update", system.UpdateStatus)
 			r.With(middleware.AdminOnly).Post("/system/update/start", system.StartUpdate)
 			r.With(middleware.AdminOnly).Get("/system/update/log", system.UpdateLog)
-			r.With(middleware.AdminOnly).Get("/system/version-check", system.VersionCheckStatus)
+			r.With(middleware.ResellerOrAbove).Get("/system/version-check", system.VersionCheckStatus)
 			r.With(middleware.AdminOnly).Post("/system/version-check/refresh", system.VersionCheckRefresh)
-			r.With(middleware.AdminOnly).Get("/system/optimize", system.OptimizeStatus)
+			r.With(middleware.ResellerOrAbove).Get("/system/optimize", system.OptimizeStatus)
 			r.With(middleware.AdminOnly).Post("/system/optimize/start", system.OptimizeStart)
 			r.With(middleware.AdminOnly).Get("/system/optimize/log", system.OptimizeLog)
 			r.With(middleware.AdminOnly).Get("/system/cve", system.CveStatus)
@@ -282,8 +291,10 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/system/kernelcare", system.KernelcareStatusHandler)
 			r.With(middleware.AdminOnly).Post("/system/kernelcare/patch", system.KernelcarePatch)
 			pluginH.Routes(r)
+			// Process list and system logs stay admin-only: they leak other
+			// tenants' processes/logs, which is more than "server health".
 			r.With(middleware.AdminOnly).Get("/system/processes", monitor.Processes)
-			r.With(middleware.AdminOnly).Get("/system/load-history", monitorH.LoadHistory)
+			r.With(middleware.ResellerOrAbove).Get("/system/load-history", monitorH.LoadHistory)
 			r.With(middleware.AdminOnly).Get("/admin/system/logs", monitorH.ServerLog)
 			r.With(middleware.CustomerScope).Get("/domains/{id}/health", monitorH.Health)
 
@@ -449,8 +460,10 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}/logs/read", logsH.Read)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}/logs/live", logsH.Tail)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/calculate-disk", domainsH.CalculateDisk)
-				r.With(middleware.AdminOnly).Get("/plans", plansH.List)
-				r.With(middleware.AdminOnly).Get("/plans/{id}", plansH.Get)
+				// Plan read is open to resellers (so they can assign a plan to
+				// their customer); plan create/edit is admin's product definition.
+				r.With(middleware.ResellerOrAbove).Get("/plans", plansH.List)
+				r.With(middleware.ResellerOrAbove).Get("/plans/{id}", plansH.Get)
 				r.With(middleware.AdminOnly).Post("/plans", plansH.Create)
 				r.With(middleware.AdminOnly).Put("/plans/{id}", plansH.Update)
 				r.With(middleware.AdminOnly).Delete("/plans/{id}", plansH.Delete)
@@ -524,7 +537,9 @@ func main() {
 				r.With(middleware.CustomerScope).Put("/domains/{id}/nginx-settings", nginxsetH.Save)
 				r.With(middleware.AdminOnly).Get("/domains/{id}/custom-vhost", nginxsetH.ShowCustomVhost)
 				r.With(middleware.AdminOnly).Put("/domains/{id}/custom-vhost", nginxsetH.SaveCustomVhost)
-				r.With(middleware.AdminOnly).Get("/php-extensions", phpExtH.List)
+				// The PHP version/module LIST is open to resellers (needed while
+				// configuring a customer domain's PHP); install/remove mutates the server.
+				r.With(middleware.ResellerOrAbove).Get("/php-extensions", phpExtH.List)
 				r.With(middleware.AdminOnly).Put("/php-extensions/toggle", phpExtH.Toggle)
 				r.With(middleware.AdminOnly).Post("/php-extensions/pecl-install", phpExtH.PECLInstall)
 				r.With(middleware.AdminOnly).Post("/php-extensions/pecl-uninstall", phpExtH.PECLRemove)
@@ -537,7 +552,7 @@ func main() {
 				r.With(middleware.AdminOnly).Post("/packages/install", packagesH.Install)
 				r.With(middleware.AdminOnly).Post("/packages/remove", packagesH.Remove)
 				r.With(middleware.AdminOnly).Post("/packages/update", packagesH.Update)
-				r.With(middleware.AdminOnly).Get("/php-versions", phpVersionH.List)
+				r.With(middleware.ResellerOrAbove).Get("/php-versions", phpVersionH.List)
 				r.With(middleware.AdminOnly).Post("/php-versions/install", phpVersionH.Install)
 				r.With(middleware.AdminOnly).Post("/php-versions/remove", phpVersionH.Remove)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/git", gitH.Delete)
