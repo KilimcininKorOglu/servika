@@ -1,6 +1,6 @@
 {
-  "latest": "1.1.0",
-  "announcement": "Subdomains are now first-class: each one gets its own management pages, PHP version, WordPress and Composer tooling, logs, and password-protected directories, and its traffic rolls up into the parent domain statistics. This release also fixes an acme.sh account contact failure that could permanently block certificate issuance for every domain on a server. phpMyAdmin single sign-on tokens now work on hosts whose database timezone is not UTC.",
+  "latest": "1.1.1",
+  "announcement": "This maintenance release clears three dependency advisories reported by govulncheck by upgrading the chi router and edwards25519, neither of which was on a reachable code path. It also modernizes several internal code paths to current Go idioms with no change in behavior. No action is required beyond updating.",
   "critical": false,
-  "release_date": "2026-07-26"
+  "release_date": "2026-07-27"
 }

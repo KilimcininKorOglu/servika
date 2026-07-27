@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-07-27
+
+### Changed
+- Upgraded the chi router to v5.3.0 and edwards25519 to v1.1.1, clearing three dependency advisories reported by govulncheck (none on a reachable code path).
+- Modernized internal code paths to current Go idioms (`min`, `maps.Copy`, `slices.ContainsFunc`, `strings.FieldsSeq`, `atomic.Int64`, `WaitGroup.Go`) with no change in behavior.
+
 ## [1.1.0] - 2026-07-26
 
 ### Added
