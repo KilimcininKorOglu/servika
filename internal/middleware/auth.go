@@ -201,6 +201,27 @@ func CustomerScopeParam(param string) func(http.Handler) http.Handler {
 					}
 					next.ServeHTTP(w, r)
 					return
+				case RoleUser:
+					// A customer signed in with a panel account (Phase 5C).
+					// Unlike the legacy FTP-identity session it may own several
+					// domains, so the scope is resolved from the chain, not the
+					// token.
+					urlID, _ := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
+					if !CustomerUserOwnsDomain(r, c.UserID, urlID) {
+						httpx.WriteError(w, http.StatusForbidden, "access to this domain is forbidden")
+						return
+					}
+					suspended, err := suspendedDomainLookup(r.Context(), urlID)
+					if err != nil {
+						httpx.WriteError(w, http.StatusInternalServerError, "could not verify account status")
+						return
+					}
+					if suspended {
+						httpx.WriteError(w, http.StatusForbidden, "account is suspended")
+						return
+					}
+					next.ServeHTTP(w, r)
+					return
 				default:
 					httpx.WriteError(w, http.StatusForbidden, "access to this domain is forbidden")
 					return
@@ -261,6 +282,9 @@ func DomainOwnedBy(r *http.Request, domainID int64) bool {
 		if c.Role == RoleReseller {
 			return ResellerOwnsDomain(r, c.UserID, domainID)
 		}
+		if c.Role == RoleUser {
+			return CustomerUserOwnsDomain(r, c.UserID, domainID)
+		}
 		return false
 	}
 	if claims := CustomerClaimsFrom(r); claims != nil {
@@ -288,6 +312,29 @@ func ResellerOwnsDomain(r *http.Request, resellerUserID, domainID int64) bool {
 		FROM domains d
 		JOIN customers c ON c.id = d.customer_id
 		WHERE d.id = ? AND c.owner_user_id = ?`, domainID, resellerUserID).Scan(&n)
+	return err == nil && n > 0
+}
+
+// CustomerUserOwnsDomain reports whether a domain belongs to the given CUSTOMER
+// account.
+//
+// Chain: users.id -> customers.user_id -> domains.customer_id. In Phase 5C
+// customers moved onto users accounts; the legacy FTP-identity sessions still
+// carry a single DomainID in CustomerClaims (see CustomerScopeParam), but a
+// customer signed in with a users account may own SEVERAL domains — so the
+// scope is resolved from the chain, not the token.
+//
+// FAIL-CLOSED: returns false when the database cannot be read.
+func CustomerUserOwnsDomain(r *http.Request, userID, domainID int64) bool {
+	if scopeDB == nil || userID <= 0 {
+		return false
+	}
+	var n int
+	err := scopeDB.QueryRowContext(r.Context(), `
+		SELECT COUNT(*)
+		FROM domains d
+		JOIN customers c ON c.id = d.customer_id
+		WHERE d.id = ? AND c.user_id = ?`, domainID, userID).Scan(&n)
 	return err == nil && n > 0
 }
 

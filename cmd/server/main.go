@@ -24,6 +24,7 @@ import (
 	"servika/internal/credentials"
 	"servika/internal/cron"
 	"servika/internal/customer"
+	"servika/internal/datamigrate"
 	"servika/internal/db"
 	"servika/internal/dns"
 	"servika/internal/domains"
@@ -134,6 +135,12 @@ func main() {
 	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
 	mail.HealMailOnStartup(context.Background(), d)
 	go system.StartVersionCheck(version, buildDate)
+
+	// Backfill customer panel accounts onto the multi-user model (Phase 5C).
+	// Idempotent: exits silently when there is no tenant to migrate. The
+	// generated accounts have no password, so existing customers keep signing
+	// in with their FTP identity until a password is assigned.
+	datamigrate.BackfillCustomerAccounts(context.Background(), d)
 
 	customerH := &customer.Handlers{DB: d, Secret: cfg.JWTSecret}
 	authH := &auth.Handlers{DB: d, Secret: cfg.JWTSecret, LifetimeSec: cfg.JWTLifetime}
