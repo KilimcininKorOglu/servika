@@ -31,6 +31,8 @@ type ImportResult = {
   mailboxes: { email: string; password: string }[]
   aliases: number
   cron_jobs: number
+  ssl_imported: boolean
+  ssl_expires?: string
   skipped: string[]
 }
 
@@ -218,6 +220,7 @@ export default function AccountTransferPage() {
               <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{result.aliases} forwarder(s) transferred.</p>
             </div>}
             {result.cron_jobs > 0 && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{result.cron_jobs} cron job(s) transferred.</p>}
+            {result.ssl_imported && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">SSL certificate transferred · valid until {result.ssl_expires}</p>}
             {result.skipped?.map(s => <p key={s} className="mt-1 text-xs text-amber-700 dark:text-amber-300">⚠ {s}</p>)}
             <Link to={`/subscriptions/${result.domain_id}`} className="inline-block mt-3 text-sm font-medium text-brand-700 dark:text-brand-300">Manage domain →</Link>
           </div>}

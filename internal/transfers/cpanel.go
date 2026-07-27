@@ -109,7 +109,7 @@ func AnalyzeCPanel(src io.Reader) (Inventory, error) {
 			inv.MailFiles++
 		case rel == "cron" || strings.HasPrefix(rel, "cron/"):
 			inv.CronPresent = true
-		case strings.HasPrefix(rel, "sslcerts/") && h.Typeflag == tar.TypeReg:
+		case isSSLCertificateMember(rel) && h.Typeflag == tar.TypeReg:
 			inv.SSLCerts++
 		case strings.HasPrefix(rel, "mysql/") && strings.HasSuffix(strings.ToLower(rel), ".sql"):
 			name := strings.TrimSuffix(path.Base(rel), path.Ext(rel))
@@ -174,6 +174,19 @@ func AnalyzeCPanel(src io.Reader) (Inventory, error) {
 	sort.Strings(inv.DNSZones)
 	sort.Strings(inv.Mailboxes)
 	return inv, nil
+}
+
+// isSSLCertificateMember reports whether a member is a source SSL certificate.
+// cPanel stores them under sslcerts/ or the account home's ssl/ tree; only .crt
+// members are counted so keys and bundles are not double-counted.
+func isSSLCertificateMember(rel string) bool {
+	low := strings.ToLower(rel)
+	if !strings.HasSuffix(low, ".crt") {
+		return false
+	}
+	return strings.HasPrefix(low, "sslcerts/") ||
+		strings.HasPrefix(low, "homedir/ssl/certs/") ||
+		(strings.HasPrefix(low, "homedir/ssl/") && strings.Count(low, "/") == 2)
 }
 
 // parseCronJobs parses a cPanel crontab dump into standard five-field jobs,
