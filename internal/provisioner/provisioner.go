@@ -1262,6 +1262,11 @@ func Deprovision(domainName, systemUser string) error {
 	if !strings.HasPrefix(systemUser, "c_") {
 		return fmt.Errorf("security: refusing to delete a user without the c_ prefix")
 	}
+	// userdel -r does not always remove the tenant crontab on AlmaLinux; drop it
+	// (and any suspended copy) explicitly so import rollback and normal domain
+	// deletion cannot leave orphaned jobs running.
+	_ = os.Remove(filepath.Join("/var/spool/cron", systemUser))
+	_ = os.Remove(filepath.Join("/var/lib/servika/cron-suspended", systemUser))
 	if userExists(systemUser) {
 		_, _ = exec.Command("userdel", "-r", systemUser).CombinedOutput()
 	}

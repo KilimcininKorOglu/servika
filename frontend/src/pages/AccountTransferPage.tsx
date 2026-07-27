@@ -19,6 +19,7 @@ type Inventory = {
   mailboxes: string[]
   alias_count: number
   cron_present: boolean
+  cron_jobs: { minute: string; hour: string; day: string; month: string; weekday: string; command: string; comment?: string }[]
   ssl_certs: number
   warnings: string[]
 }
@@ -29,6 +30,7 @@ type ImportResult = {
   databases: { source: string; target: string; user: string }[]
   mailboxes: { email: string; password: string }[]
   aliases: number
+  cron_jobs: number
   skipped: string[]
 }
 
@@ -162,10 +164,12 @@ export default function AccountTransferPage() {
               ['SSL files', String(inventory.ssl_certs)],
               ['Mailboxes', String(inventory.mailboxes.length)],
               ['Forwarders', String(inventory.alias_count)],
+              ['Cron jobs', String(inventory.cron_jobs.length)],
             ]} />
             <div className="space-y-4">
               <List title="Databases" values={inventory.databases} />
               <List title="DNS zones" values={inventory.dns_zones} />
+              <List title="Cron jobs" values={inventory.cron_jobs.map(c => `${c.minute} ${c.hour} ${c.day} ${c.month} ${c.weekday}  ${c.command}`)} />
             </div>
           </div>
 
@@ -213,6 +217,7 @@ export default function AccountTransferPage() {
               {result.mailboxes.map(m => <p key={m.email} className="text-xs font-mono text-amber-800 dark:text-amber-200">{m.email}: {m.password}</p>)}
               <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{result.aliases} forwarder(s) transferred.</p>
             </div>}
+            {result.cron_jobs > 0 && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{result.cron_jobs} cron job(s) transferred.</p>}
             {result.skipped?.map(s => <p key={s} className="mt-1 text-xs text-amber-700 dark:text-amber-300">⚠ {s}</p>)}
             <Link to={`/subscriptions/${result.domain_id}`} className="inline-block mt-3 text-sm font-medium text-brand-700 dark:text-brand-300">Manage domain →</Link>
           </div>}

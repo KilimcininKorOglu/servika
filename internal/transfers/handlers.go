@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"servika/internal/credentials"
+	"servika/internal/cron"
 	"servika/internal/domains"
 	"servika/internal/httpx"
 	"servika/internal/mail"
@@ -44,6 +45,7 @@ type Handlers struct {
 	DB      *sql.DB
 	Domains *domains.Handlers
 	Mail    *mail.Handlers
+	Cron    *cron.Handlers
 }
 
 // Analyze accepts a cPanel full backup and returns an inventory. It never
@@ -89,6 +91,7 @@ type importResponse struct {
 	Databases  []DBMap          `json:"databases"`
 	Mailboxes  []MailCredential `json:"mailboxes"`
 	Aliases    int              `json:"aliases"`
+	CronJobs   int              `json:"cron_jobs"`
 	Skipped    []string         `json:"skipped"`
 	Source     Inventory        `json:"source"`
 }
@@ -187,13 +190,51 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer email: "+err.Error())
 		return
 	}
+	cronCount, err := h.importCron(r, inv, created.ID, created.SystemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer cron jobs: "+err.Error())
+		return
+	}
 	committed = true
 	httpx.WriteJSON(w, http.StatusCreated, importResponse{
 		OK: true, DomainID: created.ID, Domain: created.DomainName,
 		SystemUser: created.SystemUser, WebFiles: inv.WebFiles,
-		Databases: dbMaps, Mailboxes: mailCreds, Aliases: aliasCount, Source: inv,
-		Skipped: []string{"Cron jobs and source SSL certificates were only inventoried in this release."},
+		Databases: dbMaps, Mailboxes: mailCreds, Aliases: aliasCount, CronJobs: cronCount, Source: inv,
+		Skipped: []string{"Source SSL certificates were only inventoried in this release."},
 	})
+}
+
+// importCron recreates each supported cPanel cron job through the panel's own
+// create path, rewriting the source home prefix onto the target tenant's home.
+// It runs after the web/database/mail restore so a failure still rolls the whole
+// domain back via the caller's deferred rollbackDomain.
+func (h *Handlers) importCron(r *http.Request, inv Inventory, domainID int64, targetUser string) (int, error) {
+	if len(inv.CronJobs) == 0 {
+		return 0, nil
+	}
+	if h.Cron == nil {
+		return 0, errors.New("cron provider is not ready")
+	}
+	created := 0
+	for _, job := range inv.CronJobs {
+		command := job.Command
+		if inv.Username != "" {
+			command = strings.ReplaceAll(command, "/home/"+inv.Username+"/", "/home/"+targetUser+"/")
+		}
+		body, _ := json.Marshal(map[string]string{
+			"minute": job.Minute, "hour": job.Hour, "day": job.Day,
+			"month": job.Month, "week": job.Weekday,
+			"command": command, "comment": job.Comment,
+		})
+		req := domainRequest(r, http.MethodPost, "/cron", domainID, bytes.NewReader(body))
+		rr := httptest.NewRecorder()
+		h.Cron.Create(rr, req)
+		if rr.Code != http.StatusCreated {
+			return 0, fmt.Errorf("job %d: %s", created+1, strings.TrimSpace(rr.Body.String()))
+		}
+		created++
+	}
+	return created, nil
 }
 
 type createdDomain struct {
