@@ -484,6 +484,15 @@ func main() {
 				// long time but had no read endpoint.
 				r.With(middleware.AdminOnly).Get("/audit", authH.AuditList)
 				r.With(middleware.AdminOnly).Get("/audit/actions", authH.AuditActions)
+				// Panel accounts (admin + reseller). Scope narrowing lives inside
+				// the handlers: a reseller only sees / manages the accounts below
+				// it and may create accounts in the 'user' role only.
+				r.With(middleware.ResellerOrAbove).Get("/users", usersH.List)
+				r.With(middleware.ResellerOrAbove).Post("/users", usersH.Create)
+				r.With(middleware.ResellerOrAbove).Put("/users/{id}", usersH.Update)
+				r.With(middleware.ResellerOrAbove).Post("/users/{id}/password", usersH.ResetPassword)
+				r.With(middleware.ResellerOrAbove).Post("/users/{id}/status", usersH.SetStatus)
+				r.With(middleware.ResellerOrAbove).Delete("/users/{id}", usersH.Delete)
 				r.With(middleware.AdminOnly).Get("/customers", accountsH.ListCustomers)
 				r.With(middleware.AdminOnly).Post("/customers", accountsH.CreateCustomer)
 				r.With(middleware.AdminOnly).Put("/customers/{id}", accountsH.UpdateCustomer)

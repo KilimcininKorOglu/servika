@@ -75,26 +75,55 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if len(b.New) < 8 {
+	if len(b.New) < PasswordMinLength {
 		httpx.WriteError(w, http.StatusBadRequest, "new password must be at least 8 characters")
 		return
 	}
-	if !verifyRootPassword(b.Current) {
-		WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", false)
+
+	// root's password lives in the system (/etc/shadow), not the panel DB:
+	// verify from shadow, change with chpasswd. Reseller accounts have no system
+	// counterpart; they use users.password_hash.
+	if IsRootUser(c.Username) {
+		if !verifyRootPassword(b.Current) {
+			WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", false)
+			httpx.WriteError(w, http.StatusUnauthorized, "current password is incorrect")
+			return
+		}
+		if strings.ContainsAny(b.New, "\n\r") {
+			httpx.WriteError(w, http.StatusBadRequest, "password contains invalid characters")
+			return
+		}
+		cmd := exec.Command("chpasswd")
+		cmd.Stdin = strings.NewReader("root:" + b.New)
+		if _, err := cmd.CombinedOutput(); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "password change failed")
+			return
+		}
+		WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", true)
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+		return
+	}
+
+	var currentHash string
+	if err := h.DB.QueryRow(`SELECT password_hash FROM users WHERE id=?`, c.UserID).Scan(&currentHash); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "account could not be read")
+		return
+	}
+	if !PasswordMatches(currentHash, b.Current) {
+		WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "auth.password", c.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "current password is incorrect")
 		return
 	}
-	if strings.ContainsAny(b.New, "\n\r") {
-		httpx.WriteError(w, http.StatusBadRequest, "password contains invalid characters")
+	newHash, err := HashPassword(b.New)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	cmd := exec.Command("chpasswd")
-	cmd.Stdin = strings.NewReader("root:" + b.New)
-	if _, err := cmd.CombinedOutput(); err != nil {
+	if _, err := h.DB.Exec(`UPDATE users SET password_hash=?, updated_at=NOW() WHERE id=?`, newHash, c.UserID); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "password change failed")
 		return
 	}
-	WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", true)
+	WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "auth.password", c.Username, true)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 

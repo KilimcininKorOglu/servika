@@ -115,25 +115,66 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "username and password are required")
 		return
 	}
-	if req.Username != "root" {
-		WriteAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
-		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
-		return
-	}
-	if !verifyRootPassword(req.Password) {
-		WriteAudit(h.DB, 0, req.Username, httpx.ClientIP(r), "auth.login", req.Username, false)
-		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
-		return
+	ip := httpx.ClientIP(r)
+
+	// Identity resolution: two separate password worlds (see password.go).
+	//
+	//   root  -> /etc/shadow (yescrypt). This path was DELIBERATELY left
+	//            unchanged when adding multi-user support; it is the only way to
+	//            keep the risk of locking yourself out of the panel at zero.
+	//   other -> users.password_hash (bcrypt), status='active' accounts only.
+	//
+	// Both branches return the same failure response ("invalid username or
+	// password") so which usernames exist is never leaked.
+	var (
+		uid      int64
+		username string
+		role     string
+		fullName string
+	)
+
+	if IsRootUser(req.Username) {
+		if !verifyRootPassword(req.Password) {
+			WriteAudit(h.DB, 0, req.Username, ip, "auth.login", req.Username, false)
+			httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
+			return
+		}
+		uid, username, role = 1, "root", "admin"
+		_ = h.DB.QueryRow(`SELECT full_name FROM users WHERE id=1`).Scan(&fullName)
+	} else {
+		var hash, status string
+		err := h.DB.QueryRow(
+			`SELECT id, username, password_hash, role, status, full_name FROM users WHERE username=?`,
+			req.Username).Scan(&uid, &username, &hash, &role, &status, &fullName)
+		if err != nil || !PasswordMatches(hash, req.Password) {
+			WriteAudit(h.DB, 0, req.Username, ip, "auth.login", req.Username, false)
+			httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
+			return
+		}
+		if status != "active" {
+			WriteAudit(h.DB, uid, username, ip, "auth.login", username, false)
+			httpx.WriteError(w, http.StatusForbidden, "account is suspended")
+			return
+		}
+		// The customer role cannot open a management-panel session; customers
+		// sign in at /customer/login to their own domain panels instead.
+		if role != "admin" && role != "reseller" {
+			WriteAudit(h.DB, uid, username, ip, "auth.login", username, false)
+			httpx.WriteError(w, http.StatusForbidden, "this account cannot sign in to the management panel")
+			return
+		}
 	}
 
 	// The password is correct; a TOTP code is also required when 2FA is enabled.
-	// FAIL-CLOSED: when 2FA state cannot be read (DB error) login is DENIED
-	// (previously the error was swallowed and 2FA was silently skipped = fail-open).
+	// This is now read from the signing-in user's own record (it used to be
+	// hardcoded to id=1). FAIL-CLOSED: when 2FA state cannot be read (DB error)
+	// login is DENIED (previously the error was swallowed and 2FA was silently
+	// skipped = fail-open).
 	{
 		var en int
 		var sec string
 		var lastStep int64
-		if err := h.DB.QueryRow(`SELECT totp_enabled, totp_secret, totp_last_step FROM users WHERE id=1`).Scan(&en, &sec, &lastStep); err != nil {
+		if err := h.DB.QueryRow(`SELECT totp_enabled, totp_secret, totp_last_step FROM users WHERE id=?`, uid).Scan(&en, &sec, &lastStep); err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "could not verify 2FA state")
 			return
 		}
@@ -148,42 +189,44 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 			}
 			step, ok := TOTPVerifyStep(sec, req.Code, lastStep)
 			if !ok {
-				WriteAudit(h.DB, 1, "root", httpx.ClientIP(r), "auth.2fa", "root", false)
+				WriteAudit(h.DB, uid, username, ip, "auth.2fa", username, false)
 				httpx.WriteError(w, http.StatusUnauthorized, "invalid or reused 2FA code")
 				return
 			}
 			// Persist the accepted step for replay protection. FAIL-CLOSED: if this
 			// write fails the code would remain replayable within its validity window,
 			// so deny the login rather than issuing a token on unguaranteed protection.
-			if _, err := h.DB.Exec(`UPDATE users SET totp_last_step=? WHERE id=1`, step); err != nil {
+			if _, err := h.DB.Exec(`UPDATE users SET totp_last_step=? WHERE id=?`, step, uid); err != nil {
 				httpx.WriteError(w, http.StatusInternalServerError, "could not update 2FA state")
 				return
 			}
 		}
 	}
 
-	const adminUID = int64(1)
 	var tokenVersion int64
-	if err := h.DB.QueryRow(`SELECT token_version FROM users WHERE id=?`, adminUID).Scan(&tokenVersion); err != nil {
+	if err := h.DB.QueryRow(`SELECT token_version FROM users WHERE id=?`, uid).Scan(&tokenVersion); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
 		return
 	}
-	tok, err := Issue(h.Secret, h.LifetimeSec, adminUID, "root", "admin", tokenVersion)
+	tok, err := Issue(h.Secret, h.LifetimeSec, uid, username, role, tokenVersion)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
 		return
 	}
-	WriteAudit(h.DB, adminUID, "root", httpx.ClientIP(r), "auth.login", "root", true)
+	WriteAudit(h.DB, uid, username, ip, "auth.login", username, true)
+	// last_login_at uses the MySQL clock and is display-only (never compared to
+	// a Go time value), so NOW() is safe here.
+	if _, err := h.DB.Exec(`UPDATE users SET last_login_at=NOW(), last_login_ip=? WHERE id=?`, ip, uid); err != nil {
+		log.Printf("last_login update failed for uid=%d: %v", uid, err)
+	}
 
 	// Deliver the token only in the HttpOnly session cookie, never in the body.
 	httpx.SetSessionCookie(w, r, tok, h.LifetimeSec)
 
 	resp := loginResp{ExpiresAt: time.Now().Add(time.Duration(h.LifetimeSec) * time.Second).Unix()}
-	resp.User.ID = adminUID
-	resp.User.Name = "root"
-	resp.User.Role = "admin"
-	var fullName string
-	_ = h.DB.QueryRow(`SELECT full_name FROM users WHERE id=1`).Scan(&fullName)
+	resp.User.ID = uid
+	resp.User.Name = username
+	resp.User.Role = role
 	resp.User.FullName = fullName
 	httpx.WriteJSON(w, http.StatusOK, resp)
 }
