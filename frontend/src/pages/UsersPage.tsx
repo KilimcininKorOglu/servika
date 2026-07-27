@@ -41,6 +41,15 @@ const ROLE_STYLE: Record<string, string> = {
 type NewAccount = { username: string; password: string; email: string; full_name: string; role: string }
 const EMPTY: NewAccount = { username: '', password: '', email: '', full_name: '', role: 'user' }
 
+type ResellerLimit = {
+  user_id: number
+  max_customer: number
+  max_domain: number
+  defined: boolean
+  current_customer: number
+  current_domain: number
+}
+
 export default function UsersPage() {
   const myRole = useAuth((s) => s.username?.role)
   const myID = useAuth((s) => s.username?.id)
@@ -57,6 +66,9 @@ export default function UsersPage() {
   const [pwTarget, setPwTarget] = useState<User | null>(null)
   const [newPassword, setNewPassword] = useState('')
   const [toDelete, setToDelete] = useState<User | null>(null)
+  const [limitTarget, setLimitTarget] = useState<User | null>(null)
+  const [limit, setLimit] = useState<ResellerLimit | null>(null)
+  const [limitLoading, setLimitLoading] = useState(false)
 
   async function fetchList() {
     setLoading(true)
@@ -105,6 +117,41 @@ export default function UsersPage() {
       setNewPassword('')
     } catch (e) {
       setError(apiError(e, 'Could not reset password'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function openLimits(k: User) {
+    setLimitTarget(k)
+    setLimit(null)
+    setLimitLoading(true)
+    setError(null)
+    try {
+      const r = await api.get<ResellerLimit>(`/users/${k.id}/limits`)
+      setLimit(r.data)
+    } catch (e) {
+      setError(apiError(e, 'Could not load limits'))
+      setLimitTarget(null)
+    } finally {
+      setLimitLoading(false)
+    }
+  }
+
+  async function saveLimits() {
+    if (!limitTarget || !limit) return
+    setSaving(true)
+    setError(null)
+    try {
+      await api.put(`/users/${limitTarget.id}/limits`, {
+        max_customer: limit.max_customer,
+        max_domain: limit.max_domain,
+      })
+      setSuccess(`Limits updated for ${limitTarget.username}.`)
+      setLimitTarget(null)
+      setLimit(null)
+    } catch (e) {
+      setError(apiError(e, 'Could not save limits'))
     } finally {
       setSaving(false)
     }
@@ -212,6 +259,12 @@ export default function UsersPage() {
                         <button onClick={() => { setPwTarget(k); setNewPassword('') }} className="text-xs text-brand-600 dark:text-brand-400 hover:underline mr-3">
                           Password
                         </button>
+                        {/* Quota is meaningful only for resellers and only admins manage it. */}
+                        {isAdmin && k.role === 'reseller' && (
+                          <button onClick={() => openLimits(k)} className="text-xs text-sky-600 dark:text-sky-400 hover:underline mr-3">
+                            Limits
+                          </button>
+                        )}
                         {!protectedRow(k) && (
                           <>
                             <button onClick={() => toggleStatus(k)} className="text-xs text-amber-600 dark:text-amber-400 hover:underline mr-3">
@@ -327,6 +380,80 @@ export default function UsersPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Reseller limits */}
+      <Modal open={limitTarget !== null} title="Reseller Limits" onClose={() => { setLimitTarget(null); setLimit(null) }}>
+        {limitLoading ? (
+          <div className="py-8 text-center text-sm text-slate-400">Loading…</div>
+        ) : limit && limitTarget ? (
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Upper bounds for <span className="font-mono">{limitTarget.username}</span>.
+              <span className="block mt-1 text-xs text-slate-500">
+                <strong>0 = unlimited.</strong> If both are 0 the limit record is removed entirely.
+              </span>
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                  Max customers
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={limit.max_customer}
+                  onChange={(e) => setLimit({ ...limit, max_customer: Math.max(0, Number(e.target.value) || 0) })}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  {limit.current_customer} in use now
+                  {limit.max_customer > 0 && limit.current_customer > limit.max_customer && (
+                    <span className="text-amber-600 dark:text-amber-400"> — limit is below current usage</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                  Max domains
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={limit.max_domain}
+                  onChange={(e) => setLimit({ ...limit, max_domain: Math.max(0, Number(e.target.value) || 0) })}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  {limit.current_domain} in use now
+                  {limit.max_domain > 0 && limit.current_domain > limit.max_domain && (
+                    <span className="text-amber-600 dark:text-amber-400"> — limit is below current usage</span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {!limit.defined && (
+              <div className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-500 dark:text-slate-400">
+                No limit is defined for this reseller — currently unlimited.
+              </div>
+            )}
+
+            <p className="text-[11px] text-slate-400">
+              Lowering a limit below current usage does not delete existing accounts; it only blocks new additions.
+            </p>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button onClick={() => { setLimitTarget(null); setLimit(null) }} className="px-3.5 py-2 text-sm rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                Cancel
+              </button>
+              <button onClick={saveLimits} disabled={saving} className="px-3.5 py-2 text-sm font-medium rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 transition">
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </Modal>
 
       <ConfirmDialog

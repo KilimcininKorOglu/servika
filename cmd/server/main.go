@@ -500,6 +500,11 @@ func main() {
 				r.With(middleware.ResellerOrAbove).Post("/users/{id}/password", usersH.ResetPassword)
 				r.With(middleware.ResellerOrAbove).Post("/users/{id}/status", usersH.SetStatus)
 				r.With(middleware.ResellerOrAbove).Delete("/users/{id}", usersH.Delete)
+				// Reseller quotas: a reseller may not even read its own limit —
+				// writing is privilege escalation and reading is the preparation
+				// for it, so both stay AdminOnly.
+				r.With(middleware.AdminOnly).Get("/users/{id}/limits", usersH.GetLimits)
+				r.With(middleware.AdminOnly).Put("/users/{id}/limits", usersH.SaveLimits)
 				r.With(middleware.ResellerOrAbove).Get("/customers", accountsH.ListCustomers)
 				r.With(middleware.ResellerOrAbove).Post("/customers", accountsH.CreateCustomer)
 				r.With(middleware.ResellerOrAbove).Put("/customers/{id}", accountsH.UpdateCustomer)

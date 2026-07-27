@@ -431,6 +431,106 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
+// ---------- Reseller limits (reseller_limits) ----------
+//
+// Both endpoints are ADMIN ONLY (see cmd/server/main.go). A reseller reading
+// its own quota looks harmless, but writing it is privilege escalation and
+// reading is the preparation for that escalation; keeping both AdminOnly avoids
+// landing on the wrong side of a fragile "read open, write closed" split.
+
+// ResellerLimit is the quota row plus the reseller's current usage. The limit
+// is meaningless without usage beside it: an admin cannot decide what to grant
+// without knowing how many customers and domains the reseller already has.
+type ResellerLimit struct {
+	UserID          int64 `json:"user_id"`
+	MaxCustomer     int   `json:"max_customer"`
+	MaxDomain       int   `json:"max_domain"`
+	Defined         bool  `json:"defined"`          // whether a reseller_limits row exists
+	CurrentCustomer int   `json:"current_customer"` // present usage
+	CurrentDomain   int   `json:"current_domain"`
+}
+
+// GetLimits: GET /users/{id}/limits
+func (h *Handlers) GetLimits(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+
+	var role string
+	if err := h.DB.QueryRowContext(r.Context(), `SELECT role FROM users WHERE id=?`, id).Scan(&role); err != nil {
+		httpx.WriteError(w, http.StatusNotFound, "account not found")
+		return
+	}
+	if role != middleware.RoleReseller {
+		httpx.WriteError(w, http.StatusBadRequest, "limits can only be defined for reseller accounts")
+		return
+	}
+
+	out := ResellerLimit{UserID: id}
+	err := h.DB.QueryRowContext(r.Context(),
+		`SELECT max_customer, max_domain FROM reseller_limits WHERE user_id=?`, id).
+		Scan(&out.MaxCustomer, &out.MaxDomain)
+	out.Defined = err == nil // no row means unlimited
+
+	// Usage: shown beside the limit so the number is meaningful.
+	_ = h.DB.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM customers WHERE owner_user_id=?`, id).Scan(&out.CurrentCustomer)
+	_ = h.DB.QueryRowContext(r.Context(), `
+		SELECT COUNT(*) FROM domains d JOIN customers c ON c.id = d.customer_id
+		WHERE c.owner_user_id = ?`, id).Scan(&out.CurrentDomain)
+
+	httpx.WriteJSON(w, http.StatusOK, out)
+}
+
+// SaveLimits: PUT /users/{id}/limits
+//
+// 0 = unlimited (same quota contract as service_plans). When both limits are 0
+// the row is deleted, so "unlimited" has a single representation (no row)
+// instead of two states (no row vs. zero-valued row).
+func (h *Handlers) SaveLimits(w http.ResponseWriter, r *http.Request) {
+	c := middleware.ClaimsFrom(r)
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+
+	var role string
+	if err := h.DB.QueryRowContext(r.Context(), `SELECT role FROM users WHERE id=?`, id).Scan(&role); err != nil {
+		httpx.WriteError(w, http.StatusNotFound, "account not found")
+		return
+	}
+	if role != middleware.RoleReseller {
+		httpx.WriteError(w, http.StatusBadRequest, "limits can only be defined for reseller accounts")
+		return
+	}
+
+	var b struct {
+		MaxCustomer int `json:"max_customer"`
+		MaxDomain   int `json:"max_domain"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if b.MaxCustomer < 0 || b.MaxDomain < 0 {
+		httpx.WriteError(w, http.StatusBadRequest, "limits cannot be negative (0 = unlimited)")
+		return
+	}
+
+	if b.MaxCustomer == 0 && b.MaxDomain == 0 {
+		if _, err := h.DB.ExecContext(r.Context(),
+			`DELETE FROM reseller_limits WHERE user_id=?`, id); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "could not remove limits")
+			return
+		}
+	} else if _, err := h.DB.ExecContext(r.Context(), `
+		INSERT INTO reseller_limits(user_id, max_customer, max_domain)
+		VALUES(?,?,?)
+		ON DUPLICATE KEY UPDATE max_customer=VALUES(max_customer), max_domain=VALUES(max_domain)`,
+		id, b.MaxCustomer, b.MaxDomain); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not save limits")
+		return
+	}
+
+	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.limits", strconv.FormatInt(id, 10), true)
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
 // Delete: DELETE /users/{id}
 func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	c := middleware.ClaimsFrom(r)
