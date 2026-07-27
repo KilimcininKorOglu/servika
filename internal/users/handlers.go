@@ -445,9 +445,13 @@ type ResellerLimit struct {
 	UserID          int64 `json:"user_id"`
 	MaxCustomer     int   `json:"max_customer"`
 	MaxDomain       int   `json:"max_domain"`
+	DiskQuotaMB     int64 `json:"disk_quota_mb"`
+	TrafficQuotaMB  int64 `json:"traffic_quota_mb"`
 	Defined         bool  `json:"defined"`          // whether a reseller_limits row exists
 	CurrentCustomer int   `json:"current_customer"` // present usage
 	CurrentDomain   int   `json:"current_domain"`
+	CurrentDiskMB   int64 `json:"current_disk_mb"`
+	CurrentTraffMB  int64 `json:"current_traffic_mb"`
 }
 
 // GetLimits: GET /users/{id}/limits
@@ -466,8 +470,9 @@ func (h *Handlers) GetLimits(w http.ResponseWriter, r *http.Request) {
 
 	out := ResellerLimit{UserID: id}
 	err := h.DB.QueryRowContext(r.Context(),
-		`SELECT max_customer, max_domain FROM reseller_limits WHERE user_id=?`, id).
-		Scan(&out.MaxCustomer, &out.MaxDomain)
+		`SELECT max_customer, max_domain, disk_quota_mb, traffic_quota_mb
+		 FROM reseller_limits WHERE user_id=?`, id).
+		Scan(&out.MaxCustomer, &out.MaxDomain, &out.DiskQuotaMB, &out.TrafficQuotaMB)
 	out.Defined = err == nil // no row means unlimited
 
 	// Usage: shown beside the limit so the number is meaningful.
@@ -476,6 +481,10 @@ func (h *Handlers) GetLimits(w http.ResponseWriter, r *http.Request) {
 	_ = h.DB.QueryRowContext(r.Context(), `
 		SELECT COUNT(*) FROM domains d JOIN customers c ON c.id = d.customer_id
 		WHERE c.owner_user_id = ?`, id).Scan(&out.CurrentDomain)
+	_ = h.DB.QueryRowContext(r.Context(), `
+		SELECT COALESCE(SUM(d.size_kb),0) DIV 1024, COALESCE(SUM(d.traffic_kb),0) DIV 1024
+		FROM domains d JOIN customers c ON c.id = d.customer_id
+		WHERE c.owner_user_id = ?`, id).Scan(&out.CurrentDiskMB, &out.CurrentTraffMB)
 
 	httpx.WriteJSON(w, http.StatusOK, out)
 }
@@ -500,29 +509,32 @@ func (h *Handlers) SaveLimits(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var b struct {
-		MaxCustomer int `json:"max_customer"`
-		MaxDomain   int `json:"max_domain"`
+		MaxCustomer    int   `json:"max_customer"`
+		MaxDomain      int   `json:"max_domain"`
+		DiskQuotaMB    int64 `json:"disk_quota_mb"`
+		TrafficQuotaMB int64 `json:"traffic_quota_mb"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if b.MaxCustomer < 0 || b.MaxDomain < 0 {
+	if b.MaxCustomer < 0 || b.MaxDomain < 0 || b.DiskQuotaMB < 0 || b.TrafficQuotaMB < 0 {
 		httpx.WriteError(w, http.StatusBadRequest, "limits cannot be negative (0 = unlimited)")
 		return
 	}
 
-	if b.MaxCustomer == 0 && b.MaxDomain == 0 {
+	if b.MaxCustomer == 0 && b.MaxDomain == 0 && b.DiskQuotaMB == 0 && b.TrafficQuotaMB == 0 {
 		if _, err := h.DB.ExecContext(r.Context(),
 			`DELETE FROM reseller_limits WHERE user_id=?`, id); err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "could not remove limits")
 			return
 		}
 	} else if _, err := h.DB.ExecContext(r.Context(), `
-		INSERT INTO reseller_limits(user_id, max_customer, max_domain)
-		VALUES(?,?,?)
-		ON DUPLICATE KEY UPDATE max_customer=VALUES(max_customer), max_domain=VALUES(max_domain)`,
-		id, b.MaxCustomer, b.MaxDomain); err != nil {
+		INSERT INTO reseller_limits(user_id, max_customer, max_domain, disk_quota_mb, traffic_quota_mb)
+		VALUES(?,?,?,?,?)
+		ON DUPLICATE KEY UPDATE max_customer=VALUES(max_customer), max_domain=VALUES(max_domain),
+		                        disk_quota_mb=VALUES(disk_quota_mb), traffic_quota_mb=VALUES(traffic_quota_mb)`,
+		id, b.MaxCustomer, b.MaxDomain, b.DiskQuotaMB, b.TrafficQuotaMB); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not save limits")
 		return
 	}

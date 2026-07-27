@@ -80,6 +80,7 @@ const RESELLER_NAV: NavGroup[] = [
     { to: '/ssl',        label: 'SSL Certificates',   icon: ICONS.lock },
     { to: '/mail',       label: 'Email Accounts',     icon: ICONS.mail },
     { to: '/databases',  label: 'Databases',          icon: ICONS.database },
+    { to: '/wordpress',  label: 'WordPress',          icon: ICONS.wp },
   ]},
   { title: 'Server', items: [
     { to: '/server-status',  label: 'Server Status',  icon: ICONS.monitoring },

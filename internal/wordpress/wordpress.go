@@ -25,6 +25,7 @@ import (
 	"servika/internal/config"
 	"servika/internal/credentials"
 	"servika/internal/httpx"
+	"servika/internal/middleware"
 	"servika/internal/quota"
 	"servika/internal/subdomain"
 
@@ -154,8 +155,11 @@ type wpCandidate struct {
 // GET /wordpress/all scans installations across all domains for versions, updates, and installation dates.
 // The AdminOnly endpoint runs wp-cli calls through a four-worker pool with per-call context timeouts.
 func (h *Handlers) ListAll(w http.ResponseWriter, r *http.Request) {
+	// Scope: a reseller sees only its own customers' sites.
+	cond, arg := middleware.ScopeSQL(r, "d")
 	rows, err := h.DB.QueryContext(r.Context(),
-		`SELECT id, system_user, domain_name, COALESCE(cert_path,'') FROM domains ORDER BY domain_name`)
+		`SELECT d.id, d.system_user, d.domain_name, COALESCE(d.cert_path,'') FROM domains d`+
+			cond+` ORDER BY d.domain_name`, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not list domains")
 		return

@@ -387,7 +387,7 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/wordpress/user-password", wpH.UserPassword)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/wordpress/repair", wpH.Repair)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/wordpress/tool", wpH.ToolAction)
-				r.With(middleware.AdminOnly).Get("/wordpress/all", wpH.ListAll)
+				r.With(middleware.ResellerOrAbove).Get("/wordpress/all", wpH.ListAll)
 
 				// Subdomain-scoped WordPress: the same handlers resolve {sid} to the
 				// subdomain's document root instead of the parent domain's public_html.
@@ -524,7 +524,7 @@ func main() {
 					processed := stats.AggregateAll(d)
 					httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "processed_domains": processed})
 				})
-				r.With(middleware.AdminOnly).Get("/admin/backups/summary", backupsH.Summary)
+				r.With(middleware.ResellerOrAbove).Get("/admin/backups/summary", backupsH.Summary)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/backup-destination", backupsH.GetDestination)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/backup-destination", backupsH.PutDestination)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/backup-destination", backupsH.DeleteDestination)

@@ -80,13 +80,59 @@ func CheckResellerDomainAllowed(ctx context.Context, db *sql.DB, resellerUserID 
 	return nil
 }
 
+// CheckResellerDiskAllowed reports whether the reseller's total disk usage across
+// all of its customers has reached the disk_quota_mb ceiling.
+//
+// domains.size_kb is refreshed periodically by the disk collector, so this check
+// is NOT instantaneous — it reflects the last measurement. It is a "new resource"
+// gate, not a hard cut: when the quota is full the reseller cannot create a new
+// domain, but existing sites keep running. Enforcing a live disk cut is the job
+// of the tenant-level XFS quota, not this check.
+func CheckResellerDiskAllowed(ctx context.Context, db *sql.DB, resellerUserID int64) error {
+	maximum, err := resellerLimit(ctx, db, resellerUserID, "disk_quota_mb")
+	if err != nil || maximum <= 0 {
+		return nil
+	}
+	var usedKB int64
+	_ = db.QueryRowContext(ctx, `
+		SELECT COALESCE(SUM(d.size_kb), 0)
+		FROM domains d JOIN customers c ON c.id = d.customer_id
+		WHERE c.owner_user_id = ?`, resellerUserID).Scan(&usedKB)
+	usedMB := int(usedKB / 1024)
+	if usedMB >= maximum {
+		return &LimitError{Message: fmt.Sprintf("reseller disk quota full: %d MB / %d MB", usedMB, maximum)}
+	}
+	return nil
+}
+
+// CheckResellerTrafficAllowed reports whether the reseller's total monthly traffic
+// across all of its customers has reached the traffic_quota_mb ceiling.
+// domains.traffic_kb is filled by the monthly traffic collector, so this too
+// reflects the last measurement rather than a live figure.
+func CheckResellerTrafficAllowed(ctx context.Context, db *sql.DB, resellerUserID int64) error {
+	maximum, err := resellerLimit(ctx, db, resellerUserID, "traffic_quota_mb")
+	if err != nil || maximum <= 0 {
+		return nil
+	}
+	var usedKB int64
+	_ = db.QueryRowContext(ctx, `
+		SELECT COALESCE(SUM(d.traffic_kb), 0)
+		FROM domains d JOIN customers c ON c.id = d.customer_id
+		WHERE c.owner_user_id = ?`, resellerUserID).Scan(&usedKB)
+	usedMB := int(usedKB / 1024)
+	if usedMB >= maximum {
+		return &LimitError{Message: fmt.Sprintf("reseller traffic quota full: %d MB / %d MB", usedMB, maximum)}
+	}
+	return nil
+}
+
 // resellerLimit reads a single numeric limit from reseller_limits. Returns 0
 // (unlimited) when the reseller has no row.
 func resellerLimit(ctx context.Context, db *sql.DB, resellerUserID int64, column string) (int, error) {
 	// The column name arrives only as a constant string from within this package
 	// (no SQL-injection surface); it is still constrained to the expected values.
 	switch column {
-	case "max_customer", "max_domain":
+	case "max_customer", "max_domain", "disk_quota_mb", "traffic_quota_mb":
 	default:
 		return 0, fmt.Errorf("unknown limit column: %s", column)
 	}

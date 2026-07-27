@@ -19,6 +19,7 @@ import (
 
 	"servika/internal/config"
 	"servika/internal/httpx"
+	"servika/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -108,8 +109,10 @@ type SummaryRow struct {
 
 // Summary returns the server-wide backup summary using filesystem disk usage.
 func (h *Handlers) Summary(w http.ResponseWriter, r *http.Request) {
+	// Scope: a reseller sees only its own customers' backup summary.
+	cond, arg := middleware.ScopeSQL(r, "d")
 	rows, err := h.DB.QueryContext(r.Context(),
-		`SELECT id, domain_name, system_user FROM domains ORDER BY domain_name`)
+		`SELECT d.id, d.domain_name, d.system_user FROM domains d`+cond+` ORDER BY d.domain_name`, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not list backups")
 		return

@@ -45,9 +45,13 @@ type ResellerLimit = {
   user_id: number
   max_customer: number
   max_domain: number
+  disk_quota_mb: number
+  traffic_quota_mb: number
   defined: boolean
   current_customer: number
   current_domain: number
+  current_disk_mb: number
+  current_traffic_mb: number
 }
 
 export default function UsersPage() {
@@ -146,6 +150,8 @@ export default function UsersPage() {
       await api.put(`/users/${limitTarget.id}/limits`, {
         max_customer: limit.max_customer,
         max_domain: limit.max_domain,
+        disk_quota_mb: limit.disk_quota_mb,
+        traffic_quota_mb: limit.traffic_quota_mb,
       })
       setSuccess(`Limits updated for ${limitTarget.username}.`)
       setLimitTarget(null)
@@ -391,7 +397,7 @@ export default function UsersPage() {
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Upper bounds for <span className="font-mono">{limitTarget.username}</span>.
               <span className="block mt-1 text-xs text-slate-500">
-                <strong>0 = unlimited.</strong> If both are 0 the limit record is removed entirely.
+                <strong>0 = unlimited.</strong> If all are 0 the limit record is removed entirely.
               </span>
             </p>
 
@@ -429,6 +435,42 @@ export default function UsersPage() {
                   {limit.current_domain} in use now
                   {limit.max_domain > 0 && limit.current_domain > limit.max_domain && (
                     <span className="text-amber-600 dark:text-amber-400"> — limit is below current usage</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                  Disk quota (MB)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={limit.disk_quota_mb}
+                  onChange={(e) => setLimit({ ...limit, disk_quota_mb: Math.max(0, Number(e.target.value) || 0) })}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  {limit.current_disk_mb} MB in use now
+                  {limit.disk_quota_mb > 0 && limit.current_disk_mb > limit.disk_quota_mb && (
+                    <span className="text-amber-600 dark:text-amber-400"> — quota is below current usage</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                  Traffic quota (MB)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={limit.traffic_quota_mb}
+                  onChange={(e) => setLimit({ ...limit, traffic_quota_mb: Math.max(0, Number(e.target.value) || 0) })}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  {limit.current_traffic_mb} MB used now
+                  {limit.traffic_quota_mb > 0 && limit.current_traffic_mb > limit.traffic_quota_mb && (
+                    <span className="text-amber-600 dark:text-amber-400"> — quota is below current usage</span>
                   )}
                 </p>
               </div>

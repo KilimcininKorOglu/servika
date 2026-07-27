@@ -211,6 +211,26 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, http.StatusInternalServerError, "could not verify reseller limit")
 			return
 		}
+		// Disk/traffic quota: when full, no new domain may be opened. Existing
+		// sites are unaffected — these are "new resource" gates, not cuts.
+		if err := quota.CheckResellerDiskAllowed(r.Context(), h.DB, c.UserID); err != nil {
+			var le *quota.LimitError
+			if errors.As(err, &le) {
+				httpx.WriteError(w, http.StatusForbidden, le.Message)
+				return
+			}
+			httpx.WriteError(w, http.StatusInternalServerError, "could not verify reseller disk quota")
+			return
+		}
+		if err := quota.CheckResellerTrafficAllowed(r.Context(), h.DB, c.UserID); err != nil {
+			var le *quota.LimitError
+			if errors.As(err, &le) {
+				httpx.WriteError(w, http.StatusForbidden, le.Message)
+				return
+			}
+			httpx.WriteError(w, http.StatusInternalServerError, "could not verify reseller traffic quota")
+			return
+		}
 	}
 
 	pr, err := provisioner.Provision(req.DomainName, req.PHPVersion)
