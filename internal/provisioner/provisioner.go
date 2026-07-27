@@ -811,7 +811,6 @@ func buildSecurityHeaders(opts VhostOpts) string {
 	if opts.HdrXContentType {
 		headers.WriteString("    add_header X-Content-Type-Options \"nosniff\" always;\n")
 	}
-	headers.WriteString("    add_header X-Frame-Options \"SAMEORIGIN\" always;\n")
 	if opts.HdrXXSS {
 		headers.WriteString("    add_header X-XSS-Protection \"1; mode=block\" always;\n")
 	}
@@ -821,10 +820,10 @@ func buildSecurityHeaders(opts VhostOpts) string {
 	if opts.HdrPermissions {
 		headers.WriteString("    add_header Permissions-Policy \"geolocation=(), microphone=(), camera=(), interest-cohort=()\" always;\n")
 	}
-	headers.WriteString("    add_header Content-Security-Policy-Report-Only \"default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';\" always;\n")
-	if opts.SSL() && opts.HdrCSPUpgrade {
-		headers.WriteString("    add_header Content-Security-Policy \"upgrade-insecure-requests\" always;\n")
-	}
+	fmt.Fprintf(&headers, "    add_header Content-Security-Policy-Report-Only \"default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors %s;\" always;\n", panelFrameAncestors())
+	// Clickjacking protection is enforced via CSP frame-ancestors (not X-Frame-Options,
+	// which cannot authorize the panel's own origin to preview a tenant site).
+	headers.WriteString(framePolicyHeader("    ", opts.SSL() && opts.HdrCSPUpgrade))
 	if opts.SSL() && opts.HdrHSTS {
 		includeSubdomains := ""
 		if opts.HSTSSubdomains {

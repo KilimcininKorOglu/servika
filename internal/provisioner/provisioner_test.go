@@ -90,8 +90,11 @@ func TestTenantVhostAppliesHardeningAtEveryHeaderBoundary(t *testing.T) {
 			t.Errorf("vhost does not contain hardening directive %q", directive)
 		}
 	}
-	if count := strings.Count(config, `add_header X-Frame-Options "SAMEORIGIN" always;`); count != 3 {
-		t.Errorf("X-Frame-Options appears %d times, want server, PHP, and browser-cache locations", count)
+	if strings.Contains(config, "X-Frame-Options") {
+		t.Error("tenant vhost must not emit X-Frame-Options; clickjacking protection moved to CSP frame-ancestors so the panel can preview the site")
+	}
+	if count := strings.Count(config, `add_header Content-Security-Policy "frame-ancestors `); count != 3 {
+		t.Errorf("enforced frame-ancestors CSP appears %d times, want server, PHP, and browser-cache locations", count)
 	}
 	if strings.Contains(config, "Strict-Transport-Security") {
 		t.Error("HTTP-only vhost must not emit HSTS")
