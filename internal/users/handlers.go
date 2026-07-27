@@ -4,6 +4,8 @@ package users
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -14,6 +16,7 @@ import (
 	"servika/internal/auth"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
+	"servika/internal/quota"
 )
 
 // Handlers provides user profile HTTP handlers.
@@ -219,6 +222,17 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	// admin creates is unowned (belongs directly to admin).
 	var resellerID any
 	if c.Role == middleware.RoleReseller {
+		// The reseller's customer quota counts customer accounts (role=user), so
+		// it is enforced on the same path that creates one.
+		if err := quota.CheckResellerCustomerAllowed(r.Context(), h.DB, c.UserID); err != nil {
+			var le *quota.LimitError
+			if errors.As(err, &le) {
+				httpx.WriteError(w, http.StatusForbidden, le.Message)
+				return
+			}
+			httpx.WriteError(w, http.StatusInternalServerError, "could not verify reseller limit")
+			return
+		}
 		resellerID = c.UserID
 	}
 
@@ -235,6 +249,25 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id, _ := res.LastInsertId()
+
+	// When a reseller opens a customer account, mirror it into a customers row
+	// owned by the reseller. The reseller's customer list and quota are counted
+	// over customers.owner_user_id, so without this the new login would not
+	// appear there and the quota would drift. Non-fatal: the login already
+	// exists, so a failure here is logged, not surfaced.
+	if c.Role == middleware.RoleReseller {
+		displayName := strings.TrimSpace(b.FullName)
+		if displayName == "" {
+			displayName = b.Username
+		}
+		if _, e := h.DB.ExecContext(r.Context(),
+			`INSERT INTO customers(name, email, status, notes, user_id, owner_user_id)
+			 VALUES(?,?, 'active', '', ?, ?)`,
+			displayName, strings.TrimSpace(b.Email), id, c.UserID); e != nil {
+			log.Printf("auto customer record for user %d failed: %v", id, e)
+		}
+	}
+
 	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.create", b.Username, true)
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{"id": id})
 }
@@ -383,6 +416,17 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not change status")
 		return
 	}
+
+	// Cascade to the reseller's own sub-accounts: suspending a reseller must not
+	// leave its customer logins active, and reactivating it restores them. The
+	// cascade only touches rows bound to this reseller (reseller_id = id), so an
+	// ordinary customer account (no sub-accounts) matches nothing. Non-fatal: the
+	// primary status change already succeeded, so a cascade failure is logged.
+	if _, err := h.DB.ExecContext(r.Context(),
+		`UPDATE users SET status=?, updated_at=NOW() WHERE reseller_id=?`, b.Status, id); err != nil {
+		log.Printf("cascade status to sub-accounts of user %d failed: %v", id, err)
+	}
+
 	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.status", strconv.FormatInt(id, 10), true)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }

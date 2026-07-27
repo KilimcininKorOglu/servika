@@ -64,14 +64,22 @@ const NAV: NavGroup[] = [
 
 // Reseller menu — ONLY the places a reseller can actually reach.
 //
-// Reseller permissions are classified endpoint by endpoint: their own accounts
-// plus read-only server status are open; domain/DNS/SSL operations stay closed
-// until the scope filter lands. To avoid putting a link that would 403 into the
-// menu, this list is kept narrow; the Hosting group joins it once scoping ships.
+// Every link here maps to an endpoint a reseller is now authorized for: its own
+// accounts and customer records, the server-wide hosting lists (scoped to its
+// own customers by ScopeSQL), plus read-only server status. Nothing here 403s
+// for a reseller; admin-only screens stay out of the list.
 const RESELLER_NAV: NavGroup[] = [
   { items: [{ to: '/', label: 'Home', icon: ICONS.home }] },
   { title: 'My Accounts', items: [
-    { to: '/users',   label: 'My Customers',   icon: ICONS.customer },
+    { to: '/users',      label: 'Customer Accounts', icon: ICONS.customer },
+    { to: '/customers',  label: 'Customer Records',  icon: ICONS.subscription },
+  ]},
+  { title: 'Hosting', items: [
+    { to: '/domains',    label: 'Domains',           icon: ICONS.domain },
+    { to: '/dns',        label: 'DNS Management',     icon: ICONS.domain },
+    { to: '/ssl',        label: 'SSL Certificates',   icon: ICONS.lock },
+    { to: '/mail',       label: 'Email Accounts',     icon: ICONS.mail },
+    { to: '/databases',  label: 'Databases',          icon: ICONS.database },
   ]},
   { title: 'Server', items: [
     { to: '/server-status',  label: 'Server Status',  icon: ICONS.monitoring },

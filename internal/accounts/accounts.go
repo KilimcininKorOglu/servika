@@ -4,10 +4,13 @@ package accounts
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"servika/internal/httpx"
+	"servika/internal/middleware"
+	"servika/internal/quota"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -30,9 +33,17 @@ type Handlers struct {
 
 // ListCustomers returns all customer accounts.
 func (h *Handlers) ListCustomers(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.DB.QueryContext(r.Context(),
-		`SELECT id, name, email, plan_id, status, notes, DATE_FORMAT(created_at,'%Y-%m-%d')
-		 FROM customers ORDER BY id`)
+	// A reseller sees only its own customers (customers.owner_user_id).
+	q := `SELECT id, name, email, plan_id, status, notes, DATE_FORMAT(created_at,'%Y-%m-%d')
+	      FROM customers`
+	var arg []any
+	if c := middleware.ClaimsFrom(r); c != nil && c.Role == middleware.RoleReseller {
+		q += ` WHERE owner_user_id = ?`
+		arg = append(arg, c.UserID)
+	}
+	q += ` ORDER BY id`
+
+	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "customers could not be listed")
 		return
@@ -62,9 +73,27 @@ func (h *Handlers) CreateCustomer(w http.ResponseWriter, r *http.Request) {
 	if cs.Status == "" {
 		cs.Status = "active"
 	}
+
+	// Ownership: a customer a reseller creates is bound to it; a customer an
+	// admin creates is unowned (belongs directly to admin). A reseller's quota
+	// is also enforced here.
+	var owner any
+	if c := middleware.ClaimsFrom(r); c != nil && c.Role == middleware.RoleReseller {
+		if err := quota.CheckResellerCustomerAllowed(r.Context(), h.DB, c.UserID); err != nil {
+			var le *quota.LimitError
+			if errors.As(err, &le) {
+				httpx.WriteError(w, http.StatusForbidden, le.Message)
+				return
+			}
+			httpx.WriteError(w, http.StatusInternalServerError, "could not verify reseller limit")
+			return
+		}
+		owner = c.UserID
+	}
+
 	res, err := h.DB.ExecContext(r.Context(),
-		`INSERT INTO customers(name, email, plan_id, status, notes) VALUES(?,?,?,?,?)`,
-		cs.Name, cs.Email, cs.PlanID, cs.Status, cs.Notes)
+		`INSERT INTO customers(name, email, plan_id, status, notes, owner_user_id) VALUES(?,?,?,?,?,?)`,
+		cs.Name, cs.Email, cs.PlanID, cs.Status, cs.Notes, owner)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "customer could not be created")
 		return
@@ -74,8 +103,29 @@ func (h *Handlers) CreateCustomer(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateCustomer updates a customer account.
+// authorized reports whether the caller may act on this customer: admin on any,
+// a reseller only on its own. A missing record is also false (so a reseller
+// cannot probe existence by id).
+func (h *Handlers) authorized(r *http.Request, customerID int64) bool {
+	c := middleware.ClaimsFrom(r)
+	if c == nil {
+		return false
+	}
+	if c.Role == middleware.RoleAdmin {
+		return true
+	}
+	if c.Role != middleware.RoleReseller {
+		return false
+	}
+	return middleware.ResellerOwnsCustomer(r, c.UserID, customerID)
+}
+
 func (h *Handlers) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if !h.authorized(r, id) {
+		httpx.WriteError(w, http.StatusForbidden, "no access to this customer")
+		return
+	}
 	var cs Customer
 	if err := json.NewDecoder(r.Body).Decode(&cs); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
@@ -93,6 +143,10 @@ func (h *Handlers) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 // DeleteCustomer deletes a customer account without assigned domains.
 func (h *Handlers) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if !h.authorized(r, id) {
+		httpx.WriteError(w, http.StatusForbidden, "no access to this customer")
+		return
+	}
 	var n int
 	if err := h.DB.QueryRowContext(r.Context(),
 		`SELECT COUNT(*) FROM domains WHERE customer_id=?`, id).Scan(&n); err != nil {

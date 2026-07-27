@@ -18,6 +18,7 @@ import (
 	"servika/internal/dns"
 	"servika/internal/httpx"
 	"servika/internal/mail"
+	"servika/internal/middleware"
 	"servika/internal/provisioner"
 	"servika/internal/quota"
 	"servika/internal/redis"
@@ -85,7 +86,12 @@ func scan(rs interface{ Scan(...any) error }) (Domain, error) {
 }
 
 func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.DB.QueryContext(r.Context(), selectAll+" ORDER BY d.id DESC")
+	// Scope narrowing happens INSIDE the query: an admin sees every domain, a
+	// reseller only its own customers', a customer only its own. A row-by-row
+	// ownership check does not work here — an unfiltered list would already leak
+	// every tenant name.
+	cond, arg := middleware.ScopeSQL(r, "d")
+	rows, err := h.DB.QueryContext(r.Context(), selectAll+cond+" ORDER BY d.id DESC", arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
 		return
@@ -183,6 +189,30 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not verify plan limit")
 		return
 	}
+
+	// Reseller guard: a reseller may only attach a domain to its own customer,
+	// and the reseller's total domain quota applies (a ceiling separate from the
+	// customer plan's max_domain).
+	if c := middleware.ClaimsFrom(r); c != nil && c.Role == middleware.RoleReseller {
+		if req.CustomerID == nil {
+			httpx.WriteError(w, http.StatusBadRequest, "a domain must be attached to a customer")
+			return
+		}
+		if !middleware.ResellerOwnsCustomer(r, c.UserID, *req.CustomerID) {
+			httpx.WriteError(w, http.StatusForbidden, "no access to this customer")
+			return
+		}
+		if err := quota.CheckResellerDomainAllowed(r.Context(), h.DB, c.UserID); err != nil {
+			var le *quota.LimitError
+			if errors.As(err, &le) {
+				httpx.WriteError(w, http.StatusForbidden, le.Message)
+				return
+			}
+			httpx.WriteError(w, http.StatusInternalServerError, "could not verify reseller limit")
+			return
+		}
+	}
+
 	pr, err := provisioner.Provision(req.DomainName, req.PHPVersion)
 	if err != nil {
 		log.Printf("provision %q failed: %v", req.DomainName, err)

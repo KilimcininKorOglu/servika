@@ -261,7 +261,7 @@ func main() {
 			r.With(middleware.ResellerOrAbove).Post("/me/2fa/disable", authH.TwoFADisable)
 			// NOTE: /domains can be opened to resellers only after the scope filter
 			// (Phase 5D) lands — opening it unfiltered would show every domain.
-			r.With(middleware.AdminOnly).Get("/domains", domainsH.List)
+			r.With(middleware.ResellerOrAbove).Get("/domains", domainsH.List)
 			// Central DNS template read is open to resellers (to assign it when
 			// adding a customer domain); editing the template is admin's product config.
 			r.With(middleware.ResellerOrAbove).Get("/dns-template", dnsH.GetTemplate)
@@ -269,10 +269,10 @@ func main() {
 			// Server-wide read-only overview lists — the sidebar's DNS / SSL /
 			// Mail / Databases pages read these. Editing still happens on the
 			// domain-scoped endpoints.
-			r.With(middleware.AdminOnly).Get("/overview/dns", overviewH.DNS)
-			r.With(middleware.AdminOnly).Get("/overview/ssl", overviewH.SSL)
-			r.With(middleware.AdminOnly).Get("/overview/mail", overviewH.Mail)
-			r.With(middleware.AdminOnly).Get("/overview/databases", overviewH.Databases)
+			r.With(middleware.ResellerOrAbove).Get("/overview/dns", overviewH.DNS)
+			r.With(middleware.ResellerOrAbove).Get("/overview/ssl", overviewH.SSL)
+			r.With(middleware.ResellerOrAbove).Get("/overview/mail", overviewH.Mail)
+			r.With(middleware.ResellerOrAbove).Get("/overview/databases", overviewH.Databases)
 			r.With(middleware.CustomerScope).Get("/domains/{id}", domainsH.Get)
 			// Read-only server status — visible so a reseller can offer support
 			// (user decision, Phase 5 plan); mutating endpoints stay AdminOnly.
@@ -307,7 +307,7 @@ func main() {
 
 			// Write + customer-scope routes — authorised per-route with AdminOnly/CustomerScope
 			r.Group(func(r chi.Router) {
-				r.With(middleware.AdminOnly).Post("/domains", domainsH.Create)
+				r.With(middleware.ResellerOrAbove).Post("/domains", domainsH.Create)
 				r.With(middleware.AdminOnly).Post("/domains/{id}/suspend", domainsH.Suspend)
 				r.With(middleware.AdminOnly).Post("/domains/{id}/resume", domainsH.Resume)
 				// Deleting a whole subscription is destructive and irreversible, so it
@@ -500,10 +500,10 @@ func main() {
 				r.With(middleware.ResellerOrAbove).Post("/users/{id}/password", usersH.ResetPassword)
 				r.With(middleware.ResellerOrAbove).Post("/users/{id}/status", usersH.SetStatus)
 				r.With(middleware.ResellerOrAbove).Delete("/users/{id}", usersH.Delete)
-				r.With(middleware.AdminOnly).Get("/customers", accountsH.ListCustomers)
-				r.With(middleware.AdminOnly).Post("/customers", accountsH.CreateCustomer)
-				r.With(middleware.AdminOnly).Put("/customers/{id}", accountsH.UpdateCustomer)
-				r.With(middleware.AdminOnly).Delete("/customers/{id}", accountsH.DeleteCustomer)
+				r.With(middleware.ResellerOrAbove).Get("/customers", accountsH.ListCustomers)
+				r.With(middleware.ResellerOrAbove).Post("/customers", accountsH.CreateCustomer)
+				r.With(middleware.ResellerOrAbove).Put("/customers/{id}", accountsH.UpdateCustomer)
+				r.With(middleware.ResellerOrAbove).Delete("/customers/{id}", accountsH.DeleteCustomer)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/backups", backupsH.List)
 				// Manual backups are CPU/disk/IO heavy; throttle per IP (the handler also
 				// rejects a second concurrent backup for the same domain).

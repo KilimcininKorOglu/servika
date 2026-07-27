@@ -7,8 +7,10 @@
 // one by one. It only reads — edits still go through the domain-scoped
 // endpoints, so authorization and validation logic stays in one place.
 //
-// All endpoints are AdminOnly (see cmd/server/main.go); they list every tenant
-// on the server, so they are never exposed to customer scope.
+// Access: admin + reseller (ResellerOrAbove). Lists are narrowed with
+// middleware.ScopeSQL — an admin sees every domain, a reseller only its own
+// customers', a customer only its own. The narrowing is inside the query;
+// filtering row by row would not prevent leaks on list endpoints.
 package overview
 
 import (
@@ -21,6 +23,7 @@ import (
 	"time"
 
 	"servika/internal/httpx"
+	"servika/internal/middleware"
 )
 
 // Handlers provides the server-wide overview HTTP handlers.
@@ -41,7 +44,7 @@ type DNSRow struct {
 }
 
 func (h *Handlers) DNS(w http.ResponseWriter, r *http.Request) {
-	const q = `
+	q := `
 SELECT d.id, d.domain_name, d.status, d.dnssec_active,
        COUNT(r.id),
        COALESCE(SUM(r.type='A'), 0),
@@ -49,11 +52,14 @@ SELECT d.id, d.domain_name, d.status, d.dnssec_active,
        COALESCE(SUM(r.type='TXT'), 0),
        COALESCE(SUM(r.enabled=0), 0)
 FROM domains d
-LEFT JOIN dns_records r ON r.domain_id = d.id
+LEFT JOIN dns_records r ON r.domain_id = d.id`
+
+	cond, arg := middleware.ScopeSQL(r, "d")
+	q += cond + `
 GROUP BY d.id, d.domain_name, d.status, d.dnssec_active
 ORDER BY d.domain_name`
 
-	rows, err := h.DB.QueryContext(r.Context(), q)
+	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "dns overview failed")
 		return
@@ -88,14 +94,17 @@ type SSLRow struct {
 func (h *Handlers) SSL(w http.ResponseWriter, r *http.Request) {
 	// Ordered for the screen's real job: expired/expiring certificates first,
 	// then future-dated ones, and domains with no SSL at all last.
-	const q = `
-SELECT id, domain_name, status, ssl_enabled,
-       COALESCE(DATE_FORMAT(ssl_expiry, '%Y-%m-%d'), ''),
-       CASE WHEN ssl_expiry IS NULL THEN NULL ELSE DATEDIFF(ssl_expiry, CURDATE()) END
-FROM domains
-ORDER BY (ssl_expiry IS NULL), ssl_expiry ASC, domain_name`
+	q := `
+SELECT d.id, d.domain_name, d.status, d.ssl_enabled,
+       COALESCE(DATE_FORMAT(d.ssl_expiry, '%Y-%m-%d'), ''),
+       CASE WHEN d.ssl_expiry IS NULL THEN NULL ELSE DATEDIFF(d.ssl_expiry, CURDATE()) END
+FROM domains d`
 
-	rows, err := h.DB.QueryContext(r.Context(), q)
+	cond, arg := middleware.ScopeSQL(r, "d")
+	q += cond + `
+ORDER BY (d.ssl_expiry IS NULL), d.ssl_expiry ASC, d.domain_name`
+
+	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "ssl overview failed")
 		return
@@ -135,17 +144,20 @@ type MailRow struct {
 func (h *Handlers) Mail(w http.ResponseWriter, r *http.Request) {
 	// Subqueries are used: JOINing mailboxes and mail_aliases at once produces a
 	// cartesian product and inflates the counts.
-	const q = `
+	q := `
 SELECT d.id, d.domain_name,
        COALESCE(md.status, ''),
        (SELECT COUNT(*) FROM mailboxes mb WHERE mb.domain_id = d.id),
        (SELECT COUNT(*) FROM mail_aliases a WHERE a.domain_id = d.id),
        (SELECT COUNT(*) FROM mailboxes mb2 WHERE mb2.domain_id = d.id AND mb2.status = 'suspended')
 FROM domains d
-LEFT JOIN mail_domains md ON md.domain_id = d.id
+LEFT JOIN mail_domains md ON md.domain_id = d.id`
+
+	cond, arg := middleware.ScopeSQL(r, "d")
+	q += cond + `
 ORDER BY d.domain_name`
 
-	rows, err := h.DB.QueryContext(r.Context(), q)
+	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "mail overview failed")
 		return
@@ -221,14 +233,17 @@ func parseDBSizes(raw []byte) map[string]int64 {
 }
 
 func (h *Handlers) Databases(w http.ResponseWriter, r *http.Request) {
-	const q = `
+	q := `
 SELECT a.id, a.domain_id, d.domain_name, a.db_name, a.db_user, a.db_host,
        COALESCE(DATE_FORMAT(a.created_at, '%Y-%m-%d'), '')
 FROM db_accounts a
-JOIN domains d ON d.id = a.domain_id
+JOIN domains d ON d.id = a.domain_id`
+
+	cond, arg := middleware.ScopeSQL(r, "d")
+	q += cond + `
 ORDER BY d.domain_name, a.db_name`
 
-	rows, err := h.DB.QueryContext(r.Context(), q)
+	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "databases overview failed")
 		return

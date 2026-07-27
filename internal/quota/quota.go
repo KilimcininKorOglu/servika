@@ -39,6 +39,66 @@ type LimitError struct {
 
 func (e *LimitError) Error() string { return e.Message }
 
+// ---------- Reseller limits (WHM "reseller limits" equivalent) ----------
+//
+// A reseller with no row in reseller_limits is UNLIMITED; a 0 value also means
+// unlimited (the same quota contract service_plans already uses). Defining a
+// limit therefore stays optional and existing behavior is unchanged.
+
+// CheckResellerCustomerAllowed reports whether a reseller may create one more customer.
+func CheckResellerCustomerAllowed(ctx context.Context, db *sql.DB, resellerUserID int64) error {
+	maximum, err := resellerLimit(ctx, db, resellerUserID, "max_customer")
+	if err != nil || maximum <= 0 {
+		return nil
+	}
+	var current int
+	_ = db.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM customers WHERE owner_user_id=?`, resellerUserID).Scan(&current)
+	if current >= maximum {
+		return &LimitError{Message: fmt.Sprintf("reseller limit reached: at most %d customers", maximum)}
+	}
+	return nil
+}
+
+// CheckResellerDomainAllowed reports whether the reseller's total domain quota is full.
+//
+// This is separate from the customer plan's max_domain: that caps a single
+// customer, this caps the sum across all of the reseller's customers. Both apply.
+func CheckResellerDomainAllowed(ctx context.Context, db *sql.DB, resellerUserID int64) error {
+	maximum, err := resellerLimit(ctx, db, resellerUserID, "max_domain")
+	if err != nil || maximum <= 0 {
+		return nil
+	}
+	var current int
+	_ = db.QueryRowContext(ctx, `
+		SELECT COUNT(*)
+		FROM domains d JOIN customers c ON c.id = d.customer_id
+		WHERE c.owner_user_id = ?`, resellerUserID).Scan(&current)
+	if current >= maximum {
+		return &LimitError{Message: fmt.Sprintf("reseller limit reached: at most %d domains", maximum)}
+	}
+	return nil
+}
+
+// resellerLimit reads a single numeric limit from reseller_limits. Returns 0
+// (unlimited) when the reseller has no row.
+func resellerLimit(ctx context.Context, db *sql.DB, resellerUserID int64, column string) (int, error) {
+	// The column name arrives only as a constant string from within this package
+	// (no SQL-injection surface); it is still constrained to the expected values.
+	switch column {
+	case "max_customer", "max_domain":
+	default:
+		return 0, fmt.Errorf("unknown limit column: %s", column)
+	}
+	var v int
+	err := db.QueryRowContext(ctx,
+		`SELECT `+column+` FROM reseller_limits WHERE user_id=?`, resellerUserID).Scan(&v)
+	if err != nil {
+		return 0, nil // No row = unlimited.
+	}
+	return v, nil
+}
+
 // CheckDomainAllowed checks the customer's plan.max_domain limit when customerID is set.
 func CheckDomainAllowed(ctx context.Context, db *sql.DB, customerID *int64) error {
 	if customerID == nil {
