@@ -1,0 +1,272 @@
+// Customer records (customers table) — the /customers CRUD endpoints have
+// existed since the start but no UI was ever written; adding a customer was
+// only possible over the API. Domains link to these records via
+// domains.customer_id.
+//
+// NOTE: these are NOT panel login accounts — they are billing/contact records.
+// The only panel login is the single admin (root); customers reach their own
+// domains via FTP identity at /cp.
+import { useEffect, useMemo, useState } from 'react'
+import { api, apiError } from '@/lib/api'
+import Breadcrumb from '@/components/Breadcrumb'
+import EmptyState from '@/components/EmptyState'
+import ListToolbar from '@/components/ListToolbar'
+import Modal from '@/components/Modal'
+import ConfirmDialog from '@/components/ConfirmDialog'
+
+type Customer = {
+  id: number
+  name: string
+  email: string
+  plan_id: number | null
+  status: string
+  notes: string
+  created_at: string
+}
+
+type Plan = { id: number; name: string }
+
+const EMPTY: Customer = { id: 0, name: '', email: '', plan_id: null, status: 'active', notes: '', created_at: '' }
+
+export default function CustomersPage() {
+  const [list, setList] = useState<Customer[]>([])
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+
+  const [editing, setEditing] = useState<Customer | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [toDelete, setToDelete] = useState<Customer | null>(null)
+
+  async function fetchList() {
+    setLoading(true)
+    try {
+      const r = await api.get<Customer[]>('/customers')
+      setList(Array.isArray(r.data) ? r.data : [])
+      setError(null)
+    } catch (e) {
+      setError(apiError(e, 'Could not load customers'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchList()
+    api.get<Plan[]>('/plans')
+      .then((r) => setPlans(Array.isArray(r.data) ? r.data : []))
+      .catch(() => {})
+  }, [])
+
+  const filtered = useMemo(() => {
+    const t = query.trim().toLowerCase()
+    if (!t) return list
+    return list.filter((m) => `${m.name} ${m.email} ${m.notes}`.toLowerCase().includes(t))
+  }, [list, query])
+
+  async function save() {
+    if (!editing) return
+    const name = editing.name.trim()
+    const email = editing.email.trim()
+    if (!name || !email) {
+      setError('Name and email are required')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      const body = { name, email, plan_id: editing.plan_id, status: editing.status, notes: editing.notes }
+      if (editing.id === 0) {
+        await api.post('/customers', body)
+        setSuccess(`${name} added.`)
+      } else {
+        await api.put(`/customers/${editing.id}`, body)
+        setSuccess(`${name} updated.`)
+      }
+      setEditing(null)
+      await fetchList()
+    } catch (e) {
+      setError(apiError(e, 'Could not save'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function remove() {
+    if (!toDelete) return
+    try {
+      await api.delete(`/customers/${toDelete.id}`)
+      setSuccess(`${toDelete.name} deleted.`)
+      setToDelete(null)
+      await fetchList()
+    } catch (e) {
+      setError(apiError(e, 'Could not delete'))
+      setToDelete(null)
+    }
+  }
+
+  const planName = (id: number | null) =>
+    id === null ? '—' : (plans.find((p) => p.id === id)?.name ?? `#${id}`)
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Customers' }]} />
+
+      <div className="mb-5">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Customers</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Billing and contact records. Domains link to these — this is not a panel login account.
+        </p>
+      </div>
+
+      <ListToolbar
+        primary={{ label: 'New Customer', onClick: () => setEditing({ ...EMPTY }) }}
+        search={query}
+        onSearchChange={setQuery}
+      />
+
+      {error && (
+        <div className="mb-4 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">{error}</div>
+      )}
+      {success && (
+        <div className="mb-4 px-3 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-sm">{success}</div>
+      )}
+
+      {loading ? (
+        <div className="py-16 text-center text-sm text-slate-400">Loading…</div>
+      ) : list.length === 0 ? (
+        <EmptyState
+          title="No customer records yet"
+          description="Create a customer record first to link domains to a customer."
+          button={{ label: 'New Customer', onClick: () => setEditing({ ...EMPTY }) }}
+        />
+      ) : filtered.length === 0 ? (
+        <div className="py-12 text-center text-sm text-slate-400">No customer matches your search.</div>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 dark:bg-slate-900/60">
+              <tr>
+                {['Name', 'Email', 'Plan', 'Status', 'Created', ''].map((b, i) => (
+                  <th key={i} className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                    {b}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-950">
+              {filtered.map((m) => (
+                <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/60 transition">
+                  <td className="px-3 py-2.5 font-medium text-slate-900 dark:text-slate-100 whitespace-nowrap">{m.name}</td>
+                  <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400 whitespace-nowrap">{m.email}</td>
+                  <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400 whitespace-nowrap">{planName(m.plan_id)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    {m.status === 'active'
+                      ? <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">Active</span>
+                      : <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">Passive</span>}
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-slate-500 whitespace-nowrap">{m.created_at}</td>
+                  <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                    <button onClick={() => setEditing({ ...m })} className="text-xs text-brand-600 dark:text-brand-400 hover:underline mr-3">
+                      Edit
+                    </button>
+                    <button onClick={() => setToDelete(m)} className="text-xs text-red-600 dark:text-red-400 hover:underline">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <Modal
+        open={editing !== null}
+        title={editing?.id ? 'Edit Customer' : 'New Customer'}
+        onClose={() => setEditing(null)}
+      >
+        {editing && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Name</label>
+              <input
+                value={editing.name}
+                onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
+              <input
+                type="email"
+                value={editing.email}
+                onChange={(e) => setEditing({ ...editing, email: e.target.value })}
+                className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Plan</label>
+                <select
+                  value={editing.plan_id ?? ''}
+                  onChange={(e) => setEditing({ ...editing, plan_id: e.target.value === '' ? null : Number(e.target.value) })}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                >
+                  <option value="">No plan</option>
+                  {plans.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Status</label>
+                <select
+                  value={editing.status}
+                  onChange={(e) => setEditing({ ...editing, status: e.target.value })}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="passive">Passive</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Notes</label>
+              <input
+                value={editing.notes}
+                onChange={(e) => setEditing({ ...editing, notes: e.target.value })}
+                className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setEditing(null)}
+                className="px-3.5 py-2 text-sm rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={save}
+                disabled={saving}
+                className="px-3.5 py-2 text-sm font-medium rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 transition"
+              >
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <ConfirmDialog
+        open={toDelete !== null}
+        title="Delete customer"
+        message={`${toDelete?.name ?? ''} will be deleted. Domains linked to this customer are not removed — only the link is cleared.`}
+        confirmText="Delete"
+        dangerous
+        onConfirm={remove}
+        onCancel={() => setToDelete(null)}
+      />
+    </div>
+  )
+}

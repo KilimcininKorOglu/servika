@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import MobileNavBar from './MobileNavBar'
 import TopBar from './TopBar'
+import DomainPicker from './DomainPicker'
 import { api } from '@/lib/api'
 
 type VersionFooter = { current?: string; build_date?: string }
@@ -26,6 +27,9 @@ const ICONS = {
   firewall:    'M9 12l2 2 4-4m3 2c0 6-8 10-8 10S4 18 4 12V5l8-3 8 3v7z',
   update:      'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
   optimize:    'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4',
+  mail:        'M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+  database:    'M4 7v10c0 2 4 3 8 3s8-1 8-3V7M4 7c0 2 4 3 8 3s8-1 8-3M4 7c0-2 4-3 8-3s8 1 8 3',
+  audit:       'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
 }
 
 const NAV: NavGroup[] = [
@@ -33,6 +37,13 @@ const NAV: NavGroup[] = [
   { title: 'Hosting Services', items: [
     { to: '/domains',           label: 'Domains',        icon: ICONS.domain },
     { to: '/service-plans',     label: 'Service Plans',  icon: ICONS.plan },
+    { to: '/customers',         label: 'Customers',      icon: ICONS.customer },
+  ]},
+  { title: 'Server Overview', items: [
+    { to: '/dns',              label: 'DNS Management',   icon: ICONS.domain },
+    { to: '/ssl',              label: 'SSL Certificates', icon: ICONS.lock },
+    { to: '/mail',             label: 'Email Accounts',   icon: ICONS.mail },
+    { to: '/databases',        label: 'Databases',        icon: ICONS.database },
   ]},
   { title: 'Server Management', items: [
     { to: '/tools-settings',     label: 'Tools and Settings', icon: ICONS.tools },
@@ -42,17 +53,44 @@ const NAV: NavGroup[] = [
     { to: '/wordpress',           label: 'WordPress',          icon: ICONS.wp },
     { to: '/firewall',            label: 'Firewall',    icon: ICONS.firewall },
     { to: '/monitoring',              label: 'Monitoring',             icon: ICONS.monitoring },
+    { to: '/audit-log',               label: 'Security Log',           icon: ICONS.audit },
   ]},
   { title: 'My Profile', items: [
     { to: '/profile',              label: 'Profile and Preferences', icon: ICONS.profile },
   ]},
 ]
 
-function SidebarNav({ groups, openGroups, onToggle, onNavigate }: {
+// Domain-mode menu — when an admin is under /subscriptions/:id/* the whole
+// sidebar becomes that domain's tool menu, topped by the DomainPicker so the
+// same screen can be compared across domains in one click.
+function domainNav(id: string): NavGroup[] {
+  const s = (sub = '') => `/subscriptions/${id}${sub}`
+  return [
+    { items: [{ to: s(), label: 'Overview', icon: ICONS.home }] },
+    { title: 'Domain', items: [
+      { to: s('/files'), label: 'File Manager', icon: ICONS.domain },
+      { to: s('/databases'), label: 'Databases', icon: ICONS.plan },
+      { to: s('/ftp'), label: 'FTP Accounts', icon: ICONS.reseller },
+      { to: s('/php'), label: 'PHP Settings', icon: ICONS.tools },
+      { to: s('/web-server'), label: 'Apache & nginx', icon: ICONS.tools },
+      { to: s('/dns'), label: 'DNS Settings', icon: ICONS.domain },
+      { to: s('/ssl'), label: 'SSL/TLS', icon: ICONS.lock },
+      { to: s('/mail'), label: 'Email', icon: ICONS.mail },
+      { to: s('/cron'), label: 'Scheduled Tasks', icon: ICONS.monitoring },
+      { to: s('/git'), label: 'Git Deploy', icon: ICONS.extensions },
+      { to: s('/laravel'), label: 'Laravel Toolkit', icon: ICONS.extensions },
+      { to: s('/logs'), label: 'Logs', icon: ICONS.stats },
+      { to: s('/backups'), label: 'Backups', icon: ICONS.tools },
+    ]},
+  ]
+}
+
+function SidebarNav({ groups, openGroups, onToggle, onNavigate, topSlot }: {
   groups: NavGroup[]
   openGroups: Record<string, boolean>
   onToggle: (title: string) => void
   onNavigate?: () => void
+  topSlot?: ReactNode
 }) {
   return (
     <>
@@ -64,6 +102,8 @@ function SidebarNav({ groups, openGroups, onToggle, onNavigate }: {
         </div>
         <span className="text-base font-semibold text-slate-900 dark:text-slate-100">Servika</span>
       </div>
+
+      {topSlot}
 
       <nav className="flex-1 px-2 py-3 overflow-y-auto">
         {groups.map((group, groupIndex) => (
@@ -143,9 +183,11 @@ export default function DashboardLayout() {
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'Hosting Services': true,
+    'Server Overview': true,
     'Server Management': true,
     'My Profile': true,
     'My Domain': true,
+    'Domain': true,
   })
 
   useEffect(() => {
@@ -184,7 +226,13 @@ export default function DashboardLayout() {
     ]},
   ]
 
-  const activeNav = isCustomer ? customerNav : NAV
+  // Domain mode: while an admin is under /subscriptions/:id/* the sidebar shows
+  // that domain's tool menu. Customer sessions keep their fixed single-domain nav.
+  const domainMatch = location.pathname.match(/^\/subscriptions\/(\d+)/)
+  const activeDomainID = domainMatch ? domainMatch[1] : ''
+  const domainMode = !isCustomer && activeDomainID !== ''
+
+  const activeNav = isCustomer ? customerNav : domainMode ? domainNav(activeDomainID) : NAV
   const mobileItems = isCustomer
     ? [
         { to: `/subscriptions/${customerDomainID}`, label: 'Overview', icon: ICONS.home, end: true },
@@ -214,7 +262,13 @@ export default function DashboardLayout() {
       )}
 
       <aside className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:translate-x-0 lg:flex-shrink-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <SidebarNav groups={activeNav} openGroups={openGroups} onToggle={toggle} onNavigate={() => setMobileOpen(false)} />
+        <SidebarNav
+          groups={activeNav}
+          openGroups={openGroups}
+          onToggle={toggle}
+          onNavigate={() => setMobileOpen(false)}
+          topSlot={domainMode ? <DomainPicker activeID={activeDomainID} /> : undefined}
+        />
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">

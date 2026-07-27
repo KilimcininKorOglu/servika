@@ -52,6 +52,12 @@ import DomainAccessControlPage from '@/pages/DomainAccessControlPage'
 import CustomerLoginPage from '@/pages/CustomerLoginPage'
 import StatisticsPage from '@/pages/StatisticsPage'
 import MonitoringPage from '@/pages/MonitoringPage'
+import DnsOverviewPage from '@/pages/DnsOverviewPage'
+import SslOverviewPage from '@/pages/SslOverviewPage'
+import MailOverviewPage from '@/pages/MailOverviewPage'
+import DatabasesOverviewPage from '@/pages/DatabasesOverviewPage'
+import CustomersPage from '@/pages/CustomersPage'
+import AuditLogPage from '@/pages/AuditLogPage'
 import ServicesPage from '@/pages/ServicesPage'
 import ComingSoonPage from '@/pages/ComingSoonPage'
 
@@ -136,6 +142,13 @@ export default function App() {
         <Route path="firewall" element={<FirewallPage />} />
         <Route path="backup-management" element={<BackupManagementPage />} />
         <Route path="monitoring" element={<MonitoringPage />} />
+
+        <Route path="dns"        element={<DnsOverviewPage />} />
+        <Route path="ssl"        element={<SslOverviewPage />} />
+        <Route path="mail"       element={<MailOverviewPage />} />
+        <Route path="databases"  element={<DatabasesOverviewPage />} />
+        <Route path="customers"  element={<CustomersPage />} />
+        <Route path="audit-log"  element={<AuditLogPage />} />
 
         <Route path="profile"          element={<SettingsPage />} />
         <Route path="change-password" element={<Navigate to="/profile" replace />} />

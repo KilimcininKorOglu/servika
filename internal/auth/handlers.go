@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -211,4 +212,113 @@ func WriteAudit(db *sql.DB, uid int64, username, ip, action, target string, ok b
 		uidVal, username, ip, action, target, okv); err != nil {
 		log.Printf("audit log insert failed: %v", err)
 	}
+}
+
+// AuditEntry — a security-log row (read-only).
+type AuditEntry struct {
+	ID       int64  `json:"id"`
+	Time     string `json:"time"`
+	Username string `json:"username"`
+	IP       string `json:"ip"`
+	Action   string `json:"action"`
+	Target   string `json:"target"`
+	OK       bool   `json:"ok"`
+}
+
+// AuditList returns audit_log newest-first.
+//
+// The table has been written to since the first release but there was no read
+// endpoint — seeing failed login attempts meant SSHing into the server and
+// querying MySQL by hand.
+//
+// Filters: ?limit=N (default 200, cap 1000), ?action=auth.login,
+// ?only_failed=1. A limit is preferred over a date range — this screen's job is
+// "what happened recently", not archive analysis.
+// auditLimit parses ?limit into the effective row cap: default 200, values
+// <=0 or non-numeric fall back to 200, and anything above 1000 clamps to 1000.
+func auditLimit(raw string) int {
+	limit := 200
+	if raw != "" {
+		if n, err := strconv.Atoi(raw); err == nil && n > 0 {
+			limit = n
+		}
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+	return limit
+}
+
+// buildAuditQuery assembles the parameterized audit_log SELECT and its args
+// from the filters. The action value is always bound as a `?` placeholder (never
+// interpolated) and only_failed adds a constant predicate, so user input can
+// never reach the SQL text. Kept pure so the filter/injection-safety logic is
+// unit-testable without a database.
+func buildAuditQuery(action string, onlyFailed bool, limit int) (string, []any) {
+	q := `SELECT id, DATE_FORMAT(ts, '%Y-%m-%d %H:%i:%s'), actor_username, ip, action, target, ok
+	      FROM audit_log`
+	cond := make([]string, 0, 2)
+	arg := make([]any, 0, 3)
+	if a := strings.TrimSpace(action); a != "" {
+		cond = append(cond, "action = ?")
+		arg = append(arg, a)
+	}
+	if onlyFailed {
+		cond = append(cond, "ok = 0")
+	}
+	if len(cond) > 0 {
+		q += " WHERE " + strings.Join(cond, " AND ")
+	}
+	q += " ORDER BY id DESC LIMIT ?"
+	arg = append(arg, limit)
+	return q, arg
+}
+
+func (h *Handlers) AuditList(w http.ResponseWriter, r *http.Request) {
+	limit := auditLimit(r.URL.Query().Get("limit"))
+	q, arg := buildAuditQuery(
+		r.URL.Query().Get("action"),
+		r.URL.Query().Get("only_failed") == "1",
+		limit,
+	)
+
+	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "audit list failed")
+		return
+	}
+	defer rows.Close()
+
+	out := make([]AuditEntry, 0)
+	for rows.Next() {
+		var e AuditEntry
+		var okv int
+		if err := rows.Scan(&e.ID, &e.Time, &e.Username, &e.IP, &e.Action, &e.Target, &okv); err != nil {
+			continue
+		}
+		e.OK = okv == 1
+		out = append(out, e)
+	}
+	httpx.WriteJSON(w, http.StatusOK, out)
+}
+
+// AuditActions returns the distinct action names present in the table, to
+// populate the filter dropdown (instead of a hardcoded list — new actions show
+// up on their own as they are added).
+func (h *Handlers) AuditActions(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.DB.QueryContext(r.Context(),
+		`SELECT DISTINCT action FROM audit_log ORDER BY action`)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "audit actions failed")
+		return
+	}
+	defer rows.Close()
+	out := make([]string, 0)
+	for rows.Next() {
+		var a string
+		if err := rows.Scan(&a); err == nil {
+			out = append(out, a)
+		}
+	}
+	httpx.WriteJSON(w, http.StatusOK, out)
 }

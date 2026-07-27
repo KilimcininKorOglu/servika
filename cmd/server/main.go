@@ -39,6 +39,7 @@ import (
 	"servika/internal/middleware"
 	"servika/internal/monitor"
 	"servika/internal/nginxset"
+	"servika/internal/overview"
 	"servika/internal/packages"
 	"servika/internal/panelsettings"
 	"servika/internal/passwordprotect"
@@ -143,6 +144,7 @@ func main() {
 	logsH := &logs.Handlers{DB: d}
 	plansH := &plans.Handlers{DB: d}
 	dnsH := &dns.Handlers{DB: d}
+	overviewH := &overview.Handlers{DB: d}
 	accountsH := &accounts.Handlers{DB: d}
 	backupsH := &backups.Handlers{DB: d}
 	backups.StartScheduler(d)
@@ -250,6 +252,13 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/domains", domainsH.List)
 			r.With(middleware.AdminOnly).Get("/dns-template", dnsH.GetTemplate)
 			r.With(middleware.AdminOnly).Put("/dns-template", dnsH.PutTemplate)
+			// Server-wide read-only overview lists — the sidebar's DNS / SSL /
+			// Mail / Databases pages read these. Editing still happens on the
+			// domain-scoped endpoints.
+			r.With(middleware.AdminOnly).Get("/overview/dns", overviewH.DNS)
+			r.With(middleware.AdminOnly).Get("/overview/ssl", overviewH.SSL)
+			r.With(middleware.AdminOnly).Get("/overview/mail", overviewH.Mail)
+			r.With(middleware.AdminOnly).Get("/overview/databases", overviewH.Databases)
 			r.With(middleware.CustomerScope).Get("/domains/{id}", domainsH.Get)
 			r.With(middleware.AdminOnly).Get("/system/usage", system.Handler)
 			r.With(middleware.AdminOnly).Get("/system/metrics", metrics.Handler)
@@ -458,6 +467,10 @@ func main() {
 				r.With(middleware.CustomerScope).Put("/domains/{id}/dns/soa", dnsH.PutSOA)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/dns/dnssec", dnsH.GetDNSSEC)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/dnssec", dnsH.PostDNSSEC)
+				// Security log (read-only) — audit_log has been written to for a
+				// long time but had no read endpoint.
+				r.With(middleware.AdminOnly).Get("/audit", authH.AuditList)
+				r.With(middleware.AdminOnly).Get("/audit/actions", authH.AuditActions)
 				r.With(middleware.AdminOnly).Get("/customers", accountsH.ListCustomers)
 				r.With(middleware.AdminOnly).Post("/customers", accountsH.CreateCustomer)
 				r.With(middleware.AdminOnly).Put("/customers/{id}", accountsH.UpdateCustomer)
