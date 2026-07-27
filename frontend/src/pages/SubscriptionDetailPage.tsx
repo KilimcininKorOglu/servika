@@ -219,13 +219,23 @@ export default function SubscriptionDetailPage() {
 
 function WebSitePreview({ domainName, ssl }: { domainName: string; ssl: boolean }) {
   const url = `${ssl ? 'https' : 'http'}://${domainName}`
+  const [previewVersion, setPreviewVersion] = useState(() => Date.now())
+
+  // Reload the iframe with a fresh URL whenever the target changes. The
+  // cache-buster belongs to the preview only; it never alters the real site URL.
+  useEffect(() => {
+    setPreviewVersion(Date.now())
+  }, [domainName, ssl])
+
+  const previewURL = `${url}/?servika_preview=${previewVersion}`
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
       <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden">
         {ssl ? (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <iframe
-              src={url}
+              key={previewVersion}
+              src={previewURL}
               title={`${domainName} preview`}
               loading="lazy"
               sandbox="allow-scripts allow-same-origin"
@@ -247,13 +257,23 @@ function WebSitePreview({ domainName, ssl }: { domainName: string; ssl: boolean 
             <div className="text-[9px] uppercase tracking-wider text-white/60">Website</div>
             <div className="text-xs font-semibold text-white truncate">{domainName}</div>
           </div>
-          <a href={url} target="_blank" rel="noreferrer"
-            className="shrink-0 inline-flex items-center gap-1 text-[11px] bg-white/90 hover:bg-white text-slate-900 px-2 py-1 rounded-md font-medium transition">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            Open
-          </a>
+          <div className="shrink-0 flex items-center gap-1.5">
+            <button type="button" onClick={() => setPreviewVersion(Date.now())} disabled={!ssl}
+              title={ssl ? 'Refresh preview' : 'SSL is required for the preview'}
+              className="inline-flex items-center gap-1 text-[11px] bg-white/15 hover:bg-white/25 text-white px-2 py-1 rounded-md font-medium transition disabled:opacity-40 disabled:cursor-not-allowed">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M5.5 15a7 7 0 0011.9 2M18.5 9A7 7 0 006.6 7" />
+              </svg>
+              Refresh
+            </button>
+            <a href={url} target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] bg-white/90 hover:bg-white text-slate-900 px-2 py-1 rounded-md font-medium transition">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Open
+            </a>
+          </div>
         </div>
       </div>
     </div>
