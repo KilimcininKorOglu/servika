@@ -46,6 +46,10 @@ type destinationRequest struct {
 	Username  string `json:"username"`
 	Password  string `json:"password"` // if empty, the current one is kept
 	RemoteDir string `json:"remote_dir"`
+	Bucket    string `json:"bucket"`
+	Region    string `json:"region"`
+	Endpoint  string `json:"endpoint"`
+	PathStyle bool   `json:"path_style"`
 	Enabled   bool   `json:"active"`
 }
 
@@ -70,22 +74,47 @@ func (h *Handlers) PutDestination(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !validType(req.Type) {
-		httpx.WriteError(w, http.StatusBadRequest, "type must be ftp or sftp")
+		httpx.WriteError(w, http.StatusBadRequest, "type must be ftp, sftp, s3 or b2")
 		return
 	}
-	if req.Host == "" || req.Username == "" {
-		httpx.WriteError(w, http.StatusBadRequest, "host and username are required")
+	if req.Username == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "username / access key is required")
 		return
 	}
-	if !validHost(req.Host) {
-		httpx.WriteError(w, http.StatusBadRequest, "host must be a valid hostname or IPv4/IPv6 address")
-		return
-	}
-	if req.Port == 0 {
-		if req.Type == "sftp" {
-			req.Port = 22
-		} else {
-			req.Port = 21
+	if objectStorageType(req.Type) {
+		if req.Bucket == "" {
+			httpx.WriteError(w, http.StatusBadRequest, "bucket is required")
+			return
+		}
+		if req.Region == "" {
+			req.Region = "us-east-1"
+		}
+		// Fill the legacy NOT NULL host column with a meaningful value.
+		req.Host = req.Endpoint
+		probe := &Destination{
+			Type: req.Type, Bucket: req.Bucket, Region: req.Region,
+			Endpoint: req.Endpoint, PathStyle: req.PathStyle,
+		}
+		if _, err := s3Endpoint(probe); err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		req.Port = 443
+	} else {
+		if req.Host == "" {
+			httpx.WriteError(w, http.StatusBadRequest, "host is required")
+			return
+		}
+		if !validHost(req.Host) {
+			httpx.WriteError(w, http.StatusBadRequest, "host must be a valid hostname or IPv4/IPv6 address")
+			return
+		}
+		if req.Port == 0 {
+			if req.Type == "sftp" {
+				req.Port = 22
+			} else {
+				req.Port = 21
+			}
 		}
 	}
 	if req.RemoteDir == "" {
@@ -118,14 +147,17 @@ func (h *Handlers) PutDestination(w http.ResponseWriter, r *http.Request) {
 		enabled = 1
 	}
 	_, err = h.DB.ExecContext(r.Context(),
-		`INSERT INTO backup_destinations(domain_id, type, host, port, username, password, remote_dir, enabled)
-		 VALUES(?,?,?,?,?,?,?,?)
+		`INSERT INTO backup_destinations(domain_id, type, host, port, username, password, remote_dir,
+		   bucket, region, endpoint, path_style, enabled)
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
 		 ON DUPLICATE KEY UPDATE
 		   type=VALUES(type), host=VALUES(host), port=VALUES(port),
 		   username=VALUES(username), password=VALUES(password),
-		   remote_dir=VALUES(remote_dir), enabled=VALUES(enabled),
+		   remote_dir=VALUES(remote_dir), bucket=VALUES(bucket), region=VALUES(region),
+		   endpoint=VALUES(endpoint), path_style=VALUES(path_style), enabled=VALUES(enabled),
 		   last_status='', last_error=''`,
-		id, req.Type, req.Host, req.Port, req.Username, storedPassword, req.RemoteDir, enabled)
+		id, req.Type, req.Host, req.Port, req.Username, storedPassword, req.RemoteDir,
+		req.Bucket, req.Region, req.Endpoint, boolToInt(req.PathStyle), enabled)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not save backup destination")
 		return

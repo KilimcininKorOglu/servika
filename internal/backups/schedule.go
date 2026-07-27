@@ -152,16 +152,18 @@ func runOneBackup(db *sql.DB, d dueDomain) error {
 		sizeBytes = st.Size()
 	}
 
-	if _, err := db.Exec(
+	res, err := db.Exec(
 		`INSERT INTO backups(domain_id, type, file, size_b, notes) VALUES(?,?,?,?,?)`,
-		d.ID, "scheduled", file, sizeBytes, "Scheduled backup ("+d.Frequency+")"); err != nil {
+		d.ID, "scheduled", file, sizeBytes, "Scheduled backup ("+d.Frequency+")")
+	if err != nil {
 		return fmt.Errorf("could not save backup record: %w", err)
 	}
+	backupID, _ := res.LastInsertId()
 	if _, err := db.Exec(`UPDATE domains SET last_backup_at=NOW() WHERE id=?`, d.ID); err != nil {
 		log.Printf("last_backup_at could not be updated: %v", err)
 	}
 	// If a remote destination exists, upload in the background
-	pushToDestinationAsync(db, d.ID, abs, file)
+	pushToDestinationAsync(db, d.ID, backupID, abs, file)
 	log.Printf("scheduled backup %s: file=%s size_bytes=%d", d.DomainName, file, sizeBytes)
 	return nil
 }

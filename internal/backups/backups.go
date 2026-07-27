@@ -246,7 +246,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	backupID, _ := res.LastInsertId()
 	// If a remote destination exists, upload in the background (do not block the API response)
-	pushToDestinationAsync(h.DB, id, abs, file)
+	pushToDestinationAsync(h.DB, id, backupID, abs, file)
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
 		"ok":         true,
 		"id":         backupID,

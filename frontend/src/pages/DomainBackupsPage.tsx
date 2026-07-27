@@ -17,10 +17,12 @@ import {
 type Domain = { id: number; domain_name: string; system_user: string }
 type Backup = { id: number; domain_id: number; type: string; file: string; size_b: number; notes: string; created_at: string }
 type Schedule = { freq: 'none' | 'daily' | 'weekly'; hour: number; retention: number; last_backup_at?: string }
+type DestType = 'ftp' | 'sftp' | 's3' | 'b2'
 type Destination = {
   missing?: boolean
-  id?: number; type?: 'ftp' | 'sftp'; host?: string; port?: number
+  id?: number; type?: DestType; host?: string; port?: number
   username?: string; remote_dir?: string; active?: boolean
+  bucket?: string; region?: string; endpoint?: string; path_style?: boolean
   last_upload?: string; last_status?: string; last_error?: string
 }
 
@@ -39,7 +41,10 @@ export default function DomainBackupsPage() {
   const [scheduleSaving, setScheduleSaving] = useState(false)
 
   const [dest, setDest] = useState<Destination>({ missing: true })
-  const [destForm, setDestForm] = useState({ type: 'sftp' as 'ftp'|'sftp', host: '', port: 22, username: '', password: '', remote_dir: '/', active: true })
+  const [destForm, setDestForm] = useState({
+    type: 'sftp' as DestType, host: '', port: 22, username: '', password: '',
+    remote_dir: '/', bucket: '', region: '', endpoint: '', path_style: false, active: true,
+  })
   const [destinationSaving, setDestinationSaving] = useState(false)
   const [destTest, setDestTest] = useState<{ ok: boolean; error?: string } | null>(null)
 
@@ -56,12 +61,16 @@ export default function DomainBackupsPage() {
       setDest(d.data)
       if (!d.data.missing) {
         setDestForm({
-          type: (d.data.type || 'sftp') as 'ftp'|'sftp',
+          type: (d.data.type || 'sftp') as DestType,
           host: d.data.host || '',
           port: d.data.port || (d.data.type === 'ftp' ? 21 : 22),
           username: d.data.username || '',
           password: '',  // Security: leave blank unless the user chooses to enter it again.
           remote_dir: d.data.remote_dir || '/',
+          bucket: d.data.bucket || '',
+          region: d.data.region || '',
+          endpoint: d.data.endpoint || '',
+          path_style: !!d.data.path_style,
           active: !!d.data.active,
         })
       }
@@ -103,7 +112,7 @@ export default function DomainBackupsPage() {
     try {
       await api.delete(`/domains/${id}/backup-destination`)
       setDest({ missing: true })
-      setDestForm({ type: 'sftp', host: '', port: 22, username: '', password: '', remote_dir: '/', active: true })
+      setDestForm({ type: 'sftp', host: '', port: 22, username: '', password: '', remote_dir: '/', bucket: '', region: '', endpoint: '', path_style: false, active: true })
       setSuccess('Remote destination deleted')
       setTimeout(() => setSuccess(null), 4000)
     } catch (e) {
@@ -181,6 +190,11 @@ export default function DomainBackupsPage() {
         a.click()
       })
   }
+
+  const isObjectStorage = destForm.type === 's3' || destForm.type === 'b2'
+  const destIncomplete = isObjectStorage
+    ? (!destForm.bucket || !destForm.username)
+    : (!destForm.host || !destForm.username)
 
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
@@ -271,9 +285,9 @@ export default function DomainBackupsPage() {
       <div className="mb-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
         <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Remote Backup Destination (FTP / SFTP)</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Remote Backup Destination (FTP / SFTP / S3 / B2)</h3>
             <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
-              After creation, backups are uploaded to the remote server in the background for off-site protection against disk failure.
+              After creation, backups are uploaded to the remote destination in the background for off-site protection against disk failure.
             </p>
           </div>
           {!dest.missing && dest.last_status && (
@@ -294,53 +308,108 @@ export default function DomainBackupsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-6 gap-3 mb-3">
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Protocol</label>
-            <div className="flex gap-2">
-              {(['sftp','ftp'] as const).map(t => {
-                const isSelected = destForm.type === t
-                return (
-                  <button key={t} type="button"
-                    onClick={() => setDestForm(f => ({...f, type: t, port: t === 'sftp' ? 22 : 21}))}
-                    className={`flex-1 text-xs px-3 py-2 rounded border ${isSelected ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 font-semibold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800'}`}>
-                    {t === 'sftp' ? '🔒 SFTP (port 22)' : '📡 FTP (port 21)'}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          <div className="sm:col-span-3">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Host</label>
-            <input type="text" value={destForm.host} placeholder="backup.firma.com"
-              onChange={e => setDestForm(f => ({...f, host: e.target.value}))}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
-          </div>
-          <div className="sm:col-span-1">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Port</label>
-            <input type="number" value={destForm.port}
-              onChange={e => setDestForm(f => ({...f, port: Number(e.target.value)||0}))}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Username</label>
-            <input type="text" value={destForm.username} autoComplete="off"
-              onChange={e => setDestForm(f => ({...f, username: e.target.value}))}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Password {!dest.missing && <span className="text-[10px] text-slate-400 dark:text-slate-500">(leave blank to keep the current password)</span>}</label>
-            <input type="password" value={destForm.password} autoComplete="new-password"
-              onChange={e => setDestForm(f => ({...f, password: e.target.value}))}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Remote directory</label>
-            <input type="text" value={destForm.remote_dir}
-              onChange={e => setDestForm(f => ({...f, remote_dir: e.target.value}))}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+        <div className="mb-3">
+          <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Destination type</label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {([
+              { t: 'sftp' as const, label: '🔒 SFTP', port: 22 },
+              { t: 'ftp' as const, label: '📡 FTP', port: 21 },
+              { t: 's3' as const, label: '☁️ S3', port: 443 },
+              { t: 'b2' as const, label: '🅱️ Backblaze B2', port: 443 },
+            ]).map(o => {
+              const isSelected = destForm.type === o.t
+              return (
+                <button key={o.t} type="button"
+                  onClick={() => setDestForm(f => ({...f, type: o.t, port: o.port}))}
+                  className={`text-xs px-3 py-2 rounded border ${isSelected ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 font-semibold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800'}`}>
+                  {o.label}
+                </button>
+              )
+            })}
           </div>
         </div>
+
+        {isObjectStorage ? (
+          <div className="grid grid-cols-1 sm:grid-cols-6 gap-3 mb-3">
+            <div className="sm:col-span-3">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Bucket</label>
+              <input type="text" value={destForm.bucket} placeholder="my-backups"
+                onChange={e => setDestForm(f => ({...f, bucket: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-3">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Region {destForm.type === 's3' && <span className="text-[10px] text-slate-400 dark:text-slate-500">(defaults to us-east-1)</span>}</label>
+              <input type="text" value={destForm.region} placeholder="us-east-1"
+                onChange={e => setDestForm(f => ({...f, region: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-6">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Endpoint {destForm.type === 's3' && <span className="text-[10px] text-slate-400 dark:text-slate-500">(leave blank for AWS S3)</span>}</label>
+              <input type="text" value={destForm.endpoint} placeholder={destForm.type === 'b2' ? 's3.us-west-002.backblazeb2.com' : 'https://s3.example.com'}
+                onChange={e => setDestForm(f => ({...f, endpoint: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-3">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Access key ID</label>
+              <input type="text" value={destForm.username} autoComplete="off"
+                onChange={e => setDestForm(f => ({...f, username: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-3">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Secret access key {!dest.missing && <span className="text-[10px] text-slate-400 dark:text-slate-500">(leave blank to keep current)</span>}</label>
+              <input type="password" value={destForm.password} autoComplete="new-password"
+                onChange={e => setDestForm(f => ({...f, password: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-4">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Key prefix</label>
+              <input type="text" value={destForm.remote_dir} placeholder="/"
+                onChange={e => setDestForm(f => ({...f, remote_dir: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-2 flex items-end">
+              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input type="checkbox" checked={destForm.path_style}
+                  onChange={e => setDestForm(f => ({...f, path_style: e.target.checked}))}
+                  className="cursor-pointer"/>
+                Path-style URLs
+              </label>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-6 gap-3 mb-3">
+            <div className="sm:col-span-4">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Host</label>
+              <input type="text" value={destForm.host} placeholder="backup.firma.com"
+                onChange={e => setDestForm(f => ({...f, host: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Port</label>
+              <input type="number" value={destForm.port}
+                onChange={e => setDestForm(f => ({...f, port: Number(e.target.value)||0}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Username</label>
+              <input type="text" value={destForm.username} autoComplete="off"
+                onChange={e => setDestForm(f => ({...f, username: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Password {!dest.missing && <span className="text-[10px] text-slate-400 dark:text-slate-500">(leave blank to keep the current password)</span>}</label>
+              <input type="password" value={destForm.password} autoComplete="new-password"
+                onChange={e => setDestForm(f => ({...f, password: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Remote directory</label>
+              <input type="text" value={destForm.remote_dir}
+                onChange={e => setDestForm(f => ({...f, remote_dir: e.target.value}))}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono"/>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center justify-between flex-wrap gap-3">
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -355,11 +424,11 @@ export default function DomainBackupsPage() {
                 {destTest.ok ? '✓ Connection successful' : '✗ ' + (destTest.error?.slice(0, 80) || 'Error')}
               </span>
             )}
-            <button type="button" onClick={testDestination} disabled={destinationSaving || !destForm.host || !destForm.username}
+            <button type="button" onClick={testDestination} disabled={destinationSaving || destIncomplete}
               className="text-xs px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 disabled:opacity-50">
               {destinationSaving ? 'Testing...' : 'Test Connection'}
             </button>
-            <button type="button" onClick={saveDest} disabled={destinationSaving || !destForm.host || !destForm.username}
+            <button type="button" onClick={saveDest} disabled={destinationSaving || destIncomplete}
               className="text-xs px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 rounded font-medium">
               Save
             </button>
