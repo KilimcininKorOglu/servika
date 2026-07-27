@@ -24,7 +24,8 @@ type Customer = { id: number; name: string; email: string; plan_id?: number | nu
 type Plan = { id: number; name: string }
 type ImportResult = {
   domain_id: number; domain: string; system_user: string; web_files: number
-  database?: string; skipped: string[]
+  databases: { source: string; target: string; user: string }[]
+  skipped: string[]
 }
 
 export default function AccountTransferPage() {
@@ -190,9 +191,8 @@ export default function AccountTransferPage() {
                 </select>
               </Field>
             </div>
-            {inventory.databases.length > 1 && <p className="mt-3 text-sm text-red-600 dark:text-red-400">This account has more than one database; the first release rejects the import to prevent data loss.</p>}
             <button onClick={runImport}
-              disabled={importing || !customerID || !domain || inventory.databases.length > 1}
+              disabled={importing || !customerID || !domain}
               className="mt-5 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium disabled:opacity-50">
               {importing ? `Importing… ${progress}%` : 'Import Account'}
             </button>
@@ -200,7 +200,8 @@ export default function AccountTransferPage() {
 
           {result && <div className="mt-5 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-5">
             <h2 className="font-semibold text-emerald-800 dark:text-emerald-200">Import complete</h2>
-            <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">{result.domain} · {result.web_files} web files · {result.database || 'no database'}</p>
+            <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">{result.domain} · {result.web_files} web files · {result.databases.length} database(s)</p>
+            {result.databases.map(d => <p key={d.target} className="mt-1 text-xs font-mono text-emerald-700 dark:text-emerald-300">{d.source} → {d.target}</p>)}
             {result.skipped?.map(s => <p key={s} className="mt-1 text-xs text-amber-700 dark:text-amber-300">⚠ {s}</p>)}
             <Link to={`/subscriptions/${result.domain_id}`} className="inline-block mt-3 text-sm font-medium text-brand-700 dark:text-brand-300">Manage domain →</Link>
           </div>}

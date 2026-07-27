@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 
+	"servika/internal/credentials"
 	"servika/internal/domains"
 	"servika/internal/httpx"
 
@@ -83,14 +84,20 @@ type importResponse struct {
 	Domain     string    `json:"domain"`
 	SystemUser string    `json:"system_user"`
 	WebFiles   int       `json:"web_files"`
-	Database   string    `json:"database,omitempty"`
+	Databases  []DBMap   `json:"databases"`
 	Skipped    []string  `json:"skipped"`
 	Source     Inventory `json:"source"`
 }
 
-// Import creates a new Servika domain and restores the web root plus a single
-// cPanel database. Unsupported multi-database accounts are rejected before
-// provisioning, so the operation cannot silently lose data.
+type DBMap struct {
+	Source string `json:"source"`
+	Target string `json:"target"`
+	User   string `json:"user"`
+}
+
+// Import creates a new Servika domain and restores the web root plus the
+// cPanel databases. Additional databases share the domain's default DB user,
+// matching Servika's supported one-user-to-many-databases model.
 func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 	if h.Domains == nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "domain provider is not ready")
@@ -133,12 +140,6 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	if len(inv.Databases) > 1 {
-		httpx.WriteError(w, http.StatusUnprocessableEntity,
-			"this account has more than one database; lossless multi-database conversion is not supported yet")
-		return
-	}
-
 	created, ok := h.provisionDomain(w, r, inv)
 	if !ok {
 		return
@@ -154,8 +155,18 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer web files: "+err.Error())
 		return
 	}
-	if len(inv.Databases) == 1 {
-		if err := h.restoreDatabase(r.Context(), tmpPath, inv.ArchiveRoot, inv.Databases[0], created.DBName); err != nil {
+	dbMaps := databaseMappings(inv.Databases, created.SystemUser, created.DBName, created.DBUser)
+	for i, m := range dbMaps {
+		// The first database reuses the domain's default DB (created by
+		// domains.Create); each additional one is created and attached to the
+		// same DB user, so rollback via domains.Delete drops them all.
+		if i > 0 {
+			if err := credentials.MySQLCreateDBForUser(h.DB, created.ID, m.Target, created.DBUser); err != nil {
+				httpx.WriteError(w, http.StatusInternalServerError, "could not create the additional database: "+err.Error())
+				return
+			}
+		}
+		if err := h.restoreDatabase(r.Context(), tmpPath, inv.ArchiveRoot, m.Source, m.Target); err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "could not transfer the database: "+err.Error())
 			return
 		}
@@ -164,7 +175,7 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusCreated, importResponse{
 		OK: true, DomainID: created.ID, Domain: created.DomainName,
 		SystemUser: created.SystemUser, WebFiles: inv.WebFiles,
-		Database: created.DBName, Source: inv,
+		Databases: dbMaps, Source: inv,
 		Skipped: []string{"Email mailboxes, cron jobs and source SSL certificates were only inventoried in this first release."},
 	})
 }
@@ -174,6 +185,66 @@ type createdDomain struct {
 	DomainName string `json:"domain_name"`
 	SystemUser string `json:"system_user"`
 	DBName     string `json:"db_name"`
+	DBUser     string `json:"db_user"`
+}
+
+// databaseMappings maps each source cPanel database name to a Servika target.
+// The first source reuses the domain's default database; each additional source
+// is namespaced as "<system_user>_<sanitized-suffix>", truncated to MySQL's
+// 64-char identifier limit and de-duplicated with a numeric tail.
+func databaseMappings(sources []string, sk, defaultDB, dbUser string) []DBMap {
+	out := make([]DBMap, 0, len(sources))
+	used := map[string]bool{defaultDB: true}
+	for i, source := range sources {
+		target := defaultDB
+		if i > 0 {
+			suffix := dbSuffix(source)
+			maxSuffix := 64 - len(sk) - 1
+			if maxSuffix < 1 {
+				maxSuffix = 1
+			}
+			if len(suffix) > maxSuffix {
+				suffix = suffix[:maxSuffix]
+			}
+			target = sk + "_" + suffix
+			base := target
+			for n := 2; used[target]; n++ {
+				tail := "_" + strconv.Itoa(n)
+				limit := 64 - len(tail)
+				if len(base) > limit {
+					base = base[:limit]
+				}
+				target = base + tail
+			}
+		}
+		used[target] = true
+		out = append(out, DBMap{Source: source, Target: target, User: dbUser})
+	}
+	return out
+}
+
+func dbSuffix(source string) string {
+	s := strings.ToLower(source)
+	var b strings.Builder
+	lastUnderscore := false
+	for _, r := range s {
+		ok := r >= 'a' && r <= 'z' || r >= '0' && r <= '9'
+		if ok {
+			b.WriteRune(r)
+			lastUnderscore = false
+		} else if !lastUnderscore {
+			b.WriteByte('_')
+			lastUnderscore = true
+		}
+	}
+	s = strings.Trim(b.String(), "_")
+	if s == "" {
+		return "db"
+	}
+	if len(s) > 32 {
+		s = s[:32]
+	}
+	return strings.TrimRight(s, "_")
 }
 
 // provisionDomain drives domains.Create in-process so the full provisioning
