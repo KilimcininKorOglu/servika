@@ -61,6 +61,7 @@ import (
 	"servika/internal/stats"
 	"servika/internal/subdomain"
 	"servika/internal/system"
+	"servika/internal/transfers"
 	"servika/internal/users"
 	"servika/internal/waf"
 	"servika/internal/wordpress"
@@ -154,6 +155,7 @@ func main() {
 	overviewH := &overview.Handlers{DB: d}
 	accountsH := &accounts.Handlers{DB: d}
 	backupsH := &backups.Handlers{DB: d}
+	transfersH := &transfers.Handlers{DB: d, Domains: domainsH}
 	backups.StartScheduler(d)
 	gitH := &git.Handlers{DB: d}
 	githubH := &githubpkg.Handlers{DB: d, WebhookBase: "https://" + ipv4 + ":8443"}
@@ -525,6 +527,8 @@ func main() {
 					httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "processed_domains": processed})
 				})
 				r.With(middleware.ResellerOrAbove).Get("/admin/backups/summary", backupsH.Summary)
+				r.With(middleware.AdminOnly).Post("/admin/transfers/analyze", transfersH.Analyze)
+				r.With(middleware.AdminOnly).Post("/admin/transfers/import", transfersH.Import)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/backup-destination", backupsH.GetDestination)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/backup-destination", backupsH.PutDestination)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/backup-destination", backupsH.DeleteDestination)
