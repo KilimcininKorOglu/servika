@@ -1995,6 +1995,25 @@ func healPanelVhostHeadersOnStartup() {
 	}
 	content := string(original)
 	if strings.Contains(content, panelSecSentinel) {
+		updatedServerName := strings.Replace(content, "server_name _;", "server_name _servika_panel_;", 1)
+		if updatedServerName != content {
+			if err := os.WriteFile(panelVhostPath, []byte(updatedServerName), 0644); err != nil {
+				log.Printf("panel security repair: could not update panel server name: %v", err)
+				return
+			}
+			if output, err := exec.Command("nginx", "-t").CombinedOutput(); err != nil {
+				_ = os.WriteFile(panelVhostPath, original, 0644)
+				log.Printf("panel security repair: server name nginx -t failed, vhost restored: %s", strings.TrimSpace(string(output)))
+				return
+			}
+			if output, err := exec.Command("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
+				_ = os.WriteFile(panelVhostPath, original, 0644)
+				log.Printf("panel security repair: server name nginx reload failed, vhost restored: %s", strings.TrimSpace(string(output)))
+				return
+			}
+			log.Printf("panel security repair: panel server name updated + nginx reloaded")
+			return
+		}
 		// Older v2 installs hardened the panel before the domain-preview iframe
 		// needed frame-src. Retrofit it even when the sentinel is present. The
 		// match is scoped to the strict SPA CSP (unique `script-src 'self';`) so
@@ -2023,10 +2042,14 @@ func healPanelVhostHeadersOnStartup() {
 		log.Printf("panel security repair: CSP updated for the domain preview + nginx reloaded")
 		return
 	}
-	anchor := "server_name _;"
+	anchor := "server_name _servika_panel_;"
 	anchorIndex := strings.Index(content, anchor)
 	if anchorIndex < 0 {
-		log.Printf("panel security repair: %q anchor not found", anchor)
+		anchor = "server_name _;"
+		anchorIndex = strings.Index(content, anchor)
+	}
+	if anchorIndex < 0 {
+		log.Printf("panel security repair: panel server name anchor not found")
 		return
 	}
 

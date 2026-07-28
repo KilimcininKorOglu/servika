@@ -36,6 +36,14 @@ die(){ echo -e "  ${c_r}✗ $*${c_0}"; exit 1; }
 # verify_sha256 <file> <expected_hex>: succeeds only when the file's sha256 matches.
 # Used to gate every third-party download before it is executed or extracted.
 verify_sha256(){ [ "$(sha256sum "$1" 2>/dev/null | awk '{print $1}')" = "$2" ]; }
+# download <url> <out>: fetch a URL to a file. Some VPS networks advertise an
+# AAAA record but have no working IPv6 egress; when curl picks IPv6 first the
+# download hangs or silently produces an empty file. Try normally, then fall
+# back to forcing IPv4 so first-boot fetches do not stall.
+download(){
+  curl -fsSL --retry 3 --connect-timeout 15 -o "$2" "$1" ||
+    curl -4fsSL --retry 3 --connect-timeout 15 -o "$2" "$1"
+}
 
 [ "$(id -u)" = 0 ] || die "root is required"
 [ -d "$A" ] || die "assets/ was not found ($A)"
@@ -442,8 +450,9 @@ fi
 # it is ever executed, instead of piping the network straight into php.
 if [ ! -x /usr/local/bin/composer ]; then
   TMP=$(mktemp -d)
-  EXPECTED=$(curl -fsSL https://composer.github.io/installer.sig 2>/dev/null | tr -d '[:space:]')
-  if curl -fsSL -o "$TMP/composer-setup.php" https://getcomposer.org/installer 2>/dev/null \
+  download https://composer.github.io/installer.sig "$TMP/installer.sig" || true
+  EXPECTED=$(tr -d '[:space:]' < "$TMP/installer.sig" 2>/dev/null)
+  if download https://getcomposer.org/installer "$TMP/composer-setup.php" \
      && [ -n "$EXPECTED" ] \
      && [ "$(php -r "echo hash_file('sha384', '$TMP/composer-setup.php');" 2>/dev/null)" = "$EXPECTED" ]; then
     php "$TMP/composer-setup.php" --install-dir=/usr/local/bin --filename=composer >/dev/null 2>&1

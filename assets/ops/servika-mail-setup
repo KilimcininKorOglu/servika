@@ -217,6 +217,14 @@ log "5 mysql-virtual-*.cf files written"
 
 echo "════ Postfix main.cf and master.cf ════"
 if ! grep -q 'servika-mail' /etc/postfix/main.cf; then
+  # AlmaLinux/RHEL stock main.cf already defines these keys. Appending the
+  # managed block below works, but every postconf/postfix invocation prints
+  # "overriding earlier entry" warnings. Remove the stock keys first so the
+  # managed servika-mail block is the single canonical definition.
+  postconf -X inet_interfaces
+  postconf -X mydestination
+  postconf -X smtpd_tls_cert_file
+  postconf -X smtpd_tls_key_file
   cat "$TMPL/postfix/main.cf.append" >> /etc/postfix/main.cf
   log "servika-mail block added to main.cf"
 fi
