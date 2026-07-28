@@ -13,10 +13,32 @@ REPO="KilimcininKorOglu/servika"
 
 c_b="\033[1;34m"; c_g="\033[32m"; c_r="\033[31m"; c_0="\033[0m"
 [ -t 1 ] || { c_b=; c_g=; c_r=; c_0=; }
+die(){ echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
 
-[ "$(id -u)" = 0 ] || { echo -e "${c_r}✗ root is required:  curl ... | sudo bash${c_0}"; exit 1; }
-command -v curl >/dev/null 2>&1 || { echo -e "${c_r}✗ curl is required${c_0}"; exit 1; }
-command -v tar  >/dev/null 2>&1 || { echo -e "${c_r}✗ tar is required${c_0}"; exit 1; }
+# download_file <url> <out>: fetch a URL to a file. Some VPS networks advertise
+# IPv6 but have no working IPv6 egress, so retry with IPv4 before failing.
+download_file(){
+  curl -fsSL --retry 3 --connect-timeout 15 -o "$2" "$1" ||
+    curl -4fsSL --retry 3 --connect-timeout 15 -o "$2" "$1"
+}
+
+verify_release_bundle(){
+  local bundle_path="$1"
+  local sums_path="$2"
+  local bundle_name="$3"
+  local expected actual
+  expected=$(awk -v name="$bundle_name" '$2 == name {print $1; exit}' "$sums_path")
+  if ! printf '%s' "$expected" | grep -Eq '^[0-9a-fA-F]{64}$'; then
+    die "SHA256SUMS does not contain a valid checksum for $bundle_name"
+  fi
+  actual=$(sha256sum "$bundle_path" | cut -d' ' -f1)
+  [ "$actual" = "$expected" ] || die "checksum mismatch for $bundle_name"
+}
+
+[ "$(id -u)" = 0 ] || die "root is required:  curl ... | sudo bash"
+command -v curl >/dev/null 2>&1 || die "curl is required"
+command -v tar  >/dev/null 2>&1 || die "tar is required"
+command -v sha256sum >/dev/null 2>&1 || die "sha256sum is required"
 
 MACHINE=$(uname -m)
 case "$MACHINE" in
@@ -33,13 +55,20 @@ fi
 [ -n "$TAG" ] || { echo -e "${c_r}✗ could not determine the latest release tag${c_0}"; exit 1; }
 VERSION="${TAG#v}"
 
-URL="https://github.com/${REPO}/releases/download/${TAG}/servika-${VERSION}-${ARCH}.tar.gz"
+BUNDLE="servika-${VERSION}-${ARCH}.tar.gz"
+URL="https://github.com/${REPO}/releases/download/${TAG}/${BUNDLE}"
+SUMS_URL="https://github.com/${REPO}/releases/download/${TAG}/SHA256SUMS"
 echo -e "${c_b}══ Downloading Servika ${VERSION} (${ARCH}) ══${c_0}"
 
 TMP=$(mktemp -d)
-if ! curl -fsSL "$URL" | tar xz -C "$TMP"; then
-  echo -e "${c_r}✗ download failed: $URL${c_0}"; rm -rf "$TMP"; exit 1
-fi
+trap 'rm -rf "$TMP"' EXIT
+download_file "$URL" "$TMP/$BUNDLE" || die "download failed: $URL"
+# Verify the bundle against the release SHA256SUMS before extracting so a
+# corrupted or tampered artifact is never unpacked as root.
+download_file "$SUMS_URL" "$TMP/SHA256SUMS" || die "download failed: $SUMS_URL"
+verify_release_bundle "$TMP/$BUNDLE" "$TMP/SHA256SUMS" "$BUNDLE"
+echo -e "${c_g}✓ checksum verified${c_0}"
+tar xz -C "$TMP" -f "$TMP/$BUNDLE" || die "extraction failed"
 
 cd "$TMP"
 chmod +x servika-install.sh "assets/$ARCH/servika-server" "assets/$ARCH/servika-seed-admin" assets/ops/* 2>/dev/null || true

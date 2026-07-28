@@ -89,6 +89,17 @@ resolve_release_tag() {
   printf '%s' "$tag"
 }
 
+# verify_release_bundle <bundle> <sums_file> <bundle_name> confirms the bundle's
+# sha256 matches the entry in the release SHA256SUMS. Returns non-zero on a
+# missing/malformed checksum or a mismatch so callers can fall back safely.
+verify_release_bundle() {
+  local bundle_path="$1" sums_path="$2" bundle_name="$3" expected actual
+  expected=$(awk -v name="$bundle_name" '$2 == name {print $1; exit}' "$sums_path")
+  printf '%s' "$expected" | grep -Eq '^[0-9a-fA-F]{64}$' || return 1
+  actual=$(sha256sum "$bundle_path" | cut -d' ' -f1)
+  [ "$actual" = "$expected" ]
+}
+
 # restore_release_assets undoes every pre-restart asset swap from snapshots taken
 # during this run. Each step is existence-guarded and best-effort so a missing
 # snapshot for one asset never blocks the restore of the others. Called only on
@@ -172,6 +183,7 @@ version() { curl -fsS "$HEALTH" 2>/dev/null | grep -oE '"version":"[^"]*"' | cut
 [ -x "$BIN" ] || die "Servika is not installed ($BIN is missing); run install.sh first"
 command -v curl >/dev/null || die "curl is required"
 command -v tar  >/dev/null || die "tar is required"
+command -v sha256sum >/dev/null || die "sha256sum is required"
 
 # Rollback staging: snapshots of every release-owned asset are taken here just
 # before each pre-restart swap, so a failed health check can restore the complete
@@ -188,13 +200,21 @@ if [ "$BRANCH_EXPLICIT" = 0 ]; then
   TAG=$(resolve_release_tag)
   if [ -n "$TAG" ]; then
     VERSION_TAG="${TAG#v}"
-    BUNDLE_URL="https://github.com/$REPO/releases/download/$TAG/servika-${VERSION_TAG}-${ARCH}.tar.gz"
+    BUNDLE="servika-${VERSION_TAG}-${ARCH}.tar.gz"
+    BUNDLE_URL="https://github.com/$REPO/releases/download/$TAG/$BUNDLE"
+    SUMS_URL="https://github.com/$REPO/releases/download/$TAG/SHA256SUMS"
     step "Servika update (release $TAG, $ARCH)"
     echo "  downloading release bundle..."
-    if curl -fsSL "$BUNDLE_URL" | tar xz -C "$TMP"; then
+    # Download + checksum-verify against the release SHA256SUMS before extracting;
+    # any failure falls back to the branch tarball, matching the download-fail path.
+    if curl -fsSL --retry 3 -o "$TMP/$BUNDLE" "$BUNDLE_URL" \
+       && curl -fsSL --retry 3 -o "$TMP/SHA256SUMS" "$SUMS_URL" \
+       && verify_release_bundle "$TMP/$BUNDLE" "$TMP/SHA256SUMS" "$BUNDLE" \
+       && tar xz -C "$TMP" -f "$TMP/$BUNDLE"; then
+      ok "checksum verified"
       A="$TMP/assets"
     else
-      warn "release bundle download failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
+      warn "release bundle download or verification failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
       rm -rf "${TMP:?}/"* 2>/dev/null || true
     fi
   else

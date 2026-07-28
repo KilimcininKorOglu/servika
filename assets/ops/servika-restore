@@ -108,6 +108,17 @@ resolve_release_tag() {
   printf '%s' "$tag"
 }
 
+# verify_release_bundle <bundle> <sums_file> <bundle_name> confirms the bundle's
+# sha256 matches the entry in the release SHA256SUMS. Returns non-zero on a
+# missing/malformed checksum or a mismatch so callers can fall back safely.
+verify_release_bundle() {
+  local bundle_path="$1" sums_path="$2" bundle_name="$3" expected actual
+  expected=$(awk -v name="$bundle_name" '$2 == name {print $1; exit}' "$sums_path")
+  printf '%s' "$expected" | grep -Eq '^[0-9a-fA-F]{64}$' || return 1
+  actual=$(sha256sum "$bundle_path" | cut -d' ' -f1)
+  [ "$actual" = "$expected" ]
+}
+
 require_abs_path() {
   local name="$1"
   local value="$2"
@@ -147,6 +158,7 @@ is_elf() { head -c4 "$1" 2>/dev/null | grep -q $'\x7fELF'; }
 [ "$(id -u)" = 0 ] || die "root required (sudo servika-restore)"
 command -v curl >/dev/null || die "curl required"
 command -v tar  >/dev/null || die "tar required"
+command -v sha256sum >/dev/null || die "sha256sum required"
 
 step "Servika core repair (github.com/$REPO)$([ $DRY = 1 ] && echo '  [DRY-RUN]')"
 
@@ -168,12 +180,20 @@ else
     TAG=$(resolve_release_tag)
     if [ -n "$TAG" ]; then
       VERSION_TAG="${TAG#v}"
-      BUNDLE_URL="https://github.com/$REPO/releases/download/$TAG/servika-${VERSION_TAG}-${ARCH}.tar.gz"
+      BUNDLE="servika-${VERSION_TAG}-${ARCH}.tar.gz"
+      BUNDLE_URL="https://github.com/$REPO/releases/download/$TAG/$BUNDLE"
+      SUMS_URL="https://github.com/$REPO/releases/download/$TAG/SHA256SUMS"
       echo "  downloading release bundle ($TAG, $ARCH)…"
-      if curl -fsSL "$BUNDLE_URL" | tar xz -C "$TMP"; then
+      # Download + checksum-verify against the release SHA256SUMS before extracting;
+      # any failure falls back to the branch tarball, matching the download-fail path.
+      if curl -fsSL --retry 3 -o "$TMP/$BUNDLE" "$BUNDLE_URL" \
+         && curl -fsSL --retry 3 -o "$TMP/SHA256SUMS" "$SUMS_URL" \
+         && verify_release_bundle "$TMP/$BUNDLE" "$TMP/SHA256SUMS" "$BUNDLE" \
+         && tar xz -C "$TMP" -f "$TMP/$BUNDLE"; then
+        ok "checksum verified"
         A="$TMP/assets"
       else
-        warn "release bundle download failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
+        warn "release bundle download or verification failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
         rm -rf "${TMP:?}/"* 2>/dev/null || true
       fi
     else
