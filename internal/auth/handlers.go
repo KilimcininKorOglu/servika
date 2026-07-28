@@ -330,7 +330,7 @@ func (h *Handlers) AuditList(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "audit list failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }() // read-only query: closing the result set has nothing to flush
 
 	out := make([]AuditEntry, 0)
 	for rows.Next() {
@@ -355,7 +355,7 @@ func (h *Handlers) AuditActions(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "audit actions failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }() // read-only query: closing the result set has nothing to flush
 	out := make([]string, 0)
 	for rows.Next() {
 		var a string

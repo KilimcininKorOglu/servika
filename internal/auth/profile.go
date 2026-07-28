@@ -99,6 +99,12 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, http.StatusInternalServerError, "password change failed")
 			return
 		}
+		// Bump token_version so every existing session is revoked after the
+		// credential changes; the caller must re-authenticate.
+		if _, err := h.DB.Exec(`UPDATE users SET token_version=token_version+1, updated_at=NOW() WHERE id=?`, c.UserID); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "could not revoke existing sessions")
+			return
+		}
 		WriteAudit(h.DB, c.UserID, "root", httpx.ClientIP(r), "auth.password", "root", true)
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 		return
@@ -119,7 +125,7 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	if _, err := h.DB.Exec(`UPDATE users SET password_hash=?, updated_at=NOW() WHERE id=?`, newHash, c.UserID); err != nil {
+	if _, err := h.DB.Exec(`UPDATE users SET password_hash=?, token_version=token_version+1, updated_at=NOW() WHERE id=?`, newHash, c.UserID); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "password change failed")
 		return
 	}
@@ -189,7 +195,7 @@ func (h *Handlers) TwoFAEnable(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "code verification failed; enter the six-digit code from your authenticator app")
 		return
 	}
-	if _, err := h.DB.Exec(`UPDATE users SET totp_secret=?, totp_enabled=1, totp_last_step=? WHERE id=?`, b.Secret, step, c.UserID); err != nil {
+	if _, err := h.DB.Exec(`UPDATE users SET totp_secret=?, totp_enabled=1, totp_last_step=?, token_version=token_version+1 WHERE id=?`, b.Secret, step, c.UserID); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "2FA settings could not be saved")
 		return
 	}
@@ -217,7 +223,7 @@ func (h *Handlers) TwoFADisable(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "code verification failed")
 		return
 	}
-	if _, err := h.DB.Exec(`UPDATE users SET totp_secret='', totp_enabled=0 WHERE id=?`, c.UserID); err != nil {
+	if _, err := h.DB.Exec(`UPDATE users SET totp_secret='', totp_enabled=0, token_version=token_version+1 WHERE id=?`, c.UserID); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "2FA could not be disabled")
 		return
 	}

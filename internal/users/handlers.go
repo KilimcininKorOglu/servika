@@ -139,7 +139,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not list users")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }() // read-only query: closing the result set has nothing to flush
 
 	out := make([]UserRow, 0)
 	for rows.Next() {
@@ -325,7 +325,9 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if b.Role != nil {
-		if _, err := h.DB.ExecContext(r.Context(), `UPDATE users SET role=?, updated_at=NOW() WHERE id=?`, *b.Role, id); err != nil {
+		// Bump token_version so any session carrying the old role is revoked; a
+		// stale JWT must not keep the prior privileges after a role change.
+		if _, err := h.DB.ExecContext(r.Context(), `UPDATE users SET role=?, token_version=token_version+1, updated_at=NOW() WHERE id=?`, *b.Role, id); err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "could not update")
 			return
 		}
@@ -372,7 +374,7 @@ func (h *Handlers) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, err := h.DB.ExecContext(r.Context(),
-		`UPDATE users SET password_hash=?, updated_at=NOW() WHERE id=?`, hash, id); err != nil {
+		`UPDATE users SET password_hash=?, token_version=token_version+1, updated_at=NOW() WHERE id=?`, hash, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not reset password")
 		return
 	}
@@ -409,8 +411,10 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	// Bump token_version so a suspended account's live session is revoked at once
+	// rather than surviving until the JWT expires.
 	if _, err := h.DB.ExecContext(r.Context(),
-		`UPDATE users SET status=?, updated_at=NOW() WHERE id=?`, b.Status, id); err != nil {
+		`UPDATE users SET status=?, token_version=token_version+1, updated_at=NOW() WHERE id=?`, b.Status, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not change status")
 		return
 	}
@@ -421,7 +425,7 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 	// ordinary customer account (no sub-accounts) matches nothing. Non-fatal: the
 	// primary status change already succeeded, so a cascade failure is logged.
 	if _, err := h.DB.ExecContext(r.Context(),
-		`UPDATE users SET status=?, updated_at=NOW() WHERE reseller_id=?`, b.Status, id); err != nil {
+		`UPDATE users SET status=?, token_version=token_version+1, updated_at=NOW() WHERE reseller_id=?`, b.Status, id); err != nil {
 		log.Printf("cascade status to sub-accounts of user %d failed: %v", id, err)
 	}
 
