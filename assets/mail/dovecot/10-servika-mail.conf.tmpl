@@ -28,5 +28,16 @@ service lmtp {
   }
 }
 
+# Pigeonhole/Sieve: the panel-generated per-mailbox filters and vacation script.
+protocol lmtp {
+  mail_plugins = $mail_plugins sieve
+}
+plugin {
+  sieve = file:~/sieve;active=~/.dovecot.sieve
+  sieve_vacation_min_period = 1d
+  sieve_vacation_default_period = 7d
+  sieve_vacation_max_period = 30d
+}
+
 ssl_cert = </etc/ssl/servika/panel.crt
 ssl_key = </etc/ssl/servika/panel.key

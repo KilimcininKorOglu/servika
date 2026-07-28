@@ -323,7 +323,9 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res, err := h.DB.ExecContext(r.Context(),
-		`UPDATE mailboxes SET status=? WHERE id=? AND domain_id=?`, req.Status, mailboxID, id)
+		`UPDATE mailboxes SET status=?,
+		   spam_suspended_at=IF(?='active',NULL,spam_suspended_at)
+		 WHERE id=? AND domain_id=?`, req.Status, req.Status, mailboxID, id)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not update mailbox")
 		return

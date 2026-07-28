@@ -135,6 +135,7 @@ func main() {
 	// panel boot is not blocked.
 	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
 	mail.HealMailOnStartup(context.Background(), d)
+	mail.StartPolicyServer(d, "127.0.0.1:10040")
 	go system.StartVersionCheck(version, buildDate)
 
 	// Backfill customer panel accounts onto the multi-user model.
@@ -361,6 +362,18 @@ func main() {
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/{mid}", mailH.Delete)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/password", mailH.ResetPassword)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/status", mailH.SetStatus)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/spam", mailH.SpamGet)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/spam", mailH.SpamPut)
+				r.With(middleware.AdminOnly).Get("/admin/mail/queue", mailH.QueueList)
+				r.With(middleware.AdminOnly).Post("/admin/mail/queue", mailH.QueueAction)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/autoresponder", mailH.AutoresponderGet)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/autoresponder", mailH.AutoresponderPut)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/{mid}/autoresponder", mailH.AutoresponderDelete)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/filters", mailH.FilterList)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/filters", mailH.FilterCreate)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/filters/{fid}", mailH.FilterDelete)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/send-limits", mailH.SendLimitsGet)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/send-limits", mailH.SendLimitsPut)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/protection", protectionH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/protection", protectionH.Add)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/protection/{kid}", protectionH.Delete)
