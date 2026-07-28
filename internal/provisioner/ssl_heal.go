@@ -128,11 +128,16 @@ func bestCertificate(domain string, minDays int) (certPath, keyPath string, real
 		filepath.Join(sysDir, domain+".key"),
 	})
 
+	// Require only the hostnames a real cert is expected to cover: apex always,
+	// www only when DNS supports it. An apex-only cert (issued because www is not
+	// in DNS) must be accepted for reuse, not rejected for lacking www. Computed
+	// once here rather than per candidate to avoid repeated DNS lookups.
+	requiredHosts := certSANHosts(domain)
 	var bestCert, bestKey string
 	var bestReal bool
 	var bestNotAfter time.Time
 	for _, c := range candidates {
-		if !certValid(c.cert, c.key, minDays, wwwHostNames(domain)...) {
+		if !certValid(c.cert, c.key, minDays, requiredHosts...) {
 			continue
 		}
 		leaf, ok := loadLeaf(c.cert, c.key)

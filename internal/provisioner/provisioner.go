@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"os/user"
@@ -1006,11 +1007,54 @@ func (o VhostOpts) ServerNames() string {
 }
 
 // wwwHostNames returns the canonical certificate and vhost hostnames for a domain.
+// It always includes www.<domain>; use it for vhost server_name and self-signed
+// SANs where extra coverage is harmless. For ACME issuance and real-CA reuse,
+// prefer certSANHosts, which drops www when DNS does not support it.
 func wwwHostNames(domain string) []string {
 	if strings.HasPrefix(strings.ToLower(domain), "www.") {
 		return []string{domain}
 	}
 	return []string{domain, "www." + domain}
+}
+
+// wwwSANEligible reports whether www.<domain> may be included in ACME validation.
+// Rule: www must RESOLVE in DNS and point to the SAME address(es) as the apex.
+// Otherwise HTTP-01 validation for www would land on a different server and fail
+// the WHOLE order. When DNS cannot be read (transient error) www is left out — an
+// apex-only certificate always beats the self-signed fail-safe, which on
+// HSTS-preload TLDs (e.g. .app) makes the site entirely unreachable.
+func wwwSANEligible(domain string) bool {
+	apex, err := net.LookupHost(domain)
+	if err != nil || len(apex) == 0 {
+		return false
+	}
+	www, err := net.LookupHost("www." + domain)
+	if err != nil || len(www) == 0 {
+		return false
+	}
+	apexSet := make(map[string]bool, len(apex))
+	for _, ip := range apex {
+		apexSet[ip] = true
+	}
+	for _, ip := range www {
+		if !apexSet[ip] {
+			return false // www points to a different server
+		}
+	}
+	return true
+}
+
+// certSANHosts returns the hostnames a real certificate must cover for a domain:
+// the apex always, plus www only when wwwSANEligible allows it. This is the DNS
+// aware counterpart to wwwHostNames, used by ACME issuance and real-CA reuse.
+func certSANHosts(domain string) []string {
+	if strings.HasPrefix(strings.ToLower(domain), "www.") {
+		return []string{domain}
+	}
+	if wwwSANEligible(domain) {
+		return []string{domain, "www." + domain}
+	}
+	return []string{domain}
 }
 
 type Result struct {
@@ -1030,6 +1074,14 @@ func phpPoolPath(systemUser, phpVersion string) (string, string, string) {
 }
 
 func writePoolValidated(systemUser, phpVersion string) (socket, service string, err error) {
+	// Never write a pool for a user that no longer exists. A domain deletion
+	// removes the Linux user (userdel), and a concurrent or later heal that
+	// resurrects the pool would make `php-fpm -t` fail PERMANENTLY for that PHP
+	// version (the pool references a missing user), which blocks creation of
+	// EVERY new domain on that version. Fail closed instead.
+	if !userExists(systemUser) {
+		return "", "", fmt.Errorf("php pool skipped: system user %q does not exist", systemUser)
+	}
 	version := normalizePHP(phpVersion)
 	config := phpMap[version]
 	poolPath, socket, service := phpPoolPath(systemUser, version)
@@ -1273,13 +1325,6 @@ func Deprovision(domainName, systemUser string) error {
 		_ = os.Remove(filepath.Join(wafDomainsDir, systemUser+".conf"))
 		_ = os.Remove(filepath.Join(wafDomainsDir, systemUser+".custom.conf"))
 	}
-	for _, config := range phpMap {
-		p := filepath.Join(config.PoolDir, systemUser+".conf")
-		if _, err := os.Stat(p); err == nil {
-			_ = os.Remove(p)
-			_, _ = exec.Command("systemctl", "reload-or-restart", config.Service).CombinedOutput()
-		}
-	}
 	_, _ = exec.Command("systemctl", "reload", "nginx").CombinedOutput()
 	purgeFastCGICache(systemUser)
 
@@ -1293,6 +1338,17 @@ func Deprovision(domainName, systemUser string) error {
 	_ = os.Remove(filepath.Join("/var/lib/servika/cron-suspended", systemUser))
 	if userExists(systemUser) {
 		_, _ = exec.Command("userdel", "-r", systemUser).CombinedOutput()
+	}
+	// Sweep the shared PHP-FPM pool AFTER userdel, not before. Once the user is
+	// gone, writePoolValidated's user-existence guard refuses to resurrect the
+	// pool, so a concurrent heal cannot re-create it in the gap between sweep and
+	// userdel. The pool lives outside the home dir, so userdel -r never removes it.
+	for _, config := range phpMap {
+		p := filepath.Join(config.PoolDir, systemUser+".conf")
+		if _, err := os.Stat(p); err == nil {
+			_ = os.Remove(p)
+			_, _ = exec.Command("systemctl", "reload-or-restart", config.Service).CombinedOutput()
+		}
 	}
 	return nil
 }
@@ -1386,15 +1442,25 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 
 	// --force removed: acme.sh does not re-issue when it already has a valid cert
 	// (rate-limit protection). It still renews inside the renewal window.
-	args := []string{
-		"--issue",
-		"--webroot", "/var/www/_acme",
+	//
+	// www is added to the SAN only when DNS supports it (certSANHosts). If it is
+	// eligible yet issuance still fails (e.g. www regressed between the DNS probe
+	// and validation), retry apex-only before falling back to self-signed, because
+	// a www-only failure must not drop the apex to the fail-safe path.
+	buildIssueArgs := func(hosts []string) []string {
+		a := []string{"--issue", "--webroot", "/var/www/_acme"}
+		for _, host := range hosts {
+			a = append(a, "-d", host)
+		}
+		return append(a, "--keylength", "2048")
 	}
-	for _, host := range wwwHostNames(domainName) {
-		args = append(args, "-d", host)
+	sanHosts := certSANHosts(domainName)
+	out, e := RunACMEIssue(buildIssueArgs(sanHosts)...)
+	if e != nil && len(sanHosts) > 1 {
+		log.Printf("acme issue with www failed for %s, retrying apex-only: %s", domainName, strings.TrimSpace(string(out)))
+		out, e = RunACMEIssue(buildIssueArgs([]string{domainName})...)
 	}
-	args = append(args, "--keylength", "2048")
-	if out, e := RunACMEIssue(args...); e != nil {
+	if e != nil {
 		// FAIL-SAFE (no teardown): keep 443 alive with the existing/self-signed cert.
 		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme issue: "+strings.TrimSpace(string(out)))
 	}
