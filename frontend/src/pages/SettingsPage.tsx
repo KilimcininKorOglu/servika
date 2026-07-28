@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, apiError } from '@/lib/api'
 import PanelDomain from '@/components/PanelDomain'
+import HostnameSetting from '@/components/HostnameSetting'
 import ServerRebootButton from '@/components/ServerRebootButton'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useAuth } from '@/store/auth'
@@ -138,6 +139,7 @@ export default function SettingsPage() {
 
       <div className="space-y-5">
         <PanelDomain />
+        <HostnameSetting />
         <ServerRebootButton />
 
         {/* 1. Account information */}

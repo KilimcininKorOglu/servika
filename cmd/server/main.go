@@ -286,6 +286,8 @@ func main() {
 			r.With(middleware.ResellerOrAbove).Get("/system/services", system.ServiceStatuses)
 			r.With(middleware.AdminOnly).Post("/system/service-action", system.ServiceAction)
 			r.With(middleware.AdminOnly).Post("/system/reboot", system.Reboot)
+			r.With(middleware.AdminOnly).Get("/system/hostname", system.HostnameStatus)
+			r.With(middleware.AdminOnly).Put("/system/hostname", system.HostnameSave)
 			r.With(middleware.AdminOnly).Get("/system/panel-domain", panelSettingsH.Status)
 			r.With(middleware.AdminOnly).Post("/system/panel-domain", panelSettingsH.Save)
 			r.With(middleware.AdminOnly).Delete("/system/panel-domain", panelSettingsH.Delete)
