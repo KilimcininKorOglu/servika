@@ -227,20 +227,33 @@ func clearKernelIOLimits(systemUser string, l Limits) {
 	}
 }
 
-// DeleteSystemdSlice removes the systemd slice when it exists.
+// DeleteSystemdSlice removes the systemd slice and tears down its live state.
+//
+// Removing only the unit file is not enough: a running slice stays "loaded
+// active", keeping its cgroup and any `systemctl set-property --runtime`
+// drop-ins alive, so the old CPU/Memory/IO limits keep enforcing after the plan
+// was removed. Stop the slice, delete the runtime drop-in directory, then remove
+// the unit file, daemon-reload, and reset-failed so no stale state lingers.
 func DeleteSystemdSlice(systemUser string) error {
-	p := slicePath(systemUser)
-	if _, err := os.Stat(p); os.IsNotExist(err) {
-		return nil
+	if systemUser == "" || !strings.HasPrefix(systemUser, "c_") {
+		return nil // safety: only tenant (c_) slices are managed here
 	}
+	unit := sliceName(systemUser)
+	// Stop first so the cgroup is released before the unit file disappears.
+	_, _ = resourceCommand("systemctl", "stop", unit).CombinedOutput()
+	// Transient drop-ins written by set-property --runtime live under /run.
+	_ = os.RemoveAll("/run/systemd/system.control/" + unit + ".d")
 	// A swallowed removal leaves the old slice enforcing stale CPU/Memory/IO limits
 	// after the plan was removed; return the error so the caller can react.
-	if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("remove slice %s: %w", p, err)
+	if p := slicePath(systemUser); p != "" {
+		if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("remove slice %s: %w", p, err)
+		}
 	}
 	if out, err := resourceCommand("systemctl", "daemon-reload").CombinedOutput(); err != nil {
 		return fmt.Errorf("daemon-reload after slice removal: %v: %s", err, strings.TrimSpace(string(out)))
 	}
+	_, _ = resourceCommand("systemctl", "reset-failed", unit).CombinedOutput()
 	return nil
 }
 
