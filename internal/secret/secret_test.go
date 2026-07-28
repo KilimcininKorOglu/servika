@@ -75,3 +75,42 @@ func TestDecryptWrongKey(t *testing.T) {
 		t.Error("expected authentication failure with wrong key")
 	}
 }
+
+func TestEncryptWithAADRoundTrip(t *testing.T) {
+	if err := Init([]byte("test-key-at-least-32-bytes-long!!")); err != nil {
+		t.Fatalf("Init: %v", err)
+	}
+	enc, err := EncryptWith("db-password", "c_alice")
+	if err != nil {
+		t.Fatalf("EncryptWith: %v", err)
+	}
+	got, err := DecryptWith(enc, "c_alice")
+	if err != nil {
+		t.Fatalf("DecryptWith(matching aad): %v", err)
+	}
+	if got != "db-password" {
+		t.Errorf("round trip: got %q want %q", got, "db-password")
+	}
+	// A ciphertext sealed for one user must not decrypt under another user's AAD,
+	// so a stored value cannot be moved between rows and revealed.
+	if _, err := DecryptWith(enc, "c_bob"); err == nil {
+		t.Error("expected authentication failure with mismatched aad")
+	}
+	// Empty-AAD Decrypt must also reject an AAD-bound ciphertext.
+	if _, err := Decrypt(enc); err == nil {
+		t.Error("expected authentication failure decrypting aad-bound value without aad")
+	}
+}
+
+func TestIsEncrypted(t *testing.T) {
+	if err := Init([]byte("test-key-at-least-32-bytes-long!!")); err != nil {
+		t.Fatalf("Init: %v", err)
+	}
+	enc, _ := Encrypt("x")
+	if !IsEncrypted(enc) {
+		t.Error("IsEncrypted should be true for Encrypt output")
+	}
+	if IsEncrypted("plain-password") {
+		t.Error("IsEncrypted should be false for legacy plaintext")
+	}
+}

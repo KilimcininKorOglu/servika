@@ -133,6 +133,13 @@ func main() {
 	} else if n > 0 {
 		log.Printf("ftp password backfill: hashed %d cleartext account(s)", n)
 	}
+	// Encrypt any database-account passwords still stored as legacy cleartext, so
+	// a leaked panel dump does not expose them. Idempotent.
+	if n, err := credentials.BackfillDBPasswords(d); err != nil {
+		log.Printf("db password backfill warn: %v", err)
+	} else if n > 0 {
+		log.Printf("db password backfill: encrypted %d cleartext account(s)", n)
+	}
 	provisioner.Init(d)
 	middleware.Init(d)
 	if err := dns.SeedTemplateIfEmpty(context.Background(), d); err != nil {

@@ -740,6 +740,13 @@ func (h *Handlers) ListDatabases(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&d.ID, &d.DomainID, &d.DBName, &d.DBUser, &d.DBHost, &d.DBPass, &d.CreatedAt); err != nil {
 			continue
 		}
+		// db_pass_plain is encrypted at rest (bound to db_user); decrypt for the
+		// reveal response. Legacy plaintext rows pass through unchanged.
+		if pw, err := credentials.DecryptDBPass(d.DBUser, d.DBPass); err == nil {
+			d.DBPass = pw
+		} else {
+			d.DBPass = ""
+		}
 		out = append(out, d)
 	}
 	httpx.WriteJSON(w, http.StatusOK, out)
@@ -889,8 +896,13 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Surface the existing user's password in the response (the customer already owns it).
-		_ = h.DB.QueryRowContext(r.Context(),
-			`SELECT db_pass_plain FROM db_accounts WHERE db_user=? LIMIT 1`, dbUser).Scan(&password)
+		var stored string
+		if err := h.DB.QueryRowContext(r.Context(),
+			`SELECT db_pass_plain FROM db_accounts WHERE db_user=? LIMIT 1`, dbUser).Scan(&stored); err == nil {
+			if pw, derr := credentials.DecryptDBPass(dbUser, stored); derr == nil {
+				password = pw
+			}
+		}
 	} else {
 		if err := credentials.MySQLCreateDB(h.DB, id, dbName, dbUser, password); err != nil {
 			if errors.Is(err, credentials.ErrInvalidMySQLCredentials) {

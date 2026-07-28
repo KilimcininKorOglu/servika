@@ -29,6 +29,13 @@ func (h *Handlers) SetDatabasePassword(w http.ResponseWriter, r *http.Request) {
 	if req.Password == "" {
 		req.Password = credentials.RandomPassword(24)
 	}
+	// Reject a user-supplied value that already looks like ciphertext: storing it
+	// verbatim and revealing it later would turn this endpoint into a decryption
+	// oracle for another account's password.
+	if credentials.IsEncryptedValue(req.Password) {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid password")
+		return
+	}
 	if len(req.Password) < 6 {
 		httpx.WriteError(w, http.StatusBadRequest, "password must be at least 6 characters")
 		return

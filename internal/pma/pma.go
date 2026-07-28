@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"servika/internal/config"
+	"servika/internal/credentials"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
 
@@ -67,6 +68,15 @@ func (h *Handlers) RequestToken(w http.ResponseWriter, r *http.Request) {
 	}
 	if !middleware.DomainOwnedBy(r, domainID) {
 		httpx.WriteError(w, http.StatusNotFound, "database not found")
+		return
+	}
+	// db_pass_plain is encrypted at rest (bound to db_user). Decrypt to the real
+	// password before minting the short-lived signon token. Legacy plaintext rows
+	// pass through unchanged.
+	if pw, derr := credentials.DecryptDBPass(dbUser, dbPassword); derr == nil {
+		dbPassword = pw
+	} else {
+		httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
 		return
 	}
 	// This route is keyed by dbId, so CustomerScope (which reads "id") cannot gate it.

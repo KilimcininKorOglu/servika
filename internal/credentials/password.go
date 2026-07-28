@@ -29,9 +29,14 @@ func MySQLChangePassword(panelDB *sql.DB, dbUser, newPassword string) error {
 	if err != nil {
 		return fmt.Errorf("mysql alter: %s: %w", strings.TrimSpace(string(out)), err)
 	}
+	// Store the new password encrypted at rest (bound to the database user).
+	encPass, err := encryptDBPass(dbUser, newPassword)
+	if err != nil {
+		return fmt.Errorf("encrypt db password: %w", err)
+	}
 	if _, err := panelDB.Exec(
 		`UPDATE db_accounts SET db_pass_plain=? WHERE db_user=?`,
-		newPassword, dbUser); err != nil {
+		encPass, dbUser); err != nil {
 		return fmt.Errorf("metadata: %w", err)
 	}
 	return nil

@@ -47,10 +47,27 @@ func Init(key []byte) error {
 	return nil
 }
 
+// IsEncrypted reports whether value was produced by Encrypt/EncryptWith (i.e.
+// carries the encryption prefix). Callers use it to reject user-supplied input
+// that already looks like ciphertext, which would otherwise turn a later reveal
+// into a decryption oracle for another record's secret.
+func IsEncrypted(value string) bool {
+	return strings.HasPrefix(value, prefix)
+}
+
 // Encrypt seals plaintext with AES-256-GCM and returns a prefixed, base64
 // value safe to store in a text column. A random nonce is prepended to the
 // ciphertext so each call produces a distinct output.
 func Encrypt(plaintext string) (string, error) {
+	return EncryptWith(plaintext, "")
+}
+
+// EncryptWith is Encrypt with additional authenticated data (AAD) bound into
+// the seal. The AAD is authenticated but not stored, so a ciphertext produced
+// for one AAD (e.g. a specific database user) cannot be moved to another record
+// and decrypted under a different AAD — Open fails. Pass "" for no binding
+// (equivalent to Encrypt).
+func EncryptWith(plaintext, aad string) (string, error) {
 	if gcm == nil {
 		return "", errNotInit
 	}
@@ -58,13 +75,25 @@ func Encrypt(plaintext string) (string, error) {
 	if _, err := rand.Read(nonce); err != nil {
 		return "", fmt.Errorf("secret: nonce: %w", err)
 	}
-	sealed := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
+	var extra []byte
+	if aad != "" {
+		extra = []byte(aad)
+	}
+	sealed := gcm.Seal(nonce, nonce, []byte(plaintext), extra)
 	return prefix + base64.StdEncoding.EncodeToString(sealed), nil
 }
 
 // Decrypt reverses Encrypt. A value without the encryption prefix is returned
 // unchanged as legacy plaintext, so pre-encryption records remain readable.
 func Decrypt(value string) (string, error) {
+	return DecryptWith(value, "")
+}
+
+// DecryptWith reverses EncryptWith. The same AAD passed to EncryptWith must be
+// supplied or Open fails. A value without the encryption prefix is returned
+// unchanged as legacy plaintext (AAD ignored), so pre-encryption records remain
+// readable.
+func DecryptWith(value, aad string) (string, error) {
 	if !strings.HasPrefix(value, prefix) {
 		return value, nil // legacy plaintext written before encryption existed
 	}
@@ -78,8 +107,12 @@ func Decrypt(value string) (string, error) {
 	if len(raw) < gcm.NonceSize() {
 		return "", errShortCipher
 	}
+	var extra []byte
+	if aad != "" {
+		extra = []byte(aad)
+	}
 	nonce, ciphertext := raw[:gcm.NonceSize()], raw[gcm.NonceSize():]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, extra)
 	if err != nil {
 		return "", fmt.Errorf("secret: open: %w", err)
 	}

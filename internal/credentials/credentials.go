@@ -33,6 +33,30 @@ func ValidPassword(password string) bool {
 	return !strings.ContainsAny(password, "\r\n\x00")
 }
 
+// encryptDBPass seals a database password for at-rest storage in
+// db_accounts.db_pass_plain. The database user is bound as AEAD associated data
+// so a stored ciphertext cannot be copied into another account's row and
+// decrypted under a different user (which would leak that user's password
+// through the reveal/phpMyAdmin paths). The column keeps its historical name;
+// its content is now ciphertext for freshly written rows.
+func encryptDBPass(dbUser, plaintext string) (string, error) {
+	return secret.EncryptWith(plaintext, dbUser)
+}
+
+// DecryptDBPass reverses encryptDBPass, binding the same database-user AAD.
+// A legacy plaintext value (no encryption prefix) is returned unchanged, so
+// rows written before encryption keep working until their next write/backfill.
+func DecryptDBPass(dbUser, stored string) (string, error) {
+	return secret.DecryptWith(stored, dbUser)
+}
+
+// IsEncryptedValue reports whether stored already looks like ciphertext. Used to
+// reject user-supplied passwords that carry the encryption prefix, closing the
+// decryption-oracle path.
+func IsEncryptedValue(stored string) bool {
+	return secret.IsEncrypted(stored)
+}
+
 // IsHashed reports whether a stored value is already a SHA-512-crypt ($6$) hash
 // rather than legacy cleartext. Used to keep hashing and backfill idempotent.
 func IsHashed(stored string) bool { return strings.HasPrefix(stored, "$6$") }
@@ -125,6 +149,52 @@ func BackfillCleartextPasswords(db *sql.DB) (int, error) {
 			return n, err
 		}
 		if _, err := db.Exec(`UPDATE ftp_accounts SET password_md5=?, ftp_password_enc=? WHERE id=?`, h, enc, r.id); err != nil {
+			return n, err
+		}
+		n++
+	}
+	return n, nil
+}
+
+// BackfillDBPasswords encrypts any db_accounts.db_pass_plain rows still stored
+// as legacy cleartext (no encryption prefix), binding each to its db_user as
+// AEAD associated data. Idempotent: already-encrypted rows are skipped, so it is
+// safe to run on every startup.
+func BackfillDBPasswords(db *sql.DB) (int, error) {
+	rows, err := db.Query(`SELECT id, db_user, db_pass_plain FROM db_accounts`)
+	if err != nil {
+		return 0, err
+	}
+	type row struct {
+		id       int64
+		dbUser   string
+		password string
+	}
+	var pending []row
+	for rows.Next() {
+		var r row
+		if err := rows.Scan(&r.id, &r.dbUser, &r.password); err != nil {
+			_ = rows.Close() // read-only cursor; Close error is not actionable here
+			return 0, err
+		}
+		if !secret.IsEncrypted(r.password) {
+			pending = append(pending, r)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close() // read-only cursor; Close error is not actionable here
+		return 0, err
+	}
+	if err := rows.Close(); err != nil {
+		return 0, err
+	}
+	n := 0
+	for _, r := range pending {
+		enc, err := encryptDBPass(r.dbUser, r.password)
+		if err != nil {
+			return n, err
+		}
+		if _, err := db.Exec(`UPDATE db_accounts SET db_pass_plain=? WHERE id=?`, enc, r.id); err != nil {
 			return n, err
 		}
 		n++
@@ -284,11 +354,16 @@ func MySQLCreateDB(db *sql.DB, domainID int64, dbName, dbUser, dbPass string) er
 		return fmt.Errorf("mysql exec: %s: %w", strings.TrimSpace(string(out)), err)
 	}
 
-	// Record the account in the panel database.
-	_, err := db.Exec(
+	// Record the account in the panel database. The password is encrypted at
+	// rest (bound to the database user) so a leaked panel dump does not expose it.
+	encPass, err := encryptDBPass(dbUser, dbPass)
+	if err != nil {
+		return fmt.Errorf("encrypt db password: %w", err)
+	}
+	_, err = db.Exec(
 		`INSERT INTO db_accounts(domain_id, db_name, db_user, db_pass_plain, db_host)
 		 VALUES(?,?,?,?, 'localhost')`,
-		domainID, dbName, dbUser, dbPass)
+		domainID, dbName, dbUser, encPass)
 	return err
 }
 
@@ -301,10 +376,16 @@ func MySQLCreateDBForUser(db *sql.DB, domainID int64, dbName, dbUser string) err
 	if !mysqlIdentifierPattern.MatchString(dbName) || !mysqlIdentifierPattern.MatchString(dbUser) {
 		return fmt.Errorf("%w: database name or user", ErrInvalidMySQLCredentials)
 	}
-	var pass string
+	var stored string
 	if err := db.QueryRow(
-		`SELECT db_pass_plain FROM db_accounts WHERE db_user=? LIMIT 1`, dbUser).Scan(&pass); err != nil {
+		`SELECT db_pass_plain FROM db_accounts WHERE db_user=? LIMIT 1`, dbUser).Scan(&stored); err != nil {
 		return fmt.Errorf("existing user password not found: %w", err)
+	}
+	// Stored value may be ciphertext (bound to this same db_user) or legacy
+	// plaintext; decrypt so the new row can be re-sealed consistently.
+	pass, err := DecryptDBPass(dbUser, stored)
+	if err != nil {
+		return fmt.Errorf("decrypt existing db password: %w", err)
 	}
 	// Create the database and grant the existing user access. No CREATE/ALTER USER statement, so
 	// the user's password is preserved.
@@ -316,10 +397,14 @@ func MySQLCreateDBForUser(db *sql.DB, domainID int64, dbName, dbUser string) err
 	if out, err := exec.Command("mysql", "-e", strings.Join(stmts, " ")).CombinedOutput(); err != nil {
 		return fmt.Errorf("mysql exec: %s: %w", strings.TrimSpace(string(out)), err)
 	}
-	_, err := db.Exec(
+	encPass, err := encryptDBPass(dbUser, pass)
+	if err != nil {
+		return fmt.Errorf("encrypt db password: %w", err)
+	}
+	_, err = db.Exec(
 		`INSERT INTO db_accounts(domain_id, db_name, db_user, db_pass_plain, db_host)
 		 VALUES(?,?,?,?, 'localhost')`,
-		domainID, dbName, dbUser, pass)
+		domainID, dbName, dbUser, encPass)
 	return err
 }
 
