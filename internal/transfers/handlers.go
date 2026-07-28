@@ -11,11 +11,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -53,20 +55,36 @@ type Handlers struct {
 // extracts or persists archive contents.
 func (h *Handlers) Analyze(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, MaxUploadBytes)
-	if err := r.ParseMultipartForm(8 << 20); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "could not read the upload or the size limit was exceeded")
+	// The inventory scan reads the archive strictly front-to-back, so there is no
+	// need to spool the upload to disk: ParseMultipartForm would copy a file of up
+	// to 20 GiB into the temp dir. MultipartReader streams the body directly.
+	mr, err := r.MultipartReader()
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "a multipart body is required")
 		return
 	}
-	if r.MultipartForm != nil {
-		defer func() { _ = r.MultipartForm.RemoveAll() }()
+	var f *multipart.Part
+	for {
+		part, err := mr.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, "could not read the upload or the size limit was exceeded")
+			return
+		}
+		if part.FormName() == "archive" {
+			f = part
+			break
+		}
+		_ = part.Close()
 	}
-	f, hdr, err := r.FormFile("archive")
-	if err != nil {
+	if f == nil {
 		httpx.WriteError(w, http.StatusBadRequest, "a cPanel .tar.gz backup is required in the archive field")
 		return
 	}
 	defer func() { _ = f.Close() }()
-	low := strings.ToLower(hdr.Filename)
+	low := strings.ToLower(f.FileName())
 	if !strings.HasSuffix(low, ".tar.gz") && !strings.HasSuffix(low, ".tgz") {
 		httpx.WriteError(w, http.StatusBadRequest, "the first release only supports cPanel .tar.gz/.tgz full backups")
 		return
@@ -142,7 +160,9 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 	}
 	tmpPath := tmp.Name()
 	defer func() { _ = os.Remove(tmpPath) }()
-	if _, err := io.Copy(tmp, f); err != nil || tmp.Close() != nil {
+	_, copyErr := io.Copy(tmp, f)
+	closeErr := tmp.Close() // close on the error path too, or the fd leaks
+	if copyErr != nil || closeErr != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "could not save the archive")
 		return
 	}
@@ -168,6 +188,14 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+	// Read the archive's small helper members (the SSL pair plus the alias table)
+	// in a single pass; none of the steps below rescan the archive.
+	extras, err := readArchiveExtras(tmpPath, inv)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not read archive helper files: "+err.Error())
+		return
+	}
+
 	if err := h.restoreWeb(r.Context(), tmpPath, inv.ArchiveRoot, created.SystemUser); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer web files: "+err.Error())
 		return
@@ -183,12 +211,14 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		if err := h.restoreDatabase(r.Context(), tmpPath, inv.ArchiveRoot, m.Source, m.Target); err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "could not transfer the database: "+err.Error())
-			return
-		}
 	}
-	mailCreds, aliasCount, err := h.importMail(r, tmpPath, inv, created.ID, created.DomainName, created.SystemUser)
+	// Import every dump in a SINGLE archive pass; a per-dump pass meant one full
+	// gzip decompress per database (gzip has no random access).
+	if err := h.restoreDatabases(r.Context(), tmpPath, inv.ArchiveRoot, dbMaps); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer the database: "+err.Error())
+		return
+	}
+	mailCreds, aliasCount, err := h.importMail(r, tmpPath, extras, inv, created.ID, created.DomainName, created.SystemUser)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer email: "+err.Error())
 		return
@@ -198,7 +228,7 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer cron jobs: "+err.Error())
 		return
 	}
-	sslImported, sslExpires, sslWarning, err := h.importSSL(r, tmpPath, inv, created.ID, created.DomainName)
+	sslImported, sslExpires, sslWarning, err := h.importSSL(r, extras, inv, created.ID, created.DomainName)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not transfer the SSL certificate: "+err.Error())
 		return
@@ -220,11 +250,11 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 // present) for the primary domain, validated against the target domain. A
 // mismatched or unusable certificate is skipped with a warning rather than
 // failing the whole transfer; only unexpected I/O errors abort the import.
-func (h *Handlers) importSSL(r *http.Request, archivePath string, inv Inventory, domainID int64, targetDomain string) (bool, string, string, error) {
+func (h *Handlers) importSSL(r *http.Request, extras archiveExtras, inv Inventory, domainID int64, targetDomain string) (bool, string, string, error) {
 	if inv.SSLCerts == 0 {
 		return false, "", "", nil
 	}
-	certPEM, keyPEM, err := readCPanelSSL(archivePath, inv.ArchiveRoot, inv.PrimaryDomain)
+	certPEM, keyPEM, err := extras.sslPair()
 	if errors.Is(err, errMemberNotFound) {
 		return false, "", "No matching private key was found for the source SSL certificate; SSL was not transferred.", nil
 	}
@@ -249,55 +279,79 @@ func (h *Handlers) importSSL(r *http.Request, archivePath string, inv Inventory,
 	return true, expires.UTC().Format("2006-01-02"), "", nil
 }
 
-// readCPanelSSL locates the certificate, private key, and optional CA bundle for
-// the primary domain across the layouts cPanel uses, appending the bundle to the
-// leaf so intermediates are served.
-func readCPanelSSL(archivePath, root, domain string) ([]byte, []byte, error) {
+// archiveExtras holds the archive's small helper members (the SSL pair and the
+// alias table) across the layouts cPanel uses. Every member is read in a single
+// pass; see readSmallTarMembers.
+type archiveExtras struct {
+	certCandidates   []string
+	keyCandidates    []string
+	bundleCandidates []string
+	aliasMember      string
+	members          map[string][]byte
+}
+
+// readArchiveExtras collects the SSL certificate/key/bundle candidates and the
+// alias table for the primary domain in one archive pass.
+func readArchiveExtras(archivePath string, inv Inventory) (archiveExtras, error) {
+	e := archiveExtras{members: map[string][]byte{}}
+	root, domain := inv.ArchiveRoot, inv.PrimaryDomain
 	if domain == "" {
-		return nil, nil, errMemberNotFound
+		return e, nil
 	}
-	certCandidates := []string{
+	e.certCandidates = []string{
 		root + "/sslcerts/" + domain + ".crt",
 		root + "/homedir/ssl/certs/" + domain + ".crt",
 		root + "/homedir/ssl/" + domain + ".crt",
 	}
-	keyCandidates := []string{
+	e.keyCandidates = []string{
 		root + "/sslkeys/" + domain + ".key",
 		root + "/homedir/ssl/private/" + domain + ".key",
 		root + "/homedir/ssl/" + domain + ".key",
 	}
-	certPEM, err := readFirstTarMember(archivePath, certCandidates)
-	if err != nil {
-		return nil, nil, err
-	}
-	keyPEM, err := readFirstTarMember(archivePath, keyCandidates)
-	if err != nil {
-		return nil, nil, err
-	}
-	bundleCandidates := []string{
+	e.bundleCandidates = []string{
 		root + "/sslcerts/" + domain + ".cabundle",
 		root + "/homedir/ssl/certs/" + domain + ".cabundle",
 		root + "/homedir/ssl/" + domain + ".cabundle",
 	}
-	if bundle, bundleErr := readFirstTarMember(archivePath, bundleCandidates); bundleErr == nil && len(bundle) > 0 {
-		certPEM = append(append(certPEM, '\n'), bundle...)
+	e.aliasMember = root + "/va/" + domain
+
+	wants := append([]string{}, e.certCandidates...)
+	wants = append(wants, e.keyCandidates...)
+	wants = append(wants, e.bundleCandidates...)
+	wants = append(wants, e.aliasMember)
+	members, err := readSmallTarMembers(archivePath, wants)
+	if err != nil {
+		return e, err
 	}
-	return certPEM, keyPEM, nil
+	e.members = members
+	return e, nil
 }
 
-// readFirstTarMember returns the first candidate member that exists, treating a
-// missing member as "try the next candidate" and surfacing any other error.
-func readFirstTarMember(archivePath string, candidates []string) ([]byte, error) {
-	for _, candidate := range candidates {
-		body, err := readSmallTarMember(archivePath, candidate)
-		if err == nil {
-			return body, nil
-		}
-		if !errors.Is(err, errMemberNotFound) {
-			return nil, err
+// first returns the body of the first candidate present in the collected members.
+func (e archiveExtras) first(candidates []string) ([]byte, bool) {
+	for _, c := range candidates {
+		if body, ok := e.members[c]; ok && len(body) > 0 {
+			return body, true
 		}
 	}
-	return nil, errMemberNotFound
+	return nil, false
+}
+
+// sslPair returns the leaf certificate (with the CA bundle appended when present)
+// and its private key, or errMemberNotFound when either is missing.
+func (e archiveExtras) sslPair() ([]byte, []byte, error) {
+	certPEM, ok := e.first(e.certCandidates)
+	if !ok {
+		return nil, nil, errMemberNotFound
+	}
+	keyPEM, ok := e.first(e.keyCandidates)
+	if !ok {
+		return nil, nil, errMemberNotFound
+	}
+	if bundle, ok := e.first(e.bundleCandidates); ok {
+		certPEM = append(append(append([]byte{}, certPEM...), '\n'), bundle...)
+	}
+	return certPEM, keyPEM, nil
 }
 
 // importCron recreates each supported cPanel cron job through the panel's own
@@ -510,10 +564,20 @@ func (h *Handlers) restoreWeb(ctx context.Context, archivePath, root, sk string)
 	return nil
 }
 
-// restoreDatabase streams the single cPanel SQL dump into the target database,
-// dropping CREATE DATABASE / USE statements so the dump lands in Servika's own
-// database rather than the source's. mysql runs with a minimal environment.
-func (h *Handlers) restoreDatabase(ctx context.Context, archivePath, root, sourceDB, targetDB string) error {
+// restoreDatabases imports every SQL dump in a SINGLE archive pass, dropping each
+// dump's CREATE DATABASE / USE statements so it lands in Servika's own database
+// rather than the source's. A per-dump pass meant one full gzip decompress per
+// database (gzip has no random access). The archive is read sequentially; each
+// member is routed to its mapped target as it is reached. mysql runs with a
+// minimal environment.
+func (h *Handlers) restoreDatabases(ctx context.Context, archivePath, root string, maps []DBMap) error {
+	targets := make(map[string]string, len(maps)) // archive member -> target DB
+	for _, m := range maps {
+		targets[path.Clean(root+"/mysql/"+m.Source+".sql")] = m.Target
+	}
+	if len(targets) == 0 {
+		return nil
+	}
 	f, err := os.Open(archivePath)
 	if err != nil {
 		return err
@@ -525,20 +589,34 @@ func (h *Handlers) restoreDatabase(ctx context.Context, archivePath, root, sourc
 	}
 	defer func() { _ = gz.Close() }()
 	tr := tar.NewReader(gz)
-	want := root + "/mysql/" + sourceDB + ".sql"
-	for {
+	remaining := len(targets)
+	for remaining > 0 {
 		hdr, err := tr.Next()
 		if err == io.EOF {
-			return errors.New("the SQL dump was not found in the archive")
+			break
 		}
 		if err != nil {
 			return err
 		}
-		if path.Clean(hdr.Name) != want {
+		targetDB, ok := targets[path.Clean(hdr.Name)]
+		if !ok || hdr.Typeflag != tar.TypeReg {
 			continue
 		}
-		return pipeDumpToMySQL(ctx, tr, targetDB)
+		delete(targets, path.Clean(hdr.Name))
+		remaining--
+		if err := pipeDumpToMySQL(ctx, tr, targetDB); err != nil {
+			return err
+		}
 	}
+	if remaining > 0 {
+		missing := make([]string, 0, remaining)
+		for _, targetDB := range targets {
+			missing = append(missing, targetDB)
+		}
+		sort.Strings(missing)
+		return fmt.Errorf("the SQL dump was not found in the archive: %s", strings.Join(missing, ", "))
+	}
+	return nil
 }
 
 func pipeDumpToMySQL(ctx context.Context, dump io.Reader, targetDB string) error {
@@ -586,7 +664,7 @@ func pipeDumpToMySQL(ctx context.Context, dump io.Reader, targetDB string) error
 // Maildir, and recreates forwarders. It runs after the web/database restore so a
 // mail failure still rolls the whole domain back via the caller's deferred
 // rollbackDomain.
-func (h *Handlers) importMail(r *http.Request, archivePath string, inv Inventory, domainID int64, targetDomain, sk string) ([]MailCredential, int, error) {
+func (h *Handlers) importMail(r *http.Request, archivePath string, extras archiveExtras, inv Inventory, domainID int64, targetDomain, sk string) ([]MailCredential, int, error) {
 	if len(inv.Mailboxes) == 0 && inv.AliasCount == 0 && inv.MailFiles == 0 {
 		return []MailCredential{}, 0, nil
 	}
@@ -597,6 +675,7 @@ func (h *Handlers) importMail(r *http.Request, archivePath string, inv Inventory
 		return nil, 0, err
 	}
 	creds := make([]MailCredential, 0, len(inv.Mailboxes))
+	locals := make([]string, 0, len(inv.Mailboxes))
 	for _, local := range inv.Mailboxes {
 		body, _ := json.Marshal(map[string]string{"local_part": local})
 		req := domainRequest(r, http.MethodPost, "/mail", domainID, bytes.NewReader(body))
@@ -613,17 +692,15 @@ func (h *Handlers) importMail(r *http.Request, archivePath string, inv Inventory
 			return nil, 0, err
 		}
 		creds = append(creds, MailCredential{Email: result.Email, Password: result.Password})
-		if inv.PrimaryDomain != "" {
-			if err := h.restoreMailbox(r.Context(), archivePath, inv.ArchiveRoot, inv.PrimaryDomain, local, sk); err != nil {
-				return nil, 0, fmt.Errorf("mailbox %s messages: %w", local, err)
-			}
+		locals = append(locals, local)
+	}
+	if inv.PrimaryDomain != "" && len(locals) > 0 {
+		if err := h.restoreMailboxes(r.Context(), archivePath, inv.ArchiveRoot, inv.PrimaryDomain, locals, sk); err != nil {
+			return nil, 0, fmt.Errorf("mailbox messages: %w", err)
 		}
 	}
 
-	aliases, err := readAliases(archivePath, inv.ArchiveRoot, inv.PrimaryDomain, targetDomain)
-	if err != nil {
-		return nil, 0, err
-	}
+	aliases := readAliases(extras, inv.PrimaryDomain, targetDomain)
 	created := 0
 	for _, a := range aliases {
 		body, _ := json.Marshal(map[string]string{"local_part": a.Local, "destination": a.Destination})
@@ -650,24 +727,35 @@ func domainRequest(parent *http.Request, method, url string, domainID int64, bod
 	return req
 }
 
-// restoreMailbox extracts a single source Maildir into the tenant's mail root as
-// root, then fixes SELinux context. Subprocesses run with a minimal environment.
-func (h *Handlers) restoreMailbox(ctx context.Context, archivePath, root, sourceDomain, local, sk string) error {
+// restoreMailboxes extracts every source Maildir in a SINGLE tar call, then fixes
+// ownership and SELinux context. A per-box call reopened the (up to 20 GiB)
+// archive once per mailbox. The member path is
+// root/homedir/mail/<source-domain>/<local>, so stripping 4 components and
+// targeting /home/<sk>/mail drops each box into its own directory. Subprocesses
+// run with a minimal environment.
+func (h *Handlers) restoreMailboxes(ctx context.Context, archivePath, root, sourceDomain string, locals []string, sk string) error {
 	if !strings.HasPrefix(sk, "c_") || root == "" {
 		return errors.New("unsafe target")
 	}
-	target := "/home/" + sk + "/mail/" + local
+	target := "/home/" + sk + "/mail"
 	f, err := os.Open(archivePath)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = f.Close() }()
-	member := root + "/homedir/mail/" + sourceDomain + "/" + local
-	cmd := newTransferCommand(ctx, "tar", "-xz", "-f", "-", "-C", target, "--strip-components=5", member)
+	args := []string{"tar", "-xz", "-f", "-", "-C", target, "--strip-components=4"}
+	for _, local := range locals {
+		args = append(args, root+"/homedir/mail/"+sourceDomain+"/"+local)
+	}
+	cmd := newTransferCommand(ctx, args[0], args[1:]...)
 	cmd.Stdin = f
 	if out, err := cmd.CombinedOutput(); err != nil {
-		// A mailbox present only in metadata may have no Maildir in the archive.
+		// A mailbox present only in metadata may have no Maildir in the archive;
+		// tar does not treat that as fatal but does taint the exit code. The other
+		// boxes were still extracted, so fix context and report success.
 		if strings.Contains(string(out), "Not found in archive") || strings.Contains(string(out), "Not found") {
+			_, _ = newTransferCommand(ctx, "chown", "-R", sk+":"+sk, target).CombinedOutput()
+			_, _ = newTransferCommand(ctx, "restorecon", "-RF", target).CombinedOutput()
 			return nil
 		}
 		return fmt.Errorf("tar: %s", strings.TrimSpace(string(out)))
@@ -686,18 +774,15 @@ type aliasImport struct {
 
 // readAliases parses the source valias file and rewrites each forwarder onto the
 // target domain, dropping pipe/include destinations that Servika cannot host.
-func readAliases(archivePath, root, sourceDomain, targetDomain string) ([]aliasImport, error) {
-	if sourceDomain == "" {
-		return []aliasImport{}, nil
-	}
-	body, err := readSmallTarMember(archivePath, root+"/va/"+sourceDomain)
-	if errors.Is(err, errMemberNotFound) {
-		return []aliasImport{}, nil
-	}
-	if err != nil {
-		return nil, err
-	}
+func readAliases(extras archiveExtras, sourceDomain, targetDomain string) []aliasImport {
 	out := []aliasImport{}
+	if sourceDomain == "" {
+		return out
+	}
+	body, ok := extras.members[extras.aliasMember]
+	if !ok {
+		return out
+	}
 	for _, line := range strings.Split(string(body), "\n") {
 		p := strings.SplitN(strings.TrimSpace(line), ":", 2)
 		if len(p) != 2 {
@@ -733,14 +818,29 @@ func readAliases(archivePath, root, sourceDomain, targetDomain string) ([]aliasI
 			out = append(out, aliasImport{Local: local, Destination: strings.Join(dests, ",")})
 		}
 	}
-	return out, nil
+	return out
 }
 
 var errMemberNotFound = errors.New("archive member not found")
 
-// readSmallTarMember returns a single small metadata member from the archive,
-// guarding against oversized entries.
-func readSmallTarMember(archivePath, want string) ([]byte, error) {
+// readSmallTarMembers collects the requested small members in a SINGLE archive
+// pass.
+//
+// WHY BATCHED: the archive is gzip, i.e. no random access — every seek reopens
+// and re-decompresses the whole file. A per-member call pushed a 20 GiB cPanel
+// backup's transfer into hours (9 SSL candidates × a full decompress on their
+// own). Members that are absent simply never appear in the result map.
+func readSmallTarMembers(archivePath string, wants []string) (map[string][]byte, error) {
+	wanted := make(map[string]string, len(wants)) // cleaned name -> original request
+	for _, w := range wants {
+		if w != "" {
+			wanted[path.Clean(w)] = w
+		}
+	}
+	found := make(map[string][]byte, len(wanted))
+	if len(wanted) == 0 {
+		return found, nil
+	}
 	f, err := os.Open(archivePath)
 	if err != nil {
 		return nil, err
@@ -752,19 +852,26 @@ func readSmallTarMember(archivePath, want string) ([]byte, error) {
 	}
 	defer func() { _ = gz.Close() }()
 	tr := tar.NewReader(gz)
-	for {
+	for len(found) < len(wanted) {
 		hdr, err := tr.Next()
 		if err == io.EOF {
-			return nil, errMemberNotFound
+			break
 		}
 		if err != nil {
 			return nil, err
 		}
-		if path.Clean(hdr.Name) == path.Clean(want) {
-			if hdr.Size > maxMetadataBytes {
-				return nil, ErrArchiveTooLarge
-			}
-			return io.ReadAll(io.LimitReader(tr, maxMetadataBytes))
+		req, ok := wanted[path.Clean(hdr.Name)]
+		if !ok || hdr.Typeflag != tar.TypeReg {
+			continue
 		}
+		if hdr.Size > maxMetadataBytes {
+			return nil, ErrArchiveTooLarge
+		}
+		body, err := io.ReadAll(io.LimitReader(tr, maxMetadataBytes))
+		if err != nil {
+			return nil, err
+		}
+		found[req] = body
 	}
+	return found, nil
 }

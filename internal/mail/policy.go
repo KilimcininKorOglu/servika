@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -38,15 +39,59 @@ func StartPolicyServer(db *sql.DB, address string) {
 	}
 	log.Printf("mail send policy service on %s", address)
 	go func() {
+		defer func() { _ = listener.Close() }()
+		// An unconditional `continue` on an Accept error spins the CPU forever
+		// when the listener breaks permanently (a closed fd). A close is
+		// permanent → return; on a transient error (fd/memory pressure) back off
+		// briefly and retry, doubling the wait on consecutive failures.
+		wait := 5 * time.Millisecond
+		const maxWait = time.Second
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
+				if errors.Is(err, net.ErrClosed) {
+					log.Printf("mail policy listener closed: %v", err)
+					return
+				}
 				log.Printf("mail policy accept: %v", err)
+				time.Sleep(wait)
+				if wait < maxWait {
+					wait *= 2
+				}
 				continue
 			}
+			wait = 5 * time.Millisecond
 			go handlePolicyConnection(db, conn)
 		}
 	}()
+	go pruneSendLog(db)
+}
+
+// pruneSendLog trims mail_send_log: it gains one row per outgoing message and,
+// left unbounded, climbs to millions of rows over months. The policy server runs
+// two SUMs over this table on every mail, so its cost feeds straight into send
+// latency. The limit windows are 1 hour and 1 day, so a 2-day retention is more
+// than enough (the same pattern as the 30-day git_webhook_deliveries prune).
+func pruneSendLog(db *sql.DB) {
+	const batch = 50000
+	for {
+		// A single DELETE of millions of rows means a long InnoDB lock; delete in
+		// batches and fully drain any accumulated backlog on the first pass.
+		for round := 0; round < 200; round++ {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+			res, err := db.ExecContext(ctx,
+				`DELETE FROM mail_send_log WHERE ts < NOW()-INTERVAL 2 DAY LIMIT ?`, batch)
+			cancel()
+			if err != nil {
+				log.Printf("mail_send_log prune: %v", err)
+				break
+			}
+			if n, err := res.RowsAffected(); err != nil || n < batch {
+				break
+			}
+		}
+		time.Sleep(time.Hour)
+	}
 }
 
 func handlePolicyConnection(db *sql.DB, conn net.Conn) {

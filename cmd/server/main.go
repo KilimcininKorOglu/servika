@@ -81,7 +81,36 @@ var version = "1.1.1"
 // -X main.buildDate=...). It stays "development" when built manually with `go build`.
 var buildDate = "development"
 
+// pinTempDir moves every large temporary file the panel writes onto persistent
+// disk. AlmaLinux 10 (the RHEL 10 default) mounts /tmp as tmpfs, i.e. RAM: if the
+// panel's os.CreateTemp("", ...) / os.MkdirTemp("", ...) calls land there, a
+// cPanel account import (archive up to 20 GiB, doubled again by its multipart
+// copy), a database import (2 GiB raw + 2 GiB expanded), or a backup restore
+// drags the server into OOM — the service does not slow down, it dies. TMPDIR is
+// inherited by subprocesses too (tar, mysql, mysqldump, rsync), so this single
+// point fixes every stream. An externally supplied TMPDIR is left untouched.
+func pinTempDir() {
+	if strings.TrimSpace(os.Getenv("TMPDIR")) != "" {
+		return
+	}
+	const dir = "/var/lib/servika/tmp"
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		log.Printf("could not create temp dir (%s), falling back to /tmp: %v", dir, err)
+		return
+	}
+	if err := os.Chmod(dir, 0o700); err != nil {
+		log.Printf("could not set temp dir permissions: %v", err)
+	}
+	if err := os.Setenv("TMPDIR", dir); err != nil {
+		log.Printf("could not set TMPDIR: %v", err)
+		return
+	}
+	log.Printf("temporary file directory: %s", dir)
+}
+
 func main() {
+	pinTempDir()
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("config: %v", err)

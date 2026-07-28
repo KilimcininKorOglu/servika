@@ -418,10 +418,17 @@ func sieveMultiline(value string) string {
 	return strings.Join(lines, "\n")
 }
 
+// sieveQuote escapes a value as a Sieve quoted-string (RFC 5228 §2.4.2).
+//
+// Newlines are folded to a space: a quoted-string has NO escape that represents
+// a line break — a backslash only takes the following character literally, so
+// `\n` means "n". The previously emitted `\n` silently turned a multi-line match
+// value into "…n…".
 func sieveQuote(value string) string {
+	value = strings.ReplaceAll(value, "\r\n", " ")
+	value = strings.ReplaceAll(value, "\r", " ")
+	value = strings.ReplaceAll(value, "\n", " ")
 	value = strings.ReplaceAll(value, `\`, `\\`)
 	value = strings.ReplaceAll(value, `"`, `\"`)
-	value = strings.ReplaceAll(value, "\r", "")
-	value = strings.ReplaceAll(value, "\n", `\n`)
 	return `"` + value + `"`
 }

@@ -1,6 +1,9 @@
 package mail
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestSieveEscaping(t *testing.T) {
 	if got := sieveQuote("a\"b\\c"); got != `"a\"b\\c"` {
@@ -8,6 +11,18 @@ func TestSieveEscaping(t *testing.T) {
 	}
 	if got := sieveMultiline("first\n.dot\r\nlast"); got != "first\n..dot\nlast" {
 		t.Fatalf("sieveMultiline = %q", got)
+	}
+}
+
+// A Sieve quoted-string has no newline escape — emitting `\n` resolves to the
+// letter "n" and would silently corrupt the match value. It must fold to a space.
+func TestSieveQuoteNewline(t *testing.T) {
+	got := sieveQuote("one\r\ntwo\nthree\rfour")
+	if want := `"one two three four"`; got != want {
+		t.Fatalf("sieveQuote = %s, want %s", got, want)
+	}
+	if strings.Contains(got, `\n`) {
+		t.Fatalf("output kept an invalid \\n escape: %s", got)
 	}
 }
 
