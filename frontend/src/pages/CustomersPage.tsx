@@ -7,6 +7,7 @@
 // The only panel login is the single admin (root); customers reach their own
 // domains via FTP identity at /cp.
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import EmptyState from '@/components/EmptyState'
@@ -29,12 +30,17 @@ type Plan = { id: number; name: string }
 const EMPTY: Customer = { id: 0, name: '', email: '', plan_id: null, status: 'active', notes: '', created_at: '' }
 
 export default function CustomersPage() {
+  // Global search (TopBar) deep-links here with ?q=<email|name>; seed the filter
+  // from it and keep it in sync when the param changes without a remount.
+  const [searchParams] = useSearchParams()
   const [list, setList] = useState<Customer[]>([])
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(() => searchParams.get('q') || '')
+
+  useEffect(() => { setQuery(searchParams.get('q') || '') }, [searchParams])
 
   const [editing, setEditing] = useState<Customer | null>(null)
   const [saving, setSaving] = useState(false)

@@ -5,6 +5,7 @@
 // restrictions here mirror those rules for the UI; they are not a security
 // boundary.
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -62,11 +63,16 @@ export default function UsersPage() {
   const myID = useAuth((s) => s.username?.id)
   const isAdmin = myRole === 'admin'
 
+  // Global search (TopBar) deep-links here with ?q=<username>; seed the filter
+  // from it and keep it in sync when the param changes without a remount.
+  const [searchParams] = useSearchParams()
   const [list, setList] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(() => searchParams.get('q') || '')
+
+  useEffect(() => { setQuery(searchParams.get('q') || '') }, [searchParams])
 
   const [creating, setCreating] = useState<NewAccount | null>(null)
   const [saving, setSaving] = useState(false)

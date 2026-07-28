@@ -1,11 +1,93 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import { getTheme, setTheme, type Theme } from '@/lib/theme'
 import { api } from '@/lib/api'
 
 type TopBarProps = {
   onMenuClick?: () => void
+}
+
+type SearchEntry = {
+  kind: 'page' | 'domain' | 'customer' | 'user'
+  title: string
+  subtitle: string
+  path: string
+  keywords?: string
+}
+
+type DomainRow = { id: number; domain_name: string; system_user?: string; status?: string }
+type CustomerRow = { id: number; name: string; email?: string; status?: string }
+type UserRow = { id: number; username: string; full_name?: string; email?: string; role?: string }
+
+// Static navigation targets. `roles` limits an entry to those roles; when absent
+// the entry is offered to every management session (admin and reseller). Paths
+// mirror App.tsx exactly so a result always resolves to a real route.
+const PAGES: Array<SearchEntry & { roles?: string[] }> = [
+  { kind: 'page', title: 'Home', subtitle: 'Panel overview', path: '/', keywords: 'dashboard' },
+  { kind: 'page', title: 'Domains', subtitle: 'Domains and subscriptions', path: '/domains', keywords: 'site hosting subscription' },
+  { kind: 'page', title: 'Service Plans', subtitle: 'Package and quota plans', path: '/service-plans', keywords: 'package quota' },
+  { kind: 'page', title: 'Customers', subtitle: 'Customer and contact records', path: '/customers', keywords: 'contact billing' },
+  { kind: 'page', title: 'Users', subtitle: 'Panel accounts', path: '/users', keywords: 'account reseller admin' },
+  { kind: 'page', title: 'DNS Management', subtitle: 'Server-wide DNS records', path: '/dns', keywords: 'zone nameserver ns' },
+  { kind: 'page', title: 'SSL Certificates', subtitle: 'TLS and certificate management', path: '/ssl', keywords: 'https lets encrypt tls' },
+  { kind: 'page', title: 'Email Accounts', subtitle: 'Mailboxes and mail', path: '/mail', keywords: 'email mailbox' },
+  { kind: 'page', title: 'Databases', subtitle: 'MySQL databases', path: '/databases', keywords: 'mysql db' },
+  { kind: 'page', title: 'WordPress', subtitle: 'WordPress sites', path: '/wordpress', keywords: 'wp application' },
+  { kind: 'page', title: 'Server Status', subtitle: 'Resource and service summary', path: '/server-status', keywords: 'cpu ram disk' },
+  { kind: 'page', title: 'Profile and Preferences', subtitle: 'Account and security settings', path: '/profile', keywords: 'password 2fa theme' },
+  { kind: 'page', title: 'Account Transfer', subtitle: 'Account and site migration', path: '/account-transfer', keywords: 'migration cpanel', roles: ['admin'] },
+  { kind: 'page', title: 'Tools and Settings', subtitle: 'Panel tools', path: '/tools-settings', keywords: 'settings', roles: ['admin'] },
+  { kind: 'page', title: 'Server Optimize', subtitle: 'Server tuning', path: '/tools/optimize', keywords: 'performance tune', roles: ['admin'] },
+  { kind: 'page', title: 'Statistics', subtitle: 'Usage statistics', path: '/statistics', keywords: 'graph traffic', roles: ['admin'] },
+  { kind: 'page', title: 'Firewall', subtitle: 'Firewall rules', path: '/firewall', keywords: 'port ip block', roles: ['admin'] },
+  { kind: 'page', title: 'Monitoring', subtitle: 'Live server metrics and logs', path: '/monitoring', keywords: 'monitor log cpu ram', roles: ['admin'] },
+  { kind: 'page', title: 'Security Log', subtitle: 'Security events', path: '/audit-log', keywords: 'audit event', roles: ['admin'] },
+  { kind: 'page', title: 'Services', subtitle: 'System services', path: '/tools/services', keywords: 'systemd nginx mysql php', roles: ['admin'] },
+  { kind: 'page', title: 'PHP Versions', subtitle: 'PHP version management', path: '/tools/php-versions', keywords: 'fpm', roles: ['admin'] },
+  { kind: 'page', title: 'PHP Modules', subtitle: 'PHP extension management', path: '/system/php-modules', keywords: 'extension pecl', roles: ['admin'] },
+  { kind: 'page', title: 'Package Manager', subtitle: 'System packages', path: '/tools/packages', keywords: 'dnf rpm', roles: ['admin'] },
+  { kind: 'page', title: 'DNS Template', subtitle: 'Default DNS records', path: '/tools/dns-template', keywords: 'template zone', roles: ['admin'] },
+  { kind: 'page', title: 'Panel Update', subtitle: 'Panel version and updates', path: '/tools/update', keywords: 'upgrade release', roles: ['admin'] },
+]
+
+// Domain-scoped tool pages, offered as results only while a domain is open.
+// Each tuple is [path suffix, title, subtitle].
+const DOMAIN_PAGES: ReadonlyArray<readonly [string, string, string]> = [
+  ['', 'Overview', 'Domain overview'],
+  ['/files', 'File Manager', 'Files and directories'],
+  ['/web-server', 'Apache & nginx', 'Web server settings'],
+  ['/php', 'PHP Settings', 'PHP and FPM configuration'],
+  ['/composer', 'Composer', 'PHP package management'],
+  ['/performance', 'Performance', 'Site performance settings'],
+  ['/redis', 'Redis Cache', 'Cache management'],
+  ['/wordpress', 'WordPress', 'WordPress tools'],
+  ['/dns', 'DNS Settings', 'Domain DNS records'],
+  ['/subdomains', 'Subdomains', 'Subdomains'],
+  ['/addon-domains', 'Addon Domains', 'Alias domains'],
+  ['/ssl', 'SSL/TLS', 'HTTPS certificate'],
+  ['/databases', 'Databases', 'MySQL databases'],
+  ['/ftp', 'FTP Accounts', 'FTP access'],
+  ['/mail', 'Email', 'Mailboxes'],
+  ['/backups', 'Backups', 'Domain backups'],
+  ['/copy', 'Copy Site', 'Site cloning'],
+  ['/git', 'Git Deploy', 'Git deploy'],
+  ['/laravel', 'Laravel Toolkit', 'Laravel tools'],
+  ['/cron', 'Scheduled Tasks', 'Cron jobs'],
+  ['/ssh-access', 'SSH Access', 'Terminal access'],
+  ['/logs', 'Logs', 'Access and error logs'],
+  ['/waf', 'WAF', 'Web application firewall'],
+  ['/access-control', 'Access Control', 'IP access rules'],
+  ['/password-protection', 'Password Protection', 'Directory password'],
+  ['/imunify', 'Imunify', 'Malware scanning'],
+  ['/stats', 'Statistics', 'Domain usage data'],
+  ['/connection', 'Connection Info', 'FTP and database details'],
+]
+
+// Locale-neutral fold: lowercase + strip combining diacritics so "Örnek"
+// matches "ornek". Good enough for both English and Turkish target text.
+function normalize(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
 function copyToClipboard(text: string): boolean {
@@ -34,16 +116,115 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
   const logout = useAuth((s) => s.logout)
   const isCustomer = useAuth((s) => s.isCustomer)
   const navigate = useNavigate()
+  const location = useLocation()
+  const searchRef = useRef<HTMLInputElement>(null)
+  const searchBoxRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [theme, setCurrentTheme] = useState<Theme>(getTheme())
   const [serverIp, setServerIp] = useState<string | null>(null)
   const [ipCopied, setIpCopied] = useState(false)
+  const [query, setQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [selected, setSelected] = useState(0)
+  const [records, setRecords] = useState<SearchEntry[]>([])
+  const [recordsLoaded, setRecordsLoaded] = useState(false)
+
+  const role = username?.role || 'user'
+  // Global search targets management data (domains/customers/users) and admin
+  // pages; a customer portal session has none of these, so it is never shown.
+  const canSearch = !isCustomer && (role === 'admin' || role === 'reseller')
+  const openDomainID = location.pathname.match(/^\/subscriptions\/(\d+)/)?.[1]
+
+  const results = useMemo(() => {
+    const q = normalize(query.trim())
+    if (!q) return []
+    const pages = PAGES.filter((p) => !p.roles || p.roles.includes(role))
+    const domainPages: SearchEntry[] = openDomainID
+      ? DOMAIN_PAGES.map(([suffix, title, subtitle]) => ({
+          kind: 'page' as const, title, subtitle: `${subtitle} · open domain`,
+          path: `/subscriptions/${openDomainID}${suffix}`, keywords: 'domain site subscription',
+        }))
+      : []
+    return [...pages, ...domainPages, ...records]
+      .map((entry) => {
+        const text = normalize(`${entry.title} ${entry.subtitle} ${entry.keywords || ''}`)
+        const rank = normalize(entry.title).startsWith(q) ? 0 : text.includes(q) ? 1 : 2
+        return { entry, rank }
+      })
+      .filter((x) => x.rank < 2)
+      .sort((a, b) => a.rank - b.rank || a.entry.title.localeCompare(b.entry.title))
+      .slice(0, 12)
+      .map((x) => x.entry)
+  }, [query, openDomainID, records, role])
+
+  async function loadSearchData() {
+    if (!canSearch || recordsLoaded || searchLoading) return
+    setSearchLoading(true)
+    try {
+      const requests: Array<Promise<SearchEntry[]>> = [
+        api.get<DomainRow[]>('/domains').then((r) => (Array.isArray(r.data) ? r.data : []).map((d) => ({
+          kind: 'domain' as const, title: d.domain_name,
+          subtitle: `Domain${d.system_user ? ` · ${d.system_user}` : ''}${d.status ? ` · ${d.status}` : ''}`,
+          path: `/subscriptions/${d.id}`, keywords: `site hosting ${d.system_user || ''}`,
+        }))).catch(() => []),
+        api.get<CustomerRow[]>('/customers').then((r) => (Array.isArray(r.data) ? r.data : []).map((c) => ({
+          kind: 'customer' as const, title: c.name, subtitle: `Customer${c.email ? ` · ${c.email}` : ''}`,
+          path: `/customers?q=${encodeURIComponent(c.email || c.name)}`, keywords: c.email || '',
+        }))).catch(() => []),
+        api.get<UserRow[]>('/users').then((r) => (Array.isArray(r.data) ? r.data : []).map((u) => ({
+          kind: 'user' as const, title: u.full_name || u.username,
+          subtitle: `User · ${u.username}${u.email ? ` · ${u.email}` : ''}`,
+          path: `/users?q=${encodeURIComponent(u.username)}`, keywords: `${u.email || ''} ${u.role || ''}`,
+        }))).catch(() => []),
+      ]
+      const loaded = await Promise.all(requests)
+      setRecords(loaded.flat())
+      setRecordsLoaded(true)
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
+  function goToResult(entry: SearchEntry) {
+    setQuery('')
+    setSearchOpen(false)
+    navigate(entry.path)
+  }
 
   useEffect(() => {
     const handler = (event: Event) => setCurrentTheme((event as CustomEvent<Theme>).detail)
     window.addEventListener('servika:theme-change', handler)
     return () => window.removeEventListener('servika:theme-change', handler)
   }, [])
+
+  useEffect(() => { setSelected(0) }, [query])
+
+  useEffect(() => {
+    if (!canSearch) return
+    function onKey(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        searchRef.current?.focus()
+        setSearchOpen(true)
+        void loadSearchData()
+      }
+      if (event.key === 'Escape') {
+        setSearchOpen(false)
+        searchRef.current?.blur()
+      }
+    }
+    function onClickOutside(event: MouseEvent) {
+      if (!searchBoxRef.current?.contains(event.target as Node)) setSearchOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    document.addEventListener('mousedown', onClickOutside)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('mousedown', onClickOutside)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSearch])
 
   useEffect(() => {
     // The /system/panel-domain endpoint is admin-only; customer sessions would
@@ -84,6 +265,65 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
+
+      {canSearch ? (
+        <div className="flex-1 min-w-0 max-w-xl" ref={searchBoxRef}>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              ref={searchRef}
+              type="search"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setSearchOpen(true) }}
+              onFocus={() => { setSearchOpen(true); void loadSearchData() }}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') { e.preventDefault(); setSelected((i) => Math.max(0, Math.min(i + 1, results.length - 1))) }
+                if (e.key === 'ArrowUp') { e.preventDefault(); setSelected((i) => Math.max(i - 1, 0)) }
+                if (e.key === 'Enter' && results[selected]) { e.preventDefault(); goToResult(results[selected]) }
+              }}
+              placeholder="Search everything..."
+              aria-label="Search the panel"
+              aria-expanded={searchOpen && !!query.trim()}
+              aria-controls="global-search-results"
+              className="w-full pl-9 pr-16 py-1.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:bg-white dark:focus:bg-slate-800 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/15 outline-none transition"
+            />
+            <span className="hidden sm:block absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5 pointer-events-none">Ctrl K</span>
+            {searchOpen && query.trim() && (
+              <div id="global-search-results" role="listbox" className="absolute top-full left-0 right-0 mt-2 max-h-[min(70vh,32rem)] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 p-1.5">
+                {results.map((entry, i) => (
+                  <button
+                    key={`${entry.kind}-${entry.path}-${entry.title}`}
+                    type="button"
+                    role="option"
+                    aria-selected={i === selected}
+                    onMouseEnter={() => setSelected(i)}
+                    onClick={() => goToResult(entry)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition ${i === selected ? 'bg-brand-50 dark:bg-brand-900/25' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                  >
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-semibold ${
+                      entry.kind === 'domain' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
+                      : entry.kind === 'customer' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                      : entry.kind === 'user' ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                    }`}>{entry.kind === 'domain' ? 'D' : entry.kind === 'customer' ? 'C' : entry.kind === 'user' ? 'U' : '↗'}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{entry.title}</span>
+                      <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">{entry.subtitle}</span>
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">{entry.kind}</span>
+                  </button>
+                ))}
+                {searchLoading && <div className="px-3 py-3 text-sm text-slate-500">Loading records…</div>}
+                {!searchLoading && results.length === 0 && (
+                  <div className="px-3 py-6 text-center text-sm text-slate-500">No results for “{query}”.</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       <div className="flex-1" />
 
