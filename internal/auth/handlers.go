@@ -240,7 +240,41 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
+// ScopeOf resolves the reseller scope a user belongs to for audit_log.reseller_id:
+// a reseller is its own scope (its users.id), any other account maps to its
+// managing reseller (users.reseller_id), and root/admin or an unreadable row map
+// to 0 (root-only). FAIL-SAFE: on any error the scope is 0, so a lookup failure
+// can never leak an entry into a reseller's log — it stays root-only.
+func ScopeOf(db *sql.DB, uid int64) int64 {
+	if db == nil || uid <= 0 {
+		return 0
+	}
+	var role string
+	var resellerID sql.NullInt64
+	if err := db.QueryRow(`SELECT role, reseller_id FROM users WHERE id=?`, uid).Scan(&role, &resellerID); err != nil {
+		return 0
+	}
+	if role == "reseller" {
+		return uid
+	}
+	if resellerID.Valid && resellerID.Int64 > 0 {
+		return resellerID.Int64
+	}
+	return 0
+}
+
+// WriteAudit records an audit entry scoped to the ACTOR's reseller (ScopeOf).
+// Use WriteAuditScoped when the entry must be scoped to a DIFFERENT account than
+// the actor (e.g. root changing a reseller's account: the reseller must see it).
 func WriteAudit(db *sql.DB, uid int64, username, ip, action, target string, ok bool) {
+	WriteAuditScoped(db, uid, username, ip, action, target, ok, ScopeOf(db, uid))
+}
+
+// WriteAuditScoped records an audit entry with an explicit reseller scope. The
+// scope is the owning reseller's users.id (0 = root-only). Entries are scoped to
+// the AFFECTED account's owner so a reseller sees changes made to its own
+// accounts even when root performed them.
+func WriteAuditScoped(db *sql.DB, uid int64, username, ip, action, target string, ok bool, resellerScope int64) {
 	var uidVal any
 	if uid > 0 {
 		uidVal = uid
@@ -249,10 +283,13 @@ func WriteAudit(db *sql.DB, uid int64, username, ip, action, target string, ok b
 	if ok {
 		okv = 1
 	}
+	if resellerScope < 0 {
+		resellerScope = 0
+	}
 	if _, err := db.Exec(
-		`INSERT INTO audit_log(actor_user_id, actor_username, ip, action, target, ok)
-		 VALUES(?,?,?,?,?,?)`,
-		uidVal, username, ip, action, target, okv); err != nil {
+		`INSERT INTO audit_log(actor_user_id, actor_username, ip, action, target, ok, reseller_id)
+		 VALUES(?,?,?,?,?,?,?)`,
+		uidVal, username, ip, action, target, okv, resellerScope); err != nil {
 		log.Printf("audit log insert failed: %v", err)
 	}
 }
@@ -297,11 +334,18 @@ func auditLimit(raw string) int {
 // interpolated) and only_failed adds a constant predicate, so user input can
 // never reach the SQL text. Kept pure so the filter/injection-safety logic is
 // unit-testable without a database.
-func buildAuditQuery(action string, onlyFailed bool, limit int) (string, []any) {
+// scope < 0 means "all scopes" (root/admin); scope >= 0 restricts to that
+// reseller_id (a reseller sees only its own entries). The value is always bound
+// as a `?` placeholder, never interpolated.
+func buildAuditQuery(action string, onlyFailed bool, limit int, scope int64) (string, []any) {
 	q := `SELECT id, DATE_FORMAT(ts, '%Y-%m-%d %H:%i:%s'), actor_username, ip, action, target, ok
 	      FROM audit_log`
-	cond := make([]string, 0, 2)
-	arg := make([]any, 0, 3)
+	cond := make([]string, 0, 3)
+	arg := make([]any, 0, 4)
+	if scope >= 0 {
+		cond = append(cond, "reseller_id = ?")
+		arg = append(arg, scope)
+	}
 	if a := strings.TrimSpace(action); a != "" {
 		cond = append(cond, "action = ?")
 		arg = append(arg, a)
@@ -317,12 +361,31 @@ func buildAuditQuery(action string, onlyFailed bool, limit int) (string, []any) 
 	return q, arg
 }
 
+// auditViewScope maps the requesting session to a query scope: an admin sees
+// every entry (-1), a reseller sees only its own reseller_id, and anything else
+// is confined to root-only entries (0) as a fail-safe.
+func auditViewScope(r *http.Request) int64 {
+	c := ClaimsFromContext(r.Context())
+	if c == nil {
+		return 0
+	}
+	switch c.Role {
+	case "admin":
+		return -1
+	case "reseller":
+		return c.UserID
+	default:
+		return 0
+	}
+}
+
 func (h *Handlers) AuditList(w http.ResponseWriter, r *http.Request) {
 	limit := auditLimit(r.URL.Query().Get("limit"))
 	q, arg := buildAuditQuery(
 		r.URL.Query().Get("action"),
 		r.URL.Query().Get("only_failed") == "1",
 		limit,
+		auditViewScope(r),
 	)
 
 	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
@@ -349,8 +412,16 @@ func (h *Handlers) AuditList(w http.ResponseWriter, r *http.Request) {
 // populate the filter dropdown (instead of a hardcoded list — new actions show
 // up on their own as they are added).
 func (h *Handlers) AuditActions(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.DB.QueryContext(r.Context(),
-		`SELECT DISTINCT action FROM audit_log ORDER BY action`)
+	// Mirror AuditList's scope so a reseller's dropdown lists only the actions
+	// present in its own entries.
+	q := `SELECT DISTINCT action FROM audit_log`
+	var arg []any
+	if scope := auditViewScope(r); scope >= 0 {
+		q += ` WHERE reseller_id = ?`
+		arg = append(arg, scope)
+	}
+	q += ` ORDER BY action`
+	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "audit actions failed")
 		return

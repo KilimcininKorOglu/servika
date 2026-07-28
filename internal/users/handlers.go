@@ -266,7 +266,10 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.create", b.Username, true)
+	// Scope the entry to the affected account's owner, not the actor: a reseller
+	// (or admin) creating an account is recorded in that account's own scope so
+	// its managing reseller sees it.
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.create", b.Username, true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{"id": id})
 }
 
@@ -332,7 +335,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.update", strconv.FormatInt(id, 10), true)
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.update", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -378,7 +381,7 @@ func (h *Handlers) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not reset password")
 		return
 	}
-	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.password", strconv.FormatInt(id, 10), true)
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.password", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -429,7 +432,7 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 		log.Printf("cascade status to sub-accounts of user %d failed: %v", id, err)
 	}
 
-	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.status", strconv.FormatInt(id, 10), true)
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.status", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -541,7 +544,7 @@ func (h *Handlers) SaveLimits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.limits", strconv.FormatInt(id, 10), true)
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.limits", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -573,10 +576,27 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not reassign linked accounts")
 		return
 	}
+	// Resolve the audit scope BEFORE the row is deleted (the users row is gone
+	// once the DELETE runs). A deleted RESELLER's own scope dies with it, so the
+	// deletion is scoped to root (0); deleting any other account is scoped to its
+	// owning reseller so that reseller sees the removal.
+	var deletedRole string
+	var deletedReseller sql.NullInt64
+	_ = h.DB.QueryRowContext(r.Context(), `SELECT role, reseller_id FROM users WHERE id=?`, id).Scan(&deletedRole, &deletedReseller)
+	var deletedScope int64
+	if deletedRole != "reseller" && deletedReseller.Valid {
+		deletedScope = deletedReseller.Int64
+	}
 	if _, err := h.DB.ExecContext(r.Context(), `DELETE FROM users WHERE id=?`, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not delete")
 		return
 	}
-	auth.WriteAudit(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.delete", strconv.FormatInt(id, 10), true)
+	// Move any entries scoped to the deleted account to root-only: only resellers
+	// own a scope, and once this id can be reassigned by AUTO_INCREMENT a future
+	// reseller must not inherit the deleted one's history.
+	if _, err := h.DB.ExecContext(r.Context(), `UPDATE audit_log SET reseller_id=0 WHERE reseller_id=?`, id); err != nil {
+		log.Printf("audit scope cleanup after deleting user %d failed: %v", id, err)
+	}
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.delete", strconv.FormatInt(id, 10), true, deletedScope)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }

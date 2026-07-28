@@ -96,8 +96,8 @@ func TestDomainOwnedByEnforcesCustomerDomain(t *testing.T) {
 		domainID int64
 		allowed  bool
 	}{
-		{name: "administrator may access any domain", context: context.WithValue(context.Background(), claimsKey, &auth.Claims{Role: RoleAdmin}), domainID: 42, allowed: true},
-		{name: "customer without a DB is denied (fail-closed)", context: context.WithValue(context.Background(), claimsKey, &auth.Claims{Role: RoleUser, UserID: 3}), domainID: 42, allowed: false},
+		{name: "administrator may access any domain", context: auth.WithClaims(context.Background(), &auth.Claims{Role: RoleAdmin}), domainID: 42, allowed: true},
+		{name: "customer without a DB is denied (fail-closed)", context: auth.WithClaims(context.Background(), &auth.Claims{Role: RoleUser, UserID: 3}), domainID: 42, allowed: false},
 		{name: "missing identity is denied", context: context.Background(), domainID: 42, allowed: false},
 	}
 
@@ -114,7 +114,7 @@ func TestDomainOwnedByEnforcesCustomerDomain(t *testing.T) {
 // reqRole builds a request carrying a session token (auth.Claims) of the given role.
 func reqRole(role string, uid int64) *http.Request {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
-	return r.WithContext(context.WithValue(r.Context(), claimsKey, &auth.Claims{UserID: uid, Username: "t", Role: role}))
+	return r.WithContext(auth.WithClaims(r.Context(), &auth.Claims{UserID: uid, Username: "t", Role: role}))
 }
 
 func TestAdminOnly(t *testing.T) {
@@ -220,7 +220,7 @@ func TestCustomerScopeResellerWithoutScopeCannotPass(t *testing.T) {
 	routeContext := chi.NewRouteContext()
 	routeContext.URLParams.Add("id", "42")
 	ctx := context.WithValue(context.Background(), chi.RouteCtxKey, routeContext)
-	ctx = context.WithValue(ctx, claimsKey, &auth.Claims{UserID: 2, Role: RoleReseller})
+	ctx = auth.WithClaims(ctx, &auth.Claims{UserID: 2, Role: RoleReseller})
 	request := httptest.NewRequest(http.MethodGet, "/domains/42", nil).WithContext(ctx)
 
 	rec := httptest.NewRecorder()

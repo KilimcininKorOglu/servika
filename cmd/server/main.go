@@ -544,8 +544,10 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/dnssec", dnsH.PostDNSSEC)
 				// Security log (read-only) — audit_log has been written to for a
 				// long time but had no read endpoint.
-				r.With(middleware.AdminOnly).Get("/audit", authH.AuditList)
-				r.With(middleware.AdminOnly).Get("/audit/actions", authH.AuditActions)
+				// A reseller sees only entries scoped to its own reseller_id; an
+				// admin sees every entry (scope filter applied inside the handler).
+				r.With(middleware.ResellerOrAbove).Get("/audit", authH.AuditList)
+				r.With(middleware.ResellerOrAbove).Get("/audit/actions", authH.AuditActions)
 				// Panel accounts (admin + reseller). Scope narrowing lives inside
 				// the handlers: a reseller only sees / manages the accounts below
 				// it and may create accounts in the 'user' role only.

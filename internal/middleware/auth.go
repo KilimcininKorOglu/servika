@@ -50,10 +50,6 @@ func tokenVersionMatches(ctx context.Context, table string, id, claimVersion int
 	return current == claimVersion, nil
 }
 
-type ctxKey int
-
-const claimsKey ctxKey = 1
-
 // RequireAuth validates the session token and stores the claims in the request
 // context.
 //
@@ -92,7 +88,7 @@ func RequireAuth(secret []byte) func(http.Handler) http.Handler {
 				httpx.WriteError(w, http.StatusUnauthorized, "session has been revoked")
 				return
 			}
-			ctx := context.WithValue(r.Context(), claimsKey, c)
+			ctx := auth.WithClaims(r.Context(), c)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -381,10 +377,5 @@ func EnforceCustomerNotSuspended(w http.ResponseWriter, r *http.Request, domainI
 }
 
 func ClaimsFrom(r *http.Request) *auth.Claims {
-	v := r.Context().Value(claimsKey)
-	if v == nil {
-		return nil
-	}
-	c, _ := v.(*auth.Claims)
-	return c
+	return auth.ClaimsFromContext(r.Context())
 }
