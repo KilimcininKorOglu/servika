@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"log"
 	"net"
@@ -650,17 +652,22 @@ func runMigrations(d *sql.DB) {
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`); err != nil {
 		log.Fatalf("migrations: could not create schema_migrations: %v", err)
 	}
-	applied := map[string]bool{}
-	rows, err := d.Query(`SELECT filename FROM schema_migrations`)
+	// Backward-compatible checksum column: existing installs recorded only the
+	// filename, so add the column when missing and backfill legacy rows below.
+	if _, err := d.Exec(`ALTER TABLE schema_migrations ADD COLUMN IF NOT EXISTS checksum CHAR(64) NOT NULL DEFAULT ''`); err != nil {
+		log.Fatalf("migrations: could not add checksum column: %v", err)
+	}
+	applied := map[string]string{}
+	rows, err := d.Query(`SELECT filename, checksum FROM schema_migrations`)
 	if err != nil {
 		log.Fatalf("migrations: could not read schema_migrations: %v", err)
 	}
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		var name, sum string
+		if err := rows.Scan(&name, &sum); err != nil {
 			log.Fatalf("migrations: scan applied row: %v", err)
 		}
-		applied[name] = true
+		applied[name] = sum
 	}
 	_ = rows.Close()
 
@@ -673,22 +680,35 @@ func runMigrations(d *sql.DB) {
 	sort.Strings(names)
 
 	for _, name := range names {
-		if applied[name] {
-			continue
-		}
 		body, err := os.ReadFile(dir + "/" + name)
 		if err != nil {
 			log.Fatalf("migrations: could not read %s: %v", name, err)
 		}
+		sum := sha256.Sum256(body)
+		checksum := hex.EncodeToString(sum[:])
+		if prev, ok := applied[name]; ok {
+			// A blank stored checksum is a legacy row: backfill it once. A
+			// non-blank mismatch means an applied migration file was edited,
+			// which must never happen; stop startup rather than run on a schema
+			// that no longer matches its recorded history.
+			if prev == "" {
+				if _, err := d.Exec(`UPDATE schema_migrations SET checksum=? WHERE filename=?`, checksum, name); err != nil {
+					log.Fatalf("migrations: could not backfill checksum for %s: %v", name, err)
+				}
+			} else if prev != checksum {
+				log.Fatalf("migrations: %s was already applied but its contents changed", name)
+			}
+			continue
+		}
 		log.Printf("migration: %s", name)
-		applyMigration(d, name, string(body))
+		applyMigration(d, name, string(body), checksum)
 	}
 }
 
 // applyMigration runs one migration file's statements in a single transaction
 // and records it as applied. Any error is fatal: the transaction is rolled back
 // and startup stops so no later migration runs on a half-applied schema.
-func applyMigration(d *sql.DB, name, body string) {
+func applyMigration(d *sql.DB, name, body, checksum string) {
 	var cleaned []string
 	for line := range strings.SplitSeq(body, "\n") {
 		t := strings.TrimSpace(line)
@@ -711,7 +731,7 @@ func applyMigration(d *sql.DB, name, body string) {
 			log.Fatalf("migrations: %s failed, rolled back: %v", name, err)
 		}
 	}
-	if _, err := tx.Exec(`INSERT INTO schema_migrations(filename) VALUES(?)`, name); err != nil {
+	if _, err := tx.Exec(`INSERT INTO schema_migrations(filename, checksum) VALUES(?,?)`, name, checksum); err != nil {
 		_ = tx.Rollback()
 		log.Fatalf("migrations: record %s: %v", name, err)
 	}
