@@ -182,9 +182,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	// Create the initial landing page.
 	if _, e := os.Stat(filepath.Join(docroot, "index.html")); e != nil {
 		_ = os.WriteFile(filepath.Join(docroot, "index.html"),
-			[]byte("<!doctype html><meta charset=utf-8><title>"+fqdn+"</title>"+
-				"<body style='font-family:sans-serif;text-align:center;padding:60px'>"+
-				"<h1>"+fqdn+"</h1><p>Subdomain is ready. Upload your files to this directory.</p></body>"), 0o644)
+			[]byte(provisioner.WelcomeHTML(fqdn)), 0o644)
 	}
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, "/home/"+systemUser+"/subdomains").Run()
 	_ = exec.Command("chcon", "-R", "-t", "httpd_sys_content_t", docroot).Run()
@@ -296,6 +294,20 @@ func vhost(fqdn, docroot, socket, protected string) string {
         auth_basic off;
         root /var/www/_acme;
         try_files $uri =404;
+    }
+
+    error_page 404 /_srv_404.html;
+    location = /_srv_404.html {
+        root /usr/share/servika/errors;
+        internal;
+        access_log off;
+    }
+    location ^~ /_srv/ {
+        alias /usr/share/servika/errors/;
+        access_log off;
+        expires 7d;
+        gzip on;
+        gzip_types application/json application/javascript;
     }
 
     location / { try_files $uri $uri/ /index.php?$query_string; }

@@ -200,6 +200,8 @@ func Init(db *sql.DB) {
 	// installed BEFORE HealHomePerms and the file manager RAR extraction rely on them. This
 	// keeps per-user ACL isolation and RAR extraction ready on the very first update + restart.
 	ensureArchiveTools()
+	Ensure404Page()     // brand 404 page (root-owned; a tenant cannot modify it)
+	EnsureBrandAssets() // Lottie animations + player (shared, served at /_srv/)
 	healCacheZoneOnStartup()
 	healPanelVhostHeadersOnStartup()
 	healPanelLoginRateLimitOnStartup()
@@ -655,6 +657,7 @@ server {
     access_log /var/log/nginx/{{.DomainName}}.access.log;
     error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
 
+{{.ErrorPageBlock}}
 {{if eq .Backend "apache"}}    # ---- Backend: Apache (127.0.0.1:10080 proxy) ----
     location / {
         proxy_pass http://127.0.0.1:10080;
@@ -738,6 +741,7 @@ server {
 
 {{.IPRules}}{{.DenyBlocks}}{{.HotlinkLocation}}
 
+{{.ErrorPageBlock}}
 {{if eq .Backend "apache"}}    # ---- Backend: Apache (127.0.0.1:10080 proxy) ----
     location / {
         proxy_pass http://127.0.0.1:10080;
@@ -1005,6 +1009,11 @@ func (o VhostOpts) SSL() bool {
 func (o VhostOpts) ServerNames() string {
 	return strings.Join(wwwHostNames(o.DomainName), " ")
 }
+
+// ErrorPageBlock returns the nginx block that wires the brand 404 page and the
+// shared /_srv/ asset location into the vhost. Exposed as a method so the vhost
+// template can inject it with {{.ErrorPageBlock}}.
+func (o VhostOpts) ErrorPageBlock() string { return errorPageBlock }
 
 // wwwHostNames returns the canonical certificate and vhost hostnames for a domain.
 // It always includes www.<domain>; use it for vhost server_name and self-signed
@@ -1742,36 +1751,6 @@ func SuspendUserRuntime(systemUser string, suspended bool) {
 		_ = os.Chmod(cronSpool, 0600)
 		_, _ = tenantCommand("restorecon", cronSpool).CombinedOutput()
 	}
-}
-
-func welcomeHTML(domain string) string {
-	return fmt.Sprintf(`<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>%s</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Inter,system-ui,sans-serif;background:linear-gradient(135deg,#f8fafc,#fff7ed);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-  .card{max-width:560px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:48px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.05)}
-  .logo{width:48px;height:48px;background:#ea580c;border-radius:10px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
-  h1{font-size:24px;color:#0f172a;margin-bottom:8px}
-  p{color:#64748b;line-height:1.6;margin-bottom:8px}
-  .muted{font-size:13px;color:#94a3b8;margin-top:24px}
-  code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:13px;color:#475569}
-</style>
-</head>
-<body>
-<div class="card">
-  <div class="logo">G</div>
-  <h1>%s</h1>
-  <p>The website was created successfully.</p>
-  <p>Use FTP or the file manager to upload content.</p>
-  <p class="muted">Web root: <code>public_html/</code> · PHP enabled · Managed by Servika</p>
-</div>
-</body>
-</html>`, domain, domain)
 }
 
 // ApplyVhostForDomain re-renders an nginx vhost for a domain ID.
