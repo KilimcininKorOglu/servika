@@ -1,68 +1,73 @@
+import { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import LoginPage from '@/pages/LoginPage'
 import DashboardLayout from '@/components/DashboardLayout'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import HomePage from '@/pages/HomePage'
-import DomainsPage from '@/pages/DomainsPage'
-import SubscriptionDetailPage from '@/pages/SubscriptionDetailPage'
-import ServicePlansPage from '@/pages/ServicePlansPage'
-import SettingsPage from '@/pages/SettingsPage'
-import PlaceholderPage from '@/pages/PlaceholderPage'
-import ToolPage from '@/pages/ToolPage'
-import DomainFilesPage from '@/pages/DomainFilesPage'
-import DomainSSLPage from '@/pages/DomainSSLPage'
-import DomainSSHPage from '@/pages/DomainSSHPage'
-import DomainStatsPage from '@/pages/DomainStatsPage'
-import DomainPerformancePage from '@/pages/DomainPerformancePage'
-import DomainComposerPage from '@/pages/DomainComposerPage'
-import DomainPasswordProtectPage from '@/pages/DomainPasswordProtectPage'
-import DomainAntivirusPage from '@/pages/DomainAntivirusPage'
-import DomainCopyPage from '@/pages/DomainCopyPage'
-import DomainCronPage from '@/pages/DomainCronPage'
-import DomainLogsPage from '@/pages/DomainLogsPage'
-import DomainDNSPage from '@/pages/DomainDNSPage'
-import RedisPage from '@/pages/RedisPage'
-import DomainConnectionPage from '@/pages/DomainConnectionPage'
-import DomainDatabasesPage from '@/pages/DomainDatabasesPage'
-import DomainFTPPage from '@/pages/DomainFTPPage'
-import DomainMailPage from '@/pages/DomainMailPage'
-import DomainPHPPage from '@/pages/DomainPHPPage'
-import DomainBackupsPage from '@/pages/DomainBackupsPage'
-import DomainGitPage from '@/pages/DomainGitPage'
-import DomainWebServerPage from '@/pages/DomainWebServerPage'
-import DomainLaravelPage from '@/pages/DomainLaravelPage'
-import DomainWafPage from '@/pages/DomainWafPage'
-import PHPExtensionsPage from '@/pages/PHPExtensionsPage'
-import PackagesPage from '@/pages/PackagesPage'
-import PackageDetailPage from '@/pages/PackageDetailPage'
-import PHPVersionsPage from '@/pages/PHPVersionsPage'
-import ToolsSettingsPage from '@/pages/ToolsSettingsPage'
-import PanelUpdatePage from '@/pages/PanelUpdatePage'
-import ServerOptimizePage from '@/pages/ServerOptimizePage'
-import DNSTemplatePage from '@/pages/DNSTemplatePage'
-import WordPressPage from '@/pages/WordPressPage'
-import FirewallPage from '@/pages/FirewallPage'
-import BackupManagementPage from '@/pages/BackupManagementPage'
-import DomainWordPressPage from '@/pages/DomainWordPressPage'
-import DomainSubdomainsPage from '@/pages/DomainSubdomainsPage'
-import DomainSubdomainPage from '@/pages/DomainSubdomainPage'
-import DomainAddonDomainsPage from '@/pages/DomainAddonDomainsPage'
-import DomainAccessControlPage from '@/pages/DomainAccessControlPage'
 import CustomerLoginPage from '@/pages/CustomerLoginPage'
-import StatisticsPage from '@/pages/StatisticsPage'
-import MonitoringPage from '@/pages/MonitoringPage'
-import DnsOverviewPage from '@/pages/DnsOverviewPage'
-import SslOverviewPage from '@/pages/SslOverviewPage'
-import MailOverviewPage from '@/pages/MailOverviewPage'
-import DatabasesOverviewPage from '@/pages/DatabasesOverviewPage'
-import CustomersPage from '@/pages/CustomersPage'
-import AccountTransferPage from '@/pages/AccountTransferPage'
-import AuditLogPage from '@/pages/AuditLogPage'
-import UsersPage from '@/pages/UsersPage'
-import ServerStatusPage from '@/pages/ServerStatusPage'
-import ServicesPage from '@/pages/ServicesPage'
-import ComingSoonPage from '@/pages/ComingSoonPage'
+
+// The login shell is small and needed on the first screen; every panel page is
+// downloaded only when its route opens. This keeps heavy dependencies (file
+// manager, code editor, charts) out of the initial panel bundle.
+const HomePage = lazy(() => import('@/pages/HomePage'))
+const DomainsPage = lazy(() => import('@/pages/DomainsPage'))
+const SubscriptionDetailPage = lazy(() => import('@/pages/SubscriptionDetailPage'))
+const ServicePlansPage = lazy(() => import('@/pages/ServicePlansPage'))
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
+const PlaceholderPage = lazy(() => import('@/pages/PlaceholderPage'))
+const ToolPage = lazy(() => import('@/pages/ToolPage'))
+const DomainFilesPage = lazy(() => import('@/pages/DomainFilesPage'))
+const DomainSSLPage = lazy(() => import('@/pages/DomainSSLPage'))
+const DomainSSHPage = lazy(() => import('@/pages/DomainSSHPage'))
+const DomainStatsPage = lazy(() => import('@/pages/DomainStatsPage'))
+const DomainPerformancePage = lazy(() => import('@/pages/DomainPerformancePage'))
+const DomainComposerPage = lazy(() => import('@/pages/DomainComposerPage'))
+const DomainPasswordProtectPage = lazy(() => import('@/pages/DomainPasswordProtectPage'))
+const DomainAntivirusPage = lazy(() => import('@/pages/DomainAntivirusPage'))
+const DomainCopyPage = lazy(() => import('@/pages/DomainCopyPage'))
+const DomainCronPage = lazy(() => import('@/pages/DomainCronPage'))
+const DomainLogsPage = lazy(() => import('@/pages/DomainLogsPage'))
+const DomainDNSPage = lazy(() => import('@/pages/DomainDNSPage'))
+const RedisPage = lazy(() => import('@/pages/RedisPage'))
+const DomainConnectionPage = lazy(() => import('@/pages/DomainConnectionPage'))
+const DomainDatabasesPage = lazy(() => import('@/pages/DomainDatabasesPage'))
+const DomainFTPPage = lazy(() => import('@/pages/DomainFTPPage'))
+const DomainMailPage = lazy(() => import('@/pages/DomainMailPage'))
+const DomainPHPPage = lazy(() => import('@/pages/DomainPHPPage'))
+const DomainBackupsPage = lazy(() => import('@/pages/DomainBackupsPage'))
+const DomainGitPage = lazy(() => import('@/pages/DomainGitPage'))
+const DomainWebServerPage = lazy(() => import('@/pages/DomainWebServerPage'))
+const DomainLaravelPage = lazy(() => import('@/pages/DomainLaravelPage'))
+const DomainWafPage = lazy(() => import('@/pages/DomainWafPage'))
+const PHPExtensionsPage = lazy(() => import('@/pages/PHPExtensionsPage'))
+const PackagesPage = lazy(() => import('@/pages/PackagesPage'))
+const PackageDetailPage = lazy(() => import('@/pages/PackageDetailPage'))
+const PHPVersionsPage = lazy(() => import('@/pages/PHPVersionsPage'))
+const ToolsSettingsPage = lazy(() => import('@/pages/ToolsSettingsPage'))
+const PanelUpdatePage = lazy(() => import('@/pages/PanelUpdatePage'))
+const ServerOptimizePage = lazy(() => import('@/pages/ServerOptimizePage'))
+const DNSTemplatePage = lazy(() => import('@/pages/DNSTemplatePage'))
+const WordPressPage = lazy(() => import('@/pages/WordPressPage'))
+const FirewallPage = lazy(() => import('@/pages/FirewallPage'))
+const BackupManagementPage = lazy(() => import('@/pages/BackupManagementPage'))
+const DomainWordPressPage = lazy(() => import('@/pages/DomainWordPressPage'))
+const DomainSubdomainsPage = lazy(() => import('@/pages/DomainSubdomainsPage'))
+const DomainSubdomainPage = lazy(() => import('@/pages/DomainSubdomainPage'))
+const DomainAddonDomainsPage = lazy(() => import('@/pages/DomainAddonDomainsPage'))
+const DomainAccessControlPage = lazy(() => import('@/pages/DomainAccessControlPage'))
+const StatisticsPage = lazy(() => import('@/pages/StatisticsPage'))
+const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'))
+const DnsOverviewPage = lazy(() => import('@/pages/DnsOverviewPage'))
+const SslOverviewPage = lazy(() => import('@/pages/SslOverviewPage'))
+const MailOverviewPage = lazy(() => import('@/pages/MailOverviewPage'))
+const DatabasesOverviewPage = lazy(() => import('@/pages/DatabasesOverviewPage'))
+const CustomersPage = lazy(() => import('@/pages/CustomersPage'))
+const AccountTransferPage = lazy(() => import('@/pages/AccountTransferPage'))
+const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'))
+const UsersPage = lazy(() => import('@/pages/UsersPage'))
+const ServerStatusPage = lazy(() => import('@/pages/ServerStatusPage'))
+const ServicesPage = lazy(() => import('@/pages/ServicesPage'))
+const ComingSoonPage = lazy(() => import('@/pages/ComingSoonPage'))
 
 function GuardedRoute({ children }: { children: React.ReactNode }) {
   // The token is in an HttpOnly cookie the SPA cannot read; a stored non-expired

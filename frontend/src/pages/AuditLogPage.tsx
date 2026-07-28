@@ -64,7 +64,7 @@ export default function AuditLogPage() {
   const failed = list.filter((k) => !k.ok).length
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
+    <div className="w-full max-w-[1600px] px-6 py-5">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Security Log' }]} />
 
       <div className="mb-5">

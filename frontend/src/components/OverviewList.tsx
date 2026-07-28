@@ -61,7 +61,7 @@ export default function OverviewList<T>({
   const badges = summary && list.length > 0 ? summary(list) : []
 
   return (
-    <div>
+    <div className="w-full max-w-[1600px] px-6 py-5">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: title }]} />
       <div className="flex items-center gap-2 mb-1">
         <span className="text-2xl">{icon}</span>

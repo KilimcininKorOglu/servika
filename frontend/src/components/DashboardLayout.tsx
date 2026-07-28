@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import MobileNavBar from './MobileNavBar'
 import TopBar from './TopBar'
@@ -319,7 +319,13 @@ export default function DashboardLayout() {
         <TopBar onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 min-w-0 flex flex-col">
           <div className="flex-1 min-w-0">
-            <Outlet />
+            <Suspense fallback={
+              <div className="px-6 py-10 text-sm text-slate-400 dark:text-slate-500" role="status">
+                Loading page…
+              </div>
+            }>
+              <Outlet />
+            </Suspense>
           </div>
           <footer className="py-4 text-center text-xs text-slate-400 dark:text-slate-600">
             Servika{footer?.current ? ` v${footer.current}` : ''}
