@@ -569,6 +569,38 @@ func (h *Handlers) Webhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	event := strings.TrimSpace(r.Header.Get("X-GitHub-Event"))
+	delivery := strings.TrimSpace(r.Header.Get("X-GitHub-Delivery"))
+	if delivery == "" || len(delivery) > 128 {
+		httpx.WriteError(w, http.StatusBadRequest, "delivery id missing or invalid")
+		return
+	}
+	// GitHub assigns each delivery a unique id. INSERT IGNORE against the UNIQUE
+	// primary key atomically rejects a replay of the same signed request, whether
+	// it arrives over the wire twice or is deliberately resent.
+	res, derr := h.DB.ExecContext(r.Context(),
+		`INSERT IGNORE INTO git_webhook_deliveries(delivery_id, git_repo_id, event)
+		 VALUES(?,?,?)`, delivery, gid, event)
+	if derr != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not record webhook delivery")
+		return
+	}
+	if affected, aerr := res.RowsAffected(); aerr != nil || affected != 1 {
+		httpx.WriteError(w, http.StatusConflict, "webhook delivery already processed")
+		return
+	}
+	_, _ = h.DB.ExecContext(r.Context(),
+		`DELETE FROM git_webhook_deliveries WHERE received_at < NOW() - INTERVAL 30 DAY`)
+
+	if event == "ping" {
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "pong": true})
+		return
+	}
+	if event != "push" {
+		httpx.WriteError(w, http.StatusBadRequest, "unsupported webhook event")
+		return
+	}
+
 	sha, _, perr := gitPull(systemUser, targetDir, branch, githubTokenFor(h.DB, domainID))
 	status := "successful"
 	if perr != nil {
@@ -578,6 +610,10 @@ func (h *Handlers) Webhook(w http.ResponseWriter, r *http.Request) {
 		`UPDATE git_repos SET last_sync=NOW(), last_commit=?, last_status=? WHERE id=?`,
 		sha, status, gid)
 	if perr != nil {
+		// GitHub retries transient failures with the same delivery id. Drop the
+		// replay row on failure so a legitimate retry is not rejected as a replay.
+		_, _ = h.DB.ExecContext(r.Context(),
+			`DELETE FROM git_webhook_deliveries WHERE delivery_id=?`, delivery)
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
