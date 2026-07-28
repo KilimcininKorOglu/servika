@@ -113,7 +113,7 @@ func TestDatabaseMappingsAreNamespacedAndUnique(t *testing.T) {
 
 func TestParseCronJobsCapsAndPreservesFiveFieldTasks(t *testing.T) {
 	var body strings.Builder
-	for i := 0; i < 101; i++ {
+	for range 101 {
 		body.WriteString("0 2 * * 1 /bin/echo ok\n")
 	}
 	got, skipped := parseCronJobs(body.String())

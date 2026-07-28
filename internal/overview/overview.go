@@ -64,7 +64,7 @@ ORDER BY d.domain_name`
 		httpx.WriteError(w, http.StatusInternalServerError, "dns overview failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }() // read-only query: closing the result set has nothing to flush
 
 	out := make([]DNSRow, 0)
 	for rows.Next() {
@@ -109,7 +109,7 @@ ORDER BY (d.ssl_expiry IS NULL), d.ssl_expiry ASC, d.domain_name`
 		httpx.WriteError(w, http.StatusInternalServerError, "ssl overview failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }() // read-only query: closing the result set has nothing to flush
 
 	out := make([]SSLRow, 0)
 	for rows.Next() {
@@ -162,7 +162,7 @@ ORDER BY d.domain_name`
 		httpx.WriteError(w, http.StatusInternalServerError, "mail overview failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }() // read-only query: closing the result set has nothing to flush
 
 	out := make([]MailRow, 0)
 	for rows.Next() {
@@ -218,7 +218,7 @@ func dbSizes() map[string]int64 {
 // from dbSizes so this untrusted-subprocess parsing is unit-testable.
 func parseDBSizes(raw []byte) map[string]int64 {
 	sizes := make(map[string]int64)
-	for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(raw)), "\n") {
 		field := strings.Split(line, "\t")
 		if len(field) != 2 {
 			continue
@@ -248,7 +248,7 @@ ORDER BY d.domain_name, a.db_name`
 		httpx.WriteError(w, http.StatusInternalServerError, "databases overview failed")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }() // read-only query: closing the result set has nothing to flush
 
 	out := make([]DBRow, 0)
 	for rows.Next() {

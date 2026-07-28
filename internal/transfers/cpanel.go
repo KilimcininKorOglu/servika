@@ -10,6 +10,7 @@ import (
 	"io"
 	"path"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -197,14 +198,14 @@ func parseCronJobs(body string) ([]CronJob, int) {
 	out := make([]CronJob, 0)
 	skipped := 0
 	comment := ""
-	for _, raw := range strings.Split(body, "\n") {
+	for raw := range strings.SplitSeq(body, "\n") {
 		line := strings.TrimSpace(raw)
 		if line == "" {
 			comment = ""
 			continue
 		}
-		if strings.HasPrefix(line, "#") {
-			comment = strings.TrimSpace(strings.TrimPrefix(line, "#"))
+		if after, ok := strings.CutPrefix(line, "#"); ok {
+			comment = strings.TrimSpace(after)
 			if len(comment) > 200 {
 				comment = comment[:200]
 			}
@@ -236,10 +237,8 @@ func unsafeMember(h *tar.Header) bool {
 	if strings.HasPrefix(n, "/") {
 		return true
 	}
-	for _, p := range strings.Split(n, "/") {
-		if p == ".." {
-			return true
-		}
+	if slices.Contains(strings.Split(n, "/"), "..") {
+		return true
 	}
 	switch h.Typeflag {
 	case tar.TypeSymlink, tar.TypeLink, tar.TypeChar, tar.TypeBlock, tar.TypeFifo:
@@ -265,7 +264,7 @@ func parseMainMetadata(inv *Inventory, body, rel string) {
 	if inv.Username == "" && len(parts) >= 4 {
 		inv.Username = parts[2]
 	}
-	for _, line := range strings.Split(body, "\n") {
+	for line := range strings.SplitSeq(body, "\n") {
 		p := strings.SplitN(line, ":", 2)
 		if len(p) != 2 {
 			continue
@@ -286,7 +285,7 @@ func parseMailboxNames(inv *Inventory, body string) {
 	for _, v := range inv.Mailboxes {
 		seen[v] = true
 	}
-	for _, line := range strings.Split(body, "\n") {
+	for line := range strings.SplitSeq(body, "\n") {
 		p := strings.SplitN(strings.TrimSpace(line), ":", 2)
 		if len(p) != 2 {
 			continue
@@ -303,7 +302,7 @@ func parseMailboxNames(inv *Inventory, body string) {
 // countAliases counts forwarder entries in a cPanel valias file (va/<domain>).
 func countAliases(body string) int {
 	n := 0
-	for _, line := range strings.Split(body, "\n") {
+	for line := range strings.SplitSeq(body, "\n") {
 		p := strings.SplitN(strings.TrimSpace(line), ":", 2)
 		if len(p) == 2 && strings.TrimSpace(p[0]) != "" && strings.TrimSpace(p[1]) != "" {
 			n++

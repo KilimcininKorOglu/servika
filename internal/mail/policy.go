@@ -77,7 +77,7 @@ func pruneSendLog(db *sql.DB) {
 	for {
 		// A single DELETE of millions of rows means a long InnoDB lock; delete in
 		// batches and fully drain any accumulated backlog on the first pass.
-		for round := 0; round < 200; round++ {
+		for range 200 {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			res, err := db.ExecContext(ctx,
 				`DELETE FROM mail_send_log WHERE ts < NOW()-INTERVAL 2 DAY LIMIT ?`, batch)

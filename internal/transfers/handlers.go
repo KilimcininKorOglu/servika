@@ -406,10 +406,7 @@ func databaseMappings(sources []string, sk, defaultDB, dbUser string) []DBMap {
 		target := defaultDB
 		if i > 0 {
 			suffix := dbSuffix(source)
-			maxSuffix := 64 - len(sk) - 1
-			if maxSuffix < 1 {
-				maxSuffix = 1
-			}
+			maxSuffix := max(64-len(sk)-1, 1)
 			if len(suffix) > maxSuffix {
 				suffix = suffix[:maxSuffix]
 			}
@@ -783,7 +780,7 @@ func readAliases(extras archiveExtras, sourceDomain, targetDomain string) []alia
 	if !ok {
 		return out
 	}
-	for _, line := range strings.Split(string(body), "\n") {
+	for line := range strings.SplitSeq(string(body), "\n") {
 		p := strings.SplitN(strings.TrimSpace(line), ":", 2)
 		if len(p) != 2 {
 			continue
@@ -801,7 +798,7 @@ func readAliases(extras archiveExtras, sourceDomain, targetDomain string) []alia
 			continue
 		}
 		var dests []string
-		for _, d := range strings.Split(destRaw, ",") {
+		for d := range strings.SplitSeq(destRaw, ",") {
 			d = strings.ToLower(strings.TrimSpace(d))
 			if d == "" {
 				continue

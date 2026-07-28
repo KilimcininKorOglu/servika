@@ -139,6 +139,8 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 }
 
 // downloadFromRemote fetches a single backup file from the destination into localPath.
+//
+//nolint:unused // reserved for the remote-restore path (not yet wired to a handler); kept alongside uploadToRemote so the destination round-trip stays complete.
 func downloadFromRemote(ctx context.Context, d *Destination, fileName, localPath string) error {
 	if objectStorageType(d.Type) {
 		return downloadS3Object(ctx, d, fileName, localPath)
@@ -162,6 +164,8 @@ func downloadFromRemote(ctx context.Context, d *Destination, fileName, localPath
 }
 
 // deleteFromRemote removes a single backup file from the destination.
+//
+//nolint:unused // reserved for the remote retention-prune path (not yet wired to a handler); kept alongside uploadToRemote so the destination round-trip stays complete.
 func deleteFromRemote(ctx context.Context, d *Destination, fileName string) error {
 	if objectStorageType(d.Type) {
 		return deleteS3Object(ctx, d, fileName)

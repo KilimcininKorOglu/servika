@@ -46,7 +46,7 @@ func validateHostname(raw string) (string, error) {
 	if name == "localhost" || strings.HasSuffix(name, ".localhost") {
 		return "", errors.New("localhost cannot be used as a hostname")
 	}
-	for _, label := range strings.Split(name, ".") {
+	for label := range strings.SplitSeq(name, ".") {
 		if len(label) == 0 || len(label) > 63 ||
 			label[0] == '-' || label[len(label)-1] == '-' {
 			return "", errors.New("invalid hostname label")

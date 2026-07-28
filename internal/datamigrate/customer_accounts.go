@@ -57,7 +57,7 @@ func BackfillCustomerAccounts(ctx context.Context, db *sql.DB) {
 			list = append(list, t)
 		}
 	}
-	rows.Close()
+	_ = rows.Close() // read-only query: closing the result set has nothing to flush
 	if len(list) == 0 {
 		return
 	}
