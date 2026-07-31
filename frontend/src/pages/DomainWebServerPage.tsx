@@ -4,7 +4,8 @@ import { useParams, Link } from 'react-router-dom'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
-import CodeEditor from '@/components/CodeEditor'
+import CodeMirror from '@uiw/react-codemirror'
+import { oneDark } from '@codemirror/theme-one-dark'
 
 type Settings = {
   hdr_x_content_type: boolean
@@ -72,11 +73,13 @@ export default function DomainWebServerPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
 
+  // Raw vhost file — admin only. CloudPanel-like: the file nginx actually serves
+  // is always shown in an inline editor, no separate "open" click.
   const [customVhost, setCustomVhost] = useState<CustomVhostResponse | null>(null)
-  const [customVhostEnabled, setCustomVhostEnabled] = useState(false)
   const [customVhostContent, setCustomVhostContent] = useState('')
   const [customVhostChanging, setCustomVhostChanging] = useState(false)
-  const [customVhostEditorOpen, setCustomVhostEditorOpen] = useState(false)
+  const [customVhostSaving, setCustomVhostSaving] = useState(false)
+  const customVhostDirty = customVhost !== null && customVhostContent !== customVhost.content
 
   const [backend, setBackend] = useState<string>('php-fpm')
   const [backendChanging, setBackendChanging] = useState(false)
@@ -101,7 +104,6 @@ export default function DomainWebServerPage() {
       setWebRootCandidates(webRootResponse.data.candidates || [])
       if (customVhostResponse) {
         setCustomVhost(customVhostResponse.data)
-        setCustomVhostEnabled(customVhostResponse.data.enabled)
         setCustomVhostContent(customVhostResponse.data.content)
       }
     }).catch(error => setError(apiError(error)))
@@ -154,22 +156,43 @@ export default function DomainWebServerPage() {
     }
   }
 
+  // Saving the raw file always switches the domain to custom-vhost mode: the
+  // edited content becomes the file nginx serves.
   async function saveCustomVhost() {
     if (!isAdmin) return
-    setCustomVhostChanging(true); setError(null); setSuccess(null)
+    setCustomVhostSaving(true); setError(null); setSuccess(null)
     try {
       const response = await api.put<CustomVhostResponse>(`/domains/${id}/custom-vhost`, {
-        enabled: customVhostEnabled,
+        enabled: true,
         content: customVhostContent,
       })
       setCustomVhost(response.data)
-      setCustomVhostEnabled(response.data.enabled)
       setCustomVhostContent(response.data.content)
-      setSuccess(response.data.enabled ? '✓ Custom vhost applied and nginx reloaded' : '✓ Managed vhost restored and nginx reloaded')
+      setSuccess('✓ Custom vhost saved and nginx reloaded')
       setTimeout(() => setSuccess(null), 4000)
     } catch (error) {
       setError(apiError(error, 'Could not save custom vhost'))
-      throw error
+    } finally {
+      setCustomVhostSaving(false)
+    }
+  }
+
+  // Return to panel-managed vhost: the edited content is preserved server-side,
+  // and the managed vhost is re-rendered from the settings above.
+  async function returnToManagedVhost() {
+    if (!isAdmin || !customVhost) return
+    if (!confirm('Return this file to the panel\'s standard management?\n\nYour edits are NOT deleted — switching back to custom mode resumes where you left off.')) return
+    setCustomVhostChanging(true); setError(null); setSuccess(null)
+    try {
+      await api.put<CustomVhostResponse>(`/domains/${id}/custom-vhost`, {
+        enabled: false,
+        content: customVhost.content,
+      })
+      setSuccess('✓ Returned to panel management, vhost re-rendered')
+      setTimeout(() => setSuccess(null), 4000)
+      load()
+    } catch (error) {
+      setError(apiError(error, 'Could not return to managed vhost'))
     } finally {
       setCustomVhostChanging(false)
     }
@@ -276,6 +299,13 @@ export default function DomainWebServerPage() {
 
       {loading || !settings ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div> : (
         <>
+          {customVhost?.enabled && (
+            <div className="mb-5 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
+              ⚠️ <strong>Custom vhost is active</strong> — the security headers, cache, and extra-directive settings below are <strong>not applied</strong> right now.
+              Changes here are saved but do not reach the vhost file; to make these settings effective again, press "Return to Panel Management" in the vhost file card below.
+            </div>
+          )}
+
           {/* General security headers */}
           <Card title="Security Headers (HTTP + HTTPS)">
             <div className="space-y-3">
@@ -379,47 +409,48 @@ export default function DomainWebServerPage() {
             </div>
           </Card>
 
-          {isAdmin && (
-            <Card title="Raw Custom nginx Vhost">
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-500">
-                      This advanced mode replaces the generated domain vhost with raw nginx configuration. Use it only for administrator-managed overrides.
-                    </p>
-                    {customVhost && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Current mode: {customVhost.enabled ? 'custom raw vhost' : 'managed vhost'}</p>}
-                  </div>
-                  {customVhostChanging && <span className="text-xs text-slate-400 dark:text-slate-500">Applying…</span>}
+          {isAdmin && customVhost && (
+            <Card title="nginx Vhost File">
+              <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
+                This is the file nginx <strong>actually serves</strong> for this domain. You can edit it directly and save — the moment you save, the <strong>entire</strong> vhost file (including the HTTP→HTTPS redirect and the Let's Encrypt validation location) becomes your responsibility; the header/cache/extra-directive settings above and the panel no longer touch this file.{' '}
+                <code className="font-mono">/.well-known/acme-challenge/</code> — if you remove this block, the certificate cannot auto-renew after 90 days.
+              </div>
+
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {customVhost.enabled ? '🟢 Custom vhost active — the panel does not touch this file' : '⚪ Panel-managed — the file currently active is shown below'}
                 </div>
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={customVhostEnabled}
-                    onChange={event => setCustomVhostEnabled(event.target.checked)}
-                    className="mt-1 cursor-pointer"
-                  />
-                  <div>
-                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Enable raw custom vhost</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-500">When enabled, Servika writes this content directly to the domain nginx vhost file after validation.</div>
-                  </div>
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setCustomVhostEditorOpen(true)}
-                    className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                  >
-                    Edit Raw Vhost
-                  </button>
-                  <button
-                    type="button"
-                    onClick={saveCustomVhost}
-                    disabled={customVhostChanging}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-900 text-white dark:bg-white dark:text-slate-900 disabled:opacity-50"
-                  >
-                    {customVhostChanging ? 'Applying…' : 'Save Custom Vhost'}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {customVhostDirty && <span className="text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded">Unsaved changes</span>}
+                  {customVhost.enabled && (
+                    <button onClick={returnToManagedVhost} disabled={customVhostChanging}
+                      className="px-3 py-1.5 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 text-xs rounded-md">
+                      {customVhostChanging ? 'Working…' : 'Return to Panel Management'}
+                    </button>
+                  )}
+                  <button onClick={saveCustomVhost} disabled={customVhostSaving || !customVhostDirty}
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-xs font-medium rounded-md">
+                    {customVhostSaving ? 'Saving…' : '💾 Save and Apply'}
                   </button>
                 </div>
+              </div>
+
+              <div className="rounded-lg overflow-hidden border border-slate-700">
+                <CodeMirror
+                  value={customVhostContent}
+                  height="480px"
+                  theme={oneDark}
+                  onChange={setCustomVhostContent}
+                  basicSetup={{
+                    lineNumbers: true,
+                    foldGutter: true,
+                    highlightActiveLine: true,
+                    highlightActiveLineGutter: true,
+                    bracketMatching: true,
+                    tabSize: 2,
+                  }}
+                  style={{ fontSize: '13px' }}
+                />
               </div>
             </Card>
           )}
@@ -446,15 +477,6 @@ export default function DomainWebServerPage() {
             </button>
           </div>
         </>
-      )}
-      {customVhostEditorOpen && (
-        <CodeEditor
-          path={`${response?.domain_name || 'domain'}.conf`}
-          content={customVhostContent}
-          onChange={setCustomVhostContent}
-          onSave={saveCustomVhost}
-          onClose={() => setCustomVhostEditorOpen(false)}
-        />
       )}
     </div>
   )
