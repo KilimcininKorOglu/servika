@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 
 type Entry = { name: string; path: string; type: 'folder' | 'file' | 'symlink' }
@@ -44,6 +44,7 @@ function TreeNode({
   const [folders, setFolders] = useState<Entry[]>([])
   const [loaded, setLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
+  const rowRef = useRef<HTMLDivElement>(null)
 
   function fetchChildren() {
     setLoading(true)
@@ -62,6 +63,27 @@ function TreeNode({
     if (loaded) fetchChildren()
   }, [refreshKey]) // eslint-disable-line
 
+  const selectedNorm = selected === '' ? '/' : selected
+  const childPrefix = path === '/' ? '/' : path + '/'
+  const onSelectedBranch = selectedNorm === path || selectedNorm.startsWith(childPrefix)
+
+  // When a folder is entered from the right-hand panel (selected changes), this
+  // node auto-opens if it is on or above that path — otherwise the folder browsed
+  // on the right would never appear in the tree (it stayed unfetched/closed).
+  useEffect(() => {
+    if (onSelectedBranch && !open) {
+      setOpen(true)
+      if (!loaded) fetchChildren()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected])
+
+  // The target folder's own row scrolls into view so a folder entered from the
+  // right does not stay off-screen in a deep tree.
+  useEffect(() => {
+    if (path === selectedNorm) rowRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [selected]) // eslint-disable-line
+
   function handleChevronClick(e: React.MouseEvent) {
     e.stopPropagation()
     if (!open && !loaded) fetchChildren()
@@ -74,6 +96,7 @@ function TreeNode({
   return (
     <div>
       <div
+        ref={rowRef}
         onClick={() => onSelect(path)}
         className={`flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition ${
           isSelected ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300' : 'hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
