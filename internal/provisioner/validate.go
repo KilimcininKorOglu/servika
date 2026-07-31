@@ -121,24 +121,62 @@ var forbiddenNginxDirectives = map[string]bool{
 	"auth_basic_user_file": true, "secure_link_secret": true,
 }
 
-// DangerousNginxDirective returns the first forbidden custom directive name.
+// DangerousNginxDirective returns the first forbidden custom directive name, or
+// "" when none is present. It tokenizes with nginx semantics: inside a quoted
+// string ("..." or '...') the characters #, ;, { and } are literal, so only
+// unquoted '#' starts a comment and unquoted ;{} separate statements. That way
+// `add_header X-Test "#"; alias /etc/;` splits into two statements and the
+// alias is still caught, instead of being hidden inside a fake comment.
 func DangerousNginxDirective(directives string) string {
-	var uncommented strings.Builder
-	for line := range strings.SplitSeq(directives, "\n") {
-		if index := strings.IndexByte(line, '#'); index >= 0 {
-			line = line[:index]
+	var current strings.Builder
+	var quote byte // 0, '"' or '\''
+	var statements []string
+	flush := func() {
+		if t := strings.TrimSpace(current.String()); t != "" {
+			statements = append(statements, t)
 		}
-		uncommented.WriteString(line)
-		uncommented.WriteByte('\n')
+		current.Reset()
 	}
+	raw := []byte(directives)
+	for i := 0; i < len(raw); i++ {
+		c := raw[i]
+		if quote != 0 {
+			if c == '\\' && i+1 < len(raw) { // escape: keep the next byte verbatim
+				current.WriteByte(c)
+				current.WriteByte(raw[i+1])
+				i++
+				continue
+			}
+			if c == quote {
+				quote = 0
+			}
+			current.WriteByte(c)
+			continue
+		}
+		switch c {
+		case '"', '\'':
+			quote = c
+			current.WriteByte(c)
+		case '#': // comment: skip to end of line
+			for i < len(raw) && raw[i] != '\n' {
+				i++
+			}
+		case ';', '{', '}', '\n':
+			flush()
+		default:
+			current.WriteByte(c)
+		}
+	}
+	flush()
 
-	replacer := strings.NewReplacer("{", "\n", "}", "\n", ";", "\n")
-	for statement := range strings.SplitSeq(replacer.Replace(uncommented.String()), "\n") {
+	for _, statement := range statements {
 		fields := strings.Fields(statement)
 		if len(fields) == 0 {
 			continue
 		}
-		name := strings.ToLower(fields[0])
+		// Strip quotes from the directive name too (nginx rejects a quoted
+		// directive name anyway, but the denylist must still see it): "alias" -> alias.
+		name := strings.ToLower(strings.Trim(fields[0], `"'`))
 		if forbiddenNginxDirectives[name] ||
 			strings.Contains(name, "_by_lua") ||
 			strings.HasPrefix(name, "lua_") ||

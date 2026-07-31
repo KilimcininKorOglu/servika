@@ -27,6 +27,9 @@ func TestDangerousNginxDirectiveRejectsPrivilegedOperations(t *testing.T) {
 		{name: "Lua execution", directives: "content_by_lua_block { ngx.say('unsafe') }", want: "content_by_lua_block"},
 		{name: "commented directive", directives: "# proxy_pass http://127.0.0.1;\nclient_max_body_size 10m;", want: ""},
 		{name: "safe directive", directives: "client_max_body_size 10m;\nadd_header X-Test safe;", want: ""},
+		{name: "quoted hash does not hide alias", directives: `add_header X-Test "#"; alias /etc/;`, want: "alias"},
+		{name: "hash inside quotes is literal", directives: `add_header X-Marker "a#b safe";`, want: ""},
+		{name: "quoted directive name still caught", directives: `"alias" /etc/;`, want: "alias"},
 	}
 
 	for _, test := range tests {
