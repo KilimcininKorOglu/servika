@@ -40,6 +40,8 @@ export default function PackageDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [reapplyingId, setReapplyingId] = useState<number | null>(null)
+  const [reapplyResult, setReapplyResult] = useState<{ id: number; ok: boolean } | null>(null)
 
   function load() {
     if (!id) return
@@ -76,14 +78,16 @@ export default function PackageDetailPage() {
 
   async function reapplyForDomain(domainId: number) {
     if (!plan) return
-    setProcessing(true)
+    setReapplyingId(domainId); setReapplyResult(null); setError(null)
     try {
       await api.put(`/domains/${domainId}/plan`, { plan_id: plan.id })
-      setSuccess(`✓ Resource limits were reapplied for ${domains.find(domain => domain.id === domainId)?.domain_name}`)
-      setTimeout(() => setSuccess(null), 4000)
+      setReapplyResult({ id: domainId, ok: true })
     } catch (e) {
-      setError(apiError(e))
-    } finally { setProcessing(false) }
+      setReapplyResult({ id: domainId, ok: false }); setError(apiError(e))
+    } finally {
+      setReapplyingId(null)
+      setTimeout(() => setReapplyResult(current => (current?.id === domainId ? null : current)), 3500)
+    }
   }
 
   function updatePlan<K extends keyof Plan>(key: K, value: Plan[K]) {
@@ -291,9 +295,14 @@ export default function PackageDetailPage() {
                       </td>
                       <td data-label="Created" className={responsiveTableCodeCellClass}>{domain.created_at}</td>
                       <td className={responsiveTableActionCellClass}>
-                        <button onClick={() => reapplyForDomain(domain.id)} disabled={processing}
-                          className="text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800">
-                          Reapply
+                        <button type="button" onClick={() => reapplyForDomain(domain.id)} disabled={reapplyingId !== null}
+                          className={`text-xs px-2 py-1 border rounded-md disabled:opacity-60 transition ${
+                            reapplyResult?.id === domain.id
+                              ? (reapplyResult.ok
+                                  ? 'border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20'
+                                  : 'border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20')
+                              : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                          {reapplyingId === domain.id ? 'Reapplying…' : reapplyResult?.id === domain.id ? (reapplyResult.ok ? '✓ Applied' : '✗ Failed') : 'Reapply'}
                         </button>
                       </td>
                     </tr>

@@ -67,6 +67,35 @@ export default function DomainDNSPage() {
   const [dnssecProcessing, setDNSSECProcessing] = useState(false)
   const [dnssecDisableConfirmationOpen, setDNSSECDisableConfirmationOpen] = useState(false)
   const [dsCopied, setDSCopied] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importReplace, setImportReplace] = useState(false)
+  const [importing, setImporting] = useState(false)
+
+  async function exportZone() {
+    try {
+      const response = await api.get(`/domains/${id}/dns/export`, { responseType: 'blob' })
+      const url = URL.createObjectURL(response.data as Blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = `${domain?.domain_name || 'zone'}.zone`
+      document.body.appendChild(anchor); anchor.click(); anchor.remove()
+      URL.revokeObjectURL(url)
+    } catch (e) { setError(apiError(e, 'Export failed')) }
+  }
+
+  async function importZone() {
+    if (!importFile) return
+    setImporting(true); setError(null); setSuccess(null)
+    try {
+      const form = new FormData(); form.append('file', importFile)
+      const mode = importReplace ? 'replace' : 'merge'
+      const { data } = await api.post<{ added: number; skipped: number; mode: string; warning?: string }>(`/domains/${id}/dns/import?mode=${mode}`, form)
+      setSuccess(`Import complete — ${data.added} added, ${data.skipped} skipped (${data.mode})${data.warning ? ' · ' + data.warning : ''}`)
+      setImportOpen(false); setImportFile(null); setImportReplace(false)
+      load()
+    } catch (e) { setError(apiError(e, 'Import failed')) } finally { setImporting(false) }
+  }
 
   function load() {
     if (!id) return
@@ -297,8 +326,29 @@ export default function DomainDNSPage() {
           📋 Apply Default Template
         </button>
         <button onClick={load} className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md transition">↻ Refresh</button>
+        <button onClick={exportZone} title="Download the DNS records as a BIND zone file" className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md transition">⬇ Export</button>
+        <button onClick={() => setImportOpen(true)} title="Upload a BIND zone file" className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md transition">⬆ Import</button>
         <span className="col-span-2 text-sm text-slate-500 dark:text-slate-500 sm:col-span-1 sm:ml-auto">{records.length} records</span>
       </div>
+
+      {importOpen && (
+        <Modal open={true} title="Import Zone File" onClose={() => setImportOpen(false)} width="md">
+          <div className="space-y-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Upload a standard BIND zone file (.zone / .txt). Records are imported into this domain, then the zone is validated and rewritten.</p>
+            <input type="file" accept=".zone,.txt,.db,.bind,text/plain" onChange={e => setImportFile(e.target.files?.[0] || null)}
+              className="block w-full text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:px-3 file:py-2 file:rounded-md file:border-0 file:bg-slate-900 file:text-white dark:file:bg-slate-700 hover:file:bg-slate-800 file:cursor-pointer" />
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
+              <input type="checkbox" checked={importReplace} onChange={e => setImportReplace(e.target.checked)} className="rounded" />
+              Overwrite existing records — when unchecked, records are merged (new ones added)
+            </label>
+            {importReplace && <p className="text-[11px] text-amber-600 dark:text-amber-400">⚠️ ALL current DNS records for this domain will be deleted and replaced with the file's. Exporting a backup first is recommended.</p>}
+            <div className="flex justify-end gap-2 pt-1">
+              <button onClick={() => setImportOpen(false)} className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition">Cancel</button>
+              <button disabled={!importFile || importing} onClick={importZone} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white dark:text-slate-100 text-sm font-medium rounded-md transition disabled:opacity-50">{importing ? 'Importing…' : 'Import'}</button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}

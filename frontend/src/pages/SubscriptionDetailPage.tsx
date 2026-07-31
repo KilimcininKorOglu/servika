@@ -8,7 +8,7 @@ import DomainDashboard from "@/components/DomainDashboard"
 import ToolCard from '@/components/ToolCard'
 import type { Domain } from '@/components/DomainList'
 
-type Tab = 'dashboard' | 'hosting' | 'getting_started'
+type Tab = 'dashboard' | 'hosting'
 
 const ICONS = {
   connection:  'M13.828 10.172a4 4 0 015.656 5.656l-3 3a4 4 0 01-5.656-5.656m.172-5.172a4 4 0 00-5.656 5.656l-3 3a4 4 0 005.656 5.656',
@@ -163,7 +163,6 @@ export default function SubscriptionDetailPage() {
       <div className="flex items-center gap-5 border-b border-slate-200 dark:border-slate-700 mb-5">
         <TabBtn enabled={tab === 'dashboard'} onClick={() => setTab('dashboard')}>Dashboard</TabBtn>
         <TabBtn enabled={tab === 'hosting'}   onClick={() => setTab('hosting')}>Hosting and DNS</TabBtn>
-        <TabBtn enabled={tab === 'getting_started'} onClick={() => setTab('getting_started')}>Getting Started</TabBtn>
       </div>
 
       <div className="grid grid-cols-12 gap-5">
@@ -197,7 +196,6 @@ export default function SubscriptionDetailPage() {
         <section className="col-span-12 lg:col-span-6">
           {tab === 'dashboard' && <DomainDashboard domain={domain} />}
           {tab === 'hosting'   && <HostingTab domain={domain} />}
-          {tab === 'getting_started' && <GettingStartedTab />}
 
           <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-500 flex-wrap gap-2">
             <div className="flex items-center gap-4">
@@ -361,10 +359,3 @@ function HostingTab({ domain }: { domain: Domain }) {
   )
 }
 
-function GettingStartedTab() {
-  return (
-    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 text-sm text-amber-800 dark:text-amber-200">
-      <strong>Getting Started</strong>. This tab will contain setup wizards and will be enabled in F2.
-    </div>
-  )
-}
