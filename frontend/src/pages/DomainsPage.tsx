@@ -19,6 +19,7 @@ type Domain = {
   size_kb: number; traffic_kb: number; status: string; suspended?: boolean
   php_version?: string; is_demo?: boolean
   created_at?: string; plan_id?: number; plan_name?: string
+  ssl?: boolean; ssl_expiry?: string; reseller_name?: string
 }
 type Subdomain = {
   id: number; subdomain: string; fqdn: string
@@ -303,10 +304,16 @@ export default function DomainsPage() {
                         <Link to={`/subscriptions/${d.id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">
                           {d.domain_name}
                         </Link>
-                        {d.is_demo && <span className="ml-2 text-[10px] uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">DEMO</span>}
+                        {' '}
+                        <a href={`https://${d.domain_name}`} target="_blank" rel="noopener noreferrer" title="Open in new tab" className="text-slate-400 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 text-xs">↗</a>
+                        {d.ssl && <span className="ml-1.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded" title={d.ssl_expiry ? `Expires: ${d.ssl_expiry}` : 'SSL active'}>SSL</span>}
+                        {d.is_demo && <span className="ml-1.5 text-[10px] uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">DEMO</span>}
                       </div>
                     </td>
-                    <td data-label="System User" className={responsiveTableCodeCellClass}>{d.system_user}</td>
+                    <td data-label="System User" className={responsiveTableCodeCellClass}>
+                      {d.system_user}
+                      {d.reseller_name && <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Reseller: {d.reseller_name}</div>}
+                    </td>
                     <td data-label="Plan" className={responsiveTableCellClass}>
                       {d.plan_name ? <span className="text-slate-700 dark:text-slate-300">{d.plan_name}</span> : <span className="text-slate-400 dark:text-slate-500 italic">None</span>}
                     </td>

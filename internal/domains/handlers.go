@@ -51,6 +51,9 @@ type Domain struct {
 	PlanName   string `json:"plan_name,omitempty"`
 	SshAccess  bool   `json:"ssh_access"`
 	Suspended  bool   `json:"suspended"`
+	// ResellerName is the username of the reseller who owns the domain's customer.
+	// Empty means the customer is directly under admin (no reseller).
+	ResellerName string `json:"reseller_name,omitempty"`
 }
 
 type Handlers struct {
@@ -62,8 +65,12 @@ const selectAll = `SELECT d.id, d.domain_name, d.system_user, d.php_version, d.s
   COALESCE(DATE_FORMAT(d.ssl_expiry,'%Y-%m-%d'),''), d.status, d.ipv4, d.ftp_host, d.ftp_user,
   d.db_host, d.db_user, d.db_name, d.web_root, d.size_kb, d.traffic_kb, d.is_demo,
   COALESCE(d.notes,''), DATE_FORMAT(d.created_at,'%Y-%m-%d'),
-  d.plan_id, COALESCE(p.name,''), d.ssh_access, COALESCE(d.suspended,0)
-  FROM domains d LEFT JOIN service_plans p ON p.id=d.plan_id`
+  d.plan_id, COALESCE(p.name,''), d.ssh_access, COALESCE(d.suspended,0),
+  COALESCE(ru.username,'')
+  FROM domains d
+  LEFT JOIN service_plans p ON p.id=d.plan_id
+  LEFT JOIN customers cu ON cu.id=d.customer_id
+  LEFT JOIN users ru ON ru.id=cu.owner_user_id`
 
 func scan(rs interface{ Scan(...any) error }) (Domain, error) {
 	var d Domain
@@ -73,7 +80,8 @@ func scan(rs interface{ Scan(...any) error }) (Domain, error) {
 		&d.SSLExpiry, &d.Status, &d.IPv4, &d.FTPHost, &d.FTPUser,
 		&d.DBHost, &d.DBUser, &d.DBName, &d.WebRoot, &d.SizeKB, &d.TrafficKB, &demo,
 		&d.Notes, &d.CreatedAt,
-		&planID, &d.PlanName, &sshE, &suspended)
+		&planID, &d.PlanName, &sshE, &suspended,
+		&d.ResellerName)
 	d.SSL = ssl == 1
 	d.IsDemo = demo == 1
 	d.SshAccess = sshE == 1
