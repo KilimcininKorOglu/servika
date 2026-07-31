@@ -71,3 +71,7 @@ func openReadBeneath(_, _ string) (*os.File, error) {
 }
 
 func fchownRestoreFd(_ string, _ *os.File, _ string) {}
+
+func resetTreeBeneath(_, _, _ string, _, _ uint32) error {
+	return errSafeIOLinuxOnly
+}

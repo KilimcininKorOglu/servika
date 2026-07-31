@@ -1652,6 +1652,14 @@ func hardenHomePermsRecursive(publicHTML, systemUser string) bool {
 	return true
 }
 
+// ReapplyPublicHTMLACL reapplies the nginx read ACL (u:nginx:rX + default ACL)
+// recursively across a tenant's public_html. The file-manager permission-reset
+// re-runs this after a chmod sweep, since a chmod (or a restore without --acls)
+// can strip the ACL that lets nginx/PHP-FPM read the site.
+func ReapplyPublicHTMLACL(publicHTML, systemUser string) bool {
+	return hardenHomePermsRecursive(publicHTML, systemUser)
+}
+
 // HealHomePerms applies tenant-isolating ownership and permissions to existing managed homes.
 func HealHomePerms() {
 	if packageDB == nil {

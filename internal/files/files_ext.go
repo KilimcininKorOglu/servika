@@ -17,6 +17,7 @@ import (
 
 	"servika/internal/archivex"
 	"servika/internal/httpx"
+	"servika/internal/provisioner"
 )
 
 // Decompression-bomb defense for tenant-uploaded archives: cap the declared
@@ -592,4 +593,26 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"content": results, "total": len(results), "q": q,
 	})
+}
+
+// ResetPermissions resets ownership and permissions across the tenant's
+// public_html to the canonical values used at provisioning: directories 0750,
+// files 0644, owned by the site's own system user (the CloudPanel
+// "system:permissions:reset" equivalent). The walk is symlink-safe
+// (resetTreeBeneath skips symlinks and cannot escape home), and only public_html
+// is targeted — the home siblings (logs/tmp/ssl/.cron) are panel-managed and are
+// not affected by user file corruption. The nginx read ACL is reapplied
+// afterwards because a chmod can strip it.
+func (h *Handlers) ResetPermissions(w http.ResponseWriter, r *http.Request) {
+	home, systemUser, err := h.home(r)
+	if err != nil {
+		httpx.WriteError(w, statusFromErr(err), messageFromErr(err))
+		return
+	}
+	if err := resetTreeBeneath(home, "public_html", systemUser, 0o750, 0o644); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not reset permissions")
+		return
+	}
+	provisioner.ReapplyPublicHTMLACL(filepath.Join(home, "public_html"), systemUser)
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }

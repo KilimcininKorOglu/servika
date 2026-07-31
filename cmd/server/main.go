@@ -498,6 +498,7 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/files/write", filesH.Write)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/files/rename", filesH.Rename)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/files/chmod", filesH.Chmod)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/files/reset-permissions", filesH.ResetPermissions)
 				// Expensive file operations (recursive walks, archive extraction/creation,
 				// du, find) are throttled per IP so a customer cannot exhaust CPU/disk/IO
 				// by launching them in a tight loop. new-file stays unthrottled (cheap).

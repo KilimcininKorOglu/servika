@@ -221,6 +221,70 @@ func chmodBeneath(home, rel string, mode uint32) error {
 	return unix.Fchmod(int(f.Fd()), mode)
 }
 
+// resetTreeBeneath resets ownership and permissions across the subtree rooted at
+// rel (relative to home): directories get dirMode, regular files get fileMode,
+// and every non-symlink inode is chowned to the tenant (uid/gid of sk). It opens
+// the root through openAt2Beneath (RESOLVE_BENEATH/NO_SYMLINKS) and then walks
+// fd-by-fd with O_NOFOLLOW, so a symlink can never redirect the walk outside
+// home; symlinks themselves are skipped (Linux fchmodat follows the link and has
+// no AT_SYMLINK_NOFOLLOW for chmod, so a jail-escaping link like
+// public_html/x -> /etc/passwd is never touched).
+func resetTreeBeneath(home, rel, sk string, dirMode, fileMode uint32) error {
+	uid, gid, ok := tenantIDs(sk)
+	if !ok {
+		return errBadUser
+	}
+	parentFd, leaf, err := safeParentFd(home, rel)
+	if err != nil {
+		return err
+	}
+	defer unix.Close(parentFd)
+	var st unix.Stat_t
+	if err := unix.Fstatat(parentFd, leaf, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return err
+	}
+	if (st.Mode & unix.S_IFMT) == unix.S_IFLNK {
+		return errEscape // the root itself is a symlink — refuse
+	}
+	resetEntry(parentFd, leaf, uid, gid, dirMode, fileMode)
+	return nil
+}
+
+// resetEntry chmods+chowns one entry named `name` under dirfd, recursing into a
+// directory by opening it with O_NOFOLLOW (a symlink leaf therefore fails to
+// open as a directory and is skipped). It never follows a symlink.
+func resetEntry(dirfd int, name string, uid, gid int, dirMode, fileMode uint32) {
+	var st unix.Stat_t
+	if err := unix.Fstatat(dirfd, name, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return
+	}
+	switch st.Mode & unix.S_IFMT {
+	case unix.S_IFLNK:
+		return // never chmod/chown a symlink
+	case unix.S_IFDIR:
+		_ = unix.Fchownat(dirfd, name, uid, gid, unix.AT_SYMLINK_NOFOLLOW)
+		_ = unix.Fchmodat(dirfd, name, dirMode, 0)
+		fd, err := unix.Openat(dirfd, name, unix.O_DIRECTORY|unix.O_RDONLY|unix.O_NOFOLLOW|unix.O_NONBLOCK, 0)
+		if err != nil {
+			return // could not open as a real directory (raced/replaced) — skip, never escape
+		}
+		defer unix.Close(fd)
+		names, err := readdirnamesFd(fd)
+		if err != nil {
+			return
+		}
+		for _, child := range names {
+			if child == "." || child == ".." {
+				continue
+			}
+			resetEntry(fd, child, uid, gid, dirMode, fileMode)
+		}
+	case unix.S_IFREG:
+		_ = unix.Fchownat(dirfd, name, uid, gid, unix.AT_SYMLINK_NOFOLLOW)
+		_ = unix.Fchmodat(dirfd, name, fileMode, 0)
+	}
+}
+
 // writeBeneath is a symlink-safe file write (create/truncate). An existing file's
 // permissions are preserved (open won't touch mode outside create); a new file gets
 // createMode. The fd is then chowned to the tenant + restorecon'd.
