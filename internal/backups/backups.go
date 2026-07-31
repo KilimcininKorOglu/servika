@@ -2,6 +2,7 @@
 package backups
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -192,6 +193,11 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer backupInProgress.Delete(id)
 
+	// Bound the dump+archive work so a pathological dataset cannot pin mysqldump
+	// or tar (CPU/IO heavy) indefinitely and starve the host.
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Minute)
+	defer cancel()
+
 	stamp := time.Now().UTC().Format("20060102-150405")
 	dir := filepath.Join(backupRoot(), systemUser)
 	_ = os.MkdirAll(dir, 0700)
@@ -213,7 +219,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { _ = os.RemoveAll(dumpDir) }()
 	sqlDump := filepath.Join(dumpDir, "dump.sql")
-	if out, derr := exec.Command("bash", "-c",
+	if out, derr := exec.CommandContext(ctx, "bash", "-c",
 		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); derr != nil {
 		log.Printf("backup mysqldump failed for %s: %v: %s", dbName, derr, strings.TrimSpace(string(out)))
 		httpx.WriteError(w, http.StatusInternalServerError, "could not dump database for backup")
@@ -226,7 +232,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		"-C", "/home", systemUser,
 		"-C", dumpDir, "dump.sql",
 	}
-	if _, tarErr := exec.Command("tar", args...).CombinedOutput(); tarErr != nil {
+	if _, tarErr := exec.CommandContext(ctx, "tar", args...).CombinedOutput(); tarErr != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create backup archive")
 		return
 	}
@@ -245,6 +251,10 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	backupID, _ := res.LastInsertId()
+	// Cap manual backups too: retention previously applied only to scheduled
+	// backups, so manual ones accumulated on the root disk (outside the tenant
+	// quota) and could fill it (a slow disk-exhaustion DoS).
+	pruneManualBackups(h.DB, id, systemUser)
 	// If a remote destination exists, upload in the background (do not block the API response)
 	pushToDestinationAsync(h.DB, id, backupID, abs, file)
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
@@ -302,4 +312,38 @@ func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", strconv.FormatInt(st.Size(), 10))
 	}
 	_, _ = io.Copy(w, f)
+}
+
+// manualBackupKeep is the number of newest manual ('full') backups retained per
+// domain. Older ones have their archive and DB row removed so manual backups
+// cannot pile up on the root disk (outside the tenant quota).
+const manualBackupKeep = 10
+
+// pruneManualBackups deletes every manual backup beyond the newest
+// manualBackupKeep for the domain. Best-effort: any error is ignored so it never
+// fails the backup that just succeeded.
+func pruneManualBackups(db *sql.DB, domainID int64, systemUser string) {
+	rows, err := db.Query(
+		`SELECT id, file FROM backups
+		 WHERE domain_id=? AND type='full'
+		 ORDER BY id DESC LIMIT 500 OFFSET ?`, domainID, manualBackupKeep)
+	if err != nil {
+		return
+	}
+	type item struct {
+		id   int64
+		file string
+	}
+	var old []item
+	for rows.Next() {
+		var it item
+		if rows.Scan(&it.id, &it.file) == nil {
+			old = append(old, it)
+		}
+	}
+	_ = rows.Close()
+	for _, it := range old {
+		_ = os.Remove(filepath.Join(backupRoot(), systemUser, it.file))
+		_, _ = db.Exec(`DELETE FROM backups WHERE id=?`, it.id)
+	}
 }
