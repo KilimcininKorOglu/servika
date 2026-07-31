@@ -98,6 +98,15 @@ func ClientIP(r *http.Request) string {
 	if !isLocalProxy(remote) {
 		return remote // direct connection — do not trust headers
 	}
+	// A loopback peer can be nginx OR a same-host tenant process (both 127.0.0.1).
+	// When the shared secret is INSTALLED (the normal case) trust the proxy
+	// headers only on a request that carries nginx's X-Servika-Proxy; otherwise
+	// fall back to remote so a tenant cannot forge X-Real-IP to bypass the login
+	// rate-limit. When no secret exists yet (first boot / rollback) the previous
+	// loopback-trust behaviour is kept so nobody is locked out.
+	if secret := ProxySecret(); secret != "" && !hasProxySecretHeader(r, secret) {
+		return remote
+	}
 	if v := strings.TrimSpace(r.Header.Get("X-Real-IP")); v != "" {
 		return v
 	}
