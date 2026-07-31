@@ -89,7 +89,7 @@ func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, http.StatusUnauthorized, "current password is incorrect")
 			return
 		}
-		if strings.ContainsAny(b.New, "\n\r") {
+		if strings.ContainsAny(b.New, "\n\r\x00") {
 			httpx.WriteError(w, http.StatusBadRequest, "password contains invalid characters")
 			return
 		}
