@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "laravel": "Laravel Araç Seti"
+  },
+  "loading": "Yükleniyor…",
+  "title": "Laravel Araç Seti",
+  "subtitle": "Bu abonelik için bir Laravel uygulaması kurun, dağıtın ve yönetin.",
+  "backToSubscription": "Aboneliğe Dön",
+  "tabs": {
+    "overview": "Genel Bakış",
+    "install": "Kurulum",
+    "commands": "Komutlar",
+    "env": ".env",
+    "deploy": "Dağıtım",
+    "workers": "İşçiler"
+  },
+  "messages": {
+    "actionCompleted": "İşlem tamamlandı",
+    "actionFailed": "İşlem başarısız"
+  },
+  "overview": {
+    "title": "Uygulama Durumu",
+    "installed": "Kurulu",
+    "yes": "Evet",
+    "no": "Hayır",
+    "appRoot": "Uygulama kök dizini",
+    "documentPath": "Belge yolu",
+    "php": "PHP",
+    "composerManifest": "Composer bildirimi",
+    "found": "Bulundu",
+    "missing": "Eksik",
+    "git": "Git",
+    "repositoryFound": "Depo bulundu",
+    "notConnected": "Bağlı değil",
+    "maintenance": "Bakım",
+    "enabled": "Etkin",
+    "disabled": "Devre dışı",
+    "schedule": "Zamanlama",
+    "queue": "Kuyruk"
+  },
+  "install": {
+    "title": "Laravel Kur",
+    "mode": "Mod",
+    "modeRemote": "Uzak depoyu klonla",
+    "modeScaffold": "Yeni Laravel projesi oluştur",
+    "modeLocal": "Boş Git deposu başlat",
+    "appRoot": "Uygulama kök dizini",
+    "repositoryUrl": "Depo URL'si",
+    "repositoryUrlPlaceholder": "https://github.com/ornek/app.git",
+    "branch": "Dal",
+    "branchPlaceholder": "main",
+    "startInstall": "Kurulumu başlat",
+    "checkInstallStatus": "Kurulum durumunu kontrol et"
+  },
+  "commands": {
+    "title": "Laravel Komutları",
+    "packagePlaceholder": "vendor/package",
+    "scriptPlaceholder": "betik adı",
+    "run": "Çalıştır"
+  },
+  "env": {
+    "title": "Ortam Dosyası",
+    "load": ".env yükle",
+    "save": ".env kaydet"
+  },
+  "deploy": {
+    "title": "Dağıtım",
+    "deployWithMigrate": "Migrate ve build ile dağıt",
+    "checkDeployStatus": "Dağıtım durumunu kontrol et",
+    "disableMaintenance": "Bakımı kapat",
+    "enableMaintenance": "Bakımı aç"
+  },
+  "workers": {
+    "title": "Zamanlama ve Kuyruk İşçisi",
+    "queueTimeout": "Kuyruk zaman aşımı",
+    "maxJobs": "Maksimum iş",
+    "connection": "Bağlantı",
+    "disableSchedule": "Zamanlamayı kapat",
+    "enableSchedule": "Zamanlamayı aç",
+    "disableQueue": "Kuyruğu kapat",
+    "enableQueue": "Kuyruğu aç"
+  },
+  "common": {
+    "save": "Kaydet"
+  }
+}

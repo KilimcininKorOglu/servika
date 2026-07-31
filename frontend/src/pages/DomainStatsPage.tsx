@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useResourceScope } from '@/lib/scope'
@@ -14,6 +15,7 @@ type Summary = {
 }
 
 export default function DomainStatsPage() {
+  const { t } = useTranslation('DomainStatsPage')
   const { id, base, isSubdomain, backHref, backLabel } = useResourceScope()
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,8 +31,8 @@ export default function DomainStatsPage() {
   }
   useEffect(load, [base])
 
-  if (loading) return <div className="px-6 py-5 text-slate-400">Loading…</div>
-  if (!summary) return <div className="px-6 py-5"><div className="text-sm text-red-600">{error || 'Not found'}</div></div>
+  if (loading) return <div className="px-6 py-5 text-slate-400">{t('loading')}</div>
+  if (!summary) return <div className="px-6 py-5"><div className="text-sm text-red-600">{error || t('notFound')}</div></div>
 
   const maxDailyRequests = Math.max(1, ...summary.daily.map(day => day.request))
   const statusBar: Record<string, string> = { '2xx': 'bg-emerald-500', '3xx': 'bg-sky-500', '4xx': 'bg-amber-500', '5xx': 'bg-rose-500' }
@@ -39,37 +41,37 @@ export default function DomainStatsPage() {
     <div className="px-6 py-5">
       <div>
         <Breadcrumb items={[
-          { label: 'Home', href: '/' },
-          { label: 'Domains', href: '/domains' },
+          { label: t('breadcrumb.home'), href: '/' },
+          { label: t('breadcrumb.domains'), href: '/domains' },
           { label: summary.domain_name, href: `/subscriptions/${id}` },
-          { label: 'Statistics' },
+          { label: t('breadcrumb.statistics') },
         ]} />
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Traffic Statistics</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1"><span className="font-mono">{summary.domain_name}</span>, nginx access log analysis.
-              {!isSubdomain && ' Subdomain traffic is included in these totals.'}</p>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1"><span className="font-mono">{summary.domain_name}</span>{t('subtitle.pre')}
+              {!isSubdomain && t('subtitle.subdomainNote')}</p>
           </div>
-          <button onClick={load} className="text-sm px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">↻ Refresh</button>
+          <button onClick={load} className="text-sm px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">{t('refresh')}</button>
         </div>
 
         {!summary.has_log || summary.total_requests === 0 ? (
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-10 text-center text-sm text-slate-400">
-            No access log data yet. It will appear here once the site starts receiving traffic.
+            {t('emptyLog')}
           </div>
         ) : (
           <>
             {/* KPI cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              <KPI label="Total Requests" value={summary.total_requests.toLocaleString('en-US')} color="indigo" />
-              <KPI label="Bandwidth Usage" value={`${summary.total_bandwidth_mb.toFixed(1)} MB`} color="sky" />
-              <KPI label="Unique IPs" value={summary.unique_ip.toLocaleString('en-US')} color="emerald" />
-              <KPI label="Bot Ratio" value={`${summary.bot_ratio}%`} color={summary.bot_ratio >= 50 ? 'rose' : 'violet'} />
+              <KPI label={t('kpi.totalRequests')} value={summary.total_requests.toLocaleString('en-US')} color="indigo" />
+              <KPI label={t('kpi.bandwidth')} value={`${summary.total_bandwidth_mb.toFixed(1)} MB`} color="sky" />
+              <KPI label={t('kpi.uniqueIps')} value={summary.unique_ip.toLocaleString('en-US')} color="emerald" />
+              <KPI label={t('kpi.botRatio')} value={`${summary.bot_ratio}%`} color={summary.bot_ratio >= 50 ? 'rose' : 'violet'} />
             </div>
 
             {/* Status distribution */}
-            <Card title="HTTP Status Distribution">
+            <Card title={t('statusTitle')}>
               <div className="space-y-2">
                 {(['2xx', '3xx', '4xx', '5xx'] as const).map(group => {
                   const count = summary.status_group[group] || 0
@@ -89,12 +91,12 @@ export default function DomainStatsPage() {
 
             {/* Daily requests over seven days */}
             {summary.daily.length > 0 && (
-              <Card title="Daily Requests (last 7 days)">
+              <Card title={t('dailyTitle')}>
                 <div className="flex items-end gap-2 h-32">
                   {summary.daily.map(day => (
                     <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
                       <div className="w-full flex items-end justify-center" style={{ height: '100px' }}>
-                        <div className="w-full max-w-[36px] rounded-t bg-gradient-to-t from-brand-600 to-brand-400" style={{ height: Math.max(4, day.request / maxDailyRequests * 100) + '%' }} title={`${day.request} requests`} />
+                        <div className="w-full max-w-[36px] rounded-t bg-gradient-to-t from-brand-600 to-brand-400" style={{ height: Math.max(4, day.request / maxDailyRequests * 100) + '%' }} title={t('dailyRequests', { count: day.request })} />
                       </div>
                       <span className="text-[10px] text-slate-400 font-mono">{day.date.split('/')[0]}</span>
                       <span className="text-[10px] text-slate-600 dark:text-slate-300 font-mono">{day.request}</span>
@@ -105,15 +107,15 @@ export default function DomainStatsPage() {
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card title="Most Requested Paths">
-                <Table rows={summary.top_paths} unit="requests" mono />
+              <Card title={t('topPathsTitle')}>
+                <Table rows={summary.top_paths} unit={t('unit.requests')} mono />
               </Card>
-              <Card title="Most Active IPs">
-                <Table rows={summary.top_ip} unit="requests" mono />
+              <Card title={t('topIpsTitle')}>
+                <Table rows={summary.top_ip} unit={t('unit.requests')} mono />
               </Card>
             </div>
 
-            <Card title="Latest Requests">
+            <Card title={t('latestTitle')}>
               <div className="font-mono text-xs space-y-1 max-h-64 overflow-y-auto">
                 {summary.last_requests.map((request, index) => {
                   const code = request.slice(0, 3)
@@ -149,8 +151,9 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   )
 }
 function Table({ rows, unit, mono }: { rows: KeyValue[]; unit: string; mono?: boolean }) {
+  const { t } = useTranslation('DomainStatsPage')
   const max = Math.max(1, ...rows.map(row => row.count))
-  if (!rows.length) return <div className="text-sm text-slate-400 py-3">No data.</div>
+  if (!rows.length) return <div className="text-sm text-slate-400 py-3">{t('noData')}</div>
   return (
     <div className="space-y-1.5">
       {rows.map((row, index) => (

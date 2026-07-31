@@ -1,0 +1,132 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "settings": "Apache ve nginx Ayarları"
+  },
+  "title": "Apache ve nginx Ayarları",
+  "subtitle": "Güvenlik başlıkları ve özel yönergeler. Kaydetmek nginx vhost dosyasını yeniden oluşturur.",
+  "loading": "Yükleniyor…",
+  "applying": "Uygulanıyor…",
+  "reload": "Yeniden Yükle",
+  "saveApply": "💾 Kaydet ve Uygula",
+  "backend": {
+    "php-fpm": {
+      "name": "nginx + PHP-FPM",
+      "description": "Varsayılan. nginx, PHP-FPM'i FastCGI üzerinden doğrudan çağırır. WordPress, Laravel ve dinamik PHP siteleri için en düşük gecikmeyle idealdir."
+    },
+    "apache": {
+      "name": "nginx + Apache",
+      "description": "nginx uçta TLS'i sonlandırır, arkasındaki Apache (10080) vhost'u sunar. Joomla, eski WordPress siteleri ve eski CMS'ler için tam .htaccess desteği."
+    },
+    "static": {
+      "name": "Statik (PHP yok)",
+      "description": "Yalnızca dosya sunar. React, Vue veya Angular SPA'ları, Hugo ve Jekyll gibi statik site oluşturucular ve CDN içeriği için tasarlanmıştır. PHP istekleri 404 döner."
+    }
+  },
+  "headers": {
+    "hdr_x_content_type": "XSS savunması olarak MIME sniffing'i önler",
+    "hdr_x_xss": "Eski tarayıcı XSS koruması",
+    "hdr_referrer": "Siteler arası Referer bilgisini kısıtlar",
+    "hdr_permissions": "Kamera, mikrofon ve konum API'lerini varsayılan olarak devre dışı bırakır",
+    "hdr_csp_upgrade": "HTTP bağlantılarını otomatik olarak HTTPS'e yükseltir"
+  },
+  "stack": {
+    "title": "Web Sunucu Yığını",
+    "description": "nginx, uçta TLS sonlandırıcı olarak kalır. Aşağıdaki seçim, alan adını seçilen arka uç motoruna yönlendirir.",
+    "active": "● Etkin"
+  },
+  "docRoot": {
+    "title": "Belge Kök Dizini",
+    "description": "nginx'in hangi public_html alt dizinini sunacağını seçin. Laravel uygulamaları genellikle public dizinini kullanır.",
+    "subdirLabel": "public_html altındaki alt dizin",
+    "placeholder": "public",
+    "save": "Belge Kök Dizinini Kaydet",
+    "currentLabel": "Geçerli belge kök dizini:"
+  },
+  "hstsNote": {
+    "pre": " yalnızca HTTPS etkin siteler için geçerlidir. Site yalnızca HTTP kullandığında tarayıcıya gönderilmez. Değişiklikler otomatik olarak ",
+    "mid": " ve ",
+    "post": " işlemlerini sıfır kesinti ile tetikler."
+  },
+  "customVhostActive": {
+    "boldPre": "Özel vhost etkin",
+    "post": " — aşağıdaki güvenlik başlıkları, önbellek ve ek yönerge ayarları şu anda ",
+    "boldNot": "uygulanmıyor",
+    "tail": ". Buradaki değişiklikler kaydedilir ancak vhost dosyasına ulaşmaz; bu ayarları tekrar etkin hale getirmek için aşağıdaki vhost dosyası kartında \"Panel Yönetimine Dön\" düğmesine basın."
+  },
+  "cards": {
+    "securityHeaders": "Güvenlik Başlıkları (HTTP + HTTPS)",
+    "hsts": "HTTP Strict Transport Security (yalnızca HTTPS)",
+    "performanceCache": "Performans Önbelleği",
+    "vhostFile": "nginx Vhost Dosyası",
+    "additionalDirectives": "Ek nginx Yönergeleri"
+  },
+  "hsts": {
+    "description": "Tarayıcılar siteye yalnızca HTTPS üzerinden bağlanır. Yanlış yapılandırmayı geri almak zordur, bu yüzden yalnızca uygun olduğunda etkinleştirin.",
+    "maxAgeLabel": "max-age (saniye)",
+    "maxAge300": "5 dakika (test için)",
+    "maxAge86400": "1 gün",
+    "maxAge604800": "1 hafta",
+    "maxAge2592000": "30 gün",
+    "maxAge15768000": "6 ay",
+    "maxAge31536000": "1 yıl (önerilen)",
+    "maxAge63072000": "2 yıl (preload için)",
+    "includeSubDomainsDesc": "Her birinin HTTPS desteklediğini onayladıktan sonra tüm alt alan adlarına uygulayın",
+    "preloadDesc": "Siteyi tarayıcılara varsayılan olarak dahil edin (hstspreload.org'da kayıt gereklidir)"
+  },
+  "cache": {
+    "fastcgiLabel": "nginx FastCGI Önbelleği",
+    "fastcgiValue": "x-cache-status başlığı · {{minutes}} dakikalık önbellek süresi",
+    "fastcgiDesc": "WordPress ve PHP sayfalarını diskte önbelleğe alır. POST istekleri, çerezler, giriş sayfaları ve önizlemeler otomatik olarak atlanır. WP Site Health sayfa önbelleği uyarısını giderir.",
+    "durationMinutes": "Önbellek süresi (dakika)",
+    "min5": "5 dakika",
+    "min15": "15 dakika",
+    "min60": "1 saat (önerilen)",
+    "min360": "6 saat",
+    "min1440": "1 gün",
+    "browserLabel": "Tarayıcı Önbelleği (statik dosyalar)",
+    "browserValue": "Cache-Control: public, immutable · {{days}} gün sonra sona erer",
+    "browserDesc": "CSS, JS, PNG, JPG ve WOFF gibi statik dosyalar tarayıcıda önbelleğe alınır, böylece tekrar ziyaretler çok daha hızlı yüklenir.",
+    "durationDays": "Önbellek süresi (gün)",
+    "day1": "1 gün",
+    "day7": "1 hafta",
+    "day30": "30 gün (önerilen)",
+    "day90": "3 ay",
+    "day365": "1 yıl"
+  },
+  "vhost": {
+    "warningPre": "Bu, nginx'in bu alan adı için ",
+    "warningBoldActually": "gerçekte sunduğu",
+    "warningMid": " dosyadır. Doğrudan düzenleyip kaydedebilirsiniz — kaydettiğiniz anda, ",
+    "warningBoldEntire": "tüm",
+    "warningPost": " vhost dosyası (HTTP→HTTPS yönlendirmesi ve Let's Encrypt doğrulama konumu dahil) sizin sorumluluğunuza geçer; yukarıdaki başlık/önbellek/ek yönerge ayarları ve panel artık bu dosyaya dokunmaz. ",
+    "warningTail": " — bu bloğu kaldırırsanız, sertifika 90 gün sonra otomatik yenilenemez.",
+    "activeState": "🟢 Özel vhost etkin — panel bu dosyaya dokunmaz",
+    "managedState": "⚪ Panel tarafından yönetiliyor — şu anda etkin olan dosya aşağıda gösteriliyor",
+    "unsaved": "Kaydedilmemiş değişiklikler",
+    "working": "Çalışıyor…",
+    "returnToPanel": "Panel Yönetimine Dön",
+    "saving": "Kaydediliyor…",
+    "confirmReturn": "Bu dosya panelin standart yönetimine döndürülsün mü?\n\nDüzenlemeleriniz SİLİNMEZ — özel moda geri geçtiğinizde kaldığınız yerden devam edersiniz."
+  },
+  "directives": {
+    "pre": "Bu metin, ",
+    "mid": " bloğunun sonuna eklenir. Örnek: ",
+    "placeholder": "# Örnek:\nclient_max_body_size 200m;\nrewrite ^/old/(.*)$ /new/$1 permanent;"
+  },
+  "success": {
+    "backendChanged": "✓ Web sunucusu \"{{name}}\" olarak değiştirildi",
+    "docRootUpdated": "✓ Belge kök dizini güncellendi ve nginx yeniden yüklendi",
+    "settingsApplied": "✓ Ayarlar uygulandı ve nginx yeniden yüklendi",
+    "customVhostSaved": "✓ Özel vhost kaydedildi ve nginx yeniden yüklendi",
+    "returnedToPanel": "✓ Panel yönetimine dönüldü, vhost yeniden oluşturuldu"
+  },
+  "errors": {
+    "changeBackendFailed": "Arka uç değiştirilemedi",
+    "updateDocRootFailed": "Belge kök dizini güncellenemedi",
+    "saveSettingsFailed": "Ayarlar kaydedilemedi",
+    "saveCustomVhostFailed": "Özel vhost kaydedilemedi",
+    "returnManagedFailed": "Yönetilen vhost'a dönülemedi"
+  }
+}

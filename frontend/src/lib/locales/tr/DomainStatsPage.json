@@ -1,0 +1,32 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "statistics": "İstatistikler"
+  },
+  "loading": "Yükleniyor…",
+  "notFound": "Bulunamadı",
+  "title": "Trafik İstatistikleri",
+  "subtitle": {
+    "pre": ", nginx erişim günlüğü analizi.",
+    "subdomainNote": " Alt alan adı trafiği bu toplamlara dahildir."
+  },
+  "refresh": "↻ Yenile",
+  "emptyLog": "Henüz erişim günlüğü verisi yok. Site trafik almaya başladığında burada görünecektir.",
+  "kpi": {
+    "totalRequests": "Toplam İstek",
+    "bandwidth": "Bant Genişliği Kullanımı",
+    "uniqueIps": "Benzersiz IP",
+    "botRatio": "Bot Oranı"
+  },
+  "statusTitle": "HTTP Durum Dağılımı",
+  "dailyTitle": "Günlük İstekler (son 7 gün)",
+  "dailyRequests": "{{count}} istek",
+  "topPathsTitle": "En Çok İstenen Yollar",
+  "topIpsTitle": "En Etkin IP'ler",
+  "latestTitle": "Son İstekler",
+  "unit": {
+    "requests": "istek"
+  },
+  "noData": "Veri yok."
+}

@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "accessControl": "Erişim Denetimi"
+  },
+  "title": "Erişim Denetimi",
+  "subtitle": "Hotlink korumasını ve alan adı düzeyinde IP izin veya engelleme kurallarını yapılandırın. Kaydetme, nginx vhost dosyasını yeniden oluşturur.",
+  "loading": "Yükleniyor…",
+  "modes": {
+    "off": {
+      "label": "Kapalı",
+      "description": "nginx vhost dosyasına hiçbir IP izin veya engelleme kuralı yazılmaz."
+    },
+    "block": {
+      "label": "Listelenen IP'leri engelle",
+      "description": "Listelenen IP adreslerinden veya CIDR aralıklarından gelen ziyaretçiler 403 yanıtı alır."
+    },
+    "allow": {
+      "label": "Yalnızca listelenen IP'lere izin ver",
+      "description": "En az bir kural olduğunda yalnızca listelenen IP adreslerine veya CIDR aralıklarına izin verilir."
+    }
+  },
+  "hotlink": {
+    "title": "Hotlink Koruması",
+    "description": "Dış sitelerin bu alan adı tarafından sunulan görsel dosyalarını gömmesini engeller.",
+    "enabled": "Etkin",
+    "allowedLabel": "İzin verilen ek yönlendiren alan adları",
+    "hint": "Mevcut alan adı ve www ana bilgisayarına her zaman izin verilir. Her satıra bir alan adı ekleyin veya virgülle ayırın.",
+    "save": "Hotlink Ayarlarını Kaydet",
+    "saving": "Kaydediliyor…"
+  },
+  "ipMode": {
+    "title": "IP Erişim Modu",
+    "selected": "● Seçili"
+  },
+  "newRule": {
+    "title": "Yeni IP Kuralı",
+    "label": "IP adresi veya CIDR",
+    "placeholder": "203.0.113.10 veya 203.0.113.0/24",
+    "add": "Kural Ekle",
+    "adding": "Ekleniyor…"
+  },
+  "rules": {
+    "title": "Yapılandırılmış IP Kuralları",
+    "empty": "Henüz IP kuralı yok.",
+    "created": "Oluşturulma {{date}}",
+    "delete": "Sil"
+  },
+  "back": "← Aboneliğe dön",
+  "messages": {
+    "hotlinkSaved": "Hotlink koruması ayarları kaydedildi.",
+    "modeSaved": "IP erişim modu kaydedildi.",
+    "ruleAdded": "IP kuralı eklendi.",
+    "ruleDeleted": "IP kuralı silindi."
+  },
+  "confirmDelete": "{{ip}} IP kuralı silinsin mi?",
+  "errors": {
+    "hotlinkFailed": "Hotlink ayarları kaydedilemedi",
+    "modeFailed": "IP erişim modu kaydedilemedi",
+    "addFailed": "IP kuralı eklenemedi",
+    "deleteFailed": "IP kuralı silinemedi"
+  }
+}

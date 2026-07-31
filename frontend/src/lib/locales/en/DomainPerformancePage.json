@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "performance": "Performance"
+  },
+  "loading": "Loading…",
+  "notFound": "Not found",
+  "title": "Performance and Accelerators",
+  "subtitle": {
+    "post": ", current accelerator status and suggestions."
+  },
+  "scoreLabel": "Performance Score",
+  "acceleratorsTitle": "Accelerators",
+  "cacheStat": "{{rate}}% hit · {{total}} req",
+  "configure": "Configure →",
+  "suggestionsTitle": "Suggestions",
+  "open": "Open →",
+  "back": "← Back to subscription"
+}

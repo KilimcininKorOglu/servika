@@ -1,0 +1,32 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "statistics": "Statistics"
+  },
+  "loading": "Loading…",
+  "notFound": "Not found",
+  "title": "Traffic Statistics",
+  "subtitle": {
+    "pre": ", nginx access log analysis.",
+    "subdomainNote": " Subdomain traffic is included in these totals."
+  },
+  "refresh": "↻ Refresh",
+  "emptyLog": "No access log data yet. It will appear here once the site starts receiving traffic.",
+  "kpi": {
+    "totalRequests": "Total Requests",
+    "bandwidth": "Bandwidth Usage",
+    "uniqueIps": "Unique IPs",
+    "botRatio": "Bot Ratio"
+  },
+  "statusTitle": "HTTP Status Distribution",
+  "dailyTitle": "Daily Requests (last 7 days)",
+  "dailyRequests": "{{count}} requests",
+  "topPathsTitle": "Most Requested Paths",
+  "topIpsTitle": "Most Active IPs",
+  "latestTitle": "Latest Requests",
+  "unit": {
+    "requests": "requests"
+  },
+  "noData": "No data."
+}

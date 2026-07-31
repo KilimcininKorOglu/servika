@@ -1,0 +1,29 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "composer": "Composer"
+  },
+  "title": "PHP Composer",
+  "subtitle": {
+    "pre": "",
+    "mid": " dizini, sistem kullanıcısı ",
+    "post": " olarak."
+  },
+  "loading": "Yükleniyor…",
+  "notFound": "Bulunamadı",
+  "notInstalled": "Composer sunucuda kurulu değil. Bir yönetici kurmalıdır.",
+  "composerJsonFound": "✓ composer.json bulundu",
+  "composerJsonNotFound": "composer.json bulunamadı",
+  "packagePlaceholder": "vendor/package veya vendor/package:^1.2",
+  "run": {
+    "header": "$ composer {{cmd}}",
+    "running": "Çalışıyor…",
+    "noOutput": "(çıktı yok)",
+    "completed": "✓ Tamamlandı",
+    "failed": "✗ Başarısız"
+  },
+  "errors": {
+    "runFailed": "Komut çalıştırılamadı"
+  }
+}

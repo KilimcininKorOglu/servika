@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -63,6 +64,7 @@ const HEADERS = [
 ] as const
 
 export default function DomainWebServerPage() {
+  const { t } = useTranslation('DomainWebServerPage')
   const { id } = useParams()
   const user = useAuth(state => state.username)
   const isAdmin = user?.role === 'admin'
@@ -117,10 +119,10 @@ export default function DomainWebServerPage() {
     try {
       await api.put(`/domains/${id}/web-backend`, { backend: newBackend })
       setBackend(newBackend)
-      setSuccess(`✓ Web server changed to "${BACKEND_INFO[newBackend]?.name || newBackend}"`)
+      setSuccess(t('success.backendChanged', { name: t(`backend.${newBackend}.name`, { defaultValue: BACKEND_INFO[newBackend]?.name || newBackend }) }))
       setTimeout(() => setSuccess(null), 4000)
     } catch (error) {
-      setError(apiError(error, 'Could not change backend'))
+      setError(apiError(error, t('errors.changeBackendFailed')))
     } finally {
       setBackendChanging(false)
     }
@@ -133,10 +135,10 @@ export default function DomainWebServerPage() {
       setWebRootPath(response.data.web_root)
       setWebRootSubdirectory(response.data.subdirectory)
       setWebRootCandidates(response.data.candidates || [])
-      setSuccess('✓ Document root updated and nginx reloaded')
+      setSuccess(t('success.docRootUpdated'))
       setTimeout(() => setSuccess(null), 4000)
     } catch (error) {
-      setError(apiError(error, 'Could not update document root'))
+      setError(apiError(error, t('errors.updateDocRootFailed')))
     } finally {
       setWebRootChanging(false)
     }
@@ -147,10 +149,10 @@ export default function DomainWebServerPage() {
     setProcessing(true); setError(null); setSuccess(null)
     try {
       await api.put(`/domains/${id}/nginx-settings`, { settings })
-      setSuccess('✓ Settings applied and nginx reloaded')
+      setSuccess(t('success.settingsApplied'))
       load()
     } catch (error) {
-      setError(apiError(error, 'Could not save settings'))
+      setError(apiError(error, t('errors.saveSettingsFailed')))
     } finally {
       setProcessing(false)
     }
@@ -168,10 +170,10 @@ export default function DomainWebServerPage() {
       })
       setCustomVhost(response.data)
       setCustomVhostContent(response.data.content)
-      setSuccess('✓ Custom vhost saved and nginx reloaded')
+      setSuccess(t('success.customVhostSaved'))
       setTimeout(() => setSuccess(null), 4000)
     } catch (error) {
-      setError(apiError(error, 'Could not save custom vhost'))
+      setError(apiError(error, t('errors.saveCustomVhostFailed')))
     } finally {
       setCustomVhostSaving(false)
     }
@@ -181,18 +183,18 @@ export default function DomainWebServerPage() {
   // and the managed vhost is re-rendered from the settings above.
   async function returnToManagedVhost() {
     if (!isAdmin || !customVhost) return
-    if (!confirm('Return this file to the panel\'s standard management?\n\nYour edits are NOT deleted — switching back to custom mode resumes where you left off.')) return
+    if (!confirm(t('vhost.confirmReturn'))) return
     setCustomVhostChanging(true); setError(null); setSuccess(null)
     try {
       await api.put<CustomVhostResponse>(`/domains/${id}/custom-vhost`, {
         enabled: false,
         content: customVhost.content,
       })
-      setSuccess('✓ Returned to panel management, vhost re-rendered')
+      setSuccess(t('success.returnedToPanel'))
       setTimeout(() => setSuccess(null), 4000)
       load()
     } catch (error) {
-      setError(apiError(error, 'Could not return to managed vhost'))
+      setError(apiError(error, t('errors.returnManagedFailed')))
     } finally {
       setCustomVhostChanging(false)
     }
@@ -206,15 +208,15 @@ export default function DomainWebServerPage() {
   return (
     <div className="w-full px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' },
+        { label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.domains'), href: '/domains' },
         { label: response?.domain_name || '...', href: `/subscriptions/${id}` },
-        { label: 'Apache and nginx Settings' },
+        { label: t('breadcrumb.settings') },
       ]} />
 
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Apache and nginx Settings</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
       {response && <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
         <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{response.domain_name}</Link>
-        {' · '}Security headers and custom directives. Saving re-renders the nginx vhost.
+        {' · '}{t('subtitle')}
       </p>}
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">{error}</div>}
@@ -224,12 +226,12 @@ export default function DomainWebServerPage() {
       <div className="mb-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Web Server Stack</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('stack.title')}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
-              nginx remains the TLS terminator at the edge. The selection below routes the domain to the chosen backend engine.
+              {t('stack.description')}
             </p>
           </div>
-          {backendChanging && <span className="text-xs text-slate-400 dark:text-slate-500">Applying…</span>}
+          {backendChanging && <span className="text-xs text-slate-400 dark:text-slate-500">{t('applying')}</span>}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {(['php-fpm','apache','static'] as const).map(k => {
@@ -248,10 +250,10 @@ export default function DomainWebServerPage() {
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-lg leading-none">{b.icon}</span>
-                  {enabled && <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-300">● Active</span>}
+                  {enabled && <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-300">{t('stack.active')}</span>}
                 </div>
-                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{b.name}</div>
-                <div className="text-[11px] text-slate-600 dark:text-slate-400 dark:text-slate-500 mt-1.5 leading-snug">{b.description}</div>
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t(`backend.${k}.name`, { defaultValue: b.name })}</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 dark:text-slate-500 mt-1.5 leading-snug">{t(`backend.${k}.description`, { defaultValue: b.description })}</div>
               </button>
             )
           })}
@@ -261,22 +263,22 @@ export default function DomainWebServerPage() {
       <div className="mb-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Document Root</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('docRoot.title')}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
-              Choose which public_html subdirectory nginx serves. Laravel applications usually use the public directory.
+              {t('docRoot.description')}
             </p>
           </div>
-          {webRootChanging && <span className="text-xs text-slate-400 dark:text-slate-500">Applying…</span>}
+          {webRootChanging && <span className="text-xs text-slate-400 dark:text-slate-500">{t('applying')}</span>}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 items-end">
           <label className="block text-sm">
-            <span className="block mb-1 text-slate-600 dark:text-slate-400">Subdirectory under public_html</span>
+            <span className="block mb-1 text-slate-600 dark:text-slate-400">{t('docRoot.subdirLabel')}</span>
             <input
               list="web-root-candidates"
               value={webRootSubdirectory}
               onChange={event => setWebRootSubdirectory(event.target.value)}
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none"
-              placeholder="public"
+              placeholder={t('docRoot.placeholder')}
             />
             <datalist id="web-root-candidates">
               {webRootCandidates.map(candidate => <option key={candidate || 'public_html'} value={candidate} />)}
@@ -284,37 +286,35 @@ export default function DomainWebServerPage() {
           </label>
           <button onClick={saveWebRoot} disabled={webRootChanging}
             className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-900 text-white dark:bg-white dark:text-slate-900 disabled:opacity-50">
-            Save Document Root
+            {t('docRoot.save')}
           </button>
         </div>
         <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
-          Current document root: <code className="font-mono text-slate-700 dark:text-slate-300 break-all">{webRootPath || 'public_html'}</code>
+          {t('docRoot.currentLabel')} <code className="font-mono text-slate-700 dark:text-slate-300 break-all">{webRootPath || 'public_html'}</code>
         </p>
       </div>
 
       <div className="mb-5 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
-        <strong>HSTS</strong> is only relevant for HTTPS-enabled sites. It is not sent to the browser when the site uses HTTP only.
-        Changes automatically trigger <code className="font-mono">nginx -t</code> and <code className="font-mono">reload</code> with zero downtime.
+        <strong>HSTS</strong>{t('hstsNote.pre')}<code className="font-mono">nginx -t</code>{t('hstsNote.mid')}<code className="font-mono">reload</code>{t('hstsNote.post')}
       </div>
 
-      {loading || !settings ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div> : (
+      {loading || !settings ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</div> : (
         <>
           {customVhost?.enabled && (
             <div className="mb-5 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
-              ⚠️ <strong>Custom vhost is active</strong> — the security headers, cache, and extra-directive settings below are <strong>not applied</strong> right now.
-              Changes here are saved but do not reach the vhost file; to make these settings effective again, press "Return to Panel Management" in the vhost file card below.
+              ⚠️ <strong>{t('customVhostActive.boldPre')}</strong>{t('customVhostActive.post')}<strong>{t('customVhostActive.boldNot')}</strong>{t('customVhostActive.tail')}
             </div>
           )}
 
           {/* General security headers */}
-          <Card title="Security Headers (HTTP + HTTPS)">
+          <Card title={t('cards.securityHeaders')}>
             <div className="space-y-3">
               {HEADERS.map(h => (
                 <RowToggle
                   key={h.key}
                   label={h.label}
                   value={h.value}
-                  description={h.description}
+                  description={t(`headers.${h.key}`, { defaultValue: h.description })}
                   enabled={settings[h.key] as boolean}
                   onToggle={() => updateSetting(h.key as keyof Settings, !settings[h.key] as never)}
                 />
@@ -323,38 +323,38 @@ export default function DomainWebServerPage() {
           </Card>
 
           {/* HSTS-specific settings */}
-          <Card title="HTTP Strict Transport Security (HTTPS only)">
+          <Card title={t('cards.hsts')}>
             <RowToggle
               label="Strict-Transport-Security"
               value={`max-age=${settings.hsts_max_age}${settings.hsts_subdomains ? '; includeSubDomains' : ''}${settings.hsts_preload ? '; preload' : ''}`}
-              description="Browsers connect to the site only over HTTPS. Incorrect configuration is difficult to reverse, so enable it only when appropriate."
+              description={t('hsts.description')}
               enabled={settings.hdr_hsts}
               onToggle={() => updateSetting('hdr_hsts', !settings.hdr_hsts)}
             />
             {settings.hdr_hsts && (
               <div className="mt-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700 space-y-2">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">max-age (seconds)</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('hsts.maxAgeLabel')}</label>
                   <select value={settings.hsts_max_age} onChange={event => updateSetting('hsts_max_age', parseInt(event.target.value))}
                     className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono">
-                    <option value={300}>5 minutes (for testing)</option>
-                    <option value={86400}>1 day</option>
-                    <option value={604800}>1 week</option>
-                    <option value={2592000}>30 days</option>
-                    <option value={15768000}>6 months</option>
-                    <option value={31536000}>1 year (recommended)</option>
-                    <option value={63072000}>2 years (for preload)</option>
+                    <option value={300}>{t('hsts.maxAge300')}</option>
+                    <option value={86400}>{t('hsts.maxAge86400')}</option>
+                    <option value={604800}>{t('hsts.maxAge604800')}</option>
+                    <option value={2592000}>{t('hsts.maxAge2592000')}</option>
+                    <option value={15768000}>{t('hsts.maxAge15768000')}</option>
+                    <option value={31536000}>{t('hsts.maxAge31536000')}</option>
+                    <option value={63072000}>{t('hsts.maxAge63072000')}</option>
                   </select>
                 </div>
                 <CheckboxRow
                   label="includeSubDomains"
-                  description="Apply to all subdomains after confirming that each one supports HTTPS"
+                  description={t('hsts.includeSubDomainsDesc')}
                   checked={settings.hsts_subdomains}
                   onChange={v => updateSetting('hsts_subdomains', v)}
                 />
                 <CheckboxRow
                   label="preload"
-                  description="Include the site in browsers by default (registration at hstspreload.org is required)"
+                  description={t('hsts.preloadDesc')}
                   checked={settings.hsts_preload}
                   onChange={v => updateSetting('hsts_preload', v)}
                 />
@@ -363,46 +363,46 @@ export default function DomainWebServerPage() {
           </Card>
 
           {/* Performance cache */}
-          <Card title="Performance Cache">
+          <Card title={t('cards.performanceCache')}>
             <RowToggle
               label="nginx FastCGI Cache"
-              value={`x-cache-status header · ${settings.fastcgi_cache_minutes}-minute cache duration`}
-              description="Caches WordPress and PHP pages on disk. POST requests, cookies, login pages, and previews are skipped automatically. Resolves the WP Site Health page-cache warning."
+              value={t('cache.fastcgiValue', { minutes: settings.fastcgi_cache_minutes })}
+              description={t('cache.fastcgiDesc')}
               enabled={settings.fastcgi_cache}
               onToggle={() => updateSetting('fastcgi_cache', !settings.fastcgi_cache)}
             />
             {settings.fastcgi_cache && (
               <div className="mt-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Cache duration (minutes)</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('cache.durationMinutes')}</label>
                 <select value={settings.fastcgi_cache_minutes} onChange={event => updateSetting('fastcgi_cache_minutes', parseInt(event.target.value))}
                   className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono">
-                  <option value={5}>5 minutes</option>
-                  <option value={15}>15 minutes</option>
-                  <option value={60}>1 hour (recommended)</option>
-                  <option value={360}>6 hours</option>
-                  <option value={1440}>1 day</option>
+                  <option value={5}>{t('cache.min5')}</option>
+                  <option value={15}>{t('cache.min15')}</option>
+                  <option value={60}>{t('cache.min60')}</option>
+                  <option value={360}>{t('cache.min360')}</option>
+                  <option value={1440}>{t('cache.min1440')}</option>
                 </select>
               </div>
             )}
 
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
               <RowToggle
-                label="Browser Cache (static files)"
-                value={`Cache-Control: public, immutable · expires ${settings.browser_cache_days}d`}
-                description="Static files such as CSS, JS, PNG, JPG, and WOFF are cached in the browser, making repeat visits load much faster."
+                label={t('cache.browserLabel')}
+                value={t('cache.browserValue', { days: settings.browser_cache_days })}
+                description={t('cache.browserDesc')}
                 enabled={settings.browser_cache}
                 onToggle={() => updateSetting('browser_cache', !settings.browser_cache)}
               />
               {settings.browser_cache && (
                 <div className="mt-3 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Cache duration (days)</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('cache.durationDays')}</label>
                   <select value={settings.browser_cache_days} onChange={event => updateSetting('browser_cache_days', parseInt(event.target.value))}
                     className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono">
-                    <option value={1}>1 day</option>
-                    <option value={7}>1 week</option>
-                    <option value={30}>30 days (recommended)</option>
-                    <option value={90}>3 months</option>
-                    <option value={365}>1 year</option>
+                    <option value={1}>{t('cache.day1')}</option>
+                    <option value={7}>{t('cache.day7')}</option>
+                    <option value={30}>{t('cache.day30')}</option>
+                    <option value={90}>{t('cache.day90')}</option>
+                    <option value={365}>{t('cache.day365')}</option>
                   </select>
                 </div>
               )}
@@ -410,27 +410,27 @@ export default function DomainWebServerPage() {
           </Card>
 
           {isAdmin && customVhost && (
-            <Card title="nginx Vhost File">
+            <Card title={t('cards.vhostFile')}>
               <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
-                This is the file nginx <strong>actually serves</strong> for this domain. You can edit it directly and save — the moment you save, the <strong>entire</strong> vhost file (including the HTTP→HTTPS redirect and the Let's Encrypt validation location) becomes your responsibility; the header/cache/extra-directive settings above and the panel no longer touch this file.{' '}
-                <code className="font-mono">/.well-known/acme-challenge/</code> — if you remove this block, the certificate cannot auto-renew after 90 days.
+                {t('vhost.warningPre')}<strong>{t('vhost.warningBoldActually')}</strong>{t('vhost.warningMid')}<strong>{t('vhost.warningBoldEntire')}</strong>{t('vhost.warningPost')}
+                <code className="font-mono">/.well-known/acme-challenge/</code>{t('vhost.warningTail')}
               </div>
 
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  {customVhost.enabled ? '🟢 Custom vhost active — the panel does not touch this file' : '⚪ Panel-managed — the file currently active is shown below'}
+                  {customVhost.enabled ? t('vhost.activeState') : t('vhost.managedState')}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {customVhostDirty && <span className="text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded">Unsaved changes</span>}
+                  {customVhostDirty && <span className="text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded">{t('vhost.unsaved')}</span>}
                   {customVhost.enabled && (
                     <button onClick={returnToManagedVhost} disabled={customVhostChanging}
                       className="px-3 py-1.5 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 text-xs rounded-md">
-                      {customVhostChanging ? 'Working…' : 'Return to Panel Management'}
+                      {customVhostChanging ? t('vhost.working') : t('vhost.returnToPanel')}
                     </button>
                   )}
                   <button onClick={saveCustomVhost} disabled={customVhostSaving || !customVhostDirty}
                     className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-xs font-medium rounded-md">
-                    {customVhostSaving ? 'Saving…' : '💾 Save and Apply'}
+                    {customVhostSaving ? t('vhost.saving') : t('saveApply')}
                   </button>
                 </div>
               </div>
@@ -456,24 +456,24 @@ export default function DomainWebServerPage() {
           )}
 
           {/* Additional directives */}
-          <Card title="Additional nginx Directives">
+          <Card title={t('cards.additionalDirectives')}>
             <p className="text-xs text-slate-500 dark:text-slate-500 mb-2">
-              This text is appended to the end of the <code className="font-mono">server</code> block. Example: <code className="font-mono">client_max_body_size 200m;</code>
+              {t('directives.pre')}<code className="font-mono">server</code>{t('directives.mid')}<code className="font-mono">client_max_body_size 200m;</code>
             </p>
             <textarea value={settings.extra_directives} onChange={event => updateSetting('extra_directives', event.target.value)}
               rows={6}
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-xs font-mono"
-              placeholder="# Example:&#10;client_max_body_size 200m;&#10;rewrite ^/old/(.*)$ /new/$1 permanent;" />
+              placeholder={t('directives.placeholder')} />
           </Card>
 
           <div className="flex gap-3 mt-6">
             <button onClick={save} disabled={processing}
               className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">
-              {processing ? 'Applying…' : '💾 Save and Apply'}
+              {processing ? t('applying') : t('saveApply')}
             </button>
             <button onClick={load} disabled={processing}
               className="px-4 py-2.5 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm rounded-md">
-              Reload
+              {t('reload')}
             </button>
           </div>
         </>

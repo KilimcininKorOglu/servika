@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useResourceScope } from '@/lib/scope'
@@ -11,6 +12,7 @@ type Package = { name: string; status: string; version: string; update: string; 
 type User = { ID: number; user_login: string; user_email: string; display_name: string; roles: string }
 
 export default function DomainWordPressPage() {
+  const { t } = useTranslation('DomainWordPressPage')
   const { id, base, isSubdomain, backHref, backLabel } = useResourceScope()
   const [items, setItems] = useState<Install[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,7 +50,7 @@ export default function DomainWordPressPage() {
       })
       setResult(data); setTitle(''); setSubdirectory(''); setFormOpen(false)
       list()
-    } catch (error) { setError(apiError(error, 'Installation failed')) }
+    } catch (error) { setError(apiError(error, t('errors.installFailed'))) }
     finally { setInstalling(false) }
   }
 
@@ -57,19 +59,19 @@ export default function DomainWordPressPage() {
   return (
     <div className="w-full px-6 py-6">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: domainName || 'Subscription', href: backHref },
-        { label: 'WordPress' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: domainName || t('breadcrumb.subscription'), href: backHref },
+        { label: t('breadcrumb.wordpress') },
       ]} />
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">WordPress Toolkit</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage versions, plugins, themes, and users in one place.</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">{t('title')}</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
         </div>
         {!emptyState && !formOpen && (
           <button onClick={() => { setFormOpen(true); setResult(null) }}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition">
-            <span className="text-base leading-none">+</span> New WordPress
+            <span className="text-base leading-none">+</span> {t('actions.new')}
           </button>
         )}
       </div>
@@ -79,12 +81,12 @@ export default function DomainWordPressPage() {
       {result && <InstallResult s={result} close={() => setResult(null)} />}
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/60 bg-white dark:bg-slate-800/40 p-10 text-center text-sm text-slate-400">Loading…</div>
+        <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/60 bg-white dark:bg-slate-800/40 p-10 text-center text-sm text-slate-400">{t('loading')}</div>
       ) : emptyState ? (
         <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 p-12 text-center mb-5">
           <div className="w-12 h-12 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl mb-3">📝</div>
-          <p className="text-base font-medium text-slate-800 dark:text-slate-100">No WordPress installation exists on this domain yet</p>
-          <p className="text-sm text-slate-400 mt-1">Install it with one click using the form below.</p>
+          <p className="text-base font-medium text-slate-800 dark:text-slate-100">{t('empty.title')}</p>
+          <p className="text-sm text-slate-400 mt-1">{t('empty.subtitle')}</p>
         </div>
       ) : (
         <div className="space-y-5">
@@ -108,12 +110,10 @@ export default function DomainWordPressPage() {
 // ================= Toolkit: single installation card =================
 
 type ToolkitTab = 'overview' | 'extensions' | 'themes' | 'users'
-const TABS: { k: ToolkitTab; name: string }[] = [
-  { k: 'overview', name: 'Overview' }, { k: 'extensions', name: 'Plugins' },
-  { k: 'themes', name: 'Themes' }, { k: 'users', name: 'Users' },
-]
+const TAB_KEYS: ToolkitTab[] = ['overview', 'extensions', 'themes', 'users']
 
 function Toolkit({ base, installation, onChange }: { base: string; installation: Install; onChange: () => void }) {
+  const { t } = useTranslation('DomainWordPressPage')
   const dir = installation.dir
   const isRoot = dir === '/ (root)'
   const [tab, setTab] = useState<ToolkitTab>('overview')
@@ -149,37 +149,37 @@ function Toolkit({ base, installation, onChange }: { base: string; installation:
       setSuccess(successMessage)
       if (data?.output) setOutput(data.output)
       after?.()
-    } catch (error) { setError(apiError(error, 'Operation failed')) }
+    } catch (error) { setError(apiError(error, t('errors.operationFailed'))) }
     finally { setBusy(null) }
   }
 
-  const updateVersion = () => run('version', async () => (await api.post(`${base}/wordpress/update`, { dir })).data, 'WordPress core updated.', () => { loadStatus(); onChange() })
-  const updateAll = () => run('all', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: 'update-all' })).data, 'Core, plugins, and themes updated.', () => { loadStatus(); setPlugins(null); setThemes(null); onChange() })
-  const maintenanceToggle = () => run('maintenance', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: status?.maintenance ? 'maintenance-off' : 'maintenance-on' })).data, status?.maintenance ? 'Maintenance mode disabled.' : 'Maintenance mode enabled.', loadStatus)
-  const clearCache = () => run('cache', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: 'cache-clear' })).data, 'Cache cleared.')
-  const repair = () => run('repair', async () => (await api.post(`${base}/wordpress/repair`, { dir })).data, 'Core repair completed.', loadStatus)
+  const updateVersion = () => run('version', async () => (await api.post(`${base}/wordpress/update`, { dir })).data, t('messages.coreUpdated'), () => { loadStatus(); onChange() })
+  const updateAll = () => run('all', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: 'update-all' })).data, t('messages.allUpdated'), () => { loadStatus(); setPlugins(null); setThemes(null); onChange() })
+  const maintenanceToggle = () => run('maintenance', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: status?.maintenance ? 'maintenance-off' : 'maintenance-on' })).data, status?.maintenance ? t('messages.maintenanceDisabled') : t('messages.maintenanceEnabled'), loadStatus)
+  const clearCache = () => run('cache', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: 'cache-clear' })).data, t('messages.cacheCleared'))
+  const repair = () => run('repair', async () => (await api.post(`${base}/wordpress/repair`, { dir })).data, t('messages.repairDone'), loadStatus)
 
-  const updatePackage = (type: 'plugin' | 'theme', name: string) => run(`${type}:${name}`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update', name })).data, `${name} updated.`, () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
-  const packageAll = (type: 'plugin' | 'theme') => run(`${type}:all`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update-all' })).data, 'All updates completed.', () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
-  const pluginToggle = (plugin: Package) => run(`plugin:${plugin.name}`, async () => (await api.post(`${base}/wordpress/plugin`, { dir, action: plugin.status === 'active' ? 'passive' : 'active', name: plugin.name })).data, `${plugin.name} ${plugin.status === 'active' ? 'deactivated' : 'activated'}.`, () => setPlugins(null))
-  const activateTheme = (theme: Package) => run(`theme:${theme.name}`, async () => (await api.post(`${base}/wordpress/theme`, { dir, action: 'active', name: theme.name })).data, `${theme.name} activated.`, () => setThemes(null))
+  const updatePackage = (type: 'plugin' | 'theme', name: string) => run(`${type}:${name}`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update', name })).data, t('messages.packageUpdated', { name }), () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
+  const packageAll = (type: 'plugin' | 'theme') => run(`${type}:all`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update-all' })).data, t('messages.allUpdatesDone'), () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
+  const pluginToggle = (plugin: Package) => run(`plugin:${plugin.name}`, async () => (await api.post(`${base}/wordpress/plugin`, { dir, action: plugin.status === 'active' ? 'passive' : 'active', name: plugin.name })).data, plugin.status === 'active' ? t('messages.deactivated', { name: plugin.name }) : t('messages.activated', { name: plugin.name }), () => setPlugins(null))
+  const activateTheme = (theme: Package) => run(`theme:${theme.name}`, async () => (await api.post(`${base}/wordpress/theme`, { dir, action: 'active', name: theme.name })).data, t('messages.activated', { name: theme.name }), () => setThemes(null))
 
   async function resetPassword(user: User) {
-    if (!confirm(`Generate a new password for "${user.user_login}"?\nThe current password will become invalid.`)) return
+    if (!confirm(t('confirm.resetPassword', { user: user.user_login }))) return
     setBusy(`pw:${user.ID}`); setError(null); setSuccess(null)
     try {
       const { data } = await api.post<{ password: string; username: string }>(`${base}/wordpress/user-password`, { dir, user_id: user.ID })
       setPasswordResult({ username: data.username || user.user_login, password: data.password })
-    } catch (error) { setError(apiError(error, 'Could not reset password')) }
+    } catch (error) { setError(apiError(error, t('errors.resetFailed'))) }
     finally { setBusy(null) }
   }
 
   async function remove() {
-    if (isRoot) { alert('WordPress installations in the root directory cannot be deleted from the panel.'); return }
-    if (!confirm(`Delete the WordPress installation under ${dir}?\nAll files in this directory and its database will be removed. This cannot be undone.`)) return
+    if (isRoot) { alert(t('confirm.rootRemove')); return }
+    if (!confirm(t('confirm.remove', { dir }))) return
     setBusy('remove'); setError(null)
     try { await api.delete(`${base}/wordpress`, { data: { dir, delete_db: true } }); onChange() }
-    catch (err) { setError(apiError(err, 'Could not remove installation')) }
+    catch (err) { setError(apiError(err, t('errors.removeFailed'))) }
     finally { setBusy(null) }
   }
 
@@ -202,33 +202,33 @@ function Toolkit({ base, installation, onChange }: { base: string; installation:
           {installation.admin_url && (
             <a href={installation.admin_url} target="_blank" rel="noreferrer"
               className="inline-flex items-center gap-1 px-3.5 py-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition">
-              Admin panel <span className="opacity-70">↗</span>
+              {t('toolkit.adminPanel')} <span className="opacity-70">↗</span>
             </a>
           )}
-          {!isRoot && <button disabled={!!busy} onClick={remove} className="px-3 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-xs text-slate-500 hover:border-red-300 hover:text-red-600 dark:hover:border-red-800 dark:hover:text-red-400 disabled:opacity-50 transition">{busy === 'remove' ? '…' : 'Remove'}</button>}
+          {!isRoot && <button disabled={!!busy} onClick={remove} className="px-3 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-xs text-slate-500 hover:border-red-300 hover:text-red-600 dark:hover:border-red-800 dark:hover:text-red-400 disabled:opacity-50 transition">{busy === 'remove' ? '…' : t('toolkit.remove')}</button>}
         </div>
       </div>
 
       {/* Metrics */}
       <div className="px-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Metric label="Version" v={status?.version ? status.version : '…'}
-          pill={status ? (status.update_available ? { t: `↑ ${status.target_version}`, c: 'amber' } : { t: 'up to date', c: 'green' }) : undefined} />
-        <Metric label="PHP" v={status?.php || '…'} />
-        <Metric label="Database" v={status ? `${status.db_mb} MB` : '…'} />
-        <Metric label="Maintenance mode" v={status?.maintenance ? 'On' : 'Off'}
-          pill={status?.maintenance ? { t: 'active', c: 'amber' } : undefined} />
+        <Metric label={t('metrics.version')} v={status?.version ? status.version : '…'}
+          pill={status ? (status.update_available ? { t: `↑ ${status.target_version}`, c: 'amber' } : { t: t('metrics.upToDate'), c: 'green' }) : undefined} />
+        <Metric label={t('metrics.php')} v={status?.php || '…'} />
+        <Metric label={t('metrics.database')} v={status ? `${status.db_mb} MB` : '…'} />
+        <Metric label={t('metrics.maintenance')} v={status?.maintenance ? t('metrics.on') : t('metrics.off')}
+          pill={status?.maintenance ? { t: t('metrics.active'), c: 'amber' } : undefined} />
       </div>
 
       {/* Segmented tabs */}
       <div className="px-5 pt-5">
         <div className="inline-flex items-center gap-1 p-1 rounded-full bg-slate-100 dark:bg-slate-900/50">
-          {TABS.map(t => (
-            <button key={t.k} onClick={() => setTab(t.k)}
-              className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition ${tab === t.k
+          {TAB_KEYS.map(k => (
+            <button key={k} onClick={() => setTab(k)}
+              className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition ${tab === k
                 ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
-              {t.name}
-              {!!badge[t.k] && badge[t.k] > 0 && <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-semibold align-middle">{badge[t.k]}</span>}
+              {t(`tabs.${k}`)}
+              {!!badge[k] && badge[k] > 0 && <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-semibold align-middle">{badge[k]}</span>}
             </button>
           ))}
         </div>
@@ -241,14 +241,14 @@ function Toolkit({ base, installation, onChange }: { base: string; installation:
         {tab === 'overview' && (
           <div>
             <div className="flex flex-wrap gap-2">
-              {status?.update_available && <Btn onClick={updateVersion} waiting={busy === 'version'} type="primary">Update version · v{status.target_version}</Btn>}
-              <Btn onClick={updateAll} waiting={busy === 'all'} type={status?.update_available ? 'outline' : 'primary'}>Update all</Btn>
-              <Btn onClick={maintenanceToggle} waiting={busy === 'maintenance'}>{status?.maintenance ? 'Disable maintenance mode' : 'Enable maintenance mode'}</Btn>
-              <Btn onClick={clearCache} waiting={busy === 'cache'}>Clear cache</Btn>
-              <Btn onClick={repair} waiting={busy === 'repair'}>Repair core</Btn>
+              {status?.update_available && <Btn onClick={updateVersion} waiting={busy === 'version'} type="primary">{t('overview.updateVersion', { version: status.target_version })}</Btn>}
+              <Btn onClick={updateAll} waiting={busy === 'all'} type={status?.update_available ? 'outline' : 'primary'}>{t('overview.updateAll')}</Btn>
+              <Btn onClick={maintenanceToggle} waiting={busy === 'maintenance'}>{status?.maintenance ? t('overview.disableMaintenance') : t('overview.enableMaintenance')}</Btn>
+              <Btn onClick={clearCache} waiting={busy === 'cache'}>{t('overview.clearCache')}</Btn>
+              <Btn onClick={repair} waiting={busy === 'repair'}>{t('overview.repairCore')}</Btn>
             </div>
             {output && <Output text={output} />}
-            {!output && <p className="text-xs text-slate-400 mt-4">Quick maintenance actions. Available version updates appear in the metric above.</p>}
+            {!output && <p className="text-xs text-slate-400 mt-4">{t('overview.hint')}</p>}
           </div>
         )}
 
@@ -295,21 +295,23 @@ function StatusPill({ t, c }: { t: string; c: 'green' | 'amber' | 'red' | 'slate
 }
 
 function Btn({ onClick, waiting, children, type }: { onClick: () => void; waiting: boolean; children: React.ReactNode; type?: 'primary' | 'outline' }) {
+  const { t } = useTranslation('DomainWordPressPage')
   const cls = type === 'primary'
     ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 border-transparent'
     : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50'
   return (
     <button onClick={onClick} disabled={waiting} className={`text-sm px-4 py-2 rounded-full border font-medium disabled:opacity-50 transition ${cls}`}>
-      {waiting ? 'Processing…' : children}
+      {waiting ? t('btn.processing') : children}
     </button>
   )
 }
 
 function Output({ text }: { text: string }) {
+  const { t } = useTranslation('DomainWordPressPage')
   const clean = text.replace(/\[[0-9;]*m/g, '')
   return (
     <details className="mt-4 group" open>
-      <summary className="text-xs text-slate-400 cursor-pointer select-none hover:text-slate-600 dark:hover:text-slate-300">Operation output</summary>
+      <summary className="text-xs text-slate-400 cursor-pointer select-none hover:text-slate-600 dark:hover:text-slate-300">{t('output.title')}</summary>
       <pre className="mt-2 max-h-44 overflow-auto text-[12px] leading-relaxed bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 rounded-xl p-3 whitespace-pre-wrap break-words">{clean}</pre>
     </details>
   )
@@ -319,15 +321,16 @@ function PackageTable({ type, items, busy, onUpdateAll, onUpdate, onToggle, onAc
   type: 'plugin' | 'theme'; items: Package[] | null; busy: string | null
   onUpdateAll: () => void; onUpdate: (p: Package) => void; onToggle?: (p: Package) => void; onActivate?: (p: Package) => void
 }) {
-  if (items === null) return <div className="text-sm text-slate-400 py-4">Loading…</div>
-  if (items.length === 0) return <div className="text-sm text-slate-400 py-4">No {type === 'plugin' ? 'plugins' : 'themes'} found.</div>
+  const { t } = useTranslation('DomainWordPressPage')
+  if (items === null) return <div className="text-sm text-slate-400 py-4">{t('packages.loading')}</div>
+  if (items.length === 0) return <div className="text-sm text-slate-400 py-4">{type === 'plugin' ? t('packages.noPlugins') : t('packages.noThemes')}</div>
   const updatable = items.filter(p => p.update === 'available').length
   return (
     <div>
       {updatable > 0 && (
         <div className="flex items-center justify-between mb-4 px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-900/15 border border-amber-100 dark:border-amber-800/50">
-          <span className="text-sm text-amber-700 dark:text-amber-300 font-medium">{updatable} {updatable === 1 ? 'update' : 'updates'} available</span>
-          <button disabled={!!busy} onClick={onUpdateAll} className="text-sm px-4 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 transition">{busy === `${type}:all` ? '…' : 'Update all'}</button>
+          <span className="text-sm text-amber-700 dark:text-amber-300 font-medium">{updatable === 1 ? t('packages.updateSingular', { count: updatable }) : t('packages.updatePlural', { count: updatable })}</span>
+          <button disabled={!!busy} onClick={onUpdateAll} className="text-sm px-4 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 transition">{busy === `${type}:all` ? '…' : t('packages.updateAll')}</button>
         </div>
       )}
       <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -339,17 +342,17 @@ function PackageTable({ type, items, busy, onUpdateAll, onUpdate, onToggle, onAc
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{p.name}</span>
-                  <StatusPill t={enabled ? 'Active' : 'Inactive'} c={enabled ? 'green' : 'slate'} />
+                  <StatusPill t={enabled ? t('packages.active') : t('packages.inactive')} c={enabled ? 'green' : 'slate'} />
                 </div>
                 <div className="text-xs text-slate-400 mt-0.5">
-                  Version {p.version}{updateAvailable && <span className="text-amber-600 dark:text-amber-400"> → {p.update_version} available</span>}
+                  {t('packages.version', { version: p.version })}{updateAvailable && <span className="text-amber-600 dark:text-amber-400">{t('packages.updateAvailable', { version: p.update_version })}</span>}
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {updateAvailable && <button disabled={!!busy} onClick={() => onUpdate(p)} className="text-xs px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-medium disabled:opacity-50 transition">{busy === `${type}:${p.name}` ? '…' : 'Update'}</button>}
-                {onToggle && <button disabled={!!busy} onClick={() => onToggle(p)} className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 disabled:opacity-50 transition">{busy === `plugin:${p.name}` ? '…' : enabled ? 'Deactivate' : 'Activate'}</button>}
-                {onActivate && !enabled && <button disabled={!!busy} onClick={() => onActivate(p)} className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 disabled:opacity-50 transition">{busy === `theme:${p.name}` ? '…' : 'Activate'}</button>}
-                {onActivate && enabled && <StatusPill t="Active theme" c="green" />}
+                {updateAvailable && <button disabled={!!busy} onClick={() => onUpdate(p)} className="text-xs px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-medium disabled:opacity-50 transition">{busy === `${type}:${p.name}` ? '…' : t('packages.update')}</button>}
+                {onToggle && <button disabled={!!busy} onClick={() => onToggle(p)} className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 disabled:opacity-50 transition">{busy === `plugin:${p.name}` ? '…' : enabled ? t('packages.deactivate') : t('packages.activate')}</button>}
+                {onActivate && !enabled && <button disabled={!!busy} onClick={() => onActivate(p)} className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 disabled:opacity-50 transition">{busy === `theme:${p.name}` ? '…' : t('packages.activate')}</button>}
+                {onActivate && enabled && <StatusPill t={t('packages.activeTheme')} c="green" />}
               </div>
             </div>
           )
@@ -360,8 +363,9 @@ function PackageTable({ type, items, busy, onUpdateAll, onUpdate, onToggle, onAc
 }
 
 function UserList({ items, busy, onReset }: { items: User[] | null; busy: string | null; onReset: (u: User) => void }) {
-  if (items === null) return <div className="text-sm text-slate-400 py-4">Loading…</div>
-  if (items.length === 0) return <div className="text-sm text-slate-400 py-4">No users found.</div>
+  const { t } = useTranslation('DomainWordPressPage')
+  if (items === null) return <div className="text-sm text-slate-400 py-4">{t('usersTab.loading')}</div>
+  if (items.length === 0) return <div className="text-sm text-slate-400 py-4">{t('usersTab.empty')}</div>
   return (
     <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
       {items.map(u => (
@@ -378,7 +382,7 @@ function UserList({ items, busy, onReset }: { items: User[] | null; busy: string
               <div className="text-xs text-slate-400 truncate">{u.user_email}</div>
             </div>
           </div>
-          <button disabled={!!busy} onClick={() => onReset(u)} className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 disabled:opacity-50 transition shrink-0">{busy === `pw:${u.ID}` ? '…' : 'Reset password'}</button>
+          <button disabled={!!busy} onClick={() => onReset(u)} className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 disabled:opacity-50 transition shrink-0">{busy === `pw:${u.ID}` ? '…' : t('usersTab.resetPassword')}</button>
         </div>
       ))}
     </div>
@@ -392,20 +396,21 @@ function InstallForm(props: {
   adminUser: string; setAdminUser: (value: string) => void; adminEmail: string; setAdminEmail: (value: string) => void
   install: (event: React.FormEvent) => void; installing: boolean; close?: () => void
 }) {
+  const { t } = useTranslation('DomainWordPressPage')
   return (
     <form onSubmit={props.install} className="rounded-2xl border border-slate-200/70 dark:border-slate-700/60 bg-white dark:bg-slate-800/40 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">New WordPress installation</h3>
-        {props.close && <button type="button" onClick={props.close} className="text-xs text-slate-400 hover:text-slate-600">✕ Close</button>}
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('installForm.title')}</h3>
+        {props.close && <button type="button" onClick={props.close} className="text-xs text-slate-400 hover:text-slate-600">{t('installForm.close')}</button>}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input label="Site title" value={props.title} setValue={props.setTitle} required placeholder="My Blog" />
-        <Input label="Subdirectory (optional)" value={props.subdirectory} setValue={props.setSubdirectory} placeholder="blank = root · example: blog" mono />
-        <Input label="Admin username" value={props.adminUser} setValue={props.setAdminUser} required mono />
-        <Input label="Admin email" value={props.adminEmail} setValue={props.setAdminEmail} required type="email" placeholder="admin@site.com" />
+        <Input label={t('installForm.siteTitle')} value={props.title} setValue={props.setTitle} required placeholder={t('installForm.siteTitlePlaceholder')} />
+        <Input label={t('installForm.subdirectory')} value={props.subdirectory} setValue={props.setSubdirectory} placeholder={t('installForm.subdirectoryPlaceholder')} mono />
+        <Input label={t('installForm.adminUser')} value={props.adminUser} setValue={props.setAdminUser} required mono />
+        <Input label={t('installForm.adminEmail')} value={props.adminEmail} setValue={props.setAdminEmail} required type="email" placeholder={t('installForm.adminEmailPlaceholder')} />
       </div>
       <button disabled={props.installing} className="mt-5 px-5 py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 transition">
-        {props.installing ? 'Installing… (~30 sec)' : 'Install WordPress'}
+        {props.installing ? t('installForm.installing') : t('installForm.install')}
       </button>
     </form>
   )
@@ -422,19 +427,20 @@ function Input({ label, value, setValue, required, placeholder, mono, type }: { 
 }
 
 function InstallResult({ s, close }: { s: Result; close: () => void }) {
+  const { t } = useTranslation('DomainWordPressPage')
   return (
     <div className="mb-5 rounded-2xl border border-emerald-100 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-900/15 p-5">
       <div className="flex items-center justify-between mb-3">
-        <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">WordPress {s.version} installed</div>
+        <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{t('result.installed', { version: s.version })}</div>
         <button onClick={close} className="text-xs text-emerald-600/70 hover:text-emerald-700">✕</button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-        <ResultRow label="Site" value={s.site_url} link />
-        <ResultRow label="Admin" value={s.admin_url} link />
-        <ResultRow label="Username" value={s.admin_user} mono />
-        <ResultRow label="Password" value={s.admin_password} mono />
+        <ResultRow label={t('result.site')} value={s.site_url} link />
+        <ResultRow label={t('result.admin')} value={s.admin_url} link />
+        <ResultRow label={t('result.username')} value={s.admin_user} mono />
+        <ResultRow label={t('result.password')} value={s.admin_password} mono />
       </div>
-      <p className="text-xs text-amber-700 dark:text-amber-400 mt-3">Save the password now. It will not be shown again.</p>
+      <p className="text-xs text-amber-700 dark:text-amber-400 mt-3">{t('result.savePassword')}</p>
     </div>
   )
 }
@@ -450,17 +456,18 @@ function ResultRow({ label, value, mono, link }: { label: string; value: string;
 }
 
 function PasswordModal({ s, close }: { s: { username: string; password: string }; close: () => void }) {
+  const { t } = useTranslation('DomainWordPressPage')
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm p-4" onClick={close}>
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
-        <div className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">New password created</div>
-        <div className="text-xs text-slate-400 mb-4">User: <span className="font-mono text-slate-600 dark:text-slate-300">{s.username}</span></div>
+        <div className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('passwordModal.title')}</div>
+        <div className="text-xs text-slate-400 mb-4">{t('passwordModal.user')} <span className="font-mono text-slate-600 dark:text-slate-300">{s.username}</span></div>
         <div className="flex items-center gap-2">
           <code className="flex-1 px-3.5 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-sm font-mono text-slate-800 dark:text-slate-100 break-all border border-slate-100 dark:border-slate-700">{s.password}</code>
-          <button onClick={() => navigator.clipboard?.writeText(s.password)} className="text-xs px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Copy</button>
+          <button onClick={() => navigator.clipboard?.writeText(s.password)} className="text-xs px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">{t('passwordModal.copy')}</button>
         </div>
-        <p className="text-xs text-amber-600 dark:text-amber-400 mt-3">This password will not be shown again. Save it now.</p>
-        <button onClick={close} className="mt-5 w-full py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition">OK</button>
+        <p className="text-xs text-amber-600 dark:text-amber-400 mt-3">{t('passwordModal.notice')}</p>
+        <button onClick={close} className="mt-5 w-full py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition">{t('passwordModal.ok')}</button>
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -17,6 +18,7 @@ type MailFilter = {
 type SendLimits = { mailbox_id: number; email: string; hour_limit: number; day_limit: number; sent_hour: number; sent_day: number; spam_suspended_at?: string }
 
 export default function DomainMailPage() {
+  const { t } = useTranslation('DomainMailPage')
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [status, setStatus] = useState<MailStatus | null>(null)
@@ -76,7 +78,7 @@ export default function DomainMailPage() {
     if (!id) return
     api.get<Domain>(`/domains/${id}`)
       .then(response => setDomain(response.data))
-      .catch(cause => setError(apiError(cause, 'Could not load the domain')))
+      .catch(cause => setError(apiError(cause, t('errors.loadDomainFailed'))))
     loadMail()
   }, [id])
 
@@ -86,10 +88,10 @@ export default function DomainMailPage() {
     setSuccess(null)
     try {
       await api.post(`/domains/${id}/mail/enable`)
-      setSuccess('Email hosting has been enabled for this domain. MX, SPF, DKIM, and DMARC records were added to DNS when possible.')
+      setSuccess(t('messages.enabled'))
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, 'Could not enable email hosting'))
+      setError(apiError(cause, t('errors.enableFailed')))
     } finally {
       setIsSaving(false)
     }
@@ -108,7 +110,7 @@ export default function DomainMailPage() {
       setPassword('')
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, 'Could not create the mailbox'))
+      setError(apiError(cause, t('errors.createMailboxFailed')))
     } finally {
       setIsSaving(false)
     }
@@ -127,36 +129,36 @@ export default function DomainMailPage() {
       setAliasLocalPart('')
       setAliasDestination('')
       setAliasCatchAll(false)
-      setSuccess('Mail forwarder has been added.')
+      setSuccess(t('messages.forwarderAdded'))
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, 'Could not add the mail forwarder'))
+      setError(apiError(cause, t('errors.addForwarderFailed')))
     } finally {
       setIsSavingAlias(false)
     }
   }
 
   async function removeMailbox(mailbox: Mailbox) {
-    if (!confirm(`Delete the mailbox "${mailbox.email}"? The Maildir will remain on disk, and only the account row will be removed.`)) return
+    if (!confirm(t('confirm.deleteMailbox', { email: mailbox.email }))) return
     setError(null)
     setSuccess(null)
     try {
       await api.delete(`/domains/${id}/mail/${mailbox.id}`)
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, 'Could not delete the mailbox'))
+      setError(apiError(cause, t('errors.deleteMailboxFailed')))
     }
   }
 
   async function removeAlias(alias: Alias) {
-    if (!confirm(`Delete the forwarder "${alias.source}"?`)) return
+    if (!confirm(t('confirm.deleteForwarder', { source: alias.source }))) return
     setError(null)
     setSuccess(null)
     try {
       await api.delete(`/domains/${id}/mail/aliases/${alias.id}`)
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, 'Could not delete the mail forwarder'))
+      setError(apiError(cause, t('errors.deleteForwarderFailed')))
     }
   }
 
@@ -168,7 +170,7 @@ export default function DomainMailPage() {
       const response = await api.put<{ password: string }>(`/domains/${id}/mail/${mailbox.id}/password`, {})
       setGeneratedPassword({ email: mailbox.email, password: response.data.password })
     } catch (cause) {
-      setError(apiError(cause, 'Could not reset the password'))
+      setError(apiError(cause, t('errors.resetPasswordFailed')))
     }
   }
 
@@ -179,7 +181,7 @@ export default function DomainMailPage() {
       await api.post(`/domains/${id}/mail/aliases/${alias.id}/status`, { status: alias.status === 'active' ? 'suspended' : 'active' })
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, 'Could not update the mail forwarder'))
+      setError(apiError(cause, t('errors.updateForwarderFailed')))
     }
   }
 
@@ -190,7 +192,7 @@ export default function DomainMailPage() {
       await api.post(`/domains/${id}/mail/${mailbox.id}/status`, { status: mailbox.status === 'active' ? 'suspended' : 'active' })
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, 'Could not update the mailbox'))
+      setError(apiError(cause, t('errors.updateMailboxFailed')))
     }
   }
 
@@ -203,9 +205,9 @@ export default function DomainMailPage() {
       const response = await api.put<{ settings: SpamSettings }>(`/domains/${id}/mail/spam`, spam)
       setSpam(response.data.settings)
       setRspamd(true)
-      setSuccess('The Rspamd spam policy has been validated and applied.')
+      setSuccess(t('messages.spamApplied'))
     } catch (cause) {
-      setError(apiError(cause, 'Could not apply the spam settings'))
+      setError(apiError(cause, t('errors.applySpamFailed')))
     } finally {
       setIsSavingSpam(false)
     }
@@ -217,7 +219,7 @@ export default function DomainMailPage() {
       const response = await api.get<Autoresponder>(`/domains/${id}/mail/${mailboxID}/autoresponder`)
       setAutoresponder(response.data)
     } catch (cause) {
-      setError(apiError(cause, 'Could not read the autoresponder'))
+      setError(apiError(cause, t('errors.readAutoresponderFailed')))
     }
   }
 
@@ -228,9 +230,9 @@ export default function DomainMailPage() {
     setSuccess(null)
     try {
       await api.put(`/domains/${id}/mail/${autoresponder.mailbox_id}/autoresponder`, autoresponder)
-      setSuccess('The autoresponder and its Sieve script have been applied.')
+      setSuccess(t('messages.autoresponderSaved'))
     } catch (cause) {
-      setError(apiError(cause, 'Could not save the autoresponder'))
+      setError(apiError(cause, t('errors.saveAutoresponderFailed')))
     } finally {
       setIsSavingAutoresponder(false)
     }
@@ -242,7 +244,7 @@ export default function DomainMailPage() {
     try {
       await api.delete(`/domains/${id}/mail/${autoresponder.mailbox_id}/autoresponder`)
       setAutoresponder(current => ({ ...current, enabled: false, body: '' }))
-      setSuccess('The autoresponder has been removed.')
+      setSuccess(t('messages.autoresponderRemoved'))
     } catch (cause) {
       setError(apiError(cause))
     } finally {
@@ -258,17 +260,17 @@ export default function DomainMailPage() {
     try {
       await api.post(`/domains/${id}/mail/filters`, filter)
       setFilter(current => ({ ...current, name: '', match_value: '' }))
-      setSuccess('The mail filter has been compiled and enabled.')
+      setSuccess(t('messages.filterAdded'))
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, 'Could not add the mail filter'))
+      setError(apiError(cause, t('errors.addFilterFailed')))
     } finally {
       setIsSavingFilter(false)
     }
   }
 
   async function deleteFilter(item: MailFilter) {
-    if (!confirm(`Delete the filter "${item.name}"?`)) return
+    if (!confirm(t('confirm.deleteFilter', { name: item.name }))) return
     setError(null)
     try {
       await api.delete(`/domains/${id}/mail/filters/${item.id}`)
@@ -284,7 +286,7 @@ export default function DomainMailPage() {
       const response = await api.get<SendLimits>(`/domains/${id}/mail/${mailboxID}/send-limits`)
       setLimits(response.data)
     } catch (cause) {
-      setError(apiError(cause, 'Could not read the send limits'))
+      setError(apiError(cause, t('errors.readSendLimitsFailed')))
     }
   }
 
@@ -295,10 +297,10 @@ export default function DomainMailPage() {
     setSuccess(null)
     try {
       await api.put(`/domains/${id}/mail/${limits.mailbox_id}/send-limits`, limits)
-      setSuccess('The send limits have been saved.')
+      setSuccess(t('messages.sendLimitsSaved'))
       loadSendLimits(limits.mailbox_id)
     } catch (cause) {
-      setError(apiError(cause, 'Could not save the send limits'))
+      setError(apiError(cause, t('errors.saveSendLimitsFailed')))
     } finally {
       setIsSavingLimits(false)
     }
@@ -308,14 +310,14 @@ export default function DomainMailPage() {
     <div className="px-6 py-5">
       <div>
         <Breadcrumb items={[
-          { label: 'Home', href: '/' },
-          { label: 'Domains', href: '/domains' },
+          { label: t('breadcrumb.home'), href: '/' },
+          { label: t('breadcrumb.domains'), href: '/domains' },
           { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },
-          { label: 'Email' },
+          { label: t('breadcrumb.email') },
         ]} />
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Email Accounts</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-          Manage native Postfix and Dovecot mailboxes. Use SMTP port 587 with STARTTLS for authenticated sending.
+          {t('subtitle')}
         </p>
 
         {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">{error}</div>}
@@ -323,48 +325,48 @@ export default function DomainMailPage() {
 
         {generatedPassword && (
           <div className="mb-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
-            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium mb-1">Password for {generatedPassword.email}</p>
-            <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-2">Save it now. It will not be shown again.</p>
+            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium mb-1">{t('generatedPassword.title', { email: generatedPassword.email })}</p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-2">{t('generatedPassword.saveNote')}</p>
             <div className="flex items-center gap-2">
               <code className="flex-1 bg-white dark:bg-slate-800 px-3 py-2 font-mono text-sm text-slate-900 dark:text-slate-100 rounded border border-emerald-200 dark:border-emerald-800 break-all">{generatedPassword.password}</code>
-              <button type="button" onClick={() => navigator.clipboard.writeText(generatedPassword.password)} className="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 text-emerald-800 dark:text-emerald-200 text-xs rounded">Copy</button>
+              <button type="button" onClick={() => navigator.clipboard.writeText(generatedPassword.password)} className="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 text-emerald-800 dark:text-emerald-200 text-xs rounded">{t('generatedPassword.copy')}</button>
             </div>
           </div>
         )}
 
         {loading ? (
-          <div className="text-sm text-slate-400">Loading…</div>
+          <div className="text-sm text-slate-400">{t('loading')}</div>
         ) : !status?.enabled ? (
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center">
             <div className="text-3xl mb-2">📧</div>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mb-1">Email hosting is not enabled for this domain yet.</p>
-            <p className="text-xs text-slate-500 dark:text-slate-500 mb-4">Enabling it adds MX, SPF, DKIM, and DMARC DNS records when possible.</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-1">{t('enable.notEnabled')}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mb-4">{t('enable.info')}</p>
             <button type="button" onClick={enableMail} disabled={isSaving}
               className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-              {isSaving ? 'Enabling…' : 'Enable Email'}
+              {isSaving ? t('enable.enabling') : t('enable.button')}
             </button>
           </div>
         ) : (
           <>
             <form onSubmit={addMailbox} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Add mailbox</h3>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('mailboxAdd.title')}</h3>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <input value={localPart} onChange={event => setLocalPart(event.target.value)} required placeholder="info"
+                <input value={localPart} onChange={event => setLocalPart(event.target.value)} required placeholder={t('mailboxAdd.localPlaceholder')}
                   className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
                 <span className="text-slate-500 dark:text-slate-400 text-sm">@{domain?.domain_name}</span>
-                <input value={password} onChange={event => setPassword(event.target.value)} type="password" placeholder="password, generated if empty"
+                <input value={password} onChange={event => setPassword(event.target.value)} type="password" placeholder={t('mailboxAdd.passwordPlaceholder')}
                   className="sm:w-60 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
                 <button disabled={isSaving || !localPart} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-                  {isSaving ? 'Adding…' : 'Add'}
+                  {isSaving ? t('mailboxAdd.adding') : t('mailboxAdd.add')}
                 </button>
               </div>
             </form>
 
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Mailboxes</h3>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('mailboxes.title')}</h3>
               {mailboxes.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">No mailboxes yet.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('mailboxes.empty')}</p>
                 </div>
               ) : (
                 <ul className="divide-y divide-slate-50 dark:divide-slate-700/50">
@@ -373,15 +375,15 @@ export default function DomainMailPage() {
                       <div>
                         <span className="text-sm font-mono text-slate-800 dark:text-slate-200">{mailbox.email}</span>
                         {mailbox.status !== 'active' && (
-                          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">suspended</span>
+                          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">{t('mailboxes.suspended')}</span>
                         )}
                       </div>
                       <div className="flex items-center gap-3">
                         <button type="button" onClick={() => toggleMailboxStatus(mailbox)} className="text-xs text-slate-600 dark:text-slate-300 hover:underline">
-                          {mailbox.status === 'active' ? 'Suspend' : 'Activate'}
+                          {mailbox.status === 'active' ? t('mailboxes.suspend') : t('mailboxes.activate')}
                         </button>
-                        <button type="button" onClick={() => resetPassword(mailbox)} className="text-xs text-slate-600 dark:text-slate-300 hover:underline">Reset password</button>
-                        <button type="button" onClick={() => removeMailbox(mailbox)} className="text-xs text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                        <button type="button" onClick={() => resetPassword(mailbox)} className="text-xs text-slate-600 dark:text-slate-300 hover:underline">{t('mailboxes.resetPassword')}</button>
+                        <button type="button" onClick={() => removeMailbox(mailbox)} className="text-xs text-red-600 dark:text-red-400 hover:underline">{t('mailboxes.delete')}</button>
                       </div>
                     </li>
                   ))}
@@ -390,9 +392,9 @@ export default function DomainMailPage() {
             </div>
 
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">Forwarders and Catch-All</h3>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('forwarders.title')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                Forward incoming mail to one or more destination addresses without creating a mailbox. Catch-all forwards mail for undefined addresses on this domain.
+                {t('forwarders.description')}
               </p>
               <form onSubmit={addAlias} className="mb-4 space-y-2">
                 <div className="flex items-center gap-2">
@@ -400,7 +402,7 @@ export default function DomainMailPage() {
                     <span className="flex-1 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-500 dark:text-slate-400 font-mono">*@{domain?.domain_name}</span>
                   ) : (
                     <>
-                      <input value={aliasLocalPart} onChange={event => setAliasLocalPart(event.target.value)} required={!aliasCatchAll} placeholder="support"
+                      <input value={aliasLocalPart} onChange={event => setAliasLocalPart(event.target.value)} required={!aliasCatchAll} placeholder={t('forwarders.sourcePlaceholder')}
                         className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
                       <span className="text-slate-500 dark:text-slate-400 text-sm">@{domain?.domain_name}</span>
                     </>
@@ -408,21 +410,21 @@ export default function DomainMailPage() {
                 </div>
                 <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
                   <input type="checkbox" checked={aliasCatchAll} onChange={event => setAliasCatchAll(event.target.checked)} />
-                  Forward all undefined addresses on this domain
+                  {t('forwarders.catchAll')}
                 </label>
                 <div className="flex items-center gap-2">
-                  <input value={aliasDestination} onChange={event => setAliasDestination(event.target.value)} required placeholder="target1@example.com, target2@example.com"
+                  <input value={aliasDestination} onChange={event => setAliasDestination(event.target.value)} required placeholder={t('forwarders.destinationPlaceholder')}
                     className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
                   <button disabled={isSavingAlias || !aliasDestination || (!aliasCatchAll && !aliasLocalPart)}
                     className="px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-                    {isSavingAlias ? 'Adding…' : 'Add'}
+                    {isSavingAlias ? t('forwarders.adding') : t('forwarders.add')}
                   </button>
                 </div>
               </form>
 
               {aliases.length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">No forwarders yet.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('forwarders.empty')}</p>
                 </div>
               ) : (
                 <ul className="divide-y divide-slate-50 dark:divide-slate-700/50">
@@ -435,14 +437,14 @@ export default function DomainMailPage() {
                         <span className="mx-1.5 text-slate-400">→</span>
                         <span className="text-sm font-mono text-slate-600 dark:text-slate-400">{alias.destination}</span>
                         {alias.status !== 'active' && (
-                          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">suspended</span>
+                          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">{t('forwarders.suspended')}</span>
                         )}
                       </div>
                       <div className="flex items-center gap-3">
                         <button type="button" onClick={() => toggleAliasStatus(alias)} className="text-xs text-slate-600 dark:text-slate-300 hover:underline">
-                          {alias.status === 'active' ? 'Suspend' : 'Activate'}
+                          {alias.status === 'active' ? t('forwarders.suspend') : t('forwarders.activate')}
                         </button>
-                        <button type="button" onClick={() => removeAlias(alias)} className="text-xs text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                        <button type="button" onClick={() => removeAlias(alias)} className="text-xs text-red-600 dark:text-red-400 hover:underline">{t('forwarders.delete')}</button>
                       </div>
                     </li>
                   ))}
@@ -451,17 +453,17 @@ export default function DomainMailPage() {
             </div>
 
             <form onSubmit={saveSpam} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">Spam Filtering</h3>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('spam.title')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                Rspamd scores every incoming message. Greylisting temporarily defers, the header threshold flags mail as spam, and the reject threshold refuses delivery.
-                {!rspamd && <span className="text-amber-600 dark:text-amber-400"> Rspamd is not installed on this server; settings are stored but not enforced.</span>}
+                {t('spam.description')}
+                {!rspamd && <span className="text-amber-600 dark:text-amber-400">{t('spam.notInstalled')}</span>}
               </p>
               <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 mb-3">
                 <input type="checkbox" checked={spam.enabled} onChange={event => setSpam({ ...spam, enabled: event.target.checked })} />
-                Enable spam filtering for this domain
+                {t('spam.enable')}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {([['greylist_score', 'Greylist'], ['add_header_score', 'Add header'], ['reject_score', 'Reject']] as const).map(([key, label]) => (
+                {([['greylist_score', t('spam.greylist')], ['add_header_score', t('spam.addHeader')], ['reject_score', t('spam.reject')]] as const).map(([key, label]) => (
                   <label key={key} className="text-xs text-slate-600 dark:text-slate-300">
                     {label}
                     <input type="number" step="0.5" min="0" max="50" value={spam[key]}
@@ -471,74 +473,74 @@ export default function DomainMailPage() {
                 ))}
               </div>
               <button disabled={isSavingSpam} className="mt-3 px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-                {isSavingSpam ? 'Applying…' : 'Apply spam policy'}
+                {isSavingSpam ? t('spam.applying') : t('spam.apply')}
               </button>
             </form>
 
             {mailboxes.length > 0 && (
             <form onSubmit={saveAutoresponder} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">Automatic Reply</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">Send a vacation reply from a mailbox, at most once per interval to the same sender.</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('autoresponder.title')}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('autoresponder.description')}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                <label className="text-xs text-slate-600 dark:text-slate-300">Mailbox
+                <label className="text-xs text-slate-600 dark:text-slate-300">{t('autoresponder.mailbox')}
                   <select value={autoresponder.mailbox_id} onChange={event => loadAutoresponder(Number(event.target.value))}
                     className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
                     {mailboxes.map(mailbox => <option key={mailbox.id} value={mailbox.id}>{mailbox.email}</option>)}
                   </select>
                 </label>
-                <label className="text-xs text-slate-600 dark:text-slate-300">Reply interval (days)
+                <label className="text-xs text-slate-600 dark:text-slate-300">{t('autoresponder.interval')}
                   <input type="number" min="1" max="30" value={autoresponder.interval_days}
                     onChange={event => setAutoresponder({ ...autoresponder, interval_days: Number(event.target.value) })}
                     className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
                 </label>
               </div>
               <input value={autoresponder.subject} onChange={event => setAutoresponder({ ...autoresponder, subject: event.target.value })}
-                placeholder="Subject" className="w-full mb-2 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
+                placeholder={t('autoresponder.subjectPlaceholder')} className="w-full mb-2 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
               <textarea value={autoresponder.body} onChange={event => setAutoresponder({ ...autoresponder, body: event.target.value })}
-                placeholder="Message body" rows={3} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
+                placeholder={t('autoresponder.bodyPlaceholder')} rows={3} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
               <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 my-3">
                 <input type="checkbox" checked={autoresponder.enabled} onChange={event => setAutoresponder({ ...autoresponder, enabled: event.target.checked })} />
-                Enable the automatic reply
+                {t('autoresponder.enable')}
               </label>
               <div className="flex gap-2">
                 <button disabled={isSavingAutoresponder} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-                  {isSavingAutoresponder ? 'Saving…' : 'Save autoresponder'}
+                  {isSavingAutoresponder ? t('autoresponder.saving') : t('autoresponder.save')}
                 </button>
-                <button type="button" onClick={deleteAutoresponder} disabled={isSavingAutoresponder} className="px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:underline">Remove</button>
+                <button type="button" onClick={deleteAutoresponder} disabled={isSavingAutoresponder} className="px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:underline">{t('autoresponder.remove')}</button>
               </div>
             </form>
             )}
 
             {mailboxes.length > 0 && (
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">Message Filters</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">Sort incoming mail into folders, redirect it, or discard it with Sieve rules compiled per mailbox.</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('filters.title')}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('filters.description')}</p>
               <form onSubmit={addFilter} className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                 <select value={filter.mailbox_id} onChange={event => setFilter({ ...filter, mailbox_id: Number(event.target.value) })}
                   className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
                   {mailboxes.map(mailbox => <option key={mailbox.id} value={mailbox.id}>{mailbox.email}</option>)}
                 </select>
-                <input value={filter.name} onChange={event => setFilter({ ...filter, name: event.target.value })} required placeholder="Filter name"
+                <input value={filter.name} onChange={event => setFilter({ ...filter, name: event.target.value })} required placeholder={t('filters.namePlaceholder')}
                   className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
                 <select value={filter.match_field} onChange={event => setFilter({ ...filter, match_field: event.target.value as MailFilter['match_field'] })}
                   className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
-                  <option value="subject">Subject contains</option><option value="from">From contains</option><option value="to">To contains</option>
+                  <option value="subject">{t('filters.subjectContains')}</option><option value="from">{t('filters.fromContains')}</option><option value="to">{t('filters.toContains')}</option>
                 </select>
-                <input value={filter.match_value} onChange={event => setFilter({ ...filter, match_value: event.target.value })} required placeholder="Matched text"
+                <input value={filter.match_value} onChange={event => setFilter({ ...filter, match_value: event.target.value })} required placeholder={t('filters.matchedTextPlaceholder')}
                   className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
                 <select value={filter.action_type} onChange={event => setFilter({ ...filter, action_type: event.target.value as MailFilter['action_type'] })}
                   className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
-                  <option value="move">Move to folder</option><option value="redirect">Redirect to</option><option value="discard">Discard</option>
+                  <option value="move">{t('filters.moveToFolder')}</option><option value="redirect">{t('filters.redirectTo')}</option><option value="discard">{t('filters.discard')}</option>
                 </select>
                 {filter.action_type !== 'discard' &&
                   <input value={filter.action_value} onChange={event => setFilter({ ...filter, action_value: event.target.value })} required
-                    placeholder={filter.action_type === 'move' ? 'Folder (e.g. Invoices)' : 'target@example.com'}
+                    placeholder={filter.action_type === 'move' ? t('filters.folderPlaceholder') : t('filters.targetPlaceholder')}
                     className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono" />}
                 <button disabled={isSavingFilter} className="sm:col-span-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-                  {isSavingFilter ? 'Adding…' : 'Add filter'}
+                  {isSavingFilter ? t('filters.adding') : t('filters.add')}
                 </button>
               </form>
-              {filters.length === 0 ? <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">No filters yet.</p> : (
+              {filters.length === 0 ? <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">{t('filters.empty')}</p> : (
                 <ul className="divide-y divide-slate-50 dark:divide-slate-700/50">
                   {filters.map(item => (
                     <li key={item.id} className="flex items-center justify-between py-2.5 text-sm">
@@ -547,7 +549,7 @@ export default function DomainMailPage() {
                         <span className="text-slate-800 dark:text-slate-200">{item.name}</span>
                         <div className="text-xs text-slate-500">{item.match_field} ∋ “{item.match_value}” → {item.action_type} {item.action_value}</div>
                       </div>
-                      <button type="button" onClick={() => deleteFilter(item)} className="text-xs text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                      <button type="button" onClick={() => deleteFilter(item)} className="text-xs text-red-600 dark:text-red-400 hover:underline">{t('filters.delete')}</button>
                     </li>
                   ))}
                 </ul>
@@ -557,39 +559,39 @@ export default function DomainMailPage() {
 
             {mailboxes.length > 0 && (
             <form onSubmit={saveSendLimits} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">Send Limits</h3>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('sendLimits.title')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                Cap outbound recipients per mailbox. Exceeding a limit suspends the account automatically to contain a compromised login. Use 0 for unlimited.
+                {t('sendLimits.description')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <label className="text-xs text-slate-600 dark:text-slate-300">Mailbox
+                <label className="text-xs text-slate-600 dark:text-slate-300">{t('sendLimits.mailbox')}
                   <select value={limits.mailbox_id} onChange={event => loadSendLimits(Number(event.target.value))}
                     className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
                     {mailboxes.map(mailbox => <option key={mailbox.id} value={mailbox.id}>{mailbox.email}</option>)}
                   </select>
                 </label>
-                <label className="text-xs text-slate-600 dark:text-slate-300">Hourly ({limits.sent_hour} used)
+                <label className="text-xs text-slate-600 dark:text-slate-300">{t('sendLimits.hourly', { count: limits.sent_hour })}
                   <input type="number" min="0" max="100000" value={limits.hour_limit}
                     onChange={event => setLimits({ ...limits, hour_limit: Number(event.target.value) })}
                     className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
                 </label>
-                <label className="text-xs text-slate-600 dark:text-slate-300">Daily ({limits.sent_day} used)
+                <label className="text-xs text-slate-600 dark:text-slate-300">{t('sendLimits.daily', { count: limits.sent_day })}
                   <input type="number" min="0" max="100000" value={limits.day_limit}
                     onChange={event => setLimits({ ...limits, day_limit: Number(event.target.value) })}
                     className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
                 </label>
               </div>
               {limits.spam_suspended_at &&
-                <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">Auto-suspended at {limits.spam_suspended_at}. Reactivate the mailbox above to clear it.</p>}
+                <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{t('sendLimits.suspendedNote', { time: limits.spam_suspended_at })}</p>}
               <button disabled={isSavingLimits} className="mt-3 px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-                {isSavingLimits ? 'Saving…' : 'Save send limits'}
+                {isSavingLimits ? t('sendLimits.saving') : t('sendLimits.save')}
               </button>
             </form>
             )}
           </>
         )}
 
-        <div className="mt-4"><Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">← Back to subscription</Link></div>
+        <div className="mt-4"><Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">{t('back')}</Link></div>
       </div>
     </div>
   )

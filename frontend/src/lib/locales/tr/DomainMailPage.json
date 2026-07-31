@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "email": "E-posta"
+  },
+  "title": "E-posta Hesapları",
+  "subtitle": "Yerel Postfix ve Dovecot posta kutularını yönetin. Kimlik doğrulamalı gönderim için STARTTLS ile 587 numaralı SMTP portunu kullanın.",
+  "loading": "Yükleniyor…",
+  "back": "← Aboneliğe geri dön",
+  "generatedPassword": {
+    "title": "{{email}} için parola",
+    "saveNote": "Şimdi kaydedin. Tekrar gösterilmeyecek.",
+    "copy": "Kopyala"
+  },
+  "enable": {
+    "notEnabled": "Bu alan adı için e-posta barındırma henüz etkin değil.",
+    "info": "Etkinleştirmek, mümkün olduğunda MX, SPF, DKIM ve DMARC DNS kayıtlarını ekler.",
+    "enabling": "Etkinleştiriliyor…",
+    "button": "E-postayı Etkinleştir"
+  },
+  "mailboxAdd": {
+    "title": "Posta kutusu ekle",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "parola, boş bırakılırsa oluşturulur",
+    "adding": "Ekleniyor…",
+    "add": "Ekle"
+  },
+  "mailboxes": {
+    "title": "Posta Kutuları",
+    "empty": "Henüz posta kutusu yok.",
+    "suspended": "askıya alındı",
+    "suspend": "Askıya Al",
+    "activate": "Etkinleştir",
+    "resetPassword": "Parolayı sıfırla",
+    "delete": "Sil"
+  },
+  "forwarders": {
+    "title": "Yönlendiriciler ve Tümünü Yakala",
+    "description": "Gelen postayı, posta kutusu oluşturmadan bir veya daha fazla hedef adrese yönlendirin. Tümünü yakala, bu alan adındaki tanımsız adreslere gelen postayı yönlendirir.",
+    "sourcePlaceholder": "destek",
+    "catchAll": "Bu alan adındaki tüm tanımsız adresleri yönlendir",
+    "destinationPlaceholder": "hedef1@example.com, hedef2@example.com",
+    "adding": "Ekleniyor…",
+    "add": "Ekle",
+    "empty": "Henüz yönlendirici yok.",
+    "suspended": "askıya alındı",
+    "suspend": "Askıya Al",
+    "activate": "Etkinleştir",
+    "delete": "Sil"
+  },
+  "spam": {
+    "title": "Spam Filtreleme",
+    "description": "Rspamd, gelen her iletiyi puanlar. Greylisting geçici olarak erteler, başlık eşiği postayı spam olarak işaretler ve reddetme eşiği teslimatı reddeder.",
+    "notInstalled": " Bu sunucuda Rspamd kurulu değil; ayarlar saklanır ancak uygulanmaz.",
+    "enable": "Bu alan adı için spam filtrelemeyi etkinleştir",
+    "greylist": "Greylist",
+    "addHeader": "Başlık ekle",
+    "reject": "Reddet",
+    "applying": "Uygulanıyor…",
+    "apply": "Spam politikasını uygula"
+  },
+  "autoresponder": {
+    "title": "Otomatik Yanıt",
+    "description": "Bir posta kutusundan tatil yanıtı gönderin, aynı gönderene aralık başına en fazla bir kez.",
+    "mailbox": "Posta kutusu",
+    "interval": "Yanıt aralığı (gün)",
+    "subjectPlaceholder": "Konu",
+    "bodyPlaceholder": "İleti gövdesi",
+    "enable": "Otomatik yanıtı etkinleştir",
+    "saving": "Kaydediliyor…",
+    "save": "Otomatik yanıtı kaydet",
+    "remove": "Kaldır"
+  },
+  "filters": {
+    "title": "İleti Filtreleri",
+    "description": "Gelen postayı klasörlere ayırın, yönlendirin veya posta kutusu başına derlenen Sieve kurallarıyla atın.",
+    "namePlaceholder": "Filtre adı",
+    "subjectContains": "Konu şunu içerir",
+    "fromContains": "Gönderen şunu içerir",
+    "toContains": "Alıcı şunu içerir",
+    "matchedTextPlaceholder": "Eşleşen metin",
+    "moveToFolder": "Klasöre taşı",
+    "redirectTo": "Şuraya yönlendir",
+    "discard": "At",
+    "folderPlaceholder": "Klasör (örn. Faturalar)",
+    "targetPlaceholder": "hedef@example.com",
+    "adding": "Ekleniyor…",
+    "add": "Filtre ekle",
+    "empty": "Henüz filtre yok.",
+    "delete": "Sil"
+  },
+  "sendLimits": {
+    "title": "Gönderim Limitleri",
+    "description": "Posta kutusu başına giden alıcıları sınırlayın. Bir limitin aşılması, ele geçirilmiş bir oturumu sınırlamak için hesabı otomatik olarak askıya alır. Sınırsız için 0 kullanın.",
+    "mailbox": "Posta kutusu",
+    "hourly": "Saatlik ({{count}} kullanıldı)",
+    "daily": "Günlük ({{count}} kullanıldı)",
+    "suspendedNote": "{{time}} tarihinde otomatik askıya alındı. Temizlemek için yukarıdaki posta kutusunu yeniden etkinleştirin.",
+    "saving": "Kaydediliyor…",
+    "save": "Gönderim limitlerini kaydet"
+  },
+  "messages": {
+    "enabled": "Bu alan adı için e-posta barındırma etkinleştirildi. MX, SPF, DKIM ve DMARC kayıtları mümkün olduğunda DNS'e eklendi.",
+    "forwarderAdded": "Posta yönlendirici eklendi.",
+    "spamApplied": "Rspamd spam politikası doğrulandı ve uygulandı.",
+    "autoresponderSaved": "Otomatik yanıt ve Sieve betiği uygulandı.",
+    "autoresponderRemoved": "Otomatik yanıt kaldırıldı.",
+    "filterAdded": "Posta filtresi derlendi ve etkinleştirildi.",
+    "sendLimitsSaved": "Gönderim limitleri kaydedildi."
+  },
+  "confirm": {
+    "deleteMailbox": "\"{{email}}\" posta kutusu silinsin mi? Maildir diskte kalır ve yalnızca hesap satırı kaldırılır.",
+    "deleteForwarder": "\"{{source}}\" yönlendiricisi silinsin mi?",
+    "deleteFilter": "\"{{name}}\" filtresi silinsin mi?"
+  },
+  "errors": {
+    "loadDomainFailed": "Alan adı yüklenemedi",
+    "enableFailed": "E-posta barındırma etkinleştirilemedi",
+    "createMailboxFailed": "Posta kutusu oluşturulamadı",
+    "addForwarderFailed": "Posta yönlendirici eklenemedi",
+    "deleteMailboxFailed": "Posta kutusu silinemedi",
+    "deleteForwarderFailed": "Posta yönlendirici silinemedi",
+    "resetPasswordFailed": "Parola sıfırlanamadı",
+    "updateForwarderFailed": "Posta yönlendirici güncellenemedi",
+    "updateMailboxFailed": "Posta kutusu güncellenemedi",
+    "applySpamFailed": "Spam ayarları uygulanamadı",
+    "readAutoresponderFailed": "Otomatik yanıt okunamadı",
+    "saveAutoresponderFailed": "Otomatik yanıt kaydedilemedi",
+    "addFilterFailed": "Posta filtresi eklenemedi",
+    "readSendLimitsFailed": "Gönderim limitleri okunamadı",
+    "saveSendLimitsFailed": "Gönderim limitleri kaydedilemedi"
+  }
+}

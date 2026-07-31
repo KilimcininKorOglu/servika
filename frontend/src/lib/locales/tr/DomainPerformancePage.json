@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "performance": "Performans"
+  },
+  "loading": "Yükleniyor…",
+  "notFound": "Bulunamadı",
+  "title": "Performans ve Hızlandırıcılar",
+  "subtitle": {
+    "post": ", mevcut hızlandırıcı durumu ve öneriler."
+  },
+  "scoreLabel": "Performans Puanı",
+  "acceleratorsTitle": "Hızlandırıcılar",
+  "cacheStat": "%{{rate}} isabet · {{total}} istek",
+  "configure": "Yapılandır →",
+  "suggestionsTitle": "Öneriler",
+  "open": "Aç →",
+  "back": "← Aboneliğe dön"
+}

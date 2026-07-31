@@ -1,0 +1,124 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "subscription": "Abonelik",
+    "wordpress": "WordPress"
+  },
+  "title": "WordPress Araç Seti",
+  "subtitle": "Sürümleri, eklentileri, temaları ve kullanıcıları tek yerden yönetin.",
+  "loading": "Yükleniyor…",
+  "actions": {
+    "new": "Yeni WordPress"
+  },
+  "empty": {
+    "title": "Bu alan adında henüz WordPress kurulumu yok",
+    "subtitle": "Aşağıdaki formu kullanarak tek tıkla kurun."
+  },
+  "tabs": {
+    "overview": "Genel Bakış",
+    "extensions": "Eklentiler",
+    "themes": "Temalar",
+    "users": "Kullanıcılar"
+  },
+  "toolkit": {
+    "adminPanel": "Yönetim paneli",
+    "remove": "Kaldır"
+  },
+  "metrics": {
+    "version": "Sürüm",
+    "php": "PHP",
+    "database": "Veritabanı",
+    "maintenance": "Bakım modu",
+    "upToDate": "güncel",
+    "active": "etkin",
+    "on": "Açık",
+    "off": "Kapalı"
+  },
+  "overview": {
+    "updateVersion": "Sürümü güncelle · v{{version}}",
+    "updateAll": "Tümünü güncelle",
+    "disableMaintenance": "Bakım modunu kapat",
+    "enableMaintenance": "Bakım modunu aç",
+    "clearCache": "Önbelleği temizle",
+    "repairCore": "Çekirdeği onar",
+    "hint": "Hızlı bakım işlemleri. Kullanılabilir sürüm güncellemeleri yukarıdaki ölçümde görünür."
+  },
+  "messages": {
+    "coreUpdated": "WordPress çekirdeği güncellendi.",
+    "allUpdated": "Çekirdek, eklentiler ve temalar güncellendi.",
+    "maintenanceEnabled": "Bakım modu açıldı.",
+    "maintenanceDisabled": "Bakım modu kapatıldı.",
+    "cacheCleared": "Önbellek temizlendi.",
+    "repairDone": "Çekirdek onarımı tamamlandı.",
+    "packageUpdated": "{{name}} güncellendi.",
+    "allUpdatesDone": "Tüm güncellemeler tamamlandı.",
+    "activated": "{{name}} etkinleştirildi.",
+    "deactivated": "{{name}} devre dışı bırakıldı."
+  },
+  "errors": {
+    "installFailed": "Kurulum başarısız oldu",
+    "operationFailed": "İşlem başarısız oldu",
+    "resetFailed": "Parola sıfırlanamadı",
+    "removeFailed": "Kurulum kaldırılamadı"
+  },
+  "output": {
+    "title": "İşlem çıktısı"
+  },
+  "btn": {
+    "processing": "İşleniyor…"
+  },
+  "packages": {
+    "loading": "Yükleniyor…",
+    "noPlugins": "Eklenti bulunamadı.",
+    "noThemes": "Tema bulunamadı.",
+    "updateSingular": "{{count}} güncelleme mevcut",
+    "updatePlural": "{{count}} güncelleme mevcut",
+    "updateAll": "Tümünü güncelle",
+    "active": "Etkin",
+    "inactive": "Etkin değil",
+    "version": "Sürüm {{version}}",
+    "updateAvailable": " → {{version}} mevcut",
+    "update": "Güncelle",
+    "activate": "Etkinleştir",
+    "deactivate": "Devre dışı bırak",
+    "activeTheme": "Etkin tema"
+  },
+  "usersTab": {
+    "loading": "Yükleniyor…",
+    "empty": "Kullanıcı bulunamadı.",
+    "resetPassword": "Parolayı sıfırla"
+  },
+  "confirm": {
+    "resetPassword": "\"{{user}}\" için yeni bir parola oluşturulsun mu?\nMevcut parola geçersiz olacak.",
+    "rootRemove": "Kök dizindeki WordPress kurulumları panelden silinemez.",
+    "remove": "{{dir}} altındaki WordPress kurulumu silinsin mi?\nBu dizindeki tüm dosyalar ve veritabanı kaldırılacak. Bu işlem geri alınamaz."
+  },
+  "installForm": {
+    "title": "Yeni WordPress kurulumu",
+    "close": "✕ Kapat",
+    "siteTitle": "Site başlığı",
+    "siteTitlePlaceholder": "Blogum",
+    "subdirectory": "Alt dizin (isteğe bağlı)",
+    "subdirectoryPlaceholder": "boş = kök · örnek: blog",
+    "adminUser": "Yönetici kullanıcı adı",
+    "adminEmail": "Yönetici e-postası",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "Kuruluyor… (~30 sn)",
+    "install": "WordPress'i kur"
+  },
+  "result": {
+    "installed": "WordPress {{version}} kuruldu",
+    "site": "Site",
+    "admin": "Yönetim",
+    "username": "Kullanıcı adı",
+    "password": "Parola",
+    "savePassword": "Parolayı şimdi kaydedin. Tekrar gösterilmeyecek."
+  },
+  "passwordModal": {
+    "title": "Yeni parola oluşturuldu",
+    "user": "Kullanıcı:",
+    "copy": "Kopyala",
+    "notice": "Bu parola tekrar gösterilmeyecek. Şimdi kaydedin.",
+    "ok": "Tamam"
+  }
+}

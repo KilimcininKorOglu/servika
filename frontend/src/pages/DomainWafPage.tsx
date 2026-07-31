@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -15,26 +16,15 @@ type Response = {
   module_loaded: boolean
 }
 
-const MODES: { key: Mode; name: string; icon: string; description: string; color: string }[] = [
-  { key: 'inherit', name: 'Inherit from Plan', icon: '↩︎',
-    description: 'This domain uses the WAF default from its assigned service plan.', color: 'slate' },
-  { key: 'block', name: 'Block', icon: '🛡️',
-    description: 'Malicious requests (SQLi, XSS, RCE…) are blocked with 403. SecRuleEngine On.', color: 'emerald' },
-  { key: 'detect', name: 'Detect', icon: '👁️',
-    description: 'Requests are not blocked; matching rules are written to the audit log only. DetectionOnly — ideal for rule tuning.', color: 'indigo' },
-  { key: 'off', name: 'Off', icon: '⛔',
-    description: 'WAF is completely disabled for this domain (even if the plan has it enabled).', color: 'rose' },
+const MODES: { key: Mode; icon: string; color: string }[] = [
+  { key: 'inherit', icon: '↩︎', color: 'slate' },
+  { key: 'block', icon: '🛡️', color: 'emerald' },
+  { key: 'detect', icon: '👁️', color: 'indigo' },
+  { key: 'off', icon: '⛔', color: 'rose' },
 ]
 
-const PARANOIA_DESCRIPTION: Record<number, string> = {
-  0: 'Plan default is used.',
-  1: 'Low — basic attack signatures. Almost no false positives. (recommended)',
-  2: 'Medium — more rules. Some legitimate requests may be blocked.',
-  3: 'High — aggressive. Per-application exclusions may be needed.',
-  4: 'Strict — most aggressive. Only for tightly audited scenarios.',
-}
-
 export default function DomainWafPage() {
+  const { t } = useTranslation('DomainWafPage')
   const { id } = useParams()
   const [data, setData] = useState<Response | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
@@ -60,11 +50,13 @@ export default function DomainWafPage() {
       const r = await api.put<{ effective: Effective; module_loaded: boolean }>(`/domains/${id}/waf`, { settings })
       const ef = r.data.effective
       setSuccess(ef.active
-        ? `WAF applied — ${ef.engine === 'On' ? 'Blocking' : 'Detection'} mode, paranoia ${ef.paranoia}`
-        : 'Settings saved — WAF is passive for this domain')
+        ? (ef.engine === 'On'
+          ? t('messages.appliedBlocking', { paranoia: ef.paranoia })
+          : t('messages.appliedDetection', { paranoia: ef.paranoia }))
+        : t('messages.savedPassive'))
       load()
     } catch (e) {
-      setError(apiError(e, 'Save failed'))
+      setError(apiError(e, t('errors.saveFailed')))
     } finally {
       setSaving(false)
     }
@@ -73,15 +65,15 @@ export default function DomainWafPage() {
   return (
     <div className="w-full px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' },
+        { label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.domains'), href: '/domains' },
         { label: data?.domain_name || '...', href: `/subscriptions/${id}` },
-        { label: 'Web Application Firewall (WAF)' },
+        { label: t('breadcrumb.waf') },
       ]} />
 
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Web Application Firewall</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
       {data && <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
         <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-medium">{data.domain_name}</Link>
-        {' · '}ModSecurity v3 + OWASP Core Rule Set. Saving re-renders the nginx vhost (zero downtime).
+        {t('subtitle')}
       </p>}
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">{error}</div>}
@@ -89,39 +81,38 @@ export default function DomainWafPage() {
 
       {data && !data.module_loaded && (
         <div className="mb-5 px-3 py-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
-          <strong>The ModSecurity module is not installed on this server.</strong> Settings are saved but WAF is not applied.
-          Run <code className="font-mono">servika-waf-setup</code> on the server to enable it (existing sites are not affected).
+          <strong>{t('moduleWarning.bold')}</strong>{t('moduleWarning.pre')}<code className="font-mono">servika-waf-setup</code>{t('moduleWarning.post')}
         </div>
       )}
 
       {loading || !settings || !data ? (
-        <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div>
+        <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</div>
       ) : (
         <>
           {/* Effective status + plan info */}
           <div className="mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Effective Status:</span>
+              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('effective.label')}</span>
               {data.effective.active ? (
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                   data.effective.engine === 'On'
                     ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
                     : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
                 }`}>
-                  {'●'} {data.effective.engine === 'On' ? 'Active · Blocking' : 'Active · Detection'} · Paranoia {data.effective.paranoia}
+                  {'●'} {data.effective.engine === 'On' ? t('effective.blocking') : t('effective.detection')} · {t('effective.paranoia', { level: data.effective.paranoia })}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">{'○'} Passive</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">{'○'} {t('effective.passive')}</span>
               )}
               <span className="text-xs text-slate-400 dark:text-slate-500 ml-auto">
-                Plan default ({data.plan.name || '—'}):{' '}
-                {data.plan.active ? `${data.plan.mode === 'detect' ? 'Detect' : 'Block'} · PL${data.plan.paranoia}` : 'Off'}
+                {t('effective.planDefault', { name: data.plan.name || '—' })}
+                {data.plan.active ? (data.plan.mode === 'detect' ? t('effective.planDetect', { paranoia: data.plan.paranoia }) : t('effective.planBlock', { paranoia: data.plan.paranoia })) : t('effective.planOff')}
               </span>
             </div>
           </div>
 
           {/* Mode selector */}
-          <Card title="WAF Mode">
+          <Card title={t('modeCard.title')}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {MODES.map(m => {
                 const active = settings.mode === m.key
@@ -135,10 +126,10 @@ export default function DomainWafPage() {
                   <button key={m.key} type="button" onClick={() => setSettings({ ...settings, mode: m.key })}
                     className={`text-left p-4 border rounded-xl transition ${colors[m.color]}`}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{m.icon} {m.name}</span>
-                      {active && <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">{'●'} Selected</span>}
+                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{m.icon} {t(`modes.${m.key}.name`)}</span>
+                      {active && <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">{'●'} {t('modeCard.selected')}</span>}
                     </div>
-                    <div className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">{m.description}</div>
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">{t(`modes.${m.key}.description`)}</div>
                   </button>
                 )
               })}
@@ -146,10 +137,9 @@ export default function DomainWafPage() {
           </Card>
 
           {/* Paranoia */}
-          <Card title="Paranoia Level (CRS)">
+          <Card title={t('paranoiaCard.title')}>
             <p className="text-xs text-slate-500 dark:text-slate-500 mb-3">
-              A higher level = more rules + stronger protection, but also a higher chance of false positives.
-              Only effective when WAF is in <strong>Block</strong> or <strong>Detect</strong> mode.
+              {t('paranoiaCard.hint.pre')}<strong>{t('paranoiaCard.hint.block')}</strong>{t('paranoiaCard.hint.mid')}<strong>{t('paranoiaCard.hint.detect')}</strong>{t('paranoiaCard.hint.post')}
             </p>
             <div className="flex items-center gap-3">
               <select
@@ -157,24 +147,24 @@ export default function DomainWafPage() {
                 onChange={e => setSettings({ ...settings, paranoia: parseInt(e.target.value) })}
                 disabled={settings.mode === 'inherit' || settings.mode === 'off'}
                 className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded text-sm font-mono disabled:opacity-50">
-                <option value={0}>Inherit from plan</option>
-                <option value={1}>Level 1 (Low)</option>
-                <option value={2}>Level 2 (Medium)</option>
-                <option value={3}>Level 3 (High)</option>
-                <option value={4}>Level 4 (Strict)</option>
+                <option value={0}>{t('paranoiaCard.options.inherit')}</option>
+                <option value={1}>{t('paranoiaCard.options.level1')}</option>
+                <option value={2}>{t('paranoiaCard.options.level2')}</option>
+                <option value={3}>{t('paranoiaCard.options.level3')}</option>
+                <option value={4}>{t('paranoiaCard.options.level4')}</option>
               </select>
-              <span className="text-xs text-slate-500 dark:text-slate-400">{PARANOIA_DESCRIPTION[settings.paranoia]}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">{t(`paranoiaDescription.${settings.paranoia}`)}</span>
             </div>
           </Card>
 
           <div className="flex gap-3 mt-6">
             <button onClick={save} disabled={saving}
               className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">
-              {saving ? 'Applying…' : 'Save and Apply'}
+              {saving ? t('actions.saving') : t('actions.save')}
             </button>
             <button onClick={load} disabled={saving}
               className="px-4 py-2.5 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm rounded-md">
-              Reload
+              {t('actions.reload')}
             </button>
           </div>
         </>

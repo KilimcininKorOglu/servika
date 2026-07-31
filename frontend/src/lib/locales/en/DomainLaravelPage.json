@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "laravel": "Laravel Toolkit"
+  },
+  "loading": "Loading…",
+  "title": "Laravel Toolkit",
+  "subtitle": "Install, deploy, and operate a Laravel application for this subscription.",
+  "backToSubscription": "Back to Subscription",
+  "tabs": {
+    "overview": "Overview",
+    "install": "Install",
+    "commands": "Commands",
+    "env": ".env",
+    "deploy": "Deploy",
+    "workers": "Workers"
+  },
+  "messages": {
+    "actionCompleted": "Action completed",
+    "actionFailed": "Action failed"
+  },
+  "overview": {
+    "title": "Application Status",
+    "installed": "Installed",
+    "yes": "Yes",
+    "no": "No",
+    "appRoot": "Application root",
+    "documentPath": "Document path",
+    "php": "PHP",
+    "composerManifest": "Composer manifest",
+    "found": "Found",
+    "missing": "Missing",
+    "git": "Git",
+    "repositoryFound": "Repository found",
+    "notConnected": "Not connected",
+    "maintenance": "Maintenance",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "schedule": "Schedule",
+    "queue": "Queue"
+  },
+  "install": {
+    "title": "Install Laravel",
+    "mode": "Mode",
+    "modeRemote": "Clone remote repository",
+    "modeScaffold": "Create new Laravel project",
+    "modeLocal": "Initialize empty Git repository",
+    "appRoot": "Application root",
+    "repositoryUrl": "Repository URL",
+    "repositoryUrlPlaceholder": "https://github.com/example/app.git",
+    "branch": "Branch",
+    "branchPlaceholder": "main",
+    "startInstall": "Start install",
+    "checkInstallStatus": "Check install status"
+  },
+  "commands": {
+    "title": "Laravel Commands",
+    "packagePlaceholder": "vendor/package",
+    "scriptPlaceholder": "script name",
+    "run": "Run"
+  },
+  "env": {
+    "title": "Environment File",
+    "load": "Load .env",
+    "save": "Save .env"
+  },
+  "deploy": {
+    "title": "Deploy",
+    "deployWithMigrate": "Deploy with migrate and build",
+    "checkDeployStatus": "Check deploy status",
+    "disableMaintenance": "Disable maintenance",
+    "enableMaintenance": "Enable maintenance"
+  },
+  "workers": {
+    "title": "Schedule and Queue Worker",
+    "queueTimeout": "Queue timeout",
+    "maxJobs": "Max jobs",
+    "connection": "Connection",
+    "disableSchedule": "Disable schedule",
+    "enableSchedule": "Enable schedule",
+    "disableQueue": "Disable queue",
+    "enableQueue": "Enable queue"
+  },
+  "common": {
+    "save": "Save"
+  }
+}

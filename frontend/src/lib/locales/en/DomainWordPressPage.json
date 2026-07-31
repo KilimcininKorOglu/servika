@@ -1,0 +1,124 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "subscription": "Subscription",
+    "wordpress": "WordPress"
+  },
+  "title": "WordPress Toolkit",
+  "subtitle": "Manage versions, plugins, themes, and users in one place.",
+  "loading": "Loading…",
+  "actions": {
+    "new": "New WordPress"
+  },
+  "empty": {
+    "title": "No WordPress installation exists on this domain yet",
+    "subtitle": "Install it with one click using the form below."
+  },
+  "tabs": {
+    "overview": "Overview",
+    "extensions": "Plugins",
+    "themes": "Themes",
+    "users": "Users"
+  },
+  "toolkit": {
+    "adminPanel": "Admin panel",
+    "remove": "Remove"
+  },
+  "metrics": {
+    "version": "Version",
+    "php": "PHP",
+    "database": "Database",
+    "maintenance": "Maintenance mode",
+    "upToDate": "up to date",
+    "active": "active",
+    "on": "On",
+    "off": "Off"
+  },
+  "overview": {
+    "updateVersion": "Update version · v{{version}}",
+    "updateAll": "Update all",
+    "disableMaintenance": "Disable maintenance mode",
+    "enableMaintenance": "Enable maintenance mode",
+    "clearCache": "Clear cache",
+    "repairCore": "Repair core",
+    "hint": "Quick maintenance actions. Available version updates appear in the metric above."
+  },
+  "messages": {
+    "coreUpdated": "WordPress core updated.",
+    "allUpdated": "Core, plugins, and themes updated.",
+    "maintenanceEnabled": "Maintenance mode enabled.",
+    "maintenanceDisabled": "Maintenance mode disabled.",
+    "cacheCleared": "Cache cleared.",
+    "repairDone": "Core repair completed.",
+    "packageUpdated": "{{name}} updated.",
+    "allUpdatesDone": "All updates completed.",
+    "activated": "{{name}} activated.",
+    "deactivated": "{{name}} deactivated."
+  },
+  "errors": {
+    "installFailed": "Installation failed",
+    "operationFailed": "Operation failed",
+    "resetFailed": "Could not reset password",
+    "removeFailed": "Could not remove installation"
+  },
+  "output": {
+    "title": "Operation output"
+  },
+  "btn": {
+    "processing": "Processing…"
+  },
+  "packages": {
+    "loading": "Loading…",
+    "noPlugins": "No plugins found.",
+    "noThemes": "No themes found.",
+    "updateSingular": "{{count}} update available",
+    "updatePlural": "{{count}} updates available",
+    "updateAll": "Update all",
+    "active": "Active",
+    "inactive": "Inactive",
+    "version": "Version {{version}}",
+    "updateAvailable": " → {{version}} available",
+    "update": "Update",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "activeTheme": "Active theme"
+  },
+  "usersTab": {
+    "loading": "Loading…",
+    "empty": "No users found.",
+    "resetPassword": "Reset password"
+  },
+  "confirm": {
+    "resetPassword": "Generate a new password for \"{{user}}\"?\nThe current password will become invalid.",
+    "rootRemove": "WordPress installations in the root directory cannot be deleted from the panel.",
+    "remove": "Delete the WordPress installation under {{dir}}?\nAll files in this directory and its database will be removed. This cannot be undone."
+  },
+  "installForm": {
+    "title": "New WordPress installation",
+    "close": "✕ Close",
+    "siteTitle": "Site title",
+    "siteTitlePlaceholder": "My Blog",
+    "subdirectory": "Subdirectory (optional)",
+    "subdirectoryPlaceholder": "blank = root · example: blog",
+    "adminUser": "Admin username",
+    "adminEmail": "Admin email",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "Installing… (~30 sec)",
+    "install": "Install WordPress"
+  },
+  "result": {
+    "installed": "WordPress {{version}} installed",
+    "site": "Site",
+    "admin": "Admin",
+    "username": "Username",
+    "password": "Password",
+    "savePassword": "Save the password now. It will not be shown again."
+  },
+  "passwordModal": {
+    "title": "New password created",
+    "user": "User:",
+    "copy": "Copy",
+    "notice": "This password will not be shown again. Save it now.",
+    "ok": "OK"
+  }
+}

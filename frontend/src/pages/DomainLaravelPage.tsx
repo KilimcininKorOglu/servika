@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import Breadcrumb from '@/components/Breadcrumb'
 import { api, apiError } from '@/lib/api'
@@ -35,16 +36,10 @@ type ActionResult = { data?: { output?: string; log?: string } }
 
 const fieldClass = 'w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none'
 
-const tabs: Array<{ key: Tab; label: string }> = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'install', label: 'Install' },
-  { key: 'commands', label: 'Commands' },
-  { key: 'env', label: '.env' },
-  { key: 'deploy', label: 'Deploy' },
-  { key: 'workers', label: 'Workers' },
-]
+const tabs: Tab[] = ['overview', 'install', 'commands', 'env', 'deploy', 'workers']
 
 export default function DomainLaravelPage() {
+  const { t } = useTranslation('DomainLaravelPage')
   const { id } = useParams()
   const [active, setActive] = useState<Tab>('overview')
   const [status, setStatus] = useState<Status | null>(null)
@@ -108,10 +103,10 @@ export default function DomainLaravelPage() {
       const data = (result as ActionResult).data
       if (data?.output) setOutput(data.output)
       if (data?.log) setOutput(data.log)
-      setSuccess('Action completed')
+      setSuccess(t('messages.actionCompleted'))
       if (refresh) load()
     } catch (error) {
-      setError(apiError(error, 'Action failed'))
+      setError(apiError(error, t('messages.actionFailed')))
     } finally {
       setRunning(null)
     }
@@ -187,17 +182,17 @@ export default function DomainLaravelPage() {
     }))
   }
 
-  if (loading && !status) return <div className="px-6 py-5 text-sm text-slate-400">Loading…</div>
+  if (loading && !status) return <div className="px-6 py-5 text-sm text-slate-400">{t('loading')}</div>
 
   return (
     <div className="w-full px-6 py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' }, { label: 'Laravel Toolkit' }]} />
+      <Breadcrumb items={[{ label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.domains'), href: '/domains' }, { label: t('breadcrumb.laravel') }]} />
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Laravel Toolkit</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Install, deploy, and operate a Laravel application for this subscription.</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
         </div>
-        <Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">Back to Subscription</Link>
+        <Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">{t('backToSubscription')}</Link>
       </div>
 
       {error && <div className="mb-3 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">{error}</div>}
@@ -205,68 +200,68 @@ export default function DomainLaravelPage() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {tabs.map(tab => (
-          <button key={tab.key} onClick={() => setActive(tab.key)} className={`px-3 py-1.5 rounded-lg text-sm font-medium ${active === tab.key ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>{tab.label}</button>
+          <button key={tab} onClick={() => setActive(tab)} className={`px-3 py-1.5 rounded-lg text-sm font-medium ${active === tab ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>{t(`tabs.${tab}`)}</button>
         ))}
       </div>
 
       {active === 'overview' && status && (
-        <Card title="Application Status">
+        <Card title={t('overview.title')}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-            <Metric label="Installed" value={status.installed ? 'Yes' : 'No'} />
-            <Metric label="Application root" value={status.app_root} />
-            <Metric label="Document path" value={status.directory} mono />
-            <Metric label="PHP" value={`${status.php_version} (${status.php_binary})`} />
-            <Metric label="Composer manifest" value={status.composer_json ? 'Found' : 'Missing'} />
-            <Metric label="Git" value={status.git_present ? status.last_commit || 'Repository found' : 'Not connected'} />
-            <Metric label="Maintenance" value={status.maintenance ? 'Enabled' : 'Disabled'} />
-            <Metric label="Schedule" value={status.schedule_enabled ? 'Enabled' : 'Disabled'} />
-            <Metric label="Queue" value={status.queue_enabled ? 'Enabled' : 'Disabled'} />
+            <Metric label={t('overview.installed')} value={status.installed ? t('overview.yes') : t('overview.no')} />
+            <Metric label={t('overview.appRoot')} value={status.app_root} />
+            <Metric label={t('overview.documentPath')} value={status.directory} mono />
+            <Metric label={t('overview.php')} value={`${status.php_version} (${status.php_binary})`} />
+            <Metric label={t('overview.composerManifest')} value={status.composer_json ? t('overview.found') : t('overview.missing')} />
+            <Metric label={t('overview.git')} value={status.git_present ? status.last_commit || t('overview.repositoryFound') : t('overview.notConnected')} />
+            <Metric label={t('overview.maintenance')} value={status.maintenance ? t('overview.enabled') : t('overview.disabled')} />
+            <Metric label={t('overview.schedule')} value={status.schedule_enabled ? t('overview.enabled') : t('overview.disabled')} />
+            <Metric label={t('overview.queue')} value={status.queue_enabled ? t('overview.enabled') : t('overview.disabled')} />
           </div>
         </Card>
       )}
 
       {active === 'install' && (
-        <Card title="Install Laravel">
+        <Card title={t('install.title')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Mode"><select value={installMode} onChange={e => setInstallMode(e.target.value as InstallMode)} className={fieldClass}><option value="remote">Clone remote repository</option><option value="scaffold">Create new Laravel project</option><option value="local">Initialize empty Git repository</option></select></Field>
-            <Field label="Application root"><RootSelect value={appRoot} candidates={candidates?.candidates || []} onChange={setAppRoot} onSave={saveAppRoot} /></Field>
-            {installMode === 'remote' && <Field label="Repository URL"><input value={repoURL} onChange={e => setRepoURL(e.target.value)} className={fieldClass} placeholder="https://github.com/example/app.git" /></Field>}
-            {installMode === 'remote' && <Field label="Branch"><input value={branch} onChange={e => setBranch(e.target.value)} className={fieldClass} placeholder="main" /></Field>}
+            <Field label={t('install.mode')}><select value={installMode} onChange={e => setInstallMode(e.target.value as InstallMode)} className={fieldClass}><option value="remote">{t('install.modeRemote')}</option><option value="scaffold">{t('install.modeScaffold')}</option><option value="local">{t('install.modeLocal')}</option></select></Field>
+            <Field label={t('install.appRoot')}><RootSelect value={appRoot} candidates={candidates?.candidates || []} onChange={setAppRoot} onSave={saveAppRoot} /></Field>
+            {installMode === 'remote' && <Field label={t('install.repositoryUrl')}><input value={repoURL} onChange={e => setRepoURL(e.target.value)} className={fieldClass} placeholder={t('install.repositoryUrlPlaceholder')} /></Field>}
+            {installMode === 'remote' && <Field label={t('install.branch')}><input value={branch} onChange={e => setBranch(e.target.value)} className={fieldClass} placeholder={t('install.branchPlaceholder')} /></Field>}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2"><Button disabled={!!running} onClick={startInstall}>Start install</Button><Button variant="secondary" disabled={!!running} onClick={pollInstall}>Check install status</Button></div>
+          <div className="mt-4 flex flex-wrap gap-2"><Button disabled={!!running} onClick={startInstall}>{t('install.startInstall')}</Button><Button variant="secondary" disabled={!!running} onClick={pollInstall}>{t('install.checkInstallStatus')}</Button></div>
         </Card>
       )}
 
       {active === 'commands' && (
-        <Card title="Laravel Commands">
+        <Card title={t('commands.title')}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <CommandBox title="Artisan" value={artisanCommand} setValue={setArtisanCommand} options={['about','migrate','migrate:status','config:cache','cache:clear','queue:restart','storage:link']} onRun={runArtisan} />
-            <CommandBox title="Composer" value={composerCommand} setValue={setComposerCommand} options={['install','update','dump-autoload','validate','show','diagnose','require','remove']} onRun={runComposer}><input value={composerPackage} onChange={e => setComposerPackage(e.target.value)} className={`${fieldClass} mt-2`} placeholder="vendor/package" /></CommandBox>
-            <CommandBox title="npm" value={npmCommand} setValue={setNpmCommand} options={['install','ci','run','prune','ls','outdated','audit','--version']} onRun={runNpm}><input value={npmScript} onChange={e => setNpmScript(e.target.value)} className={`${fieldClass} mt-2`} placeholder="script name" /><NodeSelect value={nodeVersion} versions={nodeVersions} onChange={setNodeVersion} /></CommandBox>
+            <CommandBox title="Composer" value={composerCommand} setValue={setComposerCommand} options={['install','update','dump-autoload','validate','show','diagnose','require','remove']} onRun={runComposer}><input value={composerPackage} onChange={e => setComposerPackage(e.target.value)} className={`${fieldClass} mt-2`} placeholder={t('commands.packagePlaceholder')} /></CommandBox>
+            <CommandBox title="npm" value={npmCommand} setValue={setNpmCommand} options={['install','ci','run','prune','ls','outdated','audit','--version']} onRun={runNpm}><input value={npmScript} onChange={e => setNpmScript(e.target.value)} className={`${fieldClass} mt-2`} placeholder={t('commands.scriptPlaceholder')} /><NodeSelect value={nodeVersion} versions={nodeVersions} onChange={setNodeVersion} /></CommandBox>
           </div>
         </Card>
       )}
 
       {active === 'env' && (
-        <Card title="Environment File">
-          {!envLoaded ? <Button disabled={!!running} onClick={loadEnv}>Load .env</Button> : <><textarea value={envContent} onChange={e => setEnvContent(e.target.value)} rows={16} className={`${fieldClass} font-mono text-xs`} /><div className="mt-3"><Button disabled={!!running} onClick={saveEnv}>Save .env</Button></div></>}
+        <Card title={t('env.title')}>
+          {!envLoaded ? <Button disabled={!!running} onClick={loadEnv}>{t('env.load')}</Button> : <><textarea value={envContent} onChange={e => setEnvContent(e.target.value)} rows={16} className={`${fieldClass} font-mono text-xs`} /><div className="mt-3"><Button disabled={!!running} onClick={saveEnv}>{t('env.save')}</Button></div></>}
         </Card>
       )}
 
       {active === 'deploy' && (
-        <Card title="Deploy">
-          <div className="flex flex-wrap gap-2 mb-4"><NodeSelect value={nodeVersion} versions={nodeVersions} onChange={setNodeVersion} /><Button disabled={!!running} onClick={startDeploy}>Deploy with migrate and build</Button><Button variant="secondary" disabled={!!running} onClick={pollDeploy}>Check deploy status</Button><Button variant="secondary" disabled={!!running} onClick={() => setMaintenance(!status?.maintenance)}>{status?.maintenance ? 'Disable maintenance' : 'Enable maintenance'}</Button></div>
+        <Card title={t('deploy.title')}>
+          <div className="flex flex-wrap gap-2 mb-4"><NodeSelect value={nodeVersion} versions={nodeVersions} onChange={setNodeVersion} /><Button disabled={!!running} onClick={startDeploy}>{t('deploy.deployWithMigrate')}</Button><Button variant="secondary" disabled={!!running} onClick={pollDeploy}>{t('deploy.checkDeployStatus')}</Button><Button variant="secondary" disabled={!!running} onClick={() => setMaintenance(!status?.maintenance)}>{status?.maintenance ? t('deploy.disableMaintenance') : t('deploy.enableMaintenance')}</Button></div>
         </Card>
       )}
 
       {active === 'workers' && status && (
-        <Card title="Schedule and Queue Worker">
+        <Card title={t('workers.title')}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-            <Field label="Queue timeout"><input type="number" value={queueTimeout} onChange={e => setQueueTimeout(parseInt(e.target.value) || 60)} className={fieldClass} /></Field>
-            <Field label="Max jobs"><input type="number" value={queueMaxJobs} onChange={e => setQueueMaxJobs(parseInt(e.target.value) || 1000)} className={fieldClass} /></Field>
-            <Field label="Connection"><input value={queueConnection} onChange={e => setQueueConnection(e.target.value)} className={fieldClass} /></Field>
+            <Field label={t('workers.queueTimeout')}><input type="number" value={queueTimeout} onChange={e => setQueueTimeout(parseInt(e.target.value) || 60)} className={fieldClass} /></Field>
+            <Field label={t('workers.maxJobs')}><input type="number" value={queueMaxJobs} onChange={e => setQueueMaxJobs(parseInt(e.target.value) || 1000)} className={fieldClass} /></Field>
+            <Field label={t('workers.connection')}><input value={queueConnection} onChange={e => setQueueConnection(e.target.value)} className={fieldClass} /></Field>
           </div>
-          <div className="flex flex-wrap gap-2"><Button disabled={!!running} onClick={() => setSchedule(!status.schedule_enabled)}>{status.schedule_enabled ? 'Disable schedule' : 'Enable schedule'}</Button><Button disabled={!!running} onClick={() => setQueue(!status.queue_enabled)}>{status.queue_enabled ? 'Disable queue' : 'Enable queue'}</Button></div>
+          <div className="flex flex-wrap gap-2"><Button disabled={!!running} onClick={() => setSchedule(!status.schedule_enabled)}>{status.schedule_enabled ? t('workers.disableSchedule') : t('workers.enableSchedule')}</Button><Button disabled={!!running} onClick={() => setQueue(!status.queue_enabled)}>{status.queue_enabled ? t('workers.disableQueue') : t('workers.enableQueue')}</Button></div>
         </Card>
       )}
 
@@ -292,7 +287,8 @@ function Button({ children, onClick, disabled, variant = 'primary' }: { children
 }
 
 function RootSelect({ value, candidates, onChange, onSave }: { value: string; candidates: string[]; onChange: (value: string) => void; onSave: (value: string) => void }) {
-  return <div className="flex gap-2"><input list="laravel-root-candidates" value={value} onChange={e => onChange(e.target.value)} className={fieldClass} /><datalist id="laravel-root-candidates">{candidates.map(candidate => <option key={candidate || 'public_html'} value={candidate || 'public_html'} />)}</datalist><Button variant="secondary" onClick={() => onSave(value)}>Save</Button></div>
+  const { t } = useTranslation('DomainLaravelPage')
+  return <div className="flex gap-2"><input list="laravel-root-candidates" value={value} onChange={e => onChange(e.target.value)} className={fieldClass} /><datalist id="laravel-root-candidates">{candidates.map(candidate => <option key={candidate || 'public_html'} value={candidate || 'public_html'} />)}</datalist><Button variant="secondary" onClick={() => onSave(value)}>{t('common.save')}</Button></div>
 }
 
 function NodeSelect({ value, versions, onChange }: { value: string; versions: string[]; onChange: (value: string) => void }) {
@@ -301,5 +297,6 @@ function NodeSelect({ value, versions, onChange }: { value: string; versions: st
 }
 
 function CommandBox({ title, value, setValue, options, onRun, children }: { title: string; value: string; setValue: (value: string) => void; options: string[]; onRun: () => void; children?: ReactNode }) {
-  return <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4"><h3 className="text-sm font-semibold mb-2 text-slate-900 dark:text-slate-100">{title}</h3><select value={value} onChange={e => setValue(e.target.value)} className={fieldClass}>{options.map(option => <option key={option} value={option}>{option}</option>)}</select>{children}<div className="mt-3"><Button onClick={onRun}>Run</Button></div></div>
+  const { t } = useTranslation('DomainLaravelPage')
+  return <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4"><h3 className="text-sm font-semibold mb-2 text-slate-900 dark:text-slate-100">{title}</h3><select value={value} onChange={e => setValue(e.target.value)} className={fieldClass}>{options.map(option => <option key={option} value={option}>{option}</option>)}</select>{children}<div className="mt-3"><Button onClick={onRun}>{t('commands.run')}</Button></div></div>
 }

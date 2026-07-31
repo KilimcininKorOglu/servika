@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "copyWebsite": "Copy Website"
+  },
+  "title": "Copy Website",
+  "subtitle": {
+    "pre": "Creates a timestamped snapshot of your site files under ",
+    "post": ", providing a safe restore point before making changes."
+  },
+  "note": {
+    "pre": "ℹ️ This tool copies only ",
+    "bold1": "files",
+    "mid": " and does not include the database. For a complete backup, use ",
+    "bold2": "Backup and Restore",
+    "post": "."
+  },
+  "createDescription": "Create a new copy of the public_html contents.",
+  "actions": {
+    "create": "Create Copy",
+    "creating": "Copying…",
+    "delete": "Delete"
+  },
+  "existingTitle": "Existing Copies",
+  "loading": "Loading…",
+  "empty": "No copies yet.",
+  "back": "← Back to Subscription",
+  "createdCopy": "Copy created: {{name}} ({{size}} MB)",
+  "confirmDelete": "Delete this copy?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "Could not create copy",
+    "deleteFailed": "Could not delete copy"
+  }
+}

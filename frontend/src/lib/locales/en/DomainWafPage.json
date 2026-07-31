@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "waf": "Web Application Firewall (WAF)"
+  },
+  "title": "Web Application Firewall",
+  "subtitle": " · ModSecurity v3 + OWASP Core Rule Set. Saving re-renders the nginx vhost (zero downtime).",
+  "loading": "Loading…",
+  "moduleWarning": {
+    "bold": "The ModSecurity module is not installed on this server.",
+    "pre": " Settings are saved but WAF is not applied. Run ",
+    "post": " on the server to enable it (existing sites are not affected)."
+  },
+  "modes": {
+    "inherit": {
+      "name": "Inherit from Plan",
+      "description": "This domain uses the WAF default from its assigned service plan."
+    },
+    "block": {
+      "name": "Block",
+      "description": "Malicious requests (SQLi, XSS, RCE…) are blocked with 403. SecRuleEngine On."
+    },
+    "detect": {
+      "name": "Detect",
+      "description": "Requests are not blocked; matching rules are written to the audit log only. DetectionOnly — ideal for rule tuning."
+    },
+    "off": {
+      "name": "Off",
+      "description": "WAF is completely disabled for this domain (even if the plan has it enabled)."
+    }
+  },
+  "paranoiaDescription": {
+    "0": "Plan default is used.",
+    "1": "Low — basic attack signatures. Almost no false positives. (recommended)",
+    "2": "Medium — more rules. Some legitimate requests may be blocked.",
+    "3": "High — aggressive. Per-application exclusions may be needed.",
+    "4": "Strict — most aggressive. Only for tightly audited scenarios."
+  },
+  "effective": {
+    "label": "Effective Status:",
+    "blocking": "Active · Blocking",
+    "detection": "Active · Detection",
+    "paranoia": "Paranoia {{level}}",
+    "passive": "Passive",
+    "planDefault": "Plan default ({{name}}): ",
+    "planBlock": "Block · PL{{paranoia}}",
+    "planDetect": "Detect · PL{{paranoia}}",
+    "planOff": "Off"
+  },
+  "modeCard": {
+    "title": "WAF Mode",
+    "selected": "Selected"
+  },
+  "paranoiaCard": {
+    "title": "Paranoia Level (CRS)",
+    "hint": {
+      "pre": "A higher level = more rules + stronger protection, but also a higher chance of false positives. Only effective when WAF is in ",
+      "block": "Block",
+      "mid": " or ",
+      "detect": "Detect",
+      "post": " mode."
+    },
+    "options": {
+      "inherit": "Inherit from plan",
+      "level1": "Level 1 (Low)",
+      "level2": "Level 2 (Medium)",
+      "level3": "Level 3 (High)",
+      "level4": "Level 4 (Strict)"
+    }
+  },
+  "actions": {
+    "save": "Save and Apply",
+    "saving": "Applying…",
+    "reload": "Reload"
+  },
+  "messages": {
+    "appliedBlocking": "WAF applied — Blocking mode, paranoia {{paranoia}}",
+    "appliedDetection": "WAF applied — Detection mode, paranoia {{paranoia}}",
+    "savedPassive": "Settings saved — WAF is passive for this domain"
+  },
+  "errors": {
+    "saveFailed": "Save failed"
+  }
+}

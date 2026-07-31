@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "waf": "Web Uygulama Güvenlik Duvarı (WAF)"
+  },
+  "title": "Web Uygulama Güvenlik Duvarı",
+  "subtitle": " · ModSecurity v3 + OWASP Core Rule Set. Kaydetme, nginx vhost dosyasını yeniden oluşturur (sıfır kesinti).",
+  "loading": "Yükleniyor…",
+  "moduleWarning": {
+    "bold": "ModSecurity modülü bu sunucuda kurulu değil.",
+    "pre": " Ayarlar kaydedilir ancak WAF uygulanmaz. Etkinleştirmek için sunucuda ",
+    "post": " komutunu çalıştırın (mevcut siteler etkilenmez)."
+  },
+  "modes": {
+    "inherit": {
+      "name": "Plandan Devral",
+      "description": "Bu alan adı, atanmış hizmet planındaki WAF varsayılanını kullanır."
+    },
+    "block": {
+      "name": "Engelle",
+      "description": "Kötü amaçlı istekler (SQLi, XSS, RCE…) 403 ile engellenir. SecRuleEngine On."
+    },
+    "detect": {
+      "name": "Algıla",
+      "description": "İstekler engellenmez; eşleşen kurallar yalnızca denetim günlüğüne yazılır. DetectionOnly — kural ayarlaması için idealdir."
+    },
+    "off": {
+      "name": "Kapalı",
+      "description": "Bu alan adı için WAF tamamen devre dışıdır (plan etkin olsa bile)."
+    }
+  },
+  "paranoiaDescription": {
+    "0": "Plan varsayılanı kullanılır.",
+    "1": "Düşük — temel saldırı imzaları. Neredeyse hiç yanlış pozitif yok. (önerilen)",
+    "2": "Orta — daha fazla kural. Bazı meşru istekler engellenebilir.",
+    "3": "Yüksek — agresif. Uygulama başına istisnalar gerekebilir.",
+    "4": "Katı — en agresif. Yalnızca sıkı denetlenen senaryolar için."
+  },
+  "effective": {
+    "label": "Geçerli Durum:",
+    "blocking": "Etkin · Engelleme",
+    "detection": "Etkin · Algılama",
+    "paranoia": "Paranoya {{level}}",
+    "passive": "Pasif",
+    "planDefault": "Plan varsayılanı ({{name}}): ",
+    "planBlock": "Engelle · PL{{paranoia}}",
+    "planDetect": "Algıla · PL{{paranoia}}",
+    "planOff": "Kapalı"
+  },
+  "modeCard": {
+    "title": "WAF Modu",
+    "selected": "Seçili"
+  },
+  "paranoiaCard": {
+    "title": "Paranoya Düzeyi (CRS)",
+    "hint": {
+      "pre": "Daha yüksek düzey = daha fazla kural + daha güçlü koruma, ancak aynı zamanda daha yüksek yanlış pozitif olasılığı. Yalnızca WAF ",
+      "block": "Engelle",
+      "mid": " veya ",
+      "detect": "Algıla",
+      "post": " modundayken etkilidir."
+    },
+    "options": {
+      "inherit": "Plandan devral",
+      "level1": "Düzey 1 (Düşük)",
+      "level2": "Düzey 2 (Orta)",
+      "level3": "Düzey 3 (Yüksek)",
+      "level4": "Düzey 4 (Katı)"
+    }
+  },
+  "actions": {
+    "save": "Kaydet ve Uygula",
+    "saving": "Uygulanıyor…",
+    "reload": "Yeniden Yükle"
+  },
+  "messages": {
+    "appliedBlocking": "WAF uygulandı — Engelleme modu, paranoya {{paranoia}}",
+    "appliedDetection": "WAF uygulandı — Algılama modu, paranoya {{paranoia}}",
+    "savedPassive": "Ayarlar kaydedildi — WAF bu alan adı için pasif"
+  },
+  "errors": {
+    "saveFailed": "Kaydetme başarısız"
+  }
+}

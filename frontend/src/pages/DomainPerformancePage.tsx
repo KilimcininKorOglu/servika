@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -9,6 +10,7 @@ type CacheStats = { hit: number; miss: number; expired?: number; bypass?: number
 type Summary = { domain_name: string; php_version: string; score: number; items: Item[]; suggestions: Suggestion[]; fastcgi_cache?: CacheStats; redis_cache?: CacheStats }
 
 export default function DomainPerformancePage() {
+  const { t } = useTranslation('DomainPerformancePage')
   const { id } = useParams()
   const navigate = useNavigate()
   const [summary, setSummary] = useState<Summary | null>(null)
@@ -22,8 +24,8 @@ export default function DomainPerformancePage() {
       .then(r => setSummary(r.data)).catch(e => setError(apiError(e))).finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div className="px-6 py-5 text-slate-400">Loading…</div>
-  if (!summary) return <div className="px-6 py-5"><div className="text-sm text-red-600">{error || 'Not found'}</div></div>
+  if (loading) return <div className="px-6 py-5 text-slate-400">{t('loading')}</div>
+  if (!summary) return <div className="px-6 py-5"><div className="text-sm text-red-600">{error || t('notFound')}</div></div>
 
   const scoreColor = summary.score >= 80 ? 'emerald' : summary.score >= 60 ? 'amber' : 'rose'
   const scoreHex: Record<string, string> = { emerald: '#10b981', amber: '#f59e0b', rose: '#f43f5e' }
@@ -34,13 +36,13 @@ export default function DomainPerformancePage() {
     <div className="px-6 py-5">
       <div>
         <Breadcrumb items={[
-          { label: 'Home', href: '/' },
-          { label: 'Domains', href: '/domains' },
+          { label: t('breadcrumb.home'), href: '/' },
+          { label: t('breadcrumb.domains'), href: '/domains' },
           { label: summary.domain_name, href: `/subscriptions/${id}` },
-          { label: 'Performance' },
+          { label: t('breadcrumb.performance') },
         ]} />
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Performance and Accelerators</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-5"><span className="font-mono">{summary.domain_name}</span>, current accelerator status and suggestions.</p>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-5"><span className="font-mono">{summary.domain_name}</span>{t('subtitle.post')}</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           {/* Score ring */}
@@ -56,12 +58,12 @@ export default function DomainPerformancePage() {
                 <span className="text-[10px] text-slate-400">/ 100</span>
               </div>
             </div>
-            <div className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">Performance Score</div>
+            <div className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">{t('scoreLabel')}</div>
           </div>
 
           {/* Accelerator statuses */}
           <div className="sm:col-span-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Accelerators</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('acceleratorsTitle')}</h3>
             <div className="space-y-2">
               {summary.items.map(item => {
                 const fcStats = item.name === 'FastCGI Cache' ? summary.fastcgi_cache : undefined
@@ -76,13 +78,13 @@ export default function DomainPerformancePage() {
                       <span className="text-xs font-mono text-slate-400">{item.value}</span>
                       {cacheStats && cacheStats.total > 0 && (
                         <span className={`text-xs font-mono ${cacheStats.hit_rate >= 80 ? 'text-emerald-500' : cacheStats.hit_rate >= 50 ? 'text-amber-500' : 'text-rose-500'}`}>
-                          {cacheStats.hit_rate.toFixed(1)}% hit · {cacheStats.total.toLocaleString()} req
+                          {t('cacheStat', { rate: cacheStats.hit_rate.toFixed(1), total: cacheStats.total.toLocaleString() })}
                         </span>
                       )}
                     </div>
                     <p className="text-[11px] text-slate-400 ml-4 truncate">{item.description}</p>
                   </div>
-                  {item.setting && <button onClick={() => navigateToSetting(item.setting)} className="shrink-0 text-xs text-brand-600 dark:text-brand-400 hover:underline">Configure →</button>}
+                  {item.setting && <button onClick={() => navigateToSetting(item.setting)} className="shrink-0 text-xs text-brand-600 dark:text-brand-400 hover:underline">{t('configure')}</button>}
                 </div>
                 )
               })}
@@ -92,19 +94,19 @@ export default function DomainPerformancePage() {
 
         {/* Suggestions */}
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Suggestions</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('suggestionsTitle')}</h3>
           <ul className="space-y-2">
             {summary.suggestions.map((suggestion, index) => (
               <li key={index} className="flex items-start gap-2 text-sm">
                 <span className={`mt-0.5 ${severityColor[suggestion.severity] || 'text-slate-400'}`}>●</span>
                 <span className="text-slate-600 dark:text-slate-300 flex-1">{suggestion.text}</span>
-                {suggestion.setting && <button onClick={() => navigateToSetting(suggestion.setting)} className="shrink-0 text-xs text-brand-600 dark:text-brand-400 hover:underline">Open →</button>}
+                {suggestion.setting && <button onClick={() => navigateToSetting(suggestion.setting)} className="shrink-0 text-xs text-brand-600 dark:text-brand-400 hover:underline">{t('open')}</button>}
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="mt-4"><Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">← Back to subscription</Link></div>
+        <div className="mt-4"><Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">{t('back')}</Link></div>
       </div>
     </div>
   )

@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "git": "Git"
+  },
+  "title": "Git Dağıtımı",
+  "loading": "Yükleniyor…",
+  "intro": {
+    "pre": " · ",
+    "text": "Bir depo bağlayın, deploy anahtarını GitHub'a ekleyin ve otomatik çekmeler için webhook URL'sini kullanın."
+  },
+  "errors": {
+    "patRequired": "GitHub PAT gereklidir",
+    "connectFailed": "GitHub'a bağlanılamadı",
+    "loadReposFailed": "Depolar yüklenemedi",
+    "selectRepoBranch": "Bir depo ve dal seçin",
+    "connectionFailed": "Bağlantı başarısız"
+  },
+  "messages": {
+    "connected": "GitHub'a bağlanıldı: @{{login}}",
+    "repoConnected": "Depo bağlandı: {{repo}}@{{branch}}",
+    "webhookEnabled": " · Otomatik dağıtım etkinleştirildi (webhook oluşturuldu)",
+    "webhookError": " · Webhook hatası: {{error}}",
+    "ghDisconnected": "GitHub bağlantısı kaldırıldı",
+    "connectHint": "Depo bağlandı. Deploy anahtarını kopyalayın, GitHub deponuza ekleyin, ardından \"Klonla\" düğmesine tıklayın.",
+    "cloned": "Klonlandı. Commit: {{commit}}",
+    "cloneFailed": "Klonlama başarısız",
+    "pullDone": "Çekme tamamlandı. Commit: {{commit}}",
+    "pullFailed": "Çekme başarısız",
+    "repoRemoved": "Depo bağlantısı kaldırıldı"
+  },
+  "confirm": {
+    "ghDisconnect": "GitHub bağlantısı kaldırılacak. Varsa webhook silinecek ancak mevcut depo dosyaları etkilenmeyecek."
+  },
+  "github": {
+    "title": "GitHub Bağlantısı",
+    "subtitle": "Bir PAT ile bağlanın, depo seçin ve otomatik webhook ile tek tıkla dağıtımı etkinleştirin.",
+    "removeConnection": "Bağlantıyı Kaldır",
+    "patLabel": "Kişisel Erişim Belirteci (classic)",
+    "connecting": "Bağlanıyor…",
+    "connect": "Bağlan",
+    "patHintLink": "github.com/settings/tokens",
+    "patHintPre": " →\n                  Fine-grained PAT → kapsam: ",
+    "patHintScope1": "repo",
+    "patHintMid": " +",
+    "patHintScope2": "admin:repo_hook",
+    "patHintPost": " (otomatik dağıtım için).",
+    "autoDeployBadge": "● Otomatik Dağıtım",
+    "repo": "Depo",
+    "selectPlaceholder": "— seçin —",
+    "reposFound": "{{count}} depo bulundu",
+    "branch": "Dal",
+    "autoDeployLabel": "Push'ta otomatik dağıt (webhook oluşturur)",
+    "useRepo": "Bu Depoyu Kullan",
+    "webhookLabel": "Webhook: {{url}}"
+  },
+  "repoCard": {
+    "settingsTitle": "Depo Ayarları",
+    "connectTitle": "Depo Bağla",
+    "gitUrl": "Git URL (SSH)",
+    "gitUrlPlaceholder": "git@github.com:kullanici/depo.git",
+    "gitUrlHint": "Özel depolar için SSH URL'si kullanın. HTTPS kimlik doğrulaması desteklenmez.",
+    "branch": "Dal",
+    "targetDir": "Hedef Dizin",
+    "update": "Güncelle",
+    "connect": "Bağla",
+    "clone": "⬇ Klonla (hedefi temizler)",
+    "pull": "↻ Çek",
+    "removeConnection": "Bağlantıyı Kaldır"
+  },
+  "deployKey": {
+    "title": "Deploy Anahtarı (Genel)",
+    "copy": "Kopyala",
+    "hint": "GitHub → Depo → Settings → Deploy keys → Add deploy key, ardından bu anahtarı yapıştırın (Allow write access gerekli değildir)."
+  },
+  "webhook": {
+    "title": "Webhook (Otomatik Çekme)",
+    "hintPre": "GitHub → Depo → Settings → Webhooks → Add webhook. Content type: ",
+    "hintPost": ". Push olayı yeterlidir.",
+    "payloadUrl": "Payload URL",
+    "secret": "Secret",
+    "contentType": "Content type",
+    "contentTypeValue": "application/json",
+    "events": "Events",
+    "eventsValue": "Just the push event"
+  },
+  "status": {
+    "title": "Eşitleme Durumu",
+    "latestSync": "Son eşitleme",
+    "noneYet": "— (henüz yok)",
+    "latestCommit": "Son commit",
+    "statusLabel": "Durum",
+    "successful": "✓ başarılı",
+    "error": "⚠ hata",
+    "latestLog": "Son günlük"
+  },
+  "cloneDialog": {
+    "title": "İlk Klonlama",
+    "message": "Hedef dizin ({{dir}}) tamamen temizlenecek, ardından deponun {{branch}} dalı klonlanacak. Devam edilsin mi?",
+    "confirm": "Evet, klonla"
+  },
+  "deleteDialog": {
+    "title": "Depo bağlantısını kaldır",
+    "message": "Panel kaydı silinecek. Klonlanan dosyalar diskte kalacak.",
+    "confirm": "Evet, sil"
+  }
+}

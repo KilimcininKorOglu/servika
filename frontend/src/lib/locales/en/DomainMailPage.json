@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "email": "Email"
+  },
+  "title": "Email Accounts",
+  "subtitle": "Manage native Postfix and Dovecot mailboxes. Use SMTP port 587 with STARTTLS for authenticated sending.",
+  "loading": "Loading…",
+  "back": "← Back to subscription",
+  "generatedPassword": {
+    "title": "Password for {{email}}",
+    "saveNote": "Save it now. It will not be shown again.",
+    "copy": "Copy"
+  },
+  "enable": {
+    "notEnabled": "Email hosting is not enabled for this domain yet.",
+    "info": "Enabling it adds MX, SPF, DKIM, and DMARC DNS records when possible.",
+    "enabling": "Enabling…",
+    "button": "Enable Email"
+  },
+  "mailboxAdd": {
+    "title": "Add mailbox",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "password, generated if empty",
+    "adding": "Adding…",
+    "add": "Add"
+  },
+  "mailboxes": {
+    "title": "Mailboxes",
+    "empty": "No mailboxes yet.",
+    "suspended": "suspended",
+    "suspend": "Suspend",
+    "activate": "Activate",
+    "resetPassword": "Reset password",
+    "delete": "Delete"
+  },
+  "forwarders": {
+    "title": "Forwarders and Catch-All",
+    "description": "Forward incoming mail to one or more destination addresses without creating a mailbox. Catch-all forwards mail for undefined addresses on this domain.",
+    "sourcePlaceholder": "support",
+    "catchAll": "Forward all undefined addresses on this domain",
+    "destinationPlaceholder": "target1@example.com, target2@example.com",
+    "adding": "Adding…",
+    "add": "Add",
+    "empty": "No forwarders yet.",
+    "suspended": "suspended",
+    "suspend": "Suspend",
+    "activate": "Activate",
+    "delete": "Delete"
+  },
+  "spam": {
+    "title": "Spam Filtering",
+    "description": "Rspamd scores every incoming message. Greylisting temporarily defers, the header threshold flags mail as spam, and the reject threshold refuses delivery.",
+    "notInstalled": " Rspamd is not installed on this server; settings are stored but not enforced.",
+    "enable": "Enable spam filtering for this domain",
+    "greylist": "Greylist",
+    "addHeader": "Add header",
+    "reject": "Reject",
+    "applying": "Applying…",
+    "apply": "Apply spam policy"
+  },
+  "autoresponder": {
+    "title": "Automatic Reply",
+    "description": "Send a vacation reply from a mailbox, at most once per interval to the same sender.",
+    "mailbox": "Mailbox",
+    "interval": "Reply interval (days)",
+    "subjectPlaceholder": "Subject",
+    "bodyPlaceholder": "Message body",
+    "enable": "Enable the automatic reply",
+    "saving": "Saving…",
+    "save": "Save autoresponder",
+    "remove": "Remove"
+  },
+  "filters": {
+    "title": "Message Filters",
+    "description": "Sort incoming mail into folders, redirect it, or discard it with Sieve rules compiled per mailbox.",
+    "namePlaceholder": "Filter name",
+    "subjectContains": "Subject contains",
+    "fromContains": "From contains",
+    "toContains": "To contains",
+    "matchedTextPlaceholder": "Matched text",
+    "moveToFolder": "Move to folder",
+    "redirectTo": "Redirect to",
+    "discard": "Discard",
+    "folderPlaceholder": "Folder (e.g. Invoices)",
+    "targetPlaceholder": "target@example.com",
+    "adding": "Adding…",
+    "add": "Add filter",
+    "empty": "No filters yet.",
+    "delete": "Delete"
+  },
+  "sendLimits": {
+    "title": "Send Limits",
+    "description": "Cap outbound recipients per mailbox. Exceeding a limit suspends the account automatically to contain a compromised login. Use 0 for unlimited.",
+    "mailbox": "Mailbox",
+    "hourly": "Hourly ({{count}} used)",
+    "daily": "Daily ({{count}} used)",
+    "suspendedNote": "Auto-suspended at {{time}}. Reactivate the mailbox above to clear it.",
+    "saving": "Saving…",
+    "save": "Save send limits"
+  },
+  "messages": {
+    "enabled": "Email hosting has been enabled for this domain. MX, SPF, DKIM, and DMARC records were added to DNS when possible.",
+    "forwarderAdded": "Mail forwarder has been added.",
+    "spamApplied": "The Rspamd spam policy has been validated and applied.",
+    "autoresponderSaved": "The autoresponder and its Sieve script have been applied.",
+    "autoresponderRemoved": "The autoresponder has been removed.",
+    "filterAdded": "The mail filter has been compiled and enabled.",
+    "sendLimitsSaved": "The send limits have been saved."
+  },
+  "confirm": {
+    "deleteMailbox": "Delete the mailbox \"{{email}}\"? The Maildir will remain on disk, and only the account row will be removed.",
+    "deleteForwarder": "Delete the forwarder \"{{source}}\"?",
+    "deleteFilter": "Delete the filter \"{{name}}\"?"
+  },
+  "errors": {
+    "loadDomainFailed": "Could not load the domain",
+    "enableFailed": "Could not enable email hosting",
+    "createMailboxFailed": "Could not create the mailbox",
+    "addForwarderFailed": "Could not add the mail forwarder",
+    "deleteMailboxFailed": "Could not delete the mailbox",
+    "deleteForwarderFailed": "Could not delete the mail forwarder",
+    "resetPasswordFailed": "Could not reset the password",
+    "updateForwarderFailed": "Could not update the mail forwarder",
+    "updateMailboxFailed": "Could not update the mailbox",
+    "applySpamFailed": "Could not apply the spam settings",
+    "readAutoresponderFailed": "Could not read the autoresponder",
+    "saveAutoresponderFailed": "Could not save the autoresponder",
+    "addFilterFailed": "Could not add the mail filter",
+    "readSendLimitsFailed": "Could not read the send limits",
+    "saveSendLimitsFailed": "Could not save the send limits"
+  }
+}

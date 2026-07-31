@@ -1,0 +1,132 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "settings": "Apache and nginx Settings"
+  },
+  "title": "Apache and nginx Settings",
+  "subtitle": "Security headers and custom directives. Saving re-renders the nginx vhost.",
+  "loading": "Loading…",
+  "applying": "Applying…",
+  "reload": "Reload",
+  "saveApply": "💾 Save and Apply",
+  "backend": {
+    "php-fpm": {
+      "name": "nginx + PHP-FPM",
+      "description": "Default. nginx calls PHP-FPM directly through FastCGI. Ideal for WordPress, Laravel, and dynamic PHP sites with the lowest latency."
+    },
+    "apache": {
+      "name": "nginx + Apache",
+      "description": "nginx terminates TLS at the edge, while Apache (10080) serves the vhost behind it. Full .htaccess support for Joomla, older WordPress sites, and legacy CMSs."
+    },
+    "static": {
+      "name": "Static (no PHP)",
+      "description": "Serves files only. Intended for React, Vue, or Angular SPAs, static site generators such as Hugo and Jekyll, and CDN content. PHP requests return 404."
+    }
+  },
+  "headers": {
+    "hdr_x_content_type": "Prevents MIME sniffing as an XSS defense",
+    "hdr_x_xss": "Legacy browser XSS protection",
+    "hdr_referrer": "Restricts cross-site Referer information",
+    "hdr_permissions": "Disables camera, microphone, and location APIs by default",
+    "hdr_csp_upgrade": "Automatically upgrades HTTP links to HTTPS"
+  },
+  "stack": {
+    "title": "Web Server Stack",
+    "description": "nginx remains the TLS terminator at the edge. The selection below routes the domain to the chosen backend engine.",
+    "active": "● Active"
+  },
+  "docRoot": {
+    "title": "Document Root",
+    "description": "Choose which public_html subdirectory nginx serves. Laravel applications usually use the public directory.",
+    "subdirLabel": "Subdirectory under public_html",
+    "placeholder": "public",
+    "save": "Save Document Root",
+    "currentLabel": "Current document root:"
+  },
+  "hstsNote": {
+    "pre": " is only relevant for HTTPS-enabled sites. It is not sent to the browser when the site uses HTTP only. Changes automatically trigger ",
+    "mid": " and ",
+    "post": " with zero downtime."
+  },
+  "customVhostActive": {
+    "boldPre": "Custom vhost is active",
+    "post": " — the security headers, cache, and extra-directive settings below are ",
+    "boldNot": "not applied",
+    "tail": " right now. Changes here are saved but do not reach the vhost file; to make these settings effective again, press \"Return to Panel Management\" in the vhost file card below."
+  },
+  "cards": {
+    "securityHeaders": "Security Headers (HTTP + HTTPS)",
+    "hsts": "HTTP Strict Transport Security (HTTPS only)",
+    "performanceCache": "Performance Cache",
+    "vhostFile": "nginx Vhost File",
+    "additionalDirectives": "Additional nginx Directives"
+  },
+  "hsts": {
+    "description": "Browsers connect to the site only over HTTPS. Incorrect configuration is difficult to reverse, so enable it only when appropriate.",
+    "maxAgeLabel": "max-age (seconds)",
+    "maxAge300": "5 minutes (for testing)",
+    "maxAge86400": "1 day",
+    "maxAge604800": "1 week",
+    "maxAge2592000": "30 days",
+    "maxAge15768000": "6 months",
+    "maxAge31536000": "1 year (recommended)",
+    "maxAge63072000": "2 years (for preload)",
+    "includeSubDomainsDesc": "Apply to all subdomains after confirming that each one supports HTTPS",
+    "preloadDesc": "Include the site in browsers by default (registration at hstspreload.org is required)"
+  },
+  "cache": {
+    "fastcgiLabel": "nginx FastCGI Cache",
+    "fastcgiValue": "x-cache-status header · {{minutes}}-minute cache duration",
+    "fastcgiDesc": "Caches WordPress and PHP pages on disk. POST requests, cookies, login pages, and previews are skipped automatically. Resolves the WP Site Health page-cache warning.",
+    "durationMinutes": "Cache duration (minutes)",
+    "min5": "5 minutes",
+    "min15": "15 minutes",
+    "min60": "1 hour (recommended)",
+    "min360": "6 hours",
+    "min1440": "1 day",
+    "browserLabel": "Browser Cache (static files)",
+    "browserValue": "Cache-Control: public, immutable · expires {{days}}d",
+    "browserDesc": "Static files such as CSS, JS, PNG, JPG, and WOFF are cached in the browser, making repeat visits load much faster.",
+    "durationDays": "Cache duration (days)",
+    "day1": "1 day",
+    "day7": "1 week",
+    "day30": "30 days (recommended)",
+    "day90": "3 months",
+    "day365": "1 year"
+  },
+  "vhost": {
+    "warningPre": "This is the file nginx ",
+    "warningBoldActually": "actually serves",
+    "warningMid": " for this domain. You can edit it directly and save — the moment you save, the ",
+    "warningBoldEntire": "entire",
+    "warningPost": " vhost file (including the HTTP→HTTPS redirect and the Let's Encrypt validation location) becomes your responsibility; the header/cache/extra-directive settings above and the panel no longer touch this file. ",
+    "warningTail": " — if you remove this block, the certificate cannot auto-renew after 90 days.",
+    "activeState": "🟢 Custom vhost active — the panel does not touch this file",
+    "managedState": "⚪ Panel-managed — the file currently active is shown below",
+    "unsaved": "Unsaved changes",
+    "working": "Working…",
+    "returnToPanel": "Return to Panel Management",
+    "saving": "Saving…",
+    "confirmReturn": "Return this file to the panel's standard management?\n\nYour edits are NOT deleted — switching back to custom mode resumes where you left off."
+  },
+  "directives": {
+    "pre": "This text is appended to the end of the ",
+    "mid": " block. Example: ",
+    "placeholder": "# Example:\nclient_max_body_size 200m;\nrewrite ^/old/(.*)$ /new/$1 permanent;"
+  },
+  "success": {
+    "backendChanged": "✓ Web server changed to \"{{name}}\"",
+    "docRootUpdated": "✓ Document root updated and nginx reloaded",
+    "settingsApplied": "✓ Settings applied and nginx reloaded",
+    "customVhostSaved": "✓ Custom vhost saved and nginx reloaded",
+    "returnedToPanel": "✓ Returned to panel management, vhost re-rendered"
+  },
+  "errors": {
+    "changeBackendFailed": "Could not change backend",
+    "updateDocRootFailed": "Could not update document root",
+    "saveSettingsFailed": "Could not save settings",
+    "saveCustomVhostFailed": "Could not save custom vhost",
+    "returnManagedFailed": "Could not return to managed vhost"
+  }
+}

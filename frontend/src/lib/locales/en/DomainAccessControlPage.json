@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "accessControl": "Access Control"
+  },
+  "title": "Access Control",
+  "subtitle": "Configure hotlink protection and domain-level IP allow or block rules. Saving re-renders the nginx vhost.",
+  "loading": "Loading…",
+  "modes": {
+    "off": {
+      "label": "Off",
+      "description": "No IP allow or block rules are rendered into the nginx vhost."
+    },
+    "block": {
+      "label": "Block listed IPs",
+      "description": "Visitors from listed IP addresses or CIDR ranges receive 403 responses."
+    },
+    "allow": {
+      "label": "Allow listed IPs only",
+      "description": "Only listed IP addresses or CIDR ranges are allowed when at least one rule exists."
+    }
+  },
+  "hotlink": {
+    "title": "Hotlink Protection",
+    "description": "Blocks external sites from embedding image files served by this domain.",
+    "enabled": "Enabled",
+    "allowedLabel": "Additional allowed referrer domains",
+    "hint": "The current domain and its www host are always allowed. Add one domain per line or comma-separated.",
+    "save": "Save Hotlink Settings",
+    "saving": "Saving…"
+  },
+  "ipMode": {
+    "title": "IP Access Mode",
+    "selected": "● Selected"
+  },
+  "newRule": {
+    "title": "New IP Rule",
+    "label": "IP address or CIDR",
+    "placeholder": "203.0.113.10 or 203.0.113.0/24",
+    "add": "Add Rule",
+    "adding": "Adding…"
+  },
+  "rules": {
+    "title": "Configured IP Rules",
+    "empty": "No IP rules yet.",
+    "created": "Created {{date}}",
+    "delete": "Delete"
+  },
+  "back": "← Back to subscription",
+  "messages": {
+    "hotlinkSaved": "Hotlink protection settings were saved.",
+    "modeSaved": "IP access mode was saved.",
+    "ruleAdded": "IP rule was added.",
+    "ruleDeleted": "IP rule was deleted."
+  },
+  "confirmDelete": "Delete IP rule {{ip}}?",
+  "errors": {
+    "hotlinkFailed": "Could not save hotlink settings",
+    "modeFailed": "Could not save IP access mode",
+    "addFailed": "Could not add IP rule",
+    "deleteFailed": "Could not delete IP rule"
+  }
+}

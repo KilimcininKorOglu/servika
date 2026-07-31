@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "copyWebsite": "Web Sitesini Kopyala"
+  },
+  "title": "Web Sitesini Kopyala",
+  "subtitle": {
+    "pre": "Site dosyalarınızın zaman damgalı bir anlık görüntüsünü ",
+    "post": " altında oluşturur ve değişiklik yapmadan önce güvenli bir geri dönüş noktası sağlar."
+  },
+  "note": {
+    "pre": "ℹ️ Bu araç yalnızca ",
+    "bold1": "dosyaları",
+    "mid": " kopyalar ve veritabanını içermez. Tam bir yedek için ",
+    "bold2": "Yedekleme ve Geri Yükleme",
+    "post": " özelliğini kullanın."
+  },
+  "createDescription": "public_html içeriğinin yeni bir kopyasını oluşturun.",
+  "actions": {
+    "create": "Kopya Oluştur",
+    "creating": "Kopyalanıyor…",
+    "delete": "Sil"
+  },
+  "existingTitle": "Mevcut Kopyalar",
+  "loading": "Yükleniyor…",
+  "empty": "Henüz kopya yok.",
+  "back": "← Aboneliğe Dön",
+  "createdCopy": "Kopya oluşturuldu: {{name}} ({{size}} MB)",
+  "confirmDelete": "Bu kopya silinsin mi?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "Kopya oluşturulamadı",
+    "deleteFailed": "Kopya silinemedi"
+  }
+}

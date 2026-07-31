@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "git": "Git"
+  },
+  "title": "Git Deploy",
+  "loading": "Loading…",
+  "intro": {
+    "pre": " · ",
+    "text": "Connect a repository, add the deploy key to GitHub, and use the webhook URL for automatic pulls."
+  },
+  "errors": {
+    "patRequired": "A GitHub PAT is required",
+    "connectFailed": "Could not connect to GitHub",
+    "loadReposFailed": "Could not load repositories",
+    "selectRepoBranch": "Select a repository and branch",
+    "connectionFailed": "Connection failed"
+  },
+  "messages": {
+    "connected": "Connected to GitHub: @{{login}}",
+    "repoConnected": "Repository connected: {{repo}}@{{branch}}",
+    "webhookEnabled": " · Automatic deployment enabled (webhook created)",
+    "webhookError": " · Webhook error: {{error}}",
+    "ghDisconnected": "GitHub connection removed",
+    "connectHint": "Repository connected. Copy the deploy key, add it to your GitHub repository, then click \"Clone\".",
+    "cloned": "Cloned. Commit: {{commit}}",
+    "cloneFailed": "Clone failed",
+    "pullDone": "Pull completed. Commit: {{commit}}",
+    "pullFailed": "Pull failed",
+    "repoRemoved": "Repository connection removed"
+  },
+  "confirm": {
+    "ghDisconnect": "The GitHub connection will be removed. Any webhook will be deleted, but existing repository files will not be affected."
+  },
+  "github": {
+    "title": "GitHub Connection",
+    "subtitle": "Connect with a PAT, choose a repository, and enable one-click deployment with an automatic webhook.",
+    "removeConnection": "Remove Connection",
+    "patLabel": "Personal Access Token (classic)",
+    "connecting": "Connecting…",
+    "connect": "Connect",
+    "patHintLink": "github.com/settings/tokens",
+    "patHintPre": " →\n                  Fine-grained PAT → scope: ",
+    "patHintScope1": "repo",
+    "patHintMid": " +",
+    "patHintScope2": "admin:repo_hook",
+    "patHintPost": " (for automatic deployment).",
+    "autoDeployBadge": "● Automatic Deployment",
+    "repo": "Repo",
+    "selectPlaceholder": "— select —",
+    "reposFound": "{{count}} repositories found",
+    "branch": "Branch",
+    "autoDeployLabel": "Deploy automatically on push (creates a webhook)",
+    "useRepo": "Use This Repository",
+    "webhookLabel": "Webhook: {{url}}"
+  },
+  "repoCard": {
+    "settingsTitle": "Repository Settings",
+    "connectTitle": "Connect Repository",
+    "gitUrl": "Git URL (SSH)",
+    "gitUrlPlaceholder": "git@github.com:username/repo.git",
+    "gitUrlHint": "Use an SSH URL for private repositories. HTTPS authentication is not supported.",
+    "branch": "Branch",
+    "targetDir": "Target Directory",
+    "update": "Update",
+    "connect": "Connect",
+    "clone": "⬇ Clone (clears target)",
+    "pull": "↻ Pull",
+    "removeConnection": "Remove Connection"
+  },
+  "deployKey": {
+    "title": "Deploy Key (Public)",
+    "copy": "Copy",
+    "hint": "GitHub → Repository → Settings → Deploy keys → Add deploy key, then paste this key (Allow write access is not required)."
+  },
+  "webhook": {
+    "title": "Webhook (Automatic Pull)",
+    "hintPre": "GitHub → Repository → Settings → Webhooks → Add webhook. Content type: ",
+    "hintPost": ". The push event is sufficient.",
+    "payloadUrl": "Payload URL",
+    "secret": "Secret",
+    "contentType": "Content type",
+    "contentTypeValue": "application/json",
+    "events": "Events",
+    "eventsValue": "Just the push event"
+  },
+  "status": {
+    "title": "Sync Status",
+    "latestSync": "Latest sync",
+    "noneYet": "— (none yet)",
+    "latestCommit": "Latest commit",
+    "statusLabel": "Status",
+    "successful": "✓ successful",
+    "error": "⚠ error",
+    "latestLog": "Latest log"
+  },
+  "cloneDialog": {
+    "title": "Initial Clone",
+    "message": "The target directory ({{dir}}) will be completely cleared, then the repository {{branch}} branch will be cloned. Continue?",
+    "confirm": "Yes, clone"
+  },
+  "deleteDialog": {
+    "title": "Remove repository connection",
+    "message": "The panel record will be deleted. Cloned files will remain on disk.",
+    "confirm": "Yes, delete"
+  }
+}
