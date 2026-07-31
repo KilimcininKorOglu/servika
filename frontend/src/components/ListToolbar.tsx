@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 export type ToolbarButton = { label: string; onClick?: () => void; disabled?: boolean; hint?: string }
 
 export default function ListToolbar({
@@ -8,6 +10,7 @@ export default function ListToolbar({
   onSearchChange?: (value: string) => void
   search?: string
 }) {
+  const { t } = useTranslation('common')
   return (
     <div className="flex items-center gap-2 mb-4 flex-wrap">
       {primary && (
@@ -43,7 +46,7 @@ export default function ListToolbar({
             type="text"
             value={search || ''}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search..."
+            placeholder={t('search')}
             className="pl-8 pr-3 py-1.5 text-sm w-56 border border-slate-200 dark:border-slate-700 rounded-full focus:border-brand-400 focus:ring-2 focus:ring-brand-500/15 outline-none transition"
           />
         </div>

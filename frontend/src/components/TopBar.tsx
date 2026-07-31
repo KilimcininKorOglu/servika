@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/store/auth'
 import { getTheme, setTheme, type Theme } from '@/lib/theme'
 import { api } from '@/lib/api'
@@ -23,66 +24,68 @@ type UserRow = { id: number; username: string; full_name?: string; email?: strin
 
 // Static navigation targets. `roles` limits an entry to those roles; when absent
 // the entry is offered to every management session (admin and reseller). Paths
-// mirror App.tsx exactly so a result always resolves to a real route.
-const PAGES: Array<SearchEntry & { roles?: string[] }> = [
-  { kind: 'page', title: 'Home', subtitle: 'Panel overview', path: '/', keywords: 'dashboard' },
-  { kind: 'page', title: 'Domains', subtitle: 'Domains and subscriptions', path: '/domains', keywords: 'site hosting subscription' },
-  { kind: 'page', title: 'Service Plans', subtitle: 'Package and quota plans', path: '/service-plans', keywords: 'package quota' },
-  { kind: 'page', title: 'Customers', subtitle: 'Customer and contact records', path: '/customers', keywords: 'contact billing' },
-  { kind: 'page', title: 'Users', subtitle: 'Panel accounts', path: '/users', keywords: 'account reseller admin' },
-  { kind: 'page', title: 'DNS Management', subtitle: 'Server-wide DNS records', path: '/dns', keywords: 'zone nameserver ns' },
-  { kind: 'page', title: 'SSL Certificates', subtitle: 'TLS and certificate management', path: '/ssl', keywords: 'https lets encrypt tls' },
-  { kind: 'page', title: 'Email Accounts', subtitle: 'Mailboxes and mail', path: '/mail', keywords: 'email mailbox' },
-  { kind: 'page', title: 'Databases', subtitle: 'MySQL databases', path: '/databases', keywords: 'mysql db' },
-  { kind: 'page', title: 'WordPress', subtitle: 'WordPress sites', path: '/wordpress', keywords: 'wp application' },
-  { kind: 'page', title: 'Server Status', subtitle: 'Resource and service summary', path: '/server-status', keywords: 'cpu ram disk' },
-  { kind: 'page', title: 'Profile and Preferences', subtitle: 'Account and security settings', path: '/profile', keywords: 'password 2fa theme' },
-  { kind: 'page', title: 'Account Transfer', subtitle: 'Account and site migration', path: '/account-transfer', keywords: 'migration cpanel', roles: ['admin'] },
-  { kind: 'page', title: 'Tools and Settings', subtitle: 'Panel tools', path: '/tools-settings', keywords: 'settings', roles: ['admin'] },
-  { kind: 'page', title: 'Server Optimize', subtitle: 'Server tuning', path: '/tools/optimize', keywords: 'performance tune', roles: ['admin'] },
-  { kind: 'page', title: 'Statistics', subtitle: 'Usage statistics', path: '/statistics', keywords: 'graph traffic', roles: ['admin'] },
-  { kind: 'page', title: 'Firewall', subtitle: 'Firewall rules', path: '/firewall', keywords: 'port ip block', roles: ['admin'] },
-  { kind: 'page', title: 'Monitoring', subtitle: 'Live server metrics and logs', path: '/monitoring', keywords: 'monitor log cpu ram', roles: ['admin'] },
-  { kind: 'page', title: 'Security Log', subtitle: 'Security events', path: '/audit-log', keywords: 'audit event', roles: ['admin'] },
-  { kind: 'page', title: 'Services', subtitle: 'System services', path: '/tools/services', keywords: 'systemd nginx mysql php', roles: ['admin'] },
-  { kind: 'page', title: 'PHP Versions', subtitle: 'PHP version management', path: '/tools/php-versions', keywords: 'fpm', roles: ['admin'] },
-  { kind: 'page', title: 'PHP Modules', subtitle: 'PHP extension management', path: '/system/php-modules', keywords: 'extension pecl', roles: ['admin'] },
-  { kind: 'page', title: 'Package Manager', subtitle: 'System packages', path: '/tools/packages', keywords: 'dnf rpm', roles: ['admin'] },
-  { kind: 'page', title: 'DNS Template', subtitle: 'Default DNS records', path: '/tools/dns-template', keywords: 'template zone', roles: ['admin'] },
-  { kind: 'page', title: 'Panel Update', subtitle: 'Panel version and updates', path: '/tools/update', keywords: 'upgrade release', roles: ['admin'] },
+// mirror App.tsx exactly so a result always resolves to a real route. `tkey`
+// resolves the display title/subtitle via the TopBar `pages` namespace.
+const PAGES: ReadonlyArray<{ tkey: string; path: string; keywords: string; roles?: string[] }> = [
+  { tkey: 'home', path: '/', keywords: 'dashboard' },
+  { tkey: 'domains', path: '/domains', keywords: 'site hosting subscription' },
+  { tkey: 'servicePlans', path: '/service-plans', keywords: 'package quota' },
+  { tkey: 'customers', path: '/customers', keywords: 'contact billing' },
+  { tkey: 'users', path: '/users', keywords: 'account reseller admin' },
+  { tkey: 'dns', path: '/dns', keywords: 'zone nameserver ns' },
+  { tkey: 'ssl', path: '/ssl', keywords: 'https lets encrypt tls' },
+  { tkey: 'mail', path: '/mail', keywords: 'email mailbox' },
+  { tkey: 'databases', path: '/databases', keywords: 'mysql db' },
+  { tkey: 'wordpress', path: '/wordpress', keywords: 'wp application' },
+  { tkey: 'serverStatus', path: '/server-status', keywords: 'cpu ram disk' },
+  { tkey: 'profile', path: '/profile', keywords: 'password 2fa theme' },
+  { tkey: 'accountTransfer', path: '/account-transfer', keywords: 'migration cpanel', roles: ['admin'] },
+  { tkey: 'toolsSettings', path: '/tools-settings', keywords: 'settings', roles: ['admin'] },
+  { tkey: 'optimize', path: '/tools/optimize', keywords: 'performance tune', roles: ['admin'] },
+  { tkey: 'statistics', path: '/statistics', keywords: 'graph traffic', roles: ['admin'] },
+  { tkey: 'firewall', path: '/firewall', keywords: 'port ip block', roles: ['admin'] },
+  { tkey: 'monitoring', path: '/monitoring', keywords: 'monitor log cpu ram', roles: ['admin'] },
+  { tkey: 'auditLog', path: '/audit-log', keywords: 'audit event', roles: ['admin'] },
+  { tkey: 'services', path: '/tools/services', keywords: 'systemd nginx mysql php', roles: ['admin'] },
+  { tkey: 'phpVersions', path: '/tools/php-versions', keywords: 'fpm', roles: ['admin'] },
+  { tkey: 'phpModules', path: '/system/php-modules', keywords: 'extension pecl', roles: ['admin'] },
+  { tkey: 'packages', path: '/tools/packages', keywords: 'dnf rpm', roles: ['admin'] },
+  { tkey: 'dnsTemplate', path: '/tools/dns-template', keywords: 'template zone', roles: ['admin'] },
+  { tkey: 'panelUpdate', path: '/tools/update', keywords: 'upgrade release', roles: ['admin'] },
 ]
 
 // Domain-scoped tool pages, offered as results only while a domain is open.
-// Each tuple is [path suffix, title, subtitle].
-const DOMAIN_PAGES: ReadonlyArray<readonly [string, string, string]> = [
-  ['', 'Overview', 'Domain overview'],
-  ['/files', 'File Manager', 'Files and directories'],
-  ['/web-server', 'Apache & nginx', 'Web server settings'],
-  ['/php', 'PHP Settings', 'PHP and FPM configuration'],
-  ['/composer', 'Composer', 'PHP package management'],
-  ['/performance', 'Performance', 'Site performance settings'],
-  ['/redis', 'Redis Cache', 'Cache management'],
-  ['/wordpress', 'WordPress', 'WordPress tools'],
-  ['/dns', 'DNS Settings', 'Domain DNS records'],
-  ['/subdomains', 'Subdomains', 'Subdomains'],
-  ['/addon-domains', 'Addon Domains', 'Alias domains'],
-  ['/ssl', 'SSL/TLS', 'HTTPS certificate'],
-  ['/databases', 'Databases', 'MySQL databases'],
-  ['/ftp', 'FTP Accounts', 'FTP access'],
-  ['/mail', 'Email', 'Mailboxes'],
-  ['/backups', 'Backups', 'Domain backups'],
-  ['/copy', 'Copy Site', 'Site cloning'],
-  ['/git', 'Git Deploy', 'Git deploy'],
-  ['/laravel', 'Laravel Toolkit', 'Laravel tools'],
-  ['/cron', 'Scheduled Tasks', 'Cron jobs'],
-  ['/ssh-access', 'SSH Access', 'Terminal access'],
-  ['/logs', 'Logs', 'Access and error logs'],
-  ['/waf', 'WAF', 'Web application firewall'],
-  ['/access-control', 'Access Control', 'IP access rules'],
-  ['/password-protection', 'Password Protection', 'Directory password'],
-  ['/imunify', 'Imunify', 'Malware scanning'],
-  ['/stats', 'Statistics', 'Domain usage data'],
-  ['/connection', 'Connection Info', 'FTP and database details'],
+// Each tuple is [path suffix, tkey]; the display title/subtitle resolve via the
+// TopBar `domain` namespace.
+const DOMAIN_PAGES: ReadonlyArray<readonly [string, string]> = [
+  ['', 'overview'],
+  ['/files', 'files'],
+  ['/web-server', 'webServer'],
+  ['/php', 'php'],
+  ['/composer', 'composer'],
+  ['/performance', 'performance'],
+  ['/redis', 'redis'],
+  ['/wordpress', 'wordpress'],
+  ['/dns', 'dns'],
+  ['/subdomains', 'subdomains'],
+  ['/addon-domains', 'addonDomains'],
+  ['/ssl', 'ssl'],
+  ['/databases', 'databases'],
+  ['/ftp', 'ftp'],
+  ['/mail', 'mail'],
+  ['/backups', 'backups'],
+  ['/copy', 'copy'],
+  ['/git', 'git'],
+  ['/laravel', 'laravel'],
+  ['/cron', 'cron'],
+  ['/ssh-access', 'ssh'],
+  ['/logs', 'logs'],
+  ['/waf', 'waf'],
+  ['/access-control', 'accessControl'],
+  ['/password-protection', 'passwordProtection'],
+  ['/imunify', 'imunify'],
+  ['/stats', 'stats'],
+  ['/connection', 'connection'],
 ]
 
 // Locale-neutral fold: lowercase + strip combining diacritics so "Örnek"
@@ -113,6 +116,7 @@ function copyToClipboard(text: string): boolean {
 }
 
 export default function TopBar({ onMenuClick }: TopBarProps) {
+  const { t } = useTranslation('TopBar')
   const username = useAuth((s) => s.username)
   const logout = useAuth((s) => s.logout)
   const isCustomer = useAuth((s) => s.isCustomer)
@@ -140,10 +144,16 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
   const results = useMemo(() => {
     const q = normalize(query.trim())
     if (!q) return []
-    const pages = PAGES.filter((p) => !p.roles || p.roles.includes(role))
+    const pages: SearchEntry[] = PAGES
+      .filter((p) => !p.roles || p.roles.includes(role))
+      .map((p) => ({
+        kind: 'page' as const, title: t(`pages.${p.tkey}.title`), subtitle: t(`pages.${p.tkey}.subtitle`),
+        path: p.path, keywords: p.keywords,
+      }))
     const domainPages: SearchEntry[] = openDomainID
-      ? DOMAIN_PAGES.map(([suffix, title, subtitle]) => ({
-          kind: 'page' as const, title, subtitle: `${subtitle} · open domain`,
+      ? DOMAIN_PAGES.map(([suffix, tkey]) => ({
+          kind: 'page' as const, title: t(`domain.${tkey}.title`),
+          subtitle: `${t(`domain.${tkey}.subtitle`)} · ${t('openDomain')}`,
           path: `/subscriptions/${openDomainID}${suffix}`, keywords: 'domain site subscription',
         }))
       : []
@@ -157,7 +167,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
       .sort((a, b) => a.rank - b.rank || a.entry.title.localeCompare(b.entry.title))
       .slice(0, 12)
       .map((x) => x.entry)
-  }, [query, openDomainID, records, role])
+  }, [query, openDomainID, records, role, t])
 
   async function loadSearchData() {
     if (!canSearch || recordsLoaded || searchLoading) return
@@ -260,7 +270,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
         type="button"
         onClick={onMenuClick}
         className="lg:hidden p-2 rounded-md text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-        aria-label="Open navigation"
+        aria-label={t('openNav')}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -284,8 +294,8 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
                 if (e.key === 'ArrowUp') { e.preventDefault(); setSelected((i) => Math.max(i - 1, 0)) }
                 if (e.key === 'Enter' && results[selected]) { e.preventDefault(); goToResult(results[selected]) }
               }}
-              placeholder="Search everything..."
-              aria-label="Search the panel"
+              placeholder={t('searchPlaceholder')}
+              aria-label={t('searchPlaceholder')}
               aria-expanded={searchOpen && !!query.trim()}
               aria-controls="global-search-results"
               className="w-full pl-9 pr-16 py-1.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:bg-white dark:focus:bg-slate-800 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/15 outline-none transition"
@@ -316,9 +326,9 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
                     <span className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">{entry.kind}</span>
                   </button>
                 ))}
-                {searchLoading && <div className="px-3 py-3 text-sm text-slate-500">Loading records…</div>}
+                {searchLoading && <div className="px-3 py-3 text-sm text-slate-500">{t('loadingRecords')}</div>}
                 {!searchLoading && results.length === 0 && (
-                  <div className="px-3 py-6 text-center text-sm text-slate-500">No results for “{query}”.</div>
+                  <div className="px-3 py-6 text-center text-sm text-slate-500">{t('noResults')}</div>
                 )}
               </div>
             )}
@@ -332,14 +342,14 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
         {serverIp && (
           <button
             onClick={handleCopyIp}
-            title="Click to copy"
+            title={t('copyIp')}
             className="hidden sm:inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
           >
             <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
             </svg>
             {ipCopied ? (
-              <span className="text-emerald-600 dark:text-emerald-400 font-sans font-medium">Copied</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-sans font-medium">{t('copied')}</span>
             ) : (
               <span>{serverIp}</span>
             )}
@@ -347,7 +357,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
         )}
         <button onClick={cycleTheme}
           className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
-          title={`Theme: ${theme}, click to change`}>
+          title={t('themeToggle', { theme })}>
           {theme === 'dark' ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -363,7 +373,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
           )}
         </button>
         <LanguageSwitcher />
-        <button className="hidden sm:inline-flex p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition" title="Notifications">
+        <button className="hidden sm:inline-flex p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition" title={t('notifications')}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
@@ -395,14 +405,14 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
                   onClick={() => { setMenuOpen(false); navigate('/profile') }}
                   className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
-                  Profile and Preferences
+                  {t('profileMenu')}
                 </button>
                 <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
                 <button
                   onClick={handleLogout}
                   className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                 >
-                  Log Out
+                  {t('logout')}
                 </button>
               </div>
             </>

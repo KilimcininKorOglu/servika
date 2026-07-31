@@ -1,5 +1,7 @@
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import MobileNavBar from './MobileNavBar'
 import TopBar from './TopBar'
 import DomainPicker from './DomainPicker'
@@ -8,8 +10,11 @@ import { useAuth } from '@/store/auth'
 
 type VersionFooter = { current?: string; build_date?: string }
 
-type NavItem = { to: string; label: string; icon: string }
-type NavGroup = { title?: string; items: NavItem[] }
+// `labelKey`/`titleKey` are stable identifiers resolved to display text via the
+// DashboardLayout namespace. `titleKey` also serves as the openGroups state key,
+// so collapse state survives a language switch.
+type NavItem = { to: string; labelKey: string; icon: string }
+type NavGroup = { titleKey?: string; items: NavItem[] }
 
 const ICONS = {
   home:        'M3 12l2-2 7-7 7 7 2 2v8a2 2 0 01-2 2h-3v-7H10v7H7a2 2 0 01-2-2v-8z',
@@ -35,32 +40,32 @@ const ICONS = {
 }
 
 const NAV: NavGroup[] = [
-  { items: [{ to: '/', label: 'Home', icon: ICONS.home }] },
-  { title: 'Hosting Services', items: [
-    { to: '/domains',           label: 'Domains',        icon: ICONS.domain },
-    { to: '/service-plans',     label: 'Service Plans',  icon: ICONS.plan },
-    { to: '/customers',         label: 'Customers',      icon: ICONS.customer },
-    { to: '/account-transfer',  label: 'Account Transfer', icon: ICONS.transfer },
+  { items: [{ to: '/', labelKey: 'home', icon: ICONS.home }] },
+  { titleKey: 'hostingServices', items: [
+    { to: '/domains',           labelKey: 'domains',        icon: ICONS.domain },
+    { to: '/service-plans',     labelKey: 'servicePlans',  icon: ICONS.plan },
+    { to: '/customers',         labelKey: 'customers',      icon: ICONS.customer },
+    { to: '/account-transfer',  labelKey: 'accountTransfer', icon: ICONS.transfer },
   ]},
-  { title: 'Server Overview', items: [
-    { to: '/dns',              label: 'DNS Management',   icon: ICONS.domain },
-    { to: '/ssl',              label: 'SSL Certificates', icon: ICONS.lock },
-    { to: '/mail',             label: 'Email Accounts',   icon: ICONS.mail },
-    { to: '/databases',        label: 'Databases',        icon: ICONS.database },
+  { titleKey: 'serverOverview', items: [
+    { to: '/dns',              labelKey: 'dns',   icon: ICONS.domain },
+    { to: '/ssl',              labelKey: 'ssl', icon: ICONS.lock },
+    { to: '/mail',             labelKey: 'mail',   icon: ICONS.mail },
+    { to: '/databases',        labelKey: 'databases',        icon: ICONS.database },
   ]},
-  { title: 'Server Management', items: [
-    { to: '/tools-settings',     label: 'Tools and Settings', icon: ICONS.tools },
-    { to: '/tools/optimize',   label: 'Server Optimize',      icon: ICONS.optimize },
-    { to: '/statistics',       label: 'Statistics',      icon: ICONS.stats },
-    { to: '/extensions',          label: 'Extensions',         icon: ICONS.extensions },
-    { to: '/wordpress',           label: 'WordPress',          icon: ICONS.wp },
-    { to: '/firewall',            label: 'Firewall',    icon: ICONS.firewall },
-    { to: '/monitoring',              label: 'Monitoring',             icon: ICONS.monitoring },
-    { to: '/users',                   label: 'Users',                  icon: ICONS.reseller },
-    { to: '/audit-log',               label: 'Security Log',           icon: ICONS.audit },
+  { titleKey: 'serverManagement', items: [
+    { to: '/tools-settings',     labelKey: 'toolsSettings', icon: ICONS.tools },
+    { to: '/tools/optimize',   labelKey: 'optimize',      icon: ICONS.optimize },
+    { to: '/statistics',       labelKey: 'statistics',      icon: ICONS.stats },
+    { to: '/extensions',          labelKey: 'extensions',         icon: ICONS.extensions },
+    { to: '/wordpress',           labelKey: 'wordpress',          icon: ICONS.wp },
+    { to: '/firewall',            labelKey: 'firewall',    icon: ICONS.firewall },
+    { to: '/monitoring',              labelKey: 'monitoring',             icon: ICONS.monitoring },
+    { to: '/users',                   labelKey: 'users',                  icon: ICONS.reseller },
+    { to: '/audit-log',               labelKey: 'auditLog',           icon: ICONS.audit },
   ]},
-  { title: 'My Profile', items: [
-    { to: '/profile',              label: 'Profile and Preferences', icon: ICONS.profile },
+  { titleKey: 'myProfile', items: [
+    { to: '/profile',              labelKey: 'profile', icon: ICONS.profile },
   ]},
 ]
 
@@ -71,22 +76,22 @@ const NAV: NavGroup[] = [
 // own customers by ScopeSQL), plus read-only server status. Nothing here 403s
 // for a reseller; admin-only screens stay out of the list.
 const RESELLER_NAV: NavGroup[] = [
-  { items: [{ to: '/', label: 'Home', icon: ICONS.home }] },
-  { title: 'My Accounts', items: [
-    { to: '/users',      label: 'Customer Accounts', icon: ICONS.customer },
-    { to: '/customers',  label: 'Customer Records',  icon: ICONS.subscription },
+  { items: [{ to: '/', labelKey: 'home', icon: ICONS.home }] },
+  { titleKey: 'myAccounts', items: [
+    { to: '/users',      labelKey: 'customerAccounts', icon: ICONS.customer },
+    { to: '/customers',  labelKey: 'customerRecords',  icon: ICONS.subscription },
   ]},
-  { title: 'Hosting', items: [
-    { to: '/domains',    label: 'Domains',           icon: ICONS.domain },
-    { to: '/dns',        label: 'DNS Management',     icon: ICONS.domain },
-    { to: '/ssl',        label: 'SSL Certificates',   icon: ICONS.lock },
-    { to: '/mail',       label: 'Email Accounts',     icon: ICONS.mail },
-    { to: '/databases',  label: 'Databases',          icon: ICONS.database },
-    { to: '/wordpress',  label: 'WordPress',          icon: ICONS.wp },
+  { titleKey: 'hosting', items: [
+    { to: '/domains',    labelKey: 'domains',           icon: ICONS.domain },
+    { to: '/dns',        labelKey: 'dns',     icon: ICONS.domain },
+    { to: '/ssl',        labelKey: 'ssl',   icon: ICONS.lock },
+    { to: '/mail',       labelKey: 'mail',     icon: ICONS.mail },
+    { to: '/databases',  labelKey: 'databases',          icon: ICONS.database },
+    { to: '/wordpress',  labelKey: 'wordpress',          icon: ICONS.wp },
   ]},
-  { title: 'Server', items: [
-    { to: '/server-status',  label: 'Server Status',  icon: ICONS.monitoring },
-    { to: '/service-plans',  label: 'Service Plans',  icon: ICONS.plan },
+  { titleKey: 'server', items: [
+    { to: '/server-status',  labelKey: 'serverStatus',  icon: ICONS.monitoring },
+    { to: '/service-plans',  labelKey: 'servicePlans',  icon: ICONS.plan },
   ]},
 ]
 
@@ -96,31 +101,32 @@ const RESELLER_NAV: NavGroup[] = [
 function domainNav(id: string): NavGroup[] {
   const s = (sub = '') => `/subscriptions/${id}${sub}`
   return [
-    { items: [{ to: s(), label: 'Overview', icon: ICONS.home }] },
-    { title: 'Domain', items: [
-      { to: s('/files'), label: 'File Manager', icon: ICONS.domain },
-      { to: s('/databases'), label: 'Databases', icon: ICONS.plan },
-      { to: s('/ftp'), label: 'FTP Accounts', icon: ICONS.reseller },
-      { to: s('/php'), label: 'PHP Settings', icon: ICONS.tools },
-      { to: s('/web-server'), label: 'Apache & nginx', icon: ICONS.tools },
-      { to: s('/dns'), label: 'DNS Settings', icon: ICONS.domain },
-      { to: s('/ssl'), label: 'SSL/TLS', icon: ICONS.lock },
-      { to: s('/mail'), label: 'Email', icon: ICONS.mail },
-      { to: s('/cron'), label: 'Scheduled Tasks', icon: ICONS.monitoring },
-      { to: s('/git'), label: 'Git Deploy', icon: ICONS.extensions },
-      { to: s('/laravel'), label: 'Laravel Toolkit', icon: ICONS.extensions },
-      { to: s('/logs'), label: 'Logs', icon: ICONS.stats },
-      { to: s('/backups'), label: 'Backups', icon: ICONS.tools },
+    { items: [{ to: s(), labelKey: 'overview', icon: ICONS.home }] },
+    { titleKey: 'domain', items: [
+      { to: s('/files'), labelKey: 'fileManager', icon: ICONS.domain },
+      { to: s('/databases'), labelKey: 'databases', icon: ICONS.plan },
+      { to: s('/ftp'), labelKey: 'ftp', icon: ICONS.reseller },
+      { to: s('/php'), labelKey: 'php', icon: ICONS.tools },
+      { to: s('/web-server'), labelKey: 'webServer', icon: ICONS.tools },
+      { to: s('/dns'), labelKey: 'dnsSettings', icon: ICONS.domain },
+      { to: s('/ssl'), labelKey: 'sslTls', icon: ICONS.lock },
+      { to: s('/mail'), labelKey: 'email', icon: ICONS.mail },
+      { to: s('/cron'), labelKey: 'scheduledTasks', icon: ICONS.monitoring },
+      { to: s('/git'), labelKey: 'gitDeploy', icon: ICONS.extensions },
+      { to: s('/laravel'), labelKey: 'laravel', icon: ICONS.extensions },
+      { to: s('/logs'), labelKey: 'logs', icon: ICONS.stats },
+      { to: s('/backups'), labelKey: 'backups', icon: ICONS.tools },
     ]},
   ]
 }
 
-function SidebarNav({ groups, openGroups, onToggle, onNavigate, topSlot }: {
+function SidebarNav({ groups, openGroups, onToggle, onNavigate, topSlot, t }: {
   groups: NavGroup[]
   openGroups: Record<string, boolean>
   onToggle: (title: string) => void
   onNavigate?: () => void
   topSlot?: ReactNode
+  t: TFunction
 }) {
   return (
     <>
@@ -138,21 +144,21 @@ function SidebarNav({ groups, openGroups, onToggle, onNavigate, topSlot }: {
       <nav className="flex-1 px-2 py-3 overflow-y-auto">
         {groups.map((group, groupIndex) => (
           <div key={groupIndex} className="mb-2">
-            {group.title && (
+            {group.titleKey && (
               <button
-                onClick={() => onToggle(group.title!)}
+                onClick={() => onToggle(group.titleKey!)}
                 className="w-full flex items-center justify-between px-3 py-1.5 mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition"
               >
-                <span>{group.title}</span>
+                <span>{t(`groups.${group.titleKey}`)}</span>
                 <svg
-                  className={`w-3 h-3 transition-transform ${openGroups[group.title] ? '' : '-rotate-90'}`}
+                  className={`w-3 h-3 transition-transform ${openGroups[group.titleKey] ? '' : '-rotate-90'}`}
                   fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
             )}
-            {(!group.title || openGroups[group.title]) && (
+            {(!group.titleKey || openGroups[group.titleKey]) && (
               <ul className="space-y-0.5">
                 {group.items.map((item) => {
                   const hasParentPath = group.items.some(
@@ -182,7 +188,7 @@ function SidebarNav({ groups, openGroups, onToggle, onNavigate, topSlot }: {
                             }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}>
                               <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                             </svg>
-                            <span className="truncate">{item.label}</span>
+                            <span className="truncate">{t(`nav.${item.labelKey}`)}</span>
                           </>
                         )}
                       </NavLink>
@@ -199,6 +205,7 @@ function SidebarNav({ groups, openGroups, onToggle, onNavigate, topSlot }: {
 }
 
 export default function DashboardLayout() {
+  const { t } = useTranslation('DashboardLayout')
   const isCustomer = useAuth((s) => s.isCustomer)
   const customerDomainID = useAuth((s) => s.customerDomainID)
   const role = useAuth((s) => s.username?.role)
@@ -212,15 +219,18 @@ export default function DashboardLayout() {
       .catch(() => {})
   }, [])
 
+  // Keyed by the stable NavGroup.titleKey so collapse state survives a language
+  // switch (the visible label changes, the key does not).
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    'Hosting Services': true,
-    'Server Overview': true,
-    'Server Management': true,
-    'My Profile': true,
-    'My Domain': true,
-    'Domain': true,
-    'My Accounts': true,
-    'Server': true,
+    hostingServices: true,
+    serverOverview: true,
+    serverManagement: true,
+    myProfile: true,
+    myDomain: true,
+    domain: true,
+    myAccounts: true,
+    hosting: true,
+    server: true,
   })
 
   useEffect(() => {
@@ -242,20 +252,20 @@ export default function DashboardLayout() {
   }, [mobileOpen])
 
   const customerNav: NavGroup[] = [
-    { title: 'My Domain', items: [
-      { to: `/subscriptions/${customerDomainID}`, label: 'Overview', icon: ICONS.home },
-      { to: `/subscriptions/${customerDomainID}/files`, label: 'File Manager', icon: ICONS.domain },
-      { to: `/subscriptions/${customerDomainID}/databases`, label: 'Databases', icon: ICONS.plan },
-      { to: `/subscriptions/${customerDomainID}/ftp`, label: 'FTP Accounts', icon: ICONS.reseller },
-      { to: `/subscriptions/${customerDomainID}/php`, label: 'PHP Settings', icon: ICONS.tools },
-      { to: `/subscriptions/${customerDomainID}/web-server`, label: 'Apache & nginx', icon: ICONS.tools },
-      { to: `/subscriptions/${customerDomainID}/dns`, label: 'DNS Settings', icon: ICONS.domain },
-      { to: `/subscriptions/${customerDomainID}/ssl`, label: 'SSL/TLS', icon: ICONS.lock },
-      { to: `/subscriptions/${customerDomainID}/cron`, label: 'Scheduled Tasks', icon: ICONS.monitoring },
-      { to: `/subscriptions/${customerDomainID}/git`, label: 'Git Deploy', icon: ICONS.extensions },
-      { to: `/subscriptions/${customerDomainID}/laravel`, label: 'Laravel Toolkit', icon: ICONS.extensions },
-      { to: `/subscriptions/${customerDomainID}/logs`, label: 'Logs', icon: ICONS.stats },
-      { to: `/subscriptions/${customerDomainID}/backups`, label: 'Backups', icon: ICONS.tools },
+    { titleKey: 'myDomain', items: [
+      { to: `/subscriptions/${customerDomainID}`, labelKey: 'overview', icon: ICONS.home },
+      { to: `/subscriptions/${customerDomainID}/files`, labelKey: 'fileManager', icon: ICONS.domain },
+      { to: `/subscriptions/${customerDomainID}/databases`, labelKey: 'databases', icon: ICONS.plan },
+      { to: `/subscriptions/${customerDomainID}/ftp`, labelKey: 'ftp', icon: ICONS.reseller },
+      { to: `/subscriptions/${customerDomainID}/php`, labelKey: 'php', icon: ICONS.tools },
+      { to: `/subscriptions/${customerDomainID}/web-server`, labelKey: 'webServer', icon: ICONS.tools },
+      { to: `/subscriptions/${customerDomainID}/dns`, labelKey: 'dnsSettings', icon: ICONS.domain },
+      { to: `/subscriptions/${customerDomainID}/ssl`, labelKey: 'sslTls', icon: ICONS.lock },
+      { to: `/subscriptions/${customerDomainID}/cron`, labelKey: 'scheduledTasks', icon: ICONS.monitoring },
+      { to: `/subscriptions/${customerDomainID}/git`, labelKey: 'gitDeploy', icon: ICONS.extensions },
+      { to: `/subscriptions/${customerDomainID}/laravel`, labelKey: 'laravel', icon: ICONS.extensions },
+      { to: `/subscriptions/${customerDomainID}/logs`, labelKey: 'logs', icon: ICONS.stats },
+      { to: `/subscriptions/${customerDomainID}/backups`, labelKey: 'backups', icon: ICONS.tools },
     ]},
   ]
 
@@ -279,16 +289,16 @@ export default function DashboardLayout() {
     : NAV
   const mobileItems = isCustomer
     ? [
-        { to: `/subscriptions/${customerDomainID}`, label: 'Overview', icon: ICONS.home, end: true },
-        { to: `/subscriptions/${customerDomainID}/files`, label: 'Files', icon: ICONS.domain },
-        { to: `/subscriptions/${customerDomainID}/databases`, label: 'DB', icon: ICONS.plan },
-        { to: `/subscriptions/${customerDomainID}/backups`, label: 'Backups', icon: ICONS.tools },
+        { to: `/subscriptions/${customerDomainID}`, label: t('mobile.overview'), icon: ICONS.home, end: true },
+        { to: `/subscriptions/${customerDomainID}/files`, label: t('mobile.files'), icon: ICONS.domain },
+        { to: `/subscriptions/${customerDomainID}/databases`, label: t('mobile.db'), icon: ICONS.plan },
+        { to: `/subscriptions/${customerDomainID}/backups`, label: t('mobile.backups'), icon: ICONS.tools },
       ]
     : [
-        { to: '/', label: 'Home', icon: ICONS.home, end: true },
-        { to: '/domains', label: 'Domains', icon: ICONS.domain },
-        { to: '/tools-settings', label: 'Tools', icon: ICONS.tools },
-        { to: '/profile', label: 'Profile', icon: ICONS.profile },
+        { to: '/', label: t('mobile.home'), icon: ICONS.home, end: true },
+        { to: '/domains', label: t('mobile.domains'), icon: ICONS.domain },
+        { to: '/tools-settings', label: t('mobile.tools'), icon: ICONS.tools },
+        { to: '/profile', label: t('mobile.profile'), icon: ICONS.profile },
       ]
 
   function toggle(title: string) {
@@ -312,6 +322,7 @@ export default function DashboardLayout() {
           onToggle={toggle}
           onNavigate={() => setMobileOpen(false)}
           topSlot={domainMode ? <DomainPicker activeID={activeDomainID} /> : undefined}
+          t={t}
         />
       </aside>
 
@@ -321,7 +332,7 @@ export default function DashboardLayout() {
           <div className="flex-1 min-w-0">
             <Suspense fallback={
               <div className="px-6 py-10 text-sm text-slate-400 dark:text-slate-500" role="status">
-                Loading page…
+                {t('loadingPage')}
               </div>
             }>
               <Outlet />

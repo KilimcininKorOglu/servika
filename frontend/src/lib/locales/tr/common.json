@@ -20,5 +20,9 @@
   "yes": "Evet",
   "no": "Hayır",
   "operationFailed": "İşlem başarısız",
-  "internalError": "Sunucu hatası"
+  "internalError": "Sunucu hatası",
+  "search": "Ara...",
+  "processing": "İşleniyor…",
+  "breadcrumb": "Gezinti",
+  "goBack": "Geri dön"
 }

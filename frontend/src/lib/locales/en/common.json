@@ -20,5 +20,9 @@
   "yes": "Yes",
   "no": "No",
   "operationFailed": "Operation failed",
-  "internalError": "Internal server error"
+  "internalError": "Internal server error",
+  "search": "Search...",
+  "processing": "Processing…",
+  "breadcrumb": "Breadcrumb",
+  "goBack": "Go back"
 }

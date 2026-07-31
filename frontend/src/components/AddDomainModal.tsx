@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Modal from './Modal'
 
@@ -22,6 +23,7 @@ export default function AddDomainModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const { t } = useTranslation('AddDomainModal')
 
   // Fetch plans + installed PHP versions when the modal opens
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function AddDomainModal({
       }
       if (planId !== '') payload.plan_id = planId
       const { data } = await api.post('/domains', payload)
-      setSuccess(`${data.domain_name} was created successfully (system user: ${data.system_user})`)
+      setSuccess(t('createdSuccess', { domain: data.domain_name, user: data.system_user }))
       setTimeout(() => {
         setDomainName('')
         setSuccess(null)
@@ -74,17 +76,17 @@ export default function AddDomainModal({
         onClose()
       }, 1500)
     } catch (e) {
-      setError(apiError(e, 'Unable to add domain'))
+      setError(apiError(e, t('addFailed')))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Modal open={open} title="Add New Domain" onClose={onClose} width="md">
+    <Modal open={open} title={t('title')} onClose={onClose} width="md">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Domain Name</label>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('domainName')}</label>
           <input
             type="text"
             value={domainName}
@@ -94,26 +96,26 @@ export default function AddDomainModal({
             required
             className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition text-sm"
           />
-          <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Example: <code className="font-mono">site.com</code>, <code className="font-mono">customer-1.org</code></p>
+          <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">{t('domainHint')} <code className="font-mono">site.com</code>, <code className="font-mono">customer-1.org</code></p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Plan (Package)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('plan')}</label>
             <select
               value={planId}
               onChange={(e) => handlePlanChange(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition text-sm bg-white dark:bg-slate-800"
             >
-              <option value="">No plan selected</option>
+              <option value="">{t('noPlan')}</option>
               {plans.map(p => (
-                <option key={p.id} value={p.id}>{p.name}{p.is_default ? ' (default)' : ''}</option>
+                <option key={p.id} value={p.id}>{p.name}{p.is_default ? t('defaultSuffix') : ''}</option>
               ))}
             </select>
-            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Resource limits and the default PHP version come from this plan.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">{t('planHint')}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">PHP Version</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('phpVersion')}</label>
             <select
               value={phpVersion}
               onChange={(e) => setPhpVersion(e.target.value)}
@@ -122,13 +124,13 @@ export default function AddDomainModal({
               {phpOpts.map(v => <option key={v} value={v}>PHP {v}</option>)}
             </select>
             <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
-              {isPlanPhpVersion ? <span className="text-brand-600 dark:text-brand-400">✓ From plan ({selectedPlan?.name})</span> : 'You can change this independently of the plan.'}
+              {isPlanPhpVersion ? <span className="text-brand-600 dark:text-brand-400">{t('fromPlan', { name: selectedPlan?.name })}</span> : t('phpIndependent')}
             </p>
           </div>
         </div>
 
         <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 rounded-md p-3 text-xs text-sky-800">
-          <strong>Automatic provisioning:</strong> Linux user (<code className="font-mono">c_&lt;slug&gt;</code>) + home directory (<code className="font-mono">/home/c_&lt;slug&gt;/public_html</code>) + nginx vhost + welcome page
+          <strong>{t('provisioning')}</strong> {t('provisioningDetail')}
         </div>
 
         {error && <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
@@ -141,14 +143,14 @@ export default function AddDomainModal({
             disabled={loading}
             className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 rounded-md text-sm transition"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             type="submit"
             disabled={loading || !domainName.trim()}
             className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 rounded-md text-sm font-medium transition"
           >
-            {loading ? 'Provisioning…' : 'Add Domain'}
+            {loading ? t('provisioningState') : t('addDomain')}
           </button>
         </div>
       </form>

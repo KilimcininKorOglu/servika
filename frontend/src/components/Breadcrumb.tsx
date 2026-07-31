@@ -1,9 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export type BreadcrumbItem = { label: string; href?: string }
 
 export default function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
 
   function goBack() {
     if (window.history.length > 1) navigate(-1)
@@ -13,13 +15,13 @@ export default function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
     <nav
       className="flex items-center gap-1 text-sm mb-3 text-slate-500 dark:text-slate-500 overflow-x-auto [&>*]:flex-shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      aria-label="Breadcrumb"
+      aria-label={t('breadcrumb')}
     >
       <button
         type="button"
         onClick={goBack}
         className="lg:hidden -ml-1.5 mr-0.5 p-1.5 rounded-md text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-        aria-label="Go back"
+        aria-label={t('goBack')}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />

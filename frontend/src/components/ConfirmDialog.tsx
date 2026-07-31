@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
 
 export default function ConfirmDialog({
-  open, title, message, confirmText = 'Confirm', dangerous = false,
+  open, title, message, confirmText, dangerous = false,
   onConfirm, onCancel,
 }: {
   open: boolean
@@ -13,6 +14,7 @@ export default function ConfirmDialog({
   onConfirm: () => Promise<void> | void
   onCancel: () => void
 }) {
+  const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
 
   async function handleConfirm() {
@@ -25,7 +27,7 @@ export default function ConfirmDialog({
       <p className="text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-5">{message}</p>
       <div className="flex justify-end gap-2">
         <button onClick={onCancel} disabled={loading} className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 rounded-md text-sm">
-          Cancel
+          {t('cancel')}
         </button>
         <button
           onClick={handleConfirm}
@@ -34,7 +36,7 @@ export default function ConfirmDialog({
             dangerous ? 'bg-red-600 hover:bg-red-700 disabled:bg-red-300' : 'bg-brand-600 hover:bg-brand-700 disabled:opacity-60'
           }`}
         >
-          {loading ? 'Processing…' : confirmText}
+          {loading ? t('processing') : (confirmText ?? t('confirm'))}
         </button>
       </div>
     </Modal>

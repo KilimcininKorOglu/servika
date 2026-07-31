@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import PanelDomain from '@/components/PanelDomain'
 import HostnameSetting from '@/components/HostnameSetting'
@@ -46,6 +47,7 @@ function Alert({ type, message }: { type: 'ok' | 'err'; message: string }) {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation('SettingsPage')
   const updateName = useAuth((state) => state.updateName)
   const logout = useAuth((state) => state.logout)
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
@@ -77,20 +79,20 @@ export default function SettingsPage() {
     try {
       await api.put('/me', { full_name: fullName, email })
       updateName(fullName) // Keep the top-right bar in sync.
-      setProfileSuccess('Profile information saved.'); setTimeout(() => setProfileSuccess(''), 3000); load()
-    } catch (error) { setProfileError(apiError(error, 'Could not save profile information')) } finally { setIsProfileLoading(false) }
+      setProfileSuccess(t('account.saved')); setTimeout(() => setProfileSuccess(''), 3000); load()
+    } catch (error) { setProfileError(apiError(error, t('account.saveFailed'))) } finally { setIsProfileLoading(false) }
   }
 
   async function changePassword(event: React.FormEvent) {
     event.preventDefault(); setPasswordSuccess(''); setPasswordError('')
-    if (newPassword.length < 8) { setPasswordError('The new password must be at least 8 characters.'); return }
-    if (newPassword !== confirmPassword) { setPasswordError('The new passwords do not match.'); return }
+    if (newPassword.length < 8) { setPasswordError(t('password.tooShort')); return }
+    if (newPassword !== confirmPassword) { setPasswordError(t('password.mismatch')); return }
     setIsPasswordLoading(true)
     try {
       await api.post('/me/password', { current: currentPassword, new: newPassword })
-      setPasswordSuccess('Password changed. (The server root password was updated.)')
+      setPasswordSuccess(t('password.changed'))
       setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setTimeout(() => setPasswordSuccess(''), 5000)
-    } catch (error) { setPasswordError(apiError(error, 'Could not change the password')) } finally { setIsPasswordLoading(false) }
+    } catch (error) { setPasswordError(apiError(error, t('password.changeFailed'))) } finally { setIsPasswordLoading(false) }
   }
 
   const revokeSessions = async () => {
@@ -98,7 +100,7 @@ export default function SettingsPage() {
     try {
       await api.post('/me/sessions/revoke')
       logout()
-    } catch (error) { setPasswordError(apiError(error, 'Could not sign out all sessions')) }
+    } catch (error) { setPasswordError(apiError(error, t('password.signOutFailed'))) }
   }
 
   async function startTwoFactorSetup() {
@@ -111,12 +113,12 @@ export default function SettingsPage() {
     try {
       await api.post('/me/2fa/enable', { secret: twoFactorSetup!.secret, code: twoFactorCode })
       setTwoFactorSetup(null); setTwoFactorCode(''); load()
-    } catch (error) { setTwoFactorError(apiError(error, 'The code could not be verified')) } finally { setIsTwoFactorLoading(false) }
+    } catch (error) { setTwoFactorError(apiError(error, t('twoFa.verifyFailed'))) } finally { setIsTwoFactorLoading(false) }
   }
   async function confirmDisableTwoFactor(event: React.FormEvent) {
     event.preventDefault(); setTwoFactorError(''); setIsTwoFactorLoading(true)
     try { await api.post('/me/2fa/disable', { code: disableCode }); setIsDisablingTwoFactor(false); setDisableCode(''); load() }
-    catch (error) { setTwoFactorError(apiError(error, 'The code could not be verified')) } finally { setIsTwoFactorLoading(false) }
+    catch (error) { setTwoFactorError(apiError(error, t('twoFa.verifyFailed'))) } finally { setIsTwoFactorLoading(false) }
   }
 
   async function savePreferences() {
@@ -125,7 +127,7 @@ export default function SettingsPage() {
       await api.put('/me', { full_name: fullName, email, pref_theme: theme, pref_lang: language })
       applyThemePreference(theme)
       setLang((language === 'tr' ? 'tr' : 'en') as Lang)
-      setPreferenceSuccess('Preferences saved.'); setTimeout(() => setPreferenceSuccess(''), 3000)
+      setPreferenceSuccess(t('preferences.saved')); setTimeout(() => setPreferenceSuccess(''), 3000)
     } catch { setPreferenceSuccess('') } finally { setIsPreferenceLoading(false) }
   }
 
@@ -134,9 +136,9 @@ export default function SettingsPage() {
 
   return (
     <div className="px-6 md:px-8 py-6">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Profile and Preferences' }]} />
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Profile and Preferences</h1>
-      <p className="text-sm text-slate-500 dark:text-slate-500 mb-6">Manage your account information, password, two-factor authentication, and panel preferences.</p>
+      <Breadcrumb items={[{ label: t('breadcrumbHome'), href: '/' }, { label: t('pageTitle') }]} />
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('pageTitle')}</h1>
+      <p className="text-sm text-slate-500 dark:text-slate-500 mb-6">{t('pageSubtitle')}</p>
       {loadError && <div className="mb-4"><Alert type="err" message={loadError} /></div>}
 
       <div className="space-y-5">
@@ -145,101 +147,101 @@ export default function SettingsPage() {
         <ServerRebootButton />
 
         {/* 1. Account information */}
-        <Card title="Account Information" description="Edit your full name and email address."
+        <Card title={t('account.title')} description={t('account.description')}
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
         >
             <form onSubmit={saveProfile} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
-                <Input label="Username" value={currentUser?.name || 'root'} disabled />
+                <Input label={t('account.username')} value={currentUser?.name || 'root'} disabled />
                 <div>
-                  <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Role / Status</span>
+                  <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('account.roleStatus')}</span>
                   <div className="flex gap-2 pt-1.5">
                     <span className="text-[11px] uppercase tracking-wider px-2 py-1 rounded bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-semibold">{currentUser?.role || 'admin'}</span>
                     <span className="text-[11px] uppercase tracking-wider px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-semibold">{currentUser?.status || 'active'}</span>
                   </div>
                 </div>
-                <Input label="Full Name" value={fullName} onChange={event => setFullName(event.target.value)} placeholder="Your full name" />
-                <Input label="Email" type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="example@site.com" />
+                <Input label={t('account.fullName')} value={fullName} onChange={event => setFullName(event.target.value)} placeholder={t('account.fullNamePlaceholder')} />
+                <Input label={t('account.email')} type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="example@site.com" />
               </div>
               <div className="flex items-center gap-3 flex-wrap">
-                <button type="submit" disabled={isProfileLoading} className={buttonClasses}>{isProfileLoading ? 'Saving…' : 'Save'}</button>
+                <button type="submit" disabled={isProfileLoading} className={buttonClasses}>{isProfileLoading ? t('account.saving') : t('account.save')}</button>
                 <Alert type="ok" message={profileSuccess} /><Alert type="err" message={profileError} />
               </div>
             </form>
         </Card>
 
         {/* 2. Password */}
-        <Card title="Password" description="This changes the server root password, including SSH access."
+        <Card title={t('password.title')} description={t('password.description')}
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>}
         >
             <form onSubmit={changePassword} className="space-y-4">
-              <Input label="Current password" type="password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} autoComplete="current-password" />
+              <Input label={t('password.current')} type="password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} autoComplete="current-password" />
               <div className="grid sm:grid-cols-2 gap-4">
-                <Input label="New password" type="password" value={newPassword} onChange={event => setNewPassword(event.target.value)} autoComplete="new-password" />
-                <Input label="Confirm new password" type="password" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} autoComplete="new-password" />
+                <Input label={t('password.new')} type="password" value={newPassword} onChange={event => setNewPassword(event.target.value)} autoComplete="new-password" />
+                <Input label={t('password.confirm')} type="password" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} autoComplete="new-password" />
               </div>
               <div className="flex items-center gap-3 flex-wrap">
-                <button type="submit" disabled={isPasswordLoading || !currentPassword || !newPassword} className={buttonClasses}>{isPasswordLoading ? 'Changing…' : 'Change Password'}</button>
-                <button type="button" onClick={revokeSessions} className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Sign out all sessions</button>
+                <button type="submit" disabled={isPasswordLoading || !currentPassword || !newPassword} className={buttonClasses}>{isPasswordLoading ? t('password.changing') : t('password.change')}</button>
+                <button type="button" onClick={revokeSessions} className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">{t('password.signOutAll')}</button>
                 <Alert type="ok" message={passwordSuccess} /><Alert type="err" message={passwordError} />
               </div>
             </form>
         </Card>
 
         {/* 3. Two-factor authentication */}
-        <Card title="Two-Factor Authentication (2FA)" description="Require a six-digit authenticator code in addition to your password when signing in."
+        <Card title={t('twoFa.title')} description={t('twoFa.description')}
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>}
         >
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <span className="text-sm text-slate-600 dark:text-slate-400">Status:</span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">{t('twoFa.status')}</span>
                 {currentUser?.two_fa
-                  ? <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">● Active</span>
-                  : <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">○ Disabled</span>}
+                  ? <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">{t('twoFa.active')}</span>
+                  : <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">{t('twoFa.disabled')}</span>}
               </div>
 
               {!currentUser?.two_fa && !twoFactorSetup && (
-                <button onClick={startTwoFactorSetup} className={buttonClasses}>Enable 2FA</button>
+                <button onClick={startTwoFactorSetup} className={buttonClasses}>{t('twoFa.enable')}</button>
               )}
 
               {!currentUser?.two_fa && twoFactorSetup && (
                 <form onSubmit={enableTwoFactor} className="space-y-3 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-900">
-                  <p className="text-sm text-slate-700 dark:text-slate-300">1) Scan the QR code or enter the key in your authenticator app (Google Authenticator, Authy, or Microsoft Authenticator):</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">{t('twoFa.step1')}</p>
                   {twoFactorSetup.qr_data_uri && (
                     <div className="flex flex-col items-center gap-2 py-1">
-                      <img src={twoFactorSetup.qr_data_uri} alt="2FA QR code" width={256} height={256}
+                      <img src={twoFactorSetup.qr_data_uri} alt={t('twoFa.qrAlt')} width={256} height={256}
                         className="w-64 h-64 rounded-2xl bg-white p-3 border border-slate-200 dark:border-slate-700 shadow-sm" />
-                      <p className="text-xs text-slate-500 dark:text-slate-500">Scan with your authenticator app</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-500">{t('twoFa.scanHint')}</p>
                     </div>
                   )}
-                  <p className="text-xs text-slate-500 dark:text-slate-500">If you cannot scan, enter the secret key manually:</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-500">{t('twoFa.manualHint')}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <code className="font-mono text-sm px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 tracking-widest select-all">{groupedSecret}</code>
-                    <button type="button" onClick={() => { navigator.clipboard?.writeText(twoFactorSetup.secret) }} className="text-xs px-2.5 py-1.5 rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Copy</button>
+                    <button type="button" onClick={() => { navigator.clipboard?.writeText(twoFactorSetup.secret) }} className="text-xs px-2.5 py-1.5 rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">{t('twoFa.copy')}</button>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-500 break-all">Or use this link: <span className="font-mono">{twoFactorSetup.otpauth}</span></p>
-                  <p className="text-sm text-slate-700 dark:text-slate-300">2) Enter the six-digit code from the app:</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-500 break-all">{t('twoFa.orLink')} <span className="font-mono">{twoFactorSetup.otpauth}</span></p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">{t('twoFa.step2')}</p>
                   <div className="flex items-center gap-3 flex-wrap">
                     <input value={twoFactorCode} onChange={event => setTwoFactorCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" inputMode="numeric"
                       className="w-32 px-3 py-2 text-center text-lg font-mono tracking-[0.3em] bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 focus:border-brand-500 outline-none" />
-                    <button type="submit" disabled={isTwoFactorLoading || twoFactorCode.length !== 6} className={buttonClasses}>{isTwoFactorLoading ? 'Verifying…' : 'Verify and Enable'}</button>
-                    <button type="button" onClick={() => setTwoFactorSetup(null)} className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Cancel</button>
+                    <button type="submit" disabled={isTwoFactorLoading || twoFactorCode.length !== 6} className={buttonClasses}>{isTwoFactorLoading ? t('twoFa.verifying') : t('twoFa.verifyEnable')}</button>
+                    <button type="button" onClick={() => setTwoFactorSetup(null)} className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">{t('twoFa.cancel')}</button>
                   </div>
                   <Alert type="err" message={twoFactorError} />
                 </form>
               )}
 
               {currentUser?.two_fa && !isDisablingTwoFactor && (
-                <button onClick={() => { setIsDisablingTwoFactor(true); setTwoFactorError('') }} className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Disable 2FA</button>
+                <button onClick={() => { setIsDisablingTwoFactor(true); setTwoFactorError('') }} className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">{t('twoFa.disable')}</button>
               )}
               {currentUser?.two_fa && isDisablingTwoFactor && (
                 <form onSubmit={confirmDisableTwoFactor} className="space-y-3 border border-red-200 dark:border-red-800 rounded-2xl p-4 bg-red-50 dark:bg-red-900/10">
-                  <p className="text-sm text-slate-700 dark:text-slate-300">Enter your authenticator code to disable 2FA:</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">{t('twoFa.disablePrompt')}</p>
                   <div className="flex items-center gap-3 flex-wrap">
                     <input value={disableCode} onChange={event => setDisableCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" inputMode="numeric"
                       className="w-32 px-3 py-2 text-center text-lg font-mono tracking-[0.3em] bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 outline-none" />
-                    <button type="submit" disabled={isTwoFactorLoading || disableCode.length !== 6} className="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white disabled:opacity-50">Disable</button>
-                    <button type="button" onClick={() => setIsDisablingTwoFactor(false)} className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Cancel</button>
+                    <button type="submit" disabled={isTwoFactorLoading || disableCode.length !== 6} className="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white disabled:opacity-50">{t('twoFa.disableConfirm')}</button>
+                    <button type="button" onClick={() => setIsDisablingTwoFactor(false)} className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">{t('twoFa.cancel')}</button>
                   </div>
                   <Alert type="err" message={twoFactorError} />
                 </form>
@@ -248,26 +250,26 @@ export default function SettingsPage() {
         </Card>
 
         {/* 4. Preferences */}
-        <Card title="Preferences" description="Panel appearance and language preferences."
+        <Card title={t('preferences.title')} description={t('preferences.description')}
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>}
         >
             <div className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Theme</span>
+                  <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('preferences.theme')}</span>
                   <select value={theme} onChange={event => setThemePreference(event.target.value as Theme)} className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 outline-none">
-                    <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
+                    <option value="system">{t('preferences.system')}</option><option value="light">{t('preferences.light')}</option><option value="dark">{t('preferences.dark')}</option>
                   </select>
                 </label>
                 <label className="block">
-                  <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Language</span>
+                  <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('preferences.language')}</span>
                   <select value={language} onChange={event => setLanguage(event.target.value)} className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 outline-none">
-                    <option value="tr">Turkish</option><option value="en">English</option>
+                    <option value="tr">{t('preferences.turkish')}</option><option value="en">{t('preferences.english')}</option>
                   </select>
                 </label>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
-                <button onClick={savePreferences} disabled={isPreferenceLoading} className={buttonClasses}>{isPreferenceLoading ? 'Saving…' : 'Save Preferences'}</button>
+                <button onClick={savePreferences} disabled={isPreferenceLoading} className={buttonClasses}>{isPreferenceLoading ? t('preferences.saving') : t('preferences.save')}</button>
                 <Alert type="ok" message={preferenceSuccess} />
               </div>
             </div>
