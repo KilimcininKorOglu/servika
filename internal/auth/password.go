@@ -51,13 +51,24 @@ func HashPassword(password string) (string, error) {
 	return string(h), nil
 }
 
+// dummyBcryptHash lets PasswordMatches run a bcrypt comparison even when the
+// account does not exist (empty hash), so a present and an absent username
+// cannot be told apart by timing (bcrypt at cost 12 is ~180x slower than the
+// early return it replaces). Generated once at package load.
+var dummyBcryptHash, _ = bcrypt.GenerateFromPassword([]byte("servika-timing-guard"), bcryptCost)
+
 // PasswordMatches compares a users.password_hash against the given password.
 //
-// bcrypt.CompareHashAndPassword is already constant-time. An empty hash (an
-// account whose password was never set) always returns false, otherwise login
-// with an empty password would be possible.
+// bcrypt.CompareHashAndPassword is already constant-time. When the hash is empty
+// (an account whose password was never set, or a username that does not exist)
+// it still runs bcrypt against a dummy hash and then returns false, so the
+// failure path takes the same time whether or not the account exists.
 func PasswordMatches(hash, password string) bool {
-	if strings.TrimSpace(hash) == "" || password == "" {
+	if strings.TrimSpace(hash) == "" {
+		_ = bcrypt.CompareHashAndPassword(dummyBcryptHash, []byte(password))
+		return false
+	}
+	if password == "" {
 		return false
 	}
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil

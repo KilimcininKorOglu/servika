@@ -146,7 +146,11 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		err := h.DB.QueryRow(
 			`SELECT id, username, password_hash, role, status, full_name FROM users WHERE username=?`,
 			req.Username).Scan(&uid, &username, &hash, &role, &status, &fullName)
-		if err != nil || !PasswordMatches(hash, req.Password) {
+		// Always run PasswordMatches (even on a DB miss, where hash is empty) so a
+		// present and an absent username cannot be told apart by timing; do not let
+		// the err check short-circuit it away.
+		matches := PasswordMatches(hash, req.Password)
+		if err != nil || !matches {
 			WriteAudit(h.DB, 0, req.Username, ip, "auth.login", req.Username, false)
 			httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 			return

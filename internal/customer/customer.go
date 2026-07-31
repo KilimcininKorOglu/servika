@@ -68,10 +68,13 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "authentication failed")
 		return
 	}
-	// One and the same rejection so which usernames exist does not leak. An empty
-	// password_hash never matches (see auth.PasswordMatches), so an account whose
+	// One and the same rejection so which usernames exist does not leak. Run
+	// PasswordMatches unconditionally (even on a DB miss, where hash is empty, it
+	// still spends the bcrypt time) so timing cannot distinguish a present from an
+	// absent username. An empty password_hash never matches, so an account whose
 	// password has not been assigned yet cannot pass here.
-	if err != nil || role != mw.RoleUser || !auth.PasswordMatches(hash, req.Password) {
+	matches := auth.PasswordMatches(hash, req.Password)
+	if err != nil || role != mw.RoleUser || !matches {
 		auth.WriteAudit(h.DB, 0, req.Username, ip, "customer.login", req.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
