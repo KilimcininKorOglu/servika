@@ -29,6 +29,7 @@ type Subdomain = {
 type Plan = { id: number; name: string; disk_quota_mb?: number }
 type PHPVer = { version: string; description?: string }
 type CreateResult = {
+  id: number
   domain_name: string; system_user: string; ftp_user: string; ftp_host: string
   db_host: string; db_user: string; db_name: string
   created_passwords: { ftp: string; db: string }
@@ -62,6 +63,7 @@ export default function DomainsPage() {
   const [formDomainName, setFormDomainName] = useState('')
   const [formPhpVersion, setFormPhpVersion] = useState('8.3')
   const [formPlanId, setFormPlanId] = useState<number | ''>('')
+  const [formIssueSSL, setFormIssueSSL] = useState(false)
 
   // The domain list depends only on /domains. /plans and /php/versions (which can be
   // slow due to dnf discovery) are loaded lazily when the create modal opens.
@@ -107,7 +109,7 @@ export default function DomainsPage() {
     // Default plan = "Starter" (if data has already arrived, pick it now; otherwise
     // loadModalData sets it once the fetch completes).
     const defaultPlan = plans.find(plan => plan.name === 'Starter') || plans[0]
-    setFormDomainName(''); setFormPhpVersion('8.3'); setFormPlanId(defaultPlan ? defaultPlan.id : '')
+    setFormDomainName(''); setFormPhpVersion('8.3'); setFormPlanId(defaultPlan ? defaultPlan.id : ''); setFormIssueSSL(false)
     setCreateOpen(true)
     loadModalData() // lazy: fetch plans/php versions if they haven't been loaded yet
   }
@@ -127,8 +129,17 @@ export default function DomainsPage() {
       const response = await api.post<CreateResult>('/domains', request)
       setCreateOpen(false)
       setCreationResult(response.data)
-      setSuccess(`✓ "${domainName}" created. The Linux user, nginx vhost, PHP-FPM pool, FTP account, MySQL database, and DNS zone are ready.`)
-      setTimeout(() => setSuccess(null), 8000)
+      let successMsg = `✓ "${domainName}" created. The Linux user, nginx vhost, PHP-FPM pool, FTP account, MySQL database, and DNS zone are ready.`
+      if (formIssueSSL) {
+        try {
+          await api.post(`/domains/${response.data.id}/ssl/issue`, { type: 'letsencrypt' })
+          successMsg += ' Let\'s Encrypt SSL was installed.'
+        } catch {
+          successMsg += ' (Let\'s Encrypt SSL could not be issued — make sure the DNS A record points here, then install it from the SSL page.)'
+        }
+      }
+      setSuccess(successMsg)
+      setTimeout(() => setSuccess(null), 10000)
       load()
     } catch (error) {
       setError(apiError(error, 'Could not create domain'))
@@ -429,6 +440,18 @@ export default function DomainsPage() {
                   ))}
                 </select>
               </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
+                <input type="checkbox" checked={formIssueSSL} onChange={e => setFormIssueSSL(e.target.checked)} disabled={creating} className="rounded" />
+                Install a Let's Encrypt SSL certificate after creation
+              </label>
+              {formIssueSSL && (
+                <p className="mt-1.5 text-[11px] text-amber-600 dark:text-amber-400">
+                  ⚠️ The domain's DNS A record must already point to this server, otherwise issuance fails and you can retry later from the SSL page.
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 mt-5">
