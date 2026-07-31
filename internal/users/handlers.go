@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"servika/internal/auth"
+	"servika/internal/domains"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
 	"servika/internal/quota"
@@ -430,6 +431,17 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE users SET status=?, token_version=token_version+1, updated_at=NOW() WHERE reseller_id=?`, b.Status, id); err != nil {
 		log.Printf("cascade status to sub-accounts of user %d failed: %v", id, err)
+	}
+
+	// Cascade to the reseller's actual hosting: without this, suspending a
+	// reseller only revoked panel logins while its customers' sites, FTP and mail
+	// stayed live. Suspend/resume every domain owned by this reseller's customers.
+	// Non-fatal: the account status change already succeeded. This is a no-op for
+	// a customer account (it owns no customers, so the sweep matches nothing).
+	if affected, failed, err := domains.SuspendResellerDomains(r.Context(), h.DB, id, b.Status == "suspended"); err != nil {
+		log.Printf("hosting suspend cascade for reseller %d failed: %v", id, err)
+	} else if affected > 0 || failed > 0 {
+		log.Printf("hosting suspend cascade for reseller %d: %d applied, %d failed", id, affected, failed)
 	}
 
 	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.status", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
