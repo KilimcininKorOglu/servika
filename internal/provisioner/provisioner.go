@@ -205,6 +205,7 @@ func Init(db *sql.DB) {
 	healCacheZoneOnStartup()
 	healPanelVhostHeadersOnStartup()
 	healPanelLoginRateLimitOnStartup()
+	HealPanelProxyTrustOnStartup() // :8080 proxy secret + pma-redeem deny + slowloris/limit_conn
 	healPanelIndexNoCacheOnStartup()
 	ensurePMAStartup()
 	healVhostsOnStartup()
@@ -1347,6 +1348,11 @@ func Deprovision(domainName, systemUser string) error {
 	_ = os.Remove(filepath.Join("/var/lib/servika/cron-suspended", systemUser))
 	if userExists(systemUser) {
 		_, _ = exec.Command("userdel", "-r", systemUser).CombinedOutput()
+		// Orphan cleanup: userdel -r removes the home dir, but these live outside
+		// it, so they survived and accumulated after every domain deletion or
+		// import rollback.
+		_ = os.RemoveAll(filepath.Join(config.BackupRoot(), systemUser))        // manual + scheduled backups
+		_ = os.Remove(filepath.Join(tenantLogDir, "tenant-"+systemUser+".log")) // tenant PHP-FPM log
 	}
 	// Sweep the shared PHP-FPM pool AFTER userdel, not before. Once the user is
 	// gone, writePoolValidated's user-existence guard refuses to resurrect the
