@@ -189,6 +189,11 @@ func deleteFromRemote(ctx context.Context, d *Destination, fileName string) erro
 
 // lftpEscape: escapes values placed inside double quotes on the lftp command line.
 func lftpEscape(s string) string {
+	// Strip control characters (line-injection). The input layer rejects these
+	// too, but sanitize here as defence in depth.
+	s = strings.ReplaceAll(s, "\r", "")
+	s = strings.ReplaceAll(s, "\n", "")
+	s = strings.ReplaceAll(s, "\x00", "")
 	s = strings.ReplaceAll(s, `\`, `\\`)
 	s = strings.ReplaceAll(s, `"`, `\"`)
 	return s
@@ -218,18 +223,21 @@ func testConnection(ctx context.Context, d *Destination) error {
 	if d.Type == "sftp" {
 		// Force password authentication through sshpass and disable public-key fallback.
 		// This ensures the supplied user password is actually valid.
-		host := fmt.Sprintf("%s@%s", d.Username, d.Host)
+		// Pass the user with -l and the host after --, so neither can be
+		// interpreted as an ssh option (closes ProxyCommand-style arg injection
+		// via a username or host beginning with "-").
 		args := []string{
 			"-p", d.Password,
 			"ssh",
 			"-p", fmt.Sprintf("%d", d.Port),
+			"-l", d.Username,
 			"-o", "ConnectTimeout=10",
 			"-o", "StrictHostKeyChecking=no",
 			"-o", "UserKnownHostsFile=/dev/null",
 			"-o", "PreferredAuthentications=password",
 			"-o", "PubkeyAuthentication=no",
 			"-o", "BatchMode=no",
-			host, "true",
+			"--", d.Host, "true",
 		}
 		cmd := exec.CommandContext(ctx, "sshpass", args...)
 		out, err := cmd.CombinedOutput()
