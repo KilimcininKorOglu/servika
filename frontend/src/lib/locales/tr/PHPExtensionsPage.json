@@ -1,0 +1,62 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "system": "Sistem Yönetimi",
+    "current": "PHP Eklentileri"
+  },
+  "title": "PHP Eklentileri",
+  "subtitle": {
+    "pre": "Sunucu genelinde PHP eklentilerini yönetin. Bir eklentiyi açmak veya kapatmak için anahtarı kullanın; PHP-FPM otomatik olarak yeniden başlar. ",
+    "bold": "Sunucu geneli",
+    "post": ", tüm alan adlarını etkiler."
+  },
+  "removeIonCube": "⊗ IonCube Kaldır",
+  "installIonCube": "🔐 IonCube Kur",
+  "installFromPecl": "📦 PECL'den Kur",
+  "versionTab": "PHP {{version}}",
+  "counters": {
+    "enabled": "{{count}} etkin",
+    "inactive": "{{count}} etkin değil",
+    "total": "Toplam {{count}}"
+  },
+  "searchPlaceholder": "🔍 Eklenti ara...",
+  "loading": "Yükleniyor…",
+  "coreExtension": "çekirdek eklenti",
+  "toggleTitle": {
+    "core": "Çekirdek eklenti, devre dışı bırakılamaz",
+    "disable": "Devre dışı bırak",
+    "enable": "Etkinleştir"
+  },
+  "alerts": {
+    "coreCannotDisable": "Bu eklenti PHP'nin çekirdek bir parçasıdır ve devre dışı bırakılamaz.",
+    "invalidPackage": "Geçersiz paket adı"
+  },
+  "confirm": {
+    "ionCubeInstall": "IonCube Loader, PHP {{version}} için kurulacak.\n\nioncube.com adresinden bir tar.gz arşivi indirilecek, .so dosyası kopyalanacak ve bir zend_extension olarak yüklenecek.\nDevam edilsin mi?",
+    "ionCubeRemove": "IonCube Loader, PHP {{version}} sürümünden kaldırılacak. Devam edilsin mi?",
+    "peclInstall": "\"{{package}}\" PECL paketi, PHP {{version}} için derlenip kurulacak. Devam edilsin mi?"
+  },
+  "success": {
+    "toggleEnabled": "✓ {{name}} etkinleştirildi · PHP-FPM yeniden başlatıldı",
+    "toggleDisabled": "✓ {{name}} devre dışı bırakıldı · PHP-FPM yeniden başlatıldı",
+    "ionCubeLoaded": "✓ IonCube kuruldu · YÜKLENDİ",
+    "ionCubeNotLoaded": "✓ IonCube kuruldu · INI dosyası yazıldı, ancak eklenti çalışma zamanında algılanmadı",
+    "ionCubeRemoved": "✓ IonCube kaldırıldı",
+    "peclInstalled": "✓ {{package}} kuruldu"
+  },
+  "errors": {
+    "toggleFailed": "Açma/kapatma başarısız oldu",
+    "ionCubeInstallFailed": "IonCube kurulumu başarısız oldu",
+    "ionCubeRemoveFailed": "IonCube kaldırma başarısız oldu",
+    "peclInstallFailed": "PECL kurulumu başarısız oldu"
+  },
+  "peclModal": {
+    "title": "PECL'den Eklenti Kur",
+    "descPre": "PECL deposundan bir eklenti indirir ve derler. Örnekler: ",
+    "warnPre": "⚠ Eklenti, PHP {{version}} için derlenecek. Hedef: ",
+    "warnMid": " veya Remi dizini",
+    "inputPlaceholder": "örn. mongodb",
+    "cancel": "İptal",
+    "install": "Kur"
+  }
+}

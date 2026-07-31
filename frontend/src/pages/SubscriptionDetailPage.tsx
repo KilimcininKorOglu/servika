@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import ResourceCard from '@/components/ResourceCard'
@@ -33,6 +34,7 @@ const ICONS = {
 }
 
 export default function SubscriptionDetailPage() {
+  const { t } = useTranslation('SubscriptionDetailPage')
   const { id } = useParams()
   const navigate = useNavigate()
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -48,7 +50,7 @@ export default function SubscriptionDetailPage() {
     if (!id) return
     api.get<Domain>(`/domains/${id}`)
       .then(r => setDomain(r.data))
-      .catch(e => setError(apiError(e, 'Could not load the subscription')))
+      .catch(e => setError(apiError(e, t('errors.loadFailed'))))
   }
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export default function SubscriptionDetailPage() {
   async function toggleSuspension() {
     if (!id || !domain) return
     const suspend = !domain.suspended
-    if (suspend && !window.confirm(`Suspend "${domain.domain_name}"? The website will return HTTP 503 until it is resumed.`)) return
+    if (suspend && !window.confirm(t('confirmSuspend', { domain: domain.domain_name }))) return
 
     setMenuOpen(false)
     setProcessing(true)
@@ -71,11 +73,11 @@ export default function SubscriptionDetailPage() {
     setNoticeError(false)
     try {
       await api.post(`/domains/${id}/${suspend ? 'suspend' : 'resume'}`)
-      setNotice(suspend ? 'The domain has been suspended.' : 'The domain has been resumed.')
+      setNotice(suspend ? t('notice.suspended') : t('notice.resumed'))
       setDomain(current => current ? { ...current, suspended: suspend, status: suspend ? 'passive' : 'active' } : current)
     } catch (cause) {
       setNoticeError(true)
-      setNotice(apiError(cause, 'Could not update the domain suspension state'))
+      setNotice(apiError(cause, t('errors.suspendFailed')))
     } finally {
       setProcessing(false)
     }
@@ -83,23 +85,23 @@ export default function SubscriptionDetailPage() {
 
   if (error) return (
     <div className="px-6 py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' }, { label: 'Error' }]} />
+      <Breadcrumb items={[{ label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.domains'), href: '/domains' }, { label: t('breadcrumb.error') }]} />
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 text-sm text-red-700 dark:text-red-300">{error}</div>
     </div>
   )
 
   if (!domain) return (
     <div className="px-6 py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' }]} />
-      <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div>
+      <Breadcrumb items={[{ label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.domains'), href: '/domains' }]} />
+      <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</div>
     </div>
   )
 
   return (
     <div className="px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Domains', href: '/domains' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.domains'), href: '/domains' },
         { label: domain.domain_name },
       ]} />
 
@@ -108,7 +110,7 @@ export default function SubscriptionDetailPage() {
         <button
           onClick={() => navigate('/subscriptions')}
           className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300"
-          title="Switch subscription"
+          title={t('header.switchSubscription')}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -122,7 +124,7 @@ export default function SubscriptionDetailPage() {
         </span>
         {domain.suspended && (
           <span className="text-[10px] px-2 py-0.5 rounded uppercase font-semibold tracking-wider bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
-            Suspended
+            {t('header.suspended')}
           </span>
         )}
         <div className="relative">
@@ -131,7 +133,7 @@ export default function SubscriptionDetailPage() {
             onClick={() => setMenuOpen(open => !open)}
             disabled={processing}
             className="ml-1 p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded disabled:opacity-50"
-            title="More actions"
+            title={t('header.moreActions')}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
           >
@@ -147,7 +149,7 @@ export default function SubscriptionDetailPage() {
                 onClick={toggleSuspension}
                 className={`w-full rounded-md px-3 py-2 text-left text-sm ${domain.suspended ? 'text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
               >
-                {domain.suspended ? 'Resume domain' : 'Suspend domain'}
+                {domain.suspended ? t('header.resumeDomain') : t('header.suspendDomain')}
               </button>
             </div>
           )}
@@ -161,8 +163,8 @@ export default function SubscriptionDetailPage() {
       )}
 
       <div className="flex items-center gap-5 border-b border-slate-200 dark:border-slate-700 mb-5">
-        <TabBtn enabled={tab === 'dashboard'} onClick={() => setTab('dashboard')}>Dashboard</TabBtn>
-        <TabBtn enabled={tab === 'hosting'}   onClick={() => setTab('hosting')}>Hosting and DNS</TabBtn>
+        <TabBtn enabled={tab === 'dashboard'} onClick={() => setTab('dashboard')}>{t('tabs.dashboard')}</TabBtn>
+        <TabBtn enabled={tab === 'hosting'}   onClick={() => setTab('hosting')}>{t('tabs.hosting')}</TabBtn>
       </div>
 
       <div className="grid grid-cols-12 gap-5">
@@ -171,24 +173,24 @@ export default function SubscriptionDetailPage() {
 
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Statistics</h3>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('stats.title')}</h3>
               <button onClick={() => {
                 if (!id) return;
                 api.get<{ disk_mb: { usage: number } }>(`/domains/${id}/resources`)
                   .then(r => setDiskMB(r.data.disk_mb.usage))
                   .catch(() => {});
                 loadDomain();
-              }} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300" title="Refresh">
+              }} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300" title={t('stats.refresh')}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
             </div>
             <div className="space-y-2.5 text-sm">
-              <Stat label="Disk space" value={diskMB != null ? `${diskMB} MB` : '…'} />
-              <Stat label="Monthly traffic" value={`${Math.round(domain.traffic_kb / 1024)} MB`} />
-              <Stat label="Created" value={domain.created_at} />
-              <Stat label="PHP version" value={domain.php_version} />
+              <Stat label={t('stats.disk')} value={diskMB != null ? `${diskMB} MB` : '…'} />
+              <Stat label={t('stats.traffic')} value={`${Math.round(domain.traffic_kb / 1024)} MB`} />
+              <Stat label={t('stats.created')} value={domain.created_at} />
+              <Stat label={t('stats.phpVersion')} value={domain.php_version} />
             </div>
           </div>
         </aside>
@@ -199,11 +201,11 @@ export default function SubscriptionDetailPage() {
 
           <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-500 flex-wrap gap-2">
             <div className="flex items-center gap-4">
-              <span>Website: <span className="font-mono text-slate-700 dark:text-slate-300">httpdocs</span></span>
-              <span>IP: <span className="font-mono text-slate-700 dark:text-slate-300">{domain.ipv4}</span></span>
-              <span>System user: <span className="font-mono text-slate-700 dark:text-slate-300">{domain.system_user}</span></span>
+              <span>{t('footer.website')} <span className="font-mono text-slate-700 dark:text-slate-300">httpdocs</span></span>
+              <span>{t('footer.ip')} <span className="font-mono text-slate-700 dark:text-slate-300">{domain.ipv4}</span></span>
+              <span>{t('footer.systemUser')} <span className="font-mono text-slate-700 dark:text-slate-300">{domain.system_user}</span></span>
             </div>
-            <button className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300">Add description</button>
+            <button className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300">{t('footer.addDescription')}</button>
           </div>
         </section>
 
@@ -216,6 +218,7 @@ export default function SubscriptionDetailPage() {
 }
 
 function WebSitePreview({ domainName, ssl }: { domainName: string; ssl: boolean }) {
+  const { t } = useTranslation('SubscriptionDetailPage')
   const url = `${ssl ? 'https' : 'http'}://${domainName}`
   const [previewVersion, setPreviewVersion] = useState(() => Date.now())
 
@@ -234,7 +237,7 @@ function WebSitePreview({ domainName, ssl }: { domainName: string; ssl: boolean 
             <iframe
               key={previewVersion}
               src={previewURL}
-              title={`${domainName} preview`}
+              title={t('preview.previewAlt', { domain: domainName })}
               loading="lazy"
               sandbox="allow-scripts allow-same-origin"
               tabIndex={-1}
@@ -246,30 +249,30 @@ function WebSitePreview({ domainName, ssl }: { domainName: string; ssl: boolean 
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
             <svg className="w-9 h-9 text-white/40 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
-            <div className="text-[11px] text-white/60">Preview is available only for HTTPS sites</div>
-            <div className="text-[10px] text-white/40 mt-0.5">It appears automatically when SSL is enabled</div>
+            <div className="text-[11px] text-white/60">{t('preview.httpsOnly')}</div>
+            <div className="text-[10px] text-white/40 mt-0.5">{t('preview.autoAppear')}</div>
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-3 flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-[9px] uppercase tracking-wider text-white/60">Website</div>
+            <div className="text-[9px] uppercase tracking-wider text-white/60">{t('preview.website')}</div>
             <div className="text-xs font-semibold text-white truncate">{domainName}</div>
           </div>
           <div className="shrink-0 flex items-center gap-1.5">
             <button type="button" onClick={() => setPreviewVersion(Date.now())} disabled={!ssl}
-              title={ssl ? 'Refresh preview' : 'SSL is required for the preview'}
+              title={ssl ? t('preview.refreshTitle') : t('preview.sslRequired')}
               className="inline-flex items-center gap-1 text-[11px] bg-white/15 hover:bg-white/25 text-white px-2 py-1 rounded-md font-medium transition disabled:opacity-40 disabled:cursor-not-allowed">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M5.5 15a7 7 0 0011.9 2M18.5 9A7 7 0 006.6 7" />
               </svg>
-              Refresh
+              {t('preview.refresh')}
             </button>
             <a href={url} target="_blank" rel="noreferrer"
               className="inline-flex items-center gap-1 text-[11px] bg-white/90 hover:bg-white text-slate-900 px-2 py-1 rounded-md font-medium transition">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
-              Open
+              {t('preview.open')}
             </a>
           </div>
         </div>
@@ -302,6 +305,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  // title is already translated by the caller.
   return (
     <section className="mb-5 last:mb-0">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-2">{title}</h3>
@@ -311,50 +315,52 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 }
 
 function DashboardTabContent({ domain }: { domain: Domain }) {
+  const { t } = useTranslation('SubscriptionDetailPage')
   return (
     <div>
-      <Group title="Files and Databases">
-        <ToolCard label="Connection Information" description="FTP and database" icon={ICONS.connection} color="emerald" />
-        <ToolCard label="Files" description="File manager" icon={ICONS.files} color="amber" phase="F6" />
-        <ToolCard label="Databases" description={domain.db_name} icon={ICONS.db} color="violet" phase="F5" />
-        <ToolCard label="FTP" description="FTP accounts" icon={ICONS.ftp} color="sky" phase="F4" />
-        <ToolCard label="Backup and Restore" description="Backup management" icon={ICONS.backup} color="rose" phase="F12" />
-        <ToolCard label="Copy Website" description="Cloning" icon={ICONS.copy} color="sky" />
+      <Group title={t('groups.filesAndDatabases')}>
+        <ToolCard label={t('tools.connection')} description={t('tools.connectionDesc')} icon={ICONS.connection} color="emerald" />
+        <ToolCard label={t('tools.files')} description={t('tools.filesDesc')} icon={ICONS.files} color="amber" phase="F6" />
+        <ToolCard label={t('tools.databases')} description={domain.db_name} icon={ICONS.db} color="violet" phase="F5" />
+        <ToolCard label={t('tools.ftp')} description={t('tools.ftpDesc')} icon={ICONS.ftp} color="sky" phase="F4" />
+        <ToolCard label={t('tools.backup')} description={t('tools.backupDesc')} icon={ICONS.backup} color="rose" phase="F12" />
+        <ToolCard label={t('tools.copy')} description={t('tools.copyDesc')} icon={ICONS.copy} color="sky" />
       </Group>
 
-      <Group title="Development Tools">
-        <ToolCard label="PHP" description={`Version ${domain.php_version}`} icon={ICONS.php} color="indigo" phase="F3" />
-        <ToolCard label="Logs" description="Access and error logs" icon={ICONS.log} color="slate" phase="F10" />
-        <ToolCard label="Scheduled Tasks" description="Cron" icon={ICONS.cron} color="teal" phase="F8" />
-        <ToolCard label="Git" description="Repository integration" icon={ICONS.git} color="orange" phase="F9" />
-        <ToolCard label="PHP Composer" description="Package manager" icon={ICONS.composer} color="amber" />
-        <ToolCard label="Performance" description="Accelerators" icon={ICONS.service} color="emerald" />
+      <Group title={t('groups.developmentTools')}>
+        <ToolCard label={t('tools.php')} description={t('tools.phpDesc', { version: domain.php_version })} icon={ICONS.php} color="indigo" phase="F3" />
+        <ToolCard label={t('tools.logs')} description={t('tools.logsDesc')} icon={ICONS.log} color="slate" phase="F10" />
+        <ToolCard label={t('tools.cron')} description={t('tools.cronDesc')} icon={ICONS.cron} color="teal" phase="F8" />
+        <ToolCard label={t('tools.git')} description={t('tools.gitDesc')} icon={ICONS.git} color="orange" phase="F9" />
+        <ToolCard label={t('tools.composer')} description={t('tools.composerDesc')} icon={ICONS.composer} color="amber" />
+        <ToolCard label={t('tools.performance')} description={t('tools.performanceDesc')} icon={ICONS.service} color="emerald" />
       </Group>
 
-      <Group title="Security">
+      <Group title={t('groups.security')}>
         <ToolCard
-          label="SSL/TLS Certificates"
-          description={domain.ssl ? `Expires: ${domain.ssl_expiry || '—'}` : 'Let’s Encrypt'}
+          label={t('tools.ssl')}
+          description={domain.ssl ? t('tools.sslExpires', { expiry: domain.ssl_expiry || '—' }) : t('tools.sslLetsEncrypt')}
           icon={ICONS.ssl}
           color={domain.ssl ? 'emerald' : 'rose'}
           phase="F7"
-          warning={!domain.ssl ? 'Domain is not protected' : undefined}
+          warning={!domain.ssl ? t('tools.sslNotProtected') : undefined}
         />
-        <ToolCard label="Password-Protected Directories" description=".htpasswd" icon={ICONS.lock} color="amber" phase="F7" />
-        <ToolCard label="Statistics" description="Traffic analysis" icon={ICONS.stats} color="indigo" phase="F10" />
-        <ToolCard label="Imunify" description="Antivirus" icon={ICONS.imunify} color="emerald" />
-        <ToolCard label="WAF (Web Application Firewall)" description="ModSecurity + OWASP CRS" icon={ICONS.waf} color="emerald" to={`/subscriptions/${domain.id}/waf`} />
+        <ToolCard label={t('tools.passwordProtect')} description=".htpasswd" icon={ICONS.lock} color="amber" phase="F7" />
+        <ToolCard label={t('tools.statistics')} description={t('tools.statisticsDesc')} icon={ICONS.stats} color="indigo" phase="F10" />
+        <ToolCard label={t('tools.imunify')} description={t('tools.imunifyDesc')} icon={ICONS.imunify} color="emerald" />
+        <ToolCard label={t('tools.waf')} description={t('tools.wafDesc')} icon={ICONS.waf} color="emerald" to={`/subscriptions/${domain.id}/waf`} />
       </Group>
     </div>
   )
 }
 
 function HostingTab({ domain }: { domain: Domain }) {
+  const { t } = useTranslation('SubscriptionDetailPage')
   return (
-    <Group title="Hosting Services">
-      <ToolCard label="Hosting Settings" description="Document root and options" icon={ICONS.service} color="indigo" to={`/subscriptions/${domain.id}/web-server`} />
-      <ToolCard label="Apache and nginx" description="Security headers and additional directives" icon={ICONS.apache} color="orange" to={`/subscriptions/${domain.id}/web-server`} />
-      <ToolCard label="DNS Settings" description="A, CNAME, MX" icon={ICONS.dns} color="emerald" to={`/subscriptions/${domain.id}/dns`} />
+    <Group title={t('groups.hostingServices')}>
+      <ToolCard label={t('tools.hostingSettings')} description={t('tools.hostingSettingsDesc')} icon={ICONS.service} color="indigo" to={`/subscriptions/${domain.id}/web-server`} />
+      <ToolCard label={t('tools.apacheNginx')} description={t('tools.apacheNginxDesc')} icon={ICONS.apache} color="orange" to={`/subscriptions/${domain.id}/web-server`} />
+      <ToolCard label={t('tools.dns')} description={t('tools.dnsDesc')} icon={ICONS.dns} color="emerald" to={`/subscriptions/${domain.id}/dns`} />
     </Group>
   )
 }

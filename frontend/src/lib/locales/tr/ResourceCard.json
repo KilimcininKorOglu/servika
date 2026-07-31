@@ -1,0 +1,21 @@
+{
+  "resourceUsage": "Kaynak Kullanımı",
+  "live": "canlı",
+  "loading": "Yükleniyor…",
+  "cpu": "İşlemci",
+  "cpuAlt": "{{cores}} çekirdek · yük {{load1}} / {{load5}} / {{load15}}",
+  "memory": "Bellek",
+  "disk": "Disk",
+  "uptime": "Çalışma süresi",
+  "systemStatus": "Sistem Durumu",
+  "waiting": "Bekleniyor…",
+  "backend": "Arka uç",
+  "running": "Çalışıyor",
+  "version": "Sürüm",
+  "time": "Saat",
+  "uptimeFmt": {
+    "daysHours": "{{days}}g {{hours}}s",
+    "hoursMinutes": "{{hours}}s {{minutes}}dk",
+    "minutes": "{{minutes}}dk"
+  }
+}

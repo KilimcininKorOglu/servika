@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "Automatic copying failed. Press Ctrl+C, then Enter:",
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "connectionDetails": "Connection Details"
+  },
+  "title": "Connection Details",
+  "subtitle": "Select a value to copy it automatically",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Host",
+    "port": "Port",
+    "username": "Username",
+    "password": "Password",
+    "homeDirectory": "Home directory",
+    "database": "Database",
+    "webRoot": "Web root",
+    "ipv4": "IPv4",
+    "systemUser": "System user",
+    "httpUrl": "HTTP URL",
+    "httpsUrl": "HTTPS URL"
+  },
+  "links": {
+    "ftp": "Go to FTP management →",
+    "database": "Go to database management →"
+  },
+  "row": {
+    "selectToCopy": "Select to copy",
+    "copied": "✓ Copied"
+  },
+  "password": {
+    "button": "🔑 Show / Reset Password"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Database"
+  },
+  "modal": {
+    "titleSuffix": "Password",
+    "userLabel": "User:",
+    "notStored": "(not stored)",
+    "notAuthorized": "(not authorized)",
+    "showCurrent": "👁 Show current password",
+    "currentPasswordLabel": "Current password",
+    "newPasswordGenerated": "✓ New password generated",
+    "copyWarning": "⚠ Copy the password now. You may not be able to view it again after closing this window.",
+    "close": "Close",
+    "generating": "Generating…",
+    "generateAgain": "↻ Generate again",
+    "generateNew": "⚡ Generate new password",
+    "errorGenerate": "Could not generate password"
+  },
+  "copyButton": {
+    "copy": "Copy",
+    "copied": "✓ Copied"
+  }
+}

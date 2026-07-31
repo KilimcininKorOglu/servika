@@ -1,0 +1,133 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "firewall": "Güvenlik Duvarı"
+  },
+  "title": "Güvenlik Duvarı",
+  "subtitle": {
+    "pre": "",
+    "bold": "Sunucunuza internetten kimlerin erişebileceğini",
+    "post": " denetleyin. Bir hazır ayar uygulayın veya özel bir kural ekleyin."
+  },
+  "info": {
+    "pre": "Kurallar yalnızca ",
+    "bold": "yeni bağlantıları",
+    "mid": " etkiler. Etkin SSH veya panel oturumunuz bağlı kalır. Korumalı portlar ",
+    "post": " kapatılamaz."
+  },
+  "templates": {
+    "sectionTitle": "Hazır Ayarlar",
+    "sectionHint": "tek tıkla uygulayın",
+    "portLabel": "Port: {{ports}}",
+    "apply": "Uygula",
+    "applying": "...",
+    "close_mysql": {
+      "name": "Dış MySQL Erişimini Kapat",
+      "description": "3306 veritabanı portunu internete kapatır. MySQL sunucudan erişilebilir kalır."
+    },
+    "close_ftp": {
+      "name": "FTP'yi Kapat",
+      "description": "21 FTP portunu kapatır. SFTP kullanıyorsanız FTP'yi güvenle kapatabilirsiniz."
+    },
+    "close_mail": {
+      "name": "Posta Portlarını Kapat",
+      "description": "SMTP, POP3 ve IMAP portlarını kapatır. Posta sunucusu yoksa bu, spam aktarım riskini azaltır."
+    },
+    "close_rpc": {
+      "name": "RPC / NFS'yi Kapat",
+      "description": "Dosya paylaşımı kullanılmadığında 111 rpcbind portunu ve 2049 NFS portunu kapatır."
+    }
+  },
+  "modes": {
+    "ban": {
+      "name": "IP Engelle",
+      "description": "Belirli bir IP adresini engelleyin. Yalnızca o porta erişimi engellemek için bir port girin veya tüm portlara erişimi engellemek için boş bırakın.",
+      "example": "Örnek: Tekrarlanan SSH denemelerinden sonra 45.9.1.2 adresini tamamen engelleyin."
+    },
+    "whitelist": {
+      "name": "IP'ye İzin Ver",
+      "description": "Yalnızca bu IP adreslerinden erişime izin vermek ve diğer herkesi engellemek için bir port girin. Bu IP'ye tüm portlara öncelikli erişim vermek için portu boş bırakın.",
+      "example": "Örnek: Yalnızca sizin panele erişebilmeniz için 8443 portunu ve ofis IP'nizi girin."
+    },
+    "close": {
+      "name": "Port Kapat",
+      "description": "İzin listesindeki adresler dışında herkese bir portu kapatın. SSH, web, panel ve DNS için kritik portlar korumalıdır ve kapatılamaz.",
+      "example": "Örnek: 3306 veritabanı portunu dış erişime kapatın."
+    }
+  },
+  "form": {
+    "sectionTitle": "Özel Kural",
+    "step1": "1. Ne yapmak istiyorsunuz?",
+    "step2": "2. Ayrıntılar",
+    "ipLabel": "IP adresi veya aralığı",
+    "ipPlaceholder": "1.2.3.4 veya 1.2.3.0/24",
+    "portLabel": "Port",
+    "portBlankHint": "(boş = tümü)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "örn. 22",
+    "protocolLabel": "Protokol",
+    "noteLabel": "Not (isteğe bağlı)",
+    "notePlaceholder": "örn. SSH kaba kuvvet denemesi yapan IP",
+    "previewLabel": "Önizleme:",
+    "submit": "Kural Ekle ve Uygula",
+    "submitting": "Uygulanıyor..."
+  },
+  "warning": {
+    "pre": "",
+    "bold": "Uyarı:",
+    "mid": " Bu port yalnızca yukarıdaki IP adresine açık olacak. IP'niz ",
+    "boldDynamic": "dinamik",
+    "post": " ise değiştiğinde erişimi kaybedersiniz. SSH 22 portu açık kalır, bu yüzden erişiminiz kesilirse SSH ile bağlanıp bu kuralı silebilirsiniz. Alternatif olarak statik bir IP adresi kullanın."
+  },
+  "preview": {
+    "closeReady": "{{port}} portu, izin listesindeki adresler dışında herkese kapatılacak.",
+    "closeEmpty": "Kapatılacak portu girin.",
+    "banPort": "{{address}}, {{port}} portuna erişimden engellenecek.",
+    "banAll": "{{address}}, tüm portlara erişimden engellenecek.",
+    "whitelistPort": "{{port}} portu yalnızca {{address}} için açık olacak. Diğer herkes engellenecek.",
+    "whitelistAll": "{{address}}, tüm portlara öncelikli erişime sahip olacak.",
+    "enterIp": "(bir IP adresi girin)"
+  },
+  "rules": {
+    "title": "Etkin Kurallar",
+    "count": "({{count}})",
+    "refresh": "↻ Yenile",
+    "colType": "Tür",
+    "colIp": "IP / CIDR",
+    "colPort": "Port",
+    "colProto": "Protokol",
+    "colNote": "Not",
+    "colAction": "İşlem",
+    "loading": "Yükleniyor...",
+    "emptyTitle": "Henüz kural yok. Sunucu tüm bağlantılara açık.",
+    "emptyHint": "Başlamak için yukarıdan bir hazır ayar uygulayın.",
+    "everyone": "herkes",
+    "allPorts": "tümü",
+    "delete": "Sil",
+    "deleting": "..."
+  },
+  "badge": {
+    "ban": "🚫 Engellendi",
+    "whitelist": "✅ İzinli",
+    "close": "🔒 Kapalı"
+  },
+  "confirm": {
+    "applyTemplate": "\"{{name}}\" hazır ayarı uygulansın mı?\nKapatılacak portlar: {{ports}}\nBu portlara internetten artık erişilemeyecek.",
+    "removeClose": "{{port}} portunu kapat",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "\"{{summary}}\" kuralı silinsin mi?"
+  },
+  "success": {
+    "templateApplied_one": "\"{{name}}\" uygulandı. {{count}} kural eklendi.",
+    "templateApplied_other": "\"{{name}}\" uygulandı. {{count}} kural eklendi.",
+    "templateAlreadyApplied": "\"{{name}}\" zaten uygulanmış. Yeni kural eklenmedi.",
+    "ruleAdded": "Kural eklendi ve güvenlik duvarına uygulandı."
+  },
+  "error": {
+    "applyTemplate": "Hazır ayar uygulanamadı",
+    "addRule": "Kural eklenemedi",
+    "deleteRule": "Kural silinemedi"
+  },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

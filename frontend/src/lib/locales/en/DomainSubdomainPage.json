@@ -1,0 +1,67 @@
+{
+  "loading": "Loading…",
+  "notFound": "Subdomain not found.",
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "domain": "Domain",
+    "subdomains": "Subdomains",
+    "subdomain": "Subdomain"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "Install and manage WordPress in this document root"
+    },
+    "logs": {
+      "label": "Logs",
+      "description": "Access and error logs for this subdomain"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "Dependency status for this document root"
+    },
+    "protection": {
+      "label": "Password Protection",
+      "description": "Restrict directories with HTTP authentication"
+    },
+    "statistics": {
+      "label": "Statistics",
+      "description": "Traffic analysis for this subdomain only"
+    }
+  },
+  "toast": {
+    "phpSaved": "This subdomain now runs on PHP {{version}}.",
+    "phpChangeFailed": "Could not change the PHP version"
+  },
+  "ssl": {
+    "active": "🔒 SSL active",
+    "none": "No SSL"
+  },
+  "intro": {
+    "pre": "A subdomain of",
+    "post": ", served from its own document root with its own PHP pool."
+  },
+  "details": {
+    "title": "Details",
+    "address": "Address",
+    "documentRoot": "Document root",
+    "diskUsage": "Disk usage",
+    "phpVersion": "PHP version",
+    "created": "Created",
+    "serverIp": "Server IP"
+  },
+  "php": {
+    "title": "PHP Version",
+    "note": "This subdomain runs on its own FPM pool, so changing it does not affect the parent domain.",
+    "versionLabel": "Version",
+    "applying": "Applying…",
+    "apply": "Apply",
+    "validationNote": "The vhost is validated before the change is saved, so a rejected configuration leaves the site untouched."
+  },
+  "toolsSection": {
+    "title": "Tools",
+    "note": "Each tool operates on this subdomain's document root instead of the parent domain's."
+  },
+  "backToSubdomains": "← Back to subdomains"
+}

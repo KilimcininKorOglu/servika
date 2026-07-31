@@ -1,0 +1,14 @@
+{
+  "title": "Sunucuyu Yeniden Başlat",
+  "description": "Tüm sunucuyu yalnızca etkin işler ve müşteri işlemleri kesilmesi güvenli olduğunda yeniden başlatın.",
+  "confirmLabel": "Onaylamak için REBOOT yazın",
+  "placeholder": "REBOOT",
+  "reboot": "Sunucuyu Yeniden Başlat",
+  "requesting": "İstek gönderiliyor...",
+  "messages": {
+    "requested": "Yeniden başlatma istendi. Sunucu yeniden başlarken panel kullanılamayacak."
+  },
+  "errors": {
+    "reboot": "Sunucu yeniden başlatma isteği gönderilemedi"
+  }
+}

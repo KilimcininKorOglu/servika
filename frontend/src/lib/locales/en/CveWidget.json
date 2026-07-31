@@ -1,0 +1,52 @@
+{
+  "title": "Security Advisories",
+  "subtitleAudit": "CVE audit (AlmaLinux)",
+  "advisories": "{{count}} security advisories",
+  "rescan": "Rescan",
+  "scanning": "Scanning…",
+  "scanningServer": "Scanning server…",
+  "updating": "Installing security updates… (runs in background)",
+  "kcApplying": "Applying live kernel patch… (KernelCare — no reboot required)",
+  "severity": {
+    "critical": "Critical",
+    "important": "Important",
+    "moderate": "Moderate",
+    "low": "Low"
+  },
+  "kcActive": {
+    "bold": "Kernel is live-patched (KernelCare).",
+    "text": " Kernel vulnerabilities are closed without a reboot.",
+    "effectivePre": " Effective kernel: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVEs live-patched."
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare is installed but the license is not registered.",
+    "text": " Register with a TuxCare license key for rebootless kernel patching."
+  },
+  "rebootRequired": {
+    "bold1": "Reboot required.",
+    "text1": " A new security-patched kernel is installed but the system is still running the old kernel — most of the CVEs below are kernel-related and will appear ",
+    "bold2": "open until the server is rebooted",
+    "text2": ". Schedule a reboot during a maintenance window."
+  },
+  "clean": {
+    "title": "System up to date",
+    "subtitle": "No known vulnerabilities"
+  },
+  "totalPre": "Total ",
+  "totalPost": " unique CVEs",
+  "lastScan": " · last scan {{scan}}",
+  "installUpdates": "Install security updates",
+  "updateLiveKernel": "Update live kernel patches (no reboot)",
+  "confirmUpdate": "Security updates (dnf --security) will be installed. A reboot may be required for kernel updates to take effect. Continue?",
+  "messages": {
+    "updatesComplete": "Security updates complete.",
+    "livePatchApplied": "Live kernel patch applied."
+  },
+  "errors": {
+    "fetch": "Could not fetch CVE status",
+    "startUpdate": "Could not start update",
+    "startLivePatch": "Could not start live patch"
+  }
+}

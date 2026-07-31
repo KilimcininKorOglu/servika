@@ -1,0 +1,61 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "redisCache": "Redis Cache"
+  },
+  "title": "Redis Cache",
+  "status": {
+    "active": "● Active",
+    "disabled": "Disabled"
+  },
+  "subtitle": {
+    "pre": "Allocates an ",
+    "bold": "isolated, dedicated Redis object cache",
+    "post": " to this domain. WordPress and dynamic applications can reduce database load and respond faster. Other sites cannot access this cache."
+  },
+  "loading": "Loading…",
+  "empty": {
+    "message": "Redis cache is disabled for this domain.",
+    "hint": "Enabling it creates an isolated ACL user and connection details.",
+    "enable": "Enable Redis Cache",
+    "enabling": "Enabling…"
+  },
+  "connection": {
+    "title": "Connection Details",
+    "disable": "Disable",
+    "host": "Host",
+    "username": "Username",
+    "password": "Password",
+    "keyPrefix": "Key prefix"
+  },
+  "wp": {
+    "title": "WordPress Setup",
+    "copy": "Copy",
+    "copied": "Copied ✓",
+    "instructionsPre": "1) Add the following lines to your ",
+    "instructionsFile": "wp-config.php",
+    "instructionsMid": " file. 2) Install the ",
+    "instructionsBold": "Redis Object Cache",
+    "instructionsPost": " plugin from the WordPress dashboard, then select \"Enable Object Cache.\""
+  },
+  "row": {
+    "show": "show",
+    "hide": "hide",
+    "copy": "copy",
+    "copied": "✓"
+  },
+  "success": {
+    "enabledWithWp_one": "Redis cache was enabled, and {{count}} WordPress installation was connected automatically. No additional setup is required.",
+    "enabledWithWp_other": "Redis cache was enabled, and {{count}} WordPress installations were connected automatically. No additional setup is required.",
+    "enabled": "Redis cache was enabled. Configure non-WordPress applications with the connection details below.",
+    "disabled": "Redis cache was disabled."
+  },
+  "confirm": {
+    "disable": "Disable Redis cache? The ACL user for this domain will be deleted."
+  },
+  "error": {
+    "enable": "Could not enable Redis cache",
+    "disable": "Could not disable Redis cache"
+  }
+}

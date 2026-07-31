@@ -1,0 +1,133 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "firewall": "Firewall"
+  },
+  "title": "Firewall",
+  "subtitle": {
+    "pre": "Control ",
+    "bold": "who can access your server from the internet",
+    "post": ". Apply a preset or add a custom rule."
+  },
+  "info": {
+    "pre": "Rules affect only ",
+    "bold": "new connections",
+    "mid": ". Your active SSH or panel session will remain connected. Protected ports ",
+    "post": " cannot be closed."
+  },
+  "templates": {
+    "sectionTitle": "Presets",
+    "sectionHint": "apply with one click",
+    "portLabel": "Port: {{ports}}",
+    "apply": "Apply",
+    "applying": "...",
+    "close_mysql": {
+      "name": "Close External MySQL Access",
+      "description": "Closes database port 3306 to the internet. MySQL remains accessible from the server."
+    },
+    "close_ftp": {
+      "name": "Close FTP",
+      "description": "Closes FTP port 21. You can safely close FTP if you use SFTP."
+    },
+    "close_mail": {
+      "name": "Close Mail Ports",
+      "description": "Closes SMTP, POP3, and IMAP ports. This reduces spam relay risk when no mail server is present."
+    },
+    "close_rpc": {
+      "name": "Close RPC / NFS",
+      "description": "Closes rpcbind port 111 and NFS port 2049 when file sharing is not in use."
+    }
+  },
+  "modes": {
+    "ban": {
+      "name": "Block IP",
+      "description": "Block a specific IP address. Enter a port to block access only to that port, or leave it blank to block access to all ports.",
+      "example": "Example: Completely block 45.9.1.2 after repeated SSH attempts."
+    },
+    "whitelist": {
+      "name": "Allow IP",
+      "description": "Enter a port to allow access only from these IP addresses and block everyone else. Leave the port blank to give this IP priority access to all ports.",
+      "example": "Example: Enter port 8443 and your office IP so only you can access the panel."
+    },
+    "close": {
+      "name": "Close Port",
+      "description": "Close a port to everyone except allowlisted addresses. Critical ports for SSH, web, the panel, and DNS are protected and cannot be closed.",
+      "example": "Example: Close database port 3306 to external access."
+    }
+  },
+  "form": {
+    "sectionTitle": "Custom Rule",
+    "step1": "1. What do you want to do?",
+    "step2": "2. Details",
+    "ipLabel": "IP address or range",
+    "ipPlaceholder": "1.2.3.4 or 1.2.3.0/24",
+    "portLabel": "Port",
+    "portBlankHint": "(blank = all)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "e.g. 22",
+    "protocolLabel": "Protocol",
+    "noteLabel": "Note (optional)",
+    "notePlaceholder": "e.g. IP attempting SSH brute force",
+    "previewLabel": "Preview:",
+    "submit": "Add and Apply Rule",
+    "submitting": "Applying..."
+  },
+  "warning": {
+    "pre": "",
+    "bold": "Warning:",
+    "mid": " This port will be open only to the IP address above. If your IP is ",
+    "boldDynamic": "dynamic",
+    "post": ", you will lose access when it changes. SSH port 22 remains open, so you can connect through SSH and delete this rule if you are locked out. Alternatively, use a static IP address."
+  },
+  "preview": {
+    "closeReady": "Port {{port}} will be closed to everyone except allowlisted addresses.",
+    "closeEmpty": "Enter the port to close.",
+    "banPort": "{{address}} will be blocked from accessing port {{port}}.",
+    "banAll": "{{address}} will be blocked from accessing all ports.",
+    "whitelistPort": "Port {{port}} will be open only to {{address}}. Everyone else will be blocked.",
+    "whitelistAll": "{{address}} will have priority access to all ports.",
+    "enterIp": "(enter an IP address)"
+  },
+  "rules": {
+    "title": "Active Rules",
+    "count": "({{count}})",
+    "refresh": "↻ Refresh",
+    "colType": "Type",
+    "colIp": "IP / CIDR",
+    "colPort": "Port",
+    "colProto": "Proto",
+    "colNote": "Note",
+    "colAction": "Action",
+    "loading": "Loading...",
+    "emptyTitle": "No rules yet. The server is open to all connections.",
+    "emptyHint": "Apply a preset above to get started.",
+    "everyone": "everyone",
+    "allPorts": "all",
+    "delete": "Delete",
+    "deleting": "..."
+  },
+  "badge": {
+    "ban": "🚫 Blocked",
+    "whitelist": "✅ Allowed",
+    "close": "🔒 Closed"
+  },
+  "confirm": {
+    "applyTemplate": "Apply the \"{{name}}\" template?\nPorts to close: {{ports}}\nThese ports will no longer be accessible from the internet.",
+    "removeClose": "close port {{port}}",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "Delete the \"{{summary}}\" rule?"
+  },
+  "success": {
+    "templateApplied_one": "\"{{name}}\" applied. {{count}} rule added.",
+    "templateApplied_other": "\"{{name}}\" applied. {{count}} rules added.",
+    "templateAlreadyApplied": "\"{{name}}\" is already applied. No new rules were added.",
+    "ruleAdded": "The rule was added and applied to the firewall."
+  },
+  "error": {
+    "applyTemplate": "Could not apply the template",
+    "addRule": "Could not add the rule",
+    "deleteRule": "Could not delete the rule"
+  },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

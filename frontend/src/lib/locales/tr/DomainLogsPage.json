@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "logs": "Kayıtlar"
+  },
+  "title": "Kayıtlar",
+  "streamFailed": "Akış başlatılamadı (HTTP {{status}})",
+  "view": {
+    "table": "Tablo",
+    "raw": "Ham"
+  },
+  "autoScroll": "Otomatik kaydır",
+  "stop": "■ Durdur",
+  "liveTail": "▶ Canlı İzle",
+  "last200": "↻ Son 200",
+  "clear": "Temizle",
+  "searchPlaceholder": "IP, yol, durum kodu, tarayıcı ile ara...",
+  "clearSearch": "Aramayı temizle",
+  "matches": "{{visible}} / {{total}} eşleşme",
+  "waiting": "Bekleniyor... Yeni satırlar geldikçe görünecek.",
+  "emptyFile": "(log dosyası boş veya henüz oluşturulmadı)",
+  "noMatch": "\"{{search}}\" Bu aramayla eşleşen satır yok.",
+  "linesFiltered": "{{visible}} / {{total}} satır (filtrelendi)",
+  "lines": "{{count}} satır",
+  "windowSuffix": ", pencere {{max}}",
+  "liveStream": "canlı akış",
+  "access": {
+    "time": "Zaman",
+    "ip": "IP",
+    "method": "Metot",
+    "path": "Yol",
+    "status": "Durum",
+    "size": "Boyut",
+    "browser": "Tarayıcı"
+  },
+  "error": {
+    "time": "Zaman",
+    "level": "Seviye",
+    "client": "İstemci",
+    "message": "Mesaj"
+  }
+}

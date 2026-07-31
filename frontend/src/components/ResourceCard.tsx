@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { api } from '@/lib/api'
 
 type Usage = {
@@ -11,6 +13,7 @@ type Usage = {
 type Health = { status: string; version: string; time: string }
 
 export default function ResourceCard() {
+  const { t } = useTranslation('ResourceCard')
   const [u, setU] = useState<Usage | null>(null)
   const [s, setS] = useState<Health | null>(null)
 
@@ -35,53 +38,53 @@ export default function ResourceCard() {
     <div className="space-y-4">
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center justify-between">
-          Resource Usage
-          {u && <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">live</span>}
+          {t('resourceUsage')}
+          {u && <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t('live')}</span>}
         </h3>
 
         {!u ? (
-          <div className="text-sm text-slate-400 dark:text-slate-500 py-6 text-center">Loading…</div>
+          <div className="text-sm text-slate-400 dark:text-slate-500 py-6 text-center">{t('loading')}</div>
         ) : (
           <>
             <Bar
-              label="CPU"
+              label={t('cpu')}
               percent={u.cpu.percent}
-              alt={`${u.cpu.cores} core(s) · load ${u.cpu.load_1m.toFixed(2)} / ${u.cpu.load_5m.toFixed(2)} / ${u.cpu.load_15m.toFixed(2)}`}
+              alt={t('cpuAlt', { cores: u.cpu.cores, load1: u.cpu.load_1m.toFixed(2), load5: u.cpu.load_5m.toFixed(2), load15: u.cpu.load_15m.toFixed(2) })}
               color="brand"
             />
             <Bar
-              label="Memory"
+              label={t('memory')}
               percent={u.memory.percent}
               alt={`${(u.memory.used_kb / 1024).toFixed(0)} MB / ${(u.memory.total_kb / 1024).toFixed(0)} MB`}
               color="emerald"
             />
             <Bar
-              label="Disk"
+              label={t('disk')}
               percent={u.disk.percent}
               alt={`${(u.disk.used_byte / 1e9).toFixed(1)} GB / ${(u.disk.total_byte / 1e9).toFixed(1)} GB`}
               color="violet"
             />
             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-500 flex justify-between">
-              <span>Uptime</span>
-              <span className="font-mono text-slate-700 dark:text-slate-300">{formatUptime(u.uptime_sec)}</span>
+              <span>{t('uptime')}</span>
+              <span className="font-mono text-slate-700 dark:text-slate-300">{formatUptime(u.uptime_sec, t)}</span>
             </div>
           </>
         )}
       </div>
 
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">System Status</h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('systemStatus')}</h3>
         {!s ? (
-          <div className="text-sm text-slate-400 dark:text-slate-500">Waiting…</div>
+          <div className="text-sm text-slate-400 dark:text-slate-500">{t('waiting')}</div>
         ) : (
           <div className="space-y-2 text-sm">
             <Row
-              label="Backend"
-              value={s.status === 'up' ? 'Running' : s.status}
+              label={t('backend')}
+              value={s.status === 'up' ? t('running') : s.status}
               ok={s.status === 'up'}
             />
-            <Row label="Version" value={s.version} ok />
-            <Row label="Time" value={new Date(s.time).toLocaleTimeString('en-US')} ok />
+            <Row label={t('version')} value={s.version} ok />
+            <Row label={t('time')} value={new Date(s.time).toLocaleTimeString('en-US')} ok />
           </div>
         )}
       </div>
@@ -122,11 +125,11 @@ function Row({ label, value, ok }: { label: string; value: string; ok: boolean }
   )
 }
 
-function formatUptime(seconds: number): string {
+function formatUptime(seconds: number, t: TFunction): string {
   const days = Math.floor(seconds / 86400)
   const hours = Math.floor((seconds % 86400) / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  if (days > 0) return `${days}d ${hours}h`
-  if (hours > 0) return `${hours}h ${minutes}min`
-  return `${minutes}min`
+  if (days > 0) return t('uptimeFmt.daysHours', { days, hours })
+  if (hours > 0) return t('uptimeFmt.hoursMinutes', { hours, minutes })
+  return t('uptimeFmt.minutes', { minutes })
 }

@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Hosting Control Panel"
+  },
+  "heading": "Welcome",
+  "subtitle": "Sign in to continue.",
+  "field": {
+    "username": "Username",
+    "password": "Password",
+    "twoFactorCode": "Two-factor authentication code"
+  },
+  "twoFactorHint": "Enter the six-digit code from your authenticator app.",
+  "button": {
+    "signingIn": "Signing in…",
+    "verify": "Verify and sign in",
+    "signIn": "Sign in"
+  },
+  "footer": "Servika · version 0.2.0-f1",
+  "error": {
+    "loginFailed": "Login failed"
+  }
+}

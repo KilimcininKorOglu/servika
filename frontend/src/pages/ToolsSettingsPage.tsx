@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Breadcrumb from '@/components/Breadcrumb'
 import PanelUpdate from '@/components/PanelUpdate'
 import ServerOptimizeCard from '@/components/ServerOptimizeCard'
@@ -11,15 +12,14 @@ import ServerOptimizeCard from '@/components/ServerOptimizeCard'
  */
 
 type Tool = {
-  title: string
-  description: string
+  id: string
   href: string
   icon: string
-  badge?: string
+  badge?: 'dynamic' | 'serverWide'
   key?: string
 }
 
-type Group = { name: string; icon: string; tools: Tool[] }
+type Group = { id: string; icon: string; tools: Tool[] }
 
 const ICONS = {
   chip:      'M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z',
@@ -40,57 +40,47 @@ const ICONS = {
 
 const GROUPS: Group[] = [
   {
-    name: 'PHP',
+    id: 'php',
     icon: ICONS.chip,
     tools: [
-      { title: 'PHP Versions', href: '/tools/php-versions', icon: ICONS.chip, badge: 'Dynamic',
-        key: 'remi fpm version 7.4 8.0 8.1 8.2 8.3 8.4 8.5 8.6',
-        description: 'Add or remove versions 7.4 through 8.6. Each domain selects its version independently.' },
-      { title: 'PHP Extensions', href: '/system/php-modules', icon: ICONS.puzzle,
-        key: 'extension pecl compile',
-        description: 'Toggle server-wide extensions, search PECL packages, and compile them.' },
+      { id: 'phpVersions', href: '/tools/php-versions', icon: ICONS.chip, badge: 'dynamic',
+        key: 'remi fpm version 7.4 8.0 8.1 8.2 8.3 8.4 8.5 8.6' },
+      { id: 'phpExtensions', href: '/system/php-modules', icon: ICONS.puzzle,
+        key: 'extension pecl compile' },
     ],
   },
   {
-    name: 'System and Services',
+    id: 'system',
     icon: ICONS.server,
     tools: [
-      { title: 'Package Manager', href: '/tools/packages', icon: ICONS.cube,
-        key: 'dnf gcc python node go podman compiler',
-        description: 'DNF packages — compilers and runtimes. Ready-made install groups.' },
-      { title: 'Services', href: '/tools/services', icon: ICONS.refresh,
-        key: 'nginx apache mariadb dns php-fpm restart',
-        description: 'Nginx / Apache / MariaDB / DNS / PHP-FPM status and restart.' },
-      { title: 'Service Plans', href: '/service-plans', icon: ICONS.clipboard,
-        key: 'package plan quota disk ftp database',
-        description: 'Hosting packages with disk, database, and FTP quotas.' },
+      { id: 'packages', href: '/tools/packages', icon: ICONS.cube,
+        key: 'dnf gcc python node go podman compiler' },
+      { id: 'services', href: '/tools/services', icon: ICONS.refresh,
+        key: 'nginx apache mariadb dns php-fpm restart' },
+      { id: 'servicePlans', href: '/service-plans', icon: ICONS.clipboard,
+        key: 'package plan quota disk ftp database' },
     ],
   },
   {
-    name: 'Network and DNS',
+    id: 'network',
     icon: ICONS.globe,
     tools: [
-      { title: 'DNS Template', href: '/tools/dns-template', icon: ICONS.globe, badge: 'Server-wide',
-        key: 'a mx spf dmarc dkim soa record',
-        description: 'Central DNS records applied to new domains (A/MX/SPF/DMARC/DKIM) with SOA.' },
-      { title: 'Domains', href: '/domains', icon: ICONS.link,
-        key: 'site subscription list',
-        description: 'Browse, search, and quickly access all domains.' },
+      { id: 'dnsTemplate', href: '/tools/dns-template', icon: ICONS.globe, badge: 'serverWide',
+        key: 'a mx spf dmarc dkim soa record' },
+      { id: 'domains', href: '/domains', icon: ICONS.link,
+        key: 'site subscription list' },
     ],
   },
   {
-    name: 'Security and Backups',
+    id: 'security',
     icon: ICONS.shield,
     tools: [
-      { title: 'Firewall', href: '/firewall', icon: ICONS.shield,
-        key: 'nftables ip port block allowlist',
-        description: 'IP/port blocking, allowlist, port closure. Critical ports are protected.' },
-      { title: 'Backup Manager', href: '/backup-management', icon: ICONS.server,
-        key: 'backup s3 sftp size',
-        description: 'View backup sizes for all domains, one-click backup, S3/SFTP destinations.' },
-      { title: 'Monitoring and Logs', href: '/monitoring', icon: ICONS.chart,
-        key: 'cpu ram disk graph journald log',
-        description: 'CPU/RAM/disk charts and server logs from journald (panel/nginx/SSH…).' },
+      { id: 'firewall', href: '/firewall', icon: ICONS.shield,
+        key: 'nftables ip port block allowlist' },
+      { id: 'backupManager', href: '/backup-management', icon: ICONS.server,
+        key: 'backup s3 sftp size' },
+      { id: 'monitoring', href: '/monitoring', icon: ICONS.chart,
+        key: 'cpu ram disk graph journald log' },
     ],
   },
 ]
@@ -104,10 +94,11 @@ function IconSvg({ d, className = '' }: { d: string; className?: string }) {
   )
 }
 
-function ToolCard({ t }: { t: Tool }) {
+function ToolCard({ tool }: { tool: Tool }) {
+  const { t } = useTranslation('ToolsSettingsPage')
   return (
     <Link
-      to={t.href}
+      to={tool.href}
       className="group relative flex items-start gap-3.5 rounded-2xl border border-slate-200 bg-white p-4
                  transition-all hover:border-brand-300 hover:shadow-sm
                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50
@@ -119,20 +110,20 @@ function ToolCard({ t }: { t: Tool }) {
                    group-hover:bg-brand-50 group-hover:text-brand-600
                    dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-brand-900/30 dark:group-hover:text-brand-400"
       >
-        <IconSvg d={t.icon} className="h-5 w-5" />
+        <IconSvg d={tool.icon} className="h-5 w-5" />
       </span>
 
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
-          <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{t.title}</span>
-          {t.badge && (
+          <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{t(`tools.${tool.id}.title`)}</span>
+          {tool.badge && (
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide
                              text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-              {t.badge}
+              {t(`badges.${tool.badge}`)}
             </span>
           )}
         </span>
-        <span className="mt-1 block text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t.description}</span>
+        <span className="mt-1 block text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t(`tools.${tool.id}.description`)}</span>
       </span>
 
       <IconSvg d={ICONS.chevron}
@@ -143,32 +134,34 @@ function ToolCard({ t }: { t: Tool }) {
 }
 
 export default function ToolsSettingsPage() {
+  const { t } = useTranslation('ToolsSettingsPage')
   const [q, setQ] = useState('')
 
   const groups = useMemo(() => {
-    const t = q.trim().toLowerCase()
-    if (!t) return GROUPS
+    const needle = q.trim().toLowerCase()
+    if (!needle) return GROUPS
     return GROUPS
       .map(g => ({
         ...g,
         tools: g.tools.filter(tool =>
-          (tool.title + ' ' + tool.description + ' ' + (tool.key ?? '') + ' ' + g.name).toLowerCase().includes(t)),
+          (t(`tools.${tool.id}.title`) + ' ' + t(`tools.${tool.id}.description`) + ' ' + (tool.key ?? '') + ' ' + t(`groups.${g.id}`))
+            .toLowerCase().includes(needle)),
       }))
       .filter(g => g.tools.length > 0)
-  }, [q])
+  }, [q, t])
 
   const total = GROUPS.reduce((n, g) => n + g.tools.length, 0)
 
   return (
     <div className="px-6 py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Tools and Settings' }]} />
+      <Breadcrumb items={[{ label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.current') }]} />
 
       {/* Header + search */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Tools and Settings</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{t('title')}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Server-wide management — PHP, system packages, network, security, and maintenance.
+            {t('subtitle')}
           </p>
         </div>
         <div className="relative w-full sm:w-72">
@@ -178,8 +171,8 @@ export default function ToolsSettingsPage() {
             type="search"
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Search tools…"
-            aria-label="Search tools"
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchAria')}
             className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-900
                        placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30
                        dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-100"
@@ -192,7 +185,7 @@ export default function ToolsSettingsPage() {
         <div className="mb-3 flex items-center gap-2">
           <IconSvg d={ICONS.wrench} className="h-4 w-4 text-slate-400" />
           <h2 id="maint-heading" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Server Maintenance
+            {t('maintenance')}
           </h2>
         </div>
         <div className="space-y-3">
@@ -205,29 +198,29 @@ export default function ToolsSettingsPage() {
       {groups.length === 0 ? (
         <div role="status" className="rounded-2xl border border-dashed border-slate-200 py-14 text-center dark:border-slate-800">
           <IconSvg d={ICONS.tune} className="mx-auto h-9 w-9 text-slate-300 dark:text-slate-600" />
-          <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-300">No tools found for "{q}"</p>
-          <p className="mt-1 text-xs text-slate-500">Change or clear the search term.</p>
+          <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-300">{t('noResults', { q })}</p>
+          <p className="mt-1 text-xs text-slate-500">{t('noResultsHint')}</p>
         </div>
       ) : (
         groups.map(g => (
-          <section key={g.name} aria-labelledby={`group-${g.name}`} className="mb-8">
+          <section key={g.id} aria-labelledby={`group-${g.id}`} className="mb-8">
             <div className="mb-3 flex items-center gap-2">
               <IconSvg d={g.icon} className="h-4 w-4 text-slate-400" />
-              <h2 id={`group-${g.name}`} className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                {g.name}
+              <h2 id={`group-${g.id}`} className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                {t(`groups.${g.id}`)}
               </h2>
               <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
               <span className="text-xs text-slate-400 dark:text-slate-500">{g.tools.length}</span>
             </div>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {g.tools.map(tool => <ToolCard key={tool.title} t={tool} />)}
+              {g.tools.map(tool => <ToolCard key={tool.id} tool={tool} />)}
             </div>
           </section>
         ))
       )}
 
       {!q && (
-        <p className="pt-2 text-xs text-slate-400 dark:text-slate-600">{total} tools · server-wide</p>
+        <p className="pt-2 text-xs text-slate-400 dark:text-slate-600">{t('footer', { count: total })}</p>
       )}
     </div>
   )

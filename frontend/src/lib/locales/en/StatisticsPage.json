@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "statistics": "Statistics"
+  },
+  "title": "Statistics",
+  "live": "● Live (10 sec)",
+  "subtitle": "Server resource usage, domain counts, and system summary.",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "Memory",
+    "disk": "Disk",
+    "load": "Load (1 min)"
+  },
+  "coresValue": "{{cores}} cores",
+  "loadSub": "5 min: {{five}} · 15 min: {{fifteen}}",
+  "system": {
+    "title": "System",
+    "hostname": "Hostname",
+    "os": "Operating system",
+    "kernel": "Kernel",
+    "processor": "Processor",
+    "swap": "Swap",
+    "panelVersion": "Panel version"
+  },
+  "processorValue": "{{model}} · {{cores}} cores",
+  "swapValue": "{{percent}}% · {{used}} / {{total}}",
+  "domains": {
+    "title": "Domains",
+    "total": "Total domains",
+    "active": "Active domains",
+    "inactive": "Inactive domains"
+  },
+  "footer": {
+    "pre": "Visit the ",
+    "link": "Monitoring",
+    "post": " page for more detailed monitoring."
+  }
+}

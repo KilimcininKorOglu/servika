@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "monitoring": "İzleme"
+  },
+  "title": "Uçtan Uca İzleme",
+  "liveRefresh": "Canlı, {{seconds}} sn yenileme",
+  "tabs": {
+    "server": "Sunucu",
+    "domain": "Alan Adına Göre",
+    "logs": "Sunucu Günlükleri"
+  },
+  "snap": {
+    "cpu": "CPU",
+    "cpuCores": "{{count}} çekirdek",
+    "memory": "Bellek",
+    "load1m": "Yük (1 dk)",
+    "loadAlt": "5 dk {{load5m}}, 15 dk {{load15m}}",
+    "diskRoot": "Disk (/)"
+  },
+  "chart": {
+    "systemResources": "Sistem Kaynakları",
+    "samples": "{{count}}/{{max}} örnek, {{minutes}} dk",
+    "legendCpu": "CPU",
+    "legendMemory": "Bellek",
+    "legendSwap": "Swap",
+    "legendLoad": "Yük (normalize)",
+    "networkTraffic": "Ağ Trafiği",
+    "interface": "Arayüz: {{name}}",
+    "legendRx": "↓ RX (KB/s)",
+    "legendTx": "↑ TX (KB/s)",
+    "collecting": "Veri toplanıyor..."
+  },
+  "services": {
+    "title": "Hizmetler",
+    "enabledCount": "{{total}} hizmetten {{enabled}} etkin",
+    "active": "Etkin",
+    "stopped": "Durdu"
+  },
+  "processes": {
+    "title": "En Yoğun Süreçler",
+    "sortCpu": "CPU",
+    "sortMem": "Bellek",
+    "colPid": "PID",
+    "colUser": "Kullanıcı",
+    "colCpu": "CPU%",
+    "colMem": "BELLEK%",
+    "colCommand": "Komut",
+    "loading": "Yükleniyor..."
+  },
+  "domain": {
+    "selectionTitle": "Alan Adı Seçimi",
+    "noActiveDomains": "Etkin alan adı yok",
+    "probing": "Sınanıyor...",
+    "healthProbe": "↻ Sağlık Sınaması",
+    "openSite": "Siteyi aç ↗",
+    "accessLog": "Erişim Günlüğü",
+    "errorLog": "Hata Günlüğü",
+    "lastLines": "son {{count}} satır",
+    "noAccessEntries": "Henüz günlük kaydı yok...",
+    "noErrorEntries": "Henüz hata kaydı yok"
+  },
+  "health": {
+    "reachable": "Erişilebilir",
+    "unreachable": "Erişilemiyor",
+    "server": "Sunucu: ",
+    "noSslTitle": "⚠ SSL Yok",
+    "noSslBody": "Bu alan adına HTTPS üzerinden erişilemiyor.",
+    "sslValid": "🔒 SSL Geçerli",
+    "sslInvalid": "✗ SSL Geçersiz",
+    "days": "gün",
+    "expires": "Bitiş: ",
+    "issuer": "Veren: ",
+    "responseTime": "Yanıt Süresi",
+    "ms": "ms",
+    "fast": "Hızlı",
+    "acceptable": "Kabul edilebilir",
+    "slow": "Yavaş"
+  },
+  "logs": {
+    "searchPlaceholder": "Ara...",
+    "lastLineCount": "son {{count}}",
+    "refresh": "↻ Yenile",
+    "loading": "Yükleniyor...",
+    "notFound": "\"{{query}}\" bulunamadı.",
+    "noEntries": "(kayıt yok)",
+    "footerFiltered": "{{filtered}} / {{total}} satır, journald, {{source}}",
+    "footer": "{{total}} satır, journald, {{source}}"
+  },
+  "logSources": {
+    "panel": "Panel",
+    "nginx": "nginx",
+    "mariadb": "MariaDB",
+    "named": "DNS (named)",
+    "sshd": "SSH",
+    "cron": "Cron",
+    "system": "Tüm Sistem"
+  }
+}

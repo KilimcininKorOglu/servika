@@ -1,0 +1,15 @@
+{
+  "heading": "Customer Portal",
+  "subtitle": "Sign in with your account credentials",
+  "field": {
+    "username": "Username",
+    "password": "Password"
+  },
+  "button": {
+    "signingIn": "Signing in…",
+    "signIn": "Sign In"
+  },
+  "error": {
+    "loginFailed": "Login failed"
+  }
+}

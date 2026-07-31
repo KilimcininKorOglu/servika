@@ -1,0 +1,146 @@
+{
+  "shared": {
+    "more": "Daha fazla →",
+    "manage": "Yönet →",
+    "loading": "Yükleniyor…"
+  },
+  "widgets": {
+    "load-chart": "Yük Grafiği",
+    "memory-chart": "Bellek Grafiği",
+    "wordpress": "WordPress Siteleri",
+    "panel-update": "Panel Güncellemesi",
+    "last-backup": "Son Sunucu Yedeği",
+    "performance": "Performans / Optimizasyon",
+    "cve-security": "Güvenlik Uyarıları (CVE)",
+    "services": "Servisler",
+    "domains": "Alan Adları",
+    "server-info": "Sunucu Bilgisi",
+    "health": "Sistem Sağlığı",
+    "live-resources": "Canlı Kaynaklar",
+    "subscriptions": "Aboneliklerim",
+    "network": "Ağ Trafiği"
+  },
+  "header": {
+    "welcome": "Tekrar hoş geldiniz, {{name}}",
+    "dashboard": "Kontrol Paneli",
+    "subtitle": "Sunucu genel görünümü ve hızlı işlemler",
+    "saving": "Kaydediliyor…",
+    "saved": "Düzen kaydedildi",
+    "saveFailed": "Kaydetme başarısız",
+    "resetLayout": "Düzeni Sıfırla"
+  },
+  "quota": {
+    "unsupportedTitle": "Bu dosya sisteminde disk kotası kullanılamıyor",
+    "unsupportedBody": "Servika, kiracı başına disk kotası için XFS kök dosya sistemine ihtiyaç duyar. Yeniden başlatma, geçerli dosya sisteminde kotayı etkinleştirmez.",
+    "rebootTitle": "Disk kotası yeniden başlatmadan sonra etkinleştirilecek",
+    "rebootBody": "XFS kullanıcı kotası yapılandırıldı ancak uygulama etkin değil. Kiracı başına disk kotasını etkinleştirmek için sunucuyu bir kez yeniden başlatın.",
+    "dismiss": "Kapat"
+  },
+  "widgetNotFound": "Bileşen bulunamadı",
+  "dragToReorder": "Yeniden sıralamak için sürükleyin",
+  "wp": {
+    "subtitle": "Tüm hesaplardaki kurulumlar",
+    "installs": "Kurulum",
+    "updates": "Güncelleme",
+    "current": "Güncel",
+    "pendingUpdatesText_one": " kurulumda bekleyen güncelleme var — güncel olmayan sürümler güvenlik riski taşır.",
+    "pendingUpdatesText_other": " kurulumda bekleyen güncelleme var — güncel olmayan sürümler güvenlik riski taşır.",
+    "empty": "WordPress kurulumu bulunamadı",
+    "rootDir": "kök dizin",
+    "badgeUpdate": "Güncelle",
+    "badgeCurrent": "Güncel",
+    "badgeUnknown": "Bilinmiyor",
+    "more_one": "+{{count}} kurulum daha →",
+    "more_other": "+{{count}} kurulum daha →",
+    "unknownNote_one": "{{count}} kurulum belirlenemedi (wp-cli zaman aşımı).",
+    "unknownNote_other": "{{count}} kurulum belirlenemedi (wp-cli zaman aşımı)."
+  },
+  "update": {
+    "subtitle": "Sürüm ve sistem paketleri",
+    "running": "Güncelleme çalışıyor",
+    "toolMissing": "Güncelleme aracı eksik",
+    "upToDate": "Panel güncel",
+    "noStatus": "Durum bilgisi yok",
+    "badgeRunning": "Çalışıyor",
+    "badgeMissing": "Eksik",
+    "badgeCurrent": "Güncel",
+    "systemPackages": "Sistem paketleri"
+  },
+  "backup": {
+    "subtitle": "Otomatik günlük yedek",
+    "unavailable": "Yedek özeti kullanılamıyor",
+    "count_one": "yedek · {{size}}",
+    "count_other": "yedek · {{size}}",
+    "lastBackup": "Son yedek",
+    "sitesBackedUp": "Yedeklenen siteler",
+    "remoteTarget": "Uzak hedef",
+    "remoteActive": "{{count}} etkin",
+    "remoteNone": "Yok",
+    "schedule": "Zamanlama"
+  },
+  "performance": {
+    "subtitle": "Sunucu ayarlarını iyileştir",
+    "running": "Optimizasyon çalışıyor",
+    "ready": "Optimizasyon hazır",
+    "defaultStatus": "MariaDB · nginx · PHP ayarları",
+    "badgeRunning": "Çalışıyor",
+    "badgeIdle": "Boşta"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} servis çalışıyor",
+    "subtitleStatus": "servis durumu",
+    "allActive": "Tümü etkin",
+    "down": "{{count}} kapalı",
+    "active": "Etkin",
+    "statusDown": "Kapalı"
+  },
+  "domains": {
+    "subtitle": "Barındırılan siteler ve SSL durumu",
+    "total": "Toplam",
+    "active": "Etkin",
+    "ssl": "SSL",
+    "empty": "Henüz alan adı yok",
+    "noSsl": "SSL yok",
+    "badgeActive": "Etkin",
+    "more_one": "+{{count}} alan adı daha →",
+    "more_other": "+{{count}} alan adı daha →"
+  },
+  "serverInfo": {
+    "subtitle": "Donanım ve sistem",
+    "hostname": "Ana bilgisayar adı",
+    "ip": "IP adresi",
+    "os": "İşletim sistemi",
+    "kernel": "Çekirdek",
+    "cpu": "CPU",
+    "cores": "Çekirdek",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "Genel durum değerlendirmesi",
+    "servicesDown_one": "{{count}} servis kapalı",
+    "servicesDown_other": "{{count}} servis kapalı",
+    "isolationLoss_one": "{{count}} izolasyon kaybı algılandı",
+    "isolationLoss_other": "{{count}} izolasyon kaybı algılandı",
+    "memoryAt": "Bellek %{{percent}}",
+    "diskAt": "Disk %{{percent}}",
+    "healthy": "Sağlıklı",
+    "fair": "İyi",
+    "degraded": "Bozulmuş",
+    "critical": "Kritik"
+  },
+  "live": {
+    "subtitle": "Gerçek zamanlı CPU ve bellek",
+    "cpu": "CPU",
+    "memory": "Bellek",
+    "disk": "Disk ({{mount}})",
+    "freeGb": "{{value}} GB boş"
+  },
+  "subscriptions": {
+    "subtitle": "Etkin servisleriniz",
+    "body": "Müşteri paneli genel görünümü"
+  },
+  "network": {
+    "subtitle": "Gelen ve giden veri",
+    "body": "Trafik istatistikleri İstatistikler sayfasında mevcut"
+  }
+}

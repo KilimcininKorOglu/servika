@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "toolsSettings": "Tools and Settings",
+    "backupManager": "Backup Manager"
+  },
+  "title": "Backup Manager",
+  "subtitle": "View backups for all domains in one place. Daily automatic backups run, and S3/SFTP destinations are configured per domain.",
+  "toast": {
+    "triggered": "Scheduled backups were triggered. Refresh in a few seconds to see the results.",
+    "triggerFailed": "Could not trigger backups"
+  },
+  "kpi": {
+    "totalSize": "Total Backup Size",
+    "totalBackups": "Total Backups",
+    "domainCount": "Domain Count",
+    "remoteDestinations": "Active Remote Destinations",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Automatic backups:",
+    "default": "Daily at 03:00",
+    "suffix": ". 7-day retention",
+    "triggering": "Triggering...",
+    "backupNow": "⏱ Back Up All Domains Now",
+    "refresh": "↻ Refresh"
+  },
+  "table": {
+    "title": "Domain Backups",
+    "colDomain": "Domain",
+    "colCount": "Backup Count",
+    "colSize": "Total Size",
+    "colLatest": "Latest Backup",
+    "colAction": "Action",
+    "loading": "Loading...",
+    "noDomains": "No domains.",
+    "never": "never",
+    "manage": "Manage"
+  },
+  "footnote": {
+    "pre": "ℹ️ Backups",
+    "post": "are stored there. Backups remain available if a domain is deleted, allowing recovery from accidental deletion. Open Manage to download or restore individual backups and configure destinations."
+  }
+}

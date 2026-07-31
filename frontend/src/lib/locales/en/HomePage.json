@@ -1,0 +1,146 @@
+{
+  "shared": {
+    "more": "More →",
+    "manage": "Manage →",
+    "loading": "Loading…"
+  },
+  "widgets": {
+    "load-chart": "Load Chart",
+    "memory-chart": "Memory Chart",
+    "wordpress": "WordPress Sites",
+    "panel-update": "Panel Update",
+    "last-backup": "Last Server Backup",
+    "performance": "Performance / Optimize",
+    "cve-security": "Security Advisories (CVE)",
+    "services": "Services",
+    "domains": "Domains",
+    "server-info": "Server Info",
+    "health": "System Health",
+    "live-resources": "Live Resources",
+    "subscriptions": "My Subscriptions",
+    "network": "Network Traffic"
+  },
+  "header": {
+    "welcome": "Welcome back, {{name}}",
+    "dashboard": "Dashboard",
+    "subtitle": "Server overview and quick actions",
+    "saving": "Saving…",
+    "saved": "Layout saved",
+    "saveFailed": "Save failed",
+    "resetLayout": "Reset Layout"
+  },
+  "quota": {
+    "unsupportedTitle": "Disk quota is unavailable on this filesystem",
+    "unsupportedBody": "Servika needs an XFS root filesystem for per-tenant disk quota. A reboot will not enable quota on the current filesystem.",
+    "rebootTitle": "Disk quota will be enabled after reboot",
+    "rebootBody": "XFS user quota is configured, but enforcement is inactive. Reboot the server once to activate per-tenant disk quota.",
+    "dismiss": "Dismiss"
+  },
+  "widgetNotFound": "Widget not found",
+  "dragToReorder": "Drag to reorder",
+  "wp": {
+    "subtitle": "Installations across all accounts",
+    "installs": "Installs",
+    "updates": "Updates",
+    "current": "Current",
+    "pendingUpdatesText_one": " installation with pending updates — outdated versions carry security risks.",
+    "pendingUpdatesText_other": " installations with pending updates — outdated versions carry security risks.",
+    "empty": "No WordPress installations found",
+    "rootDir": "root dir",
+    "badgeUpdate": "Update",
+    "badgeCurrent": "Current",
+    "badgeUnknown": "Unknown",
+    "more_one": "+{{count}} more installation →",
+    "more_other": "+{{count}} more installations →",
+    "unknownNote_one": "{{count}} installation could not be determined (wp-cli timeout).",
+    "unknownNote_other": "{{count}} installations could not be determined (wp-cli timeout)."
+  },
+  "update": {
+    "subtitle": "Version and system packages",
+    "running": "Update running",
+    "toolMissing": "Update tool missing",
+    "upToDate": "Panel up to date",
+    "noStatus": "No status info",
+    "badgeRunning": "Running",
+    "badgeMissing": "Missing",
+    "badgeCurrent": "Current",
+    "systemPackages": "System packages"
+  },
+  "backup": {
+    "subtitle": "Automatic daily backup",
+    "unavailable": "Backup summary unavailable",
+    "count_one": "backup · {{size}}",
+    "count_other": "backups · {{size}}",
+    "lastBackup": "Last backup",
+    "sitesBackedUp": "Sites backed up",
+    "remoteTarget": "Remote target",
+    "remoteActive": "{{count}} active",
+    "remoteNone": "None",
+    "schedule": "Schedule"
+  },
+  "performance": {
+    "subtitle": "Improve server settings",
+    "running": "Optimization running",
+    "ready": "Optimization ready",
+    "defaultStatus": "MariaDB · nginx · PHP settings",
+    "badgeRunning": "Running",
+    "badgeIdle": "Idle"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} services running",
+    "subtitleStatus": "service status",
+    "allActive": "All active",
+    "down": "{{count}} down",
+    "active": "Active",
+    "statusDown": "Down"
+  },
+  "domains": {
+    "subtitle": "Hosted sites and SSL status",
+    "total": "Total",
+    "active": "Active",
+    "ssl": "SSL",
+    "empty": "No domains yet",
+    "noSsl": "No SSL",
+    "badgeActive": "Active",
+    "more_one": "+{{count}} more domain →",
+    "more_other": "+{{count}} more domains →"
+  },
+  "serverInfo": {
+    "subtitle": "Hardware and system",
+    "hostname": "Hostname",
+    "ip": "IP address",
+    "os": "OS",
+    "kernel": "Kernel",
+    "cpu": "CPU",
+    "cores": "Cores",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "Overall status assessment",
+    "servicesDown_one": "{{count}} service down",
+    "servicesDown_other": "{{count}} services down",
+    "isolationLoss_one": "{{count}} isolation loss detected",
+    "isolationLoss_other": "{{count}} isolation losses detected",
+    "memoryAt": "Memory at {{percent}}%",
+    "diskAt": "Disk at {{percent}}%",
+    "healthy": "Healthy",
+    "fair": "Fair",
+    "degraded": "Degraded",
+    "critical": "Critical"
+  },
+  "live": {
+    "subtitle": "Real-time CPU and memory",
+    "cpu": "CPU",
+    "memory": "Memory",
+    "disk": "Disk ({{mount}})",
+    "freeGb": "{{value}} GB free"
+  },
+  "subscriptions": {
+    "subtitle": "Your active services",
+    "body": "Customer panel overview"
+  },
+  "network": {
+    "subtitle": "Inbound and outbound data",
+    "body": "Traffic statistics available in Statistics page"
+  }
+}

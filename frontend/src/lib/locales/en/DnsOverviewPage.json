@@ -1,0 +1,21 @@
+{
+  "title": "DNS Management",
+  "description": "Record counts and DNSSEC status across every domain.",
+  "emptyMessage": "No domains found.",
+  "column": {
+    "domain": "Domain",
+    "records": "Records",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "On",
+    "off": "Off"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC on",
+    "noMx": "No MX"
+  }
+}

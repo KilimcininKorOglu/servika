@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "Applications",
+    "domainAndDns": "Domain and DNS",
+    "email": "Email",
+    "filesAndDatabases": "Files and Databases",
+    "developmentTools": "Development Tools",
+    "security": "Security"
+  },
+  "wordpress": { "label": "WordPress", "desc": "One-click installation · management" },
+  "laravel": { "label": "Laravel Toolkit", "desc": "Install · deploy · queue" },
+  "dns": { "label": "DNS Management", "desc": "A, MX, TXT, CNAME records" },
+  "subdomains": { "label": "Subdomains", "desc": "Subdomains" },
+  "addonDomains": { "label": "Addon Domains", "desc": "Addon and parked domains · redirects" },
+  "mail": { "label": "Email Accounts", "desc": "Postfix and Dovecot mailboxes · SMTP" },
+  "connection": { "label": "Connection Information", "desc": "FTP, database" },
+  "files": { "label": "Files", "desc": "File manager" },
+  "databases": { "label": "Databases" },
+  "ftp": { "label": "FTP", "desc": "FTP accounts" },
+  "backups": { "label": "Backup and Restore", "desc": "Backup management" },
+  "copy": { "label": "Copy Website", "desc": "Cloning" },
+  "php": { "label": "PHP", "desc": "Version {{version}}" },
+  "logs": { "label": "Logs", "desc": "access, error" },
+  "cron": { "label": "Scheduled Tasks", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "Repository integration" },
+  "composer": { "label": "PHP Composer", "desc": "Package manager" },
+  "performance": { "label": "Performance", "desc": "Accelerators" },
+  "redis": { "label": "Redis Cache", "desc": "Isolated object cache · accelerator" },
+  "ssl": {
+    "label": "SSL/TLS Certificates",
+    "expires": "Expires: {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "Domain is not protected"
+  },
+  "passwordProtection": { "label": "Password-Protected Directories", "desc": ".htpasswd" },
+  "stats": { "label": "Statistics", "desc": "Traffic analysis" },
+  "accessControl": { "label": "Access Control", "desc": "Hotlink protection · IP allow/block" },
+  "imunify": { "label": "Imunify", "desc": "Antivirus" },
+  "ssh": {
+    "label": "SSH Access",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  }
+}

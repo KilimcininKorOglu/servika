@@ -1,0 +1,100 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "error": "Hata"
+  },
+  "errors": {
+    "loadFailed": "Abonelik yüklenemedi",
+    "suspendFailed": "Alan adı askıya alma durumu güncellenemedi"
+  },
+  "loading": "Yükleniyor…",
+  "confirmSuspend": "\"{{domain}}\" askıya alınsın mı? Web sitesi devam ettirilene kadar HTTP 503 döndürecek.",
+  "notice": {
+    "suspended": "Alan adı askıya alındı.",
+    "resumed": "Alan adı devam ettirildi."
+  },
+  "header": {
+    "switchSubscription": "Abonelik değiştir",
+    "suspended": "Askıya alındı",
+    "moreActions": "Diğer işlemler",
+    "resumeDomain": "Alan adını devam ettir",
+    "suspendDomain": "Alan adını askıya al"
+  },
+  "tabs": {
+    "dashboard": "Panel",
+    "hosting": "Hosting ve DNS"
+  },
+  "stats": {
+    "title": "İstatistikler",
+    "refresh": "Yenile",
+    "disk": "Disk alanı",
+    "traffic": "Aylık trafik",
+    "created": "Oluşturulma",
+    "phpVersion": "PHP sürümü"
+  },
+  "footer": {
+    "website": "Web sitesi:",
+    "ip": "IP:",
+    "systemUser": "Sistem kullanıcısı:",
+    "addDescription": "Açıklama ekle"
+  },
+  "preview": {
+    "httpsOnly": "Önizleme yalnızca HTTPS siteleri için kullanılabilir",
+    "autoAppear": "SSL etkinleştirildiğinde otomatik olarak görünür",
+    "website": "Web sitesi",
+    "refresh": "Yenile",
+    "refreshTitle": "Önizlemeyi yenile",
+    "sslRequired": "Önizleme için SSL gereklidir",
+    "open": "Aç",
+    "previewAlt": "{{domain}} önizleme"
+  },
+  "groups": {
+    "filesAndDatabases": "Dosyalar ve Veritabanları",
+    "developmentTools": "Geliştirme Araçları",
+    "security": "Güvenlik",
+    "hostingServices": "Hosting Hizmetleri"
+  },
+  "tools": {
+    "connection": "Bağlantı Bilgileri",
+    "connectionDesc": "FTP ve veritabanı",
+    "files": "Dosyalar",
+    "filesDesc": "Dosya yöneticisi",
+    "databases": "Veritabanları",
+    "ftp": "FTP",
+    "ftpDesc": "FTP hesapları",
+    "backup": "Yedekleme ve Geri Yükleme",
+    "backupDesc": "Yedek yönetimi",
+    "copy": "Web Sitesini Kopyala",
+    "copyDesc": "Klonlama",
+    "php": "PHP",
+    "phpDesc": "Sürüm {{version}}",
+    "logs": "Kayıtlar",
+    "logsDesc": "Erişim ve hata kayıtları",
+    "cron": "Zamanlanmış Görevler",
+    "cronDesc": "Cron",
+    "git": "Git",
+    "gitDesc": "Depo entegrasyonu",
+    "composer": "PHP Composer",
+    "composerDesc": "Paket yöneticisi",
+    "performance": "Performans",
+    "performanceDesc": "Hızlandırıcılar",
+    "ssl": "SSL/TLS Sertifikaları",
+    "sslExpires": "Bitiş: {{expiry}}",
+    "sslLetsEncrypt": "Let's Encrypt",
+    "sslNotProtected": "Alan adı korumasız",
+    "passwordProtect": "Parola Korumalı Dizinler",
+    "statistics": "İstatistikler",
+    "statisticsDesc": "Trafik analizi",
+    "imunify": "Imunify",
+    "imunifyDesc": "Antivirüs",
+    "waf": "WAF (Web Uygulama Güvenlik Duvarı)",
+    "wafDesc": "ModSecurity + OWASP CRS",
+    "hostingSettings": "Hosting Ayarları",
+    "hostingSettingsDesc": "Belge kök dizini ve seçenekler",
+    "apacheNginx": "Apache ve nginx",
+    "apacheNginxDesc": "Güvenlik başlıkları ve ek yönergeler",
+    "dns": "DNS Ayarları",
+    "dnsDesc": "A, CNAME, MX"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "subdomains": "Alt Alan Adları"
+  },
+  "title": "Alt Alan Adları",
+  "subtitlePre": "Bu alan adı altında alt alan adları (örneğin",
+  "subtitlePost": ") oluşturun. Her birinin ayrı bir web dizini vardır.",
+  "toast": {
+    "created": "{{fqdn}} oluşturuldu. Bir DNS A kaydı eklendi.",
+    "createFailed": "Alt alan adı oluşturulamadı",
+    "deleteFailed": "Alt alan adı silinemedi",
+    "sslInstalled": "{{fqdn}} SSL, {{method}} kullanılarak kuruldu.",
+    "sslInstallFailed": "SSL kurulamadı"
+  },
+  "sslMethod": {
+    "letsencrypt": "Let's Encrypt",
+    "selfSigned": "kendinden imzalı bir sertifika"
+  },
+  "confirmDelete": "{{fqdn}} silinsin mi?\nVhost, dosyalar (belge kökü) ve DNS kaydı kaldırılacak. Bu geri alınamaz.",
+  "form": {
+    "title": "Yeni Alt Alan Adı",
+    "label": "Alt Alan Adı",
+    "creating": "Oluşturuluyor…",
+    "add": "Alt Alan Adı Ekle",
+    "hintPre": "Küçük harfler, rakamlar ve tireler. Örnekler:"
+  },
+  "list": {
+    "title": "Mevcut Alt Alan Adları",
+    "loading": "Yükleniyor…",
+    "empty": "Henüz alt alan adı yok.",
+    "phpPrefix": "PHP",
+    "manage": "Yönet",
+    "manageTitle": "Bu alt alan adını yönet",
+    "letsencryptTitle": "Let's Encrypt SSL kur",
+    "letsencrypt": "🔒 Let's Encrypt",
+    "selfSignedTitle": "Kendinden imzalı SSL kur",
+    "selfSigned": "Kendinden imzalı",
+    "delete": "Sil",
+    "dnsNote": "ℹ️ Alt alan adı web sunucusunda hemen yapılandırılır. Erişilebilmesi için alan adınızın DNS A kaydının bu sunucuya işaret etmesi gerekir."
+  },
+  "backToSubscription": "← Aboneliğe geri dön"
+}

@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "Otomatik kopyalama başarısız oldu. Ctrl+C tuşlarına, ardından Enter tuşuna basın:",
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "connectionDetails": "Bağlantı Bilgileri"
+  },
+  "title": "Bağlantı Bilgileri",
+  "subtitle": "Otomatik kopyalamak için bir değere tıklayın",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Sunucu",
+    "port": "Port",
+    "username": "Kullanıcı adı",
+    "password": "Parola",
+    "homeDirectory": "Ana dizin",
+    "database": "Veritabanı",
+    "webRoot": "Web kök dizini",
+    "ipv4": "IPv4",
+    "systemUser": "Sistem kullanıcısı",
+    "httpUrl": "HTTP URL",
+    "httpsUrl": "HTTPS URL"
+  },
+  "links": {
+    "ftp": "FTP yönetimine git →",
+    "database": "Veritabanı yönetimine git →"
+  },
+  "row": {
+    "selectToCopy": "Kopyalamak için tıklayın",
+    "copied": "✓ Kopyalandı"
+  },
+  "password": {
+    "button": "🔑 Parolayı Göster / Sıfırla"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Veritabanı"
+  },
+  "modal": {
+    "titleSuffix": "Parolası",
+    "userLabel": "Kullanıcı:",
+    "notStored": "(saklanmıyor)",
+    "notAuthorized": "(yetki yok)",
+    "showCurrent": "👁 Mevcut parolayı göster",
+    "currentPasswordLabel": "Mevcut parola",
+    "newPasswordGenerated": "✓ Yeni parola oluşturuldu",
+    "copyWarning": "⚠ Parolayı şimdi kopyalayın. Bu pencereyi kapattıktan sonra tekrar göremeyebilirsiniz.",
+    "close": "Kapat",
+    "generating": "Oluşturuluyor…",
+    "generateAgain": "↻ Tekrar oluştur",
+    "generateNew": "⚡ Yeni parola oluştur",
+    "errorGenerate": "Parola oluşturulamadı"
+  },
+  "copyButton": {
+    "copy": "Kopyala",
+    "copied": "✓ Kopyalandı"
+  }
+}

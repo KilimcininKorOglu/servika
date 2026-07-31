@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Hosting Kontrol Paneli"
+  },
+  "heading": "Hoş geldiniz",
+  "subtitle": "Devam etmek için giriş yapın.",
+  "field": {
+    "username": "Kullanıcı adı",
+    "password": "Parola",
+    "twoFactorCode": "İki adımlı doğrulama kodu"
+  },
+  "twoFactorHint": "Kimlik doğrulama uygulamanızdaki altı haneli kodu girin.",
+  "button": {
+    "signingIn": "Giriş yapılıyor…",
+    "verify": "Doğrula ve giriş yap",
+    "signIn": "Giriş yap"
+  },
+  "footer": "Servika · sürüm 0.2.0-f1",
+  "error": {
+    "loginFailed": "Giriş başarısız"
+  }
+}

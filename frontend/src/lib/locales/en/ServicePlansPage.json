@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "Home",
+  "breadcrumbTitle": "Service Plans",
+  "title": "Service Plans",
+  "subtitle": "Define service plans for domains. Each domain is associated with a plan, and resources such as disk, traffic, PHP version, database count, and subdomain limits are configured per plan.",
+  "addPlan": "Add Plan",
+  "loading": "Loading…",
+  "empty": {
+    "title": "No service plans yet",
+    "descriptionAdmin": "Start by defining your first plan.",
+    "descriptionUser": "The administrator has not defined a plan yet."
+  },
+  "badge": {
+    "default": "Default"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "Disk",
+    "traffic": "Traffic",
+    "domains": "Domains",
+    "databases": "Databases",
+    "ftp": "FTP"
+  },
+  "detailsButton": "Details & Resource Limits",
+  "delete": "Delete",
+  "confirmDelete": {
+    "title": "Delete plan",
+    "message": "Delete the plan \"{{name}}\"?",
+    "confirmText": "Yes, delete"
+  },
+  "errors": {
+    "deleteFailed": "Failed to delete",
+    "saveFailed": "Failed to save"
+  },
+  "limit": {
+    "unlimited": "unlimited"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/month",
+    "domains": "domains",
+    "databases": "databases",
+    "accounts": "accounts"
+  },
+  "modal": {
+    "newTitle": "New Plan",
+    "editTitle": "Edit Plan",
+    "planName": "Plan Name",
+    "description": "Description",
+    "diskMb": "Disk (MB)",
+    "trafficMb": "Traffic (MB)",
+    "phpVersionLabel": "PHP Version",
+    "maxDomains": "Max Domains",
+    "maxDatabases": "Max Databases",
+    "maxFtp": "Max FTP Accounts",
+    "isDefault": "Default plan for new domains",
+    "wafHeading": "WAF Default (ModSecurity + OWASP CRS)",
+    "wafEnabled": "Enabled in this plan",
+    "wafMode": {
+      "block": "Block (On)",
+      "detect": "Detect (log only)"
+    },
+    "wafParanoia": {
+      "level1": "Level 1 (Low)",
+      "level2": "Level 2 (Medium)",
+      "level3": "Level 3 (High)",
+      "level4": "Level 4 (Strict)"
+    },
+    "hint": "0 = unlimited. Disk and traffic values are in MB. New domains on this plan are provisioned with the selected PHP version.",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "add": "Add",
+    "update": "Update"
+  }
+}

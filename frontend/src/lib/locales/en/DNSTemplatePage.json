@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "tools": "Tools and Settings",
+    "current": "DNS Template"
+  },
+  "title": "Server-wide DNS Template",
+  "subtitle": "These records are applied when a domain is created or when its default DNS template is restored.",
+  "placeholders": {
+    "label": "Placeholders:",
+    "domain": " domain name, ",
+    "ip": " server IP, ",
+    "selector": " DKIM selector, ",
+    "dkim": " generated DKIM public record"
+  },
+  "loading": "Loading...",
+  "table": {
+    "name": "Name",
+    "type": "Type",
+    "value": "Value",
+    "ttl": "TTL",
+    "priority": "Priority",
+    "order": "Order",
+    "enabled": "Enabled",
+    "priorityNone": "None",
+    "deleteTitle": "Delete record"
+  },
+  "addRecord": "Add record",
+  "soa": {
+    "title": "SOA Settings",
+    "fieldSeconds": "{{field}} (seconds)"
+  },
+  "dkim": {
+    "title": "DKIM Settings",
+    "selector": "Selector",
+    "generate": "Generate DKIM keys for new domains"
+  },
+  "discard": "Discard changes",
+  "save": "Save template",
+  "saving": "Saving...",
+  "success": "DNS template saved. New domains will use the updated records and settings.",
+  "errors": {
+    "loadFailed": "Could not load the DNS template",
+    "saveFailed": "Could not save the DNS template"
+  }
+}

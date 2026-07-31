@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "tools": "Araçlar ve Ayarlar",
+    "current": "PHP Sürümleri"
+  },
+  "title": "PHP Sürümleri",
+  "subtitle": "PHP sürümlerini ekleyin veya kaldırın. Her biri bağımsız bir PHP-FPM havuzunda çalışır ve alan adı başına seçilebilir. Kurulum 14 paket içerir (fpm, cli, mysqlnd ve 11 eklenti).",
+  "alerts": {
+    "opInProgress": "Zaten devam eden bir PHP işlemi var. Bitmesini bekleyin.",
+    "appstreamCannotRemove": "AppStream PHP sistem varsayılanıdır ve kaldırılamaz."
+  },
+  "confirm": {
+    "install": "PHP {{version}} ({{resource}}) için on dört paket kurulacak. Devam edilsin mi?",
+    "remove": "PHP {{version}} (Remi) ve TÜM eklentileri KALDIRILACAK.\nBir alan adı bu sürümü kullanıyorsa işlem reddedilir. Devam edilsin mi?"
+  },
+  "success": {
+    "installed": "PHP {{version}} kuruldu",
+    "removed": "PHP {{version}} kaldırıldı"
+  },
+  "errors": {
+    "startInstallFailed": "Kurulum başlatılamadı",
+    "startRemoveFailed": "Kaldırma başlatılamadı"
+  },
+  "log": {
+    "installStarted": "PHP {{version}} kurulumu başladı...\n",
+    "removeStarted": "PHP {{version}} kaldırma işlemi başladı...\n",
+    "installInProgress": "PHP {{version}} kurulumu devam ediyor...",
+    "removeInProgress": "PHP {{version}} kaldırma işlemi devam ediyor...",
+    "waiting": "Çıktı bekleniyor..."
+  },
+  "filters": {
+    "all": "Tümü ({{count}})",
+    "installed": "Kurulu ({{count}})",
+    "available": "Kullanılabilir ({{count}})"
+  },
+  "loading": "Yükleniyor...",
+  "badges": {
+    "installed": "KURULU",
+    "eol": "EOL"
+  },
+  "card": {
+    "version": "Sürüm:",
+    "extensions": "Eklentiler:",
+    "service": "Servis:"
+  },
+  "actions": {
+    "fixed": "Sabit (sistem varsayılanı)",
+    "inProgress": "Devam ediyor...",
+    "remove": "Kaldır",
+    "install": "Kur"
+  }
+}

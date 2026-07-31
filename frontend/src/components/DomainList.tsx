@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 export type Domain = {
   id: number
   domain_name: string
@@ -29,28 +31,29 @@ export default function DomainList({
   onSelect: (id: number) => void
   loading?: boolean
 }) {
+  const { t } = useTranslation('DomainList')
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
       <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          Domains {!loading && <span className="text-slate-400 dark:text-slate-500 font-normal">({items.length})</span>}
+          {t('domains')} {!loading && <span className="text-slate-400 dark:text-slate-500 font-normal">({items.length})</span>}
         </h3>
         <button
           type="button"
           className="text-xs px-2 py-1 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded font-medium shadow-sm transition"
-          title="Will be available in F2"
+          title={t('addDomainHint')}
           disabled
         >
-          + Add Domain
+          {t('addDomain')}
         </button>
       </div>
 
       <ul className="max-h-[640px] overflow-auto divide-y divide-slate-100 dark:divide-slate-800">
         {loading && (
-          <li className="px-4 py-6 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</li>
+          <li className="px-4 py-6 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</li>
         )}
         {!loading && items.length === 0 && (
-          <li className="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-500">No domains yet</li>
+          <li className="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-500">{t('noDomains')}</li>
         )}
         {items.map((d) => {
           const isSelected = d.id === selectedId
@@ -81,11 +84,11 @@ export default function DomainList({
                   <span className="font-mono">PHP {d.php_version}</span>
                   {d.ssl ? (
                     <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>SSL
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>{t('ssl')}
                     </span>
                   ) : (
                     <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>No SSL
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>{t('noSsl')}
                     </span>
                   )}
                   <span className="ml-auto">{Math.round(d.size_kb / 1024)} MB</span>

@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "addonDomains": "Ek Alan Adları"
+  },
+  "title": "Ek Alan Adları",
+  "subtitle": "Ek veya park edilmiş alan adları oluşturun ve tüm alan adı yönlendirmelerini yapılandırın.",
+  "toast": {
+    "created": "{{domain}} oluşturuldu.",
+    "createFailed": "Ek alan adı oluşturulamadı",
+    "deleted": "{{domain}} silindi.",
+    "deleteFailed": "Ek alan adı silinemedi",
+    "redirectSaved": "Yönlendirme ayarları kaydedildi.",
+    "redirectSaveFailed": "Yönlendirme ayarları kaydedilemedi",
+    "redirectRemoved": "Yönlendirme ayarları kaldırıldı.",
+    "redirectRemoveFailed": "Yönlendirme ayarları kaldırılamadı"
+  },
+  "mode": {
+    "parked": "park edilmiş alan adı",
+    "addon": "ek alan adı"
+  },
+  "confirmDelete": "{{domain}} silinsin mi?\n{{mode}}, vhost, DNS bölgesi ve panel kayıtları kaldırılacak. Bu geri alınamaz.",
+  "confirmRemoveRedirect": "Alan adı yönlendirmesi kaldırılsın mı?",
+  "form": {
+    "title": "Yeni Ek Alan Adı",
+    "domainLabel": "Alan Adı",
+    "parkedLabel": "Park edilmiş alan adı",
+    "creating": "Oluşturuluyor…",
+    "add": "Alan Adı Ekle",
+    "hint": "Ek alan adları kendi belge kökünü kullanır. Park edilmiş alan adları ana alan adının belge kökünü paylaşır."
+  },
+  "redirect": {
+    "title": "Tüm Alan Adı Yönlendirmesi",
+    "active": "Aktif",
+    "targetLabel": "Hedef URL",
+    "statusLabel": "Durum",
+    "status301": "301 Kalıcı",
+    "status302": "302 Geçici",
+    "saving": "Kaydediliyor…",
+    "save": "Yönlendirmeyi Kaydet",
+    "remove": "Kaldır"
+  },
+  "list": {
+    "title": "Mevcut Alan Adları",
+    "loading": "Yükleniyor…",
+    "empty": "Henüz ek alan adı yok.",
+    "parked": "Park edilmiş",
+    "phpPrefix": "PHP",
+    "delete": "Sil"
+  },
+  "backToSubscription": "← Aboneliğe geri dön"
+}

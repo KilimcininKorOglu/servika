@@ -1,0 +1,32 @@
+{
+  "notCheckedYet": "Not checked yet",
+  "title": "Panel Update",
+  "badges": {
+    "server": "Server",
+    "critical": "Critical",
+    "updateAvailable": "Update available"
+  },
+  "description": "Updates the panel to the latest version from GitHub. Environment settings, databases, and sites are preserved, and an unhealthy release is rolled back automatically.",
+  "toolMissing": " The update tool is missing and will be downloaded automatically on first use.",
+  "labels": {
+    "current": "Current",
+    "latest": "Latest",
+    "lastCheck": "Last check"
+  },
+  "unknown": "Unknown",
+  "lastCheckFailed": "Last version check failed: {{error}}",
+  "checksDisabled": "Version checks are disabled.",
+  "running": "The update is running. The panel may restart briefly; keep this page open.",
+  "logStarted": "Update started...\n",
+  "checkAndInstall": "Check for updates and install",
+  "checking": "Checking...",
+  "refreshStatus": "Refresh version status",
+  "confirmPrompt": "The panel will be updated and its service restarted. Confirm?",
+  "starting": "Starting...",
+  "confirmYes": "Yes, update",
+  "cancel": "Cancel",
+  "errors": {
+    "refresh": "Could not refresh version status",
+    "start": "Could not start the update"
+  }
+}

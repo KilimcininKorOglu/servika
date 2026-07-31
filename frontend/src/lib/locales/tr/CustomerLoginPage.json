@@ -1,0 +1,15 @@
+{
+  "heading": "Müşteri Portalı",
+  "subtitle": "Hesap bilgilerinizle giriş yapın",
+  "field": {
+    "username": "Kullanıcı adı",
+    "password": "Parola"
+  },
+  "button": {
+    "signingIn": "Giriş yapılıyor…",
+    "signIn": "Giriş yap"
+  },
+  "error": {
+    "loginFailed": "Giriş başarısız"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Server Optimization",
+  "description": "Updates system packages (dnf/yum) and applies MariaDB, nginx, and PHP performance tuning. The process runs in the background and may take a long time. You can close the page while it continues.",
+  "running": "Optimization is running. Package updates may take a while; you can close the page while it continues in the background.",
+  "logStarted": "Optimization started...\n",
+  "startButton": "Update packages and optimize",
+  "confirmPrompt": "This may briefly affect services. Continue?",
+  "starting": "Starting...",
+  "confirmYes": "Yes, start",
+  "cancel": "Cancel",
+  "errorStart": "Failed to start optimization"
+}

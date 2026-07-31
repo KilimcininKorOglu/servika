@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "backups": "Yedekler"
+  },
+  "title": "Yedekler",
+  "subtitle": {
+    "prefix": "home + MySQL dökümü = tar.gz, ",
+    "disabled": "Otomatik yedekler devre dışı",
+    "enabled": "{{freq}} {{hour}}:00, son {{retention}} otomatik yedek saklanıyor"
+  },
+  "freq": {
+    "daily": "Günlük",
+    "weekly": "Haftalık"
+  },
+  "toast": {
+    "destinationSaved": "Uzak hedef kaydedildi",
+    "destinationSaveFailed": "Hedef kaydedilemedi",
+    "destinationDeleted": "Uzak hedef silindi",
+    "confirmDeleteDest": "Uzak yedekleme hedefi silinsin mi? Mevcut yedekler etkilenmez, ancak gelecekteki otomatik yüklemeler duracak.",
+    "autoDisabled": "Otomatik yedekler devre dışı bırakıldı",
+    "autoEnabled": "Otomatik yedekler etkinleştirildi: {{freq}}, {{hour}}:00; son {{retention}} yedek saklanacak",
+    "scheduleSaveFailed": "Zamanlama kaydedilemedi",
+    "backupCreated": "Yedek oluşturuldu",
+    "createFailed": "Yedek oluşturulamadı",
+    "restored": "Geri yüklendi: {{domain}}, veritabanı: {{database}}",
+    "restoreDbUnknown": "bilinmiyor",
+    "restoreFailed": "Geri yükleme başarısız oldu"
+  },
+  "schedule": {
+    "heading": "Otomatik Yedekleme Zamanlaması",
+    "description": "Etkinleştirildiğinde panel saatlik olarak denetler. Seçilen saatte bir yedek oluşturulur ve saklama sayısının üzerindeki yedekler silinir.",
+    "lastBackup": "Son otomatik yedek:",
+    "options": {
+      "none": {
+        "name": "Devre dışı",
+        "description": "Otomatik yedek yok. Yalnızca elle “Şimdi Yedekle” çalışır."
+      },
+      "daily": {
+        "name": "Günlük",
+        "description": "Seçilen saatte günlük yedek oluşturur ve son N yedeği saklar."
+      },
+      "weekly": {
+        "name": "Haftalık",
+        "description": "Disk kullanımını azaltmak için her yedi günde bir yedek oluşturur."
+      }
+    },
+    "active": "● Etkin",
+    "runTime": "Çalışma saati (yerel)",
+    "retentionLabel": "Saklanacak yedek sayısı",
+    "retentionHint": "Bu sayının üzerindeki eski otomatik yedekler silinir. Elle alınan yedekler saklanır."
+  },
+  "destination": {
+    "heading": "Uzak Yedekleme Hedefi (FTP / SFTP / S3 / B2)",
+    "description": "Oluşturulduktan sonra yedekler, disk arızasına karşı site dışı koruma için arka planda uzak hedefe yüklenir.",
+    "statusSuccessful": "● Son: başarılı",
+    "statusError": "✗ Son: hata",
+    "lastUpload": "Son yükleme:",
+    "typeLabel": "Hedef türü",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "Bucket",
+    "region": "Bölge",
+    "regionHint": "(varsayılan us-east-1)",
+    "endpoint": "Endpoint",
+    "endpointHint": "(AWS S3 için boş bırakın)",
+    "accessKeyId": "Erişim anahtarı kimliği",
+    "secretAccessKey": "Gizli erişim anahtarı",
+    "secretKeepHint": "(mevcut değeri korumak için boş bırakın)",
+    "keyPrefix": "Anahtar öneki",
+    "pathStyle": "Yol tarzı URL'ler",
+    "host": "Sunucu",
+    "port": "Port",
+    "username": "Kullanıcı adı",
+    "password": "Parola",
+    "passwordKeepHint": "(mevcut parolayı korumak için boş bırakın)",
+    "remoteDir": "Uzak dizin",
+    "activeLabel": "Etkin (her yedeği bu hedefe gönder)",
+    "testSuccess": "✓ Bağlantı başarılı",
+    "testError": "✗ ",
+    "testErrorFallback": "Hata",
+    "testing": "Test ediliyor...",
+    "testConnection": "Bağlantıyı Test Et",
+    "save": "Kaydet",
+    "deleteDestination": "Hedefi Sil"
+  },
+  "backingUp": "Yedekleniyor...",
+  "backupNow": "+ Şimdi Yedekle",
+  "refresh": "↻ Yenile",
+  "backupCount": "{{count}} yedek",
+  "loading": "Yükleniyor...",
+  "empty": "Henüz yedek yok",
+  "columns": {
+    "file": "Dosya",
+    "type": "Tür",
+    "size": "Boyut",
+    "created": "Oluşturulma",
+    "actions": "İşlemler"
+  },
+  "typeScheduled": "Zamanlanmış",
+  "row": {
+    "download": "İndir",
+    "restore": "↺ Geri Yükle",
+    "delete": "Sil"
+  },
+  "confirmDelete": {
+    "title": "Yedek dosyasını sil",
+    "message": "\"{{file}}\" yedek dosyası silinsin mi?",
+    "confirm": "Evet, sil"
+  },
+  "confirmRestore": {
+    "title": "Yedekten geri yükle",
+    "message": "\"{{file}}\" geri yüklensin mi?\n\nUYARI: Mevcut public_html dosyalarının üzerine yazılacak ve MySQL tabloları yeniden oluşturulacak. Bu işlem geri alınamaz.",
+    "confirm": "Evet, geri yükle"
+  }
+}

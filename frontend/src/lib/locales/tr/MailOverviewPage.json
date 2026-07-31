@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Alan Adı",
+    "mail": "Posta",
+    "mailboxes": "Posta Kutuları",
+    "aliases": "Takma Adlar",
+    "suspended": "Askıya Alınan"
+  },
+  "mailNone": "Yok",
+  "overview": {
+    "title": "E-posta Hesapları",
+    "description": "Tüm alan adları genelinde posta kutusu ve takma ad sayıları.",
+    "empty": "Alan adı bulunamadı."
+  },
+  "summary": {
+    "mailDomains": "Posta alan adları",
+    "totalMailboxes": "Toplam posta kutusu"
+  },
+  "queue": {
+    "title": "Postfix Posta Kuyruğu",
+    "subtitle": "Teslim bekleyen, ertelenen veya bir yönetici tarafından beklemeye alınan iletiler.",
+    "refresh": "↻ Yenile",
+    "retry": "Kuyruğu yeniden dene",
+    "loading": "Kuyruk okunuyor…",
+    "empty": "✓ Posta kuyruğu boş",
+    "colId": "Kuyruk Kimliği",
+    "colRoute": "Gönderen → Alıcı",
+    "colSizeTime": "Boyut / Zaman",
+    "colActions": "İşlemler",
+    "release": "Serbest bırak",
+    "hold": "Beklet",
+    "requeue": "Yeniden kuyruğa al",
+    "delete": "Sil"
+  },
+  "confirmDelete": "{{queueID}} kuyruktaki iletisi kalıcı olarak silinsin mi?",
+  "errors": {
+    "readFailed": "Postfix kuyruğu okunamadı",
+    "actionFailed": "Kuyruk işlemi başarısız oldu"
+  }
+}

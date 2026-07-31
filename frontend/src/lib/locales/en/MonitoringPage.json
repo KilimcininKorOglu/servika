@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "monitoring": "Monitoring"
+  },
+  "title": "End-to-End Monitoring",
+  "liveRefresh": "Live, {{seconds}} sec refresh",
+  "tabs": {
+    "server": "Server",
+    "domain": "By Domain",
+    "logs": "Server Logs"
+  },
+  "snap": {
+    "cpu": "CPU",
+    "cpuCores": "{{count}} cores",
+    "memory": "Memory",
+    "load1m": "Load (1 min)",
+    "loadAlt": "5 min {{load5m}}, 15 min {{load15m}}",
+    "diskRoot": "Disk (/)"
+  },
+  "chart": {
+    "systemResources": "System Resources",
+    "samples": "{{count}}/{{max}} samples, {{minutes}} min",
+    "legendCpu": "CPU",
+    "legendMemory": "Memory",
+    "legendSwap": "Swap",
+    "legendLoad": "Load (normalized)",
+    "networkTraffic": "Network Traffic",
+    "interface": "Interface: {{name}}",
+    "legendRx": "↓ RX (KB/s)",
+    "legendTx": "↑ TX (KB/s)",
+    "collecting": "Collecting data..."
+  },
+  "services": {
+    "title": "Services",
+    "enabledCount": "{{enabled}}/{{total}} enabled",
+    "active": "Active",
+    "stopped": "Stopped"
+  },
+  "processes": {
+    "title": "Top Processes",
+    "sortCpu": "CPU",
+    "sortMem": "Memory",
+    "colPid": "PID",
+    "colUser": "User",
+    "colCpu": "CPU%",
+    "colMem": "MEM%",
+    "colCommand": "Command",
+    "loading": "Loading..."
+  },
+  "domain": {
+    "selectionTitle": "Domain Selection",
+    "noActiveDomains": "No active domains",
+    "probing": "Probing...",
+    "healthProbe": "↻ Health Probe",
+    "openSite": "Open site ↗",
+    "accessLog": "Access Log",
+    "errorLog": "Error Log",
+    "lastLines": "last {{count}} lines",
+    "noAccessEntries": "No log entries yet...",
+    "noErrorEntries": "No error entries yet"
+  },
+  "health": {
+    "reachable": "Reachable",
+    "unreachable": "Unreachable",
+    "server": "Server: ",
+    "noSslTitle": "⚠ No SSL",
+    "noSslBody": "This domain is not reachable over HTTPS.",
+    "sslValid": "🔒 SSL Valid",
+    "sslInvalid": "✗ SSL Invalid",
+    "days": "days",
+    "expires": "Expires: ",
+    "issuer": "Issuer: ",
+    "responseTime": "Response Time",
+    "ms": "ms",
+    "fast": "Fast",
+    "acceptable": "Acceptable",
+    "slow": "Slow"
+  },
+  "logs": {
+    "searchPlaceholder": "Search...",
+    "lastLineCount": "last {{count}}",
+    "refresh": "↻ Refresh",
+    "loading": "Loading...",
+    "notFound": "\"{{query}}\" not found.",
+    "noEntries": "(no entries)",
+    "footerFiltered": "{{filtered}} / {{total}} lines, journald, {{source}}",
+    "footer": "{{total}} lines, journald, {{source}}"
+  },
+  "logSources": {
+    "panel": "Panel",
+    "nginx": "nginx",
+    "mariadb": "MariaDB",
+    "named": "DNS (named)",
+    "sshd": "SSH",
+    "cron": "Cron",
+    "system": "Entire System"
+  }
+}

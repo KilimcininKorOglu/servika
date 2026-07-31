@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları"
+  },
+  "fallback": {
+    "label": "Araç",
+    "description": "Henüz uygulanmadı."
+  },
+  "notReady": "Hazır Değil",
+  "domainLabel": "Alan adı: ",
+  "construction": {
+    "heading": "Yapım aşamasında",
+    "availablePrefix": "Bu modül şurada kullanılabilir olacak: ",
+    "availableSuffix": ".",
+    "availableLater": "Bu modül ileriki bir aşamada kullanılabilir olacak.",
+    "returnToDashboard": "← Alan adı paneline dön"
+  },
+  "tool": {
+    "connection": {
+      "label": "Bağlantı Bilgileri",
+      "description": "FTP sunucusu, kullanıcı adı, veritabanı bağlantı dizesi ve hızlı kopyalama işlemleri."
+    },
+    "files": {
+      "label": "Dosya Yöneticisi",
+      "description": "public_html altındaki dosyaları listeleyin, yükleyin, indirin ve izinlerini değiştirin."
+    },
+    "databases": {
+      "label": "Veritabanları",
+      "description": "MySQL veritabanları, kullanıcılar ve phpMyAdmin entegrasyonu."
+    },
+    "ftp": {
+      "label": "FTP Hesapları",
+      "description": "Pure-FTPd üzerinden sanal FTP hesapları, parolalar ve ana dizinler."
+    },
+    "backups": {
+      "label": "Yedekleme ve Geri Yükleme",
+      "description": "Tarball ve veritabanı dökümlerini SFTP, S3 veya yerel depolamaya yedekleyin."
+    },
+    "copy": {
+      "label": "Web Sitesini Kopyala",
+      "description": "Mevcut bir web sitesini başka bir alan adına klonlayın."
+    },
+    "php": {
+      "label": "PHP Ayarları",
+      "description": "PHP-FPM havuz seçimi, sürüm değişiklikleri ve php.ini parametreleri."
+    },
+    "logs": {
+      "label": "Kayıtlar",
+      "description": "WebSocket ile canlı access.log ve error.log izleme."
+    },
+    "cron": {
+      "label": "Zamanlanmış Görevler",
+      "description": "Kullanıcı bazlı crontab düzenleyici."
+    },
+    "git": {
+      "label": "Git",
+      "description": "Depoları bağlayın, dağıtım anahtarlarını yapılandırın ve webhook'larla otomatik çekin."
+    },
+    "composer": {
+      "label": "PHP Composer",
+      "description": "composer install ve update için web arayüzü."
+    },
+    "performance": {
+      "label": "Performans",
+      "description": "OPcache, gzip ve tembel yükleme gibi hızlandırıcılar."
+    },
+    "ssl": {
+      "label": "SSL/TLS Sertifikası",
+      "description": "Otomatik Let's Encrypt kurulumu ve yenilemesi."
+    },
+    "password-protection": {
+      "label": "Parola Korumalı Dizinler",
+      "description": ".htpasswd ile dizinleri koruyun."
+    },
+    "stats": {
+      "label": "İstatistikler",
+      "description": "Disk, trafik ve ziyaretçi raporları."
+    },
+    "imunify": {
+      "label": "Imunify",
+      "description": "Antivirüs ve WAF entegrasyonu."
+    }
+  }
+}

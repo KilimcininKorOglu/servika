@@ -1,0 +1,28 @@
+{
+  "title": "SSL Sertifikaları",
+  "description": "Sunucu genelindeki sertifika durumu, en yakın sona erme tarihine göre sıralı.",
+  "emptyMessage": "Alan adı bulunamadı.",
+  "column": {
+    "domain": "Alan Adı",
+    "ssl": "SSL",
+    "expiry": "Sona Erme",
+    "remaining": "Kalan",
+    "status": "Durum"
+  },
+  "ssl": {
+    "enabled": "Etkin",
+    "none": "Yok"
+  },
+  "status": {
+    "active": "Aktif",
+    "passive": "Pasif"
+  },
+  "remaining": {
+    "expiredAgo": "{{days}} gün önce sona erdi",
+    "days": "{{days}} gün"
+  },
+  "summary": {
+    "withSsl": "SSL'li",
+    "expiring": "≤14g içinde sona erecek"
+  }
+}

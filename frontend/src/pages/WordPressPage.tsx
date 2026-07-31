@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
@@ -33,6 +34,7 @@ function displayDirectory(directory: string): string {
 }
 
 export default function WordPressPage() {
+  const { t } = useTranslation('WordPressPage')
   const [domains, setDomains] = useState<Domain[]>([])
   const [domainId, setDomainId] = useState<number | null>(null)
   const [installations, setInstallations] = useState<Installation[]>([])
@@ -74,7 +76,7 @@ export default function WordPressPage() {
       })
       setResult(data); setSiteTitle(''); setSubdirectory('')
       listAll()
-    } catch (cause) { setError(apiError(cause, 'Installation failed')) }
+    } catch (cause) { setError(apiError(cause, t('errors.installFailed'))) }
     finally { setInstalling(false) }
   }
 
@@ -82,19 +84,19 @@ export default function WordPressPage() {
     const key = installation.domain_id + installation.dir
     setBusyKey(key); setError(null)
     try { await api.post(`/domains/${installation.domain_id}/wordpress/update`, { dir: installation.dir }); listAll() }
-    catch (cause) { setError(apiError(cause, 'Could not update')) }
+    catch (cause) { setError(apiError(cause, t('errors.updateFailed'))) }
     finally { setBusyKey(null) }
   }
 
   async function remove(installation: Installation) {
-    if (isRootDirectory(installation.dir)) { alert('WordPress in the root directory cannot be deleted from the panel.'); return }
-    if (!confirm(`Delete WordPress at ${installation.domain_name}${installation.dir}?\nAll files and the database in this directory will be removed. This action cannot be undone.`)) return
+    if (isRootDirectory(installation.dir)) { alert(t('errors.rootDelete')); return }
+    if (!confirm(t('confirmDelete', { domain: installation.domain_name, dir: installation.dir }))) return
     const key = installation.domain_id + installation.dir
     setBusyKey(key); setError(null)
     try {
       await api.delete(`/domains/${installation.domain_id}/wordpress`, { data: { dir: installation.dir, delete_db: true } })
       listAll()
-    } catch (cause) { setError(apiError(cause, 'Could not delete')) }
+    } catch (cause) { setError(apiError(cause, t('errors.deleteFailed'))) }
     finally { setBusyKey(null) }
   }
 
@@ -103,12 +105,12 @@ export default function WordPressPage() {
 
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'WordPress' }]} />
+      <Breadcrumb items={[{ label: t('breadcrumbHome'), href: '/' }, { label: t('breadcrumbTitle') }]} />
       <div className="flex items-center gap-3 mb-1">
         <span className="text-2xl">📝</span>
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">WordPress</h1>
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
       </div>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">View and update all WordPress installations on the server, or create a new installation.</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">{t('subtitle')}</p>
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">{error}</div>}
 
@@ -117,7 +119,7 @@ export default function WordPressPage() {
         <div className="mb-4 px-4 py-3 rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 flex items-start gap-3">
           <span className="text-lg leading-none">⚠️</span>
           <div className="text-sm text-amber-800 dark:text-amber-200">
-            <strong>{outdatedInstallations.length} {outdatedInstallations.length === 1 ? 'installation has' : 'installations have'} an update available.</strong> Outdated WordPress versions contain known security vulnerabilities. Update them as soon as possible.
+            <strong>{t('outdated.banner', { count: outdatedInstallations.length })}</strong> {t('outdated.warning')}
             <div className="mt-1 text-xs text-amber-700 dark:text-amber-300 font-mono">
               {outdatedInstallations.map(installation => `${installation.domain_name}${isRootDirectory(installation.dir) ? '' : installation.dir}`).join(', ')}
             </div>
@@ -129,44 +131,44 @@ export default function WordPressPage() {
       {result && (
         <div className="mb-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/15 p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">
-            ✅ WordPress {result.version} installed
+            ✅ {t('result.installed', { version: result.version })}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
-            <Info label="Site" value={result.site_url} link />
-            <Info label="Admin" value={result.admin_url} link />
-            <Info label="User" value={result.admin_user} mono />
-            <Info label="Password" value={result.admin_password} mono />
+            <Info label={t('result.site')} value={result.site_url} link />
+            <Info label={t('result.admin')} value={result.admin_url} link />
+            <Info label={t('result.user')} value={result.admin_user} mono />
+            <Info label={t('result.password')} value={result.admin_password} mono />
           </div>
-          <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-2">⚠ Save the password now. It will not be shown again.</p>
+          <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-2">{t('result.savePassword')}</p>
         </div>
       )}
 
       {/* Full-width table of all installations */}
       <div className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl overflow-hidden mb-6">
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700/60">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Installed WordPress Sites {!loadingInstallations && <span className="text-slate-400 font-normal">({installations.length})</span>}</h3>
-          <button onClick={listAll} disabled={loadingInstallations} className="text-xs px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">↻ Refresh</button>
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t('installedSites')} {!loadingInstallations && <span className="text-slate-400 font-normal">({installations.length})</span>}</h3>
+          <button onClick={listAll} disabled={loadingInstallations} className="text-xs px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">{t('refresh')}</button>
         </div>
         <div className={responsiveTableContainerClass}>
           <table className={responsiveTableClass}>
             <thead className={responsiveTableHeadClass}>
               <tr>
-                <th className="text-left font-medium px-4 py-2.5">Domain</th>
-                <th className="text-left font-medium px-4 py-2.5">Directory</th>
-                <th className="text-left font-medium px-4 py-2.5">Version</th>
-                <th className="text-left font-medium px-4 py-2.5">Status</th>
-                <th className="text-left font-medium px-4 py-2.5 whitespace-nowrap">Installed</th>
-                <th className="text-right font-medium px-4 py-2.5">Actions</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('table.domain')}</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('table.directory')}</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('table.version')}</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('table.status')}</th>
+                <th className="text-left font-medium px-4 py-2.5 whitespace-nowrap">{t('table.installed')}</th>
+                <th className="text-right font-medium px-4 py-2.5">{t('table.actions')}</th>
               </tr>
             </thead>
             <tbody className={responsiveTableBodyClass}>
               {loadingInstallations ? (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-400">Scanning installations... (checking versions and updates)</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-400">{t('scanning')}</td></tr>
               ) : installations.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-10 text-center">
                   <div className="text-2xl mb-1">📝</div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">No WordPress installations were found on the server.</p>
-                  <p className="text-xs text-slate-400 mt-1">Use the form below to create a new installation.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('emptyTitle')}</p>
+                  <p className="text-xs text-slate-400 mt-1">{t('emptyHint')}</p>
                 </td></tr>
               ) : (
                 installations.map(installation => {
@@ -174,24 +176,24 @@ export default function WordPressPage() {
                   const isOutdated = installation.status === 'outdated'
                   return (
                     <tr key={key} className={`${responsiveTableRowClass} ${isOutdated ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}>
-                      <td data-label="Domain" className={responsiveTableCellClass}>
+                      <td data-label={t('table.domain')} className={responsiveTableCellClass}>
                         <a href={installation.site_url} target="_blank" rel="noreferrer" className="font-medium text-slate-800 dark:text-slate-100 hover:text-brand-600 dark:hover:text-brand-400">{installation.domain_name}</a>
                       </td>
-                      <td data-label="Directory" className={responsiveTableCodeCellClass}>{displayDirectory(installation.dir)}</td>
-                      <td data-label="Version" className={responsiveTableCellClass}>
+                      <td data-label={t('table.directory')} className={responsiveTableCodeCellClass}>{displayDirectory(installation.dir)}</td>
+                      <td data-label={t('table.version')} className={responsiveTableCellClass}>
                         <span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-mono font-semibold">{installation.version ? `v${installation.version}` : '-'}</span>
                       </td>
-                      <td data-label="Status" className={responsiveTableCellClass}><StatusBadge installation={installation} /></td>
-                      <td data-label="Installed" className={responsiveTableCodeCellClass}>{installation.install_date || '-'}</td>
+                      <td data-label={t('table.status')} className={responsiveTableCellClass}><StatusBadge installation={installation} /></td>
+                      <td data-label={t('table.installed')} className={responsiveTableCodeCellClass}>{installation.install_date || '-'}</td>
                       <td className={responsiveTableActionCellClass}>
                         <div className="flex flex-wrap items-center justify-end gap-1.5">
-                          <a href={installation.admin_url} target="_blank" rel="noreferrer" className="text-xs px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Admin</a>
+                          <a href={installation.admin_url} target="_blank" rel="noreferrer" className="text-xs px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">{t('adminButton')}</a>
                           <button disabled={!!busyKey} onClick={() => update(installation)}
                             className={`text-xs px-2.5 py-1 rounded-md disabled:opacity-50 ${isOutdated ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
-                            {busyKey === key ? '...' : isOutdated ? `Update to v${installation.last_version}` : 'Update'}
+                            {busyKey === key ? '...' : isOutdated ? t('updateToVersion', { version: installation.last_version }) : t('update')}
                           </button>
                           {!isRootDirectory(installation.dir) && (
-                            <button disabled={!!busyKey} onClick={() => remove(installation)} className="text-xs px-2.5 py-1 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50">Delete</button>
+                            <button disabled={!!busyKey} onClick={() => remove(installation)} className="text-xs px-2.5 py-1 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50">{t('delete')}</button>
                           )}
                         </div>
                       </td>
@@ -206,22 +208,22 @@ export default function WordPressPage() {
 
       {/* New installation */}
       <form onSubmit={install} className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-4 max-w-2xl">
-        <h3 className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-3">New Installation</h3>
+        <h3 className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-3">{t('form.heading')}</h3>
         <div className="mb-3">
-          <label className="block text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1.5">Domain</label>
+          <label className="block text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1.5">{t('form.domain')}</label>
           <select value={domainId ?? ''} onChange={event => setDomainId(Number(event.target.value))}
             className="w-full sm:w-80 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none">
             {domains.map(domain => <option key={domain.id} value={domain.id}>{domain.domain_name}</option>)}
           </select>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Site Title" value={siteTitle} setValue={setSiteTitle} required placeholder="My Blog" />
-          <Field label="Subdirectory (optional)" value={subdirectory} setValue={setSubdirectory} placeholder="blank = root, e.g. blog" mono />
-          <Field label="Admin User" value={adminUser} setValue={setAdminUser} required mono />
-          <Field label="Admin Email" value={adminEmail} setValue={setAdminEmail} required type="email" placeholder="admin@site.com" />
+          <Field label={t('form.siteTitle')} value={siteTitle} setValue={setSiteTitle} required placeholder={t('form.siteTitlePlaceholder')} />
+          <Field label={t('form.subdirectory')} value={subdirectory} setValue={setSubdirectory} placeholder={t('form.subdirectoryPlaceholder')} mono />
+          <Field label={t('form.adminUser')} value={adminUser} setValue={setAdminUser} required mono />
+          <Field label={t('form.adminEmail')} value={adminEmail} setValue={setAdminEmail} required type="email" placeholder={t('form.adminEmailPlaceholder')} />
         </div>
         <button disabled={installing || !domainId} className="mt-3 px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
-          {installing ? 'Installing... (~30 sec)' : `Install WordPress${selectedDomain ? `, ${selectedDomain.domain_name}` : ''}`}
+          {installing ? t('installing') : (selectedDomain ? t('installButtonDomain', { domain: selectedDomain.domain_name }) : t('installButton'))}
         </button>
       </form>
     </div>
@@ -229,11 +231,12 @@ export default function WordPressPage() {
 }
 
 function StatusBadge({ installation }: { installation: Installation }) {
+  const { t } = useTranslation('WordPressPage')
   if (installation.status === 'outdated') {
     return (
       <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 font-medium">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-        Update available{installation.last_version && ` to v${installation.last_version}`}
+        {installation.last_version ? t('status.updateAvailableTo', { version: installation.last_version }) : t('status.updateAvailable')}
       </span>
     )
   }
@@ -241,13 +244,13 @@ function StatusBadge({ installation }: { installation: Installation }) {
     return (
       <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-        Up to date
+        {t('status.upToDate')}
       </span>
     )
   }
   return (
     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-medium">
-      Unknown
+      {t('status.unknown')}
     </span>
   )
 }

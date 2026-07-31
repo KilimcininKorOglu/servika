@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 
 type UpdateStatus = {
@@ -25,8 +26,8 @@ type VersionStatus = {
   error: string
 }
 
-function formatCheckTime(value?: string) {
-  if (!value) return 'Not checked yet'
+function formatCheckTime(value: string | undefined, notCheckedLabel: string) {
+  if (!value) return notCheckedLabel
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   return date.toLocaleString()
@@ -34,6 +35,7 @@ function formatCheckTime(value?: string) {
 
 /** Displays update status, starts an update, and follows its persistent log. */
 export default function PanelUpdate() {
+  const { t } = useTranslation('PanelUpdate')
   const [status, setStatus] = useState<UpdateStatus | null>(null)
   const [version, setVersion] = useState<VersionStatus | null>(null)
   const [log, setLog] = useState('')
@@ -104,7 +106,7 @@ export default function PanelUpdate() {
       const response = await api.post<VersionStatus>('/system/version-check/refresh')
       setVersion(response.data)
     } catch (caughtError) {
-      setError(apiError(caughtError, 'Could not refresh version status'))
+      setError(apiError(caughtError, t('errors.refresh')))
     } finally {
       setRefreshing(false)
     }
@@ -116,10 +118,10 @@ export default function PanelUpdate() {
     setConfirmation(false)
     try {
       await api.post('/system/update/start')
-      setLog('Update started...\n')
+      setLog(t('logStarted'))
       setRunning(true)
     } catch (caughtError) {
-      setError(apiError(caughtError, 'Could not start the update'))
+      setError(apiError(caughtError, t('errors.start')))
     } finally {
       setStarting(false)
     }
@@ -135,22 +137,22 @@ export default function PanelUpdate() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Panel Update</span>
-            <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">Server</span>
-            {version?.critical && <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">Critical</span>}
-            {version?.update_available && !version.critical && <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">Update available</span>}
+            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('title')}</span>
+            <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">{t('badges.server')}</span>
+            {version?.critical && <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">{t('badges.critical')}</span>}
+            {version?.update_available && !version.critical && <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">{t('badges.updateAvailable')}</span>}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
-            Updates the panel to the latest version from GitHub. Environment settings, databases, and sites are preserved, and an unhealthy release is rolled back automatically.
-            {status && !status.tool_available && ' The update tool is missing and will be downloaded automatically on first use.'}
+            {t('description')}
+            {status && !status.tool_available && t('toolMissing')}
           </div>
 
           {version && (
             <div className="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-950/20 p-3 text-xs text-slate-600 dark:text-slate-300">
               <div className="grid gap-2 sm:grid-cols-3">
-                <div><span className="block text-slate-400 dark:text-slate-500">Current</span><span className="font-medium text-slate-900 dark:text-slate-100">{version.current || 'Unknown'}</span></div>
-                <div><span className="block text-slate-400 dark:text-slate-500">Latest</span><span className="font-medium text-slate-900 dark:text-slate-100">{version.latest || 'Unknown'}</span></div>
-                <div><span className="block text-slate-400 dark:text-slate-500">Last check</span><span className="font-medium text-slate-900 dark:text-slate-100">{formatCheckTime(version.last_check)}</span></div>
+                <div><span className="block text-slate-400 dark:text-slate-500">{t('labels.current')}</span><span className="font-medium text-slate-900 dark:text-slate-100">{version.current || t('unknown')}</span></div>
+                <div><span className="block text-slate-400 dark:text-slate-500">{t('labels.latest')}</span><span className="font-medium text-slate-900 dark:text-slate-100">{version.latest || t('unknown')}</span></div>
+                <div><span className="block text-slate-400 dark:text-slate-500">{t('labels.lastCheck')}</span><span className="font-medium text-slate-900 dark:text-slate-100">{formatCheckTime(version.last_check, t('notCheckedYet'))}</span></div>
               </div>
               {version.announcement && (
                 <div className={`mt-3 rounded-lg px-3 py-2 ${version.critical ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'}`}>
@@ -158,8 +160,8 @@ export default function PanelUpdate() {
                   {version.release_date && <span className="ml-1 opacity-80">({version.release_date})</span>}
                 </div>
               )}
-              {version.error && <div className="mt-2 text-slate-500 dark:text-slate-400">Last version check failed: {version.error}</div>}
-              {!version.enabled && <div className="mt-2 text-slate-500 dark:text-slate-400">Version checks are disabled.</div>}
+              {version.error && <div className="mt-2 text-slate-500 dark:text-slate-400">{t('lastCheckFailed', { error: version.error })}</div>}
+              {!version.enabled && <div className="mt-2 text-slate-500 dark:text-slate-400">{t('checksDisabled')}</div>}
             </div>
           )}
 
@@ -168,7 +170,7 @@ export default function PanelUpdate() {
           {running && (
             <div className="mt-2 inline-flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
               <span className="w-3 h-3 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
-              The update is running. The panel may restart briefly; keep this page open.
+              {t('running')}
             </div>
           )}
 
@@ -181,22 +183,22 @@ export default function PanelUpdate() {
               <>
                 <button onClick={() => setConfirmation(true)} disabled={running || starting}
                   className="text-xs px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 transition font-medium disabled:opacity-40 disabled:cursor-not-allowed">
-                  Check for updates and install
+                  {t('checkAndInstall')}
                 </button>
                 <button onClick={refreshVersion} disabled={refreshing || running}
                   className="text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                  {refreshing ? 'Checking...' : 'Refresh version status'}
+                  {refreshing ? t('checking') : t('refreshStatus')}
                 </button>
               </>
             ) : (
               <>
-                <span className="text-xs text-slate-600 dark:text-slate-300">The panel will be updated and its service restarted. Confirm?</span>
+                <span className="text-xs text-slate-600 dark:text-slate-300">{t('confirmPrompt')}</span>
                 <button onClick={start} disabled={starting}
                   className="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition font-medium disabled:opacity-40">
-                  {starting ? 'Starting...' : 'Yes, update'}
+                  {starting ? t('starting') : t('confirmYes')}
                 </button>
                 <button onClick={() => setConfirmation(false)} className="text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                  Cancel
+                  {t('cancel')}
                 </button>
               </>
             )}

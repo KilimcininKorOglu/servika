@@ -1,0 +1,7 @@
+{
+  "home": "Home",
+  "searchDomain": "Search domain…",
+  "loading": "Loading…",
+  "noMatch": "No domain matches your search.",
+  "errorLoad": "Could not load the list"
+}

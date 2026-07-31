@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "toolsAndSettings": "Araçlar ve Ayarlar",
+    "panelUpdate": "Panel Güncelleme"
+  },
+  "title": "Panel Güncelleme",
+  "description": "Paneli GitHub'daki en son sürüme güncelleyin. Ortam değişkenleri, veritabanı ve siteler korunur; başarısız bir sağlık kontrolü otomatik olarak önceki sürüme geri döner. İşlem arka planda çalışır, bu sayfayı kapatabilirsiniz ve güncelleme kesintisiz devam eder."
+}

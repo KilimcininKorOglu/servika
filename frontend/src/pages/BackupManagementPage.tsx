@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
@@ -17,6 +18,7 @@ type SummaryRow = { domain_id: number; domain_name: string; count: number; total
 type Summary = { domains: SummaryRow[]; total_size_bytes: number; total_backups: number; destination_count: number; schedule: string }
 
 export default function BackupManagementPage() {
+  const { t } = useTranslation('BackupManagementPage')
   const [o, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -36,79 +38,79 @@ export default function BackupManagementPage() {
     setError(null); setSuccess(null); setBackingUp(true)
     try {
       await api.post('/admin/backups/tick')
-      setSuccess('Scheduled backups were triggered. Refresh in a few seconds to see the results.')
-    } catch (e) { setError(apiError(e, 'Could not trigger backups')) }
+      setSuccess(t('toast.triggered'))
+    } catch (e) { setError(apiError(e, t('toast.triggerFailed'))) }
     finally { setBackingUp(false) }
   }
 
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Tools and Settings', href: '/tools-settings' },
-        { label: 'Backup Manager' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.toolsSettings'), href: '/tools-settings' },
+        { label: t('breadcrumb.backupManager') },
       ]} />
       <div className="flex items-center gap-3 mb-1">
         <span className="text-2xl">💾</span>
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Backup Manager</h1>
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
       </div>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">View backups for all domains in one place. Daily automatic backups run, and S3/SFTP destinations are configured per domain.</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">{t('subtitle')}</p>
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
       {/* KPI */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        <Kpi label="Total Backup Size" value={o ? formatBytes(o.total_size_bytes) : '-'} color="sky" icon="💽" />
-        <Kpi label="Total Backups" value={o ? String(o.total_backups) : '-'} color="violet" icon="📦" />
-        <Kpi label="Domain Count" value={o ? String(o.domains.length) : '-'} color="teal" icon="🌐" />
-        <Kpi label="Active Remote Destinations" value={o ? String(o.destination_count) : '-'} color="emerald" icon="☁️" subtitle="S3 / SFTP" />
+        <Kpi label={t('kpi.totalSize')} value={o ? formatBytes(o.total_size_bytes) : '-'} color="sky" icon="💽" />
+        <Kpi label={t('kpi.totalBackups')} value={o ? String(o.total_backups) : '-'} color="violet" icon="📦" />
+        <Kpi label={t('kpi.domainCount')} value={o ? String(o.domains.length) : '-'} color="teal" icon="🌐" />
+        <Kpi label={t('kpi.remoteDestinations')} value={o ? String(o.destination_count) : '-'} color="emerald" icon="☁️" subtitle={t('kpi.remoteSubtitle')} />
       </div>
 
       {/* Schedule and action */}
       <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700/60 dark:bg-slate-800/60 sm:flex-row sm:items-center">
         <span className="text-sm text-slate-600 dark:text-slate-300">
-          🕒 Automatic backups: <strong>{o?.schedule || 'Daily at 03:00'}</strong>. 7-day retention
+          {t('schedule.prefix')} <strong>{o?.schedule || t('schedule.default')}</strong>{t('schedule.suffix')}
         </span>
         <div className="flex flex-col gap-2 sm:ml-auto sm:flex-row sm:items-center">
           <button onClick={backupNow} disabled={backingUp}
             className="px-3.5 py-2 text-sm font-medium bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-lg disabled:opacity-50">
-            {backingUp ? 'Triggering...' : '⏱ Back Up All Domains Now'}
+            {backingUp ? t('schedule.triggering') : t('schedule.backupNow')}
           </button>
-          <button onClick={load} disabled={loading} className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">↻ Refresh</button>
+          <button onClick={load} disabled={loading} className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">{t('schedule.refresh')}</button>
         </div>
       </div>
 
       {/* Table */}
       <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-700/60 dark:bg-slate-800/60">
         <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/60">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Domain Backups</h3>
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t('table.title')}</h3>
         </div>
         <div className={responsiveTableContainerClass}>
           <table className={responsiveTableClass}>
             <thead className={responsiveTableHeadClass}>
               <tr>
-                <th className="text-left font-medium px-4 py-2.5">Domain</th>
-                <th className="text-right font-medium px-4 py-2.5">Backup Count</th>
-                <th className="text-right font-medium px-4 py-2.5">Total Size</th>
-                <th className="text-left font-medium px-4 py-2.5">Latest Backup</th>
-                <th className="text-right font-medium px-4 py-2.5">Action</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('table.colDomain')}</th>
+                <th className="text-right font-medium px-4 py-2.5">{t('table.colCount')}</th>
+                <th className="text-right font-medium px-4 py-2.5">{t('table.colSize')}</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('table.colLatest')}</th>
+                <th className="text-right font-medium px-4 py-2.5">{t('table.colAction')}</th>
               </tr>
             </thead>
             <tbody className={responsiveTableBodyClass}>
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">Loading...</td></tr>
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">{t('table.loading')}</td></tr>
               ) : !o || o.domains.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No domains.</td></tr>
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">{t('table.noDomains')}</td></tr>
               ) : (
                 o.domains.map(d => (
                   <tr key={d.domain_id} className={responsiveTableRowClass}>
-                    <td data-label="Domain" className={`${responsiveTableCellClass} font-medium text-slate-800 dark:text-slate-100`}>{d.domain_name}</td>
-                    <td data-label="Backup Count" className={`${responsiveTableCodeCellClass} lg:text-right`}>{d.count}</td>
-                    <td data-label="Total Size" className={`${responsiveTableCodeCellClass} lg:text-right`}>{d.count ? formatBytes(d.total_bytes) : '-'}</td>
-                    <td data-label="Latest Backup" className={responsiveTableCodeCellClass}>{d.last_backup || <span className="text-slate-400">never</span>}</td>
+                    <td data-label={t('table.colDomain')} className={`${responsiveTableCellClass} font-medium text-slate-800 dark:text-slate-100`}>{d.domain_name}</td>
+                    <td data-label={t('table.colCount')} className={`${responsiveTableCodeCellClass} lg:text-right`}>{d.count}</td>
+                    <td data-label={t('table.colSize')} className={`${responsiveTableCodeCellClass} lg:text-right`}>{d.count ? formatBytes(d.total_bytes) : '-'}</td>
+                    <td data-label={t('table.colLatest')} className={responsiveTableCodeCellClass}>{d.last_backup || <span className="text-slate-400">{t('table.never')}</span>}</td>
                     <td className={responsiveTableActionCellClass}>
-                      <Link to={`/subscriptions/${d.domain_id}/backups`} className="text-xs px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-md text-brand-600 dark:text-brand-400 hover:bg-slate-50 dark:hover:bg-slate-700">Manage</Link>
+                      <Link to={`/subscriptions/${d.domain_id}/backups`} className="text-xs px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-md text-brand-600 dark:text-brand-400 hover:bg-slate-50 dark:hover:bg-slate-700">{t('table.manage')}</Link>
                     </td>
                   </tr>
                 ))
@@ -118,7 +120,7 @@ export default function BackupManagementPage() {
         </div>
       </div>
       <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">
-        ℹ️ Backups <span className="font-mono">/var/backups/servika/&lt;domain&gt;/</span> are stored there. Backups remain available if a domain is deleted, allowing recovery from accidental deletion. Open Manage to download or restore individual backups and configure destinations.
+        {t('footnote.pre')} <span className="font-mono">/var/backups/servika/&lt;domain&gt;/</span> {t('footnote.post')}
       </p>
     </div>
   )

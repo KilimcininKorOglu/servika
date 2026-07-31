@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Link } from 'react-router-dom'
 import {
   DndContext, DragOverlay, KeyboardSensor, PointerSensor, TouchSensor,
@@ -111,6 +113,7 @@ function usePrefersReducedMotion(): boolean {
 }
 
 export default function HomePage() {
+  const { t } = useTranslation('HomePage')
   const user = useAuth((s) => s.username)
   const [s, setS] = useState<SystemUsage | null>(null)
   const [domains, setDomains] = useState<Domain[]>([])
@@ -206,17 +209,17 @@ export default function HomePage() {
   const isoCount = s?.isolation_losses ?? 0
 
   const displayName = (user?.full_name || user?.name || '').trim()
-  const health = calcHealth(s, svcDown, isoCount)
+  const health = calcHealth(t, s, svcDown, isoCount)
   const quotaWarning = s?.quota_fs_unsupported
     ? {
-        title: 'Disk quota is unavailable on this filesystem',
-        body: 'Servika needs an XFS root filesystem for per-tenant disk quota. A reboot will not enable quota on the current filesystem.',
+        title: t('quota.unsupportedTitle'),
+        body: t('quota.unsupportedBody'),
         dismissible: true,
       }
     : s?.quota_reboot_required
       ? {
-          title: 'Disk quota will be enabled after reboot',
-          body: 'XFS user quota is configured, but enforcement is inactive. Reboot the server once to activate per-tenant disk quota.',
+          title: t('quota.rebootTitle'),
+          body: t('quota.rebootBody'),
           dismissible: false,
         }
       : null
@@ -311,25 +314,25 @@ export default function HomePage() {
     'cve-security': <CveWidget />,
 
     'wordpress': (
-      <Card title="WordPress Sites" subtitle="Installations across all accounts" icon={I.wp}
-        right={<Link to="/wordpress" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">More →</Link>}>
+      <Card title={t('widgets.wordpress')} subtitle={t('wp.subtitle')} icon={I.wp}
+        right={<Link to="/wordpress" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">{t('shared.more')}</Link>}>
         {wp === null ? (
           <Spinner />
         ) : (
           <>
             <div className="mb-3 grid grid-cols-3 gap-2.5">
-              <MiniStat value={wpTotal} label="Installs" color="slate" />
-              <MiniStat value={wpOutdated} label="Updates" color={wpOutdated > 0 ? 'amber' : 'emerald'} />
-              <MiniStat value={wpCurrent} label="Current" color="emerald" />
+              <MiniStat value={wpTotal} label={t('wp.installs')} color="slate" />
+              <MiniStat value={wpOutdated} label={t('wp.updates')} color={wpOutdated > 0 ? 'amber' : 'emerald'} />
+              <MiniStat value={wpCurrent} label={t('wp.current')} color="emerald" />
             </div>
             {wpOutdated > 0 && (
               <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700 dark:border-amber-800/50 dark:bg-amber-900/15 dark:text-amber-300">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="mt-0.5 h-3.5 w-3.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008M10.36 3.6 2.26 17.66A1.5 1.5 0 0 0 3.56 19.9h16.88a1.5 1.5 0 0 0 1.3-2.25L13.64 3.6a1.5 1.5 0 0 0-2.6 0Z" /></svg>
-                <span><strong>{wpOutdated}</strong> installation{wpOutdated !== 1 ? 's' : ''} with pending updates — outdated versions carry security risks.</span>
+                <span><strong>{wpOutdated}</strong>{t('wp.pendingUpdatesText', { count: wpOutdated })}</span>
               </div>
             )}
             {wpTotal === 0 ? (
-              <div className="py-5 text-center text-xs text-slate-400">No WordPress installations found</div>
+              <div className="py-5 text-center text-xs text-slate-400">{t('wp.empty')}</div>
             ) : (
               <div className="space-y-0.5">
                 {wp!.slice(0, 5).map((k) => (
@@ -340,27 +343,27 @@ export default function HomePage() {
                         className={`h-4 w-4 shrink-0 ${k.status === 'outdated' ? 'text-amber-500' : k.status === 'current' ? 'text-emerald-500' : 'text-slate-400'}`}><path d={I.wp} /></svg>
                       <span className="min-w-0">
                         <span className="block truncate font-mono text-[13px] text-slate-700 dark:text-slate-200">{k.domain_name}</span>
-                        <span className="block truncate text-[10px] text-slate-400 dark:text-slate-500">{k.dir === '/ (root)' ? 'root dir' : k.dir}{k.version ? ` · v${k.version}` : ''}</span>
+                        <span className="block truncate text-[10px] text-slate-400 dark:text-slate-500">{k.dir === '/ (root)' ? t('wp.rootDir') : k.dir}{k.version ? ` · v${k.version}` : ''}</span>
                       </span>
                     </span>
                     <span className="shrink-0">
                       {k.status === 'outdated'
-                        ? <Badge color="amber" text={k.latest_version ? `→ v${k.latest_version}` : 'Update'} />
+                        ? <Badge color="amber" text={k.latest_version ? `→ v${k.latest_version}` : t('wp.badgeUpdate')} />
                         : k.status === 'current'
-                          ? <Badge color="emerald" text="Current" />
-                          : <Badge color="slate" text="Unknown" />}
+                          ? <Badge color="emerald" text={t('wp.badgeCurrent')} />
+                          : <Badge color="slate" text={t('wp.badgeUnknown')} />}
                     </span>
                   </Link>
                 ))}
                 {wpTotal > 5 && (
                   <Link to="/wordpress" className="block pt-1.5 text-center text-[11px] text-slate-400 transition-colors hover:text-brand-600 dark:hover:text-brand-400">
-                    +{wpTotal - 5} more installations →
+                    {t('wp.more', { count: wpTotal - 5 })}
                   </Link>
                 )}
               </div>
             )}
             {wpUnknown > 0 && (
-              <div className="mt-2 text-[10px] text-slate-400 dark:text-slate-500">{wpUnknown} installation{wpUnknown !== 1 ? 's' : ''} could not be determined (wp-cli timeout).</div>
+              <div className="mt-2 text-[10px] text-slate-400 dark:text-slate-500">{t('wp.unknownNote', { count: wpUnknown })}</div>
             )}
           </>
         )}
@@ -368,8 +371,8 @@ export default function HomePage() {
     ),
 
     'panel-update': (
-      <Card title="Panel Update" subtitle="Version and system packages" icon={I.update}
-        right={<Link to="/tools/packages" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">More →</Link>}>
+      <Card title={t('widgets.panel-update')} subtitle={t('update.subtitle')} icon={I.update}
+        right={<Link to="/tools/packages" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">{t('shared.more')}</Link>}>
         <div className="flex items-center gap-3">
           <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${
             update?.running ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/25 dark:text-sky-300'
@@ -379,43 +382,43 @@ export default function HomePage() {
           </span>
           <div className="min-w-0">
             <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              {update?.running ? 'Update running' : update?.tool_available === false ? 'Update tool missing' : 'Panel up to date'}
+              {update?.running ? t('update.running') : update?.tool_available === false ? t('update.toolMissing') : t('update.upToDate')}
             </div>
             <div className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400" title={update?.status}>
-              {update?.status || (update ? 'No status info' : 'Loading…')}
+              {update?.status || (update ? t('update.noStatus') : t('shared.loading'))}
             </div>
           </div>
           <span className="ml-auto shrink-0">
             <Badge color={update?.running ? 'sky' : update?.tool_available === false ? 'amber' : 'emerald'}
-              text={update?.running ? 'Running' : update?.tool_available === false ? 'Missing' : 'Current'} />
+              text={update?.running ? t('update.badgeRunning') : update?.tool_available === false ? t('update.badgeMissing') : t('update.badgeCurrent')} />
           </span>
         </div>
         <Link to="/tools/packages" className="-mx-2 mt-3 flex items-center justify-between rounded-xl border-t border-slate-100 px-2 pt-3 text-xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50">
           <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-400"><path d={I.package} /></svg>
-            System packages
+            {t('update.systemPackages')}
           </span>
-          <span className="text-brand-600 dark:text-brand-400">Manage →</span>
+          <span className="text-brand-600 dark:text-brand-400">{t('shared.manage')}</span>
         </Link>
       </Card>
     ),
 
     'last-backup': (
-      <Card title="Last Server Backup" subtitle="Automatic daily backup" icon={I.backup}
-        right={<Link to="/backup-management" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">More →</Link>}>
+      <Card title={t('widgets.last-backup')} subtitle={t('backup.subtitle')} icon={I.backup}
+        right={<Link to="/backup-management" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">{t('shared.more')}</Link>}>
         {!backup ? (
-          <div className="py-6 text-center text-xs text-slate-400">Backup summary unavailable</div>
+          <div className="py-6 text-center text-xs text-slate-400">{t('backup.unavailable')}</div>
         ) : (
           <>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight tabular-nums text-slate-900 dark:text-slate-100">{backup.total_backups}</span>
-              <span className="text-sm text-slate-500 dark:text-slate-400">backups · {fmtBytesGB(backup.total_size_b)}</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">{t('backup.count', { count: backup.total_backups, size: fmtBytesGB(backup.total_size_b) })}</span>
             </div>
             <div className="mt-3 space-y-0">
-              <KV label="Last backup" value={lastBackup || '—'} />
-              <KV label="Sites backed up" value={`${backedUpDomains} / ${backup.domains.length}`} />
-              <KV label="Remote target" value={backup.destination_count > 0 ? `${backup.destination_count} active` : 'None'} />
-              <KV label="Schedule" value={backup.schedule} />
+              <KV label={t('backup.lastBackup')} value={lastBackup || '—'} />
+              <KV label={t('backup.sitesBackedUp')} value={`${backedUpDomains} / ${backup.domains.length}`} />
+              <KV label={t('backup.remoteTarget')} value={backup.destination_count > 0 ? t('backup.remoteActive', { count: backup.destination_count }) : t('backup.remoteNone')} />
+              <KV label={t('backup.schedule')} value={backup.schedule} />
             </div>
           </>
         )}
@@ -423,30 +426,30 @@ export default function HomePage() {
     ),
 
     'performance': (
-      <Card title="Performance / Optimize" subtitle="Improve server settings" icon={I.optimize}
-        right={<Link to="/tools/optimize" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">More →</Link>}>
+      <Card title={t('widgets.performance')} subtitle={t('performance.subtitle')} icon={I.optimize}
+        right={<Link to="/tools/optimize" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">{t('shared.more')}</Link>}>
         <div className="flex items-center gap-3">
           <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${optimize?.running ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/25 dark:text-sky-300' : 'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-300'}`}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d={I.optimize} /></svg>
           </span>
           <div className="min-w-0">
             <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              {optimize?.running ? 'Optimization running' : 'Optimization ready'}
+              {optimize?.running ? t('performance.running') : t('performance.ready')}
             </div>
             <div className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400" title={optimize?.status}>
-              {optimize?.status || (optimize ? 'MariaDB · nginx · PHP settings' : 'Loading…')}
+              {optimize?.status || (optimize ? t('performance.defaultStatus') : t('shared.loading'))}
             </div>
           </div>
           <span className="ml-auto shrink-0">
-            <Badge color={optimize?.running ? 'sky' : 'slate'} text={optimize?.running ? 'Running' : 'Idle'} />
+            <Badge color={optimize?.running ? 'sky' : 'slate'} text={optimize?.running ? t('performance.badgeRunning') : t('performance.badgeIdle')} />
           </span>
         </div>
       </Card>
     ),
 
     'services': (
-      <Card title="Services" subtitle={s ? `${svcActive}/${svcTotal} services running` : 'service status'} icon={I.service}
-        right={s ? <Badge color={svcDown === 0 ? 'emerald' : 'amber'} text={svcDown === 0 ? 'All active' : `${svcDown} down`} /> : undefined}>
+      <Card title={t('widgets.services')} subtitle={s ? t('services.subtitleCount', { active: svcActive, total: svcTotal }) : t('services.subtitleStatus')} icon={I.service}
+        right={s ? <Badge color={svcDown === 0 ? 'emerald' : 'amber'} text={svcDown === 0 ? t('services.allActive') : t('services.down', { count: svcDown })} /> : undefined}>
         {!s ? <Spinner /> : (
           <div className="grid grid-cols-1 gap-x-5 gap-y-0.5 sm:grid-cols-2">
             {s.services.map((sv) => (
@@ -457,7 +460,7 @@ export default function HomePage() {
                   <span className="truncate text-[13px] text-slate-700 dark:text-slate-200">{sv.label}</span>
                 </span>
                 <span className={`shrink-0 text-[11px] font-medium ${sv.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
-                  {sv.active ? 'Active' : 'Down'}
+                  {sv.active ? t('services.active') : t('services.statusDown')}
                 </span>
               </div>
             ))}
@@ -467,15 +470,15 @@ export default function HomePage() {
     ),
 
     'domains': (
-      <Card title="Domains" subtitle="Hosted sites and SSL status" icon={I.domain}
-        right={<Link to="/domains" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">More →</Link>}>
+      <Card title={t('widgets.domains')} subtitle={t('domains.subtitle')} icon={I.domain}
+        right={<Link to="/domains" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">{t('shared.more')}</Link>}>
         <div className="mb-4 grid grid-cols-3 gap-2.5">
-          <MiniStat value={domains.length} label="Total" color="slate" />
-          <MiniStat value={active} label="Active" color="emerald" />
-          <MiniStat value={sslCount} label="SSL" color="sky" />
+          <MiniStat value={domains.length} label={t('domains.total')} color="slate" />
+          <MiniStat value={active} label={t('domains.active')} color="emerald" />
+          <MiniStat value={sslCount} label={t('domains.ssl')} color="sky" />
         </div>
         {domains.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-400">No domains yet</div>
+          <div className="py-6 text-center text-xs text-slate-400">{t('domains.empty')}</div>
         ) : (
           <div className="space-y-0.5">
             {domains.slice(0, 7).map((d) => (
@@ -491,14 +494,14 @@ export default function HomePage() {
                   <span className="truncate font-mono text-[13px] text-slate-700 dark:text-slate-200">{d.domain_name}</span>
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
-                  {!d.ssl && <Badge color="amber" text="No SSL" />}
-                  <Badge color={d.status === 'active' ? 'emerald' : 'slate'} text={d.status === 'active' ? 'Active' : d.status} />
+                  {!d.ssl && <Badge color="amber" text={t('domains.noSsl')} />}
+                  <Badge color={d.status === 'active' ? 'emerald' : 'slate'} text={d.status === 'active' ? t('domains.badgeActive') : d.status} />
                 </span>
               </Link>
             ))}
             {domains.length > 7 && (
               <Link to="/domains" className="block pt-1.5 text-center text-[11px] text-slate-400 transition-colors hover:text-brand-600 dark:hover:text-brand-400">
-                +{domains.length - 7} more domains →
+                {t('domains.more', { count: domains.length - 7 })}
               </Link>
             )}
           </div>
@@ -507,22 +510,22 @@ export default function HomePage() {
     ),
 
     'server-info': (
-      <Card title="Server Info" subtitle="Hardware and system" icon={I.server}>
+      <Card title={t('widgets.server-info')} subtitle={t('serverInfo.subtitle')} icon={I.server}>
         {!s ? <Spinner /> : (
           <div className="space-y-0">
-            <KV label="Hostname" value={s.system.hostname} />
-            <KV label="IP address" value={s.system.ip || '—'} />
-            <KV label="OS" value={s.system.os_name || '—'} />
-            <KV label="Kernel" value={s.system.kernel || '—'} />
-            <KV label="CPU" value={s.system.cpu_model || '—'} />
-            <KV label="Cores" value={`${s.system.cpu_cores} vCPU`} />
+            <KV label={t('serverInfo.hostname')} value={s.system.hostname} />
+            <KV label={t('serverInfo.ip')} value={s.system.ip || '—'} />
+            <KV label={t('serverInfo.os')} value={s.system.os_name || '—'} />
+            <KV label={t('serverInfo.kernel')} value={s.system.kernel || '—'} />
+            <KV label={t('serverInfo.cpu')} value={s.system.cpu_model || '—'} />
+            <KV label={t('serverInfo.cores')} value={t('serverInfo.coresValue', { count: s.system.cpu_cores })} />
           </div>
         )}
       </Card>
     ),
 
     'health': (
-      <Card title="System Health" subtitle="Overall status assessment" icon={I.health}>
+      <Card title={t('widgets.health')} subtitle={t('health.subtitle')} icon={I.health}>
         {!s ? <Spinner /> : (
           <>
             <div className="mb-3 flex items-center gap-4">
@@ -543,19 +546,19 @@ export default function HomePage() {
     ),
 
     'live-resources': !s ? <Spinner /> : (
-      <Card title="Live Resources" subtitle="Real-time CPU and memory" icon={I.chart}>
+      <Card title={t('widgets.live-resources')} subtitle={t('live.subtitle')} icon={I.chart}>
         <div className="space-y-3">
           <div>
-            <div className="mb-1 flex justify-between text-[11px]"><span className="text-slate-500">CPU</span><span className="font-mono text-slate-700 dark:text-slate-300">{s.memory_pct?.toFixed(1) ?? '—'}%</span></div>
+            <div className="mb-1 flex justify-between text-[11px]"><span className="text-slate-500">{t('live.cpu')}</span><span className="font-mono text-slate-700 dark:text-slate-300">{s.memory_pct?.toFixed(1) ?? '—'}%</span></div>
             <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-2 rounded-full bg-brand-500 transition-all" style={{ width: `${Math.min(s.memory_pct ?? 0, 100)}%` }} /></div>
           </div>
           <div>
-            <div className="mb-1 flex justify-between text-[11px]"><span className="text-slate-500">Memory</span><span className="font-mono text-slate-700 dark:text-slate-300">{fmtBytesGB((s.memory_used_gb ?? 0) * 1e9)} / {fmtBytesGB((s.memory_total_gb ?? 0) * 1e9)}</span></div>
+            <div className="mb-1 flex justify-between text-[11px]"><span className="text-slate-500">{t('live.memory')}</span><span className="font-mono text-slate-700 dark:text-slate-300">{fmtBytesGB((s.memory_used_gb ?? 0) * 1e9)} / {fmtBytesGB((s.memory_total_gb ?? 0) * 1e9)}</span></div>
             <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-2 rounded-full bg-sky-500 transition-all" style={{ width: `${Math.min(s.memory_pct ?? 0, 100)}%` }} /></div>
           </div>
           {mainDisk && (
             <div>
-              <div className="mb-1 flex justify-between text-[11px]"><span className="text-slate-500">Disk ({mainDisk.mount})</span><span className="font-mono text-slate-700 dark:text-slate-300">{mainDisk.free_gb?.toFixed(1)} GB free</span></div>
+              <div className="mb-1 flex justify-between text-[11px]"><span className="text-slate-500">{t('live.disk', { mount: mainDisk.mount })}</span><span className="font-mono text-slate-700 dark:text-slate-300">{t('live.freeGb', { value: mainDisk.free_gb?.toFixed(1) })}</span></div>
               <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-2 rounded-full bg-emerald-500 transition-all" style={{ width: `${Math.min(mainDisk.pct ?? 0, 100)}%` }} /></div>
             </div>
           )}
@@ -564,14 +567,14 @@ export default function HomePage() {
     ),
 
     'subscriptions': (
-      <Card title="Subscriptions" subtitle="Your active services" icon={I.subscription}>
-        <div className="py-5 text-center text-xs text-slate-400">Customer panel overview</div>
+      <Card title={t('widgets.subscriptions')} subtitle={t('subscriptions.subtitle')} icon={I.subscription}>
+        <div className="py-5 text-center text-xs text-slate-400">{t('subscriptions.body')}</div>
       </Card>
     ),
 
     'network': (
-      <Card title="Network Traffic" subtitle="Inbound and outbound data" icon={I.network}>
-        <div className="py-5 text-center text-xs text-slate-400">Traffic statistics available in Statistics page</div>
+      <Card title={t('widgets.network')} subtitle={t('network.subtitle')} icon={I.network}>
+        <div className="py-5 text-center text-xs text-slate-400">{t('network.body')}</div>
       </Card>
     ),
   }
@@ -582,17 +585,17 @@ export default function HomePage() {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-            {displayName ? `Welcome back, ${displayName}` : 'Dashboard'}
+            {displayName ? t('header.welcome', { name: displayName }) : t('header.dashboard')}
           </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Server overview and quick actions</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('header.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           {saveState !== 'idle' && (
             <span className={`text-[11px] font-medium ${saveState === 'saving' ? 'text-slate-400' : saveState === 'saved' ? 'text-emerald-500' : 'text-red-500'}`}>
-              {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Layout saved' : 'Save failed'}
+              {saveState === 'saving' ? t('header.saving') : saveState === 'saved' ? t('header.saved') : t('header.saveFailed')}
             </span>
           )}
-          <button onClick={resetLayout} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">Reset Layout</button>
+          <button onClick={resetLayout} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">{t('header.resetLayout')}</button>
         </div>
       </div>
 
@@ -606,7 +609,7 @@ export default function HomePage() {
             </div>
             {quotaWarning.dismissible && (
               <button type="button" onClick={dismissQuotaWarning} className="text-xs font-medium text-amber-700 underline-offset-2 hover:underline dark:text-amber-300">
-                Dismiss
+                {t('quota.dismiss')}
               </button>
             )}
           </div>
@@ -624,7 +627,7 @@ export default function HomePage() {
                 <div className="space-y-5">
                   {col.map((id) => (
                     <SortableWidget key={id} id={id} reduced={reduced}>
-                      {widgets[id] || <Card title={id} subtitle=""><div className="py-4 text-center text-xs text-slate-400">Widget not found</div></Card>}
+                      {widgets[id] || <Card title={id} subtitle=""><div className="py-4 text-center text-xs text-slate-400">{t('widgetNotFound')}</div></Card>}
                     </SortableWidget>
                   ))}
                 </div>
@@ -636,7 +639,7 @@ export default function HomePage() {
         <DragOverlay dropAnimation={null}>
           {activeId ? (
             <div className="rounded-2xl border-2 border-brand-300 bg-white/95 p-4 shadow-2xl backdrop-blur-sm dark:border-brand-700 dark:bg-slate-900/95">
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{WIDGET_NAME[activeId] || activeId}</p>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t(`widgets.${activeId}`, { defaultValue: WIDGET_NAME[activeId] || activeId })}</p>
             </div>
           ) : null}
         </DragOverlay>
@@ -653,6 +656,7 @@ function DroppableColumn({ id, items, children }: { id: string; items: string[];
 }
 
 function SortableWidget({ id, reduced, children }: { id: string; reduced: boolean; children: React.ReactNode }) {
+  const { t } = useTranslation('HomePage')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -662,7 +666,7 @@ function SortableWidget({ id, reduced, children }: { id: string; reduced: boolea
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="group/widget relative">
-        <button {...listeners} className="absolute -left-1 -top-1 z-10 flex h-6 w-6 cursor-grab items-center justify-center rounded-md text-slate-300 opacity-0 transition-opacity hover:text-slate-500 active:cursor-grabbing group-hover/widget:opacity-100 dark:text-slate-600 dark:hover:text-slate-400" title="Drag to reorder">
+        <button {...listeners} className="absolute -left-1 -top-1 z-10 flex h-6 w-6 cursor-grab items-center justify-center rounded-md text-slate-300 opacity-0 transition-opacity hover:text-slate-500 active:cursor-grabbing group-hover/widget:opacity-100 dark:text-slate-600 dark:hover:text-slate-400" title={t('dragToReorder')}>
           <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5"><circle cx="9" cy="5" r="1.5" /><circle cx="15" cy="5" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="19" r="1.5" /><circle cx="15" cy="19" r="1.5" /></svg>
         </button>
         {children}
@@ -694,9 +698,10 @@ function Card({ title, subtitle, icon, right, children }: { title: string; subti
 }
 
 function Spinner() {
+  const { t } = useTranslation('HomePage')
   return <div className="flex items-center justify-center gap-2 py-6 text-xs text-slate-400">
     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-transparent dark:border-slate-600 dark:border-t-transparent" />
-    Loading…
+    {t('shared.loading')}
   </div>
 }
 
@@ -733,18 +738,18 @@ function KV({ label, value }: { label: string; value: string }) {
   )
 }
 
-function calcHealth(s: SystemUsage | null, svcDown: number, isoCount: number): { score: number; label: string; issues: { severity: string; text: string }[] } {
+function calcHealth(t: TFunction, s: SystemUsage | null, svcDown: number, isoCount: number): { score: number; label: string; issues: { severity: string; text: string }[] } {
   const issues: { severity: string; text: string }[] = []
-  if (svcDown > 0) issues.push({ severity: 'high', text: `${svcDown} service${svcDown !== 1 ? 's' : ''} down` })
-  if (isoCount > 0) issues.push({ severity: 'high', text: `${isoCount} isolation loss${isoCount !== 1 ? 'es' : ''} detected` })
+  if (svcDown > 0) issues.push({ severity: 'high', text: t('health.servicesDown', { count: svcDown }) })
+  if (isoCount > 0) issues.push({ severity: 'high', text: t('health.isolationLoss', { count: isoCount }) })
   const memPct = s?.memory_pct ?? 0
-  if (memPct > 90) issues.push({ severity: 'high', text: `Memory at ${memPct.toFixed(0)}%` })
-  else if (memPct > 75) issues.push({ severity: 'medium', text: `Memory at ${memPct.toFixed(0)}%` })
+  if (memPct > 90) issues.push({ severity: 'high', text: t('health.memoryAt', { percent: memPct.toFixed(0) }) })
+  else if (memPct > 75) issues.push({ severity: 'medium', text: t('health.memoryAt', { percent: memPct.toFixed(0) }) })
   const diskPct = s?.disk?.pct ?? (s?.disks?.[0]?.pct ?? 0)
-  if (diskPct > 90) issues.push({ severity: 'high', text: `Disk at ${diskPct.toFixed(0)}%` })
-  else if (diskPct > 80) issues.push({ severity: 'medium', text: `Disk at ${diskPct.toFixed(0)}%` })
+  if (diskPct > 90) issues.push({ severity: 'high', text: t('health.diskAt', { percent: diskPct.toFixed(0) }) })
+  else if (diskPct > 80) issues.push({ severity: 'medium', text: t('health.diskAt', { percent: diskPct.toFixed(0) }) })
   const score = Math.max(0, 100 - issues.filter(i => i.severity === 'high').length * 25 - issues.filter(i => i.severity === 'medium').length * 10)
-  const label = score >= 90 ? 'Healthy' : score >= 70 ? 'Fair' : score >= 50 ? 'Degraded' : 'Critical'
+  const label = score >= 90 ? t('health.healthy') : score >= 70 ? t('health.fair') : score >= 50 ? t('health.degraded') : t('health.critical')
   return { score, label, issues }
 }
 

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import Breadcrumb from '@/components/Breadcrumb'
 import PanelUpdate from '@/components/PanelUpdate'
 
@@ -9,21 +10,19 @@ import PanelUpdate from '@/components/PanelUpdate'
  * progress when the page is reopened.
  */
 export default function PanelUpdatePage() {
+  const { t } = useTranslation('PanelUpdatePage')
   return (
     <div className="px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Tools and Settings', href: '/tools-settings' },
-        { label: 'Panel Update' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.toolsAndSettings'), href: '/tools-settings' },
+        { label: t('breadcrumb.panelUpdate') },
       ]} />
 
       <div className="mb-5 max-w-3xl">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Panel Update</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{t('title')}</h1>
         <p className="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          Update the panel to the latest release from GitHub. Environment variables,
-          database, and sites are preserved; a failed health check automatically rolls back
-          to the previous version. The operation runs in the background, so you can close
-          this page and the update continues uninterrupted.
+          {t('description')}
         </p>
       </div>
 

@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "statistics": "İstatistikler"
+  },
+  "title": "İstatistikler",
+  "live": "● Canlı (10 sn)",
+  "subtitle": "Sunucu kaynak kullanımı, alan adı sayıları ve sistem özeti.",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "Bellek",
+    "disk": "Disk",
+    "load": "Yük (1 dk)"
+  },
+  "coresValue": "{{cores}} çekirdek",
+  "loadSub": "5 dk: {{five}} · 15 dk: {{fifteen}}",
+  "system": {
+    "title": "Sistem",
+    "hostname": "Ana bilgisayar adı",
+    "os": "İşletim sistemi",
+    "kernel": "Çekirdek",
+    "processor": "İşlemci",
+    "swap": "Takas",
+    "panelVersion": "Panel sürümü"
+  },
+  "processorValue": "{{model}} · {{cores}} çekirdek",
+  "swapValue": "{{percent}}% · {{used}} / {{total}}",
+  "domains": {
+    "title": "Alan Adları",
+    "total": "Toplam alan adı",
+    "active": "Etkin alan adı",
+    "inactive": "Etkin olmayan alan adı"
+  },
+  "footer": {
+    "pre": "Daha ayrıntılı izleme için ",
+    "link": "İzleme",
+    "post": " sayfasını ziyaret edin."
+  }
+}

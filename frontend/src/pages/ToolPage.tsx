@@ -1,30 +1,29 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Domain = { id: number; domain_name: string }
 
-const TOOL_META: Record<string, { label: string; phase?: string; description: string }> = {
-  connection: { label: 'Connection Details', description: 'FTP server, username, database connection string, and quick-copy actions.' },
-  files: { label: 'File Manager', phase: 'F6', description: 'List, upload, download, and change permissions for files under public_html.' },
-  databases: { label: 'Databases', phase: 'F5', description: 'MySQL databases, users, and phpMyAdmin integration.' },
-  ftp: { label: 'FTP Accounts', phase: 'F4', description: 'Virtual FTP accounts, passwords, and home directories through Pure-FTPd.' },
-  backups: { label: 'Backup and Restore', phase: 'F12', description: 'Back up tarballs and database dumps to SFTP, S3, or local storage.' },
-  copy: { label: 'Copy Website', description: 'Clone an existing website to another domain.' },
-  php: { label: 'PHP Settings', phase: 'F3', description: 'PHP-FPM pool selection, version changes, and php.ini parameters.' },
-  logs: { label: 'Logs', phase: 'F10', description: 'Live access.log and error.log monitoring with WebSocket tailing.' },
-  cron: { label: 'Scheduled Tasks', phase: 'F8', description: 'Per-user crontab editor.' },
-  git: { label: 'Git', phase: 'F9', description: 'Connect repositories, configure deploy keys, and pull automatically with webhooks.' },
-  composer: { label: 'PHP Composer', phase: 'F3', description: 'Web interface for composer install and update.' },
-  performance: { label: 'Performance', description: 'Accelerators such as OPcache, gzip, and lazy loading.' },
-  ssl: { label: 'SSL/TLS Certificate', phase: 'F7', description: 'Automatic Let\'s Encrypt installation and renewal.' },
-  'password-protection': { label: 'Password-Protected Directories', phase: 'F7', description: 'Protect directories with .htpasswd.' },
-  stats: { label: 'Statistics', phase: 'F10', description: 'Disk, traffic, and visitor reports.' },
-  imunify: { label: 'Imunify', description: 'Antivirus and WAF integration.' },
+// Phase codes are non-translatable identifiers; slugs missing here have no phase.
+const TOOL_PHASE: Record<string, string> = {
+  files: 'F6',
+  databases: 'F5',
+  ftp: 'F4',
+  backups: 'F12',
+  php: 'F3',
+  logs: 'F10',
+  cron: 'F8',
+  git: 'F9',
+  composer: 'F3',
+  ssl: 'F7',
+  'password-protection': 'F7',
+  stats: 'F10',
 }
 
 export default function ToolPage() {
+  const { t } = useTranslation('ToolPage')
   const { id, slug } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -34,13 +33,19 @@ export default function ToolPage() {
     api.get<Domain>(`/domains/${id}`).then(response => setDomain(response.data)).catch(requestError => setError(apiError(requestError)))
   }, [id])
 
-  const meta = TOOL_META[slug || ''] || { label: slug || 'Tool', description: 'Not implemented yet.' }
+  const key = slug || ''
+  const known = Object.prototype.hasOwnProperty.call(TOOL_PHASE, key) || Boolean(t(`tool.${key}.label`, { defaultValue: '' }))
+  const meta = {
+    label: known ? t(`tool.${key}.label`, { defaultValue: slug || t('fallback.label') }) : (slug || t('fallback.label')),
+    phase: TOOL_PHASE[key],
+    description: known ? t(`tool.${key}.description`, { defaultValue: t('fallback.description') }) : t('fallback.description'),
+  }
 
   return (
     <div className="px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Domains', href: '/domains' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.domains'), href: '/domains' },
         { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },
         { label: meta.label },
       ]} />
@@ -49,12 +54,12 @@ export default function ToolPage() {
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{meta.label}</h1>
         {meta.phase && (
           <span className="text-[10px] font-semibold uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded">
-            {meta.phase} · Not Ready
+            {meta.phase} · {t('notReady')}
           </span>
         )}
       </div>
       <p className="text-sm text-slate-500 dark:text-slate-500 mb-1">
-        {domain ? <>Domain: <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link></> : '...'}
+        {domain ? <>{t('domainLabel')}<Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link></> : '...'}
       </p>
       <p className="text-sm text-slate-500 dark:text-slate-500 mb-6">{meta.description}</p>
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
@@ -65,12 +70,14 @@ export default function ToolPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-1">Under construction</h3>
+        <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('construction.heading')}</h3>
         <p className="text-sm text-slate-500 dark:text-slate-500">
-          This module will become available {meta.phase ? <>in <span className="font-mono text-brand-700 dark:text-brand-300">{meta.phase}</span></> : 'in a later phase'}.
+          {meta.phase
+            ? <>{t('construction.availablePrefix')}<span className="font-mono text-brand-700 dark:text-brand-300">{meta.phase}</span>{t('construction.availableSuffix')}</>
+            : t('construction.availableLater')}
         </p>
         <Link to={`/subscriptions/${id}`} className="inline-block mt-4 text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">
-          ← Return to domain dashboard
+          {t('construction.returnToDashboard')}
         </Link>
       </div>
     </div>

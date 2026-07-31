@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -18,6 +19,7 @@ type LogResponse = { log: string; running: boolean; version?: string; resource?:
 type Filter = 'all' | 'installed' | 'available'
 
 export default function PHPVersionsPage() {
+  const { t } = useTranslation('PHPVersionsPage')
   const [versions, setVersions] = useState<Version[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -62,7 +64,9 @@ export default function PHPVersionsPage() {
         if (done) return
         setOpLog(r.data.log || '')
         if (!r.data.running) {
-          setSuccess(`PHP ${activeOp.version} ${activeOp.action === 'remove' ? 'removed' : 'installed'}`)
+          setSuccess(activeOp.action === 'remove'
+            ? t('success.removed', { version: activeOp.version })
+            : t('success.installed', { version: activeOp.version }))
           setTimeout(() => setSuccess(null), 6000)
           setActiveOp(null)
           load()
@@ -74,35 +78,35 @@ export default function PHPVersionsPage() {
     const id = window.setInterval(tick, 2000)
     tick()
     return () => { done = true; window.clearInterval(id) }
-  }, [activeOp, load])
+  }, [activeOp, load, t])
 
   useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight }) }, [opLog])
 
   async function install(v: Version) {
-    if (activeOp) { alert('A PHP operation is already in progress. Wait for it to finish.'); return }
-    if (!confirm(`Fourteen packages will be installed for PHP ${v.version} (${v.resource}). Continue?`)) return
+    if (activeOp) { alert(t('alerts.opInProgress')); return }
+    if (!confirm(t('confirm.install', { version: v.version, resource: v.resource }))) return
     setError(null); setSuccess(null); setOpLog('')
     try {
       await api.post('/php-versions/install', { version: v.version, resource: v.resource })
-      setOpLog(`PHP ${v.version} installation started...\n`)
+      setOpLog(t('log.installStarted', { version: v.version }))
       setActiveOp({ version: v.version, resource: v.resource, action: 'install' })
-    } catch (e) { setError(apiError(e, 'Could not start installation')) }
+    } catch (e) { setError(apiError(e, t('errors.startInstallFailed'))) }
   }
 
   async function remove(v: Version) {
     if (v.resource === 'appstream') {
-      alert('AppStream PHP is the system default and cannot be removed.')
+      alert(t('alerts.appstreamCannotRemove'))
       return
     }
-    if (activeOp) { alert('A PHP operation is already in progress. Wait for it to finish.'); return }
-    if (!confirm(`PHP ${v.version} (Remi) and ALL its extensions will be REMOVED.\nThe operation will be rejected if a domain uses this version. Continue?`)) return
+    if (activeOp) { alert(t('alerts.opInProgress')); return }
+    if (!confirm(t('confirm.remove', { version: v.version }))) return
     setError(null); setSuccess(null); setOpLog('')
     try {
       await api.post('/php-versions/remove', { version: v.version, resource: v.resource })
-      setOpLog(`PHP ${v.version} removal started...\n`)
+      setOpLog(t('log.removeStarted', { version: v.version }))
 
       setActiveOp({ version: v.version, resource: v.resource, action: 'remove' })
-    } catch (e) { setError(apiError(e, 'Could not start removal')) }
+    } catch (e) { setError(apiError(e, t('errors.startRemoveFailed'))) }
   }
 
   const filtered = versions.filter(v => {
@@ -115,16 +119,15 @@ export default function PHPVersionsPage() {
   return (
     <div className="px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Tools and Settings', href: '/tools-settings' },
-        { label: 'PHP Versions' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.tools'), href: '/tools-settings' },
+        { label: t('breadcrumb.current') },
       ]} />
 
       <div className="mb-5">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">PHP Versions</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{t('title')}</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Add or remove PHP versions. Each runs in an independent PHP-FPM pool and can be selected per domain.
-          Install includes 14 packages (fpm, cli, mysqlnd, and 11 extensions).
+          {t('subtitle')}
         </p>
       </div>
 
@@ -137,10 +140,12 @@ export default function PHPVersionsPage() {
           <div className="mb-2 flex items-center gap-2">
             <span className="h-3 w-3 animate-spin rounded-full border-2 border-brand-400 border-t-transparent" />
             <span className="text-sm font-semibold text-brand-700 dark:text-brand-300">
-              PHP {activeOp.version} {activeOp.action === 'remove' ? 'removal' : 'installation'} in progress...
+              {activeOp.action === 'remove'
+                ? t('log.removeInProgress', { version: activeOp.version })
+                : t('log.installInProgress', { version: activeOp.version })}
             </span>
           </div>
-          <pre ref={logRef} className="max-h-48 overflow-auto rounded-xl bg-slate-900 p-3 font-mono text-xs text-slate-100">{opLog || 'Waiting for output...'}</pre>
+          <pre ref={logRef} className="max-h-48 overflow-auto rounded-xl bg-slate-900 p-3 font-mono text-xs text-slate-100">{opLog || t('log.waiting')}</pre>
         </div>
       )}
 
@@ -149,7 +154,7 @@ export default function PHPVersionsPage() {
         {(['all', 'installed', 'available'] as const).map(opt => (
           <button key={opt} onClick={() => setFilter(opt)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${filter === opt ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-            {opt === 'all' ? `All (${versions.length})` : opt === 'installed' ? `Installed (${installedCount})` : `Available (${versions.length - installedCount})`}
+            {opt === 'all' ? t('filters.all', { count: versions.length }) : opt === 'installed' ? t('filters.installed', { count: installedCount }) : t('filters.available', { count: versions.length - installedCount })}
           </button>
         ))}
       </div>
@@ -157,7 +162,7 @@ export default function PHPVersionsPage() {
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-12 text-sm text-slate-400">
           <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-transparent dark:border-slate-600 dark:border-t-transparent" />
-          Loading...
+          {t('loading')}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -176,8 +181,8 @@ export default function PHPVersionsPage() {
                         v.resource === 'appstream' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
                           : 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
                       }`}>{v.resource}</span>
-                      {v.loaded && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">INSTALLED</span>}
-                      {parseInt(v.version) < 8 && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">EOL</span>}
+                      {v.loaded && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{t('badges.installed')}</span>}
+                      {parseInt(v.version) < 8 && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{t('badges.eol')}</span>}
                     </div>
                   </div>
                 </div>
@@ -186,27 +191,27 @@ export default function PHPVersionsPage() {
 
                 {v.loaded && (
                   <div className="mb-3 space-y-0.5 rounded-lg border border-slate-200 bg-white p-2 font-mono text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-                    {v.real_version && <div>Version: <span className="text-slate-900 dark:text-slate-100">{v.real_version}</span></div>}
-                    {v.module_count !== undefined && <div>Extensions: <span className="text-slate-900 dark:text-slate-100">{v.module_count}</span></div>}
-                    {v.service && <div className="truncate">Service: <span className="text-slate-700 dark:text-slate-300">{v.service}</span></div>}
+                    {v.real_version && <div>{t('card.version')} <span className="text-slate-900 dark:text-slate-100">{v.real_version}</span></div>}
+                    {v.module_count !== undefined && <div>{t('card.extensions')} <span className="text-slate-900 dark:text-slate-100">{v.module_count}</span></div>}
+                    {v.service && <div className="truncate">{t('card.service')} <span className="text-slate-700 dark:text-slate-300">{v.service}</span></div>}
                   </div>
                 )}
 
                 {v.loaded ? (
                   v.resource === 'appstream' ? (
                     <button disabled className="w-full cursor-not-allowed rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-400 dark:bg-slate-800 dark:text-slate-500">
-                      Fixed (system default)
+                      {t('actions.fixed')}
                     </button>
                   ) : (
                     <button onClick={() => remove(v)} disabled={!!activeOp}
                       className="w-full rounded-xl bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40">
-                      {activeOp?.version === v.version ? 'In progress...' : 'Remove'}
+                      {activeOp?.version === v.version ? t('actions.inProgress') : t('actions.remove')}
                     </button>
                   )
                 ) : (
                   <button onClick={() => install(v)} disabled={!!activeOp}
                     className="w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
-                    {activeOp?.version === v.version ? 'In progress...' : 'Install'}
+                    {activeOp?.version === v.version ? t('actions.inProgress') : t('actions.install')}
                   </button>
                 )}
               </div>

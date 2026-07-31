@@ -3,6 +3,7 @@
 // search, show a table, link each row to the matching domain page. Only the
 // column definitions differ, so the shell is shared.
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from './Breadcrumb'
 import EmptyState from './EmptyState'
@@ -37,6 +38,7 @@ export default function OverviewList<T>({
   emptyMessage: string
   summary?: (list: T[]) => Badge[]
 }) {
+  const { t } = useTranslation('OverviewList')
   const [list, setList] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +49,7 @@ export default function OverviewList<T>({
     setLoading(true)
     api.get<T[]>(endpoint)
       .then((r) => { if (!cancelled) { setList(Array.isArray(r.data) ? r.data : []); setError(null) } })
-      .catch((e) => { if (!cancelled) setError(apiError(e, 'Could not load the list')) })
+      .catch((e) => { if (!cancelled) setError(apiError(e, t('errorLoad'))) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [endpoint])
@@ -62,7 +64,7 @@ export default function OverviewList<T>({
 
   return (
     <div className="w-full px-6 py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: title }]} />
+      <Breadcrumb items={[{ label: t('home'), href: '/' }, { label: title }]} />
       <div className="flex items-center gap-2 mb-1">
         <span className="text-2xl">{icon}</span>
         <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h1>
@@ -84,7 +86,7 @@ export default function OverviewList<T>({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search domain…"
+          placeholder={t('searchDomain')}
           className="w-full sm:w-72 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
         />
       </div>
@@ -94,9 +96,9 @@ export default function OverviewList<T>({
       )}
 
       {loading ? (
-        <div className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">Loading…</div>
+        <div className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">{t('loading')}</div>
       ) : filtered.length === 0 ? (
-        <EmptyState title={emptyMessage} description={query ? 'No domain matches your search.' : undefined} />
+        <EmptyState title={emptyMessage} description={query ? t('noMatch') : undefined} />
       ) : (
         <div className={tableContainerClass}>
           <table className={tableClass}>

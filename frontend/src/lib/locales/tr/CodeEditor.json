@@ -1,0 +1,15 @@
+{
+  "langPlainText": "Düz Metin",
+  "unsaved": "Kaydedilmemiş değişiklikler",
+  "saving": "Kaydediliyor…",
+  "saved": "✓ Kaydedildi",
+  "syntax": "Sözdizimi",
+  "exitFullscreen": "Tam ekrandan çık",
+  "fullscreen": "Tam ekran",
+  "save": "💾 Kaydet",
+  "close": "Kapat",
+  "cursor": "Satır {{line}}, Sütun {{column}}",
+  "lines": "{{count}} satır",
+  "bytes": "{{count}} bayt",
+  "shortcuts": "Ctrl+S: kaydet · Esc: kapat"
+}

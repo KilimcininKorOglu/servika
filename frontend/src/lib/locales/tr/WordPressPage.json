@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Ana Sayfa",
+  "breadcrumbTitle": "WordPress",
+  "title": "WordPress",
+  "subtitle": "Sunucudaki tüm WordPress kurulumlarını görüntüleyin ve güncelleyin veya yeni bir kurulum oluşturun.",
+  "outdated": {
+    "banner_other": "{{count}} kurulum için güncelleme mevcut.",
+    "warning": "Eski WordPress sürümleri bilinen güvenlik açıkları içerir. Bunları en kısa sürede güncelleyin."
+  },
+  "result": {
+    "installed": "WordPress {{version}} kuruldu",
+    "site": "Site",
+    "admin": "Yönetim",
+    "user": "Kullanıcı",
+    "password": "Parola",
+    "savePassword": "⚠ Parolayı şimdi kaydedin. Tekrar gösterilmeyecek."
+  },
+  "installedSites": "Kurulu WordPress Siteleri",
+  "refresh": "↻ Yenile",
+  "table": {
+    "domain": "Alan Adı",
+    "directory": "Dizin",
+    "version": "Sürüm",
+    "status": "Durum",
+    "installed": "Kurulum",
+    "actions": "İşlemler"
+  },
+  "scanning": "Kurulumlar taranıyor... (sürümler ve güncellemeler kontrol ediliyor)",
+  "emptyTitle": "Sunucuda WordPress kurulumu bulunamadı.",
+  "emptyHint": "Yeni bir kurulum oluşturmak için aşağıdaki formu kullanın.",
+  "adminButton": "Yönetim",
+  "updateToVersion": "v{{version}} sürümüne güncelle",
+  "update": "Güncelle",
+  "delete": "Sil",
+  "status": {
+    "updateAvailable": "Güncelleme mevcut",
+    "updateAvailableTo": "v{{version}} sürümüne güncelleme mevcut",
+    "upToDate": "Güncel",
+    "unknown": "Bilinmiyor"
+  },
+  "form": {
+    "heading": "Yeni Kurulum",
+    "domain": "Alan Adı",
+    "siteTitle": "Site Başlığı",
+    "siteTitlePlaceholder": "Blogum",
+    "subdirectory": "Alt Dizin (isteğe bağlı)",
+    "subdirectoryPlaceholder": "boş = kök, örn. blog",
+    "adminUser": "Yönetici Kullanıcı",
+    "adminEmail": "Yönetici E-postası",
+    "adminEmailPlaceholder": "admin@site.com"
+  },
+  "installing": "Kuruluyor... (~30 sn)",
+  "installButton": "WordPress Kur",
+  "installButtonDomain": "WordPress Kur, {{domain}}",
+  "confirmDelete": "{{domain}}{{dir}} konumundaki WordPress silinsin mi?\nBu dizindeki tüm dosyalar ve veritabanı kaldırılacak. Bu işlem geri alınamaz.",
+  "errors": {
+    "rootDelete": "Kök dizindeki WordPress panelden silinemez.",
+    "installFailed": "Kurulum başarısız",
+    "updateFailed": "Güncellenemedi",
+    "deleteFailed": "Silinemedi"
+  }
+}

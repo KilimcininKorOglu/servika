@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "tools": "Araçlar ve Ayarlar",
+    "current": "DNS Şablonu"
+  },
+  "title": "Sunucu Geneli DNS Şablonu",
+  "subtitle": "Bu kayıtlar, bir alan adı oluşturulduğunda veya varsayılan DNS şablonu geri yüklendiğinde uygulanır.",
+  "placeholders": {
+    "label": "Yer tutucular:",
+    "domain": " alan adı, ",
+    "ip": " sunucu IP'si, ",
+    "selector": " DKIM seçicisi, ",
+    "dkim": " oluşturulan DKIM genel kaydı"
+  },
+  "loading": "Yükleniyor...",
+  "table": {
+    "name": "Ad",
+    "type": "Tür",
+    "value": "Değer",
+    "ttl": "TTL",
+    "priority": "Öncelik",
+    "order": "Sıra",
+    "enabled": "Etkin",
+    "priorityNone": "Yok",
+    "deleteTitle": "Kaydı sil"
+  },
+  "addRecord": "Kayıt ekle",
+  "soa": {
+    "title": "SOA Ayarları",
+    "fieldSeconds": "{{field}} (saniye)"
+  },
+  "dkim": {
+    "title": "DKIM Ayarları",
+    "selector": "Seçici",
+    "generate": "Yeni alan adları için DKIM anahtarları oluştur"
+  },
+  "discard": "Değişiklikleri iptal et",
+  "save": "Şablonu kaydet",
+  "saving": "Kaydediliyor...",
+  "success": "DNS şablonu kaydedildi. Yeni alan adları güncellenmiş kayıtları ve ayarları kullanacak.",
+  "errors": {
+    "loadFailed": "DNS şablonu yüklenemedi",
+    "saveFailed": "DNS şablonu kaydedilemedi"
+  }
+}

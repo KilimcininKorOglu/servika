@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { Domain } from './DomainList'
 import ToolCard from './ToolCard'
 
@@ -41,60 +42,61 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 
 export default function DomainDashboard({ domain }: { domain: Domain }) {
   const navigate = useNavigate()
+  const { t } = useTranslation('DomainDashboard')
   const navigateTo = (slug: string) => () => navigate(`/subscriptions/${domain.id}/${slug}`)
   return (
     <div>
-      <Group title="Applications">
-        <ToolCard label="WordPress" description="One-click installation · management" icon={ICONS.wordpress} color="sky" onClick={navigateTo('wordpress')} />
-        <ToolCard label="Laravel Toolkit" description="Install · deploy · queue" icon={ICONS.laravel} color="emerald" onClick={navigateTo('laravel')} />
+      <Group title={t('groups.applications')}>
+        <ToolCard label={t('wordpress.label')} description={t('wordpress.desc')} icon={ICONS.wordpress} color="sky" onClick={navigateTo('wordpress')} />
+        <ToolCard label={t('laravel.label')} description={t('laravel.desc')} icon={ICONS.laravel} color="emerald" onClick={navigateTo('laravel')} />
       </Group>
 
-      <Group title="Domain and DNS">
-        <ToolCard label="DNS Management"          description="A, MX, TXT, CNAME records" icon={ICONS.dns}       color="sky"  onClick={navigateTo('dns')} />
-        <ToolCard label="Subdomains"          description="Subdomains"   icon={ICONS.subdomain} color="teal" onClick={navigateTo('subdomains')} />
-        <ToolCard label="Addon Domains" description="Addon and parked domains · redirects" icon={ICONS.addonDomain} color="indigo" onClick={navigateTo('addon-domains')} />
+      <Group title={t('groups.domainAndDns')}>
+        <ToolCard label={t('dns.label')}          description={t('dns.desc')} icon={ICONS.dns}       color="sky"  onClick={navigateTo('dns')} />
+        <ToolCard label={t('subdomains.label')}          description={t('subdomains.desc')}   icon={ICONS.subdomain} color="teal" onClick={navigateTo('subdomains')} />
+        <ToolCard label={t('addonDomains.label')} description={t('addonDomains.desc')} icon={ICONS.addonDomain} color="indigo" onClick={navigateTo('addon-domains')} />
       </Group>
 
-      <Group title="Email">
-        <ToolCard label="Email Accounts" description="Postfix and Dovecot mailboxes · SMTP" icon={ICONS.mail} color="indigo" onClick={navigateTo('mail')} />
+      <Group title={t('groups.email')}>
+        <ToolCard label={t('mail.label')} description={t('mail.desc')} icon={ICONS.mail} color="indigo" onClick={navigateTo('mail')} />
       </Group>
 
-      <Group title="Files and Databases">
-        <ToolCard label="Connection Information"      description="FTP, database"  icon={ICONS.connection} color="emerald" onClick={navigateTo('connection')} />
-        <ToolCard label="Files"              description="File manager"  icon={ICONS.files} color="amber"   phase="F6"  onClick={navigateTo('files')} />
-        <ToolCard label="Databases"         description={domain.db_name}     icon={ICONS.db}       color="violet"  phase="F5"  onClick={navigateTo('databases')} />
-        <ToolCard label="FTP"                   description="FTP accounts"     icon={ICONS.ftp}      color="sky"     phase="F4"  onClick={navigateTo('ftp')} />
-        <ToolCard label="Backup and Restore" description="Backup management"    icon={ICONS.backup}    color="rose"    phase="F12" onClick={navigateTo('backups')} />
-        <ToolCard label="Copy Website"  description="Cloning"          icon={ICONS.copy}    color="sky"     onClick={navigateTo('copy')} />
+      <Group title={t('groups.filesAndDatabases')}>
+        <ToolCard label={t('connection.label')}      description={t('connection.desc')}  icon={ICONS.connection} color="emerald" onClick={navigateTo('connection')} />
+        <ToolCard label={t('files.label')}              description={t('files.desc')}  icon={ICONS.files} color="amber"   phase="F6"  onClick={navigateTo('files')} />
+        <ToolCard label={t('databases.label')}         description={domain.db_name}     icon={ICONS.db}       color="violet"  phase="F5"  onClick={navigateTo('databases')} />
+        <ToolCard label={t('ftp.label')}                   description={t('ftp.desc')}     icon={ICONS.ftp}      color="sky"     phase="F4"  onClick={navigateTo('ftp')} />
+        <ToolCard label={t('backups.label')} description={t('backups.desc')}    icon={ICONS.backup}    color="rose"    phase="F12" onClick={navigateTo('backups')} />
+        <ToolCard label={t('copy.label')}  description={t('copy.desc')}          icon={ICONS.copy}    color="sky"     onClick={navigateTo('copy')} />
       </Group>
 
-      <Group title="Development Tools">
-        <ToolCard label="PHP"                   description={`Version ${domain.php_version}`} icon={ICONS.php}      color="indigo" phase="F3" onClick={navigateTo('php')} />
-        <ToolCard label="Logs"             description="access, error"  icon={ICONS.log}      color="slate"  phase="F10" onClick={navigateTo('logs')} />
-        <ToolCard label="Scheduled Tasks"  description="Cron"            icon={ICONS.cron}     color="teal"   phase="F8"  onClick={navigateTo('cron')} />
-        <ToolCard label="Git"                   description="Repository integration" icon={ICONS.navigateTo}    color="orange" phase="F9"  onClick={navigateTo('git')} />
-        <ToolCard label="PHP Composer"          description="Package manager"  icon={ICONS.composer} color="amber" phase="F3"  onClick={navigateTo('composer')} />
-        <ToolCard label="Performance"            description="Accelerators"   icon={ICONS.service} color="emerald" onClick={navigateTo('performance')} />
-        <ToolCard label="Redis Cache"           description="Isolated object cache · accelerator" icon={ICONS.redis} color="rose" onClick={navigateTo('redis')} />
+      <Group title={t('groups.developmentTools')}>
+        <ToolCard label={t('php.label')}                   description={t('php.desc', { version: domain.php_version })} icon={ICONS.php}      color="indigo" phase="F3" onClick={navigateTo('php')} />
+        <ToolCard label={t('logs.label')}             description={t('logs.desc')}  icon={ICONS.log}      color="slate"  phase="F10" onClick={navigateTo('logs')} />
+        <ToolCard label={t('cron.label')}  description={t('cron.desc')}            icon={ICONS.cron}     color="teal"   phase="F8"  onClick={navigateTo('cron')} />
+        <ToolCard label={t('git.label')}                   description={t('git.desc')} icon={ICONS.navigateTo}    color="orange" phase="F9"  onClick={navigateTo('git')} />
+        <ToolCard label={t('composer.label')}          description={t('composer.desc')}  icon={ICONS.composer} color="amber" phase="F3"  onClick={navigateTo('composer')} />
+        <ToolCard label={t('performance.label')}            description={t('performance.desc')}   icon={ICONS.service} color="emerald" onClick={navigateTo('performance')} />
+        <ToolCard label={t('redis.label')}           description={t('redis.desc')} icon={ICONS.redis} color="rose" onClick={navigateTo('redis')} />
       </Group>
 
-      <Group title="Security">
+      <Group title={t('groups.security')}>
         <ToolCard
-          label="SSL/TLS Certificates"
-          description={domain.ssl ? `Expires: ${domain.ssl_expiry || '—'}` : 'Let’s Encrypt'}
+          label={t('ssl.label')}
+          description={domain.ssl ? t('ssl.expires', { expiry: domain.ssl_expiry || '—' }) : t('ssl.letsEncrypt')}
           icon={ICONS.ssl}
           color={domain.ssl ? 'emerald' : 'rose'}
           phase="F7"
-          warning={!domain.ssl ? 'Domain is not protected' : undefined}
+          warning={!domain.ssl ? t('ssl.warning') : undefined}
           onClick={navigateTo('ssl')}
         />
-        <ToolCard label="Password-Protected Directories" description=".htpasswd"       icon={ICONS.lock}      color="amber" phase="F7" onClick={navigateTo('password-protection')} />
-        <ToolCard label="Statistics"            description="Traffic analysis"  icon={ICONS.stats} color="indigo" phase="F10" onClick={navigateTo('stats')} />
-        <ToolCard label="Access Control" description="Hotlink protection · IP allow/block" icon={ICONS.accessControl} color="rose" onClick={navigateTo('access-control')} />
-        <ToolCard label="Imunify"                  description="Antivirus"        icon={ICONS.imunify}    color="emerald" onClick={navigateTo('imunify')} />
+        <ToolCard label={t('passwordProtection.label')} description={t('passwordProtection.desc')}       icon={ICONS.lock}      color="amber" phase="F7" onClick={navigateTo('password-protection')} />
+        <ToolCard label={t('stats.label')}            description={t('stats.desc')}  icon={ICONS.stats} color="indigo" phase="F10" onClick={navigateTo('stats')} />
+        <ToolCard label={t('accessControl.label')} description={t('accessControl.desc')} icon={ICONS.accessControl} color="rose" onClick={navigateTo('access-control')} />
+        <ToolCard label={t('imunify.label')}                  description={t('imunify.desc')}        icon={ICONS.imunify}    color="emerald" onClick={navigateTo('imunify')} />
         <ToolCard
-          label="SSH Access"
-          description={domain.ssh_access ? 'Enabled' : 'Disabled'}
+          label={t('ssh.label')}
+          description={domain.ssh_access ? t('ssh.enabled') : t('ssh.disabled')}
           icon={ICONS.ssh}
           color={domain.ssh_access ? 'emerald' : 'slate'}
           onClick={navigateTo('ssh-access')}

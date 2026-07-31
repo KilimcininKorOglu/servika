@@ -1,0 +1,25 @@
+{
+  "title": "Panel Alan Adı",
+  "description": "Let's Encrypt sertifikası istemeden önce bir A kaydını bu sunucuya yönlendirin. Sertifika verildikten sonra alan adı, paneli 8443 portu olmadan açar.",
+  "customDomainLabel": "Özel panel alan adı",
+  "customDomainPlaceholder": "panel.example.com",
+  "serverIpv4": "Sunucu IPv4:",
+  "sslStatus": "SSL durumu:",
+  "portlessUrl": "Portsuz URL:",
+  "expires": "Bitiş:",
+  "unknown": "Bilinmiyor",
+  "sslNone": "yok",
+  "save": "Panel Alan Adını Kaydet",
+  "saving": "Kaydediliyor...",
+  "reset": "Sıfırla",
+  "resetting": "Sıfırlanıyor...",
+  "messages": {
+    "saved": "Panel alan adı kaydedildi. https://{{domain}} adresini 8443 portu olmadan açabilirsiniz.",
+    "reset": "Panel alan adı varsayılan sertifikaya sıfırlandı."
+  },
+  "errors": {
+    "load": "Panel alan adı ayarları yüklenemedi",
+    "save": "Panel alan adı kaydedilemedi",
+    "reset": "Panel alan adı sıfırlanamadı"
+  }
+}

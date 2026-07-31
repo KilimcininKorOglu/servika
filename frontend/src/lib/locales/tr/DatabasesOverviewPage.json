@@ -1,0 +1,16 @@
+{
+  "title": "Veritabanları",
+  "description": "Sunucudaki her veritabanı; sahibi olan alan adı ve boyutuyla birlikte.",
+  "emptyMessage": "Veritabanı bulunamadı.",
+  "column": {
+    "domain": "Alan Adı",
+    "database": "Veritabanı",
+    "user": "Kullanıcı",
+    "size": "Boyut",
+    "created": "Oluşturulma"
+  },
+  "summary": {
+    "databases": "Veritabanları",
+    "totalSize": "Toplam boyut"
+  }
+}

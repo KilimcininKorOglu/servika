@@ -1,0 +1,52 @@
+{
+  "loading": "Yükleniyor…",
+  "notFound": "Bulunamadı",
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "sshAccess": "SSH Erişimi"
+  },
+  "title": "SSH Erişimi",
+  "subtitle": "hesabının kabuk (shell) erişimi.",
+  "badge": {
+    "on": "SSH AÇIK",
+    "off": "SSH KAPALI"
+  },
+  "toast": {
+    "accessActive": "SSH erişimi aktif.",
+    "accessDisabled": "SSH erişimi devre dışı bırakıldı.",
+    "operationFailed": "İşlem başarısız oldu",
+    "keySaved": "SSH anahtarı kaydedildi.",
+    "keysCleared": "SSH anahtarları temizlendi.",
+    "keySaveFailed": "Anahtar kaydedilemedi"
+  },
+  "shell": {
+    "title": "Kabuk Erişimi",
+    "enabledPrefix": "Etkin:",
+    "disabledPrefix": "Devre dışı:",
+    "currentPrefix": "Şu anki:",
+    "disable": "SSH'ı Kapat",
+    "enable": "SSH'ı Aç",
+    "demoNotice": "Demo alan adı için SSH erişimi değiştirilemez."
+  },
+  "connection": {
+    "title": "Bağlantı Bilgileri",
+    "user": "Kullanıcı",
+    "host": "Sunucu",
+    "port": "Port",
+    "commandLabel": "Bağlantı komutu",
+    "copy": "Kopyala",
+    "passwordPrefix": "Parola:",
+    "passwordBold": "FTP hesabınızla aynı",
+    "passwordSuffix": ". SSH aktifken otomatik olarak eşitlenir. Alternatif olarak aşağıya bir SSH açık anahtarı ekleyebilirsiniz."
+  },
+  "key": {
+    "title": "SSH Açık Anahtarı (authorized_keys)",
+    "descPrefix": "Parolasız oturum açmak için açık anahtarınızı ekleyin.",
+    "configured": "Şu anda bir anahtar yapılandırılmış.",
+    "notConfigured": "Henüz anahtar yapılandırılmamış.",
+    "removeHint": "Tüm anahtarları kaldırmak için boş bir değer kaydedin.",
+    "save": "Anahtarı Kaydet"
+  },
+  "backToSubscription": "← Aboneliğe geri dön"
+}

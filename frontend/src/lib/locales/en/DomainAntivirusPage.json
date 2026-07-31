@@ -1,0 +1,43 @@
+{
+  "loading": "Loading...",
+  "notFound": "Not found",
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "antivirus": "Antivirus"
+  },
+  "title": "Antivirus Malware Scan",
+  "subtitlePrefix": "is scanned using ClamAV signatures and built-in webshell heuristics.",
+  "toast": {
+    "startScanFailed": "Could not start scan",
+    "quarantineFailed": "Could not quarantine file",
+    "updateSignatureFailed": "Could not update signatures"
+  },
+  "confirmQuarantine": "Quarantine this file?\n{{file}}\n\n(The file will be moved under ~/.quarantined and become inaccessible.)",
+  "status": {
+    "enginePrefix": "Engine:",
+    "engineFull": "ClamAV + Heuristics",
+    "engineHeuristics": "Heuristics Only",
+    "signatureDatabase": "Signature database: {{date}}",
+    "latestScan": "Latest scan: {{date}}. {{scanned}} files. {{infected}} findings",
+    "updating": "Updating...",
+    "updateSignatures": "Update Signatures",
+    "scanning": "Scanning...",
+    "scanNow": "Scan Now",
+    "inProgress": "Scan in progress. Large sites may take several minutes."
+  },
+  "findings": {
+    "title": "Findings",
+    "fromLatest": "from the latest scan",
+    "noScans": "No scans yet. Select “Scan Now” to begin.",
+    "clean": "Clean. No malware found.",
+    "colFile": "File",
+    "colSignature": "Signature",
+    "colEngine": "Engine",
+    "colStatus": "Status",
+    "quarantined": "🔒 Quarantined",
+    "active": "⚠ Active",
+    "quarantine": "Quarantine"
+  },
+  "backToSubscription": "← Back to Subscription"
+}

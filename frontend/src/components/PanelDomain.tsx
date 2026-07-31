@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 
 type PanelDomainStatus = {
@@ -10,6 +11,7 @@ type PanelDomainStatus = {
 }
 
 export default function PanelDomain() {
+  const { t } = useTranslation('PanelDomain')
   const [status, setStatus] = useState<PanelDomainStatus | null>(null)
   const [domain, setDomain] = useState('')
   const [message, setMessage] = useState('')
@@ -26,7 +28,7 @@ export default function PanelDomain() {
       setStatus(response.data)
       setDomain(response.data.custom_domain || '')
     } catch (caughtError) {
-      setError(apiError(caughtError, 'Could not load panel domain settings'))
+      setError(apiError(caughtError, t('errors.load')))
     } finally {
       setLoading(false)
     }
@@ -41,10 +43,10 @@ export default function PanelDomain() {
     setSaving(true)
     try {
       const response = await api.post<{ custom_domain: string; ssl_status: string; warning?: string }>('/system/panel-domain', { domain: domain.trim() })
-      setMessage(response.data.warning || `Panel domain saved. You can open https://${domain.trim()} without port 8443.`)
+      setMessage(response.data.warning || t('messages.saved', { domain: domain.trim() }))
       await load()
     } catch (caughtError) {
-      setError(apiError(caughtError, 'Could not save panel domain'))
+      setError(apiError(caughtError, t('errors.save')))
     } finally {
       setSaving(false)
     }
@@ -56,10 +58,10 @@ export default function PanelDomain() {
     setResetting(true)
     try {
       await api.delete('/system/panel-domain')
-      setMessage('Panel domain reset to the default certificate.')
+      setMessage(t('messages.reset'))
       await load()
     } catch (caughtError) {
-      setError(apiError(caughtError, 'Could not reset panel domain'))
+      setError(apiError(caughtError, t('errors.reset')))
     } finally {
       setResetting(false)
     }
@@ -72,23 +74,23 @@ export default function PanelDomain() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/><path d="M12 2a15.3 15.3 0 0 0 0 20"/></svg>
         </div>
         <div>
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Panel Domain</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">Point an A record to this server before requesting a Let&apos;s Encrypt certificate. After issuance, the domain opens the panel without port 8443.</p>
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">{t('description')}</p>
         </div>
       </div>
 
       <form onSubmit={save} className="space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
           <label className="block">
-            <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Custom panel domain</span>
-            <input value={domain} onChange={event => setDomain(event.target.value)} placeholder="panel.example.com" disabled={loading || saving}
+            <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('customDomainLabel')}</span>
+            <input value={domain} onChange={event => setDomain(event.target.value)} placeholder={t('customDomainPlaceholder')} disabled={loading || saving}
               className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none disabled:opacity-60" />
           </label>
           <div className="text-xs text-slate-500 dark:text-slate-400 rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-900">
-            <div>Server IPv4: <span className="font-mono text-slate-800 dark:text-slate-100">{status?.server_ipv4 || 'Unknown'}</span></div>
-            <div>SSL status: <span className="font-semibold text-slate-800 dark:text-slate-100">{status?.ssl_status || 'none'}</span></div>
-            {status?.ssl_status === 'active' && status.custom_domain && <div>Portless URL: <span className="font-mono text-slate-800 dark:text-slate-100">https://{status.custom_domain}</span></div>}
-            {status?.ssl_expires && <div>Expires: <span className="font-mono text-slate-800 dark:text-slate-100">{status.ssl_expires}</span></div>}
+            <div>{t('serverIpv4')} <span className="font-mono text-slate-800 dark:text-slate-100">{status?.server_ipv4 || t('unknown')}</span></div>
+            <div>{t('sslStatus')} <span className="font-semibold text-slate-800 dark:text-slate-100">{status?.ssl_status || t('sslNone')}</span></div>
+            {status?.ssl_status === 'active' && status.custom_domain && <div>{t('portlessUrl')} <span className="font-mono text-slate-800 dark:text-slate-100">https://{status.custom_domain}</span></div>}
+            {status?.ssl_expires && <div>{t('expires')} <span className="font-mono text-slate-800 dark:text-slate-100">{status.ssl_expires}</span></div>}
           </div>
         </div>
 
@@ -98,10 +100,10 @@ export default function PanelDomain() {
 
         <div className="flex items-center gap-3 flex-wrap">
           <button type="submit" disabled={saving || !domain.trim()} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save Panel Domain'}
+            {saving ? t('saving') : t('save')}
           </button>
           <button type="button" onClick={reset} disabled={resetting || !status?.custom_domain} className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">
-            {resetting ? 'Resetting...' : 'Reset'}
+            {resetting ? t('resetting') : t('reset')}
           </button>
         </div>
       </form>

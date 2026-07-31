@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { AxiosProgressEvent } from 'axios'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -37,6 +38,7 @@ type ImportResult = {
 }
 
 export default function AccountTransferPage() {
+  const { t } = useTranslation('AccountTransferPage')
   const [file, setFile] = useState<File | null>(null)
   const [inventory, setInventory] = useState<Inventory | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -76,7 +78,7 @@ export default function AccountTransferPage() {
       setInventory(r.data)
       setDomain(r.data.primary_domain || '')
     } catch (e) {
-      setError(apiError(e, 'Could not analyze the archive'))
+      setError(apiError(e, t('errors.analyzeFailed')))
     } finally {
       setAnalyzing(false)
     }
@@ -100,7 +102,7 @@ export default function AccountTransferPage() {
       })
       setResult(r.data)
     } catch (e) {
-      setError(apiError(e, 'Could not import the account'))
+      setError(apiError(e, t('errors.importFailed')))
     } finally {
       setImporting(false)
     }
@@ -109,16 +111,16 @@ export default function AccountTransferPage() {
   return (
     <div className="w-full px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Hosting Services' },
-        { label: 'Account Transfer' },
+        { label: t('breadcrumbHome'), href: '/' },
+        { label: t('breadcrumbServices') },
+        { label: t('breadcrumbTitle') },
       ]} />
       <div className="flex items-center gap-3 mb-1">
         <span className="text-2xl">🚚</span>
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Import Account</h1>
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
       </div>
       <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-        Safely analyze a cPanel full-account backup. The archive is not extracted or persisted on the server at this stage.
+        {t('subtitle')}
       </p>
 
       {error && <div className="mb-4 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 text-sm text-red-700 dark:text-red-300">{error}</div>}
@@ -126,14 +128,14 @@ export default function AccountTransferPage() {
       <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 p-5 mb-5">
         <div className="flex flex-col lg:flex-row lg:items-end gap-4">
           <label className="flex-1">
-            <span className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">cPanel full backup (.tar.gz / .tgz)</span>
+            <span className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{t('fileLabel')}</span>
             <input type="file" accept=".tar.gz,.tgz,application/gzip"
               onChange={e => { setFile(e.target.files?.[0] || null); setInventory(null) }}
               className="block w-full text-sm text-slate-600 dark:text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-50 dark:file:bg-brand-950/40 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-brand-700 dark:file:text-brand-300 hover:file:bg-brand-100" />
           </label>
           <button onClick={analyze} disabled={!file || analyzing}
             className="px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium disabled:opacity-50">
-            {analyzing ? `Uploading ${progress}%` : 'Analyze Archive'}
+            {analyzing ? t('uploading', { progress }) : t('analyzeButton')}
           </button>
         </div>
         {file && <div className="mt-3 text-xs text-slate-400">{file.name} · {fmtByte(file.size)}</div>}
@@ -143,10 +145,10 @@ export default function AccountTransferPage() {
       {inventory && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-            <Kpi label="Primary Domain" value={inventory.primary_domain || 'Undetermined'} />
-            <Kpi label="Web Files" value={inventory.web_files.toLocaleString('en-US')} alt={fmtByte(inventory.web_bytes)} />
-            <Kpi label="Databases" value={String(inventory.databases.length)} />
-            <Kpi label="Email Data" value={inventory.mail_files ? `${inventory.mail_files.toLocaleString('en-US')} files` : 'None'} />
+            <Kpi label={t('kpi.primaryDomain')} value={inventory.primary_domain || t('kpi.undetermined')} />
+            <Kpi label={t('kpi.webFiles')} value={inventory.web_files.toLocaleString('en-US')} alt={fmtByte(inventory.web_bytes)} />
+            <Kpi label={t('kpi.databases')} value={String(inventory.databases.length)} />
+            <Kpi label={t('kpi.emailData')} value={inventory.mail_files ? t('kpi.emailFiles', { count: inventory.mail_files }) : t('kpi.none')} />
           </div>
 
           {inventory.warnings.length > 0 && (
@@ -156,48 +158,48 @@ export default function AccountTransferPage() {
           )}
 
           <div className="grid lg:grid-cols-2 gap-4">
-            <Detail title="Account information" rows={[
-              ['Source panel', 'cPanel'],
-              ['User', inventory.username || '—'],
-              ['Archive root', inventory.archive_root || '—'],
-              ['Total members', inventory.entry_count.toLocaleString('en-US')],
-              ['Expanded size', fmtByte(inventory.expanded_bytes)],
-              ['Cron', inventory.cron_present ? 'Present' : 'None'],
-              ['SSL files', String(inventory.ssl_certs)],
-              ['Mailboxes', String(inventory.mailboxes.length)],
-              ['Forwarders', String(inventory.alias_count)],
-              ['Cron jobs', String(inventory.cron_jobs.length)],
+            <Detail title={t('detail.title')} rows={[
+              [t('detail.sourcePanel'), 'cPanel'],
+              [t('detail.user'), inventory.username || '—'],
+              [t('detail.archiveRoot'), inventory.archive_root || '—'],
+              [t('detail.totalMembers'), inventory.entry_count.toLocaleString('en-US')],
+              [t('detail.expandedSize'), fmtByte(inventory.expanded_bytes)],
+              [t('detail.cron'), inventory.cron_present ? t('detail.cronPresent') : t('detail.cronNone')],
+              [t('detail.sslFiles'), String(inventory.ssl_certs)],
+              [t('detail.mailboxes'), String(inventory.mailboxes.length)],
+              [t('detail.forwarders'), String(inventory.alias_count)],
+              [t('detail.cronJobs'), String(inventory.cron_jobs.length)],
             ]} />
             <div className="space-y-4">
-              <List title="Databases" values={inventory.databases} />
-              <List title="DNS zones" values={inventory.dns_zones} />
-              <List title="Cron jobs" values={inventory.cron_jobs.map(c => `${c.minute} ${c.hour} ${c.day} ${c.month} ${c.weekday}  ${c.command}`)} />
+              <List title={t('lists.databases')} values={inventory.databases} noneFound={t('lists.noneFound')} />
+              <List title={t('lists.dnsZones')} values={inventory.dns_zones} noneFound={t('lists.noneFound')} />
+              <List title={t('lists.cronJobs')} values={inventory.cron_jobs.map(c => `${c.minute} ${c.hour} ${c.day} ${c.month} ${c.weekday}  ${c.command}`)} noneFound={t('lists.noneFound')} />
             </div>
           </div>
 
           <div className="mt-5 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/20 px-4 py-3 text-sm text-sky-800 dark:text-sky-300">
-            Analysis complete. Import creates a new domain; if it fails, the created account is rolled back automatically.
+            {t('analysisComplete')}
           </div>
 
           <div className="mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 p-5">
-            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4">Target and plan</h2>
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4">{t('targetAndPlan')}</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Target customer">
+              <Field label={t('fields.targetCustomer')}>
                 <select value={customerID} onChange={e => setCustomerID(e.target.value)} className={inputClass}>
-                  <option value="">Select a customer</option>
+                  <option value="">{t('fields.selectCustomer')}</option>
                   {customers.map(c => <option key={c.id} value={c.id}>{c.name} — {c.email}</option>)}
                 </select>
               </Field>
-              <Field label="Service plan">
+              <Field label={t('fields.servicePlan')}>
                 <select value={planID} onChange={e => setPlanID(e.target.value)} className={inputClass}>
-                  <option value="">Default plan</option>
+                  <option value="">{t('fields.defaultPlan')}</option>
                   {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </Field>
-              <Field label="Primary domain">
+              <Field label={t('fields.primaryDomain')}>
                 <input value={domain} onChange={e => setDomain(e.target.value.toLowerCase())} className={inputClass} />
               </Field>
-              <Field label="PHP version">
+              <Field label={t('fields.phpVersion')}>
                 <select value={phpVersion} onChange={e => setPHPVersion(e.target.value)} className={inputClass}>
                   {['7.4', '8.2', '8.3', '8.4', '8.5'].map(v => <option key={v}>{v}</option>)}
                 </select>
@@ -206,23 +208,23 @@ export default function AccountTransferPage() {
             <button onClick={runImport}
               disabled={importing || !customerID || !domain}
               className="mt-5 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium disabled:opacity-50">
-              {importing ? `Importing… ${progress}%` : 'Import Account'}
+              {importing ? t('importing', { progress }) : t('importButton')}
             </button>
           </div>
 
           {result && <div className="mt-5 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-5">
-            <h2 className="font-semibold text-emerald-800 dark:text-emerald-200">Import complete</h2>
-            <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">{result.domain} · {result.web_files} web files · {result.databases.length} database(s)</p>
+            <h2 className="font-semibold text-emerald-800 dark:text-emerald-200">{t('importResult.title')}</h2>
+            <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">{t('importResult.summary', { domain: result.domain, webFiles: result.web_files, count: result.databases.length })}</p>
             {result.databases.map(d => <p key={d.target} className="mt-1 text-xs font-mono text-emerald-700 dark:text-emerald-300">{d.source} → {d.target}</p>)}
             {result.mailboxes.length > 0 && <div className="mt-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-white/60 dark:bg-slate-900/40 p-3">
-              <p className="text-xs font-semibold text-amber-800 dark:text-amber-200 mb-2">New mailbox passwords — save them now</p>
+              <p className="text-xs font-semibold text-amber-800 dark:text-amber-200 mb-2">{t('importResult.newPasswords')}</p>
               {result.mailboxes.map(m => <p key={m.email} className="text-xs font-mono text-amber-800 dark:text-amber-200">{m.email}: {m.password}</p>)}
-              <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{result.aliases} forwarder(s) transferred.</p>
+              <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{t('importResult.forwardersTransferred', { count: result.aliases })}</p>
             </div>}
-            {result.cron_jobs > 0 && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{result.cron_jobs} cron job(s) transferred.</p>}
-            {result.ssl_imported && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">SSL certificate transferred · valid until {result.ssl_expires}</p>}
+            {result.cron_jobs > 0 && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{t('importResult.cronTransferred', { count: result.cron_jobs })}</p>}
+            {result.ssl_imported && <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{t('importResult.sslTransferred', { expires: result.ssl_expires })}</p>}
             {result.skipped?.map(s => <p key={s} className="mt-1 text-xs text-amber-700 dark:text-amber-300">⚠ {s}</p>)}
-            <Link to={`/subscriptions/${result.domain_id}`} className="inline-block mt-3 text-sm font-medium text-brand-700 dark:text-brand-300">Manage domain →</Link>
+            <Link to={`/subscriptions/${result.domain_id}`} className="inline-block mt-3 text-sm font-medium text-brand-700 dark:text-brand-300">{t('importResult.manageDomain')}</Link>
           </div>}
         </>
       )}
@@ -252,10 +254,10 @@ function Detail({ title, rows }: { title: string; rows: string[][] }) {
   </div>
 }
 
-function List({ title, values }: { title: string; values: string[] }) {
+function List({ title, values, noneFound }: { title: string; values: string[]; noneFound: string }) {
   return <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 p-4">
     <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">{title} <span className="text-slate-400">({values.length})</span></h2>
-    {values.length ? <div className="flex flex-wrap gap-1.5">{values.map(v => <span key={v} className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">{v}</span>)}</div> : <p className="text-xs text-slate-400">None found</p>}
+    {values.length ? <div className="flex flex-wrap gap-1.5">{values.map(v => <span key={v} className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">{v}</span>)}</div> : <p className="text-xs text-slate-400">{noneFound}</p>}
   </div>
 }
 

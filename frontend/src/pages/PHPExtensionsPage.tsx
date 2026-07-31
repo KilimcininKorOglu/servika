@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -11,6 +12,7 @@ const REQUIRED_EXTENSIONS = new Set([
 ])
 
 export default function PHPExtensionsPage() {
+  const { t } = useTranslation('PHPExtensionsPage')
   const [versions, setVersions] = useState<Version[]>([])
   const [activeVersion, setActiveVersion] = useState('8.3')
   const [extensions, setExtensions] = useState<Extension[]>([])
@@ -34,7 +36,7 @@ export default function PHPExtensionsPage() {
 
   async function toggle(extension: Extension) {
     if (REQUIRED_EXTENSIONS.has(extension.name.toLowerCase())) {
-      alert('This extension is a core part of PHP and cannot be disabled.')
+      alert(t('alerts.coreCannotDisable'))
       return
     }
     const active = !extension.active
@@ -44,56 +46,58 @@ export default function PHPExtensionsPage() {
         ini_file: extension.ini_file,
         active,
       })
-      setSuccess(`✓ ${extension.name} ${active ? 'enabled' : 'disabled'} · PHP-FPM restarted`)
+      setSuccess(active
+        ? t('success.toggleEnabled', { name: extension.name })
+        : t('success.toggleDisabled', { name: extension.name }))
       setTimeout(() => setSuccess(null), 3000)
       load()
     } catch (error) {
-      setError(apiError(error, 'Toggle failed'))
+      setError(apiError(error, t('errors.toggleFailed')))
     }
   }
 
   async function installIonCube() {
-    if (!confirm(`IonCube Loader will be installed for PHP ${activeVersion}.\n\nA tar.gz archive will be downloaded from ioncube.com, the .so file will be copied, and it will be loaded as a zend_extension.\nContinue?`)) return
+    if (!confirm(t('confirm.ionCubeInstall', { version: activeVersion }))) return
     setLoading(true); setError(null)
     try {
       const response = await api.post('/php-extensions/ioncube-install', { version: activeVersion })
       const data = response.data
-      setSuccess(`✓ IonCube installed · ${data.loaded ? 'LOADED' : 'The INI file was written, but the extension was not detected at runtime'}`)
+      setSuccess(data.loaded ? t('success.ionCubeLoaded') : t('success.ionCubeNotLoaded'))
       setTimeout(() => setSuccess(null), 5000)
       load()
     } catch (error) {
-      setError(apiError(error, 'IonCube installation failed'))
+      setError(apiError(error, t('errors.ionCubeInstallFailed')))
       setLoading(false)
     }
   }
 
   async function removeIonCube() {
-    if (!confirm(`IonCube Loader will be removed from PHP ${activeVersion}. Continue?`)) return
+    if (!confirm(t('confirm.ionCubeRemove', { version: activeVersion }))) return
     setLoading(true); setError(null)
     try {
       await api.post('/php-extensions/ioncube-remove', { version: activeVersion })
-      setSuccess('✓ IonCube removed')
+      setSuccess(t('success.ionCubeRemoved'))
       setTimeout(() => setSuccess(null), 3000)
       load()
     } catch (error) {
-      setError(apiError(error, 'IonCube removal failed'))
+      setError(apiError(error, t('errors.ionCubeRemoveFailed')))
       setLoading(false)
     }
   }
 
   async function installPecl(packageName: string) {
     if (!packageName.match(/^[a-zA-Z0-9_-]+$/)) {
-      alert('Invalid package name'); return
+      alert(t('alerts.invalidPackage')); return
     }
-    if (!confirm(`The PECL package "${packageName}" will be compiled and installed for PHP ${activeVersion}. Continue?`)) return
+    if (!confirm(t('confirm.peclInstall', { package: packageName, version: activeVersion }))) return
     setPeclModalOpen(false); setLoading(true)
     try {
       const response = await api.post('/php-extensions/pecl-install', { version: activeVersion, package: packageName })
-      setSuccess(`✓ ${packageName} installed`)
+      setSuccess(t('success.peclInstalled', { package: packageName }))
       console.log('PECL install output:', response.data.output)
       load()
     } catch (error) {
-      setError(apiError(error, 'PECL installation failed'))
+      setError(apiError(error, t('errors.peclInstallFailed')))
       setLoading(false)
     }
   }
@@ -105,29 +109,29 @@ export default function PHPExtensionsPage() {
   return (
     <div className="px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'System Management' },
-        { label: 'PHP Extensions' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.system') },
+        { label: t('breadcrumb.current') },
       ]} />
 
       <div className="flex items-center justify-between mb-1">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">PHP Extensions</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
         <div className="flex gap-2">
           <button onClick={() => {
               const ionCubeInstalled = extensions.some(extension => extension.name.toLowerCase().includes('ioncube'))
               if (ionCubeInstalled) removeIonCube(); else installIonCube()
             }}
             className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-md">
-            {extensions.some(extension => extension.name.toLowerCase().includes('ioncube')) ? '⊗ Remove IonCube' : '🔐 Install IonCube'}
+            {extensions.some(extension => extension.name.toLowerCase().includes('ioncube')) ? t('removeIonCube') : t('installIonCube')}
           </button>
           <button onClick={() => setPeclModalOpen(true)}
             className="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-sm rounded-md">
-            📦 Install from PECL
+            {t('installFromPecl')}
           </button>
         </div>
       </div>
       <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
-        Manage PHP extensions across the server. Use the toggle to enable or disable an extension, and PHP-FPM restarts automatically. <strong>Server-wide</strong>, affects all domains.
+        {t('subtitle.pre')}<strong>{t('subtitle.bold')}</strong>{t('subtitle.post')}
       </p>
 
       {/* Version tabs */}
@@ -139,7 +143,7 @@ export default function PHPExtensionsPage() {
                 ? 'border-brand-500 text-brand-700 dark:text-brand-300'
                 : 'border-transparent text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300'
             }`}>
-            PHP {version.version}
+            {t('versionTab', { version: version.version })}
           </button>
         ))}
       </div>
@@ -148,18 +152,18 @@ export default function PHPExtensionsPage() {
       <div className="flex items-center justify-between mb-4 gap-3">
         <div className="flex items-center gap-3 text-sm">
           <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium text-xs">
-            {activeCount} enabled
+            {t('counters.enabled', { count: activeCount })}
           </span>
           <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:text-slate-500 font-medium text-xs">
-            {inactiveCount} inactive
+            {t('counters.inactive', { count: inactiveCount })}
           </span>
-          <span className="text-slate-400 dark:text-slate-500 text-xs">Total {extensions.length}</span>
+          <span className="text-slate-400 dark:text-slate-500 text-xs">{t('counters.total', { count: extensions.length })}</span>
         </div>
         <input
           type="text"
           value={filter}
           onChange={event => setFilter(event.target.value)}
-          placeholder="🔍 Search extensions..."
+          placeholder={t('searchPlaceholder')}
           className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm w-64 focus:border-brand-500 outline-none"
         />
       </div>
@@ -167,7 +171,7 @@ export default function PHPExtensionsPage() {
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
-      {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div> : (
+      {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</div> : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
           {filtered.map(extension => {
             const required = REQUIRED_EXTENSIONS.has(extension.name.toLowerCase())
@@ -180,7 +184,7 @@ export default function PHPExtensionsPage() {
                 }`}>
                 <div className="min-w-0 flex-1">
                   <div className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{extension.name}</div>
-                  {required && <div className="text-[10px] text-slate-500 dark:text-slate-500">core extension</div>}
+                  {required && <div className="text-[10px] text-slate-500 dark:text-slate-500">{t('coreExtension')}</div>}
                 </div>
                 <button
                   onClick={() => toggle(extension)}
@@ -188,7 +192,7 @@ export default function PHPExtensionsPage() {
                   className={`flex-shrink-0 relative inline-flex h-5 w-9 items-center rounded-full transition ${
                     extension.active ? 'bg-emerald-500' : 'bg-slate-300'
                   } ${required ? 'opacity-40 cursor-not-allowed' : ''}`}
-                  title={required ? 'Core extension, cannot be disabled' : (extension.active ? 'Disable' : 'Enable')}
+                  title={required ? t('toggleTitle.core') : (extension.active ? t('toggleTitle.disable') : t('toggleTitle.enable'))}
                 >
                   <span className={`inline-block h-3 w-3 transform rounded-full bg-white dark:bg-slate-800 shadow transition ${extension.active ? 'translate-x-5' : 'translate-x-1'}`} />
                 </button>
@@ -201,12 +205,12 @@ export default function PHPExtensionsPage() {
       {peclModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setPeclModalOpen(false)}>
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={event => event.stopPropagation()}>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-2">Install an Extension from PECL</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-500 mb-3">Downloads and compiles an extension from the PECL repository. Examples: <code className="font-mono">mongodb, swoole, geoip, oauth, yaml, msgpack</code></p>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('peclModal.title')}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mb-3">{t('peclModal.descPre')}<code className="font-mono">mongodb, swoole, geoip, oauth, yaml, msgpack</code></p>
             <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded p-2 mb-3">
-              ⚠ The extension will be compiled for PHP {activeVersion}. Target: <code className="font-mono">/etc/php.d/</code> or the Remi directory
+              {t('peclModal.warnPre', { version: activeVersion })}<code className="font-mono">/etc/php.d/</code>{t('peclModal.warnMid')}
             </p>
-            <input id="peclPackageName" type="text" autoFocus placeholder="e.g. mongodb"
+            <input id="peclPackageName" type="text" autoFocus placeholder={t('peclModal.inputPlaceholder')}
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded font-mono text-sm mb-3"
               onKeyDown={event => {
                 if (event.key === 'Enter') {
@@ -216,11 +220,11 @@ export default function PHPExtensionsPage() {
               }} />
             <div className="flex justify-end gap-2">
               <button onClick={() => setPeclModalOpen(false)}
-                className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
+                className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('peclModal.cancel')}</button>
               <button onClick={() => {
                 const value = (document.getElementById('peclPackageName') as HTMLInputElement)?.value?.trim()
                 if (value) installPecl(value)
-              }} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded">Install</button>
+              }} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded">{t('peclModal.install')}</button>
             </div>
           </div>
         </div>

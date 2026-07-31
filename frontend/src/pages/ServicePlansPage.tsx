@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -31,6 +32,7 @@ type Plan = {
 type Version = { version: string; description?: string }
 
 export default function ServicePlansPage() {
+  const { t } = useTranslation('ServicePlansPage')
   const isAdmin = useAuth((s) => s.username?.role) === 'admin'
   const [items, setItems] = useState<Plan[]>([])
   const [versions, setVersions] = useState<Version[]>([])
@@ -57,33 +59,32 @@ export default function ServicePlansPage() {
       await api.delete(`/plans/${planToDelete.id}`)
       setPlanToDelete(null); load()
     } catch (e) {
-      alert(apiError(e, 'Failed to delete'))
+      alert(apiError(e, t('errors.deleteFailed')))
     }
   }
 
   return (
     <div className="px-6 py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Service Plans' }]} />
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Service Plans</h1>
+      <Breadcrumb items={[{ label: t('breadcrumbHome'), href: '/' }, { label: t('breadcrumbTitle') }]} />
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('title')}</h1>
       <p className="text-sm text-slate-500 dark:text-slate-500 mb-6">
-        Define service plans for domains. Each domain is associated with a plan, and resources such as disk,
-        traffic, PHP version, database count, and subdomain limits are configured per plan.
+        {t('subtitle')}
       </p>
 
       <ListToolbar
-        primary={isAdmin ? { label: 'Add Plan', onClick: () => setModal({} as Plan) } : undefined}
+        primary={isAdmin ? { label: t('addPlan'), onClick: () => setModal({} as Plan) } : undefined}
         buttons={[]}
       />
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       {loading ? (
-        <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading…</div>
+        <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</div>
       ) : items.length === 0 ? (
         <EmptyState
-          title="No service plans yet"
-          description={isAdmin ? 'Start by defining your first plan.' : 'The administrator has not defined a plan yet.'}
-          button={isAdmin ? { label: 'Add Plan', onClick: () => setModal({} as Plan) } : undefined}
+          title={t('empty.title')}
+          description={isAdmin ? t('empty.descriptionAdmin') : t('empty.descriptionUser')}
+          button={isAdmin ? { label: t('addPlan'), onClick: () => setModal({} as Plan) } : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -93,19 +94,19 @@ export default function ServicePlansPage() {
                 <div className="min-w-0">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     {plan.name}
-                    {plan.is_default && <span className="text-[10px] uppercase tracking-wider bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-1.5 py-0.5 rounded font-semibold">Default</span>}
+                    {plan.is_default && <span className="text-[10px] uppercase tracking-wider bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-1.5 py-0.5 rounded font-semibold">{t('badge.default')}</span>}
                   </h3>
                   {plan.description && <p className="text-sm text-slate-500 dark:text-slate-500 mt-0.5">{plan.description}</p>}
                 </div>
-                {plan.php_version && <span className="shrink-0 text-[11px] font-mono font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">PHP {plan.php_version}</span>}
+                {plan.php_version && <span className="shrink-0 text-[11px] font-mono font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">{t('phpVersion', { version: plan.php_version })}</span>}
               </div>
 
               <dl className="grid grid-cols-2 gap-y-1.5 text-sm mt-4">
-                <Row label="Disk" value={formatLimit(plan.disk_quota_mb, 'MB')} />
-                <Row label="Traffic" value={formatLimit(plan.traffic_quota_mb, 'MB/month')} />
-                <Row label="Domains" value={formatLimit(plan.max_domain, 'domains')} />
-                <Row label="Databases" value={formatLimit(plan.max_db, 'databases')} />
-                <Row label="FTP" value={formatLimit(plan.max_ftp, 'accounts')} />
+                <Row label={t('rows.disk')} value={formatLimit(plan.disk_quota_mb, t('units.mb'), t('limit.unlimited'))} />
+                <Row label={t('rows.traffic')} value={formatLimit(plan.traffic_quota_mb, t('units.mbPerMonth'), t('limit.unlimited'))} />
+                <Row label={t('rows.domains')} value={formatLimit(plan.max_domain, t('units.domains'), t('limit.unlimited'))} />
+                <Row label={t('rows.databases')} value={formatLimit(plan.max_db, t('units.databases'), t('limit.unlimited'))} />
+                <Row label={t('rows.ftp')} value={formatLimit(plan.max_ftp, t('units.accounts'), t('limit.unlimited'))} />
               </dl>
 
               {/* Plan definition is the administrator's product; a reseller only
@@ -113,9 +114,9 @@ export default function ServicePlansPage() {
               {isAdmin && (
                 <div className="mt-4 flex gap-2">
                   <Link to={`/tools/packages/${plan.id}`} className="flex-1 text-center text-sm px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-md">
-                    Details & Resource Limits
+                    {t('detailsButton')}
                   </Link>
-                  <button onClick={() => setPlanToDelete(plan)} className="text-sm px-3 py-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 rounded-md">Delete</button>
+                  <button onClick={() => setPlanToDelete(plan)} className="text-sm px-3 py-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 rounded-md">{t('delete')}</button>
                 </div>
               )}
             </div>
@@ -134,10 +135,10 @@ export default function ServicePlansPage() {
 
       <ConfirmDialog
         open={!!planToDelete}
-        title="Delete plan"
-        message={`Delete the plan "${planToDelete?.name}"?`}
+        title={t('confirmDelete.title')}
+        message={t('confirmDelete.message', { name: planToDelete?.name })}
         dangerous
-        confirmText="Yes, delete"
+        confirmText={t('confirmDelete.confirmText')}
         onConfirm={remove}
         onCancel={() => setPlanToDelete(null)}
       />
@@ -154,8 +155,8 @@ function Row({ label, value }: { label: string; value: string }) {
   )
 }
 
-function formatLimit(value: number, unit: string) {
-  if (value <= 0) return 'unlimited'
+function formatLimit(value: number, unit: string, unlimited: string) {
+  if (value <= 0) return unlimited
   if (unit.startsWith('MB') && value >= 1024) return `${(value / 1024).toFixed(1)} G${unit.slice(2)}`
   return `${value.toLocaleString('en-US')} ${unit}`
 }
@@ -182,6 +183,7 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
     is_default: plan.is_default || false,
     created_at: '',
   })
+  const { t } = useTranslation('ServicePlansPage')
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -199,69 +201,69 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
       else await api.put(`/plans/${form.id}`, form)
       onSave()
     } catch (e) {
-      setError(apiError(e, 'Failed to save'))
+      setError(apiError(e, t('errors.saveFailed')))
     } finally {
       setProcessing(false)
     }
   }
 
   return (
-    <Modal open={true} title={newItem ? 'New Plan' : 'Edit Plan'} onClose={onClose} width="lg">
+    <Modal open={true} title={newItem ? t('modal.newTitle') : t('modal.editTitle')} onClose={onClose} width="lg">
       <form onSubmit={submit} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <TextField label="Plan Name" value={form.name} setValue={value => setForm({ ...form, name: value })} required />
-          <TextField label="Description" value={form.description} setValue={value => setForm({ ...form, description: value })} />
+          <TextField label={t('modal.planName')} value={form.name} setValue={value => setForm({ ...form, name: value })} required />
+          <TextField label={t('modal.description')} value={form.description} setValue={value => setForm({ ...form, description: value })} />
         </div>
         <div className="grid grid-cols-3 gap-3">
-          <Count label="Disk (MB)" value={form.disk_quota_mb} setValue={value => setForm({ ...form, disk_quota_mb: value })} />
-          <Count label="Traffic (MB)" value={form.traffic_quota_mb} setValue={value => setForm({ ...form, traffic_quota_mb: value })} />
+          <Count label={t('modal.diskMb')} value={form.disk_quota_mb} setValue={value => setForm({ ...form, disk_quota_mb: value })} />
+          <Count label={t('modal.trafficMb')} value={form.traffic_quota_mb} setValue={value => setForm({ ...form, traffic_quota_mb: value })} />
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">PHP Version</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('modal.phpVersionLabel')}</label>
             <select value={form.php_version} onChange={e => setForm({ ...form, php_version: e.target.value })}
               className="w-full px-3 py-1.5 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none">
-              {phpOptions.map(v => <option key={v} value={v}>PHP {v}</option>)}
+              {phpOptions.map(v => <option key={v} value={v}>{t('phpVersion', { version: v })}</option>)}
             </select>
           </div>
-          <Count label="Max Domains" value={form.max_domain} setValue={value => setForm({ ...form, max_domain: value })} />
-          <Count label="Max Databases" value={form.max_db} setValue={value => setForm({ ...form, max_db: value })} />
-          <Count label="Max FTP Accounts" value={form.max_ftp} setValue={value => setForm({ ...form, max_ftp: value })} />
+          <Count label={t('modal.maxDomains')} value={form.max_domain} setValue={value => setForm({ ...form, max_domain: value })} />
+          <Count label={t('modal.maxDatabases')} value={form.max_db} setValue={value => setForm({ ...form, max_db: value })} />
+          <Count label={t('modal.maxFtp')} value={form.max_ftp} setValue={value => setForm({ ...form, max_ftp: value })} />
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
           <input type="checkbox" checked={form.is_default} onChange={e => setForm({ ...form, is_default: e.target.checked })} className="rounded" />
-          Default plan for new domains
+          {t('modal.isDefault')}
         </label>
 
         {/* WAF (ModSecurity + OWASP CRS) plan default */}
         <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-          <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">WAF Default (ModSecurity + OWASP CRS)</h4>
+          <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('modal.wafHeading')}</h4>
           <div className="grid grid-cols-3 gap-3">
             <label className="flex items-center gap-2 h-[38px] px-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 cursor-pointer">
               <input type="checkbox" checked={form.waf_enabled} onChange={e => setForm({ ...form, waf_enabled: e.target.checked })} className="rounded" />
-              <span className="text-sm text-slate-700 dark:text-slate-300">Enabled in this plan</span>
+              <span className="text-sm text-slate-700 dark:text-slate-300">{t('modal.wafEnabled')}</span>
             </label>
             <select value={form.waf_mode} onChange={e => setForm({ ...form, waf_mode: e.target.value })}
               disabled={!form.waf_enabled}
               className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded text-sm disabled:opacity-50">
-              <option value="on">Block (On)</option>
-              <option value="detect">Detect (log only)</option>
+              <option value="on">{t('modal.wafMode.block')}</option>
+              <option value="detect">{t('modal.wafMode.detect')}</option>
             </select>
             <select value={form.waf_paranoia} onChange={e => setForm({ ...form, waf_paranoia: Number(e.target.value) || 1 })}
               disabled={!form.waf_enabled}
               className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded text-sm disabled:opacity-50">
-              <option value={1}>Level 1 (Low)</option>
-              <option value={2}>Level 2 (Medium)</option>
-              <option value={3}>Level 3 (High)</option>
-              <option value={4}>Level 4 (Strict)</option>
+              <option value={1}>{t('modal.wafParanoia.level1')}</option>
+              <option value={2}>{t('modal.wafParanoia.level2')}</option>
+              <option value={3}>{t('modal.wafParanoia.level3')}</option>
+              <option value={4}>{t('modal.wafParanoia.level4')}</option>
             </select>
           </div>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-500">0 = unlimited. Disk and traffic values are in MB. New domains on this plan are provisioned with the selected PHP version.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-500">{t('modal.hint')}</p>
 
         {error && <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-300">{error}</div>}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button type="button" onClick={onClose} className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-md text-sm">Cancel</button>
-          <button type="submit" disabled={processing || !form.name.trim()} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded-md">{processing ? 'Saving…' : (newItem ? 'Add' : 'Update')}</button>
+          <button type="button" onClick={onClose} className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-md text-sm">{t('modal.cancel')}</button>
+          <button type="submit" disabled={processing || !form.name.trim()} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded-md">{processing ? t('modal.saving') : (newItem ? t('modal.add') : t('modal.update'))}</button>
         </div>
       </form>
     </Modal>

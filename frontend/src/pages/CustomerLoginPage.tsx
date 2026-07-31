@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { apiError as apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 import axios from 'axios'
 
 export default function CustomerLoginPage() {
+  const { t } = useTranslation('CustomerLoginPage')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -23,7 +25,7 @@ export default function CustomerLoginPage() {
       navigate('/subscriptions/' + domain_id, { replace: true })
       setTimeout(() => window.location.reload(), 100)
     } catch (e) {
-      setError(apiError(e, 'Login failed'))
+      setError(apiError(e, t('error.loginFailed')))
     } finally {
       setLoading(false)
     }
@@ -34,8 +36,8 @@ export default function CustomerLoginPage() {
       <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-7">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-2xl mb-3">🌐</div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Customer Portal</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">Sign in with your account credentials</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{t('heading')}</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">{t('subtitle')}</p>
         </div>
 
         {error && (
@@ -44,20 +46,20 @@ export default function CustomerLoginPage() {
 
         <form onSubmit={signIn} className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Username</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('field.username')}</label>
             <input type="text" value={username} onChange={e => setUsername(e.target.value)}
               autoComplete="username" required autoFocus
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded font-mono text-sm focus:border-brand-500 outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Password</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('field.password')}</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)}
               autoComplete="current-password" required
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded font-mono text-sm focus:border-brand-500 outline-none" />
           </div>
           <button type="submit" disabled={loading || !username || !password}
             className="w-full px-4 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 font-medium rounded-md">
-            {loading ? 'Signing in…' : 'Sign In'}
+            {loading ? t('button.signingIn') : t('button.signIn')}
           </button>
         </form>
       </div>

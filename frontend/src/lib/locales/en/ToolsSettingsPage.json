@@ -1,0 +1,67 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "current": "Tools and Settings"
+  },
+  "title": "Tools and Settings",
+  "subtitle": "Server-wide management — PHP, system packages, network, security, and maintenance.",
+  "searchPlaceholder": "Search tools…",
+  "searchAria": "Search tools",
+  "maintenance": "Server Maintenance",
+  "noResults": "No tools found for \"{{q}}\"",
+  "noResultsHint": "Change or clear the search term.",
+  "footer_one": "{{count}} tool · server-wide",
+  "footer_other": "{{count}} tools · server-wide",
+  "badges": {
+    "dynamic": "Dynamic",
+    "serverWide": "Server-wide"
+  },
+  "groups": {
+    "php": "PHP",
+    "system": "System and Services",
+    "network": "Network and DNS",
+    "security": "Security and Backups"
+  },
+  "tools": {
+    "phpVersions": {
+      "title": "PHP Versions",
+      "description": "Add or remove versions 7.4 through 8.6. Each domain selects its version independently."
+    },
+    "phpExtensions": {
+      "title": "PHP Extensions",
+      "description": "Toggle server-wide extensions, search PECL packages, and compile them."
+    },
+    "packages": {
+      "title": "Package Manager",
+      "description": "DNF packages — compilers and runtimes. Ready-made install groups."
+    },
+    "services": {
+      "title": "Services",
+      "description": "Nginx / Apache / MariaDB / DNS / PHP-FPM status and restart."
+    },
+    "servicePlans": {
+      "title": "Service Plans",
+      "description": "Hosting packages with disk, database, and FTP quotas."
+    },
+    "dnsTemplate": {
+      "title": "DNS Template",
+      "description": "Central DNS records applied to new domains (A/MX/SPF/DMARC/DKIM) with SOA."
+    },
+    "domains": {
+      "title": "Domains",
+      "description": "Browse, search, and quickly access all domains."
+    },
+    "firewall": {
+      "title": "Firewall",
+      "description": "IP/port blocking, allowlist, port closure. Critical ports are protected."
+    },
+    "backupManager": {
+      "title": "Backup Manager",
+      "description": "View backup sizes for all domains, one-click backup, S3/SFTP destinations."
+    },
+    "monitoring": {
+      "title": "Monitoring and Logs",
+      "description": "CPU/RAM/disk charts and server logs from journald (panel/nginx/SSH…)."
+    }
+  }
+}

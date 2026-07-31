@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 
 type HostnameStatus = {
@@ -8,6 +9,7 @@ type HostnameStatus = {
 }
 
 export default function HostnameSetting() {
+  const { t } = useTranslation('HostnameSetting')
   const [status, setStatus] = useState<HostnameStatus | null>(null)
   const [hostname, setHostname] = useState('')
   const [saving, setSaving] = useState(false)
@@ -20,7 +22,7 @@ export default function HostnameSetting() {
       setStatus(response.data)
       setHostname(response.data.hostname)
     } catch (caughtError) {
-      setError(apiError(caughtError, 'Could not load the hostname'))
+      setError(apiError(caughtError, t('errors.load')))
     }
   }, [])
 
@@ -34,9 +36,9 @@ export default function HostnameSetting() {
       const response = await api.put<HostnameStatus>('/system/hostname', { hostname: hostname.trim() })
       setStatus(response.data)
       setHostname(response.data.hostname)
-      setMessage(`Hostname changed to "${response.data.hostname}" and made permanent.`)
+      setMessage(t('messages.changed', { hostname: response.data.hostname }))
     } catch (caughtError) {
-      setError(apiError(caughtError, 'Could not change the hostname'))
+      setError(apiError(caughtError, t('errors.change')))
     } finally {
       setSaving(false)
     }
@@ -52,19 +54,19 @@ export default function HostnameSetting() {
         </div>
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Server Hostname</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h2>
             {status && (
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
                 status.protected
                   ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                   : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
               }`}>
-                {status.protected ? 'Protected against provider' : 'Awaiting protection'}
+                {status.protected ? t('protected') : t('awaitingProtection')}
               </span>
             )}
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
-            Changes the system hostname permanently. Cloud-init and DHCP/NetworkManager are prevented from rewriting the provider-supplied name. A fully qualified name is recommended: <code className="text-[11px]">server1.example.com</code>
+            {t('descriptionPre')}<code className="text-[11px]">server1.example.com</code>
           </p>
         </div>
       </div>
@@ -77,7 +79,7 @@ export default function HostnameSetting() {
           type="text"
           value={hostname}
           onChange={event => setHostname(event.target.value)}
-          placeholder="server1.example.com"
+          placeholder={t('placeholder')}
           autoComplete="off"
           spellCheck={false}
           maxLength={253}
@@ -89,7 +91,7 @@ export default function HostnameSetting() {
           disabled={saving || !hostname.trim() || unchanged}
           className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {saving ? 'Applying…' : 'Change Hostname'}
+          {saving ? t('applying') : t('apply')}
         </button>
       </div>
     </section>

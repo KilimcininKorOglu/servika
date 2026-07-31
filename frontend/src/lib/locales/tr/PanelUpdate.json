@@ -1,0 +1,32 @@
+{
+  "notCheckedYet": "Henüz kontrol edilmedi",
+  "title": "Panel Güncellemesi",
+  "badges": {
+    "server": "Sunucu",
+    "critical": "Kritik",
+    "updateAvailable": "Güncelleme mevcut"
+  },
+  "description": "Paneli GitHub'daki en son sürüme günceller. Ortam ayarları, veritabanları ve siteler korunur; sağlıksız bir sürüm otomatik olarak geri alınır.",
+  "toolMissing": " Güncelleme aracı eksik ve ilk kullanımda otomatik olarak indirilecek.",
+  "labels": {
+    "current": "Mevcut",
+    "latest": "En son",
+    "lastCheck": "Son kontrol"
+  },
+  "unknown": "Bilinmiyor",
+  "lastCheckFailed": "Son sürüm kontrolü başarısız oldu: {{error}}",
+  "checksDisabled": "Sürüm kontrolleri devre dışı.",
+  "running": "Güncelleme çalışıyor. Panel kısa süreliğine yeniden başlayabilir; bu sayfayı açık tutun.",
+  "logStarted": "Güncelleme başlatıldı...\n",
+  "checkAndInstall": "Güncellemeleri kontrol et ve yükle",
+  "checking": "Kontrol ediliyor...",
+  "refreshStatus": "Sürüm durumunu yenile",
+  "confirmPrompt": "Panel güncellenecek ve servisi yeniden başlatılacak. Onaylıyor musunuz?",
+  "starting": "Başlatılıyor...",
+  "confirmYes": "Evet, güncelle",
+  "cancel": "İptal",
+  "errors": {
+    "refresh": "Sürüm durumu yenilenemedi",
+    "start": "Güncelleme başlatılamadı"
+  }
+}

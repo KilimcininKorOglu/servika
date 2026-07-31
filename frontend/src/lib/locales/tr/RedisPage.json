@@ -1,0 +1,61 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "redisCache": "Redis Önbellek"
+  },
+  "title": "Redis Önbellek",
+  "status": {
+    "active": "● Etkin",
+    "disabled": "Devre dışı"
+  },
+  "subtitle": {
+    "pre": "Bu alan adına ",
+    "bold": "yalıtılmış, özel bir Redis nesne önbelleği",
+    "post": " tahsis eder. WordPress ve dinamik uygulamalar veritabanı yükünü azaltabilir ve daha hızlı yanıt verebilir. Diğer siteler bu önbelleğe erişemez."
+  },
+  "loading": "Yükleniyor…",
+  "empty": {
+    "message": "Bu alan adı için Redis önbellek devre dışı.",
+    "hint": "Etkinleştirmek, yalıtılmış bir ACL kullanıcısı ve bağlantı bilgileri oluşturur.",
+    "enable": "Redis Önbelleği Etkinleştir",
+    "enabling": "Etkinleştiriliyor…"
+  },
+  "connection": {
+    "title": "Bağlantı Bilgileri",
+    "disable": "Devre dışı bırak",
+    "host": "Sunucu",
+    "username": "Kullanıcı adı",
+    "password": "Parola",
+    "keyPrefix": "Anahtar öneki"
+  },
+  "wp": {
+    "title": "WordPress Kurulumu",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı ✓",
+    "instructionsPre": "1) Aşağıdaki satırları ",
+    "instructionsFile": "wp-config.php",
+    "instructionsMid": " dosyanıza ekleyin. 2) WordPress panosundan ",
+    "instructionsBold": "Redis Object Cache",
+    "instructionsPost": " eklentisini kurun, ardından \"Enable Object Cache\" seçeneğini seçin."
+  },
+  "row": {
+    "show": "göster",
+    "hide": "gizle",
+    "copy": "kopyala",
+    "copied": "✓"
+  },
+  "success": {
+    "enabledWithWp_one": "Redis önbellek etkinleştirildi ve {{count}} WordPress kurulumu otomatik olarak bağlandı. Ek bir kurulum gerekmez.",
+    "enabledWithWp_other": "Redis önbellek etkinleştirildi ve {{count}} WordPress kurulumu otomatik olarak bağlandı. Ek bir kurulum gerekmez.",
+    "enabled": "Redis önbellek etkinleştirildi. WordPress dışı uygulamaları aşağıdaki bağlantı bilgileriyle yapılandırın.",
+    "disabled": "Redis önbellek devre dışı bırakıldı."
+  },
+  "confirm": {
+    "disable": "Redis önbellek devre dışı bırakılsın mı? Bu alan adına ait ACL kullanıcısı silinecek."
+  },
+  "error": {
+    "enable": "Redis önbellek etkinleştirilemedi",
+    "disable": "Redis önbellek devre dışı bırakılamadı"
+  }
+}

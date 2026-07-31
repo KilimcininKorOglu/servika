@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Domain",
+    "mail": "Mail",
+    "mailboxes": "Mailboxes",
+    "aliases": "Aliases",
+    "suspended": "Suspended"
+  },
+  "mailNone": "None",
+  "overview": {
+    "title": "Email Accounts",
+    "description": "Mailbox and alias counts across every domain.",
+    "empty": "No domains found."
+  },
+  "summary": {
+    "mailDomains": "Mail domains",
+    "totalMailboxes": "Total mailboxes"
+  },
+  "queue": {
+    "title": "Postfix Mail Queue",
+    "subtitle": "Messages awaiting delivery, deferred, or placed on hold by an administrator.",
+    "refresh": "↻ Refresh",
+    "retry": "Retry queue",
+    "loading": "Reading the queue…",
+    "empty": "✓ The mail queue is empty",
+    "colId": "Queue ID",
+    "colRoute": "Sender → Recipient",
+    "colSizeTime": "Size / Time",
+    "colActions": "Actions",
+    "release": "Release",
+    "hold": "Hold",
+    "requeue": "Requeue",
+    "delete": "Delete"
+  },
+  "confirmDelete": "Permanently delete the queued message {{queueID}}?",
+  "errors": {
+    "readFailed": "Could not read the Postfix queue",
+    "actionFailed": "The queue operation failed"
+  }
+}

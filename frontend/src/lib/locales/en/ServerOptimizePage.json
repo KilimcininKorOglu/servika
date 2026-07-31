@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "toolsAndSettings": "Tools and Settings",
+    "serverOptimize": "Server Optimize"
+  },
+  "title": "Server Optimize",
+  "description": "Updates system packages and re-tunes MariaDB / Nginx / PHP settings based on server resources. The operation runs in the background — you can close this page; it may take a while and briefly affect services."
+}

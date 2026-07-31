@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "subdomains": "Subdomains"
+  },
+  "title": "Subdomains",
+  "subtitlePre": "Create subdomains (such as",
+  "subtitlePost": ") under this domain. Each one has a separate web directory.",
+  "toast": {
+    "created": "{{fqdn}} was created. A DNS A record was added.",
+    "createFailed": "Could not create subdomain",
+    "deleteFailed": "Could not delete subdomain",
+    "sslInstalled": "{{fqdn}} SSL was installed using {{method}}.",
+    "sslInstallFailed": "Could not install SSL"
+  },
+  "sslMethod": {
+    "letsencrypt": "Let's Encrypt",
+    "selfSigned": "a self-signed certificate"
+  },
+  "confirmDelete": "Delete {{fqdn}}?\nThe vhost, files (document root), and DNS record will be removed. This cannot be undone.",
+  "form": {
+    "title": "New Subdomain",
+    "label": "Subdomain",
+    "creating": "Creating…",
+    "add": "Add Subdomain",
+    "hintPre": "Lowercase letters, numbers, and hyphens. Examples:"
+  },
+  "list": {
+    "title": "Existing Subdomains",
+    "loading": "Loading…",
+    "empty": "No subdomains yet.",
+    "phpPrefix": "PHP",
+    "manage": "Manage",
+    "manageTitle": "Manage this subdomain",
+    "letsencryptTitle": "Install Let's Encrypt SSL",
+    "letsencrypt": "🔒 Let's Encrypt",
+    "selfSignedTitle": "Install self-signed SSL",
+    "selfSigned": "Self-signed",
+    "delete": "Delete",
+    "dnsNote": "ℹ️ The subdomain is configured on the web server immediately. Your domain's DNS A record must point to this server before it can be accessed."
+  },
+  "backToSubscription": "← Back to subscription"
+}

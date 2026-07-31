@@ -1,0 +1,67 @@
+{
+  "loading": "Yükleniyor…",
+  "notFound": "Alt alan adı bulunamadı.",
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "domain": "Alan Adı",
+    "subdomains": "Alt Alan Adları",
+    "subdomain": "Alt Alan Adı"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "Bu belge kökünde WordPress kurun ve yönetin"
+    },
+    "logs": {
+      "label": "Günlükler",
+      "description": "Bu alt alan adı için erişim ve hata günlükleri"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "Bu belge kökü için bağımlılık durumu"
+    },
+    "protection": {
+      "label": "Parola Koruması",
+      "description": "Dizinleri HTTP kimlik doğrulaması ile kısıtlayın"
+    },
+    "statistics": {
+      "label": "İstatistikler",
+      "description": "Yalnızca bu alt alan adı için trafik analizi"
+    }
+  },
+  "toast": {
+    "phpSaved": "Bu alt alan adı artık PHP {{version}} üzerinde çalışıyor.",
+    "phpChangeFailed": "PHP sürümü değiştirilemedi"
+  },
+  "ssl": {
+    "active": "🔒 SSL aktif",
+    "none": "SSL yok"
+  },
+  "intro": {
+    "pre": "Şunun bir alt alan adı:",
+    "post": ", kendi belge kökünden ve kendi PHP havuzuyla sunulur."
+  },
+  "details": {
+    "title": "Ayrıntılar",
+    "address": "Adres",
+    "documentRoot": "Belge kökü",
+    "diskUsage": "Disk kullanımı",
+    "phpVersion": "PHP sürümü",
+    "created": "Oluşturulma",
+    "serverIp": "Sunucu IP"
+  },
+  "php": {
+    "title": "PHP Sürümü",
+    "note": "Bu alt alan adı kendi FPM havuzunda çalışır, bu yüzden değiştirilmesi ana alan adını etkilemez.",
+    "versionLabel": "Sürüm",
+    "applying": "Uygulanıyor…",
+    "apply": "Uygula",
+    "validationNote": "Değişiklik kaydedilmeden önce vhost doğrulanır, bu yüzden reddedilen bir yapılandırma siteyi olduğu gibi bırakır."
+  },
+  "toolsSection": {
+    "title": "Araçlar",
+    "note": "Her araç ana alan adının değil bu alt alan adının belge kökü üzerinde çalışır."
+  },
+  "backToSubdomains": "← Alt alan adlarına geri dön"
+}

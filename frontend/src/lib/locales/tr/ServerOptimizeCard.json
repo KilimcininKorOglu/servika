@@ -1,0 +1,12 @@
+{
+  "title": "Sunucu Optimizasyonu",
+  "description": "Sistem paketlerini (dnf/yum) günceller ve MariaDB, nginx ve PHP performans ayarlarını uygular. İşlem arka planda çalışır ve uzun sürebilir. Devam ederken sayfayı kapatabilirsiniz.",
+  "running": "Optimizasyon çalışıyor. Paket güncellemeleri biraz zaman alabilir; arka planda devam ederken sayfayı kapatabilirsiniz.",
+  "logStarted": "Optimizasyon başlatıldı...\n",
+  "startButton": "Paketleri güncelle ve optimize et",
+  "confirmPrompt": "Bu, servisleri kısa süreliğine etkileyebilir. Devam edilsin mi?",
+  "starting": "Başlatılıyor...",
+  "confirmYes": "Evet, başlat",
+  "cancel": "İptal",
+  "errorStart": "Optimizasyon başlatılamadı"
+}

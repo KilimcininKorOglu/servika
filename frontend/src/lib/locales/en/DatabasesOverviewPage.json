@@ -1,0 +1,16 @@
+{
+  "title": "Databases",
+  "description": "Every database on the server with its owning domain and size.",
+  "emptyMessage": "No databases found.",
+  "column": {
+    "domain": "Domain",
+    "database": "Database",
+    "user": "User",
+    "size": "Size",
+    "created": "Created"
+  },
+  "summary": {
+    "databases": "Databases",
+    "totalSize": "Total size"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "Uygulamalar",
+    "domainAndDns": "Alan Adı ve DNS",
+    "email": "E-posta",
+    "filesAndDatabases": "Dosyalar ve Veritabanları",
+    "developmentTools": "Geliştirme Araçları",
+    "security": "Güvenlik"
+  },
+  "wordpress": { "label": "WordPress", "desc": "Tek tıkla kurulum · yönetim" },
+  "laravel": { "label": "Laravel Araç Seti", "desc": "Kur · dağıt · kuyruk" },
+  "dns": { "label": "DNS Yönetimi", "desc": "A, MX, TXT, CNAME kayıtları" },
+  "subdomains": { "label": "Alt Alan Adları", "desc": "Alt alan adları" },
+  "addonDomains": { "label": "Ek Alan Adları", "desc": "Ek ve park edilmiş alan adları · yönlendirmeler" },
+  "mail": { "label": "E-posta Hesapları", "desc": "Postfix ve Dovecot posta kutuları · SMTP" },
+  "connection": { "label": "Bağlantı Bilgileri", "desc": "FTP, veritabanı" },
+  "files": { "label": "Dosyalar", "desc": "Dosya yöneticisi" },
+  "databases": { "label": "Veritabanları" },
+  "ftp": { "label": "FTP", "desc": "FTP hesapları" },
+  "backups": { "label": "Yedekleme ve Geri Yükleme", "desc": "Yedek yönetimi" },
+  "copy": { "label": "Web Sitesini Kopyala", "desc": "Klonlama" },
+  "php": { "label": "PHP", "desc": "Sürüm {{version}}" },
+  "logs": { "label": "Günlükler", "desc": "erişim, hata" },
+  "cron": { "label": "Zamanlanmış Görevler", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "Depo entegrasyonu" },
+  "composer": { "label": "PHP Composer", "desc": "Paket yöneticisi" },
+  "performance": { "label": "Performans", "desc": "Hızlandırıcılar" },
+  "redis": { "label": "Redis Önbelleği", "desc": "İzole nesne önbelleği · hızlandırıcı" },
+  "ssl": {
+    "label": "SSL/TLS Sertifikaları",
+    "expires": "Bitiş: {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "Alan adı korumalı değil"
+  },
+  "passwordProtection": { "label": "Parola Korumalı Dizinler", "desc": ".htpasswd" },
+  "stats": { "label": "İstatistikler", "desc": "Trafik analizi" },
+  "accessControl": { "label": "Erişim Denetimi", "desc": "Hotlink koruması · IP izin/engelleme" },
+  "imunify": { "label": "Imunify", "desc": "Antivirüs" },
+  "ssh": {
+    "label": "SSH Erişimi",
+    "enabled": "Etkin",
+    "disabled": "Devre dışı"
+  }
+}

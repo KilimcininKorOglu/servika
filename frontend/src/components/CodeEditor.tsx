@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import CodeMirror, { EditorView } from '@uiw/react-codemirror'
 import { html } from '@codemirror/lang-html'
 import { css } from '@codemirror/lang-css'
@@ -55,6 +56,7 @@ interface Props {
 }
 
 export default function CodeEditor({ path, content, onChange, onSave, onClose }: Props) {
+  const { t } = useTranslation('CodeEditor')
   const [fullscreen, setFullscreen] = useState(false)
   const [language, setLanguage] = useState<Language>(() => detectLanguage(path))
   const [saveStatus, setSaveStatus] = useState<'clean' | 'dirty' | 'saving' | 'saved'>('clean')
@@ -134,9 +136,9 @@ export default function CodeEditor({ path, content, onChange, onSave, onClose }:
             </svg>
             <span className="text-sm font-semibold text-slate-100 truncate">{fileName}</span>
             <span className="text-xs text-slate-500 dark:text-slate-500 truncate min-w-0 hidden md:inline">— {path}</span>
-            {saveStatus === 'dirty' && <span className="text-[10px] uppercase tracking-wider text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded">Unsaved changes</span>}
-            {saveStatus === 'saving' && <span className="text-[10px] uppercase tracking-wider text-sky-400 bg-sky-500/15 px-1.5 py-0.5 rounded">Saving…</span>}
-            {saveStatus === 'saved' && <span className="text-[10px] uppercase tracking-wider text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded">✓ Saved</span>}
+            {saveStatus === 'dirty' && <span className="text-[10px] uppercase tracking-wider text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded">{t('unsaved')}</span>}
+            {saveStatus === 'saving' && <span className="text-[10px] uppercase tracking-wider text-sky-400 bg-sky-500/15 px-1.5 py-0.5 rounded">{t('saving')}</span>}
+            {saveStatus === 'saved' && <span className="text-[10px] uppercase tracking-wider text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded">{t('saved')}</span>}
           </div>
 
           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -144,14 +146,14 @@ export default function CodeEditor({ path, content, onChange, onSave, onClose }:
               value={language}
               onChange={e => setLanguage(e.target.value as Language)}
               className="text-xs bg-slate-700 text-slate-100 border border-slate-600 rounded px-2 py-1 focus:outline-none focus:border-slate-400"
-              title="Syntax"
+              title={t('syntax')}
             >
-              {LANGUAGES.map(d => <option key={d.code} value={d.code}>{d.name}</option>)}
+              {LANGUAGES.map(d => <option key={d.code} value={d.code}>{d.code === 'text' ? t('langPlainText') : d.name}</option>)}
             </select>
             <button
               onClick={() => setFullscreen(!fullscreen)}
               className="text-xs px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded"
-              title={fullscreen ? 'Exit full screen' : 'Full screen'}
+              title={fullscreen ? t('exitFullscreen') : t('fullscreen')}
             >
               {fullscreen ? '⛶' : '⛶'}
             </button>
@@ -161,14 +163,14 @@ export default function CodeEditor({ path, content, onChange, onSave, onClose }:
               className="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 disabled:text-slate-500 dark:text-slate-500 text-white rounded font-medium"
               title="Ctrl+S"
             >
-              💾 Save
+              {t('save')}
             </button>
             <button
               onClick={onClose}
               className="text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded"
               title="ESC"
             >
-              Close
+              {t('close')}
             </button>
           </div>
         </div>
@@ -206,15 +208,15 @@ export default function CodeEditor({ path, content, onChange, onSave, onClose }:
         {/* Status bar */}
         <div className="flex items-center justify-between gap-4 px-3 py-1.5 bg-slate-800 border-t border-slate-700 text-[11px] text-slate-400 dark:text-slate-500 font-mono">
           <div className="flex items-center gap-4">
-            <span>Line {cursor.line}, Column {cursor.column}</span>
-            <span>{content.split('\n').length} lines</span>
-            <span>{byteCount.toLocaleString('en-US')} bytes</span>
+            <span>{t('cursor', { line: cursor.line, column: cursor.column })}</span>
+            <span>{t('lines', { count: content.split('\n').length })}</span>
+            <span>{t('bytes', { count: byteCount })}</span>
           </div>
           <div className="flex items-center gap-3">
             <span>UTF-8</span>
             <span>LF</span>
-            <span className="text-slate-300">{LANGUAGES.find(d => d.code === language)?.name}</span>
-            <span className="text-slate-500 dark:text-slate-500">Ctrl+S: save · Esc: close</span>
+            <span className="text-slate-300">{language === 'text' ? t('langPlainText') : LANGUAGES.find(d => d.code === language)?.name}</span>
+            <span className="text-slate-500 dark:text-slate-500">{t('shortcuts')}</span>
           </div>
         </div>
       </div>

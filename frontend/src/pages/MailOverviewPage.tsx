@@ -2,6 +2,8 @@
 // mail footprint is visible without opening each domain. Also exposes the live
 // Postfix queue with hold, release, requeue, delete, and flush controls.
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Link } from 'react-router-dom'
 import OverviewList, { type Column, type Badge } from '@/components/OverviewList'
 import { api, apiError } from '@/lib/api'
@@ -21,30 +23,32 @@ type QueueMessage = {
   sender: string; recipients: QueueRecipient[]
 }
 
-const columns: Column<Row>[] = [
-  {
-    title: 'Domain',
-    cell: (s) => (
-      <Link to={`/subscriptions/${s.domain_id}/mail`} className="font-medium text-slate-900 dark:text-slate-100 hover:text-brand-600 dark:hover:text-brand-400 transition">
-        {s.domain_name}
-      </Link>
-    ),
-  },
-  {
-    title: 'Mail',
-    cell: (s) => (s.mail_enabled
-      ? <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">{s.mail_status}</span>
-      : <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">None</span>),
-  },
-  { title: 'Mailboxes', cell: (s) => s.mailbox_count },
-  { title: 'Aliases', cell: (s) => s.alias_count },
-  {
-    title: 'Suspended',
-    cell: (s) => (s.suspended_mailbox_count > 0
-      ? <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">{s.suspended_mailbox_count}</span>
-      : <span className="text-xs text-slate-400">0</span>),
-  },
-]
+function buildColumns(t: TFunction): Column<Row>[] {
+  return [
+    {
+      title: t('columns.domain'),
+      cell: (s) => (
+        <Link to={`/subscriptions/${s.domain_id}/mail`} className="font-medium text-slate-900 dark:text-slate-100 hover:text-brand-600 dark:hover:text-brand-400 transition">
+          {s.domain_name}
+        </Link>
+      ),
+    },
+    {
+      title: t('columns.mail'),
+      cell: (s) => (s.mail_enabled
+        ? <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">{s.mail_status}</span>
+        : <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">{t('mailNone')}</span>),
+    },
+    { title: t('columns.mailboxes'), cell: (s) => s.mailbox_count },
+    { title: t('columns.aliases'), cell: (s) => s.alias_count },
+    {
+      title: t('columns.suspended'),
+      cell: (s) => (s.suspended_mailbox_count > 0
+        ? <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">{s.suspended_mailbox_count}</span>
+        : <span className="text-xs text-slate-400">0</span>),
+    },
+  ]
+}
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`
@@ -53,6 +57,8 @@ function formatSize(bytes: number) {
 }
 
 export default function MailOverviewPage() {
+  const { t } = useTranslation('MailOverviewPage')
+  const columns = buildColumns(t)
   const [queue, setQueue] = useState<QueueMessage[]>([])
   const [queueError, setQueueError] = useState<string | null>(null)
   const [queueLoading, setQueueLoading] = useState(true)
@@ -63,20 +69,20 @@ export default function MailOverviewPage() {
     setQueueError(null)
     api.get<{ messages: QueueMessage[] }>('/admin/mail/queue')
       .then(response => setQueue(response.data.messages || []))
-      .catch(cause => setQueueError(apiError(cause, 'Could not read the Postfix queue')))
+      .catch(cause => setQueueError(apiError(cause, t('errors.readFailed'))))
       .finally(() => setQueueLoading(false))
   }
   useEffect(loadQueue, [])
 
   async function queueAction(action: 'flush' | 'delete' | 'hold' | 'release' | 'requeue', queueID = '') {
-    if (action === 'delete' && !confirm(`Permanently delete the queued message ${queueID}?`)) return
+    if (action === 'delete' && !confirm(t('confirmDelete', { queueID }))) return
     setQueueBusy(action + queueID)
     setQueueError(null)
     try {
       await api.post('/admin/mail/queue', { action, queue_id: queueID })
       loadQueue()
     } catch (cause) {
-      setQueueError(apiError(cause, 'The queue operation failed'))
+      setQueueError(apiError(cause, t('errors.actionFailed')))
     } finally {
       setQueueBusy('')
     }
@@ -85,20 +91,20 @@ export default function MailOverviewPage() {
   return (
     <>
       <OverviewList<Row>
-        title="Email Accounts"
+        title={t('overview.title')}
         icon="✉️"
-        description="Mailbox and alias counts across every domain."
+        description={t('overview.description')}
         endpoint="/overview/mail"
         columns={columns}
         searchField={(s) => s.domain_name}
         rowKey={(s) => s.domain_id}
-        emptyMessage="No domains found."
+        emptyMessage={t('overview.empty')}
         summary={(list): Badge[] => {
           const boxes = list.reduce((n, s) => n + s.mailbox_count, 0)
           const active = list.filter((s) => s.mail_enabled).length
           return [
-            { label: 'Mail domains', value: active },
-            { label: 'Total mailboxes', value: boxes },
+            { label: t('summary.mailDomains'), value: active },
+            { label: t('summary.totalMailboxes'), value: boxes },
           ]
         }}
       />
@@ -106,25 +112,25 @@ export default function MailOverviewPage() {
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
           <div className="p-5 flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Postfix Mail Queue</h2>
-              <p className="text-xs text-slate-500 mt-1">Messages awaiting delivery, deferred, or placed on hold by an administrator.</p>
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('queue.title')}</h2>
+              <p className="text-xs text-slate-500 mt-1">{t('queue.subtitle')}</p>
             </div>
             <div className="flex gap-2">
               <button onClick={loadQueue} disabled={queueLoading}
-                className="px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded">↻ Refresh</button>
+                className="px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded">{t('queue.refresh')}</button>
               <button onClick={() => queueAction('flush')} disabled={!!queueBusy}
                 className="px-3 py-1.5 text-xs bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded disabled:opacity-50">
-                Retry queue
+                {t('queue.retry')}
               </button>
             </div>
           </div>
           {queueError && <div className="m-4 p-3 text-sm text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-300 rounded">{queueError}</div>}
-          {queueLoading ? <div className="p-8 text-center text-sm text-slate-400">Reading the queue…</div> :
-           queue.length === 0 ? <div className="p-8 text-center text-sm text-emerald-600 dark:text-emerald-400">✓ The mail queue is empty</div> :
+          {queueLoading ? <div className="p-8 text-center text-sm text-slate-400">{t('queue.loading')}</div> :
+           queue.length === 0 ? <div className="p-8 text-center text-sm text-emerald-600 dark:text-emerald-400">{t('queue.empty')}</div> :
            <div className="overflow-x-auto">
              <table className="w-full text-sm">
                <thead className="bg-slate-50 dark:bg-slate-900 text-xs text-slate-500">
-                 <tr><th className="text-left p-3">Queue ID</th><th className="text-left p-3">Sender → Recipient</th><th className="text-left p-3">Size / Time</th><th className="text-right p-3">Actions</th></tr>
+                 <tr><th className="text-left p-3">{t('queue.colId')}</th><th className="text-left p-3">{t('queue.colRoute')}</th><th className="text-left p-3">{t('queue.colSizeTime')}</th><th className="text-right p-3">{t('queue.colActions')}</th></tr>
                </thead>
                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                  {queue.map(message => <tr key={message.queue_id}>
@@ -138,10 +144,10 @@ export default function MailOverviewPage() {
                    <td className="p-3 text-xs text-slate-500">{formatSize(message.message_size)}<div>{new Date(message.arrival_time * 1000).toLocaleString()}</div></td>
                    <td className="p-3 text-right whitespace-nowrap">
                      {message.queue_name === 'hold' ?
-                       <button onClick={() => queueAction('release', message.queue_id)} className="text-xs text-emerald-600 px-2">Release</button> :
-                       <button onClick={() => queueAction('hold', message.queue_id)} className="text-xs text-amber-600 px-2">Hold</button>}
-                     <button onClick={() => queueAction('requeue', message.queue_id)} className="text-xs text-brand-600 px-2">Requeue</button>
-                     <button onClick={() => queueAction('delete', message.queue_id)} className="text-xs text-red-600 px-2">Delete</button>
+                       <button onClick={() => queueAction('release', message.queue_id)} className="text-xs text-emerald-600 px-2">{t('queue.release')}</button> :
+                       <button onClick={() => queueAction('hold', message.queue_id)} className="text-xs text-amber-600 px-2">{t('queue.hold')}</button>}
+                     <button onClick={() => queueAction('requeue', message.queue_id)} className="text-xs text-brand-600 px-2">{t('queue.requeue')}</button>
+                     <button onClick={() => queueAction('delete', message.queue_id)} className="text-xs text-red-600 px-2">{t('queue.delete')}</button>
                    </td>
                  </tr>)}
                </tbody>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
@@ -41,22 +42,23 @@ const MAX_DATA_POINTS = 60 // Sixty samples at five-second intervals cover five 
 const POLL_MS = 5000
 
 export default function MonitoringPage() {
+  const { t } = useTranslation('MonitoringPage')
   const [tab, setTab] = useState<'server' | 'domain' | 'logs'>('server')
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Monitoring' }]} />
+      <Breadcrumb items={[{ label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.monitoring') }]} />
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">End-to-End Monitoring</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
         <span className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-500">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live, {POLL_MS / 1000} sec refresh
+          {t('liveRefresh', { seconds: POLL_MS / 1000 })}
         </span>
       </div>
 
       <div className="flex gap-1 mb-5 border-b border-slate-200 dark:border-slate-700">
-        <TabButton enabled={tab === 'server'}  onClick={() => setTab('server')}>Server</TabButton>
-        <TabButton enabled={tab === 'domain'} onClick={() => setTab('domain')}>By Domain</TabButton>
-        <TabButton enabled={tab === 'logs'} onClick={() => setTab('logs')}>Server Logs</TabButton>
+        <TabButton enabled={tab === 'server'}  onClick={() => setTab('server')}>{t('tabs.server')}</TabButton>
+        <TabButton enabled={tab === 'domain'} onClick={() => setTab('domain')}>{t('tabs.domain')}</TabButton>
+        <TabButton enabled={tab === 'logs'} onClick={() => setTab('logs')}>{t('tabs.logs')}</TabButton>
       </div>
 
       {tab === 'server' ? <ServerMonitoring /> : tab === 'domain' ? <DomainMonitoring /> : <ServerLogs />}
@@ -76,6 +78,7 @@ function TabButton({ enabled, onClick, children }: { enabled: boolean; onClick: 
 // SERVER MONITORING
 // ============================================================================
 function ServerMonitoring() {
+  const { t } = useTranslation('MonitoringPage')
   const [u, setU] = useState<Usage | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
@@ -122,23 +125,23 @@ function ServerMonitoring() {
       {/* Snapshot grid */}
       {u && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-          <Snap title="CPU" value={u.cpu.percent.toFixed(1) + '%'} alt={`${u.cpu.cores} cores`} color="indigo" />
-          <Snap title="Memory" value={u.memory.percent.toFixed(1) + '%'}
+          <Snap title={t('snap.cpu')} value={u.cpu.percent.toFixed(1) + '%'} alt={t('snap.cpuCores', { count: u.cpu.cores })} color="indigo" />
+          <Snap title={t('snap.memory')} value={u.memory.percent.toFixed(1) + '%'}
             alt={`${(u.memory.used_kb/1024).toFixed(0)} / ${(u.memory.total_kb/1024).toFixed(0)} MB`} color="emerald" />
-          <Snap title="Load (1 min)" value={u.cpu.load_1m.toFixed(2)}
-            alt={`5 min ${u.cpu.load_5m.toFixed(2)}, 15 min ${u.cpu.load_15m.toFixed(2)}`} color="amber" />
-          <Snap title="Disk (/)" value={u.disk.percent.toFixed(1) + '%'}
+          <Snap title={t('snap.load1m')} value={u.cpu.load_1m.toFixed(2)}
+            alt={t('snap.loadAlt', { load5m: u.cpu.load_5m.toFixed(2), load15m: u.cpu.load_15m.toFixed(2) })} color="amber" />
+          <Snap title={t('snap.diskRoot')} value={u.disk.percent.toFixed(1) + '%'}
             alt={`${fmtByte(u.disk.used_byte)} / ${fmtByte(u.disk.total_byte)}`} color="violet" />
         </div>
       )}
 
       {/* Multi-series line chart */}
-      <Card title="System Resources" right={`${dataPoints.length}/${MAX_DATA_POINTS} samples, ${(dataPoints.length*POLL_MS/1000/60).toFixed(1)} min`}>
+      <Card title={t('chart.systemResources')} right={t('chart.samples', { count: dataPoints.length, max: MAX_DATA_POINTS, minutes: (dataPoints.length*POLL_MS/1000/60).toFixed(1) })}>
         <div className="flex items-center gap-4 mb-2 text-xs">
-          <Legend color="bg-indigo-500" label="CPU" />
-          <Legend color="bg-emerald-500" label="Memory" />
-          <Legend color="bg-violet-500" label="Swap" />
-          <Legend color="bg-amber-500" label="Load (normalized)" />
+          <Legend color="bg-indigo-500" label={t('chart.legendCpu')} />
+          <Legend color="bg-emerald-500" label={t('chart.legendMemory')} />
+          <Legend color="bg-violet-500" label={t('chart.legendSwap')} />
+          <Legend color="bg-amber-500" label={t('chart.legendLoad')} />
         </div>
         <MultiSeriesChart dataPoints={dataPoints} series={[
           { key: 'cpu', color: '#6366f1' },
@@ -151,10 +154,10 @@ function ServerMonitoring() {
       <div className="h-5" />
 
       {/* Network traffic chart */}
-      <Card title="Network Traffic" right={u?.network?.interface ? `Interface: ${u.network.interface}` : ''}>
+      <Card title={t('chart.networkTraffic')} right={u?.network?.interface ? t('chart.interface', { name: u.network.interface }) : ''}>
         <div className="flex items-center gap-4 mb-2 text-xs">
-          <Legend color="bg-sky-500" label="↓ RX (KB/s)" />
-          <Legend color="bg-pink-500" label="↑ TX (KB/s)" />
+          <Legend color="bg-sky-500" label={t('chart.legendRx')} />
+          <Legend color="bg-pink-500" label={t('chart.legendTx')} />
         </div>
         <MultiSeriesChart
           dataPoints={dataPoints.map(n => ({ ...n, rx: n.rx/1024, tx: n.tx/1024 }))}
@@ -171,7 +174,7 @@ function ServerMonitoring() {
 
       {/* Services */}
       {u && (
-        <Card title="Services" right={`${u.services.filter(s => s.enabled).length}/${u.services.length} enabled`}>
+        <Card title={t('services.title')} right={t('services.enabledCount', { enabled: u.services.filter(s => s.enabled).length, total: u.services.length })}>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {u.services.map(s => (
               <div key={s.name} className={`flex items-center gap-2 px-3 py-2 rounded-md border text-xs ${
@@ -183,7 +186,7 @@ function ServerMonitoring() {
                   <div className="text-[10px] font-mono text-slate-500 dark:text-slate-500 truncate">{s.name}</div>
                 </div>
                 <span className={`text-[10px] font-semibold uppercase ${s.enabled ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>
-                  {s.enabled ? 'Active' : 'Stopped'}
+                  {s.enabled ? t('services.active') : t('services.stopped')}
                 </span>
               </div>
             ))}
@@ -194,36 +197,36 @@ function ServerMonitoring() {
       <div className="h-5" />
 
       {/* Top processes */}
-      <Card title="Top Processes" right={
+      <Card title={t('processes.title')} right={
         <div className="flex items-center gap-1">
           <button onClick={() => setProcSort('cpu')}
-            className={`text-[11px] px-2 py-1 rounded ${procSort === 'cpu' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:bg-slate-200'}`}>CPU</button>
+            className={`text-[11px] px-2 py-1 rounded ${procSort === 'cpu' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:bg-slate-200'}`}>{t('processes.sortCpu')}</button>
           <button onClick={() => setProcSort('mem')}
-            className={`text-[11px] px-2 py-1 rounded ${procSort === 'mem' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:bg-slate-200'}`}>Memory</button>
+            className={`text-[11px] px-2 py-1 rounded ${procSort === 'mem' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:bg-slate-200'}`}>{t('processes.sortMem')}</button>
         </div>
       }>
         <div className={responsiveTableContainerClass}>
           <table className={responsiveTableClass}>
             <thead className={responsiveTableHeadClass}>
               <tr>
-                <th className="text-left font-medium px-4 py-2.5">PID</th>
-                <th className="text-left font-medium px-4 py-2.5">User</th>
-                <th className="text-right font-medium px-4 py-2.5">CPU%</th>
-                <th className="text-right font-medium px-4 py-2.5">MEM%</th>
-                <th className="text-left font-medium px-4 py-2.5">Command</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('processes.colPid')}</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('processes.colUser')}</th>
+                <th className="text-right font-medium px-4 py-2.5">{t('processes.colCpu')}</th>
+                <th className="text-right font-medium px-4 py-2.5">{t('processes.colMem')}</th>
+                <th className="text-left font-medium px-4 py-2.5">{t('processes.colCommand')}</th>
               </tr>
             </thead>
             <tbody className={responsiveTableBodyClass}>
               {procs.length === 0 && (
-                <tr><td colSpan={5} className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">Loading...</td></tr>
+                <tr><td colSpan={5} className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">{t('processes.loading')}</td></tr>
               )}
               {procs.map(p => (
                 <tr key={p.pid} className={responsiveTableRowClass}>
-                  <td data-label="PID" className={responsiveTableCodeCellClass}>{p.pid}</td>
-                  <td data-label="User" className={responsiveTableCodeCellClass}>{p.user}</td>
-                  <td data-label="CPU%" className={`${responsiveTableCodeCellClass} lg:text-right ${p.cpu_percent >= 50 ? 'text-red-600 dark:text-red-400 font-semibold' : p.cpu_percent >= 20 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{p.cpu_percent.toFixed(1)}</td>
-                  <td data-label="MEM%" className={`${responsiveTableCodeCellClass} lg:text-right ${p.mem_percent >= 30 ? 'text-red-600 dark:text-red-400 font-semibold' : p.mem_percent >= 10 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{p.mem_percent.toFixed(1)}</td>
-                  <td data-label="Command" className={`${responsiveTableCellClass} font-mono text-xs break-all`} title={p.command}>{p.command}</td>
+                  <td data-label={t('processes.colPid')} className={responsiveTableCodeCellClass}>{p.pid}</td>
+                  <td data-label={t('processes.colUser')} className={responsiveTableCodeCellClass}>{p.user}</td>
+                  <td data-label={t('processes.colCpu')} className={`${responsiveTableCodeCellClass} lg:text-right ${p.cpu_percent >= 50 ? 'text-red-600 dark:text-red-400 font-semibold' : p.cpu_percent >= 20 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{p.cpu_percent.toFixed(1)}</td>
+                  <td data-label={t('processes.colMem')} className={`${responsiveTableCodeCellClass} lg:text-right ${p.mem_percent >= 30 ? 'text-red-600 dark:text-red-400 font-semibold' : p.mem_percent >= 10 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{p.mem_percent.toFixed(1)}</td>
+                  <td data-label={t('processes.colCommand')} className={`${responsiveTableCellClass} font-mono text-xs break-all`} title={p.command}>{p.command}</td>
                 </tr>
               ))}
             </tbody>
@@ -238,6 +241,7 @@ function ServerMonitoring() {
 // DOMAIN MONITORING
 // ============================================================================
 function DomainMonitoring() {
+  const { t } = useTranslation('MonitoringPage')
   const [domains, setDomains] = useState<Domain[]>([])
   const [selected, setSelected] = useState<number | null>(null)
   const [health, setHealth] = useState<Health | null>(null)
@@ -289,22 +293,22 @@ function DomainMonitoring() {
 
   return (
     <>
-      <Card title="Domain Selection">
+      <Card title={t('domain.selectionTitle')}>
         <div className="flex items-center gap-3 flex-wrap">
           <select value={selected ?? ''} onChange={e => setSelected(Number(e.target.value))}
             className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm bg-white dark:bg-slate-800 min-w-[280px] focus:border-brand-500 outline-none">
-            {domains.length === 0 && <option value="">No active domains</option>}
+            {domains.length === 0 && <option value="">{t('domain.noActiveDomains')}</option>}
             {domains.map(d => <option key={d.id} value={d.id}>{d.domain_name}</option>)}
           </select>
           {selected && (
             <button onClick={() => probe(selected)} disabled={probingHealth}
               className="text-sm px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 rounded">
-              {probingHealth ? 'Probing...' : '↻ Health Probe'}
+              {probingHealth ? t('domain.probing') : t('domain.healthProbe')}
             </button>
           )}
           {selectedDomain && (
             <a href={`https://${selectedDomain.domain_name}`} target="_blank" rel="noreferrer"
-              className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300">Open site ↗</a>
+              className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300">{t('domain.openSite')}</a>
           )}
         </div>
       </Card>
@@ -322,17 +326,17 @@ function DomainMonitoring() {
 
       {/* Logs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <Card title="Access Log" right={`last ${accessLog.length} lines`}>
+        <Card title={t('domain.accessLog')} right={t('domain.lastLines', { count: accessLog.length })}>
           <div ref={accessRef} className="bg-slate-950 text-emerald-300 font-mono text-[11px] p-3 rounded h-80 overflow-auto whitespace-pre">
             {accessLog.length === 0
-              ? <div className="text-slate-500 dark:text-slate-500 italic">No log entries yet...</div>
+              ? <div className="text-slate-500 dark:text-slate-500 italic">{t('domain.noAccessEntries')}</div>
               : accessLog.join('\n')}
           </div>
         </Card>
-        <Card title="Error Log" right={`last ${errorLog.length} lines`}>
+        <Card title={t('domain.errorLog')} right={t('domain.lastLines', { count: errorLog.length })}>
           <div ref={errorRef} className="bg-slate-950 text-rose-300 font-mono text-[11px] p-3 rounded h-80 overflow-auto whitespace-pre">
             {errorLog.length === 0
-              ? <div className="text-slate-500 dark:text-slate-500 italic">{logError || 'No error entries yet'}</div>
+              ? <div className="text-slate-500 dark:text-slate-500 italic">{logError || t('domain.noErrorEntries')}</div>
               : errorLog.join('\n')}
           </div>
         </Card>
@@ -353,6 +357,8 @@ const LOG_SOURCE_LABELS: Record<string, string> = {
 }
 
 function ServerLogs() {
+  const { t } = useTranslation('MonitoringPage')
+  const sourceLabel = (name: string) => t(`logSources.${name}`, { defaultValue: LOG_SOURCE_LABELS[name] || name })
   const [source, setSource] = useState('panel')
   const [sources, setSources] = useState<string[]>(['panel', 'nginx', 'mariadb', 'named', 'sshd', 'cron', 'system'])
   const [lines, setLines] = useState<string[]>([])
@@ -385,27 +391,27 @@ function ServerLogs() {
               className={`px-3 py-1.5 text-xs font-medium rounded-md border transition ${source === sourceName
                 ? 'bg-brand-600 border-brand-600 text-white'
                 : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
-              {LOG_SOURCE_LABELS[sourceName] || sourceName}
+              {sourceLabel(sourceName)}
             </button>
           ))}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('logs.searchPlaceholder')}
             className="px-2.5 py-1.5 text-xs w-40 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 outline-none focus:border-brand-500" />
           <select value={lastLineCount} onChange={event => setLastLineCount(Number(event.target.value))}
             className="px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            {[100, 200, 500, 1000].map(lineCount => <option key={lineCount} value={lineCount}>last {lineCount}</option>)}
+            {[100, 200, 500, 1000].map(lineCount => <option key={lineCount} value={lineCount}>{t('logs.lastLineCount', { count: lineCount })}</option>)}
           </select>
-          <button onClick={() => load()} disabled={loading} className="px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">↻ Refresh</button>
+          <button onClick={() => load()} disabled={loading} className="px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">{t('logs.refresh')}</button>
         </div>
       </div>
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
       <div ref={scrollRef} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-auto p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all" style={{ height: 560 }}>
-        {loading ? <div className="text-slate-500 py-4">Loading...</div>
-          : visibleLines.length === 0 ? <div className="text-slate-500 py-4">{search ? `"${search}" not found.` : '(no entries)'}</div>
+        {loading ? <div className="text-slate-500 py-4">{t('logs.loading')}</div>
+          : visibleLines.length === 0 ? <div className="text-slate-500 py-4">{search ? t('logs.notFound', { query: search }) : t('logs.noEntries')}</div>
             : visibleLines.map((line, index) => <div key={index} className={logColor(line)}>{line}</div>)}
       </div>
-      <p className="text-xs text-slate-400 mt-2">{search ? `${visibleLines.length} / ${lines.length}` : lines.length} lines, journald, {LOG_SOURCE_LABELS[source] || source}</p>
+      <p className="text-xs text-slate-400 mt-2">{search ? t('logs.footerFiltered', { filtered: visibleLines.length, total: lines.length, source: sourceLabel(source) }) : t('logs.footer', { total: lines.length, source: sourceLabel(source) })}</p>
     </div>
   )
 }
@@ -452,10 +458,11 @@ function MultiSeriesChart({
 }: {
   dataPoints: any[]; series: { key: string; color: string }[]; yMax: number; suffix?: string
 }) {
+  const { t } = useTranslation('MonitoringPage')
   const W = 1000, H = 180, P = 8
   const innerW = W - P * 2, innerH = H - P * 2
   if (dataPoints.length < 2) {
-    return <div className="text-xs text-slate-400 dark:text-slate-500 italic py-12 text-center">Collecting data...</div>
+    return <div className="text-xs text-slate-400 dark:text-slate-500 italic py-12 text-center">{t('chart.collecting')}</div>
   }
   function path(key: string) {
     return dataPoints.map((n, i) => {
@@ -483,13 +490,14 @@ function MultiSeriesChart({
 }
 
 function HealthCard({ h }: { h: Health }) {
+  const { t } = useTranslation('MonitoringPage')
   const ok = h.reachable && h.status_code >= 200 && h.status_code < 400
   return (
     <div className={`rounded-2xl p-4 border ${ok ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20' : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'}`}>
       <div className="flex items-center gap-2 mb-2">
         <span className={`w-2.5 h-2.5 rounded-full ${ok ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></span>
         <span className={`text-sm font-semibold ${ok ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'}`}>
-          {ok ? 'Reachable' : 'Unreachable'}
+          {ok ? t('health.reachable') : t('health.unreachable')}
         </span>
       </div>
       <div className="text-3xl font-bold font-mono mt-1">
@@ -497,16 +505,17 @@ function HealthCard({ h }: { h: Health }) {
       </div>
       <div className="text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500 mt-1 truncate" title={h.url}>{h.url}</div>
       {h.error && <div className="mt-2 text-[11px] text-red-700 dark:text-red-300 break-words">{h.error}</div>}
-      {h.server && <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-500">Server: <span className="font-mono">{h.server}</span></div>}
+      {h.server && <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-500">{t('health.server')}<span className="font-mono">{h.server}</span></div>}
     </div>
   )
 }
 function SSLCard({ ssl, scheme }: { ssl?: SSLInfo; scheme: string }) {
+  const { t } = useTranslation('MonitoringPage')
   if (scheme !== 'https' || !ssl) {
     return (
       <div className="rounded-2xl p-4 border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
-        <div className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2">⚠ No SSL</div>
-        <div className="text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500">This domain is not reachable over HTTPS.</div>
+        <div className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2">{t('health.noSslTitle')}</div>
+        <div className="text-xs text-slate-600 dark:text-slate-400 dark:text-slate-500">{t('health.noSslBody')}</div>
       </div>
     )
   }
@@ -514,15 +523,16 @@ function SSLCard({ ssl, scheme }: { ssl?: SSLInfo; scheme: string }) {
   return (
     <div className={`rounded-2xl p-4 border ${critical ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20' : 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20'}`}>
       <div className={`text-sm font-semibold mb-2 ${critical ? 'text-red-800 dark:text-red-200' : 'text-emerald-800 dark:text-emerald-200'}`}>
-        {ssl.valid ? '🔒 SSL Valid' : '✗ SSL Invalid'}
+        {ssl.valid ? t('health.sslValid') : t('health.sslInvalid')}
       </div>
-      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 font-mono">{ssl.remaining_days}<span className="text-base ml-1 text-slate-500 dark:text-slate-500">days</span></div>
-      <div className="text-[11px] text-slate-500 dark:text-slate-500 mt-1">Expires: <span className="font-mono">{ssl.end_date}</span></div>
-      {ssl.issuer && <div className="text-[11px] text-slate-500 dark:text-slate-500">Issuer: <span className="font-mono">{ssl.issuer}</span></div>}
+      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 font-mono">{ssl.remaining_days}<span className="text-base ml-1 text-slate-500 dark:text-slate-500">{t('health.days')}</span></div>
+      <div className="text-[11px] text-slate-500 dark:text-slate-500 mt-1">{t('health.expires')}<span className="font-mono">{ssl.end_date}</span></div>
+      {ssl.issuer && <div className="text-[11px] text-slate-500 dark:text-slate-500">{t('health.issuer')}<span className="font-mono">{ssl.issuer}</span></div>}
     </div>
   )
 }
 function ResponseCard({ h }: { h: Health }) {
+  const { t } = useTranslation('MonitoringPage')
   const ms = h.response_time_ms
   const color = ms < 300 ? 'emerald' : ms < 1000 ? 'amber' : 'red'
   const m: Record<string, string> = {
@@ -532,10 +542,10 @@ function ResponseCard({ h }: { h: Health }) {
   }
   return (
     <div className={`rounded-2xl p-4 border ${m[color]}`}>
-      <div className="text-sm font-semibold mb-2">Response Time</div>
-      <div className="text-3xl font-bold text-slate-900 dark:text-slate-100 font-mono">{ms.toFixed(0)}<span className="text-base ml-1 text-slate-500 dark:text-slate-500">ms</span></div>
+      <div className="text-sm font-semibold mb-2">{t('health.responseTime')}</div>
+      <div className="text-3xl font-bold text-slate-900 dark:text-slate-100 font-mono">{ms.toFixed(0)}<span className="text-base ml-1 text-slate-500 dark:text-slate-500">{t('health.ms')}</span></div>
       <div className="text-[11px] text-slate-500 dark:text-slate-500 mt-1">
-        {ms < 300 ? 'Fast' : ms < 1000 ? 'Acceptable' : 'Slow'}, {h.scheme.toUpperCase()}
+        {ms < 300 ? t('health.fast') : ms < 1000 ? t('health.acceptable') : t('health.slow')}, {h.scheme.toUpperCase()}
       </div>
     </div>
   )

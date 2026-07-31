@@ -1,0 +1,21 @@
+{
+  "title": "DNS Yönetimi",
+  "description": "Tüm alan adları için kayıt sayıları ve DNSSEC durumu.",
+  "emptyMessage": "Alan adı bulunamadı.",
+  "column": {
+    "domain": "Alan Adı",
+    "records": "Kayıtlar",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "Açık",
+    "off": "Kapalı"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC açık",
+    "noMx": "MX yok"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "Home",
+  "breadcrumbServices": "Hosting Services",
+  "breadcrumbTitle": "Account Transfer",
+  "title": "Import Account",
+  "subtitle": "Safely analyze a cPanel full-account backup. The archive is not extracted or persisted on the server at this stage.",
+  "fileLabel": "cPanel full backup (.tar.gz / .tgz)",
+  "uploading": "Uploading {{progress}}%",
+  "analyzeButton": "Analyze Archive",
+  "kpi": {
+    "primaryDomain": "Primary Domain",
+    "undetermined": "Undetermined",
+    "webFiles": "Web Files",
+    "databases": "Databases",
+    "emailData": "Email Data",
+    "emailFiles": "{{count}} files",
+    "none": "None"
+  },
+  "detail": {
+    "title": "Account information",
+    "sourcePanel": "Source panel",
+    "user": "User",
+    "archiveRoot": "Archive root",
+    "totalMembers": "Total members",
+    "expandedSize": "Expanded size",
+    "cron": "Cron",
+    "cronPresent": "Present",
+    "cronNone": "None",
+    "sslFiles": "SSL files",
+    "mailboxes": "Mailboxes",
+    "forwarders": "Forwarders",
+    "cronJobs": "Cron jobs"
+  },
+  "lists": {
+    "databases": "Databases",
+    "dnsZones": "DNS zones",
+    "cronJobs": "Cron jobs",
+    "noneFound": "None found"
+  },
+  "analysisComplete": "Analysis complete. Import creates a new domain; if it fails, the created account is rolled back automatically.",
+  "targetAndPlan": "Target and plan",
+  "fields": {
+    "targetCustomer": "Target customer",
+    "selectCustomer": "Select a customer",
+    "servicePlan": "Service plan",
+    "defaultPlan": "Default plan",
+    "primaryDomain": "Primary domain",
+    "phpVersion": "PHP version"
+  },
+  "importing": "Importing… {{progress}}%",
+  "importButton": "Import Account",
+  "importResult": {
+    "title": "Import complete",
+    "summary": "{{domain}} · {{webFiles}} web files · {{count}} database(s)",
+    "newPasswords": "New mailbox passwords — save them now",
+    "forwardersTransferred": "{{count}} forwarder(s) transferred.",
+    "cronTransferred": "{{count}} cron job(s) transferred.",
+    "sslTransferred": "SSL certificate transferred · valid until {{expires}}",
+    "manageDomain": "Manage domain →"
+  },
+  "errors": {
+    "analyzeFailed": "Could not analyze the archive",
+    "importFailed": "Could not import the account"
+  }
+}

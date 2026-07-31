@@ -1,0 +1,52 @@
+{
+  "loading": "Loading…",
+  "notFound": "Not found",
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "sshAccess": "SSH Access"
+  },
+  "title": "SSH Access",
+  "subtitle": "account shell access.",
+  "badge": {
+    "on": "SSH ON",
+    "off": "SSH OFF"
+  },
+  "toast": {
+    "accessActive": "SSH access active.",
+    "accessDisabled": "SSH access disabled.",
+    "operationFailed": "Operation failed",
+    "keySaved": "SSH key saved.",
+    "keysCleared": "SSH keys cleared.",
+    "keySaveFailed": "Could not save the key"
+  },
+  "shell": {
+    "title": "Shell Access",
+    "enabledPrefix": "Enabled:",
+    "disabledPrefix": "Disabled:",
+    "currentPrefix": "Current:",
+    "disable": "Disable SSH",
+    "enable": "Enable SSH",
+    "demoNotice": "SSH access cannot be changed for the demo domain."
+  },
+  "connection": {
+    "title": "Connection Details",
+    "user": "User",
+    "host": "Host",
+    "port": "Port",
+    "commandLabel": "Connection command",
+    "copy": "Copy",
+    "passwordPrefix": "Password:",
+    "passwordBold": "the same as your FTP account",
+    "passwordSuffix": ". It is synchronized automatically while SSH is active. Alternatively, add an SSH public key below."
+  },
+  "key": {
+    "title": "SSH Public Key (authorized_keys)",
+    "descPrefix": "Add your public key to sign in without a password.",
+    "configured": "A key is currently configured.",
+    "notConfigured": "No key is configured yet.",
+    "removeHint": "Save an empty value to remove all keys.",
+    "save": "Save Key"
+  },
+  "backToSubscription": "← Back to subscription"
+}

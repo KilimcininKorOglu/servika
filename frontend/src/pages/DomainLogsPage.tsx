@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useResourceScope } from '@/lib/scope'
@@ -19,6 +20,7 @@ type ReadResp = { file: string; path: string; lines: string[]; current: boolean 
 const MAX_WINDOW = 1000
 
 export default function DomainLogsPage() {
+  const { t } = useTranslation('DomainLogsPage')
   const { id, base, isSubdomain, backHref } = useResourceScope()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [files, setFiles] = useState<LogFile[]>([])
@@ -84,7 +86,7 @@ export default function DomainLogsPage() {
           signal: ctrl.signal,
         })
         if (!res.ok || !res.body) {
-          setError(`Stream failed to start (HTTP ${res.status})`)
+          setError(t('streamFailed', { status: res.status }))
           setLive(false)
           return
         }
@@ -126,13 +128,13 @@ export default function DomainLogsPage() {
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Domains', href: '/domains' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.domains'), href: '/domains' },
         { label: domain?.domain_name || '...', href: backHref },
-        { label: 'Logs' },
+        { label: t('breadcrumb.logs') },
       ]} />
 
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Logs</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
       {domain && (
         <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
           <Link to={backHref} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
@@ -170,16 +172,16 @@ export default function DomainLogsPage() {
             <button
               onClick={() => setView('table')}
               className={`px-2.5 py-1.5 font-medium transition ${view === 'table' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
-            >Table</button>
+            >{t('view.table')}</button>
             <button
               onClick={() => setView('raw')}
               className={`px-2.5 py-1.5 font-medium transition ${view === 'raw' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
-            >Raw</button>
+            >{t('view.raw')}</button>
           </div>
 
           <label className="text-xs text-slate-500 dark:text-slate-500 flex items-center gap-1.5 select-none cursor-pointer">
             <input type="checkbox" checked={autoScroll} onChange={e => setAutoScroll(e.target.checked)} className="rounded" />
-            Auto-scroll
+            {t('autoScroll')}
           </label>
           <button
             onClick={() => setLive(c => !c)}
@@ -189,20 +191,20 @@ export default function DomainLogsPage() {
                 : 'bg-emerald-600 text-white hover:bg-emerald-700'
             }`}
           >
-            {live ? '■ Stop' : '▶ Live Tail'}
+            {live ? t('stop') : t('liveTail')}
           </button>
           <button
             onClick={initialLoad}
             disabled={live}
             className="px-3 py-1.5 text-xs font-medium bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md transition disabled:opacity-50"
           >
-            ↻ Last 200
+            {t('last200')}
           </button>
           <button
             onClick={() => setLines([])}
             className="px-3 py-1.5 text-xs font-medium bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md transition"
           >
-            Clear
+            {t('clear')}
           </button>
         </div>
       </div>
@@ -216,20 +218,20 @@ export default function DomainLogsPage() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by IP, path, status code, browser..."
+            placeholder={t('searchPlaceholder')}
             className="w-full pl-8 pr-8 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              aria-label="Clear search"
+              aria-label={t('clearSearch')}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg leading-none"
             >×</button>
           )}
         </div>
         {search && (
           <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
-            {visibleLines.length} / {lines.length} matches
+            {t('matches', { visible: visibleLines.length, total: lines.length })}
           </span>
         )}
       </div>
@@ -241,9 +243,9 @@ export default function DomainLogsPage() {
         style={{ height: 540 }}
       >
         {lines.length === 0 ? (
-          <div className="p-6 text-sm text-slate-500 font-mono">{live ? 'Waiting... New lines will appear as they arrive.' : '(log file is empty or has not been created yet)'}</div>
+          <div className="p-6 text-sm text-slate-500 font-mono">{live ? t('waiting') : t('emptyFile')}</div>
         ) : visibleLines.length === 0 ? (
-          <div className="p-6 text-sm text-slate-500 font-mono">"{search}" No lines match this search.</div>
+          <div className="p-6 text-sm text-slate-500 font-mono">{t('noMatch', { search })}</div>
         ) : view === 'raw' ? (
           <div className="p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all">
             {visibleLines.map((s, i) => (
@@ -258,8 +260,8 @@ export default function DomainLogsPage() {
       </div>
 
       <div className="mt-2 text-xs text-slate-500 dark:text-slate-500 flex items-center justify-between">
-        <span>{search ? `${visibleLines.length} / ${lines.length} lines (filtered)` : `${lines.length} lines`}, window {MAX_WINDOW}</span>
-        {live && <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>live stream</span>}
+        <span>{search ? t('linesFiltered', { visible: visibleLines.length, total: lines.length }) : t('lines', { count: lines.length })}{t('windowSuffix', { max: MAX_WINDOW })}</span>
+        {live && <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>{t('liveStream')}</span>}
       </div>
     </div>
   )
@@ -293,18 +295,19 @@ function parseAccess(line: string): AccessLine | null {
 }
 
 function AccessTable({ lines }: { lines: string[] }) {
+  const { t } = useTranslation('DomainLogsPage')
   const parsedLines = useMemo(() => lines.map(parseAccess), [lines])
   return (
     <table className={`${responsiveTableClass} text-xs`}>
       <thead className={`${responsiveTableHeadClass} sticky top-0 z-10 bg-slate-900/95 backdrop-blur text-slate-500 border-b border-slate-800`}>
         <tr>
-          <th className="text-left font-medium px-3 py-2 whitespace-nowrap">Time</th>
-          <th className="text-left font-medium px-3 py-2 whitespace-nowrap">IP</th>
-          <th className="text-left font-medium px-3 py-2">Method</th>
-          <th className="text-left font-medium px-3 py-2 w-full">Path</th>
-          <th className="text-left font-medium px-3 py-2">Status</th>
-          <th className="text-right font-medium px-3 py-2 whitespace-nowrap">Size</th>
-          <th className="text-left font-medium px-3 py-2">Browser</th>
+          <th className="text-left font-medium px-3 py-2 whitespace-nowrap">{t('access.time')}</th>
+          <th className="text-left font-medium px-3 py-2 whitespace-nowrap">{t('access.ip')}</th>
+          <th className="text-left font-medium px-3 py-2">{t('access.method')}</th>
+          <th className="text-left font-medium px-3 py-2 w-full">{t('access.path')}</th>
+          <th className="text-left font-medium px-3 py-2">{t('access.status')}</th>
+          <th className="text-right font-medium px-3 py-2 whitespace-nowrap">{t('access.size')}</th>
+          <th className="text-left font-medium px-3 py-2">{t('access.browser')}</th>
         </tr>
       </thead>
       <tbody className={`${responsiveTableBodyClass} divide-slate-800/70`}>
@@ -319,19 +322,19 @@ function AccessTable({ lines }: { lines: string[] }) {
           }
           return (
             <tr key={i} className={`${responsiveTableRowClass} hover:bg-slate-800/40`}>
-              <td data-label="Time" className={`${responsiveTableCodeCellClass} text-slate-400 lg:whitespace-nowrap`}>{shortTime(r.time)}</td>
-              <td data-label="IP" className={`${responsiveTableCodeCellClass} text-slate-300 lg:whitespace-nowrap`}>{r.ip}</td>
-              <td data-label="Method" className={responsiveTableCellClass}>
+              <td data-label={t('access.time')} className={`${responsiveTableCodeCellClass} text-slate-400 lg:whitespace-nowrap`}>{shortTime(r.time)}</td>
+              <td data-label={t('access.ip')} className={`${responsiveTableCodeCellClass} text-slate-300 lg:whitespace-nowrap`}>{r.ip}</td>
+              <td data-label={t('access.method')} className={responsiveTableCellClass}>
                 <span className={`inline-block px-1.5 py-0.5 rounded font-mono font-semibold text-[10px] ${methodColor(r.method)}`}>{r.method || '-'}</span>
               </td>
-              <td data-label="Path" className={`${responsiveTableCodeCellClass} text-slate-200 break-all lg:max-w-0`}>
+              <td data-label={t('access.path')} className={`${responsiveTableCodeCellClass} text-slate-200 break-all lg:max-w-0`}>
                 <div className="lg:truncate" title={r.referer && r.referer !== '-' ? `${r.path}\n← ${r.referer}` : r.path}>{r.path}</div>
               </td>
-              <td data-label="Status" className={responsiveTableCellClass}>
+              <td data-label={t('access.status')} className={responsiveTableCellClass}>
                 <span className={`inline-block px-1.5 py-0.5 rounded font-mono font-semibold text-[10px] ${statusColor(r.status)}`}>{r.status}</span>
               </td>
-              <td data-label="Size" className={`${responsiveTableCodeCellClass} text-slate-400 lg:text-right lg:whitespace-nowrap`}>{formatByteString(r.size)}</td>
-              <td data-label="Browser" className={`${responsiveTableCellClass} text-slate-400 lg:max-w-[220px]`}>
+              <td data-label={t('access.size')} className={`${responsiveTableCodeCellClass} text-slate-400 lg:text-right lg:whitespace-nowrap`}>{formatByteString(r.size)}</td>
+              <td data-label={t('access.browser')} className={`${responsiveTableCellClass} text-slate-400 lg:max-w-[220px]`}>
                 <div className="lg:truncate" title={r.ua}>{shortUserAgent(r.ua)}</div>
               </td>
             </tr>
@@ -349,14 +352,15 @@ const ERROR_RE = /^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) \[(\w+)\] (.*)$/
 const CLIENT_RE = /client: (\S+?)[,\s]/
 
 function ErrorTable({ lines }: { lines: string[] }) {
+  const { t } = useTranslation('DomainLogsPage')
   return (
     <table className={`${responsiveTableClass} text-xs`}>
       <thead className={`${responsiveTableHeadClass} sticky top-0 z-10 bg-slate-900/95 backdrop-blur text-slate-500 border-b border-slate-800`}>
         <tr>
-          <th className="text-left font-medium px-3 py-2 whitespace-nowrap">Time</th>
-          <th className="text-left font-medium px-3 py-2">Level</th>
-          <th className="text-left font-medium px-3 py-2 whitespace-nowrap">Client</th>
-          <th className="text-left font-medium px-3 py-2 w-full">Message</th>
+          <th className="text-left font-medium px-3 py-2 whitespace-nowrap">{t('error.time')}</th>
+          <th className="text-left font-medium px-3 py-2">{t('error.level')}</th>
+          <th className="text-left font-medium px-3 py-2 whitespace-nowrap">{t('error.client')}</th>
+          <th className="text-left font-medium px-3 py-2 w-full">{t('error.message')}</th>
         </tr>
       </thead>
       <tbody className={`${responsiveTableBodyClass} divide-slate-800/70`}>
@@ -373,12 +377,12 @@ function ErrorTable({ lines }: { lines: string[] }) {
           const client = cm ? cm[1] : ''
           return (
             <tr key={i} className={`${responsiveTableRowClass} hover:bg-slate-800/40`}>
-              <td data-label="Time" className={`${responsiveTableCodeCellClass} text-slate-400 lg:whitespace-nowrap`}>{m[1].slice(5)}</td>
-              <td data-label="Level" className={responsiveTableCellClass}>
+              <td data-label={t('error.time')} className={`${responsiveTableCodeCellClass} text-slate-400 lg:whitespace-nowrap`}>{m[1].slice(5)}</td>
+              <td data-label={t('error.level')} className={responsiveTableCellClass}>
                 <span className={`inline-block px-1.5 py-0.5 rounded font-mono font-semibold text-[10px] ${levelColor(m[2])}`}>{m[2]}</span>
               </td>
-              <td data-label="Client" className={`${responsiveTableCodeCellClass} text-slate-300 lg:whitespace-nowrap`}>{client || '-'}</td>
-              <td data-label="Message" className={`${responsiveTableCodeCellClass} text-slate-200 break-all lg:max-w-0`}>
+              <td data-label={t('error.client')} className={`${responsiveTableCodeCellClass} text-slate-300 lg:whitespace-nowrap`}>{client || '-'}</td>
+              <td data-label={t('error.message')} className={`${responsiveTableCodeCellClass} text-slate-200 break-all lg:max-w-0`}>
                 <div className="lg:truncate" title={m[3]}>{m[3]}</div>
               </td>
             </tr>

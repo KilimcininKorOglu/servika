@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "Ana Sayfa",
+  "breadcrumbServices": "Barındırma Hizmetleri",
+  "breadcrumbTitle": "Hesap Aktarımı",
+  "title": "Hesap İçe Aktar",
+  "subtitle": "cPanel tam hesap yedeğini güvenli şekilde analiz edin. Arşiv bu aşamada sunucuda açılmaz veya saklanmaz.",
+  "fileLabel": "cPanel tam yedek (.tar.gz / .tgz)",
+  "uploading": "Yükleniyor %{{progress}}",
+  "analyzeButton": "Arşivi Analiz Et",
+  "kpi": {
+    "primaryDomain": "Birincil Alan Adı",
+    "undetermined": "Belirlenemedi",
+    "webFiles": "Web Dosyaları",
+    "databases": "Veritabanları",
+    "emailData": "E-posta Verisi",
+    "emailFiles": "{{count}} dosya",
+    "none": "Yok"
+  },
+  "detail": {
+    "title": "Hesap bilgileri",
+    "sourcePanel": "Kaynak panel",
+    "user": "Kullanıcı",
+    "archiveRoot": "Arşiv kökü",
+    "totalMembers": "Toplam öğe",
+    "expandedSize": "Açılmış boyut",
+    "cron": "Cron",
+    "cronPresent": "Mevcut",
+    "cronNone": "Yok",
+    "sslFiles": "SSL dosyaları",
+    "mailboxes": "Posta kutuları",
+    "forwarders": "Yönlendiriciler",
+    "cronJobs": "Cron görevleri"
+  },
+  "lists": {
+    "databases": "Veritabanları",
+    "dnsZones": "DNS bölgeleri",
+    "cronJobs": "Cron görevleri",
+    "noneFound": "Bulunamadı"
+  },
+  "analysisComplete": "Analiz tamamlandı. İçe aktarma yeni bir alan adı oluşturur; başarısız olursa oluşturulan hesap otomatik olarak geri alınır.",
+  "targetAndPlan": "Hedef ve plan",
+  "fields": {
+    "targetCustomer": "Hedef müşteri",
+    "selectCustomer": "Bir müşteri seçin",
+    "servicePlan": "Servis planı",
+    "defaultPlan": "Varsayılan plan",
+    "primaryDomain": "Birincil alan adı",
+    "phpVersion": "PHP sürümü"
+  },
+  "importing": "İçe aktarılıyor… %{{progress}}",
+  "importButton": "Hesabı İçe Aktar",
+  "importResult": {
+    "title": "İçe aktarma tamamlandı",
+    "summary": "{{domain}} · {{webFiles}} web dosyası · {{count}} veritabanı",
+    "newPasswords": "Yeni posta kutusu parolaları — şimdi kaydedin",
+    "forwardersTransferred": "{{count}} yönlendirici aktarıldı.",
+    "cronTransferred": "{{count}} cron görevi aktarıldı.",
+    "sslTransferred": "SSL sertifikası aktarıldı · geçerlilik: {{expires}}",
+    "manageDomain": "Alan adını yönet →"
+  },
+  "errors": {
+    "analyzeFailed": "Arşiv analiz edilemedi",
+    "importFailed": "Hesap içe aktarılamadı"
+  }
+}

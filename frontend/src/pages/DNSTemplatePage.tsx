@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Breadcrumb from '@/components/Breadcrumb'
 import { api, apiError } from '@/lib/api'
 import {
@@ -37,6 +38,7 @@ const INPUT_CLASS = 'w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border bord
 
 /** Renders the server-wide DNS template editor. */
 export default function DNSTemplatePage() {
+  const { t } = useTranslation('DNSTemplatePage')
   const [records, setRecords] = useState<TemplateRow[]>([])
   const [meta, setMeta] = useState<TemplateMeta | null>(null)
   const [loading, setLoading] = useState(true)
@@ -52,7 +54,7 @@ export default function DNSTemplatePage() {
         setRecords(response.data.records || [])
         setMeta(response.data.meta)
       })
-      .catch(cause => setError(apiError(cause, 'Could not load the DNS template')))
+      .catch(cause => setError(apiError(cause, t('errors.loadFailed'))))
       .finally(() => setLoading(false))
   }
 
@@ -81,10 +83,10 @@ export default function DNSTemplatePage() {
     setSuccess(null)
     try {
       await api.put('/dns-template', { records, meta })
-      setSuccess('DNS template saved. New domains will use the updated records and settings.')
+      setSuccess(t('success'))
       loadTemplate()
     } catch (cause) {
-      setError(apiError(cause, 'Could not save the DNS template'))
+      setError(apiError(cause, t('errors.saveFailed')))
     } finally {
       setSaving(false)
     }
@@ -93,77 +95,77 @@ export default function DNSTemplatePage() {
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Tools and Settings', href: '/tools-settings' },
-        { label: 'DNS Template' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.tools'), href: '/tools-settings' },
+        { label: t('breadcrumb.current') },
       ]} />
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Server-wide DNS Template</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
       <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
-        These records are applied when a domain is created or when its default DNS template is restored.
+        {t('subtitle')}
       </p>
 
       {error && <div className="mb-4 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">{error}</div>}
       {success && <div className="mb-4 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
       <div className="mb-4 px-3.5 py-2.5 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg text-xs text-brand-800 dark:text-brand-200">
-        <strong>Placeholders:</strong>{' '}
-        <code className="font-mono">{'{DOMAIN}'}</code> domain name,{' '}
-        <code className="font-mono">{'{IP}'}</code> server IP,{' '}
-        <code className="font-mono">{'{SELECTOR}'}</code> DKIM selector,{' '}
-        <code className="font-mono">{'{DKIM}'}</code> generated DKIM public record
+        <strong>{t('placeholders.label')}</strong>{' '}
+        <code className="font-mono">{'{DOMAIN}'}</code>{t('placeholders.domain')}
+        <code className="font-mono">{'{IP}'}</code>{t('placeholders.ip')}
+        <code className="font-mono">{'{SELECTOR}'}</code>{t('placeholders.selector')}
+        <code className="font-mono">{'{DKIM}'}</code>{t('placeholders.dkim')}
       </div>
 
       {loading ? (
-        <div className="py-14 text-center text-sm text-slate-400">Loading...</div>
+        <div className="py-14 text-center text-sm text-slate-400">{t('loading')}</div>
       ) : !meta ? null : (
         <>
           <div className={`${responsiveTableContainerClass} mb-5`}>
             <table className={responsiveTableClass}>
               <thead className={responsiveTableHeadClass}>
                 <tr>
-                  <th className="px-3 py-2.5 w-36">Name</th>
-                  <th className="px-3 py-2.5 w-28">Type</th>
-                  <th className="px-3 py-2.5">Value</th>
-                  <th className="px-3 py-2.5 w-28">TTL</th>
-                  <th className="px-3 py-2.5 w-28">Priority</th>
-                  <th className="px-3 py-2.5 w-24">Order</th>
-                  <th className="px-3 py-2.5 w-20 text-center">Enabled</th>
+                  <th className="px-3 py-2.5 w-36">{t('table.name')}</th>
+                  <th className="px-3 py-2.5 w-28">{t('table.type')}</th>
+                  <th className="px-3 py-2.5">{t('table.value')}</th>
+                  <th className="px-3 py-2.5 w-28">{t('table.ttl')}</th>
+                  <th className="px-3 py-2.5 w-28">{t('table.priority')}</th>
+                  <th className="px-3 py-2.5 w-24">{t('table.order')}</th>
+                  <th className="px-3 py-2.5 w-20 text-center">{t('table.enabled')}</th>
                   <th className="px-3 py-2.5 w-12"></th>
                 </tr>
               </thead>
               <tbody className={responsiveTableBodyClass}>
                 {records.map((record, index) => (
                   <tr key={record.id ?? index} className={responsiveTableRowClass}>
-                    <td data-label="Name" className={responsiveTableCellClass}><input value={record.name} onChange={event => updateRecord(index, { name: event.target.value })} className={`${INPUT_CLASS} font-mono`} /></td>
-                    <td data-label="Type" className={responsiveTableCellClass}>
+                    <td data-label={t('table.name')} className={responsiveTableCellClass}><input value={record.name} onChange={event => updateRecord(index, { name: event.target.value })} className={`${INPUT_CLASS} font-mono`} /></td>
+                    <td data-label={t('table.type')} className={responsiveTableCellClass}>
                       <select value={record.type} onChange={event => updateRecord(index, { type: event.target.value })} className={`${INPUT_CLASS} font-mono`}>
                         {RECORD_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
                       </select>
                     </td>
-                    <td data-label="Value" className={responsiveTableCellClass}><input value={record.value} onChange={event => updateRecord(index, { value: event.target.value })} className={`${INPUT_CLASS} font-mono`} /></td>
-                    <td data-label="TTL" className={responsiveTableCellClass}><input type="number" min={1} value={record.ttl} onChange={event => updateRecord(index, { ttl: Number(event.target.value) || 3600 })} className={`${INPUT_CLASS} font-mono`} /></td>
-                    <td data-label="Priority" className={responsiveTableCellClass}>
+                    <td data-label={t('table.value')} className={responsiveTableCellClass}><input value={record.value} onChange={event => updateRecord(index, { value: event.target.value })} className={`${INPUT_CLASS} font-mono`} /></td>
+                    <td data-label={t('table.ttl')} className={responsiveTableCellClass}><input type="number" min={1} value={record.ttl} onChange={event => updateRecord(index, { ttl: Number(event.target.value) || 3600 })} className={`${INPUT_CLASS} font-mono`} /></td>
+                    <td data-label={t('table.priority')} className={responsiveTableCellClass}>
                       {record.type === 'MX' || record.type === 'SRV'
                         ? <input type="number" min={0} value={record.priority} onChange={event => updateRecord(index, { priority: Number(event.target.value) || 0 })} className={`${INPUT_CLASS} font-mono`} />
-                        : <span className="pl-2 text-slate-300 dark:text-slate-600">None</span>}
+                        : <span className="pl-2 text-slate-300 dark:text-slate-600">{t('table.priorityNone')}</span>}
                     </td>
-                    <td data-label="Order" className={responsiveTableCellClass}><input type="number" value={record.sort_order} onChange={event => updateRecord(index, { sort_order: Number(event.target.value) || 0 })} className={`${INPUT_CLASS} font-mono`} /></td>
-                    <td data-label="Enabled" className={responsiveTableCellClass}><input type="checkbox" checked={record.enabled} onChange={event => updateRecord(index, { enabled: event.target.checked })} className="w-4 h-4 accent-brand-600" /></td>
-                    <td className={responsiveTableActionCellClass}><button type="button" onClick={() => setRecords(current => current.filter((_, recordIndex) => recordIndex !== index))} title="Delete record" className="p-1 text-red-500 hover:text-red-700">×</button></td>
+                    <td data-label={t('table.order')} className={responsiveTableCellClass}><input type="number" value={record.sort_order} onChange={event => updateRecord(index, { sort_order: Number(event.target.value) || 0 })} className={`${INPUT_CLASS} font-mono`} /></td>
+                    <td data-label={t('table.enabled')} className={responsiveTableCellClass}><input type="checkbox" checked={record.enabled} onChange={event => updateRecord(index, { enabled: event.target.checked })} className="w-4 h-4 accent-brand-600" /></td>
+                    <td className={responsiveTableActionCellClass}><button type="button" onClick={() => setRecords(current => current.filter((_, recordIndex) => recordIndex !== index))} title={t('table.deleteTitle')} className="p-1 text-red-500 hover:text-red-700">×</button></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <button type="button" onClick={addRecord} className="m-3 px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Add record</button>
+            <button type="button" onClick={addRecord} className="m-3 px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">{t('addRecord')}</button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
             <section className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">SOA Settings</h2>
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('soa.title')}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {(['soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'soa_ttl'] as const).map(field => (
                   <label key={field}>
-                    <span className="block text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1">{field.replace('soa_', '')} (seconds)</span>
+                    <span className="block text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1">{t('soa.fieldSeconds', { field: field.replace('soa_', '') })}</span>
                     <input type="number" min={1} value={meta[field]} onChange={event => setMeta({ ...meta, [field]: Number(event.target.value) || 1 })} className={`${INPUT_CLASS} font-mono`} />
                   </label>
                 ))}
@@ -171,21 +173,21 @@ export default function DNSTemplatePage() {
             </section>
 
             <section className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">DKIM Settings</h2>
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">{t('dkim.title')}</h2>
               <label className="block mb-3">
-                <span className="block text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Selector</span>
+                <span className="block text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1">{t('dkim.selector')}</span>
                 <input value={meta.dkim_selector} onChange={event => setMeta({ ...meta, dkim_selector: event.target.value })} className={`${INPUT_CLASS} font-mono`} />
               </label>
               <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                 <input type="checkbox" checked={meta.dkim_enabled} onChange={event => setMeta({ ...meta, dkim_enabled: event.target.checked })} className="w-4 h-4 accent-brand-600" />
-                Generate DKIM keys for new domains
+                {t('dkim.generate')}
               </label>
             </section>
           </div>
 
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={loadTemplate} disabled={saving} className="px-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50">Discard changes</button>
-            <button type="button" onClick={saveTemplate} disabled={saving} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-50">{saving ? 'Saving...' : 'Save template'}</button>
+            <button type="button" onClick={loadTemplate} disabled={saving} className="px-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50">{t('discard')}</button>
+            <button type="button" onClick={saveTemplate} disabled={saving} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-50">{saving ? t('saving') : t('save')}</button>
           </div>
         </>
       )}

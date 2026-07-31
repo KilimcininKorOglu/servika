@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "backups": "Backups"
+  },
+  "title": "Backups",
+  "subtitle": {
+    "prefix": "home + MySQL dump = tar.gz, ",
+    "disabled": "Automatic backups disabled",
+    "enabled": "{{freq}} {{hour}}:00, latest {{retention}} automatic backups retained"
+  },
+  "freq": {
+    "daily": "Daily",
+    "weekly": "Weekly"
+  },
+  "toast": {
+    "destinationSaved": "Remote destination saved",
+    "destinationSaveFailed": "Could not save destination",
+    "destinationDeleted": "Remote destination deleted",
+    "confirmDeleteDest": "Delete the remote backup destination? Existing backups are unaffected, but future automatic uploads will stop.",
+    "autoDisabled": "Automatic backups disabled",
+    "autoEnabled": "Automatic backups enabled: {{freq}}, {{hour}}:00; the latest {{retention}} backups will be retained",
+    "scheduleSaveFailed": "Could not save schedule",
+    "backupCreated": "Backup created",
+    "createFailed": "Could not create backup",
+    "restored": "Restored: {{domain}}, database: {{database}}",
+    "restoreDbUnknown": "unknown",
+    "restoreFailed": "Restore failed"
+  },
+  "schedule": {
+    "heading": "Automatic Backup Schedule",
+    "description": "When enabled, the panel checks hourly. A backup is created at the selected hour, and backups beyond retention are deleted.",
+    "lastBackup": "Latest automatic backup:",
+    "options": {
+      "none": {
+        "name": "Disabled",
+        "description": "No automatic backups. Only manual “Back Up Now” runs."
+      },
+      "daily": {
+        "name": "Daily",
+        "description": "Creates a backup daily at the selected hour and retains the latest N backups."
+      },
+      "weekly": {
+        "name": "Weekly",
+        "description": "Creates a backup every seven days to reduce disk usage."
+      }
+    },
+    "active": "● Active",
+    "runTime": "Run time (local)",
+    "retentionLabel": "Backups to retain",
+    "retentionHint": "Older automatic backups beyond this count are deleted. Manual backups are retained."
+  },
+  "destination": {
+    "heading": "Remote Backup Destination (FTP / SFTP / S3 / B2)",
+    "description": "After creation, backups are uploaded to the remote destination in the background for off-site protection against disk failure.",
+    "statusSuccessful": "● Latest: successful",
+    "statusError": "✗ Latest: error",
+    "lastUpload": "Latest upload:",
+    "typeLabel": "Destination type",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "Bucket",
+    "region": "Region",
+    "regionHint": "(defaults to us-east-1)",
+    "endpoint": "Endpoint",
+    "endpointHint": "(leave blank for AWS S3)",
+    "accessKeyId": "Access key ID",
+    "secretAccessKey": "Secret access key",
+    "secretKeepHint": "(leave blank to keep current)",
+    "keyPrefix": "Key prefix",
+    "pathStyle": "Path-style URLs",
+    "host": "Host",
+    "port": "Port",
+    "username": "Username",
+    "password": "Password",
+    "passwordKeepHint": "(leave blank to keep the current password)",
+    "remoteDir": "Remote directory",
+    "activeLabel": "Active (send every backup to this destination)",
+    "testSuccess": "✓ Connection successful",
+    "testError": "✗ ",
+    "testErrorFallback": "Error",
+    "testing": "Testing...",
+    "testConnection": "Test Connection",
+    "save": "Save",
+    "deleteDestination": "Delete Destination"
+  },
+  "backingUp": "Backing up...",
+  "backupNow": "+ Back Up Now",
+  "refresh": "↻ Refresh",
+  "backupCount": "{{count}} backups",
+  "loading": "Loading...",
+  "empty": "No backups yet",
+  "columns": {
+    "file": "File",
+    "type": "Type",
+    "size": "Size",
+    "created": "Created",
+    "actions": "Actions"
+  },
+  "typeScheduled": "Scheduled",
+  "row": {
+    "download": "Download",
+    "restore": "↺ Restore",
+    "delete": "Delete"
+  },
+  "confirmDelete": {
+    "title": "Delete backup file",
+    "message": "Delete backup file \"{{file}}\"?",
+    "confirm": "Yes, delete"
+  },
+  "confirmRestore": {
+    "title": "Restore from backup",
+    "message": "Restore \"{{file}}\"?\n\nWARNING: Existing public_html files will be overwritten and MySQL tables will be recreated. This action cannot be undone.",
+    "confirm": "Yes, restore"
+  }
+}

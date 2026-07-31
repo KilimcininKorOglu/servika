@@ -1,0 +1,63 @@
+{
+  "breadcrumbHome": "Home",
+  "breadcrumbTitle": "WordPress",
+  "title": "WordPress",
+  "subtitle": "View and update all WordPress installations on the server, or create a new installation.",
+  "outdated": {
+    "banner_one": "{{count}} installation has an update available.",
+    "banner_other": "{{count}} installations have an update available.",
+    "warning": "Outdated WordPress versions contain known security vulnerabilities. Update them as soon as possible."
+  },
+  "result": {
+    "installed": "WordPress {{version}} installed",
+    "site": "Site",
+    "admin": "Admin",
+    "user": "User",
+    "password": "Password",
+    "savePassword": "⚠ Save the password now. It will not be shown again."
+  },
+  "installedSites": "Installed WordPress Sites",
+  "refresh": "↻ Refresh",
+  "table": {
+    "domain": "Domain",
+    "directory": "Directory",
+    "version": "Version",
+    "status": "Status",
+    "installed": "Installed",
+    "actions": "Actions"
+  },
+  "scanning": "Scanning installations... (checking versions and updates)",
+  "emptyTitle": "No WordPress installations were found on the server.",
+  "emptyHint": "Use the form below to create a new installation.",
+  "adminButton": "Admin",
+  "updateToVersion": "Update to v{{version}}",
+  "update": "Update",
+  "delete": "Delete",
+  "status": {
+    "updateAvailable": "Update available",
+    "updateAvailableTo": "Update available to v{{version}}",
+    "upToDate": "Up to date",
+    "unknown": "Unknown"
+  },
+  "form": {
+    "heading": "New Installation",
+    "domain": "Domain",
+    "siteTitle": "Site Title",
+    "siteTitlePlaceholder": "My Blog",
+    "subdirectory": "Subdirectory (optional)",
+    "subdirectoryPlaceholder": "blank = root, e.g. blog",
+    "adminUser": "Admin User",
+    "adminEmail": "Admin Email",
+    "adminEmailPlaceholder": "admin@site.com"
+  },
+  "installing": "Installing... (~30 sec)",
+  "installButton": "Install WordPress",
+  "installButtonDomain": "Install WordPress, {{domain}}",
+  "confirmDelete": "Delete WordPress at {{domain}}{{dir}}?\nAll files and the database in this directory will be removed. This action cannot be undone.",
+  "errors": {
+    "rootDelete": "WordPress in the root directory cannot be deleted from the panel.",
+    "installFailed": "Installation failed",
+    "updateFailed": "Could not update",
+    "deleteFailed": "Could not delete"
+  }
+}

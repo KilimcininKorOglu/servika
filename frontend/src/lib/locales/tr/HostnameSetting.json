@@ -1,0 +1,16 @@
+{
+  "title": "Sunucu Ana Makine Adı",
+  "protected": "Sağlayıcıya karşı korumalı",
+  "awaitingProtection": "Koruma bekleniyor",
+  "descriptionPre": "Sistem ana makine adını kalıcı olarak değiştirir. Cloud-init ve DHCP/NetworkManager'ın sağlayıcı tarafından verilen adı yeniden yazması engellenir. Tam nitelikli bir ad önerilir: ",
+  "placeholder": "server1.example.com",
+  "apply": "Ana Makine Adını Değiştir",
+  "applying": "Uygulanıyor…",
+  "messages": {
+    "changed": "Ana makine adı \"{{hostname}}\" olarak değiştirildi ve kalıcı hâle getirildi."
+  },
+  "errors": {
+    "load": "Ana makine adı yüklenemedi",
+    "change": "Ana makine adı değiştirilemedi"
+  }
+}

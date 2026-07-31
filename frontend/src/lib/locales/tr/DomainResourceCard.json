@@ -1,0 +1,31 @@
+{
+  "planAndResources": "Plan ve Kaynaklar",
+  "refresh": "Yenile",
+  "servicePlan": "Hizmet Planı",
+  "bars": {
+    "disk": "Disk",
+    "trafficMonthly": "Trafik (aylık)",
+    "database": "Veritabanı",
+    "ftpAccount": "FTP Hesabı",
+    "emailMailbox": "E-posta Kutusu",
+    "subdomain": "Alt Alan Adı"
+  },
+  "units": {
+    "db": "VT",
+    "account": "hesap",
+    "mailbox": "kutu",
+    "domain": "alan adı"
+  },
+  "configuration": "Yapılandırma",
+  "ipAddress": "IP Adresi",
+  "systemUser": "Sistem Kullanıcısı",
+  "phpVersion": "PHP Sürümü",
+  "sslTls": "SSL/TLS",
+  "active": "Etkin",
+  "none": "Yok",
+  "counters": "Sayaçlar",
+  "dnsRecord": "DNS kaydı",
+  "cronJob": "Zamanlanmış görev",
+  "backup": "Yedek",
+  "backupSize": "Yedek boyutu"
+}

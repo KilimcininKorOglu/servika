@@ -1,0 +1,28 @@
+{
+  "title": "SSL Certificates",
+  "description": "Server-wide certificate status, sorted by nearest expiry.",
+  "emptyMessage": "No domains found.",
+  "column": {
+    "domain": "Domain",
+    "ssl": "SSL",
+    "expiry": "Expiry",
+    "remaining": "Remaining",
+    "status": "Status"
+  },
+  "ssl": {
+    "enabled": "Enabled",
+    "none": "None"
+  },
+  "status": {
+    "active": "Active",
+    "passive": "Passive"
+  },
+  "remaining": {
+    "expiredAgo": "expired {{days}}d ago",
+    "days": "{{days}} days"
+  },
+  "summary": {
+    "withSsl": "With SSL",
+    "expiring": "Expiring ≤14d"
+  }
+}

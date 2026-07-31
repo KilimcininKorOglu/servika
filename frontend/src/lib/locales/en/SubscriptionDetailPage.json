@@ -1,0 +1,100 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "error": "Error"
+  },
+  "errors": {
+    "loadFailed": "Could not load the subscription",
+    "suspendFailed": "Could not update the domain suspension state"
+  },
+  "loading": "Loading…",
+  "confirmSuspend": "Suspend \"{{domain}}\"? The website will return HTTP 503 until it is resumed.",
+  "notice": {
+    "suspended": "The domain has been suspended.",
+    "resumed": "The domain has been resumed."
+  },
+  "header": {
+    "switchSubscription": "Switch subscription",
+    "suspended": "Suspended",
+    "moreActions": "More actions",
+    "resumeDomain": "Resume domain",
+    "suspendDomain": "Suspend domain"
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "hosting": "Hosting and DNS"
+  },
+  "stats": {
+    "title": "Statistics",
+    "refresh": "Refresh",
+    "disk": "Disk space",
+    "traffic": "Monthly traffic",
+    "created": "Created",
+    "phpVersion": "PHP version"
+  },
+  "footer": {
+    "website": "Website:",
+    "ip": "IP:",
+    "systemUser": "System user:",
+    "addDescription": "Add description"
+  },
+  "preview": {
+    "httpsOnly": "Preview is available only for HTTPS sites",
+    "autoAppear": "It appears automatically when SSL is enabled",
+    "website": "Website",
+    "refresh": "Refresh",
+    "refreshTitle": "Refresh preview",
+    "sslRequired": "SSL is required for the preview",
+    "open": "Open",
+    "previewAlt": "{{domain}} preview"
+  },
+  "groups": {
+    "filesAndDatabases": "Files and Databases",
+    "developmentTools": "Development Tools",
+    "security": "Security",
+    "hostingServices": "Hosting Services"
+  },
+  "tools": {
+    "connection": "Connection Information",
+    "connectionDesc": "FTP and database",
+    "files": "Files",
+    "filesDesc": "File manager",
+    "databases": "Databases",
+    "ftp": "FTP",
+    "ftpDesc": "FTP accounts",
+    "backup": "Backup and Restore",
+    "backupDesc": "Backup management",
+    "copy": "Copy Website",
+    "copyDesc": "Cloning",
+    "php": "PHP",
+    "phpDesc": "Version {{version}}",
+    "logs": "Logs",
+    "logsDesc": "Access and error logs",
+    "cron": "Scheduled Tasks",
+    "cronDesc": "Cron",
+    "git": "Git",
+    "gitDesc": "Repository integration",
+    "composer": "PHP Composer",
+    "composerDesc": "Package manager",
+    "performance": "Performance",
+    "performanceDesc": "Accelerators",
+    "ssl": "SSL/TLS Certificates",
+    "sslExpires": "Expires: {{expiry}}",
+    "sslLetsEncrypt": "Let's Encrypt",
+    "sslNotProtected": "Domain is not protected",
+    "passwordProtect": "Password-Protected Directories",
+    "statistics": "Statistics",
+    "statisticsDesc": "Traffic analysis",
+    "imunify": "Imunify",
+    "imunifyDesc": "Antivirus",
+    "waf": "WAF (Web Application Firewall)",
+    "wafDesc": "ModSecurity + OWASP CRS",
+    "hostingSettings": "Hosting Settings",
+    "hostingSettingsDesc": "Document root and options",
+    "apacheNginx": "Apache and nginx",
+    "apacheNginxDesc": "Security headers and additional directives",
+    "dns": "DNS Settings",
+    "dnsDesc": "A, CNAME, MX"
+  }
+}

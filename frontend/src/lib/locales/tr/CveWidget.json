@@ -1,0 +1,52 @@
+{
+  "title": "Güvenlik Duyuruları",
+  "subtitleAudit": "CVE denetimi (AlmaLinux)",
+  "advisories": "{{count}} güvenlik duyurusu",
+  "rescan": "Yeniden Tara",
+  "scanning": "Taranıyor…",
+  "scanningServer": "Sunucu taranıyor…",
+  "updating": "Güvenlik güncellemeleri yükleniyor… (arka planda çalışır)",
+  "kcApplying": "Canlı çekirdek yaması uygulanıyor… (KernelCare — yeniden başlatma gerekmez)",
+  "severity": {
+    "critical": "Kritik",
+    "important": "Önemli",
+    "moderate": "Orta",
+    "low": "Düşük"
+  },
+  "kcActive": {
+    "bold": "Çekirdek canlı olarak yamalandı (KernelCare).",
+    "text": " Çekirdek güvenlik açıkları yeniden başlatma olmadan kapatılır.",
+    "effectivePre": " Etkin çekirdek: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVE canlı olarak yamalandı."
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare kuruludur ancak lisans kayıtlı değildir.",
+    "text": " Yeniden başlatma gerektirmeyen çekirdek yaması için bir TuxCare lisans anahtarı ile kayıt yapın."
+  },
+  "rebootRequired": {
+    "bold1": "Yeniden başlatma gerekli.",
+    "text1": " Güvenlik yaması yapılmış yeni bir çekirdek kuruldu ancak sistem hâlâ eski çekirdeği çalıştırıyor. Aşağıdaki CVE'lerin çoğu çekirdekle ilgilidir ve ",
+    "bold2": "sunucu yeniden başlatılana kadar açık",
+    "text2": " görünecektir. Bir bakım penceresinde yeniden başlatma planlayın."
+  },
+  "clean": {
+    "title": "Sistem güncel",
+    "subtitle": "Bilinen güvenlik açığı yok"
+  },
+  "totalPre": "Toplam ",
+  "totalPost": " benzersiz CVE",
+  "lastScan": " · son tarama {{scan}}",
+  "installUpdates": "Güvenlik güncellemelerini yükle",
+  "updateLiveKernel": "Canlı çekirdek yamalarını güncelle (yeniden başlatma yok)",
+  "confirmUpdate": "Güvenlik güncellemeleri (dnf --security) yüklenecek. Çekirdek güncellemelerinin etkin olması için yeniden başlatma gerekebilir. Devam edilsin mi?",
+  "messages": {
+    "updatesComplete": "Güvenlik güncellemeleri tamamlandı.",
+    "livePatchApplied": "Canlı çekirdek yaması uygulandı."
+  },
+  "errors": {
+    "fetch": "CVE durumu alınamadı",
+    "startUpdate": "Güncelleme başlatılamadı",
+    "startLivePatch": "Canlı yama başlatılamadı"
+  }
+}

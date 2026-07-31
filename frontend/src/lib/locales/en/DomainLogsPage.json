@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "logs": "Logs"
+  },
+  "title": "Logs",
+  "streamFailed": "Stream failed to start (HTTP {{status}})",
+  "view": {
+    "table": "Table",
+    "raw": "Raw"
+  },
+  "autoScroll": "Auto-scroll",
+  "stop": "■ Stop",
+  "liveTail": "▶ Live Tail",
+  "last200": "↻ Last 200",
+  "clear": "Clear",
+  "searchPlaceholder": "Search by IP, path, status code, browser...",
+  "clearSearch": "Clear search",
+  "matches": "{{visible}} / {{total}} matches",
+  "waiting": "Waiting... New lines will appear as they arrive.",
+  "emptyFile": "(log file is empty or has not been created yet)",
+  "noMatch": "\"{{search}}\" No lines match this search.",
+  "linesFiltered": "{{visible}} / {{total}} lines (filtered)",
+  "lines": "{{count}} lines",
+  "windowSuffix": ", window {{max}}",
+  "liveStream": "live stream",
+  "access": {
+    "time": "Time",
+    "ip": "IP",
+    "method": "Method",
+    "path": "Path",
+    "status": "Status",
+    "size": "Size",
+    "browser": "Browser"
+  },
+  "error": {
+    "time": "Time",
+    "level": "Level",
+    "client": "Client",
+    "message": "Message"
+  }
+}

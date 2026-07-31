@@ -1,0 +1,15 @@
+{
+  "langPlainText": "Plain Text",
+  "unsaved": "Unsaved changes",
+  "saving": "Saving…",
+  "saved": "✓ Saved",
+  "syntax": "Syntax",
+  "exitFullscreen": "Exit full screen",
+  "fullscreen": "Full screen",
+  "save": "💾 Save",
+  "close": "Close",
+  "cursor": "Line {{line}}, Column {{column}}",
+  "lines": "{{count}} lines",
+  "bytes": "{{count}} bytes",
+  "shortcuts": "Ctrl+S: save · Esc: close"
+}

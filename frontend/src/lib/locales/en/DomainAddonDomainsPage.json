@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "addonDomains": "Addon Domains"
+  },
+  "title": "Addon Domains",
+  "subtitle": "Create addon or parked domains and configure whole-domain redirects.",
+  "toast": {
+    "created": "{{domain}} was created.",
+    "createFailed": "Could not create addon domain",
+    "deleted": "{{domain}} was deleted.",
+    "deleteFailed": "Could not delete addon domain",
+    "redirectSaved": "Redirect settings were saved.",
+    "redirectSaveFailed": "Could not save redirect settings",
+    "redirectRemoved": "Redirect settings were removed.",
+    "redirectRemoveFailed": "Could not remove redirect settings"
+  },
+  "mode": {
+    "parked": "parked domain",
+    "addon": "addon domain"
+  },
+  "confirmDelete": "Delete {{domain}}?\nThe {{mode}}, vhost, DNS zone, and panel records will be removed. This cannot be undone.",
+  "confirmRemoveRedirect": "Remove the domain redirect?",
+  "form": {
+    "title": "New Addon Domain",
+    "domainLabel": "Domain",
+    "parkedLabel": "Parked domain",
+    "creating": "Creating…",
+    "add": "Add Domain",
+    "hint": "Addon domains use their own document root. Parked domains share the parent domain document root."
+  },
+  "redirect": {
+    "title": "Whole-Domain Redirect",
+    "active": "Active",
+    "targetLabel": "Target URL",
+    "statusLabel": "Status",
+    "status301": "301 Permanent",
+    "status302": "302 Temporary",
+    "saving": "Saving…",
+    "save": "Save Redirect",
+    "remove": "Remove"
+  },
+  "list": {
+    "title": "Existing Domains",
+    "loading": "Loading…",
+    "empty": "No addon domains yet.",
+    "parked": "Parked",
+    "phpPrefix": "PHP",
+    "delete": "Delete"
+  },
+  "backToSubscription": "← Back to subscription"
+}

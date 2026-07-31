@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -27,6 +28,7 @@ function numberOrZero(value: number | undefined | null): number {
 }
 
 export default function StatisticsPage() {
+  const { t } = useTranslation('StatisticsPage')
   const [usage, setUsage] = useState<Usage | null>(null)
   const [counts, setCounts] = useState<Counts | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -52,59 +54,59 @@ export default function StatisticsPage() {
   return (
     <div className="px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Statistics' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.statistics') },
       ]} />
       <div className="flex items-center justify-between mb-1">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Statistics</h1>
-        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">● Live (10 sec)</span>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
+        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{t('live')}</span>
       </div>
-      <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">Server resource usage, domain counts, and system summary.</p>
+      <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">{t('subtitle')}</p>
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       {/* Four system metric cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        <Metric title="CPU" value={usage ? cpu.toFixed(1) + '%' : '–'}
-          subtitle={usage ? `${cores} cores` : ''} color="indigo" ratio={cpu} />
-        <Metric title="Memory" value={usage ? memory.toFixed(1) + '%' : '–'}
+        <Metric title={t('metric.cpu')} value={usage ? cpu.toFixed(1) + '%' : '–'}
+          subtitle={usage ? t('coresValue', { cores }) : ''} color="indigo" ratio={cpu} />
+        <Metric title={t('metric.memory')} value={usage ? memory.toFixed(1) + '%' : '–'}
           subtitle={usage ? `${formatBytes(numberOrZero(usage?.memory?.used_kb) * 1024)} / ${formatBytes(numberOrZero(usage?.memory?.total_kb) * 1024)}` : ''}
           color="emerald" ratio={memory} />
-        <Metric title="Disk" value={usage ? disk.toFixed(1) + '%' : '–'}
+        <Metric title={t('metric.disk')} value={usage ? disk.toFixed(1) + '%' : '–'}
           subtitle={usage ? `${formatBytes(numberOrZero(usage?.disk?.used_byte))} / ${formatBytes(numberOrZero(usage?.disk?.total_byte))}` : ''}
           color="violet" ratio={disk} />
-        <Metric title="Load (1 min)" value={usage ? oneMinuteLoad.toFixed(2) : '–'}
-          subtitle={usage ? `5 min: ${numberOrZero(usage?.cpu?.load_5m).toFixed(2)} · 15 min: ${numberOrZero(usage?.cpu?.load_15m).toFixed(2)}` : ''}
+        <Metric title={t('metric.load')} value={usage ? oneMinuteLoad.toFixed(2) : '–'}
+          subtitle={usage ? t('loadSub', { five: numberOrZero(usage?.cpu?.load_5m).toFixed(2), fifteen: numberOrZero(usage?.cpu?.load_15m).toFixed(2) }) : ''}
           color="amber" ratio={Math.min(100, (oneMinuteLoad / cores) * 100)} />
       </div>
 
       {/* System summary and counters */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">System</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('system.title')}</h3>
           <div className="space-y-1.5 text-sm">
-            <Row label="Hostname" value={usage?.system?.hostname || '–'} />
-            <Row label="Operating system" value={usage?.system?.os_name || '–'} />
-            <Row label="Kernel" value={usage?.system?.kernel || '–'} />
-            <Row label="Processor" value={usage?.system?.cpu_model ? `${usage.system.cpu_model} · ${cores} cores` : '–'} />
-            <Row label="Swap" value={usage?.swap ? `${numberOrZero(usage.swap.percent).toFixed(1)}% · ${formatBytes(numberOrZero(usage.swap.used_kb) * 1024)} / ${formatBytes(numberOrZero(usage.swap.total_kb) * 1024)}` : '–'} />
-            <Row label="Panel version" value={usage?.system?.panel_version || '–'} />
+            <Row label={t('system.hostname')} value={usage?.system?.hostname || '–'} />
+            <Row label={t('system.os')} value={usage?.system?.os_name || '–'} />
+            <Row label={t('system.kernel')} value={usage?.system?.kernel || '–'} />
+            <Row label={t('system.processor')} value={usage?.system?.cpu_model ? t('processorValue', { model: usage.system.cpu_model, cores }) : '–'} />
+            <Row label={t('system.swap')} value={usage?.swap ? t('swapValue', { percent: numberOrZero(usage.swap.percent).toFixed(1), used: formatBytes(numberOrZero(usage.swap.used_kb) * 1024), total: formatBytes(numberOrZero(usage.swap.total_kb) * 1024) }) : '–'} />
+            <Row label={t('system.panelVersion')} value={usage?.system?.panel_version || '–'} />
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Domains</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('domains.title')}</h3>
           <div className="space-y-1.5 text-sm">
-            <Row label="Total domains" value={counts ? String(counts.domains) : '–'} />
-            <Row label="Active domains" value={
+            <Row label={t('domains.total')} value={counts ? String(counts.domains) : '–'} />
+            <Row label={t('domains.active')} value={
               <span className="text-emerald-700 dark:text-emerald-300 font-semibold">{counts ? counts.activeDomains : 0}</span>
             } />
-            <Row label="Inactive domains" value={String(counts ? counts.domains - counts.activeDomains : 0)} />
+            <Row label={t('domains.inactive')} value={String(counts ? counts.domains - counts.activeDomains : 0)} />
           </div>
         </div>
       </div>
 
       <div className="text-xs text-slate-400 dark:text-slate-500 text-center mt-6">
-        Visit the <a href="/monitoring" className="text-brand-600 dark:text-brand-400 hover:underline">Monitoring</a> page for more detailed monitoring.
+        {t('footer.pre')}<a href="/monitoring" className="text-brand-600 dark:text-brand-400 hover:underline">{t('footer.link')}</a>{t('footer.post')}
       </div>
     </div>
   )

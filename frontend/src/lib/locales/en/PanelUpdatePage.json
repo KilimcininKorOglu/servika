@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "toolsAndSettings": "Tools and Settings",
+    "panelUpdate": "Panel Update"
+  },
+  "title": "Panel Update",
+  "description": "Update the panel to the latest release from GitHub. Environment variables, database, and sites are preserved; a failed health check automatically rolls back to the previous version. The operation runs in the background, so you can close this page and the update continues uninterrupted."
+}

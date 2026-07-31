@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "toolsAndSettings": "Araçlar ve Ayarlar",
+    "serverOptimize": "Sunucu Optimizasyonu"
+  },
+  "title": "Sunucu Optimizasyonu",
+  "description": "Sistem paketlerini günceller ve MariaDB / Nginx / PHP ayarlarını sunucu kaynaklarına göre yeniden ayarlar. İşlem arka planda çalışır — bu sayfayı kapatabilirsiniz; bir süre alabilir ve servisleri kısa süreliğine etkileyebilir."
+}

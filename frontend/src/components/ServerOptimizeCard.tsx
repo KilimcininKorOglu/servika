@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 
 type Status = { running: boolean; status: string }
 type LogResponse = { log: string; running: boolean; status: string }
 
 export default function ServerOptimizeCard() {
+  const { t } = useTranslation('ServerOptimizeCard')
   const [log, setLog] = useState('')
   const [running, setRunning] = useState(false)
   const [starting, setStarting] = useState(false)
@@ -49,10 +51,10 @@ export default function ServerOptimizeCard() {
     setError(null); setStarting(true); setConfirmed(false)
     try {
       await api.post('/system/optimize/start')
-      setLog('Optimization started...\n')
+      setLog(t('logStarted'))
       setRunning(true)
     } catch (e: any) {
-      setError(e?.response?.data?.error || e?.message || 'Failed to start optimization')
+      setError(e?.response?.data?.error || e?.message || t('errorStart'))
     } finally {
       setStarting(false)
     }
@@ -60,11 +62,9 @@ export default function ServerOptimizeCard() {
 
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-6">
-      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">Server Optimization</h3>
+      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h3>
       <p className="text-xs text-slate-500 dark:text-slate-500 mb-3">
-        Updates system packages (dnf/yum) and applies MariaDB, nginx, and PHP performance tuning.
-        The process runs in the background and may take a long time. You can close the page
-        while it continues.
+        {t('description')}
       </p>
 
       {error && <div className="mt-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">{error}</div>}
@@ -72,7 +72,7 @@ export default function ServerOptimizeCard() {
       {running && (
         <div className="mt-2 inline-flex items-center gap-2 text-xs text-sky-700 dark:text-sky-300">
           <span className="w-3 h-3 rounded-full border-2 border-sky-500 border-t-transparent animate-spin" />
-          Optimization is running. Package updates may take a while; you can close the page while it continues in the background.
+          {t('running')}
         </div>
       )}
 
@@ -84,18 +84,18 @@ export default function ServerOptimizeCard() {
         {!confirmed ? (
           <button onClick={() => setConfirmed(true)} disabled={running || starting}
             className="text-xs px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 transition font-medium disabled:opacity-40 disabled:cursor-not-allowed">
-            Update packages and optimize
+            {t('startButton')}
           </button>
         ) : (
           <span className="flex flex-col gap-2 text-xs sm:flex-row sm:items-center">
-            <span className="text-amber-600 dark:text-amber-400">This may briefly affect services. Continue?</span>
+            <span className="text-amber-600 dark:text-amber-400">{t('confirmPrompt')}</span>
             <button onClick={start} disabled={starting}
               className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-medium transition disabled:opacity-40">
-              {starting ? 'Starting...' : 'Yes, start'}
+              {starting ? t('starting') : t('confirmYes')}
             </button>
             <button onClick={() => setConfirmed(false)}
               className="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-xs transition">
-              Cancel
+              {t('cancel')}
             </button>
           </span>
         )}

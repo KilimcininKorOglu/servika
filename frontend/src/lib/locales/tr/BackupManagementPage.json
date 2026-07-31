@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "toolsSettings": "Araçlar ve Ayarlar",
+    "backupManager": "Yedek Yöneticisi"
+  },
+  "title": "Yedek Yöneticisi",
+  "subtitle": "Tüm alan adlarının yedeklerini tek bir yerde görün. Günlük otomatik yedekler çalışır ve S3/SFTP hedefleri alan adı başına yapılandırılır.",
+  "toast": {
+    "triggered": "Zamanlanmış yedekler tetiklendi. Sonuçları görmek için birkaç saniye sonra yenileyin.",
+    "triggerFailed": "Yedekler tetiklenemedi"
+  },
+  "kpi": {
+    "totalSize": "Toplam Yedek Boyutu",
+    "totalBackups": "Toplam Yedek",
+    "domainCount": "Alan Adı Sayısı",
+    "remoteDestinations": "Aktif Uzak Hedefler",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Otomatik yedekler:",
+    "default": "Her gün saat 03:00",
+    "suffix": ". 7 günlük saklama",
+    "triggering": "Tetikleniyor...",
+    "backupNow": "⏱ Tüm Alan Adlarını Şimdi Yedekle",
+    "refresh": "↻ Yenile"
+  },
+  "table": {
+    "title": "Alan Adı Yedekleri",
+    "colDomain": "Alan Adı",
+    "colCount": "Yedek Sayısı",
+    "colSize": "Toplam Boyut",
+    "colLatest": "Son Yedek",
+    "colAction": "İşlem",
+    "loading": "Yükleniyor...",
+    "noDomains": "Alan adı yok.",
+    "never": "hiç",
+    "manage": "Yönet"
+  },
+  "footnote": {
+    "pre": "ℹ️ Yedekler",
+    "post": "konumunda saklanır. Bir alan adı silinse bile yedekler kullanılabilir kalır ve yanlışlıkla silmeden kurtarmaya olanak tanır. Tek tek yedekleri indirmek veya geri yüklemek ve hedefleri yapılandırmak için Yönet'i açın."
+  }
+}

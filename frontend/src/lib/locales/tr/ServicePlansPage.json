@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "Ana Sayfa",
+  "breadcrumbTitle": "Servis Planları",
+  "title": "Servis Planları",
+  "subtitle": "Alan adları için servis planları tanımlayın. Her alan adı bir plana bağlıdır ve disk, trafik, PHP sürümü, veritabanı sayısı ve alt alan adı limitleri gibi kaynaklar plan bazında yapılandırılır.",
+  "addPlan": "Plan Ekle",
+  "loading": "Yükleniyor…",
+  "empty": {
+    "title": "Henüz servis planı yok",
+    "descriptionAdmin": "İlk planınızı tanımlayarak başlayın.",
+    "descriptionUser": "Yönetici henüz bir plan tanımlamadı."
+  },
+  "badge": {
+    "default": "Varsayılan"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "Disk",
+    "traffic": "Trafik",
+    "domains": "Alan Adları",
+    "databases": "Veritabanları",
+    "ftp": "FTP"
+  },
+  "detailsButton": "Ayrıntılar ve Kaynak Limitleri",
+  "delete": "Sil",
+  "confirmDelete": {
+    "title": "Planı sil",
+    "message": "\"{{name}}\" planı silinsin mi?",
+    "confirmText": "Evet, sil"
+  },
+  "errors": {
+    "deleteFailed": "Silme başarısız",
+    "saveFailed": "Kaydetme başarısız"
+  },
+  "limit": {
+    "unlimited": "sınırsız"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/ay",
+    "domains": "alan adı",
+    "databases": "veritabanı",
+    "accounts": "hesap"
+  },
+  "modal": {
+    "newTitle": "Yeni Plan",
+    "editTitle": "Planı Düzenle",
+    "planName": "Plan Adı",
+    "description": "Açıklama",
+    "diskMb": "Disk (MB)",
+    "trafficMb": "Trafik (MB)",
+    "phpVersionLabel": "PHP Sürümü",
+    "maxDomains": "Maksimum Alan Adı",
+    "maxDatabases": "Maksimum Veritabanı",
+    "maxFtp": "Maksimum FTP Hesabı",
+    "isDefault": "Yeni alan adları için varsayılan plan",
+    "wafHeading": "WAF Varsayılanı (ModSecurity + OWASP CRS)",
+    "wafEnabled": "Bu planda etkin",
+    "wafMode": {
+      "block": "Engelle (Açık)",
+      "detect": "Tespit (yalnızca kayıt)"
+    },
+    "wafParanoia": {
+      "level1": "Seviye 1 (Düşük)",
+      "level2": "Seviye 2 (Orta)",
+      "level3": "Seviye 3 (Yüksek)",
+      "level4": "Seviye 4 (Katı)"
+    },
+    "hint": "0 = sınırsız. Disk ve trafik değerleri MB cinsindendir. Bu plandaki yeni alan adları seçilen PHP sürümü ile hazırlanır.",
+    "cancel": "İptal",
+    "saving": "Kaydediliyor…",
+    "add": "Ekle",
+    "update": "Güncelle"
+  }
+}

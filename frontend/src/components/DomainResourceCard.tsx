@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 
 type Limit = { usage: number; limit: number }
@@ -12,6 +13,7 @@ export type Summary = {
 }
 
 export default function DomainResourceCard({ domainId }: { domainId: number | string }) {
+  const { t } = useTranslation('DomainResourceCard')
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -43,8 +45,8 @@ export default function DomainResourceCard({ domainId }: { domainId: number | st
       {/* Plan + Summary */}
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Plan and Resources</h3>
-          <button onClick={load} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" title="Refresh">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('planAndResources')}</h3>
+          <button onClick={load} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" title={t('refresh')}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
@@ -52,37 +54,37 @@ export default function DomainResourceCard({ domainId }: { domainId: number | st
         </div>
 
         <div className="mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-0.5">Service Plan</div>
+          <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-0.5">{t('servicePlan')}</div>
           <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{summary.plan_name}</div>
         </div>
 
-        <Bar label="Disk" usage={summary.disk_mb.usage} limit={summary.disk_mb.limit} unit="MB" color="indigo" />
-        <Bar label="Traffic (monthly)" usage={summary.traffic_mb.usage} limit={summary.traffic_mb.limit} unit="MB" color="sky" />
-        <Bar label="Database" usage={summary.db_count.usage} limit={summary.db_count.limit} unit="DB" color="emerald" />
-        <Bar label="FTP Account" usage={summary.ftp_count.usage} limit={summary.ftp_count.limit} unit="account" color="amber" />
-        <Bar label="Email Mailbox" usage={summary.email_count.usage} limit={summary.email_count.limit} unit="mailbox" color="rose" />
-        <Bar label="Subdomain" usage={summary.domain_count.usage} limit={summary.domain_count.limit} unit="domain" color="violet" />
+        <Bar label={t('bars.disk')} usage={summary.disk_mb.usage} limit={summary.disk_mb.limit} unit="MB" color="indigo" />
+        <Bar label={t('bars.trafficMonthly')} usage={summary.traffic_mb.usage} limit={summary.traffic_mb.limit} unit="MB" color="sky" />
+        <Bar label={t('bars.database')} usage={summary.db_count.usage} limit={summary.db_count.limit} unit={t('units.db')} color="emerald" />
+        <Bar label={t('bars.ftpAccount')} usage={summary.ftp_count.usage} limit={summary.ftp_count.limit} unit={t('units.account')} color="amber" />
+        <Bar label={t('bars.emailMailbox')} usage={summary.email_count.usage} limit={summary.email_count.limit} unit={t('units.mailbox')} color="rose" />
+        <Bar label={t('bars.subdomain')} usage={summary.domain_count.usage} limit={summary.domain_count.limit} unit={t('units.domain')} color="violet" />
       </div>
 
       {/* Configuration Summary */}
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Configuration</h3>
-        <Row label="IP Address" value={summary.ipv4 || '—'} mono />
-        <Row label="System User" value={summary.sk} mono />
-        <Row label="PHP Version"
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('configuration')}</h3>
+        <Row label={t('ipAddress')} value={summary.ipv4 || '—'} mono />
+        <Row label={t('systemUser')} value={summary.sk} mono />
+        <Row label={t('phpVersion')}
           value={<span><span className="font-mono font-medium text-slate-800 dark:text-slate-200">PHP {summary.php_version}</span></span>}
         />
-        <Row label="SSL/TLS"
+        <Row label={t('sslTls')}
           value={
             summary.ssl_enabled
               ? <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-emerald-700 dark:text-emerald-300 text-xs font-medium">Active</span>
+                  <span className="text-emerald-700 dark:text-emerald-300 text-xs font-medium">{t('active')}</span>
                   {summary.ssl_expiry && <span className="text-slate-400 dark:text-slate-500 text-[10px]">→ {summary.ssl_expiry}</span>}
                 </span>
               : <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                  <span className="text-slate-500 dark:text-slate-500 text-xs">None</span>
+                  <span className="text-slate-500 dark:text-slate-500 text-xs">{t('none')}</span>
                 </span>
           }
         />
@@ -90,12 +92,12 @@ export default function DomainResourceCard({ domainId }: { domainId: number | st
 
       {/* Additional Counters */}
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Counters</h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('counters')}</h3>
         <div className="grid grid-cols-2 gap-y-2 gap-x-3">
-          <Mini label="DNS record" value={summary.dns_record} />
-          <Mini label="Cron job" value={summary.cron_job} />
-          <Mini label="Backup" value={summary.backup_count} />
-          <Mini label="Backup size" value={`${summary.backup_mb} MB`} />
+          <Mini label={t('dnsRecord')} value={summary.dns_record} />
+          <Mini label={t('cronJob')} value={summary.cron_job} />
+          <Mini label={t('backup')} value={summary.backup_count} />
+          <Mini label={t('backupSize')} value={`${summary.backup_mb} MB`} />
         </div>
       </div>
     </div>

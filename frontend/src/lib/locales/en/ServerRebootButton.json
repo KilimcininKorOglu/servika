@@ -1,0 +1,14 @@
+{
+  "title": "Server Reboot",
+  "description": "Restart the whole server only after active jobs and customer operations are safe to interrupt.",
+  "confirmLabel": "Type REBOOT to confirm",
+  "placeholder": "REBOOT",
+  "reboot": "Reboot Server",
+  "requesting": "Requesting...",
+  "messages": {
+    "requested": "Reboot requested. The panel will be unavailable while the server restarts."
+  },
+  "errors": {
+    "reboot": "Could not request server reboot"
+  }
+}

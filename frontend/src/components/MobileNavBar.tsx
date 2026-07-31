@@ -1,5 +1,6 @@
 // Mobile bottom navigation for narrow screens.
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 type MobileNavItem = {
   to: string
@@ -18,10 +19,11 @@ function itemClass({ isActive }: { isActive: boolean }) {
 }
 
 export default function MobileNavBar({ items }: { items: MobileNavItem[] }) {
+  const { t } = useTranslation('MobileNavBar')
   return (
     <nav
       className="lg:hidden fixed bottom-0 inset-x-0 z-30 flex items-stretch border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
-      aria-label="Mobile navigation"
+      aria-label={t('ariaLabel')}
     >
       {items.map((item) => (
         <NavLink key={item.to} to={item.to} end={item.end} className={itemClass} onClick={item.onClick}>
