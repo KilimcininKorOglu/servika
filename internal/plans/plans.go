@@ -189,6 +189,10 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fillDefaults(&p)
+	if name := provisioner.DangerousNginxDirective(p.NginxExtraDirectives); name != "" {
+		httpx.WriteError(w, http.StatusBadRequest, "nginx directive '"+name+"' is not allowed at plan level")
+		return
+	}
 	if err := provisioner.ValidateNginxDirectives(p.NginxExtraDirectives); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid nginx directives")
 		return
@@ -242,6 +246,10 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fillDefaults(&p)
+	if name := provisioner.DangerousNginxDirective(p.NginxExtraDirectives); name != "" {
+		httpx.WriteError(w, http.StatusBadRequest, "nginx directive '"+name+"' is not allowed at plan level")
+		return
+	}
 	if err := provisioner.ValidateNginxDirectives(p.NginxExtraDirectives); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid nginx directives")
 		return
