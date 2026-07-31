@@ -9,12 +9,14 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 
 	"servika/internal/httpx"
@@ -272,14 +274,31 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 	if rel == "" {
 		rel = "/"
 	}
+	// Concurrent-upload disk-exhaustion guard: reject with 507 when the temp
+	// filesystem cannot hold another upload rather than letting parallel uploads
+	// fill it and take the whole service down. The reservation is released on
+	// every exit path below.
+	if !reserveUploadSpace() {
+		httpx.WriteError(w, http.StatusInsufficientStorage, "server disk space is temporarily low, please retry the upload later")
+		return
+	}
+	defer releaseUploadSpace()
 	if err := parseMultipartUpload(w, r, MaxUploadBytes, maxMultipartMemory); err != nil {
 		if errors.Is(err, errUploadTooLarge) {
-			httpx.WriteError(w, http.StatusRequestEntityTooLarge, "upload exceeds the 2 GiB limit")
+			httpx.WriteError(w, http.StatusRequestEntityTooLarge, "upload exceeds the 10 GiB limit")
 			return
 		}
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
+	// Anything over maxMultipartMemory is spooled to a temp file; without
+	// RemoveAll those /tmp/multipart-* files survive the request and slowly fill
+	// the disk. Clean them up on every exit path.
+	defer func() {
+		if r.MultipartForm != nil {
+			_ = r.MultipartForm.RemoveAll()
+		}
+	}()
 	file, fh, err := r.FormFile("file")
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
@@ -288,6 +307,13 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 	defer func() { _ = file.Close() }()
 	if fh.Size > MaxUploadBytes {
 		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "file is too large (maximum 10 GiB)")
+		return
+	}
+	// The panel writes as root and then chowns to the tenant, which bypasses the
+	// kernel EDQUOT check, so the plan disk quota could be exceeded. Check the
+	// XFS quota before writing.
+	if !uploadQuotaAvailable(systemUser, fh.Size) {
+		httpx.WriteError(w, http.StatusInsufficientStorage, "disk quota exceeded — this upload would exceed your plan quota")
 		return
 	}
 	uploadPath := filepath.Join(rel, fh.Filename)
@@ -340,4 +366,74 @@ func messageFromErr(err error) string {
 		return "invalid path"
 	}
 	return "operation failed"
+}
+
+// uploadReserved is the total temp-disk space currently reserved by in-flight
+// uploads. Each upload reserves MaxUploadBytes; when free - reserved drops below
+// what one more upload needs, the next upload is refused with 507. On a small
+// disk this stops parallel uploads from filling the temp filesystem and taking
+// every service down (a resource-exhaustion DoS).
+var (
+	uploadReserveMu sync.Mutex
+	uploadReserved  int64
+)
+
+// reserveUploadSpace reserves room for one upload when the temp filesystem has
+// it (returns true), otherwise false. Pair every true with releaseUploadSpace.
+func reserveUploadSpace() bool {
+	needed := int64(MaxUploadBytes) + 256*1024*1024 // upload cap + 256 MB safety margin
+	uploadReserveMu.Lock()
+	defer uploadReserveMu.Unlock()
+	var st syscall.Statfs_t
+	if err := syscall.Statfs(os.TempDir(), &st); err != nil {
+		return true // statfs failed: do not block (keep prior behaviour)
+	}
+	free := int64(st.Bavail) * int64(st.Bsize)
+	if free-uploadReserved < needed {
+		return false
+	}
+	uploadReserved += int64(MaxUploadBytes)
+	return true
+}
+
+func releaseUploadSpace() {
+	uploadReserveMu.Lock()
+	uploadReserved -= int64(MaxUploadBytes)
+	if uploadReserved < 0 {
+		uploadReserved = 0
+	}
+	uploadReserveMu.Unlock()
+}
+
+// uploadQuotaAvailable reports whether the tenant's XFS quota has room for
+// extraBytes. It reads used/hard (KB) from xfs_quota. When the quota cannot be
+// determined (tool missing / parse error) it fails open (true) so uploads are
+// not broken. hard=0 means unlimited. This closes the quota bypass on the
+// root-writes-then-chowns-to-tenant path.
+func uploadQuotaAvailable(systemUser string, extraBytes int64) bool {
+	if !strings.HasPrefix(systemUser, "c_") {
+		return true
+	}
+	// The XFS quota lives on the mount: /home when it is a separate mount,
+	// otherwise the rootfs / (rootflags=uquota). Try both; use the first valid row.
+	for _, mount := range []string{"/home", "/"} {
+		out, err := exec.Command("xfs_quota", "-x", "-c", "quota -u -b -N "+systemUser, mount).CombinedOutput()
+		if err != nil {
+			continue
+		}
+		fields := strings.Fields(string(out))
+		if len(fields) < 4 {
+			continue
+		}
+		usedKB, e1 := strconv.ParseInt(fields[1], 10, 64)
+		hardKB, e2 := strconv.ParseInt(fields[3], 10, 64)
+		if e1 != nil || e2 != nil {
+			continue
+		}
+		if hardKB <= 0 {
+			return true // unlimited
+		}
+		return usedKB*1024+extraBytes <= hardKB*1024
+	}
+	return true // quota could not be determined -> fail open
 }
