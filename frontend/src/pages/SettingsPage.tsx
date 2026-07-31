@@ -6,6 +6,7 @@ import ServerRebootButton from '@/components/ServerRebootButton'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useAuth } from '@/store/auth'
 import { setTheme as applyThemePreference, type Theme } from '@/lib/theme'
+import { setLang, type Lang } from '@/lib/i18n'
 
 type CurrentUser = {
   id: number; name: string; role: string; email: string; full_name: string
@@ -123,6 +124,7 @@ export default function SettingsPage() {
     try {
       await api.put('/me', { full_name: fullName, email, pref_theme: theme, pref_lang: language })
       applyThemePreference(theme)
+      setLang((language === 'tr' ? 'tr' : 'en') as Lang)
       setPreferenceSuccess('Preferences saved.'); setTimeout(() => setPreferenceSuccess(''), 3000)
     } catch { setPreferenceSuccess('') } finally { setIsPreferenceLoading(false) }
   }

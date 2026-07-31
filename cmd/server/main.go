@@ -289,6 +289,10 @@ func main() {
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAuth(cfg.JWTSecret))
 			r.Get("/me", usersH.Me)
+			// Language preference — open to EVERY authenticated role (including
+			// role=user customers) so anyone can persist their own pref_lang. The
+			// broader profile edit below stays ResellerOrAbove.
+			r.Put("/me/language", authH.UpdateLanguage)
 			// Own account — every panel user (admin + reseller) manages its own
 			// profile, password and 2FA. No scope question here: the target is
 			// always the token's own user.

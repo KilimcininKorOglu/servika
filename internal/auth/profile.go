@@ -60,6 +60,36 @@ func (h *Handlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
+// UpdateLanguage persists only the caller's language preference. Unlike
+// UpdateProfile (ResellerOrAbove), this route is open to every authenticated
+// role so a customer (role=user) can also store its own pref_lang. Same tr/en
+// whitelist: anything other than "tr" falls back to "en".
+func (h *Handlers) UpdateLanguage(w http.ResponseWriter, r *http.Request) {
+	c := h.claims(r)
+	if c == nil {
+		httpx.WriteError(w, http.StatusUnauthorized, "no active session")
+		return
+	}
+	var b struct {
+		PrefLang string `json:"pref_lang"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	language := "en"
+	if b.PrefLang == "tr" {
+		language = "tr"
+	}
+	if _, err := h.DB.Exec(
+		`UPDATE users SET pref_lang=?, updated_at=NOW() WHERE id=?`,
+		language, c.UserID); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "language update failed")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "pref_lang": language})
+}
+
 // POST /me/password — change server root password (current password verified → chpasswd)
 func (h *Handlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	c := h.claims(r)
