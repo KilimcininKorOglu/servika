@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"servika/internal/httpx"
@@ -120,6 +121,12 @@ func (h *Handlers) PutDestination(w http.ResponseWriter, r *http.Request) {
 	if req.RemoteDir == "" {
 		req.RemoteDir = "/"
 	}
+	// These fields flow into lftp scripts and ssh/curl argv; reject control
+	// characters and an option-injecting username before anything is stored.
+	if msg := validDestinationInput(&req); msg != "" {
+		httpx.WriteError(w, http.StatusBadRequest, msg)
+		return
+	}
 	// Was the password sent empty? Keep the current record.
 	var existingPassword string
 	_ = h.DB.QueryRowContext(r.Context(),
@@ -228,6 +235,12 @@ func (h *Handlers) TestDestination(w http.ResponseWriter, r *http.Request) {
 		if dz == "" {
 			dz = "/"
 		}
+		request.Port = port
+		request.RemoteDir = dz
+		if msg := validDestinationInput(&request); msg != "" {
+			httpx.WriteError(w, http.StatusBadRequest, msg)
+			return
+		}
 		d = &Destination{
 			DomainID: id, Type: request.Type, Host: request.Host, Port: port,
 			Username: request.Username, Password: request.Password, RemoteDir: dz, Enabled: true,
@@ -250,4 +263,23 @@ func (h *Handlers) TestDestination(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+// validDestinationInput validates the fields that reach lftp/ssh/curl. It
+// returns an error message, or "" when the input is acceptable. Host is already
+// checked by validHost for ftp/sftp; here the port range plus control-character
+// and option-injection rejection close the remaining command-line vectors.
+func validDestinationInput(req *destinationRequest) string {
+	if req.Port < 1 || req.Port > 65535 {
+		return "port must be between 1 and 65535"
+	}
+	for _, v := range []string{req.Username, req.Password, req.RemoteDir} {
+		if len(v) > 1024 || strings.ContainsAny(v, "\r\n\x00") {
+			return "username, password and remote directory cannot contain line breaks or control characters"
+		}
+	}
+	if strings.HasPrefix(req.Username, "-") {
+		return "username cannot begin with a dash (ssh option injection)"
+	}
+	return ""
 }
