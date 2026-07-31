@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "phpSettings": "PHP Settings"
+  },
+  "title": "PHP Settings",
+  "systemUser": "System user: ",
+  "poolNotice": {
+    "pre": "The settings configured here are written to the PHP-FPM pool (",
+    "mid1": "). The website's ",
+    "mid2": " and ",
+    "post": " files can override them. Saving automatically restarts PHP-FPM without taking the site offline."
+  },
+  "loading": "Loading…",
+  "saved": "Saved. PHP {{version}}, socket: {{socket}}",
+  "saveFailed": "Failed to save settings",
+  "clearLogFailed": "Failed to clear debug log",
+  "processManager": {
+    "ondemand": "ondemand (recommended, zero processes when idle)",
+    "dynamic": "dynamic (scales with load)",
+    "static": "static (fixed pool)"
+  },
+  "version": {
+    "title": "PHP Version",
+    "active": "Active",
+    "saveToApply": "Save to apply"
+  },
+  "cards": {
+    "performance": "Performance and Security",
+    "general": "General",
+    "debugMode": "PHP Debug Mode",
+    "lastErrors": "Last Errors (Debug Log)",
+    "fpmPool": "PHP-FPM Pool",
+    "installedModules": "Installed PHP Modules",
+    "disableDangerous": "Disable Dangerous Functions",
+    "additionalDirectives": "Additional Configuration Directives"
+  },
+  "help": {
+    "memoryLimit": "Maximum memory a script can allocate in bytes. Example: 256M.",
+    "maxExecutionTime": "Maximum execution time in seconds",
+    "maxInputTime": "Time to parse POST/GET data in seconds",
+    "postMaxSize": "Maximum POST data size. Must be larger than upload_max_filesize.",
+    "uploadMaxFilesize": "Single-file upload limit",
+    "opcacheEnable": "OPcache opcode cache (recommended: ON)",
+    "disableFunctions": "PHP functions to disable (comma-separated)",
+    "displayErrors": "Display errors in output (keep off in production)",
+    "logErrors": "Enable error logging",
+    "allowUrlFopen": "Open files over HTTP/FTP",
+    "fileUploads": "HTTP file uploads",
+    "shortOpenTag": "Support for <? ?> short tags",
+    "errorReporting": "Error reporting level (for example, E_ALL & ~E_DEPRECATED)",
+    "includePath": "Script include directories (separate with : on Linux)",
+    "openBasedir": "Directories PHP can access (empty means unrestricted). Separate with :",
+    "sessionSavePath": "Session file directory (empty means /home/{system_user}/tmp)",
+    "mailForceExtraParameters": "Additional parameters for the mail() function",
+    "pm": "Process manager strategy",
+    "pmMaxChildren": "Maximum concurrent PHP workers",
+    "pmMaxRequests": "Requests before restarting a worker (prevents memory leaks)",
+    "pmStartServers": "Workers started initially (dynamic only)",
+    "pmMinSpareServers": "Minimum idle workers",
+    "pmMaxSpareServers": "Maximum idle workers"
+  },
+  "openBasedirPlaceholder": "for example: /home/user/:/tmp/",
+  "debug": {
+    "disableTitle": "Disable debug mode",
+    "enableTitle": "Enable debug mode",
+    "label": "Debug mode",
+    "on": "On",
+    "off": "Off",
+    "descPre": "When enabled, PHP errors are displayed on-screen and fatal errors (E_ERROR, E_PARSE, ...) are reliably caught via ",
+    "descMid": " and logged to ",
+    "descPost": ". Fatal errors are captured even when the application calls ",
+    "descEnd": ".",
+    "warningLabel": "Warning:",
+    "warningPre": " With debug mode on, ",
+    "warningBold1": "display_errors = on",
+    "warningMid": " and ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " are forced; error details may be visible to site visitors. Only enable during troubleshooting, ",
+    "warningBold3": "disable on production",
+    "warningEnd": ". Changes take effect after clicking ",
+    "warningSave": "Save",
+    "warningDot": "."
+  },
+  "debugLog": {
+    "sourcePre": "Newest fatal errors on top. Source: ",
+    "sourcePost": " (last 200 lines).",
+    "loading": "Loading...",
+    "refresh": "Refresh",
+    "clear": "Clear",
+    "emptyOff": "Debug mode is off. Enable it above and save to start logging fatal errors.",
+    "emptyOn": "No errors recorded. The debug log is empty."
+  },
+  "modules": {
+    "countPre": "",
+    "countBold": "{{count}}",
+    "countPost": " modules are installed for PHP {{version}}. Modules are managed server-wide and cannot be enabled or disabled for an individual domain.",
+    "manageServer": "↗ Manage Server Modules"
+  },
+  "dangerous": {
+    "descPre": "These functions pose shell injection, RCE, and malware risks. Category toggles update ",
+    "descMid": ". ",
+    "descBoldOn": "On means enabled",
+    "descAnd": ", and ",
+    "descBoldOff": "off means blocked",
+    "descPost": ".",
+    "enableAll": "Enable all",
+    "blockAll": "Block all",
+    "blocked": "Blocked",
+    "mixed": "Mixed",
+    "active": "Active",
+    "editManually": "Edit manually (raw disable_functions)",
+    "commaSeparated": "Comma-separated function names.",
+    "groups": {
+      "shellExecution": "Shell Execution",
+      "fileExecution": "File Execution",
+      "networkAccess": "Network Access (Risky)",
+      "systemDiscovery": "System Discovery",
+      "moduleLoading": "Module Loading"
+    }
+  },
+  "additional": {
+    "descPre": "Define additional parameters using php.ini syntax. Example: "
+  },
+  "save": {
+    "saving": "Saving…",
+    "saveAndApply": "Save and Apply",
+    "cancelReload": "Cancel / Reload"
+  },
+  "select": {
+    "custom": "Custom…"
+  },
+  "flag": {
+    "on": "✓ On",
+    "off": "○ Off"
+  }
+}

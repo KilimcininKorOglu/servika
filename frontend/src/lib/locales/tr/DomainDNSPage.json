@@ -1,0 +1,159 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "dnsSettings": "DNS Ayarları"
+  },
+  "title": "DNS Ayarları",
+  "ipLabel": "IP:",
+  "authoritative": {
+    "label": "Yetkili DNS:",
+    "pre": " Bu kayıtları BIND yayınlar. Alan adını şuraya yönlendirin: ",
+    "mid": " ve ",
+    "post": "."
+  },
+  "loading": "Yükleniyor...",
+  "recordCount": "{{count}} kayıt",
+  "valueHint": {
+    "A": "IPv4 adresi, örneğin 203.0.113.10",
+    "AAAA": "IPv6 adresi, örneğin 2a01:4f8:1c1c::1",
+    "CNAME": "Hedef alan adı, örneğin target.example.com",
+    "MX": "Posta sunucusu, örneğin mail.example.com (öncelik ayrı olarak ayarlanır)",
+    "TXT": "Serbest metin, örneğin v=spf1 mx ~all",
+    "NS": "Ad sunucusu, örneğin ns1.example.com",
+    "SRV": "weight port target, örneğin 5 5060 sip.example.com (öncelik ayrı olarak ayarlanır)",
+    "CAA": "flags tag \"value\", örneğin 0 issue \"letsencrypt.org\"",
+    "PTR": "Hedef alan adı, örneğin host.example.com",
+    "DS": "keytag algorithm digest-type digest, örneğin 12345 13 2 49FD46E6C4B45C55D4AC...",
+    "TLSA": "usage selector matching-type data, örneğin 3 1 1 0B9FA5A59EED715C26C1020C...",
+    "SSHFP": "algorithm type fingerprint, örneğin 4 2 123456789ABCDEF...",
+    "NAPTR": "order preference \"flags\" \"service\" \"regexp\" replacement"
+  },
+  "soa": {
+    "title": "SOA Ayarları",
+    "titleHint": "(yetki, refresh, retry, expire ve TTL)",
+    "hide": "▲ Gizle",
+    "edit": "▼ Düzenle",
+    "primaryNs": "Birincil NS",
+    "hostmasterEmail": "Hostmaster E-postası",
+    "fields": {
+      "refresh": "refresh",
+      "retry": "retry",
+      "expire": "expire",
+      "minimum": "minimum",
+      "ttl": "ttl"
+    },
+    "save": "SOA Kaydet",
+    "saved": "SOA ayarları kaydedildi",
+    "saveFailed": "SOA ayarları kaydedilemedi"
+  },
+  "dnssec": {
+    "title": "DNSSEC",
+    "signed": "İmzalı",
+    "signing": "İmzalanıyor...",
+    "disabled": "Devre dışı",
+    "description": "Bu bölgeyi BIND satır içi imzalama ile imzalar. Oluşturulan DS kaydını alan adı kayıt kuruluşunuza ekleyin.",
+    "refreshStatus": "Durumu yenile",
+    "disable": "Devre dışı bırak",
+    "enabling": "Etkinleştiriliyor...",
+    "enable": "Etkinleştir",
+    "dsForRegistrar": "Kayıt kuruluşunuz için DS kaydı",
+    "copied": "Kopyalandı",
+    "copy": "Kopyala",
+    "dsHint": "Bu DS kaydını kayıt kuruluşunuzun DNSSEC ayarlarına ekleyin. Yayılma, kayıt TTL süresine kadar sürebilir.",
+    "signingInProgress": "İmzalama hâlâ devam ediyor. Birkaç saniye sonra durumu yenileyin.",
+    "enabledMsg": "DNSSEC etkinleştirildi. Aşağıdaki DS kaydını alan adı kayıt kuruluşunuza ekleyin.",
+    "disabledMsg": "DNSSEC devre dışı bırakıldı.",
+    "updateFailed": "DNSSEC güncellenemedi",
+    "refreshFailed": "DNSSEC durumu yenilenemedi"
+  },
+  "actions": {
+    "newRecord": "Yeni Kayıt",
+    "applyTemplate": "📋 Varsayılan Şablonu Uygula",
+    "applyTemplateTitle": "Varsayılan A/MX/TXT/NS kayıtlarını ekler (bir kez uygulanır)",
+    "refresh": "↻ Yenile",
+    "export": "⬇ Dışa Aktar",
+    "exportTitle": "DNS kayıtlarını BIND bölge dosyası olarak indir",
+    "import": "⬆ İçe Aktar",
+    "importTitle": "Bir BIND bölge dosyası yükle"
+  },
+  "import": {
+    "title": "Bölge Dosyasını İçe Aktar",
+    "description": "Standart bir BIND bölge dosyası (.zone / .txt) yükleyin. Kayıtlar bu alan adına aktarılır, ardından bölge doğrulanır ve yeniden yazılır.",
+    "overwriteLabel": "Mevcut kayıtların üzerine yaz — işaretlenmediğinde kayıtlar birleştirilir (yeniler eklenir)",
+    "replaceWarning": "⚠️ Bu alan adının TÜM mevcut DNS kayıtları silinir ve dosyadakilerle değiştirilir. Önce bir yedek dışa aktarmanız önerilir.",
+    "cancel": "İptal",
+    "importing": "İçe aktarılıyor…",
+    "import": "İçe Aktar",
+    "complete": "İçe aktarma tamamlandı — {{added}} eklendi, {{skipped}} atlandı ({{mode}})",
+    "completeWarning": "İçe aktarma tamamlandı — {{added}} eklendi, {{skipped}} atlandı ({{mode}}) · {{warning}}",
+    "failed": "İçe aktarma başarısız"
+  },
+  "exportFailed": "Dışa aktarma başarısız",
+  "bulk": {
+    "selected": "{{count}} kayıt seçildi",
+    "enable": "Etkinleştir",
+    "disable": "Devre dışı bırak",
+    "deleteSelected": "Seçilenleri Sil ({{count}})",
+    "clearSelection": "Seçimi Temizle",
+    "deleted": "{{count}} kayıt silindi",
+    "updated": "{{count}} kayıt güncellendi",
+    "deleteFailed": "Toplu silme başarısız",
+    "updateFailed": "Toplu güncelleme başarısız"
+  },
+  "table": {
+    "selectAll": "Tümünü seç",
+    "select": "{{name}} {{type}} seç",
+    "name": "Ad",
+    "type": "Tür",
+    "value": "Değer",
+    "ttl": "TTL",
+    "priority": "Öncelik",
+    "status": "Durum",
+    "actions": "İşlemler",
+    "selectLabel": "Seç",
+    "noPriority": "Yok",
+    "active": "Etkin",
+    "disabled": "Devre dışı",
+    "edit": "Düzenle",
+    "delete": "Sil"
+  },
+  "empty": {
+    "text": "Henüz DNS kaydı yok.",
+    "applyTemplate": "Varsayılan Şablonu Uygula"
+  },
+  "templateAdded": "{{count}} varsayılan kayıt eklendi",
+  "templateFailed": "Şablon uygulanamadı",
+  "delete": {
+    "title": "DNS kaydını sil",
+    "message": "\"{{name}} {{type}} {{value}}\" silinsin mi?",
+    "confirm": "Evet, sil",
+    "failed": "Silme başarısız"
+  },
+  "bulkDelete": {
+    "title": "Seçili DNS kayıtlarını sil",
+    "message": "{{count}} DNS kaydı kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?",
+    "confirm": "Evet, {{count}} kaydı sil"
+  },
+  "dnssecDisable": {
+    "title": "DNSSEC'i devre dışı bırak",
+    "message": "DNSSEC'i devre dışı bırakmadan önce, alan adı kayıt kuruluşunuzdaki DS kaydını kaldırın ve TTL süresini bekleyin. Aksi hâlde alan adı SERVFAIL ile çözülmeyi durdurabilir. Yalnızca DS kaydı kaldırıldıktan sonra devam edin.",
+    "confirm": "DS kaldırıldı, DNSSEC'i devre dışı bırak"
+  },
+  "modal": {
+    "newTitle": "Yeni DNS Kaydı",
+    "editTitle": "DNS Kaydını Düzenle",
+    "nameLabel": "Ad (alt alan adı)",
+    "nameHint": "“@” kök alan adıdır. Diğer örnekler arasında “www” ve “mail” bulunur.",
+    "typeLabel": "Tür",
+    "valueLabel": "Değer",
+    "ttlLabel": "TTL (sn)",
+    "priorityLabel": "Öncelik",
+    "active": "Etkin",
+    "cancel": "İptal",
+    "saving": "Kaydediliyor...",
+    "create": "Oluştur",
+    "update": "Güncelle",
+    "saveFailed": "Kayıt kaydedilemedi"
+  }
+}

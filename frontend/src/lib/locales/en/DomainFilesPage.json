@@ -1,0 +1,153 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "files": "Files"
+  },
+  "title": "File Manager",
+  "loading": "Loading...",
+  "dropZone": {
+    "title": "Drop files here",
+    "targetDir": "Target directory: "
+  },
+  "selection": {
+    "count": "{{count}} items selected",
+    "rightClick": "Right-click for actions",
+    "delete": "Delete ({{count}})",
+    "clear": "Clear selection"
+  },
+  "upload": {
+    "uploading": "Uploading...",
+    "remaining": "Remaining: {{eta}}"
+  },
+  "menu": {
+    "uploadFiles": "📤 Upload Files",
+    "newFolder": "📁 New Folder",
+    "newFile": "📄 New File"
+  },
+  "toolbar": {
+    "refresh": "↻ Refresh",
+    "delete": "Delete ({{count}})",
+    "searchPlaceholder": "🔍 Search files...",
+    "itemCount": "{{count}} items"
+  },
+  "columns": {
+    "select": "Select",
+    "name": "Name",
+    "size": "Size",
+    "permissions": "Permissions",
+    "modified": "Modified",
+    "actions": "Actions"
+  },
+  "parentFolder": "↑ parent folder",
+  "empty": "This folder is empty",
+  "actionsTitle": "Actions",
+  "context": {
+    "open": "Open",
+    "browse": "Open in Browser",
+    "edit": "Edit",
+    "download": "Download",
+    "rename": "Rename",
+    "permissions": "Permissions",
+    "calculateSize": "Calculate Size",
+    "extract": "Extract Archive",
+    "copy": "Copy",
+    "move": "Move",
+    "delete": "Delete"
+  },
+  "prompt": {
+    "deleteConfirm": "Delete \"{{name}}\"? This action cannot be undone.",
+    "newFolderName": "New folder name:"
+  },
+  "sizeModal": {
+    "title": "📏 Size Information",
+    "bytes": "{{bytes}} bytes",
+    "done": "Done"
+  },
+  "bulkDelete": {
+    "title": "⚠ Bulk Delete",
+    "messageBold": "{{count}}",
+    "messagePost": " items will be permanently deleted. Folders and all their contents will be removed.",
+    "moreItems": "+ {{count}} more...",
+    "cancel": "Cancel",
+    "confirm": "Yes, Delete"
+  },
+  "renameModal": {
+    "title": "Rename",
+    "cancel": "Cancel",
+    "rename": "Rename"
+  },
+  "chmodModal": {
+    "title": "Permissions",
+    "owner": "Owner",
+    "group": "Group",
+    "other": "Other",
+    "read": "Read",
+    "write": "Write",
+    "execute": "Execute",
+    "octal": "Octal: ",
+    "cancel": "Cancel",
+    "apply": "Apply"
+  },
+  "copyMoveModal": {
+    "titleCopy": "Copy",
+    "titleMove": "Move",
+    "heading": "{{title}} ({{count}} items)",
+    "moreItems": "+ {{count}} more...",
+    "targetLabel": "Target directory (under home)",
+    "targetPlaceholder": "/public_html/backups",
+    "hintPre": "The target must already exist. ",
+    "hintCopy": "Folders are copied with their contents.",
+    "hintMove": "Moves on the same disk are immediate.",
+    "cancel": "Cancel"
+  },
+  "archiveModal": {
+    "title": "📦 Add to Archive ({{count}} items)",
+    "fileName": "File name",
+    "format": "Format",
+    "output": "Output: ",
+    "cancel": "Cancel",
+    "archive": "Archive"
+  },
+  "newFileModal": {
+    "title": "📄 New File",
+    "fileNameLabel": "File name (including extension)",
+    "hint": "An empty file is created, then opened in the code editor.",
+    "cancel": "Cancel",
+    "createAndEdit": "Create and Edit"
+  },
+  "eta": {
+    "lessThanSec": "<1 sec",
+    "sec": "{{count}} sec",
+    "minSec": "{{min}} min {{sec}} sec",
+    "hrMin": "{{hr}} hr {{min}} min"
+  },
+  "toast": {
+    "uploadPartial": "{{success}}/{{total}} files uploaded, some failed.",
+    "deletePartial": "{{success}}/{{total}} items deleted.",
+    "someErrors": "Some errors: {{errors}}",
+    "downloadFailed": "Download failed: {{message}}"
+  },
+  "errors": {
+    "deleteFailed": "Deletion failed",
+    "createFolderFailed": "Could not create folder",
+    "openFailed": "Could not open",
+    "saveFailed": "Could not save",
+    "renameFailed": "Could not rename",
+    "chmodFailed": "Could not change permissions",
+    "extractFailed": "Could not open archive. ZIP, RAR, and TAR archives are supported.",
+    "searchFailed": "Search failed",
+    "copyFailed": "Copy failed",
+    "moveFailed": "Move failed",
+    "archiveFailed": "Archiving failed",
+    "createFailed": "Creation failed",
+    "sizeFailed": "Size calculation failed"
+  },
+  "newFile": {
+    "title": "📄 New File",
+    "label": "File name (including extension)",
+    "hint": "An empty file is created, then opened in the code editor.",
+    "cancel": "Cancel",
+    "create": "Create and Edit"
+  }
+}

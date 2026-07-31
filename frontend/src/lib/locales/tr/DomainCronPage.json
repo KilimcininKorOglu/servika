@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "scheduledTasks": "Zamanlanmış Görevler"
+  },
+  "title": "Zamanlanmış Görevler",
+  "presets": {
+    "everyMinute": "Her dakika",
+    "everyHour": "Her saat",
+    "dailyAt3": "Her gün 03:00'te",
+    "mondayAt9": "Pazartesi 09:00'da",
+    "every5Minutes": "Her 5 dakikada",
+    "every15Minutes": "Her 15 dakikada",
+    "firstOfMonth": "Ayın ilk günü 00:00'da"
+  },
+  "actions": {
+    "add": "Görev Ekle",
+    "refresh": "↻ Yenile"
+  },
+  "count": "{{count}} görev",
+  "loading": "Yükleniyor...",
+  "empty": "Henüz görev yok. Yukarıdan bir tane ekleyin.",
+  "columns": {
+    "min": "Dk",
+    "hour": "Saat",
+    "day": "Gün",
+    "month": "Ay",
+    "weekday": "Hafta günü",
+    "command": "Komut / Açıklama",
+    "action": "İşlem"
+  },
+  "row": {
+    "delete": "Sil"
+  },
+  "confirmDelete": "\"{{command}}...\" görevi silinsin mi?",
+  "errors": {
+    "deleteFailed": "Silme başarısız oldu",
+    "addFailed": "Öğe eklenemedi"
+  },
+  "modal": {
+    "title": "Yeni Zamanlanmış Görev",
+    "presetsLabel": "Hazır ayarlar",
+    "fields": {
+      "minute": "Dakika",
+      "hour": "Saat",
+      "day": "Gün",
+      "month": "Ay",
+      "weekday": "Hafta günü"
+    },
+    "cronHint": "Cron biçimi:",
+    "cronHintPost": " herhangi bir değer,",
+    "cronEvery": " her beş,",
+    "cronList": " liste,",
+    "cronRange": " aralık.",
+    "commandLabel": "Komut",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "Açıklama (isteğe bağlı)",
+    "descriptionPlaceholder": "örn. gece yedekleme betiği",
+    "cancel": "İptal",
+    "adding": "Ekleniyor...",
+    "addTask": "Görev Ekle"
+  }
+}

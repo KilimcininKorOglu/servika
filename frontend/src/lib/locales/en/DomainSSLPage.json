@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "sslCertificates": "SSL/TLS Certificates"
+  },
+  "title": "SSL/TLS Certificates",
+  "ipLabel": "IP:",
+  "confirm": {
+    "letsencrypt": "The domain must point to this server with a DNS A record before a Let's Encrypt certificate can be issued. Continue?",
+    "disable": "Remove SSL? The site will switch back to HTTP."
+  },
+  "success": {
+    "installed": "Certificate installed ({{type}}). Expires: {{expires}}. The site now uses HTTPS.",
+    "removed": "SSL removed. The site now uses HTTP."
+  },
+  "errors": {
+    "installFailed": "SSL installation failed",
+    "removeFailed": "Failed to remove SSL"
+  },
+  "status": {
+    "title": "Current Status",
+    "protected": "Protected",
+    "unprotected": "Unprotected",
+    "loading": "Loading…",
+    "sourceLabel": "Source",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "Self-signed",
+    "expiryLabel": "Expiry",
+    "certPathLabel": "Certificate path",
+    "keyPathLabel": "Key path",
+    "empty": "—",
+    "remove": "Remove SSL (switch to HTTP)",
+    "noCert": "There is no active SSL certificate for this domain. Install one below."
+  },
+  "selfSigned": {
+    "title": "Self-Signed Certificate",
+    "description": "Creates a self-signed certificate on the server. Browsers display a warning, but the connection is encrypted. Suitable for test and development environments.",
+    "bullet1": "✓ No DNS dependency",
+    "bullet2": "✓ Installs immediately",
+    "bullet3": "✗ Browser displays a security warning",
+    "installing": "Installing…",
+    "install": "Install Self-Signed Certificate"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (Free)",
+    "description": "An official Let's Encrypt certificate trusted by all browsers. It renews automatically every 90 days.",
+    "bullet1": "✓ Trusted by browsers",
+    "bullet2": "✓ Automatic renewal (cron)",
+    "bullet3": "⚠ The domain must point to this server via DNS",
+    "installing": "Installing…",
+    "install": "Get Let's Encrypt Certificate"
+  }
+}

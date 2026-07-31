@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "scheduledTasks": "Scheduled Tasks"
+  },
+  "title": "Scheduled Tasks",
+  "presets": {
+    "everyMinute": "Every minute",
+    "everyHour": "Every hour",
+    "dailyAt3": "Daily at 03:00",
+    "mondayAt9": "Monday at 09:00",
+    "every5Minutes": "Every 5 minutes",
+    "every15Minutes": "Every 15 minutes",
+    "firstOfMonth": "First day of the month at 00:00"
+  },
+  "actions": {
+    "add": "Add Task",
+    "refresh": "↻ Refresh"
+  },
+  "count": "{{count}} tasks",
+  "loading": "Loading...",
+  "empty": "No tasks yet. Add one above.",
+  "columns": {
+    "min": "Min",
+    "hour": "Hour",
+    "day": "Day",
+    "month": "Month",
+    "weekday": "Weekday",
+    "command": "Command / Description",
+    "action": "Action"
+  },
+  "row": {
+    "delete": "Delete"
+  },
+  "confirmDelete": "Delete the task \"{{command}}...\"?",
+  "errors": {
+    "deleteFailed": "Deletion failed",
+    "addFailed": "Could not add item"
+  },
+  "modal": {
+    "title": "New Scheduled Task",
+    "presetsLabel": "Presets",
+    "fields": {
+      "minute": "Minute",
+      "hour": "Hour",
+      "day": "Day",
+      "month": "Month",
+      "weekday": "Weekday"
+    },
+    "cronHint": "Cron format:",
+    "cronHintPost": " any value,",
+    "cronEvery": " every five,",
+    "cronList": " list,",
+    "cronRange": " range.",
+    "commandLabel": "Command",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "Description (optional)",
+    "descriptionPlaceholder": "e.g. nightly backup script",
+    "cancel": "Cancel",
+    "adding": "Adding...",
+    "addTask": "Add Task"
+  }
+}

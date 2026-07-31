@@ -1,0 +1,153 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "files": "Dosyalar"
+  },
+  "title": "Dosya Yöneticisi",
+  "loading": "Yükleniyor...",
+  "dropZone": {
+    "title": "Dosyaları buraya bırakın",
+    "targetDir": "Hedef dizin: "
+  },
+  "selection": {
+    "count": "{{count}} öğe seçildi",
+    "rightClick": "İşlemler için sağ tıklayın",
+    "delete": "Sil ({{count}})",
+    "clear": "Seçimi temizle"
+  },
+  "upload": {
+    "uploading": "Yükleniyor...",
+    "remaining": "Kalan: {{eta}}"
+  },
+  "menu": {
+    "uploadFiles": "📤 Dosya Yükle",
+    "newFolder": "📁 Yeni Klasör",
+    "newFile": "📄 Yeni Dosya"
+  },
+  "toolbar": {
+    "refresh": "↻ Yenile",
+    "delete": "Sil ({{count}})",
+    "searchPlaceholder": "🔍 Dosya ara...",
+    "itemCount": "{{count}} öğe"
+  },
+  "columns": {
+    "select": "Seç",
+    "name": "Ad",
+    "size": "Boyut",
+    "permissions": "İzinler",
+    "modified": "Değiştirilme",
+    "actions": "İşlemler"
+  },
+  "parentFolder": "↑ üst klasör",
+  "empty": "Bu klasör boş",
+  "actionsTitle": "İşlemler",
+  "context": {
+    "open": "Aç",
+    "browse": "Tarayıcıda Aç",
+    "edit": "Düzenle",
+    "download": "İndir",
+    "rename": "Yeniden Adlandır",
+    "permissions": "İzinler",
+    "calculateSize": "Boyutu Hesapla",
+    "extract": "Arşivi Çıkart",
+    "copy": "Kopyala",
+    "move": "Taşı",
+    "delete": "Sil"
+  },
+  "prompt": {
+    "deleteConfirm": "\"{{name}}\" silinsin mi? Bu işlem geri alınamaz.",
+    "newFolderName": "Yeni klasör adı:"
+  },
+  "sizeModal": {
+    "title": "📏 Boyut Bilgisi",
+    "bytes": "{{bytes}} bayt",
+    "done": "Tamam"
+  },
+  "bulkDelete": {
+    "title": "⚠ Toplu Silme",
+    "messageBold": "{{count}}",
+    "messagePost": " öğe kalıcı olarak silinecek. Klasörler ve içindeki tüm dosyalar kaldırılacak.",
+    "moreItems": "+ {{count}} daha...",
+    "cancel": "İptal",
+    "confirm": "Evet, Sil"
+  },
+  "renameModal": {
+    "title": "Yeniden Adlandır",
+    "cancel": "İptal",
+    "rename": "Yeniden Adlandır"
+  },
+  "chmodModal": {
+    "title": "İzinler",
+    "owner": "Sahip",
+    "group": "Grup",
+    "other": "Diğer",
+    "read": "Okuma",
+    "write": "Yazma",
+    "execute": "Çalıştırma",
+    "octal": "Octal: ",
+    "cancel": "İptal",
+    "apply": "Uygula"
+  },
+  "copyMoveModal": {
+    "titleCopy": "Kopyala",
+    "titleMove": "Taşı",
+    "heading": "{{title}} ({{count}} öğe)",
+    "moreItems": "+ {{count}} daha...",
+    "targetLabel": "Hedef dizin (ana dizin altında)",
+    "targetPlaceholder": "/public_html/backups",
+    "hintPre": "Hedef zaten mevcut olmalıdır. ",
+    "hintCopy": "Klasörler içerikleriyle birlikte kopyalanır.",
+    "hintMove": "Aynı disk üzerindeki taşımalar anında gerçekleşir.",
+    "cancel": "İptal"
+  },
+  "archiveModal": {
+    "title": "📦 Arşive Ekle ({{count}} öğe)",
+    "fileName": "Dosya adı",
+    "format": "Biçim",
+    "output": "Çıktı: ",
+    "cancel": "İptal",
+    "archive": "Arşivle"
+  },
+  "newFileModal": {
+    "title": "📄 Yeni Dosya",
+    "fileNameLabel": "Dosya adı (uzantı dahil)",
+    "hint": "Boş bir dosya oluşturulur ve ardından kod düzenleyicide açılır.",
+    "cancel": "İptal",
+    "createAndEdit": "Oluştur ve Düzenle"
+  },
+  "eta": {
+    "lessThanSec": "<1 sn",
+    "sec": "{{count}} sn",
+    "minSec": "{{min}} dk {{sec}} sn",
+    "hrMin": "{{hr}} sa {{min}} dk"
+  },
+  "toast": {
+    "uploadPartial": "{{success}}/{{total}} dosya yüklendi, bazıları başarısız oldu.",
+    "deletePartial": "{{success}}/{{total}} öğe silindi.",
+    "someErrors": "Bazı hatalar: {{errors}}",
+    "downloadFailed": "İndirme başarısız: {{message}}"
+  },
+  "errors": {
+    "deleteFailed": "Silme başarısız",
+    "createFolderFailed": "Klasör oluşturulamadı",
+    "openFailed": "Açılamadı",
+    "saveFailed": "Kaydedilemedi",
+    "renameFailed": "Yeniden adlandırılamadı",
+    "chmodFailed": "İzinler değiştirilemedi",
+    "extractFailed": "Arşiv açılamadı. ZIP, RAR ve TAR arşivleri desteklenir.",
+    "searchFailed": "Arama başarısız",
+    "copyFailed": "Kopyalama başarısız",
+    "moveFailed": "Taşıma başarısız",
+    "archiveFailed": "Arşivleme başarısız",
+    "createFailed": "Oluşturma başarısız",
+    "sizeFailed": "Boyut hesaplama başarısız"
+  },
+  "newFile": {
+    "title": "📄 Yeni Dosya",
+    "label": "Dosya adı (uzantı dahil)",
+    "hint": "Boş bir dosya oluşturulur, sonra kod düzenleyicide açılır.",
+    "cancel": "İptal",
+    "create": "Oluştur ve Düzenle"
+  }
+}

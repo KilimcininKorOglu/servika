@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
@@ -22,6 +23,7 @@ type DB = {
 }
 
 export default function DomainDatabasesPage() {
+  const { t } = useTranslation('DomainDatabasesPage')
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [databases, setDatabases] = useState<DB[]>([])
@@ -59,7 +61,7 @@ export default function DomainDatabasesPage() {
       form.submit()
       form.remove()
     } catch (e) {
-      alert(apiError(e, 'Could not obtain phpMyAdmin token'))
+      alert(apiError(e, t('errors.pmaToken')))
     }
   }
 
@@ -71,7 +73,7 @@ export default function DomainDatabasesPage() {
   async function remove() {
     if (!databaseToDelete) return
     try { await api.delete(`/databases/${databaseToDelete.id}`); setDatabaseToDelete(null); load() }
-    catch (e) { alert(apiError(e, 'Deletion failed')) }
+    catch (e) { alert(apiError(e, t('errors.deleteFailed'))) }
   }
 
   function copy(d: DB) {
@@ -89,63 +91,63 @@ export default function DomainDatabasesPage() {
   return (
     <div className="w-full px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' },
+        { label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.domains'), href: '/domains' },
         { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },
-        { label: 'Databases' },
+        { label: t('breadcrumb.databases') },
       ]} />
 
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">Databases</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
       {domain && <p className="text-sm text-slate-500 dark:text-slate-500 mb-5"><Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link></p>}
 
       <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center">
-        <button onClick={() => setAddOpen(true)} className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-md">+ New Database</button>
-        <button onClick={load} className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md">↻ Refresh</button>
-        <span className="text-sm text-slate-500 dark:text-slate-500 sm:ml-auto">{databases.length} databases</span>
+        <button onClick={() => setAddOpen(true)} className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-md">{t('actions.new')}</button>
+        <button onClick={load} className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-md">{t('actions.refresh')}</button>
+        <span className="text-sm text-slate-500 dark:text-slate-500 sm:ml-auto">{t('count', { count: databases.length })}</span>
       </div>
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       <div className={responsiveTableContainerClass}>
-        {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading...</div> :
-         databases.length === 0 ? <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-500">No databases yet</div> :
+        {loading ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</div> :
+         databases.length === 0 ? <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-500">{t('empty')}</div> :
         <table className={responsiveTableClass}>
           <thead className={responsiveTableHeadClass}>
             <tr>
-              <th className="text-left px-4 py-2.5">Database</th>
-              <th className="text-left px-4 py-2.5">Username</th>
-              <th className="text-left px-4 py-2.5">Host</th>
-              <th className="text-left px-4 py-2.5">Password</th>
-              <th className="text-left px-4 py-2.5">Created</th>
-              <th className="text-right px-4 py-2.5">Actions</th>
+              <th className="text-left px-4 py-2.5">{t('columns.database')}</th>
+              <th className="text-left px-4 py-2.5">{t('columns.username')}</th>
+              <th className="text-left px-4 py-2.5">{t('columns.host')}</th>
+              <th className="text-left px-4 py-2.5">{t('columns.password')}</th>
+              <th className="text-left px-4 py-2.5">{t('columns.created')}</th>
+              <th className="text-right px-4 py-2.5">{t('columns.actions')}</th>
             </tr>
           </thead>
           <tbody className={responsiveTableBodyClass}>
             {databases.map(d => (
               <tr key={d.id} className={responsiveTableRowClass}>
-                <td data-label="Database" className={responsiveTableCodeCellClass}>{d.db_name}</td>
-                <td data-label="Username" className={responsiveTableCodeCellClass}>{d.db_user}</td>
-                <td data-label="Host" className={responsiveTableCodeCellClass}>{d.db_host}:3306</td>
-                <td data-label="Password" className={responsiveTableCellClass}>
+                <td data-label={t('columns.database')} className={responsiveTableCodeCellClass}>{d.db_name}</td>
+                <td data-label={t('columns.username')} className={responsiveTableCodeCellClass}>{d.db_user}</td>
+                <td data-label={t('columns.host')} className={responsiveTableCodeCellClass}>{d.db_host}:3306</td>
+                <td data-label={t('columns.password')} className={responsiveTableCellClass}>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setPasswordVisibility({ ...passwordVisibility, [d.id]: !passwordVisibility[d.id] })}
                       className="font-mono text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded"
-                      title={passwordVisibility[d.id] ? 'Hide' : 'Show'}
+                      title={passwordVisibility[d.id] ? t('password.hide') : t('password.show')}
                     >
                       {passwordVisibility[d.id] ? d.db_pass : '••••••••'}
                     </button>
                     {passwordVisibility[d.id] && (
-                      <button onClick={() => copy(d)} className="text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-brand-100 dark:bg-brand-900/30 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 rounded" title="Copy">
+                      <button onClick={() => copy(d)} className="text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-brand-100 dark:bg-brand-900/30 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 rounded" title={t('password.copy')}>
                         {copiedValue === d.id ? '✓' : '⧉'}
                       </button>
                     )}
                   </div>
                 </td>
-                <td data-label="Created" className={responsiveTableCellClass}>{d.created_at}</td>
+                <td data-label={t('columns.created')} className={responsiveTableCellClass}>{d.created_at}</td>
                 <td className={responsiveTableActionCellClass}>
-                  <button onClick={() => openPma(d)} className="text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded" title="Open phpMyAdmin in a new tab">🔓 phpMyAdmin</button>
-                  <button onClick={() => setPwResetFor(d)} className="text-sm text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 px-2 py-1 rounded">🔑 Reset Password</button>
-                  <button onClick={() => setDatabaseToDelete(d)} className="text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 px-2 py-1 rounded">Delete</button>
+                  <button onClick={() => openPma(d)} className="text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded" title={t('row.pmaTitle')}>{t('row.pma')}</button>
+                  <button onClick={() => setPwResetFor(d)} className="text-sm text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 px-2 py-1 rounded">{t('row.resetPassword')}</button>
+                  <button onClick={() => setDatabaseToDelete(d)} className="text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/20 px-2 py-1 rounded">{t('row.delete')}</button>
                 </td>
               </tr>
             ))}
@@ -173,10 +175,10 @@ export default function DomainDatabasesPage() {
 
       <ConfirmDialog
         open={!!databaseToDelete}
-        title="Delete database"
-        message={`"${databaseToDelete?.db_name}" database and its user will be permanently deleted. This action cannot be undone.`}
+        title={t('delete.title')}
+        message={t('delete.message', { name: databaseToDelete?.db_name })}
         dangerous
-        confirmText="Yes, delete"
+        confirmText={t('delete.confirm')}
         onConfirm={remove}
         onCancel={() => setDatabaseToDelete(null)}
       />
@@ -206,6 +208,7 @@ type NewDatabaseModalProps = {
 const SUFFIX_RE = /^[a-z0-9_]{1,32}$/
 
 function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone }: NewDatabaseModalProps) {
+  const { t } = useTranslation('DomainDatabasesPage')
   const prefix = systemUser + '_'
   const [auto, setAuto] = useState(true)
   const [dbSuffix, setDbSuffix] = useState('')
@@ -224,14 +227,14 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
 
   function localValidate(): string | null {
     if (auto) return null
-    if (!SUFFIX_RE.test(dbSuffix)) return 'Database suffix: lowercase letters, digits, underscore only; 1-32 characters'
-    if ((prefix + dbSuffix).length > 64) return 'Database name too long (prefix + suffix must be at most 64 characters)'
+    if (!SUFFIX_RE.test(dbSuffix)) return t('newModal.errors.dbSuffix')
+    if ((prefix + dbSuffix).length > 64) return t('newModal.errors.dbNameTooLong')
     if (userMode === 'new') {
-      if (!SUFFIX_RE.test(userSuffix)) return 'User suffix: lowercase letters, digits, underscore only; 1-32 characters'
-      if ((prefix + userSuffix).length > 64) return 'User name too long (prefix + suffix must be at most 64 characters)'
-      if (password !== '' && passwordStrengthIssue) return 'Password must be at least 12 characters with letters and digits'
+      if (!SUFFIX_RE.test(userSuffix)) return t('newModal.errors.userSuffix')
+      if ((prefix + userSuffix).length > 64) return t('newModal.errors.userNameTooLong')
+      if (password !== '' && passwordStrengthIssue) return t('newModal.errors.passwordStrength')
     } else {
-      if (!existingUser) return 'Select an existing user'
+      if (!existingUser) return t('newModal.errors.selectExisting')
     }
     return null
   }
@@ -253,7 +256,7 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
       const { data } = await api.post(`/domains/${domainId}/databases`, body)
       setResult({ db_name: data.db_name, db_user: data.db_user, db_pass: data.db_pass })
     } catch (e) {
-      setError(apiError(e, 'Creation failed'))
+      setError(apiError(e, t('newModal.errors.createFailed')))
     } finally {
       setProcessing(false)
     }
@@ -262,18 +265,18 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
   const inputCls = 'w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-md text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none disabled:opacity-50'
 
   return (
-    <Modal open={true} title="New Database" onClose={result ? onDone : onClose} width="lg">
+    <Modal open={true} title={t('newModal.title')} onClose={result ? onDone : onClose} width="lg">
       {result ? (
         <div className="space-y-4">
           <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md p-4 space-y-3">
-            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium">✓ Database created</p>
-            <p className="text-xs text-emerald-700 dark:text-emerald-300">Save these in a secure place. You may not be able to view the password in plain text later:</p>
-            <ResultRow label="Database" value={result.db_name} />
-            <ResultRow label="User" value={result.db_user} />
-            <ResultRow label="Password" value={result.db_pass} />
+            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium">{t('newModal.created')}</p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-300">{t('newModal.saveHint')}</p>
+            <ResultRow label={t('newModal.labelDatabase')} value={result.db_name} />
+            <ResultRow label={t('newModal.labelUser')} value={result.db_user} />
+            <ResultRow label={t('newModal.labelPassword')} value={result.db_pass} />
           </div>
           <div className="flex justify-end">
-            <button onClick={onDone} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded-md">Done</button>
+            <button onClick={onDone} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded-md">{t('newModal.done')}</button>
           </div>
         </div>
       ) : (
@@ -281,31 +284,31 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} className="h-4 w-4 accent-brand-600" />
             <span className="text-sm text-slate-700 dark:text-slate-300">
-              <strong className="font-medium">Automatic</strong>, let the panel generate the database name, user, and password
+              <strong className="font-medium">{t('newModal.autoPre')}</strong>{t('newModal.autoPost')}
             </span>
           </label>
 
           {!auto && (
             <div className="space-y-5 pt-1">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Database name</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('newModal.dbNameLabel')}</label>
                 <div className="flex items-stretch">
                   <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-mono select-none">{prefix}</span>
-                  <input value={dbSuffix} onChange={e => setDbSuffix(e.target.value.toLowerCase())} placeholder="blog" className={inputCls + ' rounded-l-none'} />
+                  <input value={dbSuffix} onChange={e => setDbSuffix(e.target.value.toLowerCase())} placeholder={t('newModal.dbSuffixPlaceholder')} className={inputCls + ' rounded-l-none'} />
                 </div>
                 <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-mono">{dbNamePreview}</p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Database user</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">{t('newModal.dbUserLabel')}</label>
                 <div className="flex gap-4 mb-2">
                   <label className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                     <input type="radio" name="userMode" checked={userMode === 'new'} onChange={() => setUserMode('new')} className="accent-brand-600" />
-                    New user
+                    {t('newModal.newUser')}
                   </label>
                   <label className={'flex items-center gap-1.5 text-sm cursor-pointer ' + (existingUsers.length ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600 cursor-not-allowed')}>
                     <input type="radio" name="userMode" disabled={!existingUsers.length} checked={userMode === 'existing'} onChange={() => setUserMode('existing')} className="accent-brand-600" />
-                    Select existing user
+                    {t('newModal.selectExistingUser')}
                   </label>
                 </div>
 
@@ -313,7 +316,7 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
                   <>
                     <div className="flex items-stretch">
                       <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-mono select-none">{prefix}</span>
-                      <input value={userSuffix} onChange={e => setUserSuffix(e.target.value.toLowerCase())} placeholder="bloguser" className={inputCls + ' rounded-l-none'} />
+                      <input value={userSuffix} onChange={e => setUserSuffix(e.target.value.toLowerCase())} placeholder={t('newModal.userSuffixPlaceholder')} className={inputCls + ' rounded-l-none'} />
                     </div>
                     <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-mono">{userPreview}</p>
                   </>
@@ -326,12 +329,12 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
 
               {userMode === 'new' && (
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Password <span className="text-slate-400 dark:text-slate-500">(leave blank to generate one)</span></label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('newModal.passwordLabel')} <span className="text-slate-400 dark:text-slate-500">{t('newModal.passwordOptional')}</span></label>
                   <div className="flex gap-2">
-                    <input type="text" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 12 characters, letters and digits" className={inputCls} />
-                    <button type="button" onClick={() => setPassword(generateStrongPassword())} className="whitespace-nowrap px-3 py-2 bg-white dark:bg-slate-800 border border-brand-600 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 text-sm rounded-md">Generate</button>
+                    <input type="text" value={password} onChange={e => setPassword(e.target.value)} placeholder={t('newModal.passwordPlaceholder')} className={inputCls} />
+                    <button type="button" onClick={() => setPassword(generateStrongPassword())} className="whitespace-nowrap px-3 py-2 bg-white dark:bg-slate-800 border border-brand-600 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 text-sm rounded-md">{t('newModal.generate')}</button>
                   </div>
-                  {passwordStrengthIssue && <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">Password must be at least 12 characters with letters and digits.</p>}
+                  {passwordStrengthIssue && <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">{t('newModal.passwordStrength')}</p>}
                 </div>
               )}
             </div>
@@ -340,8 +343,8 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
           {error && <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-300">{error}</div>}
 
           <div className="flex justify-end gap-2 pt-1">
-            <button onClick={onClose} disabled={processing} className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md text-sm">Cancel</button>
-            <button onClick={create} disabled={processing} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">{processing ? 'Creating...' : 'Create'}</button>
+            <button onClick={onClose} disabled={processing} className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md text-sm">{t('newModal.cancel')}</button>
+            <button onClick={create} disabled={processing} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">{processing ? t('newModal.creating') : t('newModal.create')}</button>
           </div>
         </div>
       )}
@@ -350,17 +353,19 @@ function NewDatabaseModal({ domainId, systemUser, existingUsers, onClose, onDone
 }
 
 function ResultRow({ label, value }: { label: string; value: string }) {
+  const { t } = useTranslation('DomainDatabasesPage')
   const [copied, setCopied] = useState(false)
   return (
     <div className="flex items-center gap-2">
       <span className="w-24 shrink-0 text-xs text-emerald-700 dark:text-emerald-300">{label}</span>
       <code className="flex-1 bg-white dark:bg-slate-800 px-3 py-1.5 font-mono text-sm text-slate-900 dark:text-slate-100 rounded border border-emerald-200 dark:border-emerald-800 break-all">{value}</code>
-      <button onClick={() => { navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500) }} className="px-2.5 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 text-emerald-800 dark:text-emerald-200 text-xs rounded">{copied ? '✓' : 'Copy'}</button>
+      <button onClick={() => { navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500) }} className="px-2.5 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 text-emerald-800 dark:text-emerald-200 text-xs rounded">{copied ? t('resultRow.copied') : t('resultRow.copy')}</button>
     </div>
   )
 }
 
 function PwResetModal({ db, onClose, onDone }: { db: DB; onClose: () => void; onDone: () => void }) {
+  const { t } = useTranslation('DomainDatabasesPage')
   const [customPassword, setCustomPassword] = useState('')
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -368,7 +373,7 @@ function PwResetModal({ db, onClose, onDone }: { db: DB; onClose: () => void; on
 
   async function reset(random: boolean) {
     if (!random && customPassword.length < 6) {
-      setError('Password must be at least 6 characters')
+      setError(t('pwReset.errors.tooShort'))
       return
     }
     setProcessing(true); setError(null)
@@ -377,48 +382,48 @@ function PwResetModal({ db, onClose, onDone }: { db: DB; onClose: () => void; on
       const { data } = await api.put(`/databases/${db.id}/password`, body)
       setNewPassword(data.db_pass)
     } catch (e) {
-      setError(apiError(e, 'Password reset failed'))
+      setError(apiError(e, t('pwReset.errors.resetFailed')))
     } finally {
       setProcessing(false)
     }
   }
 
   return (
-    <Modal open={true} title={`Reset Password: ${db.db_name}`} onClose={newPassword ? onDone : onClose} width="md">
+    <Modal open={true} title={t('pwReset.title', { name: db.db_name })} onClose={newPassword ? onDone : onClose} width="md">
       {!newPassword ? (
         <div className="space-y-4">
           <div className="text-sm text-slate-600 dark:text-slate-400 dark:text-slate-500">
-            <strong className="font-mono">{db.db_user}</strong> user's password is updated in MariaDB and the panel at the same time.
+            <strong className="font-mono">{db.db_user}</strong>{t('pwReset.introPre')}
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Custom password (leave blank to generate one)</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('pwReset.customLabel')}</label>
             <input
               type="text"
               value={customPassword}
               onChange={e => setCustomPassword(e.target.value)}
-              placeholder="At least 6 characters"
+              placeholder={t('pwReset.customPlaceholder')}
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-mono focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none"
             />
           </div>
           {error && <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-300">{error}</div>}
           <div className="flex justify-end gap-2 pt-2">
-            <button onClick={onClose} disabled={processing} className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-md text-sm">Cancel</button>
-            <button onClick={() => reset(false)} disabled={processing || !customPassword} className="px-4 py-2 bg-white dark:bg-slate-800 border border-brand-600 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 disabled:opacity-50 rounded-md text-sm">Use This Password</button>
-            <button onClick={() => reset(true)} disabled={processing} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">{processing ? 'Resetting...' : 'Generate Random Password'}</button>
+            <button onClick={onClose} disabled={processing} className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-md text-sm">{t('pwReset.cancel')}</button>
+            <button onClick={() => reset(false)} disabled={processing || !customPassword} className="px-4 py-2 bg-white dark:bg-slate-800 border border-brand-600 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20 disabled:opacity-50 rounded-md text-sm">{t('pwReset.useThis')}</button>
+            <button onClick={() => reset(true)} disabled={processing} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-md">{processing ? t('pwReset.resetting') : t('pwReset.generateRandom')}</button>
           </div>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md p-4">
-            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium mb-2">✓ Password updated</p>
-            <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-2">Save this in a secure place. You cannot view it again later.</p>
+            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium mb-2">{t('pwReset.updated')}</p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-2">{t('pwReset.saveHint')}</p>
             <div className="flex items-center gap-2">
               <code className="flex-1 bg-white dark:bg-slate-800 px-3 py-2 font-mono text-sm text-slate-900 dark:text-slate-100 rounded border border-emerald-200 dark:border-emerald-800 break-all">{newPassword}</code>
-              <button onClick={() => navigator.clipboard.writeText(newPassword)} className="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 text-emerald-800 dark:text-emerald-200 text-xs rounded">Copy</button>
+              <button onClick={() => navigator.clipboard.writeText(newPassword)} className="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 text-emerald-800 dark:text-emerald-200 text-xs rounded">{t('pwReset.copy')}</button>
             </div>
           </div>
           <div className="flex justify-end">
-            <button onClick={onDone} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded-md">Done</button>
+            <button onClick={onDone} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded-md">{t('pwReset.done')}</button>
           </div>
         </div>
       )}

@@ -1,0 +1,159 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "dnsSettings": "DNS Settings"
+  },
+  "title": "DNS Settings",
+  "ipLabel": "IP:",
+  "authoritative": {
+    "label": "Authoritative DNS:",
+    "pre": " BIND publishes these records. Point the domain to ",
+    "mid": " and ",
+    "post": "."
+  },
+  "loading": "Loading...",
+  "recordCount": "{{count}} records",
+  "valueHint": {
+    "A": "IPv4 address, for example 203.0.113.10",
+    "AAAA": "IPv6 address, for example 2a01:4f8:1c1c::1",
+    "CNAME": "Target domain name, for example target.example.com",
+    "MX": "Mail server, for example mail.example.com (priority is set separately)",
+    "TXT": "Free-form text, for example v=spf1 mx ~all",
+    "NS": "Name server, for example ns1.example.com",
+    "SRV": "weight port target, for example 5 5060 sip.example.com (priority is set separately)",
+    "CAA": "flags tag \"value\", for example 0 issue \"letsencrypt.org\"",
+    "PTR": "Target domain name, for example host.example.com",
+    "DS": "keytag algorithm digest-type digest, for example 12345 13 2 49FD46E6C4B45C55D4AC...",
+    "TLSA": "usage selector matching-type data, for example 3 1 1 0B9FA5A59EED715C26C1020C...",
+    "SSHFP": "algorithm type fingerprint, for example 4 2 123456789ABCDEF...",
+    "NAPTR": "order preference \"flags\" \"service\" \"regexp\" replacement"
+  },
+  "soa": {
+    "title": "SOA Settings",
+    "titleHint": "(authority, refresh, retry, expire, and TTL)",
+    "hide": "▲ Hide",
+    "edit": "▼ Edit",
+    "primaryNs": "Primary NS",
+    "hostmasterEmail": "Hostmaster Email",
+    "fields": {
+      "refresh": "refresh",
+      "retry": "retry",
+      "expire": "expire",
+      "minimum": "minimum",
+      "ttl": "ttl"
+    },
+    "save": "Save SOA",
+    "saved": "SOA settings saved",
+    "saveFailed": "Could not save SOA settings"
+  },
+  "dnssec": {
+    "title": "DNSSEC",
+    "signed": "Signed",
+    "signing": "Signing...",
+    "disabled": "Disabled",
+    "description": "Signs this zone with BIND inline signing. Add the generated DS record at your domain registrar.",
+    "refreshStatus": "Refresh status",
+    "disable": "Disable",
+    "enabling": "Enabling...",
+    "enable": "Enable",
+    "dsForRegistrar": "DS record for your registrar",
+    "copied": "Copied",
+    "copy": "Copy",
+    "dsHint": "Add this DS record in your registrar's DNSSEC settings. Propagation may take up to the record TTL.",
+    "signingInProgress": "Signing is still in progress. Refresh the status after a few seconds.",
+    "enabledMsg": "DNSSEC enabled. Add the DS record below at your domain registrar.",
+    "disabledMsg": "DNSSEC disabled.",
+    "updateFailed": "Could not update DNSSEC",
+    "refreshFailed": "Could not refresh DNSSEC status"
+  },
+  "actions": {
+    "newRecord": "New Record",
+    "applyTemplate": "📋 Apply Default Template",
+    "applyTemplateTitle": "Adds the default A/MX/TXT/NS records (idempotent)",
+    "refresh": "↻ Refresh",
+    "export": "⬇ Export",
+    "exportTitle": "Download the DNS records as a BIND zone file",
+    "import": "⬆ Import",
+    "importTitle": "Upload a BIND zone file"
+  },
+  "import": {
+    "title": "Import Zone File",
+    "description": "Upload a standard BIND zone file (.zone / .txt). Records are imported into this domain, then the zone is validated and rewritten.",
+    "overwriteLabel": "Overwrite existing records — when unchecked, records are merged (new ones added)",
+    "replaceWarning": "⚠️ ALL current DNS records for this domain will be deleted and replaced with the file's. Exporting a backup first is recommended.",
+    "cancel": "Cancel",
+    "importing": "Importing…",
+    "import": "Import",
+    "complete": "Import complete — {{added}} added, {{skipped}} skipped ({{mode}})",
+    "completeWarning": "Import complete — {{added}} added, {{skipped}} skipped ({{mode}}) · {{warning}}",
+    "failed": "Import failed"
+  },
+  "exportFailed": "Export failed",
+  "bulk": {
+    "selected": "{{count}} records selected",
+    "enable": "Enable",
+    "disable": "Disable",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "clearSelection": "Clear Selection",
+    "deleted": "{{count}} records deleted",
+    "updated": "{{count}} records updated",
+    "deleteFailed": "Bulk deletion failed",
+    "updateFailed": "Bulk update failed"
+  },
+  "table": {
+    "selectAll": "Select all",
+    "select": "Select {{name}} {{type}}",
+    "name": "Name",
+    "type": "Type",
+    "value": "Value",
+    "ttl": "TTL",
+    "priority": "Priority",
+    "status": "Status",
+    "actions": "Actions",
+    "selectLabel": "Select",
+    "noPriority": "None",
+    "active": "Active",
+    "disabled": "Disabled",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "empty": {
+    "text": "No DNS records yet.",
+    "applyTemplate": "Apply Default Template"
+  },
+  "templateAdded": "{{count}} default records added",
+  "templateFailed": "Could not apply template",
+  "delete": {
+    "title": "Delete DNS record",
+    "message": "Delete \"{{name}} {{type}} {{value}}\"?",
+    "confirm": "Yes, delete",
+    "failed": "Deletion failed"
+  },
+  "bulkDelete": {
+    "title": "Delete selected DNS records",
+    "message": "{{count}} DNS records will be permanently deleted. This action cannot be undone. Continue?",
+    "confirm": "Yes, delete {{count}} records"
+  },
+  "dnssecDisable": {
+    "title": "Disable DNSSEC",
+    "message": "Remove the DS record at your domain registrar and wait for its TTL before disabling DNSSEC. Otherwise the domain may stop resolving with SERVFAIL. Continue only after the DS record has been removed.",
+    "confirm": "DS removed, disable DNSSEC"
+  },
+  "modal": {
+    "newTitle": "New DNS Record",
+    "editTitle": "Edit DNS Record",
+    "nameLabel": "Name (subdomain)",
+    "nameHint": "“@” is the root domain. Other examples include “www” and “mail”.",
+    "typeLabel": "Type",
+    "valueLabel": "Value",
+    "ttlLabel": "TTL (sec)",
+    "priorityLabel": "Priority",
+    "active": "Active",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "create": "Create",
+    "update": "Update",
+    "saveFailed": "Could not save record"
+  }
+}

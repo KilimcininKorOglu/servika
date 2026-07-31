@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "phpSettings": "PHP Ayarları"
+  },
+  "title": "PHP Ayarları",
+  "systemUser": "Sistem kullanıcısı: ",
+  "poolNotice": {
+    "pre": "Burada yapılandırılan ayarlar PHP-FPM havuzuna yazılır (",
+    "mid1": "). Web sitesinin ",
+    "mid2": " ve ",
+    "post": " dosyaları bunları geçersiz kılabilir. Kaydetme, siteyi çevrimdışı bırakmadan PHP-FPM'i otomatik olarak yeniden başlatır."
+  },
+  "loading": "Yükleniyor…",
+  "saved": "Kaydedildi. PHP {{version}}, soket: {{socket}}",
+  "saveFailed": "Ayarlar kaydedilemedi",
+  "clearLogFailed": "Hata ayıklama günlüğü temizlenemedi",
+  "processManager": {
+    "ondemand": "ondemand (önerilir, boştayken sıfır süreç)",
+    "dynamic": "dynamic (yüke göre ölçeklenir)",
+    "static": "static (sabit havuz)"
+  },
+  "version": {
+    "title": "PHP Sürümü",
+    "active": "Etkin",
+    "saveToApply": "Uygulamak için kaydedin"
+  },
+  "cards": {
+    "performance": "Performans ve Güvenlik",
+    "general": "Genel",
+    "debugMode": "PHP Hata Ayıklama Modu",
+    "lastErrors": "Son Hatalar (Hata Ayıklama Günlüğü)",
+    "fpmPool": "PHP-FPM Havuzu",
+    "installedModules": "Kurulu PHP Modülleri",
+    "disableDangerous": "Tehlikeli İşlevleri Devre Dışı Bırak",
+    "additionalDirectives": "Ek Yapılandırma Yönergeleri"
+  },
+  "help": {
+    "memoryLimit": "Bir betiğin bayt cinsinden ayırabileceği azami bellek. Örnek: 256M.",
+    "maxExecutionTime": "Saniye cinsinden azami çalışma süresi",
+    "maxInputTime": "POST/GET verilerini ayrıştırma süresi (saniye)",
+    "postMaxSize": "Azami POST veri boyutu. upload_max_filesize değerinden büyük olmalıdır.",
+    "uploadMaxFilesize": "Tek dosya yükleme sınırı",
+    "opcacheEnable": "OPcache opcode önbelleği (önerilir: AÇIK)",
+    "disableFunctions": "Devre dışı bırakılacak PHP işlevleri (virgülle ayrılmış)",
+    "displayErrors": "Hataları çıktıda göster (üretimde kapalı tutun)",
+    "logErrors": "Hata günlüğünü etkinleştir",
+    "allowUrlFopen": "HTTP/FTP üzerinden dosya aç",
+    "fileUploads": "HTTP dosya yüklemeleri",
+    "shortOpenTag": "<? ?> kısa etiket desteği",
+    "errorReporting": "Hata raporlama düzeyi (örneğin, E_ALL & ~E_DEPRECATED)",
+    "includePath": "Betik dahil etme dizinleri (Linux'ta : ile ayırın)",
+    "openBasedir": "PHP'nin erişebileceği dizinler (boş, kısıtlama yok demektir). : ile ayırın",
+    "sessionSavePath": "Oturum dosyası dizini (boş, /home/{system_user}/tmp demektir)",
+    "mailForceExtraParameters": "mail() işlevi için ek parametreler",
+    "pm": "Süreç yöneticisi stratejisi",
+    "pmMaxChildren": "Azami eşzamanlı PHP çalışanı",
+    "pmMaxRequests": "Bir çalışanı yeniden başlatmadan önceki istek sayısı (bellek sızıntılarını önler)",
+    "pmStartServers": "Başlangıçta başlatılan çalışanlar (yalnızca dynamic)",
+    "pmMinSpareServers": "Asgari boşta çalışan sayısı",
+    "pmMaxSpareServers": "Azami boşta çalışan sayısı"
+  },
+  "openBasedirPlaceholder": "örneğin: /home/user/:/tmp/",
+  "debug": {
+    "disableTitle": "Hata ayıklama modunu devre dışı bırak",
+    "enableTitle": "Hata ayıklama modunu etkinleştir",
+    "label": "Hata ayıklama modu",
+    "on": "Açık",
+    "off": "Kapalı",
+    "descPre": "Etkinleştirildiğinde, PHP hataları ekranda görüntülenir ve ölümcül hatalar (E_ERROR, E_PARSE, ...) ",
+    "descMid": " ile güvenilir biçimde yakalanır ve şuraya kaydedilir: ",
+    "descPost": ". Uygulama ",
+    "descEnd": " çağırsa bile ölümcül hatalar yakalanır.",
+    "warningLabel": "Uyarı:",
+    "warningPre": " Hata ayıklama modu açıkken, ",
+    "warningBold1": "display_errors = on",
+    "warningMid": " ve ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " zorunlu kılınır; hata ayrıntıları site ziyaretçilerine görünebilir. Yalnızca sorun giderme sırasında etkinleştirin, ",
+    "warningBold3": "üretimde devre dışı bırakın",
+    "warningEnd": ". Değişiklikler ",
+    "warningSave": "Kaydet",
+    "warningDot": " tıklandıktan sonra geçerli olur."
+  },
+  "debugLog": {
+    "sourcePre": "En yeni ölümcül hatalar üstte. Kaynak: ",
+    "sourcePost": " (son 200 satır).",
+    "loading": "Yükleniyor...",
+    "refresh": "Yenile",
+    "clear": "Temizle",
+    "emptyOff": "Hata ayıklama modu kapalı. Ölümcül hataları günlüğe kaydetmeye başlamak için yukarıdan etkinleştirin ve kaydedin.",
+    "emptyOn": "Kayıtlı hata yok. Hata ayıklama günlüğü boş."
+  },
+  "modules": {
+    "countPre": "PHP {{version}} için ",
+    "countBold": "{{count}}",
+    "countPost": " modül kurulu. Modüller sunucu genelinde yönetilir ve tek bir alan adı için etkinleştirilemez veya devre dışı bırakılamaz.",
+    "manageServer": "↗ Sunucu Modüllerini Yönet"
+  },
+  "dangerous": {
+    "descPre": "Bu işlevler kabuk enjeksiyonu, RCE ve kötü amaçlı yazılım riskleri taşır. Kategori anahtarları ",
+    "descMid": " değerini günceller. ",
+    "descBoldOn": "Açık, etkin demektir",
+    "descAnd": " ve ",
+    "descBoldOff": "kapalı, engellenmiş demektir",
+    "descPost": ".",
+    "enableAll": "Tümünü etkinleştir",
+    "blockAll": "Tümünü engelle",
+    "blocked": "Engellendi",
+    "mixed": "Karışık",
+    "active": "Etkin",
+    "editManually": "Elle düzenle (ham disable_functions)",
+    "commaSeparated": "Virgülle ayrılmış işlev adları.",
+    "groups": {
+      "shellExecution": "Kabuk Yürütme",
+      "fileExecution": "Dosya Yürütme",
+      "networkAccess": "Ağ Erişimi (Riskli)",
+      "systemDiscovery": "Sistem Keşfi",
+      "moduleLoading": "Modül Yükleme"
+    }
+  },
+  "additional": {
+    "descPre": "php.ini söz dizimini kullanarak ek parametreler tanımlayın. Örnek: "
+  },
+  "save": {
+    "saving": "Kaydediliyor…",
+    "saveAndApply": "Kaydet ve Uygula",
+    "cancelReload": "İptal / Yeniden Yükle"
+  },
+  "select": {
+    "custom": "Özel…"
+  },
+  "flag": {
+    "on": "✓ Açık",
+    "off": "○ Kapalı"
+  }
+}

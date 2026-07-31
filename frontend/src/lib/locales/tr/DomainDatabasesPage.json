@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "databases": "Veritabanları"
+  },
+  "title": "Veritabanları",
+  "actions": {
+    "new": "+ Yeni Veritabanı",
+    "refresh": "↻ Yenile"
+  },
+  "count": "{{count}} veritabanı",
+  "loading": "Yükleniyor...",
+  "empty": "Henüz veritabanı yok",
+  "columns": {
+    "database": "Veritabanı",
+    "username": "Kullanıcı adı",
+    "host": "Sunucu",
+    "password": "Parola",
+    "created": "Oluşturulma",
+    "actions": "İşlemler"
+  },
+  "password": {
+    "show": "Göster",
+    "hide": "Gizle",
+    "copy": "Kopyala"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "phpMyAdmin'i yeni sekmede aç",
+    "resetPassword": "🔑 Parola Sıfırla",
+    "delete": "Sil"
+  },
+  "errors": {
+    "pmaToken": "phpMyAdmin belirteci alınamadı",
+    "deleteFailed": "Silme başarısız oldu"
+  },
+  "delete": {
+    "title": "Veritabanını sil",
+    "message": "\"{{name}}\" veritabanı ve kullanıcısı kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+    "confirm": "Evet, sil"
+  },
+  "newModal": {
+    "title": "Yeni Veritabanı",
+    "created": "✓ Veritabanı oluşturuldu",
+    "saveHint": "Bunları güvenli bir yerde saklayın. Parolayı sonradan düz metin olarak göremeyebilirsiniz:",
+    "labelDatabase": "Veritabanı",
+    "labelUser": "Kullanıcı",
+    "labelPassword": "Parola",
+    "done": "Tamam",
+    "autoPre": "Otomatik",
+    "autoPost": ", panelin veritabanı adını, kullanıcıyı ve parolayı oluşturmasına izin ver",
+    "dbNameLabel": "Veritabanı adı",
+    "dbSuffixPlaceholder": "blog",
+    "dbUserLabel": "Veritabanı kullanıcısı",
+    "newUser": "Yeni kullanıcı",
+    "selectExistingUser": "Mevcut kullanıcıyı seç",
+    "userSuffixPlaceholder": "bloguser",
+    "passwordLabel": "Parola",
+    "passwordOptional": "(oluşturmak için boş bırakın)",
+    "passwordPlaceholder": "En az 12 karakter, harf ve rakam",
+    "generate": "Oluştur",
+    "passwordStrength": "Parola en az 12 karakter olmalı ve harf ile rakam içermelidir.",
+    "cancel": "İptal",
+    "creating": "Oluşturuluyor...",
+    "create": "Oluştur",
+    "errors": {
+      "dbSuffix": "Veritabanı son eki: yalnızca küçük harf, rakam, alt çizgi; 1-32 karakter",
+      "dbNameTooLong": "Veritabanı adı çok uzun (ön ek + son ek en fazla 64 karakter olmalıdır)",
+      "userSuffix": "Kullanıcı son eki: yalnızca küçük harf, rakam, alt çizgi; 1-32 karakter",
+      "userNameTooLong": "Kullanıcı adı çok uzun (ön ek + son ek en fazla 64 karakter olmalıdır)",
+      "passwordStrength": "Parola en az 12 karakter olmalı ve harf ile rakam içermelidir",
+      "selectExisting": "Mevcut bir kullanıcı seçin",
+      "createFailed": "Oluşturma başarısız oldu"
+    }
+  },
+  "resultRow": {
+    "copied": "✓",
+    "copy": "Kopyala"
+  },
+  "pwReset": {
+    "title": "Parola Sıfırla: {{name}}",
+    "introPre": " kullanıcısının parolası MariaDB ve panelde aynı anda güncellenir.",
+    "customLabel": "Özel parola (oluşturmak için boş bırakın)",
+    "customPlaceholder": "En az 6 karakter",
+    "cancel": "İptal",
+    "useThis": "Bu Parolayı Kullan",
+    "resetting": "Sıfırlanıyor...",
+    "generateRandom": "Rastgele Parola Oluştur",
+    "updated": "✓ Parola güncellendi",
+    "saveHint": "Bunu güvenli bir yerde saklayın. Sonradan tekrar göremezsiniz.",
+    "copy": "Kopyala",
+    "done": "Tamam",
+    "errors": {
+      "tooShort": "Parola en az 6 karakter olmalıdır",
+      "resetFailed": "Parola sıfırlama başarısız oldu"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "sslCertificates": "SSL/TLS Sertifikaları"
+  },
+  "title": "SSL/TLS Sertifikaları",
+  "ipLabel": "IP:",
+  "confirm": {
+    "letsencrypt": "Let's Encrypt sertifikası verilebilmesi için alan adı bir DNS A kaydı ile bu sunucuya yönlendirilmelidir. Devam edilsin mi?",
+    "disable": "SSL kaldırılsın mı? Site tekrar HTTP'ye geçecek."
+  },
+  "success": {
+    "installed": "Sertifika kuruldu ({{type}}). Son kullanma: {{expires}}. Site artık HTTPS kullanıyor.",
+    "removed": "SSL kaldırıldı. Site artık HTTP kullanıyor."
+  },
+  "errors": {
+    "installFailed": "SSL kurulumu başarısız oldu",
+    "removeFailed": "SSL kaldırılamadı"
+  },
+  "status": {
+    "title": "Mevcut Durum",
+    "protected": "Korumalı",
+    "unprotected": "Korumasız",
+    "loading": "Yükleniyor…",
+    "sourceLabel": "Kaynak",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "Kendinden imzalı",
+    "expiryLabel": "Son kullanma",
+    "certPathLabel": "Sertifika yolu",
+    "keyPathLabel": "Anahtar yolu",
+    "empty": "—",
+    "remove": "SSL'i Kaldır (HTTP'ye geç)",
+    "noCert": "Bu alan adı için etkin bir SSL sertifikası yok. Aşağıdan bir tane kurun."
+  },
+  "selfSigned": {
+    "title": "Kendinden İmzalı Sertifika",
+    "description": "Sunucuda kendinden imzalı bir sertifika oluşturur. Tarayıcılar bir uyarı gösterir, ancak bağlantı şifrelenir. Test ve geliştirme ortamları için uygundur.",
+    "bullet1": "✓ DNS bağımlılığı yok",
+    "bullet2": "✓ Anında kurulur",
+    "bullet3": "✗ Tarayıcı güvenlik uyarısı gösterir",
+    "installing": "Kuruluyor…",
+    "install": "Kendinden İmzalı Sertifika Kur"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (Ücretsiz)",
+    "description": "Tüm tarayıcılar tarafından güvenilen resmi bir Let's Encrypt sertifikası. Her 90 günde bir otomatik olarak yenilenir.",
+    "bullet1": "✓ Tarayıcılar tarafından güvenilir",
+    "bullet2": "✓ Otomatik yenileme (cron)",
+    "bullet3": "⚠ Alan adı DNS ile bu sunucuya yönlendirilmelidir",
+    "installing": "Kuruluyor…",
+    "install": "Let's Encrypt Sertifikası Al"
+  }
+}

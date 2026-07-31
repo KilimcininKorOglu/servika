@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "databases": "Databases"
+  },
+  "title": "Databases",
+  "actions": {
+    "new": "+ New Database",
+    "refresh": "↻ Refresh"
+  },
+  "count": "{{count}} databases",
+  "loading": "Loading...",
+  "empty": "No databases yet",
+  "columns": {
+    "database": "Database",
+    "username": "Username",
+    "host": "Host",
+    "password": "Password",
+    "created": "Created",
+    "actions": "Actions"
+  },
+  "password": {
+    "show": "Show",
+    "hide": "Hide",
+    "copy": "Copy"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Open phpMyAdmin in a new tab",
+    "resetPassword": "🔑 Reset Password",
+    "delete": "Delete"
+  },
+  "errors": {
+    "pmaToken": "Could not obtain phpMyAdmin token",
+    "deleteFailed": "Deletion failed"
+  },
+  "delete": {
+    "title": "Delete database",
+    "message": "\"{{name}}\" database and its user will be permanently deleted. This action cannot be undone.",
+    "confirm": "Yes, delete"
+  },
+  "newModal": {
+    "title": "New Database",
+    "created": "✓ Database created",
+    "saveHint": "Save these in a secure place. You may not be able to view the password in plain text later:",
+    "labelDatabase": "Database",
+    "labelUser": "User",
+    "labelPassword": "Password",
+    "done": "Done",
+    "autoPre": "Automatic",
+    "autoPost": ", let the panel generate the database name, user, and password",
+    "dbNameLabel": "Database name",
+    "dbSuffixPlaceholder": "blog",
+    "dbUserLabel": "Database user",
+    "newUser": "New user",
+    "selectExistingUser": "Select existing user",
+    "userSuffixPlaceholder": "bloguser",
+    "passwordLabel": "Password",
+    "passwordOptional": "(leave blank to generate one)",
+    "passwordPlaceholder": "At least 12 characters, letters and digits",
+    "generate": "Generate",
+    "passwordStrength": "Password must be at least 12 characters with letters and digits.",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create": "Create",
+    "errors": {
+      "dbSuffix": "Database suffix: lowercase letters, digits, underscore only; 1-32 characters",
+      "dbNameTooLong": "Database name too long (prefix + suffix must be at most 64 characters)",
+      "userSuffix": "User suffix: lowercase letters, digits, underscore only; 1-32 characters",
+      "userNameTooLong": "User name too long (prefix + suffix must be at most 64 characters)",
+      "passwordStrength": "Password must be at least 12 characters with letters and digits",
+      "selectExisting": "Select an existing user",
+      "createFailed": "Creation failed"
+    }
+  },
+  "resultRow": {
+    "copied": "✓",
+    "copy": "Copy"
+  },
+  "pwReset": {
+    "title": "Reset Password: {{name}}",
+    "introPre": " user's password is updated in MariaDB and the panel at the same time.",
+    "customLabel": "Custom password (leave blank to generate one)",
+    "customPlaceholder": "At least 6 characters",
+    "cancel": "Cancel",
+    "useThis": "Use This Password",
+    "resetting": "Resetting...",
+    "generateRandom": "Generate Random Password",
+    "updated": "✓ Password updated",
+    "saveHint": "Save this in a secure place. You cannot view it again later.",
+    "copy": "Copy",
+    "done": "Done",
+    "errors": {
+      "tooShort": "Password must be at least 6 characters",
+      "resetFailed": "Password reset failed"
+    }
+  }
+}

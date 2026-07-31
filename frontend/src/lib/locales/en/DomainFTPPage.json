@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "ftpAccount": "FTP Account"
+  },
+  "title": "FTP Account",
+  "errors": {
+    "resetFailed": "Password reset failed"
+  },
+  "info": {
+    "host": "Host",
+    "port": "Port",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Username",
+    "homeDir": "Home directory"
+  },
+  "reset": {
+    "title": "Reset Password",
+    "placeholder": "Enter a custom password or leave blank",
+    "setThis": "Set This Password",
+    "generateRandom": "Generate Random Password",
+    "success": "✓ New password set",
+    "saveHint": "Save this in a secure place. You cannot view it again later.",
+    "copy": "Copy"
+  },
+  "note": {
+    "label": "Note:",
+    "pre": " FTP currently uses ",
+    "code": "cleartext",
+    "post": " authentication against the local database. Use SFTP on port 22 for encrypted transport."
+  }
+}

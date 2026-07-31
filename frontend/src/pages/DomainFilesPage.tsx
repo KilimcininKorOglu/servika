@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -39,6 +40,7 @@ const ARCHIVE_RX = /\.(zip|rar|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|gz)$/i
 const ROOT = '/'
 
 export default function DomainFilesPage() {
+  const { t } = useTranslation('DomainFilesPage')
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [path, setPath] = useState<string>('/public_html')
@@ -104,18 +106,18 @@ export default function DomainFilesPage() {
   }
 
   async function remove(e: Entry) {
-    if (!confirm(`Delete "${e.name}"? This action cannot be undone.`)) return
+    if (!confirm(t('prompt.deleteConfirm', { name: e.name }))) return
     try {
       await api.delete(`/domains/${id}/files`, { params: { path: e.path } })
       setTreeRefreshKey(x => x + 1)
       scan()
     } catch (err) {
-      alert(apiError(err, 'Deletion failed'))
+      alert(apiError(err, t('errors.deleteFailed')))
     }
   }
 
   async function createFolder() {
-    const name = prompt('New folder name:')
+    const name = prompt(t('prompt.newFolderName'))
     if (!name) return
     const target = (path === '/' ? '' : path) + '/' + name
     try {
@@ -123,7 +125,7 @@ export default function DomainFilesPage() {
       setTreeRefreshKey(x => x + 1)
       scan()
     } catch (err) {
-      alert(apiError(err, 'Could not create folder'))
+      alert(apiError(err, t('errors.createFolderFailed')))
     }
   }
 
@@ -133,7 +135,7 @@ export default function DomainFilesPage() {
       const { data } = await api.get<{path: string; content: string}>(`/domains/${id}/files/read`, { params: { path: e.path } })
       setEditor({ path: e.path, content: data.content })
     } catch (err) {
-      alert(apiError(err, 'Could not open'))
+      alert(apiError(err, t('errors.openFailed')))
     }
   }
 
@@ -143,7 +145,7 @@ export default function DomainFilesPage() {
       await api.post(`/domains/${id}/files/write`, { path: editor.path, content: editor.content })
       setEditor(null); scan()
     } catch (err) {
-      alert(apiError(err, 'Could not save'))
+      alert(apiError(err, t('errors.saveFailed')))
     }
   }
 
@@ -156,7 +158,7 @@ export default function DomainFilesPage() {
       await api.post(`/domains/${id}/files/rename`, { old: entry.path, new: newPath })
       setRenameFor(null); setTreeRefreshKey(x => x + 1); scan()
     } catch (err) {
-      alert(apiError(err, 'Could not rename'))
+      alert(apiError(err, t('errors.renameFailed')))
     }
   }
 
@@ -165,7 +167,7 @@ export default function DomainFilesPage() {
       await api.post(`/domains/${id}/files/chmod`, { path: e.path, mode })
       setChmodFor(null); scan()
     } catch (err) {
-      alert(apiError(err, 'Could not change permissions'))
+      alert(apiError(err, t('errors.chmodFailed')))
     }
   }
 
@@ -236,7 +238,7 @@ export default function DomainFilesPage() {
     setTreeRefreshKey(x => x + 1)
     scan()
     if (successful < files.length) {
-      alert(`${successful}/${files.length} files uploaded, some failed.`)
+      alert(t('toast.uploadPartial', { success: successful, total: files.length }))
     }
   }
 
@@ -268,7 +270,7 @@ export default function DomainFilesPage() {
     setSelectedPaths(new Set())
     setTreeRefreshKey(x => x + 1)
     scan()
-    if (successful < paths.length) alert(`${successful}/${paths.length} items deleted.`)
+    if (successful < paths.length) alert(t('toast.deletePartial', { success: successful, total: paths.length }))
   }
 
   async function extract(e: Entry) {
@@ -278,7 +280,7 @@ export default function DomainFilesPage() {
       setTreeRefreshKey(x => x + 1)
       scan()
     } catch (err) {
-      alert(apiError(err, 'Could not open archive. ZIP, RAR, and TAR archives are supported.'))
+      alert(apiError(err, t('errors.extractFailed')))
     } finally {
       setExtractActive(false)
     }
@@ -290,7 +292,7 @@ export default function DomainFilesPage() {
       const { data } = await api.get(`/domains/${id}/files/search`, { params: { q: searchQuery, path } })
       setSearchResults(data.content)
     } catch (err) {
-      alert(apiError(err, 'Search failed'))
+      alert(apiError(err, t('errors.searchFailed')))
     }
   }
 
@@ -334,35 +336,35 @@ export default function DomainFilesPage() {
 
     if (!multi) {
       if (e.type === 'folder') {
-        items.push({ key: 'open', label: 'Open', icon: '📂', onClick: closeAfter(() => navigateTo(e.path)) })
+        items.push({ key: 'open', label: t('context.open'), icon: '📂', onClick: closeAfter(() => navigateTo(e.path)) })
       } else {
         if (docrootRelativePath(e.path) !== null)
-          items.push({ key: 'browse', label: 'Open in Browser', icon: '🌐', onClick: closeAfter(() => openInBrowser(e)) })
-        items.push({ key: 'edit', label: 'Edit', icon: '✏️', onClick: closeAfter(() => openEditor(e)) })
+          items.push({ key: 'browse', label: t('context.browse'), icon: '🌐', onClick: closeAfter(() => openInBrowser(e)) })
+        items.push({ key: 'edit', label: t('context.edit'), icon: '✏️', onClick: closeAfter(() => openEditor(e)) })
       }
     }
 
-    items.push({ key: 'download', label: 'Download', icon: '⬇️', onClick: closeAfter(() => download(e)) })
+    items.push({ key: 'download', label: t('context.download'), icon: '⬇️', onClick: closeAfter(() => download(e)) })
     items.push({ separator: true, key: 's1' })
-    items.push({ key: 'rename', label: 'Rename', icon: '✏️', onClick: closeAfter(() => setRenameFor(e)) })
-    items.push({ key: 'perms', label: 'Permissions', icon: '🔒', onClick: closeAfter(() => setChmodFor(e)) })
-    items.push({ key: 'size', label: 'Calculate Size', icon: '📏', onClick: closeAfter(() => calculateSize(e.path)) })
+    items.push({ key: 'rename', label: t('context.rename'), icon: '✏️', onClick: closeAfter(() => setRenameFor(e)) })
+    items.push({ key: 'perms', label: t('context.permissions'), icon: '🔒', onClick: closeAfter(() => setChmodFor(e)) })
+    items.push({ key: 'size', label: t('context.calculateSize'), icon: '📏', onClick: closeAfter(() => calculateSize(e.path)) })
 
     if (e.type !== 'folder' && ARCHIVE_RX.test(e.name)) {
-      items.push({ key: 'extract', label: 'Extract Archive', icon: '📦', onClick: closeAfter(() => extract(e)) })
+      items.push({ key: 'extract', label: t('context.extract'), icon: '📦', onClick: closeAfter(() => extract(e)) })
     }
 
     items.push({ separator: true, key: 's2' })
-    items.push({ key: 'copy', label: 'Copy', icon: '📋', onClick: closeAfter(() => {
+    items.push({ key: 'copy', label: t('context.copy'), icon: '📋', onClick: closeAfter(() => {
       const paths = multi ? Array.from(selectedPaths) : [e.path]
       setCopyModal({ type: 'copy', paths })
     })})
-    items.push({ key: 'move', label: 'Move', icon: '📂', onClick: closeAfter(() => {
+    items.push({ key: 'move', label: t('context.move'), icon: '📂', onClick: closeAfter(() => {
       const paths = multi ? Array.from(selectedPaths) : [e.path]
       setCopyModal({ type: 'move', paths })
     })})
     items.push({ separator: true, key: 's3' })
-    items.push({ key: 'delete', label: 'Delete', icon: '🗑️', onClick: closeAfter(() => remove(e)), danger: true })
+    items.push({ key: 'delete', label: t('context.delete'), icon: '🗑️', onClick: closeAfter(() => remove(e)), danger: true })
 
     return items
   }
@@ -376,9 +378,9 @@ export default function DomainFilesPage() {
       })
       setCopyModal(null); setSelectedPaths(new Set())
       setTreeRefreshKey(x => x + 1); scan()
-      if (data.errors?.length) alert('Some errors: ' + data.errors.join('\n'))
+      if (data.errors?.length) alert(t('toast.someErrors', { errors: data.errors.join('\n') }))
     } catch (err) {
-      alert(apiError(err, copyMoveModal.type === 'copy' ? 'Copy failed' : 'Move failed'))
+      alert(apiError(err, copyMoveModal.type === 'copy' ? t('errors.copyFailed') : t('errors.moveFailed')))
     }
   }
 
@@ -391,7 +393,7 @@ export default function DomainFilesPage() {
       setArchiveModal(false); setSelectedPaths(new Set())
       setTreeRefreshKey(x => x + 1); scan()
     } catch (err) {
-      alert(apiError(err, 'Archiving failed'))
+      alert(apiError(err, t('errors.archiveFailed')))
     }
   }
 
@@ -404,7 +406,7 @@ export default function DomainFilesPage() {
       const readResponse = await api.get(`/domains/${id}/files/read`, { params: { path: target } })
       setEditor({ path: target, content: readResponse.data.content })
     } catch (err) {
-      alert(apiError(err, 'Creation failed'))
+      alert(apiError(err, t('errors.createFailed')))
     }
   }
 
@@ -413,7 +415,7 @@ export default function DomainFilesPage() {
       const { data } = await api.get(`/domains/${id}/files/size`, { params: { path: itemPath } })
       setSizeResult({ path: itemPath, size: data.size_b })
     } catch (err) {
-      alert(apiError(err, 'Size calculation failed'))
+      alert(apiError(err, t('errors.sizeFailed')))
     }
   }
 
@@ -452,7 +454,7 @@ export default function DomainFilesPage() {
         a.click()
         setTimeout(() => URL.revokeObjectURL(a.href), 1000)
       })
-      .catch(err => alert('Download failed: ' + err.message))
+      .catch(err => alert(t('toast.downloadFailed', { message: err.message })))
   }
 
   function openInBrowser(entry: Entry) {
@@ -468,13 +470,13 @@ export default function DomainFilesPage() {
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Domains', href: '/domains' },
+        { label: t('breadcrumb.home'), href: '/' },
+        { label: t('breadcrumb.domains'), href: '/domains' },
         { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },
-        { label: 'Files' },
+        { label: t('breadcrumb.files') },
       ]} />
 
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">File Manager</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
       {domain && (
         <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
           <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{domain.domain_name}</Link>
@@ -500,17 +502,17 @@ export default function DomainFilesPage() {
             <svg className="w-14 h-14 mx-auto text-brand-600 dark:text-brand-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
-            <div className="text-lg font-semibold text-brand-700 dark:text-brand-300">Drop files here</div>
-            <div className="text-sm text-brand-600 dark:text-brand-400/80 mt-1">Target directory: <code className="font-mono bg-white dark:bg-slate-800/60 px-1.5 py-0.5 rounded">{path}</code></div>
+            <div className="text-lg font-semibold text-brand-700 dark:text-brand-300">{t('dropZone.title')}</div>
+            <div className="text-sm text-brand-600 dark:text-brand-400/80 mt-1">{t('dropZone.targetDir')}<code className="font-mono bg-white dark:bg-slate-800/60 px-1.5 py-0.5 rounded">{path}</code></div>
           </div>
         </div>
       )}
       {selectedPaths.size > 0 && (
         <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-md flex items-center gap-3 flex-wrap">
-          <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">{selectedPaths.size} items selected</span>
-          <span className="text-xs text-amber-700/80 dark:text-amber-300/80">Right-click for actions</span>
-          <button onClick={() => setBulkDeleteConfirmOpen(true)} className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-medium">Delete ({selectedPaths.size})</button>
-          <button onClick={() => setSelectedPaths(new Set())} className="text-xs px-3 py-1.5 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:bg-amber-900/30 rounded">Clear selection</button>
+          <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">{t('selection.count', { count: selectedPaths.size })}</span>
+          <span className="text-xs text-amber-700/80 dark:text-amber-300/80">{t('selection.rightClick')}</span>
+          <button onClick={() => setBulkDeleteConfirmOpen(true)} className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-medium">{t('selection.delete', { count: selectedPaths.size })}</button>
+          <button onClick={() => setSelectedPaths(new Set())} className="text-xs px-3 py-1.5 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:bg-amber-900/30 rounded">{t('selection.clear')}</button>
         </div>
       )}
       {bulkUpload && (
@@ -522,7 +524,7 @@ export default function DomainFilesPage() {
             </svg>
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm">
-                Uploading... <span className="font-mono">{bulkUpload.activeIndex + 1} / {bulkUpload.total}</span>
+                {t('upload.uploading')} <span className="font-mono">{bulkUpload.activeIndex + 1} / {bulkUpload.total}</span>
               </div>
               <div className="text-xs text-sky-700/90 truncate">{bulkUpload.activeFile}</div>
             </div>
@@ -541,7 +543,7 @@ export default function DomainFilesPage() {
           {/* Speed and ETA */}
           <div className="flex items-center justify-between mt-1 text-[11px] font-mono text-sky-700/80">
             <span>{bulkUpload.speedBps > 0 ? formatSpeed(bulkUpload.speedBps) : '-'}</span>
-            <span>{bulkUpload.etaSeconds > 0 ? `Remaining: ${formatEta(bulkUpload.etaSeconds)}` : ''}</span>
+            <span>{bulkUpload.etaSeconds > 0 ? t('upload.remaining', { eta: formatEta(bulkUpload.etaSeconds, t) }) : ''}</span>
           </div>
         </div>
       )}
@@ -560,9 +562,9 @@ export default function DomainFilesPage() {
           </button>
           {newMenuOpen && (
             <div className="absolute z-40 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg min-w-[180px] py-1">
-              <button onClick={() => { setNewMenuOpen(false); fileInputRef.current?.click() }} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">📤 Upload Files</button>
-              <button onClick={() => { setNewMenuOpen(false); createFolder() }} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">📁 New Folder</button>
-              <button onClick={() => { setNewMenuOpen(false); setNewFileModal(true) }} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">📄 New File</button>
+              <button onClick={() => { setNewMenuOpen(false); fileInputRef.current?.click() }} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">{t('menu.uploadFiles')}</button>
+              <button onClick={() => { setNewMenuOpen(false); createFolder() }} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">{t('menu.newFolder')}</button>
+              <button onClick={() => { setNewMenuOpen(false); setNewFileModal(true) }} className="block w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">{t('menu.newFile')}</button>
             </div>
           )}
         </div>
@@ -570,14 +572,14 @@ export default function DomainFilesPage() {
         {/* Refresh */}
         <button onClick={scan}
           className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">
-          ↻ Refresh
+          {t('toolbar.refresh')}
         </button>
 
         {/* Bulk delete */}
         {selectedPaths.size > 1 && (
           <button onClick={() => setBulkDeleteConfirmOpen(true)}
             className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white text-sm rounded font-medium">
-            Delete ({selectedPaths.size})
+            {t('toolbar.delete', { count: selectedPaths.size })}
           </button>
         )}
 
@@ -590,7 +592,7 @@ export default function DomainFilesPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && search()}
-            placeholder="🔍 Search files..."
+            placeholder={t('toolbar.searchPlaceholder')}
             className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm w-56 focus:border-brand-500 outline-none"
           />
           {searchResults && (
@@ -602,7 +604,7 @@ export default function DomainFilesPage() {
         {/* Hidden upload input */}
         <input ref={fileInputRef} type="file" multiple onChange={e => { const list = Array.from(e.target.files || []); if (list.length) uploadFiles(list); e.target.value = ""; }} className="hidden" />
 
-        <div className="ml-auto text-sm text-slate-500 dark:text-slate-500">{content.length} items</div>
+        <div className="ml-auto text-sm text-slate-500 dark:text-slate-500">{t('toolbar.itemCount', { count: content.length })}</div>
       </div>
 
       {/* Path breadcrumb */}
@@ -624,30 +626,30 @@ export default function DomainFilesPage() {
       {/* File table */}
       <div className={responsiveTableContainerClass}>
         {loading ? (
-          <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">Loading...</div>
+          <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</div>
         ) : (
           <table className={responsiveTableClass}>
             <thead className={responsiveTableHeadClass}>
               <tr>
                 <th className="px-3 py-2.5 w-10 text-center"><input type="checkbox" checked={content.length > 0 && selectedPaths.size === content.length} ref={ref => { if (ref) ref.indeterminate = selectedPaths.size > 0 && selectedPaths.size < content.length }} onChange={e => selectAllItems(e.target.checked)} className="cursor-pointer" /></th>
-                <th className="text-left px-4 py-2.5">Name</th>
-                <th className="text-left px-4 py-2.5">Size</th>
-                <th className="text-left px-4 py-2.5">Permissions</th>
-                <th className="text-left px-4 py-2.5">Modified</th>
-                <th className="text-right px-4 py-2.5">Actions</th>
+                <th className="text-left px-4 py-2.5">{t('columns.name')}</th>
+                <th className="text-left px-4 py-2.5">{t('columns.size')}</th>
+                <th className="text-left px-4 py-2.5">{t('columns.permissions')}</th>
+                <th className="text-left px-4 py-2.5">{t('columns.modified')}</th>
+                <th className="text-right px-4 py-2.5">{t('columns.actions')}</th>
               </tr>
             </thead>
             <tbody className={responsiveTableBodyClass}>
               {path !== '/' && (
                 <tr className={responsiveTableRowClass} onClick={goUp}>
                   <td className="px-4 py-2.5 text-sm" colSpan={6}>
-                    <span className="text-slate-500 dark:text-slate-500">↑ parent folder</span>
+                    <span className="text-slate-500 dark:text-slate-500">{t('parentFolder')}</span>
                   </td>
                 </tr>
               )}
               {content.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500">This folder is empty</td>
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('empty')}</td>
                 </tr>
               )}
               {(searchResults ?? content).map((e) => (
@@ -657,13 +659,13 @@ export default function DomainFilesPage() {
                   onTouchEnd={touchEnd}
                   onTouchMove={touchMove}
                   className={`${responsiveTableRowClass} ${selectedPaths.has(e.path) ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}>
-                  <td data-label="Select" className={responsiveTableCellClass}>
+                  <td data-label={t('columns.select')} className={responsiveTableCellClass}>
                     <input type="checkbox" checked={selectedPaths.has(e.path)}
                       onChange={() => toggleSelection2(e.path)}
                       onClick={ev => ev.stopPropagation()}
                       className="cursor-pointer" />
                   </td>
-                  <td data-label="Name" className={responsiveTableCellClass}>
+                  <td data-label={t('columns.name')} className={responsiveTableCellClass}>
                     {e.type === 'folder' ? (
                       <button
                         onClick={() => navigateTo(e.path)}
@@ -683,19 +685,19 @@ export default function DomainFilesPage() {
                       </span>
                     )}
                   </td>
-                  <td data-label="Size" className={responsiveTableCodeCellClass}>
+                  <td data-label={t('columns.size')} className={responsiveTableCodeCellClass}>
                     {e.type === 'folder' ? '-' : formatSize(e.size_b)}
                   </td>
-                  <td data-label="Permissions" className={responsiveTableCodeCellClass}>
+                  <td data-label={t('columns.permissions')} className={responsiveTableCodeCellClass}>
                     <div>{e.permissions || e.mode}</div>
                     {(e.owner || e.group) && <div className="text-xs text-slate-400 dark:text-slate-500">{e.owner}:{e.group}</div>}
                   </td>
-                  <td data-label="Modified" className={responsiveTableCellClass}>{formatDate(e.changed)}</td>
+                  <td data-label={t('columns.modified')} className={responsiveTableCellClass}>{formatDate(e.changed)}</td>
                   <td className={responsiveTableActionCellClass}>
                     <button
                       onClick={(ev) => { ev.stopPropagation(); openContext(ev.clientX, ev.clientY, e) }}
                       className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:hover:bg-slate-800 rounded transition"
-                      title="Actions">
+                      title={t('actionsTitle')}>
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                     </button>
                   </td>
@@ -750,7 +752,7 @@ export default function DomainFilesPage() {
       {sizeResult && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setSizeResult(null)}>
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-2">📏 Size Information</h3>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('sizeModal.title')}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-500 mb-3 font-mono">{sizeResult.path}</p>
             <div className="text-2xl font-bold text-brand-700 dark:text-brand-300 mb-2">
               {(() => {
@@ -761,9 +763,9 @@ export default function DomainFilesPage() {
                 return (b/1024/1024/1024).toFixed(2) + ' GB'
               })()}
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-500 font-mono">{sizeResult.size.toLocaleString('en-US')} bytes</div>
+            <div className="text-xs text-slate-500 dark:text-slate-500 font-mono">{t('sizeModal.bytes', { bytes: sizeResult.size.toLocaleString('en-US') })}</div>
             <div className="mt-4 flex justify-end">
-              <button onClick={() => setSizeResult(null)} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded">Done</button>
+              <button onClick={() => setSizeResult(null)} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded">{t('sizeModal.done')}</button>
             </div>
           </div>
         </div>
@@ -771,17 +773,17 @@ export default function DomainFilesPage() {
       {bulkDeleteConfirmOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setBulkDeleteConfirmOpen(false)}>
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-red-700 dark:text-red-300 mb-2">⚠ Bulk Delete</h3>
+            <h3 className="text-base font-semibold text-red-700 dark:text-red-300 mb-2">{t('bulkDelete.title')}</h3>
             <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
-              <span className="font-semibold">{selectedPaths.size}</span> items will be permanently deleted. Folders and all their contents will be removed.
+              <span className="font-semibold">{t('bulkDelete.messageBold', { count: selectedPaths.size })}</span>{t('bulkDelete.messagePost')}
             </p>
             <ul className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-40 overflow-auto mb-4">
               {Array.from(selectedPaths).slice(0, 8).map(y => <li key={y} className="truncate">{y}</li>)}
-              {selectedPaths.size > 8 && <li className="text-slate-400 dark:text-slate-500 italic">+ {selectedPaths.size - 8} more...</li>}
+              {selectedPaths.size > 8 && <li className="text-slate-400 dark:text-slate-500 italic">{t('bulkDelete.moreItems', { count: selectedPaths.size - 8 })}</li>}
             </ul>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setBulkDeleteConfirmOpen(false)} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
-              <button onClick={bulkDelete} className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded font-medium">Yes, Delete</button>
+              <button onClick={() => setBulkDeleteConfirmOpen(false)} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('bulkDelete.cancel')}</button>
+              <button onClick={bulkDelete} className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded font-medium">{t('bulkDelete.confirm')}</button>
             </div>
           </div>
         </div>
@@ -881,18 +883,19 @@ function ContextMenu({ x, y, items, onClose }: { x: number; y: number; items: Ct
 
 // ===== Helper components =====
 function RenameModal({ entry, onDone, onCancel }: { entry: Entry; onDone: (newName: string) => void; onCancel: () => void }) {
+  const { t } = useTranslation('DomainFilesPage')
   const [name, setName] = useState(entry.name)
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onCancel}>
       <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Rename</h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('renameModal.title')}</h3>
         <p className="text-xs text-slate-500 dark:text-slate-500 mb-3"><code className="font-mono">{entry.path}</code></p>
         <input value={name} onChange={e => setName(e.target.value)} autoFocus
           className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded font-mono text-sm" />
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
+          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('renameModal.cancel')}</button>
           <button onClick={() => onDone(name)} disabled={!name || name === entry.name}
-            className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded">Rename</button>
+            className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded">{t('renameModal.rename')}</button>
         </div>
       </div>
     </div>
@@ -900,6 +903,7 @@ function RenameModal({ entry, onDone, onCancel }: { entry: Entry; onDone: (newNa
 }
 
 function ChmodModal({ entry, onDone, onCancel }: { entry: Entry; onDone: (mod: string) => void; onCancel: () => void }) {
+  const { t } = useTranslation('DomainFilesPage')
   const [mod, setMod] = useState(entry.mode || '0644')
   // Nine permission-bit checkboxes.
   const n = parseInt(mod.replace(/^0/, ''), 8) || 0
@@ -912,20 +916,20 @@ function ChmodModal({ entry, onDone, onCancel }: { entry: Entry; onDone: (mod: s
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onCancel}>
       <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Permissions</h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('chmodModal.title')}</h3>
         <p className="text-xs text-slate-500 dark:text-slate-500 mb-3"><code className="font-mono">{entry.path}</code></p>
         <div className="grid grid-cols-3 gap-2 mb-3 text-center">
-          <div className="text-xs text-slate-500 dark:text-slate-500 font-semibold">Owner</div>
-          <div className="text-xs text-slate-500 dark:text-slate-500 font-semibold">Group</div>
-          <div className="text-xs text-slate-500 dark:text-slate-500 font-semibold">Other</div>
-          {[0o400, 0o040, 0o004].map((b, i) => <button key={'r'+i} onClick={() => tog(b)} className={cls(bit(b))}>Read</button>)}
-          {[0o200, 0o020, 0o002].map((b, i) => <button key={'w'+i} onClick={() => tog(b)} className={cls(bit(b))}>Write</button>)}
-          {[0o100, 0o010, 0o001].map((b, i) => <button key={'x'+i} onClick={() => tog(b)} className={cls(bit(b))}>Execute</button>)}
+          <div className="text-xs text-slate-500 dark:text-slate-500 font-semibold">{t('chmodModal.owner')}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-500 font-semibold">{t('chmodModal.group')}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-500 font-semibold">{t('chmodModal.other')}</div>
+          {[0o400, 0o040, 0o004].map((b, i) => <button key={'r'+i} onClick={() => tog(b)} className={cls(bit(b))}>{t('chmodModal.read')}</button>)}
+          {[0o200, 0o020, 0o002].map((b, i) => <button key={'w'+i} onClick={() => tog(b)} className={cls(bit(b))}>{t('chmodModal.write')}</button>)}
+          {[0o100, 0o010, 0o001].map((b, i) => <button key={'x'+i} onClick={() => tog(b)} className={cls(bit(b))}>{t('chmodModal.execute')}</button>)}
         </div>
-        <div className="text-xs text-slate-500 dark:text-slate-500 mb-3">Octal: <input value={mod} onChange={e => setMod(e.target.value)} className="font-mono ml-1 px-2 py-0.5 border border-slate-300 dark:border-slate-600 rounded w-20" /></div>
+        <div className="text-xs text-slate-500 dark:text-slate-500 mb-3">{t('chmodModal.octal')}<input value={mod} onChange={e => setMod(e.target.value)} className="font-mono ml-1 px-2 py-0.5 border border-slate-300 dark:border-slate-600 rounded w-20" /></div>
         <div className="flex justify-end gap-2">
-          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
-          <button onClick={() => onDone(mod)} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded">Apply</button>
+          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('chmodModal.cancel')}</button>
+          <button onClick={() => onDone(mod)} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded">{t('chmodModal.apply')}</button>
         </div>
       </div>
     </div>
@@ -943,31 +947,32 @@ function formatSpeed(bps: number): string {
   return formatBytes(bps) + '/s'
 }
 
-function formatEta(seconds: number): string {
-  if (seconds < 1) return '<1 sec'
-  if (seconds < 60) return `${Math.round(seconds)} sec`
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ${Math.round(seconds % 60)} sec`
-  return `${Math.floor(seconds / 3600)} hr ${Math.floor((seconds % 3600) / 60)} min`
+function formatEta(seconds: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
+  if (seconds < 1) return t('eta.lessThanSec')
+  if (seconds < 60) return t('eta.sec', { count: Math.round(seconds) })
+  if (seconds < 3600) return t('eta.minSec', { min: Math.floor(seconds / 60), sec: Math.round(seconds % 60) })
+  return t('eta.hrMin', { hr: Math.floor(seconds / 3600), min: Math.floor((seconds % 3600) / 60) })
 }
 
 function CopyMoveModal({ type, paths, domainId, onDone, onCancel }:
   { type: 'copy' | 'move'; paths: string[]; domainId: string | number; onDone: (target: string) => void; onCancel: () => void }) {
+  const { t } = useTranslation('DomainFilesPage')
   const [target, setTarget] = useState('/public_html')
-  const title = type === 'copy' ? 'Copy' : 'Move'
+  const title = type === 'copy' ? t('copyMoveModal.titleCopy') : t('copyMoveModal.titleMove')
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onCancel}>
       <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">{title} ({paths.length} items)</h3>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('copyMoveModal.heading', { title, count: paths.length })}</h3>
         <ul className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-32 overflow-auto mb-4">
           {paths.slice(0, 5).map(y => <li key={y} className="truncate">{y}</li>)}
-          {paths.length > 5 && <li className="text-slate-400 dark:text-slate-500 italic">+ {paths.length - 5} more...</li>}
+          {paths.length > 5 && <li className="text-slate-400 dark:text-slate-500 italic">{t('copyMoveModal.moreItems', { count: paths.length - 5 })}</li>}
         </ul>
-        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Target directory (under home)</label>
-        <input value={target} onChange={e => setTarget(e.target.value)} placeholder="/public_html/backups"
+        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('copyMoveModal.targetLabel')}</label>
+        <input value={target} onChange={e => setTarget(e.target.value)} placeholder={t('copyMoveModal.targetPlaceholder')}
           className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded font-mono text-sm" />
-        <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">The target must already exist. {type === 'copy' ? 'Folders are copied with their contents.' : 'Moves on the same disk are immediate.'}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">{t('copyMoveModal.hintPre')}{type === 'copy' ? t('copyMoveModal.hintCopy') : t('copyMoveModal.hintMove')}</p>
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
+          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('copyMoveModal.cancel')}</button>
           <button onClick={() => onDone(target)} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm rounded">{title}</button>
         </div>
       </div>
@@ -976,16 +981,17 @@ function CopyMoveModal({ type, paths, domainId, onDone, onCancel }:
 }
 
 function ArchiveModal({ itemCount, onDone, onCancel }: { itemCount: number; onDone: (name: string, format: 'zip' | 'tar.gz') => void; onCancel: () => void }) {
+  const { t } = useTranslation('DomainFilesPage')
   const [name, setName] = useState('backups-' + new Date().toISOString().slice(0, 10))
   const [format, setFormat] = useState<'zip' | 'tar.gz'>('zip')
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onCancel}>
       <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">📦 Add to Archive ({itemCount} items)</h3>
-        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">File name</label>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('archiveModal.title', { count: itemCount })}</h3>
+        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('archiveModal.fileName')}</label>
         <input value={name} onChange={e => setName(e.target.value)}
           className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded font-mono text-sm mb-3" />
-        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">Format</label>
+        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('archiveModal.format')}</label>
         <div className="flex gap-2">
           <button onClick={() => setFormat('zip')}
             className={`px-3 py-1.5 text-sm rounded border ${format === 'zip' ? 'bg-brand-50 dark:bg-brand-900/20 border-brand-500 text-brand-700 dark:text-brand-300' : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800'}`}>
@@ -996,11 +1002,11 @@ function ArchiveModal({ itemCount, onDone, onCancel }: { itemCount: number; onDo
             TAR.GZ
           </button>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">Output: <code className="font-mono">{name}.{format}</code></p>
+        <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">{t('archiveModal.output')}<code className="font-mono">{name}.{format}</code></p>
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
+          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('archiveModal.cancel')}</button>
           <button onClick={() => onDone(name, format)} disabled={!name}
-            className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded">Archive</button>
+            className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded">{t('archiveModal.archive')}</button>
         </div>
       </div>
     </div>
@@ -1008,19 +1014,20 @@ function ArchiveModal({ itemCount, onDone, onCancel }: { itemCount: number; onDo
 }
 
 function NewFileModal({ onDone, onCancel }: { onDone: (name: string) => void; onCancel: () => void }) {
+  const { t } = useTranslation('DomainFilesPage')
   const [name, setName] = useState('new-file.txt')
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onCancel}>
       <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">📄 New File</h3>
-        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">File name (including extension)</label>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('newFile.title')}</h3>
+        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('newFile.label')}</label>
         <input value={name} onChange={e => setName(e.target.value)} autoFocus
           className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded font-mono text-sm" />
-        <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">An empty file is created, then opened in the code editor.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">{t('newFile.hint')}</p>
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">Cancel</button>
+          <button onClick={onCancel} className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('newFile.cancel')}</button>
           <button onClick={() => onDone(name)} disabled={!name}
-            className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded">Create and Edit</button>
+            className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm rounded">{t('newFile.create')}</button>
         </div>
       </div>
     </div>

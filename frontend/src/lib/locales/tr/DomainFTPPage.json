@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "ftpAccount": "FTP Hesabı"
+  },
+  "title": "FTP Hesabı",
+  "errors": {
+    "resetFailed": "Parola sıfırlama başarısız oldu"
+  },
+  "info": {
+    "host": "Sunucu",
+    "port": "Bağlantı noktası",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Kullanıcı adı",
+    "homeDir": "Ana dizin"
+  },
+  "reset": {
+    "title": "Parola Sıfırla",
+    "placeholder": "Özel bir parola girin veya boş bırakın",
+    "setThis": "Bu Parolayı Ayarla",
+    "generateRandom": "Rastgele Parola Oluştur",
+    "success": "✓ Yeni parola ayarlandı",
+    "saveHint": "Bunu güvenli bir yerde saklayın. Sonradan tekrar göremezsiniz.",
+    "copy": "Kopyala"
+  },
+  "note": {
+    "label": "Not:",
+    "pre": " FTP şu anda yerel veritabanına karşı ",
+    "code": "cleartext",
+    "post": " kimlik doğrulaması kullanır. Şifreli aktarım için 22 numaralı bağlantı noktasında SFTP kullanın."
+  }
+}
