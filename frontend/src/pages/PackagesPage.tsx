@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -7,7 +8,7 @@ type Package = {
   installed: boolean; protected: boolean
 }
 
-type Group = { name: string; icon: string; packages: string[]; description: string }
+type Group = { key: string; icon: string; packages: string[] }
 
 type Tab = 'search' | 'installed'
 
@@ -37,31 +38,32 @@ function IconSvg({ d, className = '' }: { d: string; className?: string }) {
 }
 
 const PRESET_GROUPS: Group[] = [
-  { name: 'Development Tools', icon: ICONS.wrench, description: 'gcc, make, autoconf, automake, libtool, kernel-devel',
+  { key: 'devtools', icon: ICONS.wrench,
     packages: ['gcc', 'gcc-c++', 'make', 'autoconf', 'automake', 'libtool', 'kernel-devel'] },
-  { name: 'Python', icon: ICONS.code, description: 'Python 3 + pip + venv + development headers',
+  { key: 'python', icon: ICONS.code,
     packages: ['python3', 'python3-pip', 'python3-devel', 'python3-virtualenv'] },
-  { name: 'Node.js + npm', icon: ICONS.bolt, description: 'Node.js LTS + npm',
+  { key: 'nodejs', icon: ICONS.bolt,
     packages: ['nodejs', 'npm'] },
-  { name: 'Go', icon: ICONS.cube, description: 'Go compiler',
+  { key: 'go', icon: ICONS.cube,
     packages: ['golang'] },
-  { name: 'Java', icon: ICONS.beaker, description: 'OpenJDK 21 LTS + Maven',
+  { key: 'java', icon: ICONS.beaker,
     packages: ['java-21-openjdk', 'java-21-openjdk-devel', 'maven'] },
-  { name: 'Rust', icon: ICONS.cog, description: 'Rust + cargo',
+  { key: 'rust', icon: ICONS.cog,
     packages: ['rust', 'cargo'] },
-  { name: 'Container / VM', icon: ICONS.server, description: 'Docker-compatible: podman + buildah + skopeo',
+  { key: 'container', icon: ICONS.server,
     packages: ['podman', 'buildah', 'skopeo'] },
-  { name: 'System Tools', icon: ICONS.terminal, description: 'CLI productivity tools',
+  { key: 'systools', icon: ICONS.terminal,
     packages: ['htop', 'ncdu', 'jq', 'tmux', 'vim-enhanced', 'git', 'rsync', 'mtr', 'iftop', 'iotop'] },
-  { name: 'Image Processing', icon: ICONS.photo, description: 'ImageMagick + WebP + optimization',
+  { key: 'imaging', icon: ICONS.photo,
     packages: ['ImageMagick', 'libwebp-tools', 'optipng', 'jpegoptim'] },
-  { name: 'Database Clients', icon: ICONS.database, description: 'PostgreSQL + Redis CLI',
+  { key: 'dbclients', icon: ICONS.database,
     packages: ['postgresql', 'redis'] },
-  { name: 'Security', icon: ICONS.shield, description: 'GnuPG, OpenSSL, fail2ban',
+  { key: 'security', icon: ICONS.shield,
     packages: ['gnupg2', 'openssl', 'fail2ban'] },
 ]
 
 export default function PackagesPage() {
+  const { t } = useTranslation('PackagesPage')
   const [tab, setTab] = useState<Tab>('search')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Package[]>([])
@@ -88,10 +90,10 @@ export default function PackagesPage() {
   function toggleGroup(g: Group) {
     setOpen(prev => {
       const next = new Set(prev)
-      if (next.has(g.name)) {
-        next.delete(g.name)
+      if (next.has(g.key)) {
+        next.delete(g.key)
       } else {
-        next.add(g.name)
+        next.add(g.key)
         loadGroupStatus(g)
       }
       return next
@@ -101,49 +103,49 @@ export default function PackagesPage() {
   async function togglePackage(pkg: string, currentlyInstalled: boolean) {
     const action = currentlyInstalled ? 'remove' : 'install'
     const msg = currentlyInstalled
-      ? `"${pkg}" will be REMOVED. Continue?`
-      : `"${pkg}" will be installed system-wide. Continue?`
+      ? t('confirm.remove', { pkg })
+      : t('confirm.install', { pkg })
     if (!confirm(msg)) return
 
     setProcessing(pkg); setError(null); setSuccess(null)
     try {
       const r = await api.post(`/packages/${action}`, { package: pkg })
-      setSuccess(`${pkg} ${currentlyInstalled ? 'removed' : 'installed'}`)
+      setSuccess(currentlyInstalled ? t('toast.removed', { pkg }) : t('toast.installed', { pkg }))
       setGroupStatus(prev => ({ ...prev, [pkg]: !currentlyInstalled }))
       setOutputModal({
-        title: `${currentlyInstalled ? 'Removal' : 'Installation'} output: ${pkg}`,
+        title: currentlyInstalled ? t('output.removeTitle', { pkg }) : t('output.installTitle', { pkg }),
         output: r.data.output || '',
       })
       setTimeout(() => setSuccess(null), 3500)
     } catch (e) {
-      setError(apiError(e, `Failed to ${currentlyInstalled ? 'remove' : 'install'} package`))
+      setError(apiError(e, currentlyInstalled ? t('errors.toggleRemoveFailed') : t('errors.toggleInstallFailed')))
     } finally {
       setProcessing(null)
     }
   }
 
   async function installPackage(pkg: string) {
-    if (!confirm(`"${pkg}" will be installed system-wide. Continue?`)) return
+    if (!confirm(t('confirm.install', { pkg }))) return
     setProcessing(pkg); setError(null); setSuccess(null)
     try {
       const r = await api.post('/packages/install', { package: pkg })
-      setSuccess(`${pkg} installed`)
-      setOutputModal({ title: `Installation output: ${pkg}`, output: r.data.output || '' })
+      setSuccess(t('toast.installed', { pkg }))
+      setOutputModal({ title: t('output.installTitle', { pkg }), output: r.data.output || '' })
       setTimeout(() => setSuccess(null), 4000)
       if (tab === 'search') search()
-    } catch (e) { setError(apiError(e, 'Installation failed')) }
+    } catch (e) { setError(apiError(e, t('errors.installFailed'))) }
     finally { setProcessing(null) }
   }
   async function removePackage(pkg: string) {
-    if (!confirm(`"${pkg}" will be REMOVED. Continue?`)) return
+    if (!confirm(t('confirm.remove', { pkg }))) return
     setProcessing(pkg); setError(null); setSuccess(null)
     try {
       const r = await api.post('/packages/remove', { package: pkg })
-      setSuccess(`${pkg} removed`)
-      setOutputModal({ title: `Removal output: ${pkg}`, output: r.data.output || '' })
+      setSuccess(t('toast.removed', { pkg }))
+      setOutputModal({ title: t('output.removeTitle', { pkg }), output: r.data.output || '' })
       setTimeout(() => setSuccess(null), 4000)
       search()
-    } catch (e) { setError(apiError(e, 'Removal failed')) }
+    } catch (e) { setError(apiError(e, t('errors.removeFailed'))) }
     finally { setProcessing(null) }
   }
 
@@ -155,7 +157,7 @@ export default function PackagesPage() {
       const r = await api.get<{ content: Package[]; total: number }>(ep, { params: { q: query } })
       setResults(r.data.content || [])
     } catch (e) {
-      setError(apiError(e, 'Search failed'))
+      setError(apiError(e, t('errors.searchFailed')))
     } finally {
       setLoading(false)
     }
@@ -169,20 +171,20 @@ export default function PackagesPage() {
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
-        { label: 'Home', href: '/' },
-        { label: 'Tools and Settings', href: '/tools-settings' },
-        { label: 'Package Manager' },
+        { label: t('breadcrumbHome'), href: '/' },
+        { label: t('breadcrumbTools'), href: '/tools-settings' },
+        { label: t('title') },
       ]} />
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Package Manager</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{t('title')}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Server packages and compiler environments via DNF.
+            {t('subtitle')}
           </p>
         </div>
         <span className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          {installedTotal} packages installed
+          {t('installedCount', { count: installedTotal })}
         </span>
       </div>
 
@@ -193,21 +195,21 @@ export default function PackagesPage() {
       <section className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60">
         <div className="mb-3 flex items-center gap-2">
           <IconSvg d={ICONS.cube} className="h-4 w-4 text-slate-400" />
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Quick Install Groups</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('quickInstallGroups')}</h2>
         </div>
         <div className="space-y-2">
           {PRESET_GROUPS.map(group => {
-            const isOpen = open.has(group.name)
+            const isOpen = open.has(group.key)
             const installedCount = group.packages.filter(p => groupStatus[p]).length
             return (
-              <div key={group.name} className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
+              <div key={group.key} className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
                 <button onClick={() => toggleGroup(group)}
                   className="flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <div className="flex min-w-0 flex-1 items-center gap-2.5">
                     <IconSvg d={group.icon} className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{group.name}</div>
-                      <div className="truncate text-[11px] text-slate-400 dark:text-slate-500">{group.description}</div>
+                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t(`groups.${group.key}.name`)}</div>
+                      <div className="truncate text-[11px] text-slate-400 dark:text-slate-500">{t(`groups.${group.key}.description`)}</div>
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
@@ -229,14 +231,14 @@ export default function PackagesPage() {
                         <div key={p} className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-white dark:hover:bg-slate-800/50">
                           <div className="min-w-0 flex-1">
                             <code className="text-sm font-mono text-slate-900 dark:text-slate-100">{p}</code>
-                            {isInstalled && <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">INSTALLED</span>}
+                            {isInstalled && <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{t('badges.installed')}</span>}
                           </div>
                           <button onClick={() => togglePackage(p, isInstalled)}
                             disabled={pending}
                             className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ${
                               isInstalled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
                             } ${pending ? 'cursor-wait opacity-50' : ''}`}
-                            title={pending ? 'Processing...' : (isInstalled ? 'Remove' : 'Install')}>
+                            title={pending ? t('actions.processing') : (isInstalled ? t('actions.remove') : t('actions.install'))}>
                             <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition dark:bg-slate-800 ${isInstalled ? 'translate-x-5' : 'translate-x-1'}`} />
                           </button>
                         </div>
@@ -256,33 +258,33 @@ export default function PackagesPage() {
           <button onClick={() => { setTab('search'); setResults([]); setSearched(false) }}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${tab === 'search' ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
             <IconSvg d={ICONS.search} className="mr-1.5 inline h-3.5 w-3.5" />
-            Search Repositories
+            {t('tabs.search')}
           </button>
           <button onClick={() => { setTab('installed'); setResults([]); setSearched(false) }}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${tab === 'installed' ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
             <IconSvg d={ICONS.server} className="mr-1.5 inline h-3.5 w-3.5" />
-            Installed Packages
+            {t('tabs.installed')}
           </button>
         </div>
 
         <div className="mb-4 flex flex-col gap-2 sm:flex-row">
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && search()}
-            placeholder={tab === 'search' ? 'e.g. mongodb, redis, nodejs, gcc, htop' : 'installed package name or description'}
+            placeholder={tab === 'search' ? t('searchPlaceholder') : t('installedPlaceholder')}
             className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-mono placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-100" />
           <button onClick={search} disabled={loading || !query.trim()}
             className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 sm:w-auto">
-            {loading ? 'Searching...' : 'Search'}
+            {loading ? t('actions.searching') : t('actions.search')}
           </button>
         </div>
 
         {searched && !loading && results.length === 0 && (
-          <div className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">No results.</div>
+          <div className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">{t('noResults')}</div>
         )}
 
         {results.length > 0 && (
           <div className="space-y-1.5">
-            <div className="mb-2 text-xs text-slate-400 dark:text-slate-500">{results.length} results</div>
+            <div className="mb-2 text-xs text-slate-400 dark:text-slate-500">{t('resultsCount', { count: results.length })}</div>
             {results.map(p => (
               <div key={p.name}
                 className={`flex flex-col gap-3 rounded-xl px-3 py-2 sm:flex-row sm:items-center ${
@@ -291,8 +293,8 @@ export default function PackagesPage() {
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100">{p.name}</span>
                     {p.version && <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">{p.version}</span>}
-                    {p.installed && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">INSTALLED</span>}
-                    {p.protected && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">PROTECTED</span>}
+                    {p.installed && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{t('badges.installed')}</span>}
+                    {p.protected && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{t('badges.protected')}</span>}
                   </div>
                   {p.description && <div className="truncate text-xs text-slate-500 dark:text-slate-400">{p.description}</div>}
                 </div>
@@ -300,13 +302,13 @@ export default function PackagesPage() {
                   <button onClick={() => removePackage(p.name)}
                     disabled={p.protected || processing === p.name}
                     className="w-full rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-900/20 sm:w-auto">
-                    {processing === p.name ? 'Removing...' : 'Remove'}
+                    {processing === p.name ? t('actions.removing') : t('actions.remove')}
                   </button>
                 ) : (
                   <button onClick={() => installPackage(p.name)}
                     disabled={processing === p.name}
                     className="w-full rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 sm:w-auto">
-                    {processing === p.name ? 'Installing...' : 'Install'}
+                    {processing === p.name ? t('actions.installing') : t('actions.install')}
                   </button>
                 )}
               </div>
@@ -325,7 +327,7 @@ export default function PackagesPage() {
             <pre className="flex-1 overflow-auto bg-slate-900 p-3 font-mono text-xs text-slate-100 whitespace-pre-wrap">{outputModal.output}</pre>
             <div className="border-t border-slate-200 px-4 py-2 text-right dark:border-slate-700">
               <button onClick={() => setOutputModal(null)}
-                className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">Close</button>
+                className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">{t('actions.close')}</button>
             </div>
           </div>
         </div>

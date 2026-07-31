@@ -8,6 +8,7 @@
 // domains via FTP identity at /cp.
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import EmptyState from '@/components/EmptyState'
@@ -30,6 +31,7 @@ type Plan = { id: number; name: string }
 const EMPTY: Customer = { id: 0, name: '', email: '', plan_id: null, status: 'active', notes: '', created_at: '' }
 
 export default function CustomersPage() {
+  const { t } = useTranslation('CustomersPage')
   // Global search (TopBar) deep-links here with ?q=<email|name>; seed the filter
   // from it and keep it in sync when the param changes without a remount.
   const [searchParams] = useSearchParams()
@@ -53,7 +55,7 @@ export default function CustomersPage() {
       setList(Array.isArray(r.data) ? r.data : [])
       setError(null)
     } catch (e) {
-      setError(apiError(e, 'Could not load customers'))
+      setError(apiError(e, t('errors.loadFailed')))
     } finally {
       setLoading(false)
     }
@@ -77,7 +79,7 @@ export default function CustomersPage() {
     const name = editing.name.trim()
     const email = editing.email.trim()
     if (!name || !email) {
-      setError('Name and email are required')
+      setError(t('errors.nameEmailRequired'))
       return
     }
     setSaving(true)
@@ -86,15 +88,15 @@ export default function CustomersPage() {
       const body = { name, email, plan_id: editing.plan_id, status: editing.status, notes: editing.notes }
       if (editing.id === 0) {
         await api.post('/customers', body)
-        setSuccess(`${name} added.`)
+        setSuccess(t('toast.added', { name }))
       } else {
         await api.put(`/customers/${editing.id}`, body)
-        setSuccess(`${name} updated.`)
+        setSuccess(t('toast.updated', { name }))
       }
       setEditing(null)
       await fetchList()
     } catch (e) {
-      setError(apiError(e, 'Could not save'))
+      setError(apiError(e, t('errors.saveFailed')))
     } finally {
       setSaving(false)
     }
@@ -104,11 +106,11 @@ export default function CustomersPage() {
     if (!toDelete) return
     try {
       await api.delete(`/customers/${toDelete.id}`)
-      setSuccess(`${toDelete.name} deleted.`)
+      setSuccess(t('toast.deleted', { name: toDelete.name }))
       setToDelete(null)
       await fetchList()
     } catch (e) {
-      setError(apiError(e, 'Could not delete'))
+      setError(apiError(e, t('errors.deleteFailed')))
       setToDelete(null)
     }
   }
@@ -118,17 +120,17 @@ export default function CustomersPage() {
 
   return (
     <div className="w-full px-6 py-5">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Customers' }]} />
+      <Breadcrumb items={[{ label: t('breadcrumbHome'), href: '/' }, { label: t('title') }]} />
 
       <div className="mb-5">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Customers</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Billing and contact records. Domains link to these — this is not a panel login account.
+          {t('subtitle')}
         </p>
       </div>
 
       <ListToolbar
-        primary={{ label: 'New Customer', onClick: () => setEditing({ ...EMPTY }) }}
+        primary={{ label: t('newCustomer'), onClick: () => setEditing({ ...EMPTY }) }}
         search={query}
         onSearchChange={setQuery}
       />
@@ -141,23 +143,23 @@ export default function CustomersPage() {
       )}
 
       {loading ? (
-        <div className="py-16 text-center text-sm text-slate-400">Loading…</div>
+        <div className="py-16 text-center text-sm text-slate-400">{t('loading')}</div>
       ) : list.length === 0 ? (
         <EmptyState
-          title="No customer records yet"
-          description="Create a customer record first to link domains to a customer."
-          button={{ label: 'New Customer', onClick: () => setEditing({ ...EMPTY }) }}
+          title={t('empty.title')}
+          description={t('empty.description')}
+          button={{ label: t('newCustomer'), onClick: () => setEditing({ ...EMPTY }) }}
         />
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-sm text-slate-400">No customer matches your search.</div>
+        <div className="py-12 text-center text-sm text-slate-400">{t('noMatch')}</div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 dark:bg-slate-900/60">
               <tr>
-                {['Name', 'Email', 'Plan', 'Status', 'Created', ''].map((b, i) => (
+                {['name', 'email', 'plan', 'status', 'created', ''].map((b, i) => (
                   <th key={i} className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                    {b}
+                    {b ? t(`columns.${b}`) : ''}
                   </th>
                 ))}
               </tr>
@@ -170,16 +172,16 @@ export default function CustomersPage() {
                   <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400 whitespace-nowrap">{planName(m.plan_id)}</td>
                   <td className="px-3 py-2.5 whitespace-nowrap">
                     {m.status === 'active'
-                      ? <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">Active</span>
-                      : <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">Passive</span>}
+                      ? <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">{t('status.active')}</span>
+                      : <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">{t('status.passive')}</span>}
                   </td>
                   <td className="px-3 py-2.5 text-xs text-slate-500 whitespace-nowrap">{m.created_at}</td>
                   <td className="px-3 py-2.5 text-right whitespace-nowrap">
                     <button onClick={() => setEditing({ ...m })} className="text-xs text-brand-600 dark:text-brand-400 hover:underline mr-3">
-                      Edit
+                      {t('actions.edit')}
                     </button>
                     <button onClick={() => setToDelete(m)} className="text-xs text-red-600 dark:text-red-400 hover:underline">
-                      Delete
+                      {t('actions.delete')}
                     </button>
                   </td>
                 </tr>
@@ -191,13 +193,13 @@ export default function CustomersPage() {
 
       <Modal
         open={editing !== null}
-        title={editing?.id ? 'Edit Customer' : 'New Customer'}
+        title={editing?.id ? t('modal.editTitle') : t('modal.newTitle')}
         onClose={() => setEditing(null)}
       >
         {editing && (
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Name</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{t('modal.name')}</label>
               <input
                 value={editing.name}
                 onChange={(e) => setEditing({ ...editing, name: e.target.value })}
@@ -205,7 +207,7 @@ export default function CustomersPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{t('modal.email')}</label>
               <input
                 type="email"
                 value={editing.email}
@@ -215,30 +217,30 @@ export default function CustomersPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Plan</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{t('modal.plan')}</label>
                 <select
                   value={editing.plan_id ?? ''}
                   onChange={(e) => setEditing({ ...editing, plan_id: e.target.value === '' ? null : Number(e.target.value) })}
                   className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 >
-                  <option value="">No plan</option>
+                  <option value="">{t('modal.noPlan')}</option>
                   {plans.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Status</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{t('modal.status')}</label>
                 <select
                   value={editing.status}
                   onChange={(e) => setEditing({ ...editing, status: e.target.value })}
                   className="w-full px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 >
-                  <option value="active">Active</option>
-                  <option value="passive">Passive</option>
+                  <option value="active">{t('status.active')}</option>
+                  <option value="passive">{t('status.passive')}</option>
                 </select>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Notes</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{t('modal.notes')}</label>
               <input
                 value={editing.notes}
                 onChange={(e) => setEditing({ ...editing, notes: e.target.value })}
@@ -250,14 +252,14 @@ export default function CustomersPage() {
                 onClick={() => setEditing(null)}
                 className="px-3.5 py-2 text-sm rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
-                Cancel
+                {t('modal.cancel')}
               </button>
               <button
                 onClick={save}
                 disabled={saving}
                 className="px-3.5 py-2 text-sm font-medium rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 transition"
               >
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? t('modal.saving') : t('modal.save')}
               </button>
             </div>
           </div>
@@ -266,9 +268,9 @@ export default function CustomersPage() {
 
       <ConfirmDialog
         open={toDelete !== null}
-        title="Delete customer"
-        message={`${toDelete?.name ?? ''} will be deleted. Domains linked to this customer are not removed — only the link is cleared.`}
-        confirmText="Delete"
+        title={t('delete.title')}
+        message={t('delete.message', { name: toDelete?.name ?? '' })}
+        confirmText={t('delete.confirm')}
         dangerous
         onConfirm={remove}
         onCancel={() => setToDelete(null)}

@@ -1,0 +1,107 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları"
+  },
+  "title": "Alan Adları",
+  "subtitle": "Kayıtlı tüm alan adlarını görüntüleyin, durumlarını toplu değiştirin veya silin.",
+  "loading": "Yükleniyor...",
+  "searchPlaceholder": "🔍 Alan adı ara...",
+  "newDomain": "Yeni Alan Adı",
+  "empty": {
+    "title": "Henüz alan adı yok",
+    "description": "İlk alan adınızı ekleyerek başlayın. Bir Linux kullanıcısı, nginx vhost, PHP-FPM havuzu, FTP hesabı, MySQL veritabanı ve DNS bölgesi otomatik olarak oluşturulur.",
+    "button": "Alan Adı Oluştur"
+  },
+  "columns": {
+    "domainName": "Alan Adı",
+    "systemUser": "Sistem Kullanıcısı",
+    "plan": "Plan",
+    "php": "PHP",
+    "disk": "Disk",
+    "status": "Durum",
+    "created": "Oluşturuldu",
+    "actions": "İşlemler"
+  },
+  "openInNewTab": "Yeni sekmede aç",
+  "sslExpires": "Bitiş: {{date}}",
+  "sslActive": "SSL etkin",
+  "reseller": "Bayi: {{name}}",
+  "noPlan": "Yok",
+  "subdomain": "ALT",
+  "subdomainStatus": "alt alan adı",
+  "subdomainParentPlan": "Üst",
+  "manage": "Yönet",
+  "addSubdomain": "+ Alt Alan Adı",
+  "bulk": {
+    "selected": "{{count}} seçildi",
+    "activate": "▶ Etkinleştir",
+    "deactivate": "⏸ Devre Dışı Bırak",
+    "delete": "🗑 Sil ({{count}})",
+    "clear": "Seçimi temizle"
+  },
+  "deleteConfirm": {
+    "title": "⚠ Toplu Alan Adı Silme",
+    "messageMid": " alan adı ve tüm bağımlı kaynaklar (Linux kullanıcıları, ana dizinler, veritabanları, FTP hesapları, vhost'lar ve DNS bölgeleri) ",
+    "messageBold": "kalıcı olarak",
+    "messagePost": " silinecek.",
+    "moreItems": "+ {{count}} tane daha...",
+    "typeLabel": "Onaylamak için ",
+    "typeSuffix": " yazın:",
+    "cancel": "İptal",
+    "confirm": "Evet, Sil"
+  },
+  "createModal": {
+    "title": "Yeni Alan Adı Oluştur",
+    "subtitle": "Linux kullanıcısı, nginx vhost, PHP-FPM havuzu, FTP hesabı, MySQL veritabanı ve DNS bölgesi otomatik olarak yapılandırılır.",
+    "domainName": "Alan adı",
+    "domainNamePlaceholder": "example.com",
+    "loading": "Yükleniyor...",
+    "domainNameHintPre": "Küçük harfler, rakamlar, tireler ve noktalar. Örneğin: ",
+    "domainNameHintMid": " veya ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "panel.site.com",
+    "phpVersion": "PHP Sürümü",
+    "phpDefault": "PHP 8.3 (varsayılan)",
+    "servicePlan": "Hizmet Planı",
+    "planNone": "(yok)",
+    "issueSsl": "Oluşturduktan sonra Let's Encrypt SSL sertifikası kur",
+    "sslWarning": "⚠️ Alan adının DNS A kaydı bu sunucuyu göstermelidir, aksi halde sertifika alınamaz ve daha sonra SSL sayfasından yeniden deneyebilirsiniz.",
+    "cancel": "İptal",
+    "creating": "Oluşturuluyor...",
+    "create": "Oluştur"
+  },
+  "resultModal": {
+    "title": "✓ Alan Adı Oluşturuldu",
+    "readyPre": " hazır. Aşağıdaki parolalar ",
+    "readyBold": "yalnızca bir kez",
+    "readyPost": " gösterilir. Güvenli bir şekilde saklayın.",
+    "ftp": "FTP",
+    "mysql": "MySQL Veritabanı",
+    "host": "Sunucu",
+    "username": "Kullanıcı Adı",
+    "password": "Parola",
+    "database": "Veritabanı",
+    "systemUser": "Sistem kullanıcısı: ",
+    "ok": "Tamam"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "Kopyalamak için tıklayın",
+    "hide": "Gizle",
+    "show": "Göster",
+    "copied": "Kopyalandı"
+  },
+  "toast": {
+    "created": "✓ \"{{name}}\" oluşturuldu. Linux kullanıcısı, nginx vhost, PHP-FPM havuzu, FTP hesabı, MySQL veritabanı ve DNS bölgesi hazır.",
+    "sslInstalled": " Let's Encrypt SSL kuruldu.",
+    "sslFailed": " (Let's Encrypt SSL alınamadı — DNS A kaydının buraya işaret ettiğinden emin olun, sonra SSL sayfasından kurun.)",
+    "deleted": "✓ {{success}}/{{total}} alan adı silindi",
+    "statusChanged": "✓ {{count}} alan adı \"{{status}}\" durumuna değiştirildi"
+  },
+  "errors": {
+    "invalidDomain": "Geçersiz alan adı. Örneğin: example.com veya panel.example.com",
+    "createFailed": "Alan adı oluşturulamadı",
+    "statusFailed": "Durum değiştirilemedi"
+  }
+}

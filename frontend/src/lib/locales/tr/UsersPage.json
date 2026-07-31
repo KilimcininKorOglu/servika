@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "users": "Kullanıcılar"
+  },
+  "title": "Kullanıcılar",
+  "subtitleAdmin": "Panel hesapları: yöneticiler, bayiler ve müşteriler.",
+  "subtitleReseller": "Oluşturduğunuz müşteri hesapları.",
+  "newAccount": "Yeni Hesap",
+  "newCustomer": "Yeni Müşteri",
+  "loading": "Yükleniyor…",
+  "empty": {
+    "titleAdmin": "Henüz başka hesap yok",
+    "titleReseller": "Henüz müşteri hesabı yok",
+    "description": "Yeni bir hesap oluşturarak başlayın."
+  },
+  "noMatch": "Aramanızla eşleşen hesap yok.",
+  "roles": {
+    "admin": "Yönetici",
+    "reseller": "Bayi",
+    "user": "Müşteri"
+  },
+  "columns": {
+    "user": "Kullanıcı",
+    "fullName": "Ad Soyad",
+    "role": "Rol",
+    "status": "Durum",
+    "twoFa": "2FA",
+    "lastLogin": "Son Giriş"
+  },
+  "system": "(sistem)",
+  "systemAccount": "sistem hesabı",
+  "status": {
+    "active": "Etkin",
+    "suspended": "Askıda"
+  },
+  "noPassword": "Parola yok",
+  "noPasswordTitle": "Parola ayarlanmadı — bir parola atayana kadar bu hesap giriş yapamaz.",
+  "twoFaOn": "Açık",
+  "twoFaOff": "Kapalı",
+  "actions": {
+    "password": "Parola",
+    "limits": "Sınırlar",
+    "suspend": "Askıya Al",
+    "enable": "Etkinleştir",
+    "delete": "Sil"
+  },
+  "createModal": {
+    "titleAdmin": "Yeni Hesap",
+    "titleReseller": "Yeni Müşteri Hesabı",
+    "username": "Kullanıcı Adı",
+    "usernamePlaceholder": "ornek_bayi",
+    "usernameHint": "3-32 karakter, küçük harfle başlar; harf, rakam, _ ve - içerebilir.",
+    "password": "Parola",
+    "passwordHint": "En az 8 karakter. Parola yalnızca şimdi gösterilir — kullanıcıya iletin.",
+    "role": "Rol",
+    "resellerOnlyCustomers": "Bayiler yalnızca müşteri hesabı oluşturabilir.",
+    "email": "E-posta",
+    "fullName": "Ad Soyad",
+    "cancel": "İptal",
+    "creating": "Oluşturuluyor…",
+    "create": "Oluştur"
+  },
+  "passwordModal": {
+    "title": "Parola Ayarla",
+    "newFor": "Şunun için yeni parola: ",
+    "customerNote": "Bu, müşterinin panel hesabı parolasıdır. Müşteri, müşteri portalında bu kullanıcı adı ve parolayla giriş yapar; parola olmadan hesap giriş yapamaz.",
+    "placeholder": "En az 8 karakter",
+    "cancel": "İptal",
+    "saving": "Kaydediliyor…",
+    "setPassword": "Parolayı Ayarla"
+  },
+  "limitsModal": {
+    "title": "Bayi Sınırları",
+    "loading": "Yükleniyor…",
+    "upperBounds": "Şunun için üst sınırlar: ",
+    "unlimitedNote": "0 = sınırsız. Hepsi 0 ise sınır kaydı tamamen kaldırılır.",
+    "maxCustomers": "Maks. müşteri",
+    "maxDomains": "Maks. alan adı",
+    "diskQuota": "Disk kotası (MB)",
+    "trafficQuota": "Trafik kotası (MB)",
+    "inUseNow": "Şu an {{count}} kullanımda",
+    "mbInUseNow": "Şu an {{count}} MB kullanımda",
+    "mbUsedNow": "Şu an {{count}} MB kullanıldı",
+    "limitBelowUsage": " — sınır mevcut kullanımın altında",
+    "quotaBelowUsage": " — kota mevcut kullanımın altında",
+    "noLimit": "Bu bayi için sınır tanımlı değil — şu anda sınırsız.",
+    "loweringNote": "Bir sınırı mevcut kullanımın altına düşürmek var olan hesapları silmez; yalnızca yeni eklemeleri engeller.",
+    "cancel": "İptal",
+    "saving": "Kaydediliyor…",
+    "save": "Kaydet"
+  },
+  "delete": {
+    "title": "Hesabı sil",
+    "message": "{{username}} hesabı silinecek.",
+    "resellerNote": " Bu bayinin altındaki hesaplar silinmez; yöneticiye devredilir.",
+    "confirm": "Sil"
+  },
+  "toast": {
+    "created": "{{username}} hesabı oluşturuldu.",
+    "passwordUpdated": "{{username}} için parola güncellendi.",
+    "limitsUpdated": "{{username}} için sınırlar güncellendi.",
+    "enabled": "{{username}} etkinleştirildi.",
+    "suspended": "{{username}} askıya alındı.",
+    "deleted": "{{username}} silindi."
+  },
+  "errors": {
+    "loadFailed": "Hesaplar yüklenemedi",
+    "createFailed": "Hesap oluşturulamadı",
+    "resetFailed": "Parola sıfırlanamadı",
+    "loadLimitsFailed": "Sınırlar yüklenemedi",
+    "saveLimitsFailed": "Sınırlar kaydedilemedi",
+    "statusFailed": "Durum değiştirilemedi",
+    "deleteFailed": "Silinemedi"
+  }
+}

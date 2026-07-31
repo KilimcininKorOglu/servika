@@ -1,0 +1,25 @@
+{
+  "breadcrumbHome": "Ana Sayfa",
+  "breadcrumbServerStatus": "Sunucu Durumu",
+  "title": "Sunucu Durumu",
+  "subtitle": "Sunucunun canlı bir görünümü. Bu ekran salt okunurdur — servis yönetimi yöneticiye aittir.",
+  "loading": "Yükleniyor…",
+  "errorLoad": "Sunucu durumu yüklenemedi",
+  "cards": {
+    "cpu": "CPU",
+    "memory": "Bellek",
+    "disk": "Disk",
+    "panelVersion": "Panel Sürümü"
+  },
+  "loadText": "yük {{values}}",
+  "updateAvailable": "güncelleme mevcut: v{{version}}",
+  "upToDate": "güncel",
+  "servicesHeading": "Servisler",
+  "noServices": "Servis bilgisi yok.",
+  "statuses": {
+    "active": "Çalışıyor",
+    "inactive": "Durduruldu",
+    "failed": "Başarısız",
+    "absent": "Kurulu değil"
+  }
+}

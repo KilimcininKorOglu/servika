@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Ana Sayfa",
+  "breadcrumbTools": "Araçlar ve Ayarlar",
+  "title": "Paket Yöneticisi",
+  "subtitle": "DNF ile sunucu paketleri ve derleyici ortamları.",
+  "installedCount": "{{count}} paket kurulu",
+  "quickInstallGroups": "Hızlı Kurulum Grupları",
+  "groups": {
+    "devtools": { "name": "Geliştirme Araçları", "description": "gcc, make, autoconf, automake, libtool, kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + geliştirme başlıkları" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Go derleyici" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "Konteyner / VM", "description": "Docker uyumlu: podman + buildah + skopeo" },
+    "systools": { "name": "Sistem Araçları", "description": "CLI verimlilik araçları" },
+    "imaging": { "name": "Görüntü İşleme", "description": "ImageMagick + WebP + optimizasyon" },
+    "dbclients": { "name": "Veritabanı İstemcileri", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "Güvenlik", "description": "GnuPG, OpenSSL, fail2ban" }
+  },
+  "badges": {
+    "installed": "KURULU",
+    "protected": "KORUMALI"
+  },
+  "tabs": {
+    "search": "Depolarda Ara",
+    "installed": "Kurulu Paketler"
+  },
+  "searchPlaceholder": "örn. mongodb, redis, nodejs, gcc, htop",
+  "installedPlaceholder": "kurulu paket adı veya açıklaması",
+  "noResults": "Sonuç yok.",
+  "resultsCount": "{{count}} sonuç",
+  "actions": {
+    "processing": "İşleniyor...",
+    "remove": "Kaldır",
+    "install": "Kur",
+    "removing": "Kaldırılıyor...",
+    "installing": "Kuruluyor...",
+    "search": "Ara",
+    "searching": "Aranıyor...",
+    "close": "Kapat"
+  },
+  "confirm": {
+    "install": "\"{{pkg}}\" sistem genelinde kurulacak. Devam edilsin mi?",
+    "remove": "\"{{pkg}}\" KALDIRILACAK. Devam edilsin mi?"
+  },
+  "toast": {
+    "installed": "{{pkg}} kuruldu",
+    "removed": "{{pkg}} kaldırıldı"
+  },
+  "output": {
+    "installTitle": "Kurulum çıktısı: {{pkg}}",
+    "removeTitle": "Kaldırma çıktısı: {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "Kurulum başarısız",
+    "removeFailed": "Kaldırma başarısız",
+    "toggleInstallFailed": "Paket kurulamadı",
+    "toggleRemoveFailed": "Paket kaldırılamadı",
+    "searchFailed": "Arama başarısız"
+  }
+}

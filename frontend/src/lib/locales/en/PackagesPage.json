@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Home",
+  "breadcrumbTools": "Tools and Settings",
+  "title": "Package Manager",
+  "subtitle": "Server packages and compiler environments via DNF.",
+  "installedCount": "{{count}} packages installed",
+  "quickInstallGroups": "Quick Install Groups",
+  "groups": {
+    "devtools": { "name": "Development Tools", "description": "gcc, make, autoconf, automake, libtool, kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + development headers" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Go compiler" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "Container / VM", "description": "Docker-compatible: podman + buildah + skopeo" },
+    "systools": { "name": "System Tools", "description": "CLI productivity tools" },
+    "imaging": { "name": "Image Processing", "description": "ImageMagick + WebP + optimization" },
+    "dbclients": { "name": "Database Clients", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "Security", "description": "GnuPG, OpenSSL, fail2ban" }
+  },
+  "badges": {
+    "installed": "INSTALLED",
+    "protected": "PROTECTED"
+  },
+  "tabs": {
+    "search": "Search Repositories",
+    "installed": "Installed Packages"
+  },
+  "searchPlaceholder": "e.g. mongodb, redis, nodejs, gcc, htop",
+  "installedPlaceholder": "installed package name or description",
+  "noResults": "No results.",
+  "resultsCount": "{{count}} results",
+  "actions": {
+    "processing": "Processing...",
+    "remove": "Remove",
+    "install": "Install",
+    "removing": "Removing...",
+    "installing": "Installing...",
+    "search": "Search",
+    "searching": "Searching...",
+    "close": "Close"
+  },
+  "confirm": {
+    "install": "\"{{pkg}}\" will be installed system-wide. Continue?",
+    "remove": "\"{{pkg}}\" will be REMOVED. Continue?"
+  },
+  "toast": {
+    "installed": "{{pkg}} installed",
+    "removed": "{{pkg}} removed"
+  },
+  "output": {
+    "installTitle": "Installation output: {{pkg}}",
+    "removeTitle": "Removal output: {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "Installation failed",
+    "removeFailed": "Removal failed",
+    "toggleInstallFailed": "Failed to install package",
+    "toggleRemoveFailed": "Failed to remove package",
+    "searchFailed": "Search failed"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "users": "Users"
+  },
+  "title": "Users",
+  "subtitleAdmin": "Panel accounts: administrators, resellers and customers.",
+  "subtitleReseller": "The customer accounts you created.",
+  "newAccount": "New Account",
+  "newCustomer": "New Customer",
+  "loading": "Loading…",
+  "empty": {
+    "titleAdmin": "No other accounts yet",
+    "titleReseller": "No customer accounts yet",
+    "description": "Start by creating a new account."
+  },
+  "noMatch": "No account matches your search.",
+  "roles": {
+    "admin": "Administrator",
+    "reseller": "Reseller",
+    "user": "Customer"
+  },
+  "columns": {
+    "user": "User",
+    "fullName": "Full Name",
+    "role": "Role",
+    "status": "Status",
+    "twoFa": "2FA",
+    "lastLogin": "Last Login"
+  },
+  "system": "(system)",
+  "systemAccount": "system account",
+  "status": {
+    "active": "Active",
+    "suspended": "Suspended"
+  },
+  "noPassword": "No password",
+  "noPasswordTitle": "No password set — this account cannot log in until you assign one.",
+  "twoFaOn": "On",
+  "twoFaOff": "Off",
+  "actions": {
+    "password": "Password",
+    "limits": "Limits",
+    "suspend": "Suspend",
+    "enable": "Enable",
+    "delete": "Delete"
+  },
+  "createModal": {
+    "titleAdmin": "New Account",
+    "titleReseller": "New Customer Account",
+    "username": "Username",
+    "usernamePlaceholder": "example_reseller",
+    "usernameHint": "3-32 characters, starts with a lowercase letter; may contain letters, digits, _ and -.",
+    "password": "Password",
+    "passwordHint": "At least 8 characters. The password is shown only now — hand it to the user.",
+    "role": "Role",
+    "resellerOnlyCustomers": "Resellers can create customer accounts only.",
+    "email": "Email",
+    "fullName": "Full Name",
+    "cancel": "Cancel",
+    "creating": "Creating…",
+    "create": "Create"
+  },
+  "passwordModal": {
+    "title": "Set Password",
+    "newFor": "New password for ",
+    "customerNote": "This is the customer's panel account password. The customer signs in at the customer portal with this username and password; without one the account cannot log in.",
+    "placeholder": "At least 8 characters",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "setPassword": "Set Password"
+  },
+  "limitsModal": {
+    "title": "Reseller Limits",
+    "loading": "Loading…",
+    "upperBounds": "Upper bounds for ",
+    "unlimitedNote": "0 = unlimited. If all are 0 the limit record is removed entirely.",
+    "maxCustomers": "Max customers",
+    "maxDomains": "Max domains",
+    "diskQuota": "Disk quota (MB)",
+    "trafficQuota": "Traffic quota (MB)",
+    "inUseNow": "{{count}} in use now",
+    "mbInUseNow": "{{count}} MB in use now",
+    "mbUsedNow": "{{count}} MB used now",
+    "limitBelowUsage": " — limit is below current usage",
+    "quotaBelowUsage": " — quota is below current usage",
+    "noLimit": "No limit is defined for this reseller — currently unlimited.",
+    "loweringNote": "Lowering a limit below current usage does not delete existing accounts; it only blocks new additions.",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "save": "Save"
+  },
+  "delete": {
+    "title": "Delete account",
+    "message": "Account {{username}} will be deleted.",
+    "resellerNote": " Accounts beneath this reseller are not deleted; they are transferred to the administrator.",
+    "confirm": "Delete"
+  },
+  "toast": {
+    "created": "Account {{username}} created.",
+    "passwordUpdated": "Password updated for {{username}}.",
+    "limitsUpdated": "Limits updated for {{username}}.",
+    "enabled": "{{username}} enabled.",
+    "suspended": "{{username}} suspended.",
+    "deleted": "{{username}} deleted."
+  },
+  "errors": {
+    "loadFailed": "Could not load accounts",
+    "createFailed": "Could not create account",
+    "resetFailed": "Could not reset password",
+    "loadLimitsFailed": "Could not load limits",
+    "saveLimitsFailed": "Could not save limits",
+    "statusFailed": "Could not change status",
+    "deleteFailed": "Could not delete"
+  }
+}

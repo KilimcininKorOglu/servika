@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Home",
+  "title": "Security Log",
+  "subtitle": "Panel login attempts and administrative actions. Newest entry on top.",
+  "stats": {
+    "entries": "entries",
+    "failed": "failed"
+  },
+  "searchPlaceholder": "Search user, IP, target…",
+  "filters": {
+    "allActions": "All actions",
+    "last": "Last {{n}}",
+    "failedOnly": "Failed only"
+  },
+  "loading": "Loading…",
+  "empty": {
+    "title": "No entries for this filter",
+    "description": "Loosen the filters and try again."
+  },
+  "noMatch": "No entry matches your search.",
+  "columns": {
+    "time": "Time",
+    "result": "Result",
+    "action": "Action",
+    "user": "User",
+    "ip": "IP",
+    "target": "Target"
+  },
+  "status": {
+    "success": "Success",
+    "failed": "Failed"
+  },
+  "errors": {
+    "loadFailed": "Could not load the log"
+  }
+}

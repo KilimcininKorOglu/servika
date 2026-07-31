@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Ana Sayfa",
+  "title": "Müşteriler",
+  "subtitle": "Fatura ve iletişim kayıtları. Alan adları bunlara bağlanır — bu bir panel oturum açma hesabı değildir.",
+  "newCustomer": "Yeni Müşteri",
+  "loading": "Yükleniyor…",
+  "empty": {
+    "title": "Henüz müşteri kaydı yok",
+    "description": "Alan adlarını bir müşteriye bağlamak için önce bir müşteri kaydı oluşturun."
+  },
+  "noMatch": "Aramanızla eşleşen müşteri yok.",
+  "columns": {
+    "name": "Ad",
+    "email": "E-posta",
+    "plan": "Plan",
+    "status": "Durum",
+    "created": "Oluşturulma"
+  },
+  "status": {
+    "active": "Etkin",
+    "passive": "Pasif"
+  },
+  "actions": {
+    "edit": "Düzenle",
+    "delete": "Sil"
+  },
+  "modal": {
+    "editTitle": "Müşteriyi Düzenle",
+    "newTitle": "Yeni Müşteri",
+    "name": "Ad",
+    "email": "E-posta",
+    "plan": "Plan",
+    "noPlan": "Plan yok",
+    "status": "Durum",
+    "notes": "Notlar",
+    "cancel": "İptal",
+    "saving": "Kaydediliyor…",
+    "save": "Kaydet"
+  },
+  "delete": {
+    "title": "Müşteriyi sil",
+    "message": "{{name}} silinecek. Bu müşteriye bağlı alan adları kaldırılmaz — yalnızca bağlantı temizlenir.",
+    "confirm": "Sil"
+  },
+  "toast": {
+    "added": "{{name}} eklendi.",
+    "updated": "{{name}} güncellendi.",
+    "deleted": "{{name}} silindi."
+  },
+  "errors": {
+    "loadFailed": "Müşteriler yüklenemedi",
+    "nameEmailRequired": "Ad ve e-posta zorunludur",
+    "saveFailed": "Kaydedilemedi",
+    "deleteFailed": "Silinemedi"
+  }
+}

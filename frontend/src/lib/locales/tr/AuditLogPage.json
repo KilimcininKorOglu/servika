@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Ana Sayfa",
+  "title": "Güvenlik Günlüğü",
+  "subtitle": "Panel oturum açma denemeleri ve yönetim işlemleri. En yeni kayıt en üstte.",
+  "stats": {
+    "entries": "kayıt",
+    "failed": "başarısız"
+  },
+  "searchPlaceholder": "Kullanıcı, IP, hedef ara…",
+  "filters": {
+    "allActions": "Tüm işlemler",
+    "last": "Son {{n}}",
+    "failedOnly": "Yalnızca başarısız"
+  },
+  "loading": "Yükleniyor…",
+  "empty": {
+    "title": "Bu filtre için kayıt yok",
+    "description": "Filtreleri gevşetin ve tekrar deneyin."
+  },
+  "noMatch": "Aramanızla eşleşen kayıt yok.",
+  "columns": {
+    "time": "Zaman",
+    "result": "Sonuç",
+    "action": "İşlem",
+    "user": "Kullanıcı",
+    "ip": "IP",
+    "target": "Hedef"
+  },
+  "status": {
+    "success": "Başarılı",
+    "failed": "Başarısız"
+  },
+  "errors": {
+    "loadFailed": "Günlük yüklenemedi"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "Araçlar ve Ayarlar",
+  "breadcrumbServices": "Servisler",
+  "title": "Servis Yönetimi",
+  "subtitle": "Yönetilen web, veritabanı, DNS, PHP ve destek servislerini yeniden başlatın veya yeniden yükleyin.",
+  "loading": "Yükleniyor…",
+  "reload": "Yeniden Yükle",
+  "restart": "Yeniden Başlat",
+  "working": "…",
+  "statuses": {
+    "active": "● Etkin",
+    "inactive": "○ Etkin değil",
+    "failed": "✕ Başarısız",
+    "absent": "Kurulu değil"
+  },
+  "errors": {
+    "loadFailed": "Servisler yüklenemedi",
+    "actionFailed": "{{label}} işlemi başarısız oldu"
+  },
+  "success": {
+    "reloaded": "{{label}} yeniden yüklendi.",
+    "restarted": "{{label}} yeniden başlatıldı."
+  }
+}

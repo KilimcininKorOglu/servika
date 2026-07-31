@@ -1,0 +1,107 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains"
+  },
+  "title": "Domains",
+  "subtitle": "View all registered domains, change their status in bulk, or delete them.",
+  "loading": "Loading...",
+  "searchPlaceholder": "🔍 Search domains...",
+  "newDomain": "New Domain",
+  "empty": {
+    "title": "No domains yet",
+    "description": "Start by adding your first domain. A Linux user, nginx vhost, PHP-FPM pool, FTP account, MySQL database, and DNS zone will be created automatically.",
+    "button": "Create Domain"
+  },
+  "columns": {
+    "domainName": "Domain Name",
+    "systemUser": "System User",
+    "plan": "Plan",
+    "php": "PHP",
+    "disk": "Disk",
+    "status": "Status",
+    "created": "Created",
+    "actions": "Actions"
+  },
+  "openInNewTab": "Open in new tab",
+  "sslExpires": "Expires: {{date}}",
+  "sslActive": "SSL active",
+  "reseller": "Reseller: {{name}}",
+  "noPlan": "None",
+  "subdomain": "SUB",
+  "subdomainStatus": "subdomain",
+  "subdomainParentPlan": "Parent",
+  "manage": "Manage",
+  "addSubdomain": "+ Subdomain",
+  "bulk": {
+    "selected": "{{count}} selected",
+    "activate": "▶ Activate",
+    "deactivate": "⏸ Deactivate",
+    "delete": "🗑 Delete ({{count}})",
+    "clear": "Clear selection"
+  },
+  "deleteConfirm": {
+    "title": "⚠ Bulk Domain Deletion",
+    "messageMid": " domains and all dependent resources (Linux users, home directories, databases, FTP accounts, vhosts, and DNS zones) will be ",
+    "messageBold": "permanently",
+    "messagePost": " deleted.",
+    "moreItems": "+ {{count}} more...",
+    "typeLabel": "Type ",
+    "typeSuffix": " to confirm:",
+    "cancel": "Cancel",
+    "confirm": "Yes, Delete"
+  },
+  "createModal": {
+    "title": "Create New Domain",
+    "subtitle": "The Linux user, nginx vhost, PHP-FPM pool, FTP account, MySQL database, and DNS zone are configured automatically.",
+    "domainName": "Domain name",
+    "domainNamePlaceholder": "example.com",
+    "loading": "Loading...",
+    "domainNameHintPre": "Lowercase letters, numbers, hyphens, and periods. For example: ",
+    "domainNameHintMid": " or ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "panel.site.com",
+    "phpVersion": "PHP Version",
+    "phpDefault": "PHP 8.3 (default)",
+    "servicePlan": "Service Plan",
+    "planNone": "(none)",
+    "issueSsl": "Install a Let's Encrypt SSL certificate after creation",
+    "sslWarning": "⚠️ The domain's DNS A record must already point to this server, otherwise issuance fails and you can retry later from the SSL page.",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create": "Create"
+  },
+  "resultModal": {
+    "title": "✓ Domain Created",
+    "readyPre": " is ready. The passwords below are shown ",
+    "readyBold": "only once",
+    "readyPost": ". Store them securely.",
+    "ftp": "FTP",
+    "mysql": "MySQL Database",
+    "host": "Host",
+    "username": "Username",
+    "password": "Password",
+    "database": "Database",
+    "systemUser": "System user: ",
+    "ok": "OK"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "Click to copy",
+    "hide": "Hide",
+    "show": "Show",
+    "copied": "Copied"
+  },
+  "toast": {
+    "created": "✓ \"{{name}}\" created. The Linux user, nginx vhost, PHP-FPM pool, FTP account, MySQL database, and DNS zone are ready.",
+    "sslInstalled": " Let's Encrypt SSL was installed.",
+    "sslFailed": " (Let's Encrypt SSL could not be issued — make sure the DNS A record points here, then install it from the SSL page.)",
+    "deleted": "✓ {{success}}/{{total}} domains deleted",
+    "statusChanged": "✓ {{count}} domains changed to \"{{status}}\""
+  },
+  "errors": {
+    "invalidDomain": "Invalid domain name. For example: example.com or panel.example.com",
+    "createFailed": "Could not create domain",
+    "statusFailed": "Could not change status"
+  }
+}

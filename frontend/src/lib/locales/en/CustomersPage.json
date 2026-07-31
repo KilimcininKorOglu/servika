@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Home",
+  "title": "Customers",
+  "subtitle": "Billing and contact records. Domains link to these — this is not a panel login account.",
+  "newCustomer": "New Customer",
+  "loading": "Loading…",
+  "empty": {
+    "title": "No customer records yet",
+    "description": "Create a customer record first to link domains to a customer."
+  },
+  "noMatch": "No customer matches your search.",
+  "columns": {
+    "name": "Name",
+    "email": "Email",
+    "plan": "Plan",
+    "status": "Status",
+    "created": "Created"
+  },
+  "status": {
+    "active": "Active",
+    "passive": "Passive"
+  },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "modal": {
+    "editTitle": "Edit Customer",
+    "newTitle": "New Customer",
+    "name": "Name",
+    "email": "Email",
+    "plan": "Plan",
+    "noPlan": "No plan",
+    "status": "Status",
+    "notes": "Notes",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "save": "Save"
+  },
+  "delete": {
+    "title": "Delete customer",
+    "message": "{{name}} will be deleted. Domains linked to this customer are not removed — only the link is cleared.",
+    "confirm": "Delete"
+  },
+  "toast": {
+    "added": "{{name}} added.",
+    "updated": "{{name}} updated.",
+    "deleted": "{{name}} deleted."
+  },
+  "errors": {
+    "loadFailed": "Could not load customers",
+    "nameEmailRequired": "Name and email are required",
+    "saveFailed": "Could not save",
+    "deleteFailed": "Could not delete"
+  }
+}

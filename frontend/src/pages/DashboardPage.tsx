@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { api, apiError as apiError } from '@/lib/api'
 import DomainList, { type Domain } from '@/components/DomainList'
@@ -7,6 +8,7 @@ import ResourceCard from '@/components/ResourceCard'
 import { useAuth } from '@/store/auth'
 
 export default function DashboardPage() {
+  const { t } = useTranslation('DashboardPage')
   const username = useAuth((s) => s.username)
   const [params, setParams] = useSearchParams()
   const [domains, setDomains] = useState<Domain[]>([])
@@ -38,14 +40,14 @@ export default function DashboardPage() {
     <div className="w-full px-6 py-5">
       <div className="mb-5 flex items-baseline justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-500 mt-0.5">
-            Welcome, <span className="text-slate-700 dark:text-slate-300 font-medium">{username?.full_name || username?.name}</span>
+            {t('welcome')} <span className="text-slate-700 dark:text-slate-300 font-medium">{username?.full_name || username?.name}</span>
           </p>
         </div>
         {selected && (
           <div className="text-right text-xs text-slate-500 dark:text-slate-500">
-            <span className="block">Selected domain</span>
+            <span className="block">{t('selectedDomain')}</span>
             <span className="text-brand-700 dark:text-brand-300 font-mono font-semibold text-sm">{selected.domain_name}</span>
           </div>
         )}
@@ -67,7 +69,7 @@ export default function DashboardPage() {
             <DomainDashboard domain={selected} />
           ) : (
             <div className="bg-white dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-12 text-center text-slate-500 dark:text-slate-500">
-              {loading ? 'Loading…' : 'No domains yet. Add one from the left panel.'}
+              {loading ? t('loading') : t('empty')}
             </div>
           )}
         </section>

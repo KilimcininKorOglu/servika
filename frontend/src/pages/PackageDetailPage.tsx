@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
@@ -31,6 +32,7 @@ type GetResponse = { plan: Plan; domain_count: number }
 type Version = { version: string; description?: string }
 
 export default function PackageDetailPage() {
+  const { t } = useTranslation('PackageDetailPage')
   const { id } = useParams()
   const [plan, setPlan] = useState<Plan | null>(null)
   const [domainCount, setDomainCount] = useState(0)
@@ -66,11 +68,11 @@ export default function PackageDetailPage() {
     setProcessing(true); setError(null); setSuccess(null)
     try {
       await api.put(`/plans/${id}`, plan)
-      setSuccess(`"${plan.name}" was saved. Use “Reapply” below to apply it to assigned domains.`)
+      setSuccess(t('saveSuccess', { name: plan.name }))
       setTimeout(() => setSuccess(null), 6000)
       load()
     } catch (e) {
-      setError(apiError(e, 'Failed to save'))
+      setError(apiError(e, t('saveFailed')))
     } finally {
       setProcessing(false)
     }
@@ -95,8 +97,8 @@ export default function PackageDetailPage() {
     setPlan({ ...plan, [key]: value })
   }
 
-  if (loading) return <div className="px-4 py-4 text-slate-400 sm:px-6 sm:py-5">Loading...</div>
-  if (!plan) return <div className="px-4 py-4 sm:px-6 sm:py-5"><div className="text-sm text-red-600">{error || 'Plan not found'}</div></div>
+  if (loading) return <div className="px-4 py-4 text-slate-400 sm:px-6 sm:py-5">{t('loading')}</div>
+  if (!plan) return <div className="px-4 py-4 sm:px-6 sm:py-5"><div className="text-sm text-red-600">{error || t('planNotFound')}</div></div>
 
   // Include installed PHP versions and the plan's current value even when it is not installed.
   const phpOptions = Array.from(new Set([
@@ -109,9 +111,9 @@ export default function PackageDetailPage() {
     <div className="px-4 py-4 sm:px-6 sm:py-5">
       <div>
         <Breadcrumb items={[
-          { label: 'Home', href: '/' },
-          { label: 'Tools and Settings', href: '/tools-settings' },
-          { label: 'Service Plans', href: '/tools/packages' },
+          { label: t('breadcrumb.home'), href: '/' },
+          { label: t('breadcrumb.toolsSettings'), href: '/tools-settings' },
+          { label: t('breadcrumb.servicePlans'), href: '/tools/packages' },
           { label: plan.name },
         ]} />
 
@@ -120,15 +122,15 @@ export default function PackageDetailPage() {
           <div className="min-w-0">
             <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2 truncate">
               {plan.name}
-              {plan.is_default && <span className="shrink-0 text-[10px] uppercase font-semibold tracking-wider bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-1.5 py-0.5 rounded">Default</span>}
+              {plan.is_default && <span className="shrink-0 text-[10px] uppercase font-semibold tracking-wider bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-1.5 py-0.5 rounded">{t('default')}</span>}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-              {plan.description || 'No description'}, Used by <span className="font-mono">{domainCount}</span> domains
+              {plan.description || t('noDescription')}{t('usedBy')}<span className="font-mono">{domainCount}</span>{t('domainsSuffix')}
             </p>
           </div>
           <button onClick={save} disabled={processing}
             className="shrink-0 px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 disabled:opacity-60 text-sm font-medium rounded-lg shadow-sm">
-            {processing ? 'Saving...' : 'Save Changes'}
+            {processing ? t('saving') : t('saveChanges')}
           </button>
         </div>
 
@@ -136,27 +138,27 @@ export default function PackageDetailPage() {
         {success && <div className="mb-4 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
         {/* General settings */}
-        <Card title="General" icon="⚙️">
+        <Card title={t('general.title')} icon="⚙️">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Plan Name">
+            <Field label={t('general.planName')}>
               <input value={plan.name} onChange={e => updatePlan('name', e.target.value)} className={inputClass} />
             </Field>
-            <Field label="Default Plan">
+            <Field label={t('general.defaultPlan')}>
               <label className="flex items-center gap-2 h-[38px] px-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 cursor-pointer">
                 <input type="checkbox" checked={plan.is_default} onChange={e => updatePlan('is_default', e.target.checked)} className="rounded" />
-                <span className="text-sm text-slate-700 dark:text-slate-300">Assign automatically to new domains</span>
+                <span className="text-sm text-slate-700 dark:text-slate-300">{t('general.assignAuto')}</span>
               </label>
             </Field>
-            <Field label="Description" span={2}>
+            <Field label={t('general.description')} span={2}>
               <textarea value={plan.description} onChange={e => updatePlan('description', e.target.value)} rows={2} className={inputClass} />
             </Field>
           </div>
         </Card>
 
         {/* Defaults inherited by new domains */}
-        <Card title="Defaults" icon="🧩" subtitle="Initial values applied when a new domain associated with this plan is created.">
+        <Card title={t('defaults.title')} icon="🧩" subtitle={t('defaults.subtitle')}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Field label="PHP Version" hint="New domains on this plan are provisioned with this PHP version.">
+            <Field label={t('defaults.phpVersion')} hint={t('defaults.phpHint')}>
               <select value={plan.php_version} onChange={e => updatePlan('php_version', e.target.value)} className={inputClass}>
                 {phpOptions.map(version => <option key={version} value={version}>PHP {version}</option>)}
               </select>
@@ -165,94 +167,94 @@ export default function PackageDetailPage() {
         </Card>
 
         {/* Resource limits */}
-        <Card title="Resource Limits" icon="📊" subtitle="Enforced at the system level using systemd cgroup, xfs_quota, and MariaDB GRANT. After saving, use “Reapply” for assigned domains.">
+        <Card title={t('resources.title')} icon="📊" subtitle={t('resources.subtitle')}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Field label="CPU %" hint="100 = 1 core (systemd CPUQuota)">
+            <Field label={t('resources.cpu')} hint={t('resources.cpuHint')}>
               <input type="number" min={10} max={2000} value={plan.cpu_percent} onChange={e => updatePlan('cpu_percent', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="RAM (MB)" hint="Hard MemoryMax; MemoryHigh is automatically set to 90%">
+            <Field label={t('resources.ram')} hint={t('resources.ramHint')}>
               <input type="number" min={64} value={plan.ram_mb} onChange={e => updatePlan('ram_mb', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="Max Processes" hint="systemd TasksMax, including PHP-FPM workers">
+            <Field label={t('resources.maxProcesses')} hint={t('resources.maxProcessesHint')}>
               <input type="number" min={5} value={plan.max_process} onChange={e => updatePlan('max_process', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="MySQL Connections" hint="MAX_USER_CONNECTIONS">
+            <Field label={t('resources.mysqlConnections')} hint={t('resources.mysqlConnectionsHint')}>
               <input type="number" min={1} value={plan.mysql_max_connections} onChange={e => updatePlan('mysql_max_connections', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="PHP-FPM max_children" hint="0 = Automatic (max(4, RAM/64)). Keeps per-tenant PHP-FPM consistent with the memory limit.">
-              <input type="number" min={0} value={plan.pm_max_children} onChange={e => updatePlan('pm_max_children', Number(e.target.value) || 0)} placeholder="0 = Automatic" className={numberInputClass} />
+            <Field label={t('resources.fpmChildren')} hint={t('resources.fpmChildrenHint')}>
+              <input type="number" min={0} value={plan.pm_max_children} onChange={e => updatePlan('pm_max_children', Number(e.target.value) || 0)} placeholder={t('resources.fpmChildrenPlaceholder')} className={numberInputClass} />
             </Field>
-            <Field label="Disk (MB)" hint="0 = unlimited">
+            <Field label={t('resources.disk')} hint={t('resources.diskHint')}>
               <input type="number" min={0} value={plan.disk_quota_mb} onChange={e => updatePlan('disk_quota_mb', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="Traffic (MB/month)" hint="0 = unlimited">
+            <Field label={t('resources.traffic')} hint={t('resources.trafficHint')}>
               <input type="number" min={0} value={plan.traffic_quota_mb} onChange={e => updatePlan('traffic_quota_mb', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="Inode Quota" hint="Total number of files and directories">
+            <Field label={t('resources.inode')} hint={t('resources.inodeHint')}>
               <input type="number" min={1000} value={plan.inode_quota} onChange={e => updatePlan('inode_quota', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="I/O Weight" hint="systemd IOWeight (1-1000)">
+            <Field label={t('resources.ioWeight')} hint={t('resources.ioWeightHint')}>
               <input type="number" min={1} max={1000} value={plan.io_weight} onChange={e => updatePlan('io_weight', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
           </div>
-          <div className="mt-4 text-xs font-medium text-slate-500">Disk I/O, absolute throttles independent of IOWeight (cgroup v2)</div>
+          <div className="mt-4 text-xs font-medium text-slate-500">{t('resources.diskIoHeader')}</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-            <Field label="Disk Read (MB/s)" hint="Absolute read bandwidth. 0 = unlimited">
-              <input type="number" min={0} value={plan.io_read_mbps} onChange={e => updatePlan('io_read_mbps', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            <Field label={t('resources.diskRead')} hint={t('resources.diskReadHint')}>
+              <input type="number" min={0} value={plan.io_read_mbps} onChange={e => updatePlan('io_read_mbps', Number(e.target.value) || 0)} placeholder={t('resources.unlimited')} className={numberInputClass} />
             </Field>
-            <Field label="Disk Write (MB/s)" hint="Absolute write bandwidth. 0 = unlimited">
-              <input type="number" min={0} value={plan.io_write_mbps} onChange={e => updatePlan('io_write_mbps', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            <Field label={t('resources.diskWrite')} hint={t('resources.diskWriteHint')}>
+              <input type="number" min={0} value={plan.io_write_mbps} onChange={e => updatePlan('io_write_mbps', Number(e.target.value) || 0)} placeholder={t('resources.unlimited')} className={numberInputClass} />
             </Field>
-            <Field label="Read IOPS" hint="Maximum read operations per second. 0 = unlimited">
-              <input type="number" min={0} value={plan.io_read_iops} onChange={e => updatePlan('io_read_iops', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            <Field label={t('resources.readIops')} hint={t('resources.readIopsHint')}>
+              <input type="number" min={0} value={plan.io_read_iops} onChange={e => updatePlan('io_read_iops', Number(e.target.value) || 0)} placeholder={t('resources.unlimited')} className={numberInputClass} />
             </Field>
-            <Field label="Write IOPS" hint="Maximum write operations per second. 0 = unlimited">
-              <input type="number" min={0} value={plan.io_write_iops} onChange={e => updatePlan('io_write_iops', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            <Field label={t('resources.writeIops')} hint={t('resources.writeIopsHint')}>
+              <input type="number" min={0} value={plan.io_write_iops} onChange={e => updatePlan('io_write_iops', Number(e.target.value) || 0)} placeholder={t('resources.unlimited')} className={numberInputClass} />
             </Field>
           </div>
-          <div className="mt-4 text-xs font-medium text-slate-500">Database, native MariaDB resource limits</div>
+          <div className="mt-4 text-xs font-medium text-slate-500">{t('resources.dbHeader')}</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-            <Field label="Queries per Hour" hint="MAX_QUERIES_PER_HOUR. 0 = unlimited">
-              <input type="number" min={0} value={plan.db_max_queries_per_hour} onChange={e => updatePlan('db_max_queries_per_hour', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            <Field label={t('resources.queriesPerHour')} hint={t('resources.queriesPerHourHint')}>
+              <input type="number" min={0} value={plan.db_max_queries_per_hour} onChange={e => updatePlan('db_max_queries_per_hour', Number(e.target.value) || 0)} placeholder={t('resources.unlimited')} className={numberInputClass} />
             </Field>
-            <Field label="Updates per Hour" hint="MAX_UPDATES_PER_HOUR. 0 = unlimited">
-              <input type="number" min={0} value={plan.db_max_updates_per_hour} onChange={e => updatePlan('db_max_updates_per_hour', Number(e.target.value) || 0)} placeholder="0 = unlimited" className={numberInputClass} />
+            <Field label={t('resources.updatesPerHour')} hint={t('resources.updatesPerHourHint')}>
+              <input type="number" min={0} value={plan.db_max_updates_per_hour} onChange={e => updatePlan('db_max_updates_per_hour', Number(e.target.value) || 0)} placeholder={t('resources.unlimited')} className={numberInputClass} />
             </Field>
-            <Field label="Query Time (seconds)" hint="Queries exceeding this duration are terminated. 0 = disabled">
-              <input type="number" min={0} value={plan.db_max_query_seconds} onChange={e => updatePlan('db_max_query_seconds', Number(e.target.value) || 0)} placeholder="0 = disabled" className={numberInputClass} />
+            <Field label={t('resources.queryTime')} hint={t('resources.queryTimeHint')}>
+              <input type="number" min={0} value={plan.db_max_query_seconds} onChange={e => updatePlan('db_max_query_seconds', Number(e.target.value) || 0)} placeholder={t('resources.disabled')} className={numberInputClass} />
             </Field>
           </div>
         </Card>
 
         {/* Numeric limits, excluding email */}
-        <Card title="Numeric Limits" icon="🔢" subtitle="Number of resources that can be created under the account associated with this plan. 0 = unlimited.">
+        <Card title={t('numeric.title')} icon="🔢" subtitle={t('numeric.subtitle')}>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <Field label="Domains">
+            <Field label={t('numeric.domains')}>
               <input type="number" min={0} value={plan.max_domain} onChange={e => updatePlan('max_domain', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="Databases">
+            <Field label={t('numeric.databases')}>
               <input type="number" min={0} value={plan.max_db} onChange={e => updatePlan('max_db', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
-            <Field label="FTP Accounts">
+            <Field label={t('numeric.ftpAccounts')}>
               <input type="number" min={0} value={plan.max_ftp} onChange={e => updatePlan('max_ftp', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
           </div>
         </Card>
 
         {/* Web server settings for nginx */}
-        <Card title="Web Server (nginx)" icon="🛠️" subtitle="New domains on this plan are provisioned with these nginx settings. Additional directives are validated with “nginx -t” when saved.">
+        <Card title={t('nginx.title')} icon="🛠️" subtitle={t('nginx.subtitle')}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <Field label="FastCGI Cache" hint="Caches dynamic PHP output in nginx for high-traffic sites">
+            <Field label={t('nginx.fastcgiCache')} hint={t('nginx.fastcgiCacheHint')}>
               <label className="flex items-center gap-2 h-[38px] px-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 cursor-pointer">
                 <input type="checkbox" checked={plan.fastcgi_cache} onChange={e => updatePlan('fastcgi_cache', e.target.checked)} className="rounded" />
-                <span className="text-sm text-slate-700 dark:text-slate-300">Enable for new domains</span>
+                <span className="text-sm text-slate-700 dark:text-slate-300">{t('nginx.enableForNew')}</span>
               </label>
             </Field>
-            <Field label="Upload Size Limit (MB)" hint="nginx client_max_body_size, the maximum file upload size">
+            <Field label={t('nginx.uploadLimit')} hint={t('nginx.uploadLimitHint')}>
               <input type="number" min={1} max={4096} value={plan.client_max_body_mb} onChange={e => updatePlan('client_max_body_mb', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
           </div>
-          <Field label="Additional nginx Directives" hint="Added to the server{} block and validated when saved.">
+          <Field label={t('nginx.extraDirectives')} hint={t('nginx.extraDirectivesHint')}>
             <textarea
               value={plan.nginx_extra_directives || ''}
               onChange={e => updatePlan('nginx_extra_directives', e.target.value)}
@@ -263,37 +265,37 @@ export default function PackageDetailPage() {
             />
           </Field>
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            ⓘ When you save, the directives are tested in a temporary server block using <code className="font-mono">nginx -t</code>. If they are invalid, the plan is <strong>not saved</strong> and the nginx error output appears above.
+            {t('nginx.testPre')}<code className="font-mono">nginx -t</code>{t('nginx.testMid')}<strong>{t('nginx.testBold')}</strong>{t('nginx.testPost')}
           </p>
         </Card>
 
         {/* Assigned domains */}
-        <Card title={`Assigned Domains (${domains.length})`} icon="🌐" subtitle="After updating the plan, use “Reapply” to update the domain's cgroup, quota, and MySQL limits.">
+        <Card title={t('assigned.title', { count: domains.length })} icon="🌐" subtitle={t('assigned.subtitle')}>
           {domains.length === 0 ? (
-            <div className="text-sm text-slate-400 py-6 text-center">No domains are assigned to this plan yet.</div>
+            <div className="text-sm text-slate-400 py-6 text-center">{t('assigned.empty')}</div>
           ) : (
             <div className={responsiveTableContainerClass}>
               <table className={responsiveTableClass}>
                 <thead className={responsiveTableHeadClass}>
                   <tr>
-                    <th className="text-left py-2">Domain</th>
-                    <th className="text-left">System User</th>
-                    <th className="text-left">Status</th>
-                    <th className="text-left">Created</th>
-                    <th className="text-right">Action</th>
+                    <th className="text-left py-2">{t('assigned.domain')}</th>
+                    <th className="text-left">{t('assigned.systemUser')}</th>
+                    <th className="text-left">{t('assigned.status')}</th>
+                    <th className="text-left">{t('assigned.created')}</th>
+                    <th className="text-right">{t('assigned.action')}</th>
                   </tr>
                 </thead>
                 <tbody className={responsiveTableBodyClass}>
                   {domains.map(domain => (
                     <tr key={domain.id} className={responsiveTableRowClass}>
-                      <td data-label="Domain" className={responsiveTableCellClass}><Link to={`/subscriptions/${domain.id}`} className="text-brand-600 dark:text-brand-400 font-medium">{domain.domain_name}</Link></td>
-                      <td data-label="System User" className={responsiveTableCodeCellClass}>{domain.system_user}</td>
-                      <td data-label="Status" className={responsiveTableCellClass}>
+                      <td data-label={t('assigned.domain')} className={responsiveTableCellClass}><Link to={`/subscriptions/${domain.id}`} className="text-brand-600 dark:text-brand-400 font-medium">{domain.domain_name}</Link></td>
+                      <td data-label={t('assigned.systemUser')} className={responsiveTableCodeCellClass}>{domain.system_user}</td>
+                      <td data-label={t('assigned.status')} className={responsiveTableCellClass}>
                         <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-semibold ${
                           domain.status === 'active' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
                         }`}>{domain.status}</span>
                       </td>
-                      <td data-label="Created" className={responsiveTableCodeCellClass}>{domain.created_at}</td>
+                      <td data-label={t('assigned.created')} className={responsiveTableCodeCellClass}>{domain.created_at}</td>
                       <td className={responsiveTableActionCellClass}>
                         <button type="button" onClick={() => reapplyForDomain(domain.id)} disabled={reapplyingId !== null}
                           className={`text-xs px-2 py-1 border rounded-md disabled:opacity-60 transition ${
@@ -302,7 +304,7 @@ export default function PackageDetailPage() {
                                   ? 'border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20'
                                   : 'border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20')
                               : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                          {reapplyingId === domain.id ? 'Reapplying…' : reapplyResult?.id === domain.id ? (reapplyResult.ok ? '✓ Applied' : '✗ Failed') : 'Reapply'}
+                          {reapplyingId === domain.id ? t('assigned.reapplying') : reapplyResult?.id === domain.id ? (reapplyResult.ok ? t('assigned.applied') : t('assigned.failed')) : t('assigned.reapply')}
                         </button>
                       </td>
                     </tr>

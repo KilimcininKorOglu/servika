@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -17,13 +18,6 @@ const STATUS_STYLES: Record<string, string> = {
   absent: 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500',
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  active: '● Active',
-  inactive: '○ Inactive',
-  failed: '✕ Failed',
-  absent: 'Not installed',
-}
-
 const GROUP_ICONS: Record<string, string> = {
   'Web Server': '🌐',
   'Database & Cache': '🗄️',
@@ -33,6 +27,7 @@ const GROUP_ICONS: Record<string, string> = {
 }
 
 export default function ServicesPage() {
+  const { t } = useTranslation('ServicesPage')
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [processingUnit, setProcessingUnit] = useState<string | null>(null)
@@ -44,7 +39,7 @@ export default function ServicesPage() {
       const response = await api.get<Service[]>('/system/services')
       setServices(response.data)
     } catch (caughtError) {
-      setError(apiError(caughtError, 'Could not load services'))
+      setError(apiError(caughtError, t('errors.loadFailed')))
     } finally {
       setLoading(false)
     }
@@ -58,10 +53,10 @@ export default function ServicesPage() {
     setSuccess(null)
     try {
       await api.post('/system/service-action', { unit: service.unit, action })
-      setSuccess(`${service.label} ${action === 'reload' ? 'reloaded' : 'restarted'}.`)
+      setSuccess(t(action === 'reload' ? 'success.reloaded' : 'success.restarted', { label: service.label }))
       await load()
     } catch (caughtError) {
-      setError(apiError(caughtError, `${service.label} action failed`))
+      setError(apiError(caughtError, t('errors.actionFailed', { label: service.label })))
     } finally {
       setProcessingUnit(null)
     }
@@ -80,13 +75,13 @@ export default function ServicesPage() {
   return (
     <div className="w-full px-6 py-5">
       <Breadcrumb items={[
-        { label: 'Tools and Settings', href: '/tools-settings' },
-        { label: 'Services' },
+        { label: t('breadcrumbTools'), href: '/tools-settings' },
+        { label: t('breadcrumbServices') },
       ]} />
       <div className="mb-5">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Service Management</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Restart or reload managed web, database, DNS, PHP, and supporting services.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -94,7 +89,7 @@ export default function ServicesPage() {
       {success && <div className="mb-4 px-4 py-2.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
       {loading ? (
-        <div className="p-8 text-center text-sm text-slate-400">Loading…</div>
+        <div className="p-8 text-center text-sm text-slate-400">{t('loading')}</div>
       ) : (
         <div className="space-y-5">
           {groups.map(group => (
@@ -115,20 +110,20 @@ export default function ServicesPage() {
                           <div className="text-xs font-mono text-slate-400 dark:text-slate-500">{service.unit}</div>
                         </div>
                         <span className={`self-start sm:self-auto sm:w-28 sm:text-center text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[service.status] || STATUS_STYLES.inactive}`}>
-                          {STATUS_LABELS[service.status] || service.status}
+                          {t(`statuses.${service.status}`, { defaultValue: service.status })}
                         </span>
                         <div className="flex items-center gap-2 shrink-0">
                           {service.reloadable ? (
                             <button disabled={absent || busy} onClick={() => applyAction(service, 'reload')}
                               className="w-20 px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition">
-                              Reload
+                              {t('reload')}
                             </button>
                           ) : (
                             <span className="hidden sm:block w-20" />
                           )}
                           <button disabled={absent || busy} onClick={() => applyAction(service, 'restart')}
                             className="w-20 px-3.5 py-1.5 text-sm rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-40 transition">
-                            {busy ? '…' : 'Restart'}
+                            {busy ? t('working') : t('restart')}
                           </button>
                         </div>
                       </li>

@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "Tools and Settings",
+  "breadcrumbServices": "Services",
+  "title": "Service Management",
+  "subtitle": "Restart or reload managed web, database, DNS, PHP, and supporting services.",
+  "loading": "Loading…",
+  "reload": "Reload",
+  "restart": "Restart",
+  "working": "…",
+  "statuses": {
+    "active": "● Active",
+    "inactive": "○ Inactive",
+    "failed": "✕ Failed",
+    "absent": "Not installed"
+  },
+  "errors": {
+    "loadFailed": "Could not load services",
+    "actionFailed": "{{label}} action failed"
+  },
+  "success": {
+    "reloaded": "{{label}} reloaded.",
+    "restarted": "{{label}} restarted."
+  }
+}
