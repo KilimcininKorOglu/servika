@@ -2,7 +2,7 @@
 # servika-install turns a clean AlmaLinux 10 server into a complete Servika installation.
 # It is idempotent and must run as root.
 #
-#   ./servika-install.sh [--admin-password <password>] [--admin-email <email>]
+#   ./servika-install.sh [--admin-password <password>] [--admin-email <email>] [--panel-lang <tr|en>]
 #
 # The assets directory must be located next to this script:
 #   linux_amd64/servika-server  linux_amd64/servika-seed-admin
@@ -20,12 +20,17 @@ esac
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 A="$HERE/assets"
-ADMIN_PASSWORD=""; ADMIN_EMAIL="admin@local"
+ADMIN_PASSWORD=""; ADMIN_EMAIL="admin@local"; PANEL_LANG="${SERVIKA_PANEL_LANG:-en}"
 while [ $# -gt 0 ]; do case "$1" in
   --admin-password) shift; ADMIN_PASSWORD="$1" ;;
   --admin-email) shift; ADMIN_EMAIL="$1" ;;
+  --panel-lang) shift; PANEL_LANG="$1" ;;
   *) echo "unknown option: $1"; exit 2 ;;
 esac; shift; done
+# Server-default panel language shown on the login screen. English is the primary
+# language; anything but "tr" falls back to it. A signed-in user's own preference
+# always overrides this.
+[ "$PANEL_LANG" = "tr" ] || PANEL_LANG="en"
 
 c_g="\033[32m"; c_y="\033[33m"; c_r="\033[31m"; c_b="\033[1;34m"; c_0="\033[0m"
 [ -t 1 ] || { c_g=; c_y=; c_r=; c_b=; c_0=; }
@@ -522,9 +527,12 @@ if [ -x /opt/servika/bin/servika-seed-admin ]; then
     ADMIN_PASSWORD="$(openssl rand -hex 16)"
   fi
   /opt/servika/bin/servika-seed-admin -dsn "$DSN" -username root \
-    -password "$ADMIN_PASSWORD" -email "$ADMIN_EMAIL" >/dev/null 2>&1 \
+    -password "$ADMIN_PASSWORD" -email "$ADMIN_EMAIL" -lang "$PANEL_LANG" >/dev/null 2>&1 \
     && ok "administrator record ready" || warn "seed skipped (not critical)"
 fi
+# Server-default panel language for the pre-login screen (admin can change it later).
+mysql panel -e "UPDATE panel_settings SET default_lang='${PANEL_LANG}' WHERE id=1;" >/dev/null 2>&1 \
+  && ok "panel default language: ${PANEL_LANG}" || warn "panel language default skipped"
 # Clear seed defaults so the root profile starts empty and can be completed in the profile page.
 mysql panel -e "UPDATE users SET email='', full_name='' WHERE username='root' AND email='admin@local';" >/dev/null 2>&1 || true
 ok "Login: user 'root' + this server's root password"

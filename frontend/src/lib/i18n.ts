@@ -64,4 +64,25 @@ export function bootLang() {
   if (typeof document !== 'undefined') document.documentElement.lang = getLang()
 }
 
+// Server-default language for the pre-login screen. Only used when the visitor has
+// NO explicit choice yet (no servika.lang cookie): the login screen then opens in
+// whatever the admin set at install time (GET /api/v1/public/language). We switch
+// live but deliberately do NOT write the cookie — the cookie means "the user chose
+// this", and a signed-in user's own pref_lang always takes over afterwards. Runs
+// after first paint, so it never blocks rendering; failure silently keeps English.
+export function applyServerDefaultLang() {
+  if (typeof window === 'undefined') return
+  if (getCookie(KEY)) return // Explicit user choice already wins.
+  fetch('/api/v1/public/language', { headers: { Accept: 'application/json' } })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      const lang = data?.lang === 'tr' ? 'tr' : 'en'
+      if (lang !== i18n.language) {
+        void i18n.changeLanguage(lang)
+        if (typeof document !== 'undefined') document.documentElement.lang = lang
+      }
+    })
+    .catch(() => {}) // Login screen must never break over the default language.
+}
+
 export default i18n

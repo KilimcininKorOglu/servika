@@ -285,6 +285,8 @@ func main() {
 		// Logout only clears the HttpOnly session cookie; it needs no auth and must
 		// succeed even for an already-invalid session.
 		r.With(middleware.LoginRateLimit).Post("/auth/logout", authH.Logout)
+		// Server-default panel language — the login screen (no auth yet) reads this.
+		r.Get("/public/language", panelSettingsH.Language)
 
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAuth(cfg.JWTSecret))
@@ -331,6 +333,7 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/system/panel-domain", panelSettingsH.Status)
 			r.With(middleware.AdminOnly).Post("/system/panel-domain", panelSettingsH.Save)
 			r.With(middleware.AdminOnly).Delete("/system/panel-domain", panelSettingsH.Delete)
+			r.With(middleware.AdminOnly).Put("/system/panel-language", panelSettingsH.SaveLanguage)
 			r.With(middleware.ResellerOrAbove).Get("/system/update", system.UpdateStatus)
 			r.With(middleware.AdminOnly).Post("/system/update/start", system.StartUpdate)
 			r.With(middleware.AdminOnly).Get("/system/update/log", system.UpdateLog)
