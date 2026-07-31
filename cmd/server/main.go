@@ -542,6 +542,8 @@ func main() {
 				r.With(middleware.CustomerScope).Put("/domains/{id}/dns/soa", dnsH.PutSOA)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/dns/dnssec", dnsH.GetDNSSEC)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/dnssec", dnsH.PostDNSSEC)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/dns/export", dnsH.Export)  // BIND zone export
+				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/import", dnsH.Import) // BIND zone import
 				// Security log (read-only) — audit_log has been written to for a
 				// long time but had no read endpoint.
 				// A reseller sees only entries scoped to its own reseller_id; an
