@@ -7,6 +7,7 @@
   "profileMenu": "Profile and Preferences",
   "logout": "Log Out",
   "notifications": "Notifications",
+  "accountMenu": "Account menu",
   "openDomain": "open domain",
   "copied": "Copied",
   "themeToggle": "Theme: {{theme}}, click to change",

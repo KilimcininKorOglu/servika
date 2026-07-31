@@ -382,6 +382,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
         <div className="relative">
           <button
             onClick={() => setMenuOpen((value) => !value)}
+            aria-label={t('accountMenu')}
             className="flex items-center gap-2 px-1.5 sm:px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
           >
             <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-semibold text-xs flex items-center justify-center">

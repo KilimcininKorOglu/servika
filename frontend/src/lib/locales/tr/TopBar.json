@@ -7,6 +7,7 @@
   "profileMenu": "Profil ve Tercihler",
   "logout": "Çıkış",
   "notifications": "Bildirimler",
+  "accountMenu": "Hesap menüsü",
   "openDomain": "açık domain",
   "copied": "Kopyalandı",
   "themeToggle": "Tema: {{theme}}, değiştirmek için tıkla",

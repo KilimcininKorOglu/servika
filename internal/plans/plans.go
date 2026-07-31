@@ -364,7 +364,31 @@ type seedTier struct {
 	Default                                          int
 }
 
-func seedPlans() []seedTier {
+// panelLang reads panel_settings.default_lang, which decides the language of the
+// seeded plan names and descriptions (the language chosen at install). English is
+// the primary language; anything unreadable or not "tr" falls back to it.
+func panelLang(ctx context.Context, db *sql.DB) string {
+	var lang string
+	_ = db.QueryRowContext(ctx, `SELECT default_lang FROM panel_settings WHERE id=1`).Scan(&lang)
+	if lang != "tr" {
+		return "en"
+	}
+	return "tr"
+}
+
+// seedPlans returns the three default tiers with localized name/description. Only
+// the display text differs by language; every resource limit is identical.
+func seedPlans(lang string) []seedTier {
+	if lang == "tr" {
+		return []seedTier{
+			{"Başlangıç", "Küçük bir proje için tek site", 1024, 5120, 1, 1, 5, 2,
+				50, 256, 30, 25000, 100, 15, 4, 1},
+			{"Standart", "Birden çok proje ve e-posta", 10240, 51200, 5, 10, 25, 10,
+				100, 512, 60, 100000, 100, 30, 8, 0},
+			{"Profesyonel", "Yüksek trafik ve büyük siteler", 51200, 204800, 25, 50, 100, 50,
+				200, 2048, 150, 500000, 200, 100, 32, 0},
+		}
+	}
 	return []seedTier{
 		{"Starter", "One site for a small project", 1024, 5120, 1, 1, 5, 2,
 			50, 256, 30, 25000, 100, 15, 4, 1},
@@ -385,7 +409,7 @@ func SeedIfEmpty(ctx context.Context, db *sql.DB) error {
 		return nil
 	}
 	log.Printf("seed: adding 3 default plans")
-	for _, p := range seedPlans() {
+	for _, p := range seedPlans(panelLang(ctx, db)) {
 		_, err := db.ExecContext(ctx,
 			`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
 			   max_domain, max_db, max_email, max_ftp,
@@ -403,7 +427,7 @@ func SeedIfEmpty(ctx context.Context, db *sql.DB) error {
 
 // SeedSync inserts missing standard plans without modifying existing plans.
 func SeedSync(ctx context.Context, db *sql.DB) error {
-	for _, p := range seedPlans() {
+	for _, p := range seedPlans(panelLang(ctx, db)) {
 		_, err := db.ExecContext(ctx,
 			`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
 			   max_domain, max_db, max_email, max_ftp,
