@@ -190,7 +190,7 @@ export default function DomainLaravelPage() {
   if (loading && !status) return <div className="px-6 py-5 text-sm text-slate-400">Loading…</div>
 
   return (
-    <div className="px-6 py-5 max-w-[1100px]">
+    <div className="w-full px-6 py-5">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' }, { label: 'Laravel Toolkit' }]} />
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>

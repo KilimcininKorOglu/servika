@@ -34,7 +34,7 @@ export default function DomainFTPPage() {
   }
 
   return (
-    <div className="px-6 py-5 max-w-[900px]">
+    <div className="w-full px-6 py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' },
         { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },

@@ -55,7 +55,7 @@ export default function DomainWordPressPage() {
   const emptyState = !loading && items.length === 0
 
   return (
-    <div className="px-6 py-6 max-w-5xl">
+    <div className="w-full px-6 py-6">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: domainName || 'Subscription', href: backHref },

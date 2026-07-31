@@ -87,7 +87,7 @@ export default function DomainDatabasesPage() {
   )
 
   return (
-    <div className="px-4 py-4 sm:px-6 sm:py-5 max-w-[1300px]">
+    <div className="w-full px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' },
         { label: domain?.domain_name || '...', href: `/subscriptions/${id}` },

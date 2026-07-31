@@ -99,7 +99,7 @@ export default function DomainPHPPage() {
   }
 
   return (
-    <div className="px-6 py-5 max-w-[1100px]">
+    <div className="w-full px-6 py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' }, { label: 'Domains', href: '/domains' },
         { label: response?.domain_name || '...', href: `/subscriptions/${id}` },

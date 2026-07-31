@@ -203,7 +203,7 @@ export default function DomainDNSPage() {
   }
 
   return (
-    <div className="px-4 py-4 max-w-[1300px] sm:px-6 sm:py-5">
+    <div className="w-full px-4 py-4 sm:px-6 sm:py-5">
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
         { label: 'Domains', href: '/domains' },

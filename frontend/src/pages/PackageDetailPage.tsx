@@ -107,7 +107,7 @@ export default function PackageDetailPage() {
 
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
-      <div className="max-w-5xl mx-auto">
+      <div>
         <Breadcrumb items={[
           { label: 'Home', href: '/' },
           { label: 'Tools and Settings', href: '/tools-settings' },

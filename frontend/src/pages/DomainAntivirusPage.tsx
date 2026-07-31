@@ -79,7 +79,7 @@ export default function DomainAntivirusPage() {
 
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-5">
-      <div className="max-w-4xl mx-auto">
+      <div>
         <Breadcrumb items={[
           { label: 'Home', href: '/' },
           { label: 'Domains', href: '/domains' },

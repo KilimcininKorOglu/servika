@@ -202,7 +202,7 @@ export default function UsersPage() {
   const protectedRow = (k: User) => k.id === 1 || k.id === myID
 
   return (
-    <div className="w-full max-w-[1600px] px-6 py-5">
+    <div className="w-full px-6 py-5">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Users' }]} />
 
       <div className="mb-5">

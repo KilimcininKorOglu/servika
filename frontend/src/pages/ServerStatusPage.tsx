@@ -70,7 +70,7 @@ export default function ServerStatusPage() {
   const loadText = load ? `load ${[load.load_1m, load.load_5m, load.load_15m].map((y) => (y ?? 0).toFixed(2)).join(' · ')}` : undefined
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
+    <div className="w-full px-4 py-6">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Server Status' }]} />
 
       <div className="mb-5">

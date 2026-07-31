@@ -117,7 +117,7 @@ export default function CustomersPage() {
     id === null ? '—' : (plans.find((p) => p.id === id)?.name ?? `#${id}`)
 
   return (
-    <div className="w-full max-w-[1600px] px-6 py-5">
+    <div className="w-full px-6 py-5">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Customers' }]} />
 
       <div className="mb-5">
