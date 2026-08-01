@@ -238,7 +238,7 @@ func resetTreeBeneath(home, rel, sk string, dirMode, fileMode uint32) error {
 	if err != nil {
 		return err
 	}
-	defer unix.Close(parentFd)
+	defer func() { _ = unix.Close(parentFd) }() // read-only dir fd release; close error is not actionable
 	var st unix.Stat_t
 	if err := unix.Fstatat(parentFd, leaf, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
 		return err
@@ -268,7 +268,7 @@ func resetEntry(dirfd int, name string, uid, gid int, dirMode, fileMode uint32) 
 		if err != nil {
 			return // could not open as a real directory (raced/replaced) — skip, never escape
 		}
-		defer unix.Close(fd)
+		defer func() { _ = unix.Close(fd) }() // read-only dir fd release; close error is not actionable
 		names, err := readdirnamesFd(fd)
 		if err != nil {
 			return
