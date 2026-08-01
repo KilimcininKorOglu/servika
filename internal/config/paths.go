@@ -38,8 +38,8 @@ const (
 	DefaultNginxCacheLogConf  = "/etc/nginx/conf.d/00-servika-cache-log.conf"
 	DefaultGitHubAPI          = "https://api.github.com"
 	DefaultIonCubeURL         = "https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz"
-	DefaultUpdateBootstrapURL = "https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update"
-	DefaultVersionEndpoint    = "https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/version.json"
+	DefaultUpdateBootstrapURL = "https://raw.githubusercontent.com/ServikaPanel/servika/main/assets/ops/servika-update"
+	DefaultVersionEndpoint    = "https://raw.githubusercontent.com/ServikaPanel/servika/main/version.json"
 )
 
 // EnvString returns a trimmed environment value or its fallback.

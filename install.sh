@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Servika one-line installation bootstrap
-#   curl -fsSL https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ServikaPanel/servika/main/install.sh | bash
 #
 # This bootstrap downloads the latest published release bundle for the host
 # architecture from GitHub Releases, then runs servika-install.sh from it.
@@ -9,7 +9,7 @@
 # Any remaining arguments (such as --admin-password) are forwarded to the installer.
 set -euo pipefail
 
-REPO="KilimcininKorOglu/servika"
+REPO="ServikaPanel/servika"
 
 c_b="\033[1;34m"; c_g="\033[32m"; c_r="\033[31m"; c_0="\033[0m"
 [ -t 1 ] || { c_b=; c_g=; c_r=; c_0=; }

@@ -34,7 +34,7 @@ load_servika_env() {
 
 load_servika_env
 
-REPO="${SERVIKA_REPO:-KilimcininKorOglu/servika}"
+REPO="${SERVIKA_REPO:-ServikaPanel/servika}"
 BRANCH="main"; DRY=0; FORCE=0; BRANCH_EXPLICIT=0
 PREFIX="${SERVIKA_PREFIX:-/opt/servika}"
 BIN="${SERVIKA_BIN:-$PREFIX/bin/servika-server}"

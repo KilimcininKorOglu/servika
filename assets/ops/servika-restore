@@ -50,7 +50,7 @@ load_servika_env() {
 
 load_servika_env
 
-REPO="${SERVIKA_REPO:-KilimcininKorOglu/servika}"
+REPO="${SERVIKA_REPO:-ServikaPanel/servika}"
 BRANCH="main"; DRY=0; DODB=1; DORESTART=1; BRANCH_EXPLICIT=0
 
 # Paths are overridable via env (for isolated testing). Production defaults apply.

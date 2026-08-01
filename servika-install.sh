@@ -192,13 +192,13 @@ SERVIKA_JWT_LIFETIME_SEC=43200
 SERVIKA_PUBLIC_IPV4=
 SERVIKA_MAINTENANCE_MODE=
 SERVIKA_VERSION_CHECK=1
-SERVIKA_VERSION_ENDPOINT=https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/version.json
+SERVIKA_VERSION_ENDPOINT=https://raw.githubusercontent.com/ServikaPanel/servika/main/version.json
 SERVIKA_REDIS_ADMIN_PASS=${RADMIN}
 SERVIKA_MAIL_DB_PASS=
 SERVIKA_ROUNDCUBE_DB_PASS=
 SERVIKA_ROUNDCUBE_DES_KEY=
 SERVIKA_SEED_PASSWORD=
-SERVIKA_REPO=KilimcininKorOglu/servika
+SERVIKA_REPO=ServikaPanel/servika
 SERVIKA_PREFIX=/opt/servika
 SERVIKA_BIN=/opt/servika/bin/servika-server
 SERVIKA_SEED=/opt/servika/bin/servika-seed-admin
@@ -240,7 +240,7 @@ SERVIKA_NGINX_CACHE_TEMP_CONF=/etc/nginx/conf.d/00-servikacache-temporary.conf
 SERVIKA_NGINX_CACHE_LOG_CONF=/etc/nginx/conf.d/00-servika-cache-log.conf
 SERVIKA_GITHUB_API=https://api.github.com
 SERVIKA_IONCUBE_URL=https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
-SERVIKA_UPDATE_BOOTSTRAP_URL=https://raw.githubusercontent.com/KilimcininKorOglu/servika/main/assets/ops/servika-update
+SERVIKA_UPDATE_BOOTSTRAP_URL=https://raw.githubusercontent.com/ServikaPanel/servika/main/assets/ops/servika-update
 ENV
 chmod 600 /etc/servika/env
 ok "/etc/servika/env (production runtime and operations environment preserved or generated)"
