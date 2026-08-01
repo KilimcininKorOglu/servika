@@ -52,14 +52,14 @@ func downloadUpdateTool() error {
 	}
 	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("%s HTTP %d", t("download update tool:", "güncelleme aracı indirme:"), response.StatusCode)
+		return fmt.Errorf("download update tool: HTTP %d", response.StatusCode)
 	}
 	body, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
 	if err != nil {
-		return fmt.Errorf("%s %w", t("read update tool:", "güncelleme aracı okunamadı:"), err)
+		return fmt.Errorf("read update tool: %w", err)
 	}
 	if !strings.HasPrefix(string(body), "#!") {
-		return fmt.Errorf("%s", t("download update tool: unexpected content", "güncelleme aracı: beklenmeyen içerik"))
+		return fmt.Errorf("download update tool: unexpected content")
 	}
 
 	temporaryPath := scriptPath + ".tmp"
@@ -80,14 +80,14 @@ func downloadUpdateTool() error {
 // StartUpdate bootstraps the update tool when needed and starts it in a transient systemd unit.
 func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 	if updateRunning() {
-		httpx.WriteError(w, http.StatusConflict, t("an update is already running", "güncelleme zaten sürüyor"))
+		httpx.WriteError(w, http.StatusConflict, "an update is already running")
 		return
 	}
 
 	toolDownloaded := false
 	if _, err := os.Stat(updateScript()); err != nil {
 		if err := downloadUpdateTool(); err != nil {
-			httpx.WriteError(w, http.StatusBadGateway, t("the update tool could not be downloaded", "güncelleme aracı indirilemedi"))
+			httpx.WriteError(w, http.StatusBadGateway, "the update tool could not be downloaded")
 			return
 		}
 		toolDownloaded = true
@@ -95,17 +95,15 @@ func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 
 	logPath := updateLogPath()
 	if err := os.MkdirAll(filepath.Dir(logPath), 0o750); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, t("the update log could not be prepared", "güncelleme günlüğü hazırlanamadı"))
+		httpx.WriteError(w, http.StatusInternalServerError, "the update log could not be prepared")
 		return
 	}
-	logHeader := fmt.Sprintf("%s\n", t(
-		fmt.Sprintf("=== Update started: %s ===", time.Now().Format("2006-01-02 15:04:05")),
-		fmt.Sprintf("=== Güncelleme başlatıldı: %s ===", time.Now().Format("2006-01-02 15:04:05"))))
+	logHeader := fmt.Sprintf("=== Update started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
 	if toolDownloaded {
-		logHeader += t("(The missing update tool was downloaded.)\n", "(Eksik güncelleme aracı indirildi.)\n")
+		logHeader += "(The missing update tool was downloaded.)\n"
 	}
 	if err := os.WriteFile(logPath, []byte(logHeader), 0o640); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, t("the update log could not be prepared", "güncelleme günlüğü hazırlanamadı"))
+		httpx.WriteError(w, http.StatusInternalServerError, "the update log could not be prepared")
 		return
 	}
 
@@ -115,7 +113,7 @@ func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 		"--description", "Servika update",
 		"/bin/bash", "-lc", fmt.Sprintf("%s >>%s 2>&1", config.ShellQuote(updateScript()), config.ShellQuote(logPath)))
 	if _, err := command.CombinedOutput(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, t("the update could not be started", "güncelleme başlatılamadı"))
+		httpx.WriteError(w, http.StatusInternalServerError, "the update could not be started")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{

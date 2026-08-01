@@ -76,15 +76,6 @@ warn() { echo -e "  ${c_y}!${c_0} $*"; }
 die()  { echo -e "${c_r}✗ $*${c_0}" >&2; exit 1; }
 step() { echo -e "${c_b}══ $* ══${c_0}"; }
 
-# This tool runs both from SSH and from inside the panel (Settings -> panel update,
-# which streams this script's stdout live), so its messages follow the panel's own
-# default language (panel_settings.default_lang) instead of a fixed one. English is
-# the primary language; the DB may not be reachable yet (auth_socket, DB down), so it
-# falls back to English silently. t <english> <turkish> picks the string by DBLANG.
-DBLANG=$(mysql -N -B panel -e "SELECT default_lang FROM panel_settings WHERE id=1;" 2>/dev/null || echo "")
-[ "$DBLANG" = "tr" ] || DBLANG="en"
-t() { if [ "$DBLANG" = "tr" ]; then printf '%s' "$2"; else printf '%s' "$1"; fi; }
-
 # resolve_release_tag prints the release tag to deploy, or nothing if none can be
 # determined. SERVIKA_RELEASE_TAG pins an exact release; otherwise the latest
 # published GitHub release is queried. Mirrors install.sh so update deploys the
@@ -121,15 +112,15 @@ restore_release_assets() {
     mv "${FDIST}.old" "$FDIST" 2>/dev/null || true
     rm -rf "${FDIST}.new-failed" 2>/dev/null || true
     command -v restorecon >/dev/null && restorecon -R "$FDIST" >/dev/null 2>&1 || true
-    ok "$(t "frontend restored to previous release" "frontend önceki sürüme geri yüklendi")"
+    ok "frontend restored to previous release"
   fi
   # Migrations: replace the on-disk set with the snapshot so the old binary does
   # not re-run new migrations against the restored (older) schema.
   if [ -d "$ROLLBACK_DIR/migrations" ]; then
     if rm -rf "$MIGR" 2>/dev/null && cp -a "$ROLLBACK_DIR/migrations" "$MIGR" 2>/dev/null; then
-      ok "$(t "migrations restored to previous release" "migration'lar önceki sürüme geri yüklendi")"
+      ok "migrations restored to previous release"
     else
-      warn "$(t "migrations restore incomplete" "migration geri yükleme eksik")"
+      warn "migrations restore incomplete"
     fi
   fi
   # Mail templates.
@@ -149,7 +140,7 @@ restore_release_assets() {
   if [ -d "$ROLLBACK_DIR/scripts" ]; then
     rm -rf "$SCRIPTS" 2>/dev/null && cp -a "$ROLLBACK_DIR/scripts" "$SCRIPTS" 2>/dev/null || true
   fi
-  ok "$(t "release-owned assets restored to previous version" "sürüm sahipli dosyalar önceki sürüme geri yüklendi")"
+  ok "release-owned assets restored to previous version"
 }
 
 require_abs_path() {
@@ -188,11 +179,11 @@ validate_paths
 
 version() { curl -fsS "$HEALTH" 2>/dev/null | grep -oE '"version":"[^"]*"' | cut -d'"' -f4; }
 
-[ "$(id -u)" = 0 ] || die "$(t "root is required (sudo servika-update)" "root gerekli (sudo servika-update)")"
-[ -x "$BIN" ] || die "$(t "Servika is not installed ($BIN is missing); run install.sh first" "Servika kurulu değil ($BIN yok); önce install.sh çalıştırın")"
-command -v curl >/dev/null || die "$(t "curl is required" "curl gerekli")"
-command -v tar  >/dev/null || die "$(t "tar is required" "tar gerekli")"
-command -v sha256sum >/dev/null || die "$(t "sha256sum is required" "sha256sum gerekli")"
+[ "$(id -u)" = 0 ] || die "root is required (sudo servika-update)"
+[ -x "$BIN" ] || die "Servika is not installed ($BIN is missing); run install.sh first"
+command -v curl >/dev/null || die "curl is required"
+command -v tar  >/dev/null || die "tar is required"
+command -v sha256sum >/dev/null || die "sha256sum is required"
 
 # Rollback staging: snapshots of every release-owned asset are taken here just
 # before each pre-restart swap, so a failed health check can restore the complete
@@ -212,42 +203,42 @@ if [ "$BRANCH_EXPLICIT" = 0 ]; then
     BUNDLE="servika-${VERSION_TAG}-${ARCH}.tar.gz"
     BUNDLE_URL="https://github.com/$REPO/releases/download/$TAG/$BUNDLE"
     SUMS_URL="https://github.com/$REPO/releases/download/$TAG/SHA256SUMS"
-    step "$(t "Servika update (release $TAG, $ARCH)" "Servika güncelleme (sürüm $TAG, $ARCH)")"
-    echo "  $(t "downloading release bundle..." "sürüm paketi indiriliyor…")"
+    step "Servika update (release $TAG, $ARCH)"
+    echo "  downloading release bundle..."
     # Download + checksum-verify against the release SHA256SUMS before extracting;
     # any failure falls back to the branch tarball, matching the download-fail path.
     if curl -fsSL --retry 3 -o "$TMP/$BUNDLE" "$BUNDLE_URL" \
        && curl -fsSL --retry 3 -o "$TMP/SHA256SUMS" "$SUMS_URL" \
        && verify_release_bundle "$TMP/$BUNDLE" "$TMP/SHA256SUMS" "$BUNDLE" \
        && tar xz -C "$TMP" -f "$TMP/$BUNDLE"; then
-      ok "$(t "checksum verified" "sağlama doğrulandı")"
+      ok "checksum verified"
       A="$TMP/assets"
     else
-      warn "$(t "release bundle download or verification failed ($BUNDLE_URL); falling back to branch '$BRANCH'" "sürüm paketi indirme/doğrulama başarısız ($BUNDLE_URL); '$BRANCH' dalına düşülüyor")"
+      warn "release bundle download or verification failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
       rm -rf "${TMP:?}/"* 2>/dev/null || true
     fi
   else
-    warn "$(t "could not resolve a release tag; falling back to branch '$BRANCH'" "sürüm etiketi çözülemedi; '$BRANCH' dalına düşülüyor")"
+    warn "could not resolve a release tag; falling back to branch '$BRANCH'"
   fi
 fi
 if [ -z "$A" ]; then
-  step "$(t "Servika update (github.com/$REPO@$BRANCH)" "Servika güncelleme (github.com/$REPO@$BRANCH)")"
-  echo "  $(t "downloading..." "indiriliyor…")"
+  step "Servika update (github.com/$REPO@$BRANCH)"
+  echo "  downloading..."
   curl -fsSL "https://codeload.github.com/$REPO/tar.gz/refs/heads/$BRANCH" | tar xz -C "$TMP" \
-    || die "$(t "download failed; verify that the repository is public and branch '$BRANCH' exists" "indirme başarısız; repo public mi ve '$BRANCH' dalı var mı doğrulayın")"
+    || die "download failed; verify that the repository is public and branch '$BRANCH' exists"
   SRC=$(find "$TMP" -maxdepth 1 -type d -name "*-$BRANCH" | head -1)
   A="$SRC/assets"
 fi
 NEWBIN="$A/$ARCH/servika-server"
-[ -f "$NEWBIN" ] || die "$(t "$A/$ARCH/servika-server is missing" "$A/$ARCH/servika-server yok")"
+[ -f "$NEWBIN" ] || die "$A/$ARCH/servika-server is missing"
 
 # Validate the binary without executing it, then hash every release component so updates to
 # frontend, migrations, operations tools, or systemd units are not skipped.
-head -c4 "$NEWBIN" | grep -q $'\x7fELF' || die "$(t "the downloaded binary is not a valid ELF file" "indirilen binary geçerli bir ELF değil")"
+head -c4 "$NEWBIN" | grep -q $'\x7fELF' || die "the downloaded binary is not a valid ELF file"
 # Cross-arch guard: prevent deploying an amd64 binary onto an arm64 host (or vice versa).
-command -v file >/dev/null 2>&1 && file "$NEWBIN" | grep -q "$MACHINE" || die "$(t "the downloaded binary does not match the host architecture ($MACHINE)" "indirilen binary sunucu mimarisiyle eşleşmiyor ($MACHINE)")"
+command -v file >/dev/null 2>&1 && file "$NEWBIN" | grep -q "$MACHINE" || die "the downloaded binary does not match the host architecture ($MACHINE)"
 CURVER=$(version); [ -n "$CURVER" ] || CURVER="?"
-echo "  $(t "current version: $CURVER" "mevcut sürüm: $CURVER")"
+echo "  current version: $CURVER"
 RELHASH=$( { sha256sum "$NEWBIN" | cut -d' ' -f1
   [ -f "$A/frontend-dist.tar.gz" ] && sha256sum "$A/frontend-dist.tar.gz" | cut -d' ' -f1
   [ -f "$A/migrations.tar.gz" ] && sha256sum "$A/migrations.tar.gz" | cut -d' ' -f1
@@ -257,27 +248,27 @@ RELHASH=$( { sha256sum "$NEWBIN" | cut -d' ' -f1
 MARKER="$PREFIX/.release_hash"
 CURREL=$(cat "$MARKER" 2>/dev/null || echo missing)
 if [ "$RELHASH" = "$CURREL" ] && [ "$FORCE" = 0 ]; then
-  ok "$(t "the complete release is already current; use --force to reapply" "sürümün tamamı zaten güncel; yeniden uygulamak için --force kullanın")"
+  ok "the complete release is already current; use --force to reapply"
   exit 0
 fi
 
 if [ "$DRY" = 1 ]; then
-  step "$(t "DRY RUN" "DENEME (uygulanmaz)")"
-  echo "  • $BIN $(t "(replace if changed; backup: $BIN.bak)" "(değiştiyse değiştirilir; yedek: $BIN.bak)")"
+  step "DRY RUN"
+  echo "  • $BIN (replace if changed; backup: $BIN.bak)"
   echo "  • $FDIST/"
   echo "  • $MIGR/"
-  echo "  • $(t "$OPSBIN operations tools and $SCRIPTS" "$OPSBIN operasyon araçları ve $SCRIPTS")"
-  echo "  • $(t "mail templates under $PREFIX/src/mail-templates" "$PREFIX/src/mail-templates altındaki e-posta şablonları")"
-  echo "  • $(t "nginx and PHP-FPM panel integration files" "nginx ve PHP-FPM panel entegrasyon dosyaları")"
-  echo "  • $DB_BACKUP + /etc/systemd/system/servika-db-backup.{service,timer}"
-  echo "  • $(t "full panel database dump before migrations: $DB_BACKUP_DIR (not created during dry run)" "migration'lardan önce tam panel veritabanı dökümü: $DB_BACKUP_DIR (deneme sırasında alınmaz)")"
+  echo "  • $OPSBIN operations tools and $SCRIPTS"
+  echo "  • mail templates under $PREFIX/src/mail-templates"
+  echo "  • nginx and PHP-FPM panel integration files"
+  echo "  • $DB_BACKUP and /etc/systemd/system/servika-db-backup.{service,timer}"
+  echo "  • full panel database dump before migrations: $DB_BACKUP_DIR (not created during dry run)"
   echo "  • systemctl restart servika"
   exit 0
 fi
 
 # Install the backup tool and timer before taking the mandatory pre-update dump.
 [ -f "$A/ops/servika-db-backup" ] \
-  || die "$(t "the release does not contain the database backup tool; update was not started" "sürüm veritabanı yedek aracını içermiyor; güncelleme başlatılmadı")"
+  || die "the release does not contain the database backup tool; update was not started"
 install -m 0755 "$A/ops/servika-db-backup" "$DB_BACKUP"
 UNITS_INSTALLED=0
 for unit in servika-db-backup.service servika-db-backup.timer; do
@@ -290,28 +281,28 @@ if [ "$UNITS_INSTALLED" = 1 ]; then
   systemctl daemon-reload >/dev/null 2>&1 || true
   systemctl enable --now servika-db-backup.timer >/dev/null 2>&1 || true
   if systemctl is-active --quiet servika-db-backup.timer; then
-    ok "$(t "daily panel database backup timer active" "günlük panel veritabanı yedek zamanlayıcısı aktif")"
+    ok "daily panel database backup timer active"
   else
-    warn "$(t "database backup timer could not be started" "veritabanı yedek zamanlayıcısı başlatılamadı")"
+    warn "database backup timer could not be started"
   fi
 fi
 
 # Refuse to expose migrations unless a complete recovery point exists.
-step "$(t "Pre-update database backup" "Güncelleme öncesi veritabanı yedeği")"
-[ -x "$DB_BACKUP" ] || die "$(t "database backup tool is unavailable; update was not started" "veritabanı yedek aracı kullanılamıyor; güncelleme başlatılmadı")"
+step "Pre-update database backup"
+[ -x "$DB_BACKUP" ] || die "database backup tool is unavailable; update was not started"
 PRE_UPDATE_DUMP=$("$DB_BACKUP") \
-  || die "$(t "pre-update database backup failed; update was not started" "güncelleme öncesi veritabanı yedeği başarısız; güncelleme başlatılmadı")"
+  || die "pre-update database backup failed; update was not started"
 [ -n "$PRE_UPDATE_DUMP" ] && [ -f "$PRE_UPDATE_DUMP" ] \
-  || die "$(t "pre-update database backup could not be verified; update was not started" "güncelleme öncesi veritabanı yedeği doğrulanamadı; güncelleme başlatılmadı")"
-ok "$(t "pre-update database dump: $PRE_UPDATE_DUMP" "güncelleme öncesi veritabanı dökümü: $PRE_UPDATE_DUMP")"
+  || die "pre-update database backup could not be verified; update was not started"
+ok "pre-update database dump: $PRE_UPDATE_DUMP"
 
 cp -f "$BIN" "$BIN.bak"
 [ -x "$SEED" ] && cp -f "$SEED" "$SEED.bak" 2>/dev/null || true
-ok "$(t "current binary backed up" "mevcut binary yedeklendi")"
+ok "current binary backed up"
 
 install -m 0755 "$NEWBIN" "$BIN"
 [ -f "$A/$ARCH/servika-seed-admin" ] && install -m 0755 "$A/$ARCH/servika-seed-admin" "$SEED"
-ok "$(t "binary updated" "binary güncellendi")"
+ok "binary updated"
 
 # 7) frontend-dist — ATOMIC + VERIFIED swap.
 # The old pattern `rm -rf "${FDIST:?}/"* && tar xzf ...` DELETED the running frontend FIRST,
@@ -334,18 +325,18 @@ if [ -f "$A/frontend-dist.tar.gz" ]; then
   }
   rm -rf "$FDNEW"; mkdir -p "$FDNEW"
   if ! tar xzf "$A/frontend-dist.tar.gz" -C "$FDNEW"; then
-    fdist_abort "$(t "frontend-dist extraction failed — running frontend + previous binary PRESERVED" "frontend-dist açılamadı — çalışan frontend + önceki binary KORUNDU")"
+    fdist_abort "frontend-dist extraction failed — running frontend + previous binary PRESERVED"
   fi
   # Integrity gate: index.html must be non-empty + at least one JS bundle must exist
   # (0-byte or truncated tarballs are rejected).
   if [ ! -s "$FDNEW/index.html" ] || ! ls "$FDNEW"/assets/index-*.js >/dev/null 2>&1; then
-    fdist_abort "$(t "frontend-dist corrupt (index.html or JS bundles empty or missing) — running frontend + previous binary PRESERVED" "frontend-dist bozuk (index.html veya JS paketleri boş/eksik) — çalışan frontend + önceki binary KORUNDU")"
+    fdist_abort "frontend-dist corrupt (index.html or JS bundles empty or missing) — running frontend + previous binary PRESERVED"
   fi
   rm -rf "${FDIST}.old"
   [ -d "$FDIST" ] && mv "$FDIST" "${FDIST}.old"
   mv "$FDNEW" "$FDIST"
   sync   # reboot-safe: flush to disk to prevent delayed-allocation data loss
-  ok "$(t "frontend updated (atomic verified swap)" "frontend güncellendi (atomik doğrulanmış takas)")"
+  ok "frontend updated (atomic verified swap)"
 fi
 
 if [ -f "$A/migrations.tar.gz" ]; then
@@ -354,7 +345,7 @@ if [ -f "$A/migrations.tar.gz" ]; then
   # against the restored (older) schema.
   [ -d "$MIGR" ] && cp -a "$MIGR" "$ROLLBACK_DIR/migrations" 2>/dev/null || true
   mkdir -p "$MIGR"; tar xzf "$A/migrations.tar.gz" -C "$MIGR"
-  ok "$(t "migrations synchronized ($(ls "$MIGR"/*.sql 2>/dev/null | wc -l) SQL files)" "migration'lar senkronize ($(ls "$MIGR"/*.sql 2>/dev/null | wc -l) SQL dosyası)")"
+  ok "migrations synchronized ($(ls "$MIGR"/*.sql 2>/dev/null | wc -l) SQL files)"
 fi
 
 if [ -d "$A/mail" ]; then
@@ -363,12 +354,12 @@ if [ -d "$A/mail" ]; then
   mkdir -p "$MAIL_TMPL"
   rm -rf "${MAIL_TMPL:?}/"*
   cp -a "$A/mail/." "$MAIL_TMPL/"
-  ok "$(t "mail templates updated" "e-posta şablonları güncellendi")"
+  ok "mail templates updated"
 fi
 if [ -f "$A/nginx/_panel.conf" ]; then
   [ -f /etc/nginx/conf.d/_panel.conf ] && cp -a /etc/nginx/conf.d/_panel.conf "$ROLLBACK_DIR/_panel.conf" 2>/dev/null || true
   cp "$A/nginx/_panel.conf" /etc/nginx/conf.d/_panel.conf
-  ok "$(t "panel nginx vhost updated" "panel nginx vhost'u güncellendi")"
+  ok "panel nginx vhost updated"
 fi
 if [ -f "$A/php-fpm/roundcube.conf" ]; then
   [ -f /etc/php-fpm.d/roundcube.conf ] && cp -a /etc/php-fpm.d/roundcube.conf "$ROLLBACK_DIR/roundcube.conf" 2>/dev/null || true
@@ -376,7 +367,7 @@ if [ -f "$A/php-fpm/roundcube.conf" ]; then
   mkdir -p /var/lib/roundcube/{temp,sessions}
   chown -R apache:apache /var/lib/roundcube 2>/dev/null || true
   command -v restorecon >/dev/null && restorecon -R /var/lib/roundcube >/dev/null 2>&1 || true
-  ok "$(t "roundcube PHP-FPM pool updated" "roundcube PHP-FPM havuzu güncellendi")"
+  ok "roundcube PHP-FPM pool updated"
 fi
 
 if [ -d "$A/ops" ]; then
@@ -395,7 +386,7 @@ if [ -d "$A/ops" ]; then
   # run inside the panel process, which honors per-domain frequency, hour, and retention.
   # Leaving these would back up each domain twice.
   rm -f /etc/cron.d/servika-backup "$OPSBIN/servika-backup-all" "$SCRIPTS/servika-backup-all" 2>/dev/null || true
-  ok "$(t "operations tools updated" "operasyon araçları güncellendi")"
+  ok "operations tools updated"
 fi
 
 # Install prerequisites on systems created before they became base packages.
@@ -434,7 +425,7 @@ if [ "$QROOTFS" = "xfs" ] && ! echo "$QROOTOPTS" | grep -qwE 'usrquota|uquota|qu
   fi
   mkdir -p /etc/servika
   echo "rootflags=uquota written to GRUB $(date -Is 2>/dev/null) — reboot pending" > "$QSENTINEL" 2>/dev/null || true
-  warn "$(t "Disk quota: GRUB updated — a SINGLE reboot is required to activate (the operator schedules it on the live server). AUTO-REBOOT WAS NOT PERFORMED." "Disk kotası: GRUB güncellendi — etkinleşmesi için tek seferlik yeniden başlatma gerekli (operatör canlı sunucuda zamanlar). OTOMATİK YENİDEN BAŞLATMA YAPILMADI.")"
+  warn "Disk quota: GRUB updated — a SINGLE reboot is required to activate (the operator schedules it on the live server). AUTO-REBOOT WAS NOT PERFORMED."
 elif [ "$QROOTFS" = "xfs" ]; then
   [ -f "$QSENTINEL" ] && rm -f "$QSENTINEL" 2>/dev/null && ok "disk quota active — reboot sentinel cleared" || ok "disk quota active (root XFS user quota)"
 fi
@@ -443,17 +434,17 @@ fi
 # encryption. The server now requires it at boot, so it must exist before the
 # restart below or the updated binary fails to start.
 if ! grep -q '^SERVIKA_SECRET_KEY=' "$ENV_FILE" 2>/dev/null; then
-  step "$(t "Provisioning at-rest encryption key" "Durağan şifreleme anahtarı sağlanıyor")"
+  step "Provisioning at-rest encryption key"
   NEWKEY=$(openssl rand -hex 32)
   tmp=$(mktemp)
   cp -a "$ENV_FILE" "$tmp"
   printf 'SERVIKA_SECRET_KEY=%s\n' "$NEWKEY" >> "$tmp"
   install -m 600 -o root -g root "$tmp" "$ENV_FILE"
   rm -f "$tmp"
-  ok "$(t "SERVIKA_SECRET_KEY generated" "SERVIKA_SECRET_KEY üretildi")"
+  ok "SERVIKA_SECRET_KEY generated"
 fi
 
-step "$(t "Restarting" "Yeniden başlatılıyor")"
+step "Restarting"
 systemctl restart "$SVC"
 HEALTHY=0
 for _i in 1 2 3 4 5 6; do
@@ -469,11 +460,11 @@ if [ "$HEALTHY" = 1 ]; then
   rm -rf "$ROLLBACK_DIR" 2>/dev/null || true
   echo "$RELHASH" > "$MARKER" 2>/dev/null || true
   NEWVER=$(version); [ -n "$NEWVER" ] || NEWVER="?"
-  ok "$(t "panel active and health check passed" "panel aktif ve sağlık kontrolü geçti")"
-  ok "$(t "resource limits applied from plans + existing sites are being safely migrated to per-tenant PHP-FPM isolation (self-check + auto-rollback, in the background)" "kaynak limitleri planlardan uygulandı + mevcut siteler kiracı-başına PHP-FPM izolasyonuna güvenle taşınıyor (öz-denetim + otomatik geri alma, arka planda)")"
-  echo -e "${c_g}══ $(t "Update complete ($CURVER to $NEWVER); environment, database, and sites preserved" "Güncelleme tamamlandı ($CURVER -> $NEWVER); ortam, veritabanı ve siteler korundu") ══${c_0}"
+  ok "panel active and health check passed"
+  ok "resource limits applied from plans + existing sites are being safely migrated to per-tenant PHP-FPM isolation (self-check + auto-rollback, in the background)"
+  echo -e "${c_g}══ Update complete ($CURVER to $NEWVER); environment, database, and sites preserved ══${c_0}"
 else
-  warn "$(t "the new release failed its health check; restoring the previous release" "yeni sürüm sağlık kontrolünü geçemedi; önceki sürüm geri yükleniyor")"
+  warn "the new release failed its health check; restoring the previous release"
   install -m 0755 "$BIN.bak" "$BIN"
   [ -f "$SEED.bak" ] && install -m 0755 "$SEED.bak" "$SEED" 2>/dev/null || true
   command -v restorecon >/dev/null && restorecon "$BIN" >/dev/null 2>&1 || true
@@ -486,15 +477,15 @@ else
   systemctl stop "$SVC" >/dev/null 2>&1 || true
   if [ -n "$PRE_UPDATE_DUMP" ] && [ -f "$PRE_UPDATE_DUMP" ] \
     && gzip -t "$PRE_UPDATE_DUMP" && gunzip -c "$PRE_UPDATE_DUMP" | mysql; then
-    ok "$(t "database restored from $PRE_UPDATE_DUMP" "veritabanı $PRE_UPDATE_DUMP dosyasından geri yüklendi")"
+    ok "database restored from $PRE_UPDATE_DUMP"
   else
-    warn "$(t "database restore failed; the recovery dump remains at $PRE_UPDATE_DUMP" "veritabanı geri yükleme başarısız; kurtarma dökümü $PRE_UPDATE_DUMP konumunda")"
+    warn "database restore failed; the recovery dump remains at $PRE_UPDATE_DUMP"
   fi
 
   systemctl restart "$SVC"; sleep 3
   if systemctl is-active --quiet "$SVC"; then
-    die "$(t "rollback completed and the previous release is active; inspect journalctl -u servika -n 40" "geri alma tamamlandı ve önceki sürüm aktif; journalctl -u servika -n 40 ile inceleyin")"
+    die "rollback completed and the previous release is active; inspect journalctl -u servika -n 40"
   else
-    die "$(t "rollback failed to start Servika; inspect journalctl -u servika -n 40 (database dump: $PRE_UPDATE_DUMP)" "geri alma Servika'yı başlatamadı; journalctl -u servika -n 40 ile inceleyin (veritabanı dökümü: $PRE_UPDATE_DUMP)")"
+    die "rollback failed to start Servika; inspect journalctl -u servika -n 40 (database dump: $PRE_UPDATE_DUMP)"
   fi
 fi

@@ -174,9 +174,6 @@ func main() {
 	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
 	mail.HealMailOnStartup(context.Background(), d)
 	mail.StartPolicyServer(d, "127.0.0.1:10040")
-	// Show long-running maintenance job logs (update, optimize, CVE, KernelCare)
-	// in the panel's default language (see internal/system/language.go).
-	system.Init(d)
 	go system.StartVersionCheck(version, buildDate)
 
 	// Backfill customer panel accounts onto the multi-user model.

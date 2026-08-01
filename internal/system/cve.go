@@ -161,12 +161,12 @@ func cveScan() *CveSummary {
 	}
 	// Total advisory count (summary): "    15 Security notice(s)"
 	for ln := range strings.SplitSeq(cveRunShell(60*time.Second, "-q", "updateinfo", "--summary"), "\n") {
-		line := strings.TrimSpace(ln)
-		if strings.HasSuffix(line, "Security notice(s)") &&
-			!strings.Contains(line, "Critical") && !strings.Contains(line, "Important") &&
-			!strings.Contains(line, "Moderate") && !strings.Contains(line, "Low") {
+		t := strings.TrimSpace(ln)
+		if strings.HasSuffix(t, "Security notice(s)") &&
+			!strings.Contains(t, "Critical") && !strings.Contains(t, "Important") &&
+			!strings.Contains(t, "Moderate") && !strings.Contains(t, "Low") {
 			var n int
-			if _, err := fmt.Sscanf(line, "%d", &n); err == nil {
+			if _, err := fmt.Sscanf(t, "%d", &n); err == nil {
 				s.TotalAdvisories = n
 			}
 		}
@@ -205,27 +205,7 @@ func CveStatus(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, s)
 }
 
-// cveWrapperContent renders the wrapper in the panel language. The script runs as a
-// separate systemd-run process with no DB access, so the language is fixed here at
-// write time. English is the primary language.
-func cveWrapperContent(lang string) string {
-	if lang == "tr" {
-		return `#!/usr/bin/env bash
-set -uo pipefail
-echo "════════ Güvenlik güncellemeleri — $(date "+%Y-%m-%d %H:%M:%S") ════════"
-echo
-if command -v dnf >/dev/null 2>&1; then
-  dnf -y --refresh update --security
-elif command -v yum >/dev/null 2>&1; then
-  yum -y update --security
-else
-  echo "  (dnf/yum bulunamadı — güncelleme atlandı)"
-fi
-echo
-echo "════════ ✓ Güvenlik güncellemeleri tamamlandı ════════"
-`
-	}
-	return `#!/usr/bin/env bash
+const cveWrapperContent = `#!/usr/bin/env bash
 set -uo pipefail
 echo "════════ Security updates — $(date "+%Y-%m-%d %H:%M:%S") ════════"
 echo
@@ -239,11 +219,10 @@ fi
 echo
 echo "════════ ✓ Security updates complete ════════"
 `
-}
 
-func cveWriteWrapper(lang string) error {
+func cveWriteWrapper() error {
 	tmp := cveWrapper + ".tmp"
-	if err := os.WriteFile(tmp, []byte(cveWrapperContent(lang)), 0o700); err != nil {
+	if err := os.WriteFile(tmp, []byte(cveWrapperContent), 0o700); err != nil {
 		return err
 	}
 	return os.Rename(tmp, cveWrapper)
@@ -252,30 +231,28 @@ func cveWriteWrapper(lang string) error {
 // CveUpdate — POST /system/cve/update : install security updates in background.
 func CveUpdate(w http.ResponseWriter, r *http.Request) {
 	if cveUpdateRunning() {
-		httpx.WriteError(w, http.StatusConflict, t("security update is already in progress", "güvenlik güncellemesi zaten sürüyor"))
+		httpx.WriteError(w, http.StatusConflict, "security update is already in progress")
 		return
 	}
 	if running, _ := optimizeRunning(); running {
-		httpx.WriteError(w, http.StatusConflict, t("optimization is in progress — try again when it finishes", "optimizasyon sürüyor — bitince tekrar deneyin"))
+		httpx.WriteError(w, http.StatusConflict, "optimization is in progress — try again when it finishes")
 		return
 	}
 	if running := updateRunning(); running {
-		httpx.WriteError(w, http.StatusConflict, t("panel update is in progress — try again when it finishes", "panel güncellemesi sürüyor — bitince tekrar deneyin"))
+		httpx.WriteError(w, http.StatusConflict, "panel update is in progress — try again when it finishes")
 		return
 	}
 	logPath := cveLogPath()
 	_ = os.MkdirAll(filepath.Dir(logPath), 0o750)
-	if err := cveWriteWrapper(panelLang()); err != nil {
+	if err := cveWriteWrapper(); err != nil {
 		log.Printf("cve update: prepare wrapper: %v", err)
-		httpx.WriteError(w, http.StatusInternalServerError, t("could not start security update", "güvenlik güncellemesi başlatılamadı"))
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start security update")
 		return
 	}
-	header := fmt.Sprintf("%s\n", t(
-		fmt.Sprintf("=== Security update started: %s ===", time.Now().Format("2006-01-02 15:04:05")),
-		fmt.Sprintf("=== Güvenlik güncellemesi başlatıldı: %s ===", time.Now().Format("2006-01-02 15:04:05"))))
+	header := fmt.Sprintf("=== Security update started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
 	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
 		log.Printf("cve update: open log %s: %v", logPath, err)
-		httpx.WriteError(w, http.StatusInternalServerError, t("could not start security update", "güvenlik güncellemesi başlatılamadı"))
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start security update")
 		return
 	}
 	cmd := exec.Command("systemd-run",
@@ -287,7 +264,7 @@ func CveUpdate(w http.ResponseWriter, r *http.Request) {
 		cveWrapper)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.Printf("cve update: systemd-run start: %v: %s", err, strings.TrimSpace(string(out)))
-		httpx.WriteError(w, http.StatusInternalServerError, t("could not start security update", "güvenlik güncellemesi başlatılamadı"))
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start security update")
 		return
 	}
 	// Reset cache — post-update re-scan refreshes.
