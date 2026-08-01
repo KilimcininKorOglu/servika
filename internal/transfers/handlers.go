@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 
+	"servika/internal/archivex"
 	"servika/internal/credentials"
 	"servika/internal/cron"
 	"servika/internal/domains"
@@ -538,6 +539,16 @@ func (h *Handlers) rollbackDomain(r *http.Request, id int64) {
 func (h *Handlers) restoreWeb(ctx context.Context, archivePath, root, sk string) error {
 	if !strings.HasPrefix(sk, "c_") || root == "" {
 		return errors.New("unsafe target")
+	}
+	// The extraction below hands the untrusted cPanel archive to the system tar,
+	// which honors symlink/hardlink members and ".." paths — a member could escape
+	// the tenant public_html or clobber a file through a planted symlink. Pre-scan
+	// with archivex first (rejects symlink/hardlink/device/fifo members and unsafe
+	// paths) so a malicious archive is refused before any file is written. The
+	// upload is already capped at MaxUploadBytes, so no decompression-bomb limits
+	// are needed here (zero-value Limits = unbounded).
+	if err := archivex.Scan(ctx, archivePath, archivex.TypeTARGzip, archivex.Limits{}); err != nil {
+		return fmt.Errorf("unsafe archive: %w", err)
 	}
 	target := "/home/" + sk + "/public_html"
 	if out, err := newTransferCommand(ctx, "find", target, "-mindepth", "1", "-delete").CombinedOutput(); err != nil {
