@@ -340,7 +340,7 @@ func parseSOARdata(t []string, ttl int) *SOA {
 // continuation blocks into a single logical line (quote-aware).
 func logicalLines(text string) []string {
 	var clean []string
-	for _, ln := range strings.Split(text, "\n") {
+	for ln := range strings.SplitSeq(text, "\n") {
 		clean = append(clean, stripComment(strings.TrimRight(ln, "\r")))
 	}
 	var res []string
@@ -433,13 +433,12 @@ func relativeName(name, origin string) string {
 	if name == "@" || name == origin || name == o {
 		return "@"
 	}
-	if strings.HasSuffix(name, ".") {
-		n := strings.TrimSuffix(name, ".")
+	if n, ok := strings.CutSuffix(name, "."); ok {
 		if n == o {
 			return "@"
 		}
-		if strings.HasSuffix(n, "."+o) {
-			return strings.TrimSuffix(n, "."+o)
+		if base, ok := strings.CutSuffix(n, "."+o); ok {
+			return base
 		}
 		return n
 	}
@@ -475,8 +474,8 @@ func unquoteTXT(toks []string) string {
 // soaMailToEmail turns a zone RNAME (admin.example.com.) into an e-mail (admin@example.com).
 func soaMailToEmail(rname string) string {
 	r := trimDot(rname)
-	if i := strings.Index(r, "."); i >= 0 {
-		return r[:i] + "@" + r[i+1:]
+	if local, domain, ok := strings.Cut(r, "."); ok {
+		return local + "@" + domain
 	}
 	return r
 }

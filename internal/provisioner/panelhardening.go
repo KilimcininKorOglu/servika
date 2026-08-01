@@ -102,7 +102,7 @@ func injectProxyTrust(content, wanted, secret string) string {
 	// (1) X-Servika-Proxy injection (idempotent + secret-rotation safe).
 	if !strings.Contains(content, wanted) {
 		var out []string
-		for _, line := range strings.Split(content, "\n") {
+		for line := range strings.SplitSeq(content, "\n") {
 			if strings.Contains(line, "X-Servika-Proxy") {
 				continue // drop the old secret line
 			}
