@@ -1,6 +1,6 @@
 {
-  "latest": "1.1.1",
-  "announcement": "This maintenance release clears three dependency advisories reported by govulncheck by upgrading the chi router and edwards25519, neither of which was on a reachable code path. It also modernizes several internal code paths to current Go idioms with no change in behavior. No action is required beyond updating.",
-  "critical": false,
-  "release_date": "2026-07-27"
+  "latest": "1.1.2",
+  "announcement": "This release hardens security: the cPanel import now validates archive members before extraction, and it ships alongside encrypted-at-rest database passwords, hashed FTP/SSH credentials, proxy-secret IP trust, and login timing and webhook-replay defenses. It adds full Turkish/English localization across the panel with a per-user and server-default language, reseller multi-user accounts with disk and traffic quotas, cPanel full-account import, S3/B2 remote backups, and spam filtering. Many fixes are also included; updating is recommended.",
+  "critical": true,
+  "release_date": "2026-08-01"
 }

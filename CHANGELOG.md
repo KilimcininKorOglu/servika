@@ -4,6 +4,36 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-08-01
+
+### Added
+- Full Turkish/English localization across the panel (react-i18next), with a live language switcher, a per-user preference, and a server-default language chosen at install.
+- Localized live logs for long-running maintenance jobs (update, optimize, CVE, KernelCare) and the `servika-update`/`servika-optimize` scripts, following the panel default language.
+- Reseller multi-user panel accounts with a role-based sidebar, reseller-scoped management UI, and admin UI to view and edit reseller disk/traffic/customer/domain quotas.
+- Reseller-scoped hosting endpoints and quota enforcement across domains, WordPress, and backup lists; reseller suspension now cascades to its customers' hosting.
+- cPanel full-account import: web files, multiple databases, mailboxes and forwarders, cron jobs, and SSL certificates.
+- Server-wide DNS/SSL/mail/database overview lists and a per-reseller-scoped security (audit) log.
+- Mail spam filtering, Sieve rules, per-mailbox send limits, and Postfix queue management.
+- S3 and Backblaze B2 remote backup destinations.
+- BIND DNS zone import/export (backend and UI).
+- Optional Let's Encrypt SSL when creating a domain; domain SSL indicator, open-in-new-tab, and reseller column.
+- Global panel search in the top bar, admin server-hostname management, branded welcome and server-wide 404 pages, an inline nginx vhost editor, and auto-expanding file-manager directory tree.
+
+### Changed
+- Encrypt database account passwords at rest (AES-256-GCM) and store FTP/SSH credentials as yescrypt/SHA-512-crypt hashes instead of cleartext.
+- Trust proxy IP headers only with the shared proxy secret; heal panel proxy trust and clean deprovision orphans on startup.
+- Pre-scan the cPanel import archive with member validation before extraction; validate backup destinations and harden SFTP against ssh argument injection; reject dangerous nginx directives with quote-aware tokenization.
+- Reject NUL in the root password before chpasswd and close a username timing side-channel on login.
+- Verify release bundles against the published SHA256SUMS before install/update.
+- Collapse to a single role-based token (drop the FTP login bridge), store client session state in cookies (never localStorage), convert user-text tables to utf8mb4, standardize page containers to full width, lazy-load route pages, and modernize internal code to current Go idioms.
+
+### Fixed
+- Revoke live sessions on credential and authorization changes; reject replayed GitHub webhook deliveries.
+- Harden file uploads against disk exhaustion and quota bypass; symlink-safe permission reset for public_html; handle unix.Close errors on directory fd releases.
+- Bound manual backup work and cap manual retention; fully tear down the systemd slice on delete; pin TMPDIR with a single-pass cPanel import and mail policy hardening.
+- DNS-aware www SAN and guard PHP-FPM pool writes for deleted users; prevent addon domains from overwriting the parent vhost; allow safe tenant preview via CSP frame-ancestors and make the domain preview refreshable.
+- Detect edits to already-applied migration files; resolve clean-install verification errors.
+
 ## [1.1.1] - 2026-07-27
 
 ### Changed
