@@ -11,6 +11,7 @@
   "labels": {
     "current": "Mevcut",
     "latest": "En son",
+    "buildDate": "Derleme tarihi",
     "lastCheck": "Son kontrol"
   },
   "unknown": "Bilinmiyor",

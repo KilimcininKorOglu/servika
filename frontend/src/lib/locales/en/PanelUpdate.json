@@ -11,6 +11,7 @@
   "labels": {
     "current": "Current",
     "latest": "Latest",
+    "buildDate": "Build date",
     "lastCheck": "Last check"
   },
   "unknown": "Unknown",

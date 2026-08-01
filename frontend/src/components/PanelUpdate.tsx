@@ -22,6 +22,7 @@ type VersionStatus = {
   announcement: string
   critical: boolean
   release_date: string
+  build_date: string
   last_check?: string
   error: string
 }
@@ -149,9 +150,10 @@ export default function PanelUpdate() {
 
           {version && (
             <div className="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-950/20 p-3 text-xs text-slate-600 dark:text-slate-300">
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-4">
                 <div><span className="block text-slate-400 dark:text-slate-500">{t('labels.current')}</span><span className="font-medium text-slate-900 dark:text-slate-100">{version.current || t('unknown')}</span></div>
                 <div><span className="block text-slate-400 dark:text-slate-500">{t('labels.latest')}</span><span className="font-medium text-slate-900 dark:text-slate-100">{version.latest || t('unknown')}</span></div>
+                <div><span className="block text-slate-400 dark:text-slate-500">{t('labels.buildDate')}</span><span className="font-medium text-slate-900 dark:text-slate-100">{version.build_date || t('unknown')}</span></div>
                 <div><span className="block text-slate-400 dark:text-slate-500">{t('labels.lastCheck')}</span><span className="font-medium text-slate-900 dark:text-slate-100">{formatCheckTime(version.last_check, t('notCheckedYet'))}</span></div>
               </div>
               {version.announcement && (
