@@ -320,7 +320,7 @@ export default function DomainsPage() {
                         {' '}
                         <a href={`https://${d.domain_name}`} target="_blank" rel="noopener noreferrer" title={t('openInNewTab')} className="text-slate-400 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 text-xs">↗</a>
                         {d.ssl && <span className="ml-1.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded" title={d.ssl_expiry ? t('sslExpires', { date: d.ssl_expiry }) : t('sslActive')}>SSL</span>}
-                        {d.is_demo && <span className="ml-1.5 text-[10px] uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">DEMO</span>}
+                        {d.is_demo && <span className="ml-1.5 text-[10px] uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">{t('demoBadge')}</span>}
                       </div>
                     </td>
                     <td data-label={t('columns.systemUser')} className={responsiveTableCodeCellClass}>

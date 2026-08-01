@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 
 type Point = { ts: string; load_1m: number; load_5m: number; load_15m: number; memory: number }
@@ -18,6 +19,7 @@ const COLOR = '#0ea5e9' // sky — visually distinct from the CPU chart
 // Memory usage history (%). Plots the `memory` field from /system/load-history points.
 // Same visual language as LoadHistoryChart: area + gradient + smooth line + grid + hover.
 export default function MemoryHistoryChart() {
+  const { t } = useTranslation('MemoryHistoryChart')
   const [hours, setHours] = useState(24)
   const [d, setD] = useState<Response | null>(null)
   const [forbidden, setForbidden] = useState(false)
@@ -96,8 +98,8 @@ export default function MemoryHistoryChart() {
             <path d="M3 7h18v10H3zM7 7v10m5-10v10m5-10v10" />
           </svg>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Memory Usage</h3>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500">Used RAM percentage · 0–100%</p>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h3>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">{t('subtitle')}</p>
           </div>
         </div>
         <div className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-800 dark:bg-slate-800/60">
@@ -116,7 +118,7 @@ export default function MemoryHistoryChart() {
       <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1.5">
         <div className="flex items-center gap-2 text-xs">
           <span className="h-2.5 w-2.5 rounded-full" style={{ background: COLOR }} />
-          <span className="text-slate-500 dark:text-slate-400">Memory</span>
+          <span className="text-slate-500 dark:text-slate-400">{t('series')}</span>
           <span className={`font-mono font-semibold tabular-nums ${critical ? 'text-red-600 dark:text-red-400' : warning ? 'text-amber-600 dark:text-amber-400' : 'text-slate-900 dark:text-slate-100'}`}>
             {currentValue == null ? '—' : `${currentValue.toFixed(1)}%`}
           </span>
@@ -129,8 +131,8 @@ export default function MemoryHistoryChart() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-9 w-9 text-slate-300 dark:text-slate-600">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125 8 8l3 6 4-9 3 6h4" />
           </svg>
-          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No data collected yet</p>
-          <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">Samples are recorded every minute; the chart populates within a few minutes.</p>
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{t('noData')}</p>
+          <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">{t('noDataHint')}</p>
         </div>
       ) : (
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full select-none" onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
@@ -153,7 +155,7 @@ export default function MemoryHistoryChart() {
           {/* 85% critical reference line */}
           <g>
             <line x1={ML} y1={g.yAt(85)} x2={W - MR} y2={g.yAt(85)} stroke="#ef4444" strokeWidth="1" strokeDasharray="5 5" opacity="0.5" />
-            <text x={W - MR} y={g.yAt(85) - 5} textAnchor="end" fill="#ef4444" fontSize="10" opacity="0.8">85% critical</text>
+            <text x={W - MR} y={g.yAt(85) - 5} textAnchor="end" fill="#ef4444" fontSize="10" opacity="0.8">{t('criticalReference')}</text>
           </g>
 
           {/* X labels */}

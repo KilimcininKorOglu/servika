@@ -26,6 +26,7 @@
   "openInNewTab": "Yeni sekmede aç",
   "sslExpires": "Bitiş: {{date}}",
   "sslActive": "SSL etkin",
+  "demoBadge": "DEMO",
   "reseller": "Bayi: {{name}}",
   "noPlan": "Yok",
   "subdomain": "ALT",

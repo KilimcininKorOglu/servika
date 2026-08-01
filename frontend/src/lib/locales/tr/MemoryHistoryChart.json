@@ -1,0 +1,8 @@
+{
+  "title": "Bellek Kullanımı",
+  "subtitle": "Kullanılan RAM yüzdesi · %0–100",
+  "series": "Bellek",
+  "criticalReference": "%85 kritik",
+  "noData": "Henüz veri toplanmadı",
+  "noDataHint": "Örnekler her dakika kaydedilir; grafik birkaç dakika içinde dolar."
+}

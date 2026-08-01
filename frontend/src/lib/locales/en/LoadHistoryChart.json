@@ -1,0 +1,9 @@
+{
+  "title": "System Load History",
+  "subtitle": "Load average (1 / 5 / 15min)",
+  "cores": "{{count}} cores",
+  "scale": "√ scale",
+  "coresCapacity": "{{count}} cores · 100%",
+  "noData": "No data collected yet",
+  "noDataHint": "Samples are recorded every minute; the chart populates within a few minutes."
+}

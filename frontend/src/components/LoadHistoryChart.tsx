@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 
 type Point = { ts: string; load_1m: number; load_5m: number; load_15m: number; memory: number }
@@ -21,6 +22,7 @@ const SERIES = [
 const W0 = 1000, H = 320, ML = 46, MR = 16, MT = 16, MB = 30
 
 export default function LoadHistoryChart() {
+  const { t } = useTranslation('LoadHistoryChart')
   const [hours, setHours] = useState(24)
   const [d, setD] = useState<Response | null>(null)
   const [forbidden, setForbidden] = useState(false)
@@ -121,9 +123,9 @@ export default function LoadHistoryChart() {
     <div ref={wrapRef} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">System Load History</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('title')}</h3>
           <p className="text-[11px] text-slate-400 dark:text-slate-500">
-            Load average (1 / 5 / 15min){cores ? ` · ${cores} cores` : ''} · √ scale
+            {t('subtitle')}{cores ? ` · ${t('cores', { count: cores })}` : ''} · {t('scale')}
           </p>
         </div>
         <div className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-800 dark:bg-slate-800/60">
@@ -161,8 +163,8 @@ export default function LoadHistoryChart() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-9 w-9 text-slate-300 dark:text-slate-600">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125 8 8l3 6 4-9 3 6h4" />
           </svg>
-          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No data collected yet</p>
-          <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">Samples are recorded every minute; the chart populates within a few minutes.</p>
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{t('noData')}</p>
+          <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">{t('noDataHint')}</p>
         </div>
       ) : (
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full select-none" onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
@@ -186,7 +188,7 @@ export default function LoadHistoryChart() {
           {cores > 0 && cores <= g.yMax && (
             <g>
               <line x1={ML} y1={g.yAt(cores)} x2={W - MR} y2={g.yAt(cores)} stroke="#ef4444" strokeWidth="1" strokeDasharray="5 5" opacity="0.55" />
-              <text x={W - MR} y={g.yAt(cores) - 5} textAnchor="end" fill="#ef4444" fontSize="10" opacity="0.85">{cores} cores · 100%</text>
+              <text x={W - MR} y={g.yAt(cores) - 5} textAnchor="end" fill="#ef4444" fontSize="10" opacity="0.85">{t('coresCapacity', { count: cores })}</text>
             </g>
           )}
 

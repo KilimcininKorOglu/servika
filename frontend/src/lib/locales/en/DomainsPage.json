@@ -26,6 +26,7 @@
   "openInNewTab": "Open in new tab",
   "sslExpires": "Expires: {{date}}",
   "sslActive": "SSL active",
+  "demoBadge": "DEMO",
   "reseller": "Reseller: {{name}}",
   "noPlan": "None",
   "subdomain": "SUB",

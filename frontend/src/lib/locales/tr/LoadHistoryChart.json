@@ -1,0 +1,9 @@
+{
+  "title": "Sistem Yük Geçmişi",
+  "subtitle": "Yük ortalaması (1 / 5 / 15dk)",
+  "cores": "{{count}} çekirdek",
+  "scale": "√ ölçek",
+  "coresCapacity": "{{count}} çekirdek · %100",
+  "noData": "Henüz veri toplanmadı",
+  "noDataHint": "Örnekler her dakika kaydedilir; grafik birkaç dakika içinde dolar."
+}
