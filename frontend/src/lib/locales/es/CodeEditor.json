@@ -1,0 +1,15 @@
+{
+  "langPlainText": "Texto sin formato",
+  "unsaved": "Cambios sin guardar",
+  "saving": "Guardando…",
+  "saved": "✓ Guardado",
+  "syntax": "Sintaxis",
+  "exitFullscreen": "Salir de pantalla completa",
+  "fullscreen": "Pantalla completa",
+  "save": "💾 Guardar",
+  "close": "Cerrar",
+  "cursor": "Línea {{line}}, Columna {{column}}",
+  "lines": "{{count}} líneas",
+  "bytes": "{{count}} bytes",
+  "shortcuts": "Ctrl+S: guardar · Esc: cerrar"
+}

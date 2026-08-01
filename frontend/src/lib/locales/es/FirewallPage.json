@@ -1,0 +1,83 @@
+{
+  "breadcrumb": { "home": "Inicio", "firewall": "Cortafuegos" },
+  "title": "Cortafuegos",
+  "subtitle": { "pre": "Controle ", "bold": "quién puede acceder a su servidor desde internet", "post": ". Aplique un preset o añada una regla personalizada." },
+  "info": { "pre": "Las reglas afectan solo a ", "bold": "nuevas conexiones", "mid": ". Su sesión SSH o de panel activa permanecerá conectada. Los puertos protegidos ", "post": " no pueden cerrarse." },
+  "templates": {
+    "sectionTitle": "Presets",
+    "sectionHint": "aplicar con un clic",
+    "portLabel": "Puerto: {{ports}}",
+    "apply": "Aplicar",
+    "applying": "...",
+    "close_mysql": { "name": "Cerrar acceso externo a MySQL", "description": "Cierra el puerto de base de datos 3306 a internet. MySQL permanece accesible desde el servidor." },
+    "close_ftp": { "name": "Cerrar FTP", "description": "Cierra el puerto FTP 21. Puede cerrar FTP de forma segura si usa SFTP." },
+    "close_mail": { "name": "Cerrar puertos de correo", "description": "Cierra los puertos SMTP, POP3 e IMAP. Reduce el riesgo de relay de spam cuando no hay servidor de correo." },
+    "close_rpc": { "name": "Cerrar RPC / NFS", "description": "Cierra el puerto rpcbind 111 y el puerto NFS 2049 cuando no se usa el uso compartido de archivos." }
+  },
+  "modes": {
+    "ban": { "name": "Bloquear IP", "description": "Bloquea una dirección IP específica. Introduzca un puerto para bloquear el acceso solo a ese puerto, o déjelo en blanco para bloquear todos los puertos.", "example": "Ejemplo: Bloquear completamente 45.9.1.2 tras varios intentos SSH." },
+    "whitelist": { "name": "Permitir IP", "description": "Introduzca un puerto para permitir el acceso solo desde estas IPs y bloquear a todos los demás. Deje el puerto en blanco para dar a esta IP acceso prioritario a todos los puertos.", "example": "Ejemplo: Introduzca el puerto 8443 y la IP de su oficina para que solo usted pueda acceder al panel." },
+    "close": { "name": "Cerrar puerto", "description": "Cierra un puerto para todos excepto las IPs en la lista de permitidos. Los puertos críticos para SSH, web, el panel y DNS están protegidos y no pueden cerrarse.", "example": "Ejemplo: Cerrar el puerto de base de datos 3306 al acceso externo." }
+  },
+  "form": {
+    "sectionTitle": "Regla personalizada",
+    "step1": "1. ¿Qué desea hacer?",
+    "step2": "2. Detalles",
+    "ipLabel": "Dirección IP o rango",
+    "ipPlaceholder": "1.2.3.4 o 1.2.3.0/24",
+    "portLabel": "Puerto",
+    "portBlankHint": "(vacío = todos)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "p.ej. 22",
+    "protocolLabel": "Protocolo",
+    "noteLabel": "Nota (opcional)",
+    "notePlaceholder": "p.ej. IP intentando fuerza bruta SSH",
+    "previewLabel": "Vista previa:",
+    "submit": "Añadir y aplicar regla",
+    "submitting": "Aplicando..."
+  },
+  "warning": { "pre": "", "bold": "Advertencia:", "mid": " Este puerto estará abierto solo a la IP indicada. Si su IP es ", "boldDynamic": "dinámica", "post": ", perderá acceso cuando cambie. El puerto SSH 22 permanece abierto para conectarse por SSH y eliminar esta regla si queda bloqueado. Use una IP estática como alternativa." },
+  "preview": {
+    "closeReady": "El puerto {{port}} se cerrará para todos excepto las IPs en lista de permitidos.",
+    "closeEmpty": "Introduzca el puerto a cerrar.",
+    "banPort": "{{address}} será bloqueado del acceso al puerto {{port}}.",
+    "banAll": "{{address}} será bloqueado del acceso a todos los puertos.",
+    "whitelistPort": "El puerto {{port}} estará abierto solo para {{address}}. Todos los demás serán bloqueados.",
+    "whitelistAll": "{{address}} tendrá acceso prioritario a todos los puertos.",
+    "enterIp": "(introduzca una dirección IP)"
+  },
+  "rules": {
+    "title": "Reglas activas",
+    "count": "({{count}})",
+    "refresh": "↻ Actualizar",
+    "colType": "Tipo",
+    "colIp": "IP / CIDR",
+    "colPort": "Puerto",
+    "colProto": "Proto",
+    "colNote": "Nota",
+    "colAction": "Acción",
+    "loading": "Cargando...",
+    "emptyTitle": "Aún no hay reglas. El servidor está abierto a todas las conexiones.",
+    "emptyHint": "Aplique un preset de arriba para empezar.",
+    "everyone": "todos",
+    "allPorts": "todos",
+    "delete": "Eliminar",
+    "deleting": "..."
+  },
+  "badge": { "ban": "🚫 Bloqueado", "whitelist": "✅ Permitido", "close": "🔒 Cerrado" },
+  "confirm": {
+    "applyTemplate": "¿Aplicar la plantilla «{{name}}»?\nPuertos a cerrar: {{ports}}\nEstos puertos ya no serán accesibles desde internet.",
+    "removeClose": "cerrar puerto {{port}}",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "¿Eliminar la regla «{{summary}}»?"
+  },
+  "success": {
+    "templateApplied_one": "«{{name}}» aplicado. {{count}} regla añadida.",
+    "templateApplied_other": "«{{name}}» aplicado. {{count}} reglas añadidas.",
+    "templateAlreadyApplied": "«{{name}}» ya está aplicado. No se añadieron nuevas reglas.",
+    "ruleAdded": "La regla fue añadida y aplicada al cortafuegos."
+  },
+  "error": { "applyTemplate": "No se pudo aplicar la plantilla", "addRule": "No se pudo añadir la regla", "deleteRule": "No se pudo eliminar la regla" },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

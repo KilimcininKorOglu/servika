@@ -1,0 +1,14 @@
+{
+  "title": "Reinicio del servidor",
+  "description": "Reinicie el servidor completo solo después de que los trabajos activos y las operaciones de clientes sean seguros de interrumpir.",
+  "confirmLabel": "Escriba REBOOT para confirmar",
+  "placeholder": "REBOOT",
+  "reboot": "Reiniciar servidor",
+  "requesting": "Solicitando...",
+  "messages": {
+    "requested": "Reinicio solicitado. El panel no estará disponible mientras el servidor se reinicia."
+  },
+  "errors": {
+    "reboot": "No se pudo solicitar el reinicio del servidor"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "subscription": "Suscripción",
+    "wordpress": "WordPress"
+  },
+  "title": "WordPress Toolkit",
+  "subtitle": "Gestione versiones, complementos, temas y usuarios en un solo lugar.",
+  "loading": "Cargando…",
+  "actions": { "new": "Nuevo WordPress" },
+  "empty": {
+    "title": "Aún no existe ninguna instalación de WordPress en este dominio",
+    "subtitle": "Instálelo con un clic usando el formulario de abajo."
+  },
+  "tabs": { "overview": "Vista general", "extensions": "Complementos", "themes": "Temas", "users": "Usuarios" },
+  "toolkit": { "adminPanel": "Panel de administración", "remove": "Eliminar" },
+  "metrics": { "version": "Versión", "php": "PHP", "database": "Base de datos", "maintenance": "Modo mantenimiento", "upToDate": "al día", "active": "activo", "on": "Activado", "off": "Desactivado" },
+  "overview": {
+    "updateVersion": "Actualizar versión · v{{version}}",
+    "updateAll": "Actualizar todo",
+    "disableMaintenance": "Desactivar modo mantenimiento",
+    "enableMaintenance": "Activar modo mantenimiento",
+    "clearCache": "Limpiar caché",
+    "repairCore": "Reparar núcleo",
+    "hint": "Acciones de mantenimiento rápido. Las actualizaciones de versión disponibles aparecen en la métrica de arriba."
+  },
+  "messages": {
+    "coreUpdated": "Núcleo de WordPress actualizado.",
+    "allUpdated": "Núcleo, complementos y temas actualizados.",
+    "maintenanceEnabled": "Modo mantenimiento activado.",
+    "maintenanceDisabled": "Modo mantenimiento desactivado.",
+    "cacheCleared": "Caché limpiado.",
+    "repairDone": "Reparación del núcleo completada.",
+    "packageUpdated": "{{name}} actualizado.",
+    "allUpdatesDone": "Todas las actualizaciones completadas.",
+    "activated": "{{name}} activado.",
+    "deactivated": "{{name}} desactivado."
+  },
+  "errors": { "installFailed": "La instalación falló", "operationFailed": "La operación falló", "resetFailed": "No se pudo restablecer la contraseña", "removeFailed": "No se pudo eliminar la instalación" },
+  "output": { "title": "Salida de la operación" },
+  "btn": { "processing": "Procesando…" },
+  "packages": {
+    "loading": "Cargando…",
+    "noPlugins": "No se encontraron complementos.",
+    "noThemes": "No se encontraron temas.",
+    "updateSingular": "{{count}} actualización disponible",
+    "updatePlural": "{{count}} actualizaciones disponibles",
+    "updateAll": "Actualizar todo",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "version": "Versión {{version}}",
+    "updateAvailable": " → {{version}} disponible",
+    "update": "Actualizar",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "activeTheme": "Tema activo"
+  },
+  "usersTab": { "loading": "Cargando…", "empty": "No se encontraron usuarios.", "resetPassword": "Restablecer contraseña" },
+  "confirm": {
+    "resetPassword": "¿Generar una nueva contraseña para «{{user}}»?\nLa contraseña actual quedará inválida.",
+    "rootRemove": "Las instalaciones de WordPress en el directorio raíz no pueden eliminarse desde el panel.",
+    "remove": "¿Eliminar la instalación de WordPress en {{dir}}?\nTodos los archivos de este directorio y su base de datos serán eliminados. Esta acción no puede deshacerse."
+  },
+  "installForm": {
+    "title": "Nueva instalación de WordPress",
+    "close": "✕ Cerrar",
+    "siteTitle": "Título del sitio",
+    "siteTitlePlaceholder": "Mi blog",
+    "subdirectory": "Subdirectorio (opcional)",
+    "subdirectoryPlaceholder": "vacío = raíz · ejemplo: blog",
+    "adminUser": "Usuario administrador",
+    "adminEmail": "Correo del administrador",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "Instalando… (~30 seg)",
+    "install": "Instalar WordPress"
+  },
+  "result": { "installed": "WordPress {{version}} instalado", "site": "Sitio", "admin": "Administrador", "username": "Usuario", "password": "Contraseña", "savePassword": "Guarde la contraseña ahora. No se mostrará de nuevo." },
+  "passwordModal": { "title": "Nueva contraseña creada", "user": "Usuario:", "copy": "Copiar", "notice": "Esta contraseña no se mostrará de nuevo. Guárdela ahora.", "ok": "OK" }
+}

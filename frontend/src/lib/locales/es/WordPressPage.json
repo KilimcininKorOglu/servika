@@ -1,0 +1,63 @@
+{
+  "breadcrumbHome": "Inicio",
+  "breadcrumbTitle": "WordPress",
+  "title": "WordPress",
+  "subtitle": "Vea y actualice todas las instalaciones de WordPress en el servidor o cree una nueva instalación.",
+  "outdated": {
+    "banner_one": "{{count}} instalación tiene una actualización disponible.",
+    "banner_other": "{{count}} instalaciones tienen actualizaciones disponibles.",
+    "warning": "Las versiones obsoletas de WordPress contienen vulnerabilidades de seguridad conocidas. Actualícelas lo antes posible."
+  },
+  "result": {
+    "installed": "WordPress {{version}} instalado",
+    "site": "Sitio",
+    "admin": "Administrador",
+    "user": "Usuario",
+    "password": "Contraseña",
+    "savePassword": "⚠ Guarde la contraseña ahora. No se mostrará de nuevo."
+  },
+  "installedSites": "Sitios WordPress instalados",
+  "refresh": "↻ Actualizar",
+  "table": {
+    "domain": "Dominio",
+    "directory": "Directorio",
+    "version": "Versión",
+    "status": "Estado",
+    "installed": "Instalado",
+    "actions": "Acciones"
+  },
+  "scanning": "Analizando instalaciones... (verificando versiones y actualizaciones)",
+  "emptyTitle": "No se encontraron instalaciones de WordPress en el servidor.",
+  "emptyHint": "Use el formulario de abajo para crear una nueva instalación.",
+  "adminButton": "Administrador",
+  "updateToVersion": "Actualizar a v{{version}}",
+  "update": "Actualizar",
+  "delete": "Eliminar",
+  "status": {
+    "updateAvailable": "Actualización disponible",
+    "updateAvailableTo": "Actualización disponible a v{{version}}",
+    "upToDate": "Al día",
+    "unknown": "Desconocido"
+  },
+  "form": {
+    "heading": "Nueva instalación",
+    "domain": "Dominio",
+    "siteTitle": "Título del sitio",
+    "siteTitlePlaceholder": "Mi blog",
+    "subdirectory": "Subdirectorio (opcional)",
+    "subdirectoryPlaceholder": "vacío = raíz, p.ej. blog",
+    "adminUser": "Usuario administrador",
+    "adminEmail": "Correo del administrador",
+    "adminEmailPlaceholder": "admin@site.com"
+  },
+  "installing": "Instalando... (~30 seg)",
+  "installButton": "Instalar WordPress",
+  "installButtonDomain": "Instalar WordPress, {{domain}}",
+  "confirmDelete": "¿Eliminar WordPress en {{domain}}{{dir}}?\nTodos los archivos y la base de datos de este directorio se eliminarán. Esta acción no se puede deshacer.",
+  "errors": {
+    "rootDelete": "WordPress en el directorio raíz no se puede eliminar desde el panel.",
+    "installFailed": "La instalación falló",
+    "updateFailed": "No se pudo actualizar",
+    "deleteFailed": "No se pudo eliminar"
+  }
+}

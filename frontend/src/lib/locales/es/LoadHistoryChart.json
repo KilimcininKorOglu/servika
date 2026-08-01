@@ -1,0 +1,9 @@
+{
+  "title": "Historial de carga del sistema",
+  "subtitle": "Carga media (1 / 5 / 15 min)",
+  "cores": "{{count}} núcleos",
+  "scale": "√ escala",
+  "coresCapacity": "{{count}} núcleos · 100%",
+  "noData": "Aún no se han recopilado datos",
+  "noDataHint": "Las muestras se registran cada minuto; el gráfico se completa en pocos minutos."
+}

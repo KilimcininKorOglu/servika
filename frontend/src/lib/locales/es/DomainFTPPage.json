@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "ftpAccount": "Cuenta FTP"
+  },
+  "title": "Cuenta FTP",
+  "errors": {
+    "resetFailed": "El restablecimiento de contraseña falló"
+  },
+  "info": {
+    "host": "Host",
+    "port": "Puerto",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Usuario",
+    "homeDir": "Directorio home"
+  },
+  "reset": {
+    "title": "Restablecer contraseña",
+    "placeholder": "Introduzca una contraseña personalizada o deje en blanco",
+    "setThis": "Establecer esta contraseña",
+    "generateRandom": "Generar contraseña aleatoria",
+    "success": "✓ Nueva contraseña establecida",
+    "saveHint": "Guárdela en un lugar seguro. No podrá verla de nuevo.",
+    "copy": "Copiar"
+  },
+  "note": {
+    "label": "Nota:",
+    "pre": " FTP usa actualmente autenticación en ",
+    "code": "texto claro",
+    "post": " contra la base de datos local. Use SFTP en el puerto 22 para transporte cifrado."
+  }
+}

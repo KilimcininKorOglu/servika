@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "tools": "Herramientas y configuración",
+    "current": "Plantilla DNS"
+  },
+  "title": "Plantilla DNS del servidor",
+  "subtitle": "Estos registros se aplican cuando se crea un dominio o cuando se restaura su plantilla DNS predeterminada.",
+  "placeholders": {
+    "label": "Variables:",
+    "domain": " nombre de dominio, ",
+    "ip": " IP del servidor, ",
+    "selector": " selector DKIM, ",
+    "dkim": " registro DKIM público generado"
+  },
+  "loading": "Cargando...",
+  "table": {
+    "name": "Nombre",
+    "type": "Tipo",
+    "value": "Valor",
+    "ttl": "TTL",
+    "priority": "Prioridad",
+    "order": "Orden",
+    "enabled": "Activado",
+    "priorityNone": "Ninguno",
+    "deleteTitle": "Eliminar registro"
+  },
+  "addRecord": "Añadir registro",
+  "soa": {
+    "title": "Configuración SOA",
+    "fieldSeconds": "{{field}} (segundos)"
+  },
+  "dkim": {
+    "title": "Configuración DKIM",
+    "selector": "Selector",
+    "generate": "Generar claves DKIM para nuevos dominios"
+  },
+  "discard": "Descartar cambios",
+  "save": "Guardar plantilla",
+  "saving": "Guardando...",
+  "success": "Plantilla DNS guardada. Los nuevos dominios usarán los registros y la configuración actualizados.",
+  "errors": {
+    "loadFailed": "No se pudo cargar la plantilla DNS",
+    "saveFailed": "No se pudo guardar la plantilla DNS"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Inicio",
+  "title": "Clientes",
+  "subtitle": "Registros de facturación y contacto. Los dominios se vinculan a estos; no es una cuenta de acceso al panel.",
+  "newCustomer": "Nuevo cliente",
+  "loading": "Cargando…",
+  "empty": {
+    "title": "Aún no hay registros de clientes",
+    "description": "Cree un registro de cliente para vincular dominios a un cliente."
+  },
+  "noMatch": "Ningún cliente coincide con su búsqueda.",
+  "columns": {
+    "name": "Nombre",
+    "email": "Correo",
+    "plan": "Plan",
+    "status": "Estado",
+    "created": "Creado"
+  },
+  "status": {
+    "active": "Activo",
+    "passive": "Pasivo"
+  },
+  "actions": {
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "modal": {
+    "editTitle": "Editar cliente",
+    "newTitle": "Nuevo cliente",
+    "name": "Nombre",
+    "email": "Correo",
+    "plan": "Plan",
+    "noPlan": "Sin plan",
+    "status": "Estado",
+    "notes": "Notas",
+    "cancel": "Cancelar",
+    "saving": "Guardando…",
+    "save": "Guardar"
+  },
+  "delete": {
+    "title": "Eliminar cliente",
+    "message": "{{name}} será eliminado. Los dominios vinculados a este cliente no se eliminan; solo se borra el vínculo.",
+    "confirm": "Eliminar"
+  },
+  "toast": {
+    "added": "{{name}} añadido.",
+    "updated": "{{name}} actualizado.",
+    "deleted": "{{name}} eliminado."
+  },
+  "errors": {
+    "loadFailed": "No se pudieron cargar los clientes",
+    "nameEmailRequired": "El nombre y el correo son obligatorios",
+    "saveFailed": "No se pudo guardar",
+    "deleteFailed": "No se pudo eliminar"
+  }
+}

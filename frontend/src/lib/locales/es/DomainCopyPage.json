@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "copyWebsite": "Copiar sitio web"
+  },
+  "title": "Copiar sitio web",
+  "subtitle": {
+    "pre": "Crea una instantánea con marca de tiempo de los archivos del sitio bajo ",
+    "post": ", proporcionando un punto de restauración seguro antes de realizar cambios."
+  },
+  "note": {
+    "pre": "ℹ️ Esta herramienta copia solo los ",
+    "bold1": "archivos",
+    "mid": " y no incluye la base de datos. Para una copia de seguridad completa, use ",
+    "bold2": "Copia de seguridad y restauración",
+    "post": "."
+  },
+  "createDescription": "Crear una nueva copia del contenido de public_html.",
+  "actions": {
+    "create": "Crear copia",
+    "creating": "Copiando…",
+    "delete": "Eliminar"
+  },
+  "existingTitle": "Copias existentes",
+  "loading": "Cargando…",
+  "empty": "Aún no hay copias.",
+  "back": "← Volver a la suscripción",
+  "createdCopy": "Copia creada: {{name}} ({{size}} MB)",
+  "confirmDelete": "¿Eliminar esta copia?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "No se pudo crear la copia",
+    "deleteFailed": "No se pudo eliminar la copia"
+  }
+}

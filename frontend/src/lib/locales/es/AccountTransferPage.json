@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "Inicio",
+  "breadcrumbServices": "Servicios de alojamiento",
+  "breadcrumbTitle": "Transferencia de cuentas",
+  "title": "Importar cuenta",
+  "subtitle": "Analice de forma segura una copia de seguridad completa de cPanel. El archivo no se extrae ni se guarda en el servidor en esta fase.",
+  "fileLabel": "Copia de seguridad completa de cPanel (.tar.gz / .tgz)",
+  "uploading": "Cargando {{progress}}%",
+  "analyzeButton": "Analizar archivo",
+  "kpi": {
+    "primaryDomain": "Dominio principal",
+    "undetermined": "Indeterminado",
+    "webFiles": "Archivos web",
+    "databases": "Bases de datos",
+    "emailData": "Datos de correo",
+    "emailFiles": "{{count}} archivos",
+    "none": "Ninguno"
+  },
+  "detail": {
+    "title": "Información de la cuenta",
+    "sourcePanel": "Panel origen",
+    "user": "Usuario",
+    "archiveRoot": "Raíz del archivo",
+    "totalMembers": "Total de miembros",
+    "expandedSize": "Tamaño expandido",
+    "cron": "Cron",
+    "cronPresent": "Presente",
+    "cronNone": "Ninguno",
+    "sslFiles": "Archivos SSL",
+    "mailboxes": "Buzones",
+    "forwarders": "Redirecciones de correo",
+    "cronJobs": "Tareas cron"
+  },
+  "lists": {
+    "databases": "Bases de datos",
+    "dnsZones": "Zonas DNS",
+    "cronJobs": "Tareas cron",
+    "noneFound": "Ninguno encontrado"
+  },
+  "analysisComplete": "Análisis completo. La importación crea un nuevo dominio; si falla, la cuenta creada se revierte automáticamente.",
+  "targetAndPlan": "Destino y plan",
+  "fields": {
+    "targetCustomer": "Cliente destino",
+    "selectCustomer": "Seleccionar un cliente",
+    "servicePlan": "Plan de servicio",
+    "defaultPlan": "Plan predeterminado",
+    "primaryDomain": "Dominio principal",
+    "phpVersion": "Versión PHP"
+  },
+  "importing": "Importando… {{progress}}%",
+  "importButton": "Importar cuenta",
+  "importResult": {
+    "title": "Importación completada",
+    "summary": "{{domain}} · {{webFiles}} archivos web · {{count}} base(s) de datos",
+    "newPasswords": "Nuevas contraseñas de buzones — guárdelas ahora",
+    "forwardersTransferred": "{{count}} redirección(es) de correo transferida(s).",
+    "cronTransferred": "{{count}} tarea(s) cron transferida(s).",
+    "sslTransferred": "Certificado SSL transferido · válido hasta {{expires}}",
+    "manageDomain": "Gestionar dominio →"
+  },
+  "errors": {
+    "analyzeFailed": "No se pudo analizar el archivo",
+    "importFailed": "No se pudo importar la cuenta"
+  }
+}

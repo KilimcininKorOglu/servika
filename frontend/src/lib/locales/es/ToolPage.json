@@ -1,0 +1,37 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios"
+  },
+  "fallback": {
+    "label": "Herramienta",
+    "description": "Aún no implementado."
+  },
+  "notReady": "No disponible",
+  "domainLabel": "Dominio: ",
+  "construction": {
+    "heading": "En construcción",
+    "availablePrefix": "Este módulo estará disponible en la fase ",
+    "availableSuffix": ".",
+    "availableLater": "Este módulo estará disponible en una fase posterior.",
+    "returnToDashboard": "← Volver al panel del dominio"
+  },
+  "tool": {
+    "connection": { "label": "Detalles de conexión", "description": "Servidor FTP, usuario, cadena de conexión a la base de datos y acciones de copia rápida." },
+    "files": { "label": "Gestor de archivos", "description": "Listar, cargar, descargar y cambiar permisos de archivos en public_html." },
+    "databases": { "label": "Bases de datos", "description": "Bases de datos MySQL, usuarios e integración phpMyAdmin." },
+    "ftp": { "label": "Cuentas FTP", "description": "Cuentas FTP virtuales, contraseñas y directorios home mediante Pure-FTPd." },
+    "backups": { "label": "Copia de seguridad y restauración", "description": "Copias en tar y volcados de base de datos a SFTP, S3 o almacenamiento local." },
+    "copy": { "label": "Copiar sitio web", "description": "Clonar un sitio existente a otro dominio." },
+    "php": { "label": "Configuración PHP", "description": "Selección de pool PHP-FPM, cambio de versión y parámetros de php.ini." },
+    "logs": { "label": "Registros", "description": "Monitorización en vivo de access.log y error.log con seguimiento WebSocket." },
+    "cron": { "label": "Tareas programadas", "description": "Editor de crontab por usuario." },
+    "git": { "label": "Git", "description": "Conectar repositorios, configurar claves de despliegue y actualizar automáticamente con webhooks." },
+    "composer": { "label": "PHP Composer", "description": "Interfaz web para composer install y update." },
+    "performance": { "label": "Rendimiento", "description": "Aceleradores como OPcache, gzip y lazy loading." },
+    "ssl": { "label": "Certificado SSL/TLS", "description": "Instalación y renovación automática de Let's Encrypt." },
+    "password-protection": { "label": "Directorios con contraseña", "description": "Proteger directorios con .htpasswd." },
+    "stats": { "label": "Estadísticas", "description": "Informes de disco, tráfico y visitantes." },
+    "imunify": { "label": "Imunify", "description": "Integración de antivirus y WAF." }
+  }
+}

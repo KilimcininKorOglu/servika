@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "accessControl": "Control de acceso"
+  },
+  "title": "Control de acceso",
+  "subtitle": "Configure la protección anti-hotlink y las reglas de IP a nivel de dominio. Al guardar, el vhost nginx se vuelve a generar.",
+  "loading": "Cargando…",
+  "modes": {
+    "off": {
+      "label": "Desactivado",
+      "description": "No se aplican reglas de IP en el vhost nginx."
+    },
+    "block": {
+      "label": "Bloquear IPs de la lista",
+      "description": "Los visitantes de las direcciones IP o rangos CIDR de la lista reciben respuestas 403."
+    },
+    "allow": {
+      "label": "Permitir solo IPs de la lista",
+      "description": "Solo se permiten las IPs o rangos CIDR listados cuando existe al menos una regla."
+    }
+  },
+  "hotlink": {
+    "title": "Protección anti-hotlink",
+    "description": "Bloquea que sitios externos incrusten archivos de imagen servidos por este dominio.",
+    "enabled": "Activado",
+    "allowedLabel": "Dominios referenciadores adicionales permitidos",
+    "hint": "El dominio actual y su host www siempre están permitidos. Añada un dominio por línea o separados por comas.",
+    "save": "Guardar configuración anti-hotlink",
+    "saving": "Guardando…"
+  },
+  "ipMode": {
+    "title": "Modo de acceso por IP",
+    "selected": "● Seleccionado"
+  },
+  "newRule": {
+    "title": "Nueva regla de IP",
+    "label": "Dirección IP o CIDR",
+    "placeholder": "203.0.113.10 o 203.0.113.0/24",
+    "add": "Añadir regla",
+    "adding": "Añadiendo…"
+  },
+  "rules": {
+    "title": "Reglas de IP configuradas",
+    "empty": "Aún no hay reglas de IP.",
+    "created": "Creado {{date}}",
+    "delete": "Eliminar"
+  },
+  "back": "← Volver a la suscripción",
+  "messages": {
+    "hotlinkSaved": "La configuración anti-hotlink fue guardada.",
+    "modeSaved": "El modo de acceso por IP fue guardado.",
+    "ruleAdded": "La regla de IP fue añadida.",
+    "ruleDeleted": "La regla de IP fue eliminada."
+  },
+  "confirmDelete": "¿Eliminar la regla de IP {{ip}}?",
+  "errors": {
+    "hotlinkFailed": "No se pudo guardar la configuración anti-hotlink",
+    "modeFailed": "No se pudo guardar el modo de acceso por IP",
+    "addFailed": "No se pudo añadir la regla de IP",
+    "deleteFailed": "No se pudo eliminar la regla de IP"
+  }
+}

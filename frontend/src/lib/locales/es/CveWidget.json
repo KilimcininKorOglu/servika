@@ -1,0 +1,52 @@
+{
+  "title": "Seguridad — Avisos de CVE",
+  "subtitleAudit": "Auditoría CVE (AlmaLinux)",
+  "advisories": "{{count}} avisos de seguridad",
+  "rescan": "Reanalizar",
+  "scanning": "Analizando…",
+  "scanningServer": "Analizando servidor…",
+  "updating": "Instalando actualizaciones de seguridad… (se ejecuta en segundo plano)",
+  "kcApplying": "Aplicando parche en vivo del kernel… (KernelCare — sin reinicio)",
+  "severity": {
+    "critical": "Crítico",
+    "important": "Importante",
+    "moderate": "Moderado",
+    "low": "Bajo"
+  },
+  "kcActive": {
+    "bold": "El kernel está parcheado en vivo (KernelCare).",
+    "text": " Las vulnerabilidades del kernel están cerradas sin reinicio.",
+    "effectivePre": " Kernel efectivo: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVEs parcheados en vivo."
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare está instalado pero la licencia no está registrada.",
+    "text": " Regístrela con una clave de licencia TuxCare para parches de kernel sin reinicio."
+  },
+  "rebootRequired": {
+    "bold1": "Se requiere reinicio.",
+    "text1": " Un nuevo kernel con parches de seguridad está instalado pero el sistema sigue ejecutando el antiguo; la mayoría de los CVEs de abajo son del kernel y aparecerán ",
+    "bold2": "abiertos hasta que se reinicie el servidor",
+    "text2": ". Programe un reinicio en una ventana de mantenimiento."
+  },
+  "clean": {
+    "title": "Sistema actualizado",
+    "subtitle": "No hay vulnerabilidades conocidas"
+  },
+  "totalPre": "Total ",
+  "totalPost": " CVEs únicos",
+  "lastScan": " · último análisis {{scan}}",
+  "installUpdates": "Instalar actualizaciones de seguridad",
+  "updateLiveKernel": "Actualizar parches del kernel en vivo (sin reinicio)",
+  "confirmUpdate": "Se instalarán actualizaciones de seguridad (dnf --security). Puede requerirse un reinicio para los parches del kernel. ¿Continuar?",
+  "messages": {
+    "updatesComplete": "Actualizaciones de seguridad completadas.",
+    "livePatchApplied": "Parche en vivo del kernel aplicado."
+  },
+  "errors": {
+    "fetch": "No se pudo obtener el estado de CVEs",
+    "startUpdate": "No se pudo iniciar la actualización",
+    "startLivePatch": "No se pudo iniciar el parche en vivo"
+  }
+}

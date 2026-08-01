@@ -1,0 +1,21 @@
+{
+  "resourceUsage": "Uso de recursos",
+  "live": "en vivo",
+  "loading": "Cargando…",
+  "cpu": "CPU",
+  "cpuAlt": "{{cores}} núcleo(s) · carga {{load1}} / {{load5}} / {{load15}}",
+  "memory": "Memoria",
+  "disk": "Disco",
+  "uptime": "Tiempo activo",
+  "systemStatus": "Estado del sistema",
+  "waiting": "Esperando…",
+  "backend": "Backend",
+  "running": "En ejecución",
+  "version": "Versión",
+  "time": "Hora",
+  "uptimeFmt": {
+    "daysHours": "{{days}}d {{hours}}h",
+    "hoursMinutes": "{{hours}}h {{minutes}}min",
+    "minutes": "{{minutes}}min"
+  }
+}

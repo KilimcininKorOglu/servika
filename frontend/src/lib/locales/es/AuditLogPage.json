@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Inicio",
+  "title": "Registro de seguridad",
+  "subtitle": "Intentos de inicio de sesión y acciones administrativas en el panel. La entrada más reciente aparece primero.",
+  "stats": {
+    "entries": "entradas",
+    "failed": "fallidos"
+  },
+  "searchPlaceholder": "Buscar usuario, IP, objetivo…",
+  "filters": {
+    "allActions": "Todas las acciones",
+    "last": "Últimos {{n}}",
+    "failedOnly": "Solo fallidos"
+  },
+  "loading": "Cargando…",
+  "empty": {
+    "title": "No hay entradas para este filtro",
+    "description": "Amplíe los filtros e intente de nuevo."
+  },
+  "noMatch": "Ninguna entrada coincide con su búsqueda.",
+  "columns": {
+    "time": "Hora",
+    "result": "Resultado",
+    "action": "Acción",
+    "user": "Usuario",
+    "ip": "IP",
+    "target": "Objetivo"
+  },
+  "status": {
+    "success": "Correcto",
+    "failed": "Fallido"
+  },
+  "errors": {
+    "loadFailed": "No se pudo cargar el registro"
+  }
+}

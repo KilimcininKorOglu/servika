@@ -1,0 +1,12 @@
+{
+  "title": "Optimización del servidor",
+  "description": "Actualiza los paquetes del sistema (dnf/yum) y aplica ajustes de rendimiento de MariaDB, nginx y PHP. El proceso se ejecuta en segundo plano y puede tardar mucho tiempo. Puede cerrar la página mientras continúa.",
+  "running": "La optimización está en curso. Las actualizaciones de paquetes pueden tardar; puede cerrar la página mientras continúa en segundo plano.",
+  "logStarted": "Optimización iniciada...\n",
+  "startButton": "Actualizar paquetes y optimizar",
+  "confirmPrompt": "Esto puede afectar brevemente los servicios. ¿Continuar?",
+  "starting": "Iniciando...",
+  "confirmYes": "Sí, iniciar",
+  "cancel": "Cancelar",
+  "errorStart": "No se pudo iniciar la optimización"
+}

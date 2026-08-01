@@ -1,0 +1,67 @@
+{
+  "loading": "Cargando…",
+  "notFound": "Subdominio no encontrado.",
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "domain": "Dominio",
+    "subdomains": "Subdominios",
+    "subdomain": "Subdominio"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "Instalar y gestionar WordPress en este directorio raíz"
+    },
+    "logs": {
+      "label": "Registros",
+      "description": "Registros de acceso y error para este subdominio"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "Estado de dependencias para este directorio raíz"
+    },
+    "protection": {
+      "label": "Protección con contraseña",
+      "description": "Restringir directorios con autenticación HTTP"
+    },
+    "statistics": {
+      "label": "Estadísticas",
+      "description": "Análisis de tráfico solo para este subdominio"
+    }
+  },
+  "toast": {
+    "phpSaved": "Este subdominio ahora usa PHP {{version}}.",
+    "phpChangeFailed": "No se pudo cambiar la versión PHP"
+  },
+  "ssl": {
+    "active": "🔒 SSL activo",
+    "none": "Sin SSL"
+  },
+  "intro": {
+    "pre": "Un subdominio de",
+    "post": ", servido desde su propio directorio raíz con su propio pool PHP."
+  },
+  "details": {
+    "title": "Detalles",
+    "address": "Dirección",
+    "documentRoot": "Directorio raíz",
+    "diskUsage": "Uso de disco",
+    "phpVersion": "Versión PHP",
+    "created": "Creado",
+    "serverIp": "IP del servidor"
+  },
+  "php": {
+    "title": "Versión PHP",
+    "note": "Este subdominio usa su propio pool FPM, por lo que cambiarlo no afecta al dominio principal.",
+    "versionLabel": "Versión",
+    "applying": "Aplicando…",
+    "apply": "Aplicar",
+    "validationNote": "El vhost se valida antes de guardar el cambio, por lo que una configuración rechazada deja el sitio sin cambios."
+  },
+  "toolsSection": {
+    "title": "Herramientas",
+    "note": "Cada herramienta opera en el directorio raíz de este subdominio en lugar del dominio principal."
+  },
+  "backToSubdomains": "← Volver a subdominios"
+}

@@ -1,0 +1,43 @@
+{
+  "loading": "Cargando...",
+  "notFound": "No encontrado",
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "antivirus": "Antivirus"
+  },
+  "title": "Análisis antivirus de malware",
+  "subtitlePrefix": "se analiza con firmas ClamAV y heurísticas de webshell integradas.",
+  "toast": {
+    "startScanFailed": "No se pudo iniciar el análisis",
+    "quarantineFailed": "No se pudo poner en cuarentena el archivo",
+    "updateSignatureFailed": "No se pudieron actualizar las firmas"
+  },
+  "confirmQuarantine": "¿Poner en cuarentena este archivo?\n{{file}}\n\n(El archivo se moverá bajo ~/.quarantined y quedará inaccesible.)",
+  "status": {
+    "enginePrefix": "Motor:",
+    "engineFull": "ClamAV + Heurísticas",
+    "engineHeuristics": "Solo heurísticas",
+    "signatureDatabase": "Base de firmas: {{date}}",
+    "latestScan": "Último análisis: {{date}}. {{scanned}} archivos. {{infected}} hallazgos",
+    "updating": "Actualizando...",
+    "updateSignatures": "Actualizar firmas",
+    "scanning": "Analizando...",
+    "scanNow": "Analizar ahora",
+    "inProgress": "Análisis en curso. Los sitios grandes pueden tardar varios minutos."
+  },
+  "findings": {
+    "title": "Hallazgos",
+    "fromLatest": "del último análisis",
+    "noScans": "Aún no hay análisis. Seleccione «Analizar ahora» para comenzar.",
+    "clean": "Limpio. No se encontró malware.",
+    "colFile": "Archivo",
+    "colSignature": "Firma",
+    "colEngine": "Motor",
+    "colStatus": "Estado",
+    "quarantined": "🔒 En cuarentena",
+    "active": "⚠ Activo",
+    "quarantine": "Poner en cuarentena"
+  },
+  "backToSubscription": "← Volver a la suscripción"
+}

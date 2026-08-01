@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Dominio",
+    "mail": "Correo",
+    "mailboxes": "Buzones",
+    "aliases": "Alias",
+    "suspended": "Suspendido"
+  },
+  "mailNone": "Ninguno",
+  "overview": {
+    "title": "Cuentas de correo",
+    "description": "Recuento de buzones y alias en cada dominio.",
+    "empty": "No se encontraron dominios."
+  },
+  "summary": {
+    "mailDomains": "Dominios de correo",
+    "totalMailboxes": "Total de buzones"
+  },
+  "queue": {
+    "title": "Cola de correo Postfix",
+    "subtitle": "Mensajes en espera de entrega, diferidos o retenidos por un administrador.",
+    "refresh": "↻ Actualizar",
+    "retry": "Reintentar cola",
+    "loading": "Leyendo la cola…",
+    "empty": "✓ La cola de correo está vacía",
+    "colId": "ID de cola",
+    "colRoute": "Remitente → Destinatario",
+    "colSizeTime": "Tamaño / Hora",
+    "colActions": "Acciones",
+    "release": "Liberar",
+    "hold": "Retener",
+    "requeue": "Reencolar",
+    "delete": "Eliminar"
+  },
+  "confirmDelete": "¿Eliminar permanentemente el mensaje en cola {{queueID}}?",
+  "errors": {
+    "readFailed": "No se pudo leer la cola Postfix",
+    "actionFailed": "La operación de cola falló"
+  }
+}

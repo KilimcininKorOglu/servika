@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "La copia automática falló. Pulse Ctrl+C y luego Intro:",
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "connectionDetails": "Detalles de conexión"
+  },
+  "title": "Detalles de conexión",
+  "subtitle": "Seleccione un valor para copiarlo automáticamente",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Host",
+    "port": "Puerto",
+    "username": "Usuario",
+    "password": "Contraseña",
+    "homeDirectory": "Directorio home",
+    "database": "Base de datos",
+    "webRoot": "Raíz web",
+    "ipv4": "IPv4",
+    "systemUser": "Usuario del sistema",
+    "httpUrl": "URL HTTP",
+    "httpsUrl": "URL HTTPS"
+  },
+  "links": {
+    "ftp": "Ir a la gestión FTP →",
+    "database": "Ir a la gestión de bases de datos →"
+  },
+  "row": {
+    "selectToCopy": "Seleccionar para copiar",
+    "copied": "✓ Copiado"
+  },
+  "password": {
+    "button": "🔑 Ver / Restablecer contraseña"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Base de datos"
+  },
+  "modal": {
+    "titleSuffix": "Contraseña",
+    "userLabel": "Usuario:",
+    "notStored": "(no almacenado)",
+    "notAuthorized": "(no autorizado)",
+    "showCurrent": "👁 Ver contraseña actual",
+    "currentPasswordLabel": "Contraseña actual",
+    "newPasswordGenerated": "✓ Nueva contraseña generada",
+    "copyWarning": "⚠ Copie la contraseña ahora. Es posible que no pueda verla de nuevo tras cerrar esta ventana.",
+    "close": "Cerrar",
+    "generating": "Generando…",
+    "generateAgain": "↻ Generar de nuevo",
+    "generateNew": "⚡ Generar nueva contraseña",
+    "errorGenerate": "No se pudo generar la contraseña"
+  },
+  "copyButton": {
+    "copy": "Copiar",
+    "copied": "✓ Copiado"
+  }
+}

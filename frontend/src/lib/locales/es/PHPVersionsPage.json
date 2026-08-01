@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "tools": "Herramientas y configuración",
+    "current": "Versiones PHP"
+  },
+  "title": "Versiones PHP",
+  "subtitle": "Añada o elimine versiones PHP. Cada una se ejecuta en un pool PHP-FPM independiente y puede seleccionarse por dominio. La instalación incluye 14 paquetes (fpm, cli, mysqlnd y 11 extensiones).",
+  "alerts": {
+    "opInProgress": "Ya hay una operación PHP en curso. Espere a que finalice.",
+    "appstreamCannotRemove": "AppStream PHP es el sistema predeterminado y no puede eliminarse."
+  },
+  "confirm": {
+    "install": "Se instalarán catorce paquetes para PHP {{version}} ({{resource}}). ¿Continuar?",
+    "remove": "PHP {{version}} (Remi) y TODAS sus extensiones serán ELIMINADAS.\nLa operación se rechazará si algún dominio usa esta versión. ¿Continuar?"
+  },
+  "success": {
+    "installed": "PHP {{version}} instalado",
+    "removed": "PHP {{version}} eliminado"
+  },
+  "errors": {
+    "startInstallFailed": "No se pudo iniciar la instalación",
+    "startRemoveFailed": "No se pudo iniciar la eliminación"
+  },
+  "log": {
+    "installStarted": "Instalación de PHP {{version}} iniciada...\n",
+    "removeStarted": "Eliminación de PHP {{version}} iniciada...\n",
+    "installInProgress": "Instalación de PHP {{version}} en curso...",
+    "removeInProgress": "Eliminación de PHP {{version}} en curso...",
+    "waiting": "Esperando salida..."
+  },
+  "filters": {
+    "all": "Todos ({{count}})",
+    "installed": "Instalados ({{count}})",
+    "available": "Disponibles ({{count}})"
+  },
+  "loading": "Cargando...",
+  "badges": {
+    "installed": "INSTALADO",
+    "eol": "FIN DE VIDA"
+  },
+  "card": {
+    "version": "Versión:",
+    "extensions": "Extensiones:",
+    "service": "Servicio:"
+  },
+  "actions": {
+    "fixed": "Fijo (sistema predeterminado)",
+    "inProgress": "En curso...",
+    "remove": "Eliminar",
+    "install": "Instalar"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "domains": "Dominios",
+  "addDomain": "+ Añadir dominio",
+  "addDomainHint": "Disponible en F2",
+  "loading": "Cargando…",
+  "noDomains": "Aún no hay dominios",
+  "ssl": "SSL",
+  "noSsl": "Sin SSL"
+}

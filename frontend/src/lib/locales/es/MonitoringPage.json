@@ -1,0 +1,62 @@
+{
+  "breadcrumb": { "home": "Inicio", "monitoring": "Monitorización" },
+  "title": "Monitorización integral",
+  "liveRefresh": "En vivo, actualización cada {{seconds}} seg",
+  "tabs": { "server": "Servidor", "domain": "Por dominio", "logs": "Registros del servidor" },
+  "snap": { "cpu": "CPU", "cpuCores": "{{count}} núcleos", "memory": "Memoria", "load1m": "Carga (1 min)", "loadAlt": "5 min {{load5m}}, 15 min {{load15m}}", "diskRoot": "Disco (/)" },
+  "chart": {
+    "systemResources": "Recursos del sistema",
+    "samples": "{{count}}/{{max}} muestras, {{minutes}} min",
+    "legendCpu": "CPU",
+    "legendMemory": "Memoria",
+    "legendSwap": "Swap",
+    "legendLoad": "Carga (normalizada)",
+    "networkTraffic": "Tráfico de red",
+    "interface": "Interfaz: {{name}}",
+    "legendRx": "↓ RX (KB/s)",
+    "legendTx": "↑ TX (KB/s)",
+    "collecting": "Recopilando datos..."
+  },
+  "services": { "title": "Servicios", "enabledCount": "{{enabled}}/{{total}} activos", "active": "Activo", "stopped": "Detenido" },
+  "processes": { "title": "Procesos principales", "sortCpu": "CPU", "sortMem": "Memoria", "colPid": "PID", "colUser": "Usuario", "colCpu": "CPU%", "colMem": "MEM%", "colCommand": "Comando", "loading": "Cargando..." },
+  "domain": {
+    "selectionTitle": "Selección de dominio",
+    "noActiveDomains": "No hay dominios activos",
+    "probing": "Sondando...",
+    "healthProbe": "↻ Sondeo de salud",
+    "openSite": "Abrir sitio ↗",
+    "accessLog": "Registro de acceso",
+    "errorLog": "Registro de errores",
+    "lastLines": "últimas {{count}} líneas",
+    "noAccessEntries": "Aún no hay entradas en el registro...",
+    "noErrorEntries": "Aún no hay entradas de error"
+  },
+  "health": {
+    "reachable": "Accesible",
+    "unreachable": "Inaccesible",
+    "server": "Servidor: ",
+    "noSslTitle": "⚠ Sin SSL",
+    "noSslBody": "Este dominio no es accesible por HTTPS.",
+    "sslValid": "🔒 SSL válido",
+    "sslInvalid": "✗ SSL no válido",
+    "days": "días",
+    "expires": "Vence: ",
+    "issuer": "Emisor: ",
+    "responseTime": "Tiempo de respuesta",
+    "ms": "ms",
+    "fast": "Rápido",
+    "acceptable": "Aceptable",
+    "slow": "Lento"
+  },
+  "logs": {
+    "searchPlaceholder": "Buscar...",
+    "lastLineCount": "últimas {{count}}",
+    "refresh": "↻ Actualizar",
+    "loading": "Cargando...",
+    "notFound": "«{{query}}» no encontrado.",
+    "noEntries": "(sin entradas)",
+    "footerFiltered": "{{filtered}} / {{total}} líneas, journald, {{source}}",
+    "footer": "{{total}} líneas, journald, {{source}}"
+  },
+  "logSources": { "panel": "Panel", "nginx": "nginx", "mariadb": "MariaDB", "named": "DNS (named)", "sshd": "SSH", "cron": "Cron", "system": "Sistema completo" }
+}

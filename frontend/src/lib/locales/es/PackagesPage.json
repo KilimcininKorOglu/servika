@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Inicio",
+  "breadcrumbTools": "Herramientas y configuración",
+  "title": "Gestor de paquetes",
+  "subtitle": "Paquetes del servidor y entornos de compilación mediante DNF.",
+  "installedCount": "{{count}} paquetes instalados",
+  "quickInstallGroups": "Grupos de instalación rápida",
+  "groups": {
+    "devtools": { "name": "Herramientas de desarrollo", "description": "gcc, make, autoconf, automake, libtool, kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + cabeceras de desarrollo" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Compilador Go" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "Contenedor / VM", "description": "Compatible con Docker: podman + buildah + skopeo" },
+    "systools": { "name": "Herramientas del sistema", "description": "Herramientas de productividad CLI" },
+    "imaging": { "name": "Procesamiento de imágenes", "description": "ImageMagick + WebP + optimización" },
+    "dbclients": { "name": "Clientes de base de datos", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "Seguridad", "description": "GnuPG, OpenSSL, fail2ban" }
+  },
+  "badges": {
+    "installed": "INSTALADO",
+    "protected": "PROTEGIDO"
+  },
+  "tabs": {
+    "search": "Buscar en repositorios",
+    "installed": "Paquetes instalados"
+  },
+  "searchPlaceholder": "p.ej. mongodb, redis, nodejs, gcc, htop",
+  "installedPlaceholder": "nombre o descripción del paquete instalado",
+  "noResults": "Sin resultados.",
+  "resultsCount": "{{count}} resultados",
+  "actions": {
+    "processing": "Procesando...",
+    "remove": "Eliminar",
+    "install": "Instalar",
+    "removing": "Eliminando...",
+    "installing": "Instalando...",
+    "search": "Buscar",
+    "searching": "Buscando...",
+    "close": "Cerrar"
+  },
+  "confirm": {
+    "install": "«{{pkg}}» se instalará en todo el sistema. ¿Continuar?",
+    "remove": "«{{pkg}}» será ELIMINADO. ¿Continuar?"
+  },
+  "toast": {
+    "installed": "{{pkg}} instalado",
+    "removed": "{{pkg}} eliminado"
+  },
+  "output": {
+    "installTitle": "Salida de instalación: {{pkg}}",
+    "removeTitle": "Salida de eliminación: {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "La instalación falló",
+    "removeFailed": "La eliminación falló",
+    "toggleInstallFailed": "No se pudo instalar el paquete",
+    "toggleRemoveFailed": "No se pudo eliminar el paquete",
+    "searchFailed": "La búsqueda falló"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "addonDomains": "Dominios adicionales"
+  },
+  "title": "Dominios adicionales",
+  "subtitle": "Cree dominios adicionales o aparcados y configure redirecciones de dominio completo.",
+  "toast": {
+    "created": "{{domain}} fue creado.",
+    "createFailed": "No se pudo crear el dominio adicional",
+    "deleted": "{{domain}} fue eliminado.",
+    "deleteFailed": "No se pudo eliminar el dominio adicional",
+    "redirectSaved": "La configuración de redirección fue guardada.",
+    "redirectSaveFailed": "No se pudo guardar la configuración de redirección",
+    "redirectRemoved": "La configuración de redirección fue eliminada.",
+    "redirectRemoveFailed": "No se pudo eliminar la configuración de redirección"
+  },
+  "mode": {
+    "parked": "dominio aparcado",
+    "addon": "dominio adicional"
+  },
+  "confirmDelete": "¿Eliminar {{domain}}?\nEl {{mode}}, vhost, zona DNS y registros del panel se eliminarán. Esta acción no puede deshacerse.",
+  "confirmRemoveRedirect": "¿Eliminar la redirección del dominio?",
+  "form": {
+    "title": "Nuevo dominio adicional",
+    "domainLabel": "Dominio",
+    "parkedLabel": "Dominio aparcado",
+    "creating": "Creando…",
+    "add": "Añadir dominio",
+    "hint": "Los dominios adicionales usan su propio directorio raíz. Los dominios aparcados comparten el directorio raíz del dominio principal."
+  },
+  "redirect": {
+    "title": "Redirección de dominio completo",
+    "active": "Activo",
+    "targetLabel": "URL de destino",
+    "statusLabel": "Estado",
+    "status301": "301 Permanente",
+    "status302": "302 Temporal",
+    "saving": "Guardando…",
+    "save": "Guardar redirección",
+    "remove": "Eliminar"
+  },
+  "list": {
+    "title": "Dominios existentes",
+    "loading": "Cargando…",
+    "empty": "Aún no hay dominios adicionales.",
+    "parked": "Aparcado",
+    "phpPrefix": "PHP",
+    "delete": "Eliminar"
+  },
+  "backToSubscription": "← Volver a la suscripción"
+}

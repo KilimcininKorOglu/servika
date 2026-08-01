@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "Aún no verificado",
+  "title": "Actualización del panel",
+  "badges": {
+    "server": "Servidor",
+    "critical": "Crítico",
+    "updateAvailable": "Actualización disponible"
+  },
+  "description": "Actualiza el panel a la última versión de GitHub. La configuración del entorno, las bases de datos y los sitios se conservan, y una versión defectuosa se revierte automáticamente.",
+  "toolMissing": " La herramienta de actualización no está instalada y se descargará automáticamente en el primer uso.",
+  "labels": {
+    "current": "Actual",
+    "latest": "Última",
+    "buildDate": "Fecha de compilación",
+    "lastCheck": "Última verificación"
+  },
+  "unknown": "Desconocido",
+  "lastCheckFailed": "La última verificación de versión falló: {{error}}",
+  "checksDisabled": "Las verificaciones de versión están desactivadas.",
+  "running": "La actualización está en curso. El panel puede reiniciarse brevemente; mantenga esta página abierta.",
+  "logStarted": "Actualización iniciada...\n",
+  "checkAndInstall": "Buscar actualizaciones e instalar",
+  "checking": "Verificando...",
+  "refreshStatus": "Actualizar estado de versión",
+  "confirmPrompt": "El panel se actualizará y su servicio se reiniciará. ¿Confirmar?",
+  "starting": "Iniciando...",
+  "confirmYes": "Sí, actualizar",
+  "cancel": "Cancelar",
+  "errors": {
+    "refresh": "No se pudo actualizar el estado de versión",
+    "start": "No se pudo iniciar la actualización"
+  }
+}

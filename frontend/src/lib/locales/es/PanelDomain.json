@@ -1,0 +1,25 @@
+{
+  "title": "Dominio del panel",
+  "description": "Apunte un registro A a este servidor antes de solicitar un certificado Let's Encrypt. Tras la emisión, el dominio abre el panel sin el puerto 8443.",
+  "customDomainLabel": "Dominio de panel personalizado",
+  "customDomainPlaceholder": "panel.ejemplo.com",
+  "serverIpv4": "IPv4 del servidor:",
+  "sslStatus": "Estado SSL:",
+  "portlessUrl": "URL sin puerto:",
+  "expires": "Vence:",
+  "unknown": "Desconocido",
+  "sslNone": "ninguno",
+  "save": "Guardar dominio del panel",
+  "saving": "Guardando...",
+  "reset": "Restablecer",
+  "resetting": "Restableciendo...",
+  "messages": {
+    "saved": "Dominio del panel guardado. Puede abrir https://{{domain}} sin el puerto 8443.",
+    "reset": "Dominio del panel restablecido al certificado predeterminado."
+  },
+  "errors": {
+    "load": "No se pudo cargar la configuración del dominio del panel",
+    "save": "No se pudo guardar el dominio del panel",
+    "reset": "No se pudo restablecer el dominio del panel"
+  }
+}

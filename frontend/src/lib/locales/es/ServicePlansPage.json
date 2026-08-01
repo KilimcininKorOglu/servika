@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "Inicio",
+  "breadcrumbTitle": "Planes de servicio",
+  "title": "Planes de servicio",
+  "subtitle": "Defina planes de servicio para dominios. Cada dominio está asociado a un plan y los recursos como disco, tráfico, versión PHP, número de bases de datos y límites de subdominio se configuran por plan.",
+  "addPlan": "Añadir plan",
+  "loading": "Cargando…",
+  "empty": {
+    "title": "Aún no hay planes de servicio",
+    "descriptionAdmin": "Comience definiendo su primer plan.",
+    "descriptionUser": "El administrador aún no ha definido ningún plan."
+  },
+  "badge": {
+    "default": "Predeterminado"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "Disco",
+    "traffic": "Tráfico",
+    "domains": "Dominios",
+    "databases": "Bases de datos",
+    "ftp": "FTP"
+  },
+  "detailsButton": "Detalles y límites de recursos",
+  "delete": "Eliminar",
+  "confirmDelete": {
+    "title": "Eliminar plan",
+    "message": "¿Eliminar el plan «{{name}}»?",
+    "confirmText": "Sí, eliminar"
+  },
+  "errors": {
+    "deleteFailed": "No se pudo eliminar",
+    "saveFailed": "No se pudo guardar"
+  },
+  "limit": {
+    "unlimited": "ilimitado"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/mes",
+    "domains": "dominios",
+    "databases": "bases de datos",
+    "accounts": "cuentas"
+  },
+  "modal": {
+    "newTitle": "Nuevo plan",
+    "editTitle": "Editar plan",
+    "planName": "Nombre del plan",
+    "description": "Descripción",
+    "diskMb": "Disco (MB)",
+    "trafficMb": "Tráfico (MB)",
+    "phpVersionLabel": "Versión PHP",
+    "maxDomains": "Máx. dominios",
+    "maxDatabases": "Máx. bases de datos",
+    "maxFtp": "Máx. cuentas FTP",
+    "isDefault": "Plan predeterminado para nuevos dominios",
+    "wafHeading": "WAF predeterminado (ModSecurity + OWASP CRS)",
+    "wafEnabled": "Activado en este plan",
+    "wafMode": {
+      "block": "Bloquear (activado)",
+      "detect": "Detectar (solo registrar)"
+    },
+    "wafParanoia": {
+      "level1": "Nivel 1 (bajo)",
+      "level2": "Nivel 2 (medio)",
+      "level3": "Nivel 3 (alto)",
+      "level4": "Nivel 4 (estricto)"
+    },
+    "hint": "0 = ilimitado. Los valores de disco y tráfico están en MB. Los nuevos dominios en este plan se aprovisionan con la versión PHP seleccionada.",
+    "cancel": "Cancelar",
+    "saving": "Guardando…",
+    "add": "Añadir",
+    "update": "Actualizar"
+  }
+}

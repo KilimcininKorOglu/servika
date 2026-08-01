@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "toolsSettings": "Herramientas y configuración",
+    "backupManager": "Gestor de copias de seguridad"
+  },
+  "title": "Gestor de copias de seguridad",
+  "subtitle": "Vea las copias de seguridad de todos los dominios en un solo lugar. Se ejecutan copias automáticas diarias y los destinos S3/SFTP se configuran por dominio.",
+  "toast": {
+    "triggered": "Se activaron las copias de seguridad programadas. Actualice en unos segundos para ver los resultados.",
+    "triggerFailed": "No se pudieron activar las copias de seguridad"
+  },
+  "kpi": {
+    "totalSize": "Tamaño total de copias",
+    "totalBackups": "Total de copias",
+    "domainCount": "Número de dominios",
+    "remoteDestinations": "Destinos remotos activos",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Copias automáticas:",
+    "default": "Diariamente a las 03:00",
+    "suffix": ". Retención de 7 días",
+    "triggering": "Activando...",
+    "backupNow": "⏱ Hacer copia de todos los dominios ahora",
+    "refresh": "↻ Actualizar"
+  },
+  "table": {
+    "title": "Copias de seguridad por dominio",
+    "colDomain": "Dominio",
+    "colCount": "Número de copias",
+    "colSize": "Tamaño total",
+    "colLatest": "Última copia",
+    "colAction": "Acción",
+    "loading": "Cargando...",
+    "noDomains": "Sin dominios.",
+    "never": "nunca",
+    "manage": "Gestionar"
+  },
+  "footnote": {
+    "pre": "ℹ️ Las copias de seguridad",
+    "post": "se almacenan allí. Las copias permanecen disponibles si se elimina un dominio, lo que permite la recuperación ante eliminaciones accidentales. Abra Gestionar para descargar o restaurar copias individuales y configurar destinos."
+  }
+}

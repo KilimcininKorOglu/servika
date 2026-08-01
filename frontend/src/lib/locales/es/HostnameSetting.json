@@ -1,0 +1,16 @@
+{
+  "title": "Nombre de host del servidor",
+  "protected": "Protegido contra el proveedor",
+  "awaitingProtection": "En espera de protección",
+  "descriptionPre": "Cambia el nombre de host del sistema de forma permanente. Se impide que cloud-init y DHCP/NetworkManager reescriban el nombre suministrado por el proveedor. Se recomienda un nombre completamente calificado: ",
+  "placeholder": "servidor1.ejemplo.com",
+  "apply": "Cambiar nombre de host",
+  "applying": "Aplicando…",
+  "messages": {
+    "changed": "El nombre de host se cambió a \"{{hostname}}\" y se hizo permanente."
+  },
+  "errors": {
+    "load": "No se pudo cargar el nombre de host",
+    "change": "No se pudo cambiar el nombre de host"
+  }
+}
