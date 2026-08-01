@@ -1,44 +1,70 @@
-// Panel i18n — one JSON namespace per component under locales/{en,tr}/<Namespace>.json.
-// Adding a namespace only needs the two JSON files; the import.meta.glob below
-// collects them automatically, no manual registration.
+// Panel i18n — one JSON namespace per component under locales/<lang>/<Namespace>.json.
+// Adding a namespace only needs one JSON per language; the import.meta.glob below
+// collects every locale directory automatically, no manual registration.
 //
-// English is the default and fallback; Turkish is the second language. The
-// active language is mirrored in the `servika.lang` cookie (never localStorage),
-// exactly like the theme in lib/theme.ts, so boot applies it before first paint.
+// English is the default and fallback. The active language is mirrored in the
+// `servika.lang` cookie (never localStorage), exactly like the theme in
+// lib/theme.ts, so boot applies it before first paint.
 
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { getCookie, setCookie } from '@/lib/cookies'
 
-export type Lang = 'en' | 'tr'
+// Supported UI languages. English is the source/fallback; the rest are ordered
+// as they appear in the switcher. pt-BR (Brazilian) is distinct from pt (Iberian).
+export const LANGS = ['en', 'tr', 'de', 'fr', 'it', 'pt', 'pt-BR', 'es', 'cs', 'ro', 'ja', 'zh'] as const
+export type Lang = (typeof LANGS)[number]
+
+// Native display names for the language switcher.
+export const LANG_NAMES: Record<Lang, string> = {
+  en: 'English',
+  tr: 'Türkçe',
+  de: 'Deutsch',
+  fr: 'Français',
+  it: 'Italiano',
+  pt: 'Português',
+  'pt-BR': 'Português (Brasil)',
+  es: 'Español',
+  cs: 'Čeština',
+  ro: 'Română',
+  ja: '日本語',
+  zh: '中文',
+}
 
 const KEY = 'servika.lang'
 const ONE_YEAR_SEC = 365 * 24 * 60 * 60 // Language is a durable preference, not session-scoped.
 
+function isLang(v: unknown): v is Lang {
+  return typeof v === 'string' && (LANGS as readonly string[]).includes(v)
+}
+
 export function getLang(): Lang {
   if (typeof window === 'undefined') return 'en'
   // Default: English — the panel's primary language and the i18next fallback.
-  return getCookie(KEY) === 'tr' ? 'tr' : 'en'
+  const c = getCookie(KEY)
+  return isLang(c) ? c : 'en'
 }
 
-const enModules = import.meta.glob('./locales/en/*.json', { eager: true }) as Record<string, { default: Record<string, unknown> }>
-const trModules = import.meta.glob('./locales/tr/*.json', { eager: true }) as Record<string, { default: Record<string, unknown> }>
+// Collect every locale JSON across all language directories in one glob.
+const allModules = import.meta.glob('./locales/*/*.json', { eager: true }) as Record<string, { default: Record<string, unknown> }>
 
+// Build { lang: { namespace: {...} } } from paths like ./locales/pt-BR/TopBar.json.
 function buildResources(modules: Record<string, { default: Record<string, unknown> }>) {
-  const out: Record<string, Record<string, unknown>> = {}
+  const out: Record<string, Record<string, Record<string, unknown>>> = {}
   for (const path in modules) {
-    const match = path.match(/([^/]+)\.json$/)
-    if (match) out[match[1]] = modules[path].default
+    const match = path.match(/\.\/locales\/([^/]+)\/([^/]+)\.json$/)
+    if (!match) continue
+    const [, lang, ns] = match
+    ;(out[lang] ??= {})[ns] = modules[path].default
   }
   return out
 }
 
-const enResources = buildResources(enModules)
-const trResources = buildResources(trModules)
-const namespaces = Array.from(new Set([...Object.keys(enResources), ...Object.keys(trResources)]))
+const resources = buildResources(allModules)
+const namespaces = Array.from(new Set(Object.values(resources).flatMap((r) => Object.keys(r))))
 
 i18n.use(initReactI18next).init({
-  resources: { en: enResources, tr: trResources },
+  resources,
   lng: getLang(),
   fallbackLng: 'en',
   defaultNS: 'common',
@@ -76,7 +102,7 @@ export function applyServerDefaultLang() {
   fetch('/api/v1/public/language', { headers: { Accept: 'application/json' } })
     .then((res) => (res.ok ? res.json() : null))
     .then((data) => {
-      const lang = data?.lang === 'tr' ? 'tr' : 'en'
+      const lang = isLang(data?.lang) ? data.lang : 'en'
       if (lang !== i18n.language) {
         void i18n.changeLanguage(lang)
         if (typeof document !== 'undefined') document.documentElement.lang = lang

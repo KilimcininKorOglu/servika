@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 	"servika/internal/provisioner"
 
@@ -370,31 +371,42 @@ type seedTier struct {
 func panelLang(ctx context.Context, db *sql.DB) string {
 	var lang string
 	_ = db.QueryRowContext(ctx, `SELECT default_lang FROM panel_settings WHERE id=1`).Scan(&lang)
-	if lang != "tr" {
-		return "en"
-	}
-	return "tr"
+	return config.NormalizeLang(lang)
 }
 
-// seedPlans returns the three default tiers with localized name/description. Only
+// planText holds the localized display strings for the three default tiers. Only
 // the display text differs by language; every resource limit is identical.
+type planText struct{ starterName, starterDesc, standardName, standardDesc, proName, proDesc string }
+
+// planTexts maps a supported language code to its tier display strings. English is
+// the fallback for any code missing here.
+var planTexts = map[string]planText{
+	"en": {"Starter", "One site for a small project", "Standard", "Multiple projects and email", "Professional", "High traffic and large sites"},
+	"tr": {"Başlangıç", "Küçük bir proje için tek site", "Standart", "Birden çok proje ve e-posta", "Profesyonel", "Yüksek trafik ve büyük siteler"},
+	"de": {"Einsteiger", "Eine Website für ein kleines Projekt", "Standard", "Mehrere Projekte und E-Mail", "Professionell", "Hoher Traffic und große Websites"},
+	"fr": {"Débutant", "Un site pour un petit projet", "Standard", "Plusieurs projets et e-mail", "Professionnel", "Trafic élevé et grands sites"},
+	"it": {"Base", "Un sito per un piccolo progetto", "Standard", "Più progetti ed e-mail", "Professionale", "Traffico elevato e siti grandi"},
+	"pt": {"Inicial", "Um site para um pequeno projeto", "Padrão", "Vários projetos e e-mail", "Profissional", "Tráfego elevado e sites grandes"},
+	"pt-BR": {"Inicial", "Um site para um projeto pequeno", "Padrão", "Vários projetos e e-mail", "Profissional", "Tráfego alto e sites grandes"},
+	"es": {"Inicial", "Un sitio para un proyecto pequeño", "Estándar", "Varios proyectos y correo", "Profesional", "Alto tráfico y sitios grandes"},
+	"cs": {"Začátečník", "Jeden web pro malý projekt", "Standard", "Více projektů a e-mail", "Profesionální", "Vysoký provoz a velké weby"},
+	"ro": {"Start", "Un site pentru un proiect mic", "Standard", "Mai multe proiecte și e-mail", "Profesional", "Trafic ridicat și site-uri mari"},
+	"ja": {"スターター", "小規模プロジェクト向けの1サイト", "スタンダード", "複数のプロジェクトとメール", "プロフェッショナル", "高トラフィックと大規模サイト"},
+	"zh": {"入门版", "适合小型项目的单个站点", "标准版", "多个项目和电子邮件", "专业版", "高流量和大型站点"},
+}
+
+// seedPlans returns the three default tiers with localized name/description.
 func seedPlans(lang string) []seedTier {
-	if lang == "tr" {
-		return []seedTier{
-			{"Başlangıç", "Küçük bir proje için tek site", 1024, 5120, 1, 1, 5, 2,
-				50, 256, 30, 25000, 100, 15, 4, 1},
-			{"Standart", "Birden çok proje ve e-posta", 10240, 51200, 5, 10, 25, 10,
-				100, 512, 60, 100000, 100, 30, 8, 0},
-			{"Profesyonel", "Yüksek trafik ve büyük siteler", 51200, 204800, 25, 50, 100, 50,
-				200, 2048, 150, 500000, 200, 100, 32, 0},
-		}
+	tx, ok := planTexts[lang]
+	if !ok {
+		tx = planTexts["en"]
 	}
 	return []seedTier{
-		{"Starter", "One site for a small project", 1024, 5120, 1, 1, 5, 2,
+		{tx.starterName, tx.starterDesc, 1024, 5120, 1, 1, 5, 2,
 			50, 256, 30, 25000, 100, 15, 4, 1},
-		{"Standard", "Multiple projects and email", 10240, 51200, 5, 10, 25, 10,
+		{tx.standardName, tx.standardDesc, 10240, 51200, 5, 10, 25, 10,
 			100, 512, 60, 100000, 100, 30, 8, 0},
-		{"Professional", "High traffic and large sites", 51200, 204800, 25, 50, 100, 50,
+		{tx.proName, tx.proDesc, 51200, 204800, 25, 50, 100, 50,
 			200, 2048, 150, 500000, 200, 100, 32, 0},
 	}
 }

@@ -7,7 +7,7 @@ import ServerRebootButton from '@/components/ServerRebootButton'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useAuth } from '@/store/auth'
 import { setTheme as applyThemePreference, type Theme } from '@/lib/theme'
-import { setLang, type Lang } from '@/lib/i18n'
+import { setLang, LANGS, LANG_NAMES, type Lang } from '@/lib/i18n'
 
 type CurrentUser = {
   id: number; name: string; role: string; email: string; full_name: string
@@ -126,7 +126,7 @@ export default function SettingsPage() {
     try {
       await api.put('/me', { full_name: fullName, email, pref_theme: theme, pref_lang: language })
       applyThemePreference(theme)
-      setLang((language === 'tr' ? 'tr' : 'en') as Lang)
+      setLang(((LANGS as readonly string[]).includes(language) ? language : 'en') as Lang)
       setPreferenceSuccess(t('preferences.saved')); setTimeout(() => setPreferenceSuccess(''), 3000)
     } catch { setPreferenceSuccess('') } finally { setIsPreferenceLoading(false) }
   }
@@ -264,7 +264,7 @@ export default function SettingsPage() {
                 <label className="block">
                   <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('preferences.language')}</span>
                   <select value={language} onChange={event => setLanguage(event.target.value)} className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 outline-none">
-                    <option value="tr">{t('preferences.turkish')}</option><option value="en">{t('preferences.english')}</option>
+                    {LANGS.map(code => <option key={code} value={code}>{LANG_NAMES[code]}</option>)}
                   </select>
                 </label>
               </div>

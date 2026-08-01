@@ -10,8 +10,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 )
 
@@ -23,9 +23,7 @@ func (h *Handlers) Language(w http.ResponseWriter, r *http.Request) {
 		// Never fail the login screen over this: fall back to the primary language.
 		lang = "en"
 	}
-	if lang != "tr" {
-		lang = "en"
-	}
+	lang = config.NormalizeLang(lang)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"lang": lang})
 }
 
@@ -41,11 +39,13 @@ func (h *Handlers) SaveLanguage(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	lang := strings.ToLower(strings.TrimSpace(req.Lang))
-	if lang != "tr" && lang != "en" {
-		httpx.WriteError(w, http.StatusBadRequest, "language must be 'tr' or 'en'")
+	// Reject an unknown code rather than silently coercing it to "en", so an admin
+	// gets clear feedback. NormalizeLang canonicalizes the region form (pt-br → pt-BR).
+	if !config.IsSupportedLang(req.Lang) {
+		httpx.WriteError(w, http.StatusBadRequest, "unsupported language code")
 		return
 	}
+	lang := config.NormalizeLang(req.Lang)
 	if _, err := h.DB.ExecContext(r.Context(), `UPDATE panel_settings SET default_lang=? WHERE id=1`, lang); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "panel settings could not be saved")
 		return

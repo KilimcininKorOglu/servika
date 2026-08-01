@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"servika/internal/config"
 	"servika/internal/httpx"
 )
 
@@ -47,10 +48,7 @@ func (h *Handlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if b.PrefTheme == "light" || b.PrefTheme == "dark" || b.PrefTheme == "system" {
 		theme = b.PrefTheme
 	}
-	language := "en"
-	if b.PrefLang == "tr" {
-		language = "tr"
-	}
+	language := config.NormalizeLang(b.PrefLang)
 	if _, err := h.DB.Exec(
 		`UPDATE users SET full_name=?, email=?, pref_theme=?, pref_lang=?, updated_at=NOW() WHERE id=?`,
 		b.FullName, b.Email, theme, language, c.UserID); err != nil {
@@ -62,8 +60,8 @@ func (h *Handlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 // UpdateLanguage persists only the caller's language preference. Unlike
 // UpdateProfile (ResellerOrAbove), this route is open to every authenticated
-// role so a customer (role=user) can also store its own pref_lang. Same tr/en
-// whitelist: anything other than "tr" falls back to "en".
+// role so a customer (role=user) can also store its own pref_lang. Uses the same
+// whitelist as UpdateProfile: anything outside the supported set falls back to "en".
 func (h *Handlers) UpdateLanguage(w http.ResponseWriter, r *http.Request) {
 	c := h.claims(r)
 	if c == nil {
@@ -77,10 +75,7 @@ func (h *Handlers) UpdateLanguage(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	language := "en"
-	if b.PrefLang == "tr" {
-		language = "tr"
-	}
+	language := config.NormalizeLang(b.PrefLang)
 	if _, err := h.DB.Exec(
 		`UPDATE users SET pref_lang=?, updated_at=NOW() WHERE id=?`,
 		language, c.UserID); err != nil {

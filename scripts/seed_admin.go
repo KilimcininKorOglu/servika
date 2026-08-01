@@ -21,11 +21,16 @@ func main() {
 	user := flag.String("username", "admin", "administrator username")
 	pass := flag.String("password", "", "administrator password (defaults to SERVIKA_SEED_PASSWORD)")
 	email := flag.String("email", "admin@local", "email address")
-	lang := flag.String("lang", "en", "preferred language (tr|en)")
+	lang := flag.String("lang", "en", "preferred language (en|tr|de|fr|it|pt|pt-BR|es|cs|ro|ja|zh)")
 	flag.Parse()
 
-	// English is the panel's primary language; anything but "tr" falls back to it.
-	if *lang != "tr" {
+	// English is the panel's primary language; an unsupported code falls back to it.
+	// Keep this set in sync with internal/config/lang.go supportedLangs.
+	supported := map[string]bool{
+		"en": true, "tr": true, "de": true, "fr": true, "it": true, "pt": true,
+		"pt-BR": true, "es": true, "cs": true, "ro": true, "ja": true, "zh": true,
+	}
+	if !supported[*lang] {
 		*lang = "en"
 	}
 

@@ -2,7 +2,7 @@
 # servika-install turns a clean AlmaLinux 10 server into a complete Servika installation.
 # It is idempotent and must run as root.
 #
-#   ./servika-install.sh [--admin-password <password>] [--admin-email <email>] [--panel-lang <tr|en>]
+#   ./servika-install.sh [--admin-password <password>] [--admin-email <email>] [--panel-lang <en|tr|de|fr|it|pt|pt-BR|es|cs|ro|ja|zh>]
 #
 # The assets directory must be located next to this script:
 #   linux_amd64/servika-server  linux_amd64/servika-seed-admin
@@ -28,9 +28,12 @@ while [ $# -gt 0 ]; do case "$1" in
   *) echo "unknown option: $1"; exit 2 ;;
 esac; shift; done
 # Server-default panel language shown on the login screen. English is the primary
-# language; anything but "tr" falls back to it. A signed-in user's own preference
-# always overrides this.
-[ "$PANEL_LANG" = "tr" ] || PANEL_LANG="en"
+# language; an unsupported code falls back to it. A signed-in user's own preference
+# always overrides this. Keep this set in sync with internal/config/lang.go.
+case "$PANEL_LANG" in
+  en|tr|de|fr|it|pt|pt-BR|es|cs|ro|ja|zh) ;;
+  *) PANEL_LANG="en" ;;
+esac
 
 c_g="\033[32m"; c_y="\033[33m"; c_r="\033[31m"; c_b="\033[1;34m"; c_0="\033[0m"
 [ -t 1 ] || { c_g=; c_y=; c_r=; c_b=; c_0=; }

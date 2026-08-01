@@ -1,39 +1,82 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '@/lib/api'
-import { getLang, setLang, type Lang } from '@/lib/i18n'
+import { getLang, setLang, LANGS, LANG_NAMES, type Lang } from '@/lib/i18n'
 
-// EN/TR toggle. Mirrors the TopBar theme button: local state stays in sync via
-// the servika:lang-change event so every mounted switcher agrees. On change it
+// Language dropdown. Mirrors the TopBar theme button: local state stays in sync
+// via the servika:lang-change event so every mounted switcher agrees. On change it
 // applies the language (cookie + i18next via setLang) and persists it to the
 // user's pref_lang through PUT /me/language (open to all roles). The DB write is
 // best-effort — the cookie already makes the choice durable in the browser.
 export default function LanguageSwitcher() {
   const [lang, setLangState] = useState<Lang>(getLang())
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function onChange(e: Event) {
       const detail = (e as CustomEvent).detail as Lang
-      if (detail === 'en' || detail === 'tr') setLangState(detail)
+      if ((LANGS as readonly string[]).includes(detail)) setLangState(detail)
     }
     window.addEventListener('servika:lang-change', onChange)
     return () => window.removeEventListener('servika:lang-change', onChange)
   }, [])
 
-  function toggle() {
-    const next: Lang = lang === 'en' ? 'tr' : 'en'
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [])
+
+  function choose(next: Lang) {
+    setOpen(false)
+    if (next === lang) return
     setLang(next)
     setLangState(next)
     api.put('/me/language', { pref_lang: next }).catch(() => {})
   }
 
+  // Short code shown on the button: the base subtag, uppercased (EN, PT, ZH).
+  const short = lang.split('-')[0].toUpperCase()
+
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
-      title={lang === 'en' ? 'Language: English, click for Türkçe' : 'Dil: Türkçe, İngilizce için tıkla'}
-    >
-      {lang === 'en' ? 'EN' : 'TR'}
-    </button>
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
+        title={LANG_NAMES[lang]}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        {short}
+      </button>
+      {open && (
+        <ul
+          role="listbox"
+          className="absolute right-0 z-50 mt-1 max-h-80 w-44 overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800"
+        >
+          {LANGS.map((code) => (
+            <li key={code}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={code === lang}
+                onClick={() => choose(code)}
+                className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-700 ${
+                  code === lang
+                    ? 'font-semibold text-brand-600 dark:text-brand-400'
+                    : 'text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                <span>{LANG_NAMES[code]}</span>
+                <span className="ml-2 text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">{code}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
