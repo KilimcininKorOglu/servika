@@ -1,0 +1,100 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "error": "Fehler"
+  },
+  "errors": {
+    "loadFailed": "Das Abonnement konnte nicht geladen werden",
+    "suspendFailed": "Der Sperrstatus der Domain konnte nicht aktualisiert werden"
+  },
+  "loading": "Laden…",
+  "confirmSuspend": "\"{{domain}}\" sperren? Die Website gibt HTTP 503 zurück, bis sie fortgesetzt wird.",
+  "notice": {
+    "suspended": "Die Domain wurde gesperrt.",
+    "resumed": "Die Domain wurde fortgesetzt."
+  },
+  "header": {
+    "switchSubscription": "Abonnement wechseln",
+    "suspended": "Gesperrt",
+    "moreActions": "Weitere Aktionen",
+    "resumeDomain": "Domain fortsetzen",
+    "suspendDomain": "Domain sperren"
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "hosting": "Hosting und DNS"
+  },
+  "stats": {
+    "title": "Statistiken",
+    "refresh": "Aktualisieren",
+    "disk": "Festplattenspeicher",
+    "traffic": "Monatlicher Traffic",
+    "created": "Erstellt",
+    "phpVersion": "PHP-Version"
+  },
+  "footer": {
+    "website": "Website:",
+    "ip": "IP:",
+    "systemUser": "Systembenutzer:",
+    "addDescription": "Beschreibung hinzufügen"
+  },
+  "preview": {
+    "httpsOnly": "Die Vorschau ist nur für HTTPS-Websites verfügbar",
+    "autoAppear": "Sie erscheint automatisch, wenn SSL aktiviert ist",
+    "website": "Website",
+    "refresh": "Aktualisieren",
+    "refreshTitle": "Vorschau aktualisieren",
+    "sslRequired": "SSL ist für die Vorschau erforderlich",
+    "open": "Öffnen",
+    "previewAlt": "{{domain}}-Vorschau"
+  },
+  "groups": {
+    "filesAndDatabases": "Dateien und Datenbanken",
+    "developmentTools": "Entwicklungstools",
+    "security": "Sicherheit",
+    "hostingServices": "Hosting-Dienste"
+  },
+  "tools": {
+    "connection": "Verbindungsinformationen",
+    "connectionDesc": "FTP und Datenbank",
+    "files": "Dateien",
+    "filesDesc": "Dateimanager",
+    "databases": "Datenbanken",
+    "ftp": "FTP",
+    "ftpDesc": "FTP-Konten",
+    "backup": "Backup und Wiederherstellung",
+    "backupDesc": "Backup-Verwaltung",
+    "copy": "Website kopieren",
+    "copyDesc": "Klonen",
+    "php": "PHP",
+    "phpDesc": "Version {{version}}",
+    "logs": "Protokolle",
+    "logsDesc": "Access- und Error-Logs",
+    "cron": "Geplante Aufgaben",
+    "cronDesc": "Cron",
+    "git": "Git",
+    "gitDesc": "Repository-Integration",
+    "composer": "PHP Composer",
+    "composerDesc": "Paketmanager",
+    "performance": "Leistung",
+    "performanceDesc": "Beschleuniger",
+    "ssl": "SSL/TLS-Zertifikate",
+    "sslExpires": "Läuft ab: {{expiry}}",
+    "sslLetsEncrypt": "Let's Encrypt",
+    "sslNotProtected": "Domain ist nicht geschützt",
+    "passwordProtect": "Passwortgeschützte Verzeichnisse",
+    "statistics": "Statistiken",
+    "statisticsDesc": "Traffic-Analyse",
+    "imunify": "Imunify",
+    "imunifyDesc": "Antivirus",
+    "waf": "WAF (Web Application Firewall)",
+    "wafDesc": "ModSecurity + OWASP CRS",
+    "hostingSettings": "Hosting-Einstellungen",
+    "hostingSettingsDesc": "Dokumentenstamm und Optionen",
+    "apacheNginx": "Apache und nginx",
+    "apacheNginxDesc": "Sicherheits-Header und zusätzliche Direktiven",
+    "dns": "DNS-Einstellungen",
+    "dnsDesc": "A, CNAME, MX"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "title": "SSL-Zertifikate",
+  "description": "Serverweiter Zertifikatstatus, sortiert nach nächstem Ablauf.",
+  "emptyMessage": "Keine Domains gefunden.",
+  "column": {
+    "domain": "Domain",
+    "ssl": "SSL",
+    "expiry": "Ablauf",
+    "remaining": "Verbleibend",
+    "status": "Status"
+  },
+  "ssl": {
+    "enabled": "Aktiviert",
+    "none": "Keines"
+  },
+  "status": {
+    "active": "Aktiv",
+    "passive": "Passiv"
+  },
+  "remaining": {
+    "expiredAgo": "vor {{days}} T abgelaufen",
+    "days": "{{days}} Tage"
+  },
+  "summary": {
+    "withSsl": "Mit SSL",
+    "expiring": "Läuft ab ≤14 T"
+  }
+}

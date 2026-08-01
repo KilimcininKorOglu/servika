@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "toolsAndSettings": "Tools und Einstellungen",
+    "serverOptimize": "Server optimieren"
+  },
+  "title": "Server optimieren",
+  "description": "Aktualisiert Systempakete und stimmt MariaDB-/Nginx-/PHP-Einstellungen basierend auf den Serverressourcen neu ab. Der Vorgang läuft im Hintergrund — Sie können diese Seite schließen; er kann eine Weile dauern und Dienste kurz beeinflussen."
+}

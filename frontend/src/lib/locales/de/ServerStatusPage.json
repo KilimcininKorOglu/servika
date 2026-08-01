@@ -1,0 +1,25 @@
+{
+  "breadcrumbHome": "Startseite",
+  "breadcrumbServerStatus": "Serverstatus",
+  "title": "Serverstatus",
+  "subtitle": "Eine Live-Momentaufnahme des Servers. Dieser Bildschirm ist schreibgeschützt — die Dienstverwaltung obliegt dem Administrator.",
+  "loading": "Laden…",
+  "errorLoad": "Serverstatus konnte nicht geladen werden",
+  "cards": {
+    "cpu": "CPU",
+    "memory": "Speicher",
+    "disk": "Festplatte",
+    "panelVersion": "Panel-Version"
+  },
+  "loadText": "Auslastung {{values}}",
+  "updateAvailable": "Aktualisierung verfügbar: v{{version}}",
+  "upToDate": "aktuell",
+  "servicesHeading": "Dienste",
+  "noServices": "Keine Dienstinformationen.",
+  "statuses": {
+    "active": "Läuft",
+    "inactive": "Gestoppt",
+    "failed": "Fehlgeschlagen",
+    "absent": "Nicht installiert"
+  }
+}

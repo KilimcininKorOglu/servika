@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "phpSettings": "PHP-Einstellungen"
+  },
+  "title": "PHP-Einstellungen",
+  "systemUser": "Systembenutzer: ",
+  "poolNotice": {
+    "pre": "Die hier konfigurierten Einstellungen werden in den PHP-FPM-Pool geschrieben (",
+    "mid1": "). Die ",
+    "mid2": "- und ",
+    "post": "-Dateien der Website können sie überschreiben. Das Speichern startet PHP-FPM automatisch neu, ohne die Website offline zu nehmen."
+  },
+  "loading": "Laden…",
+  "saved": "Gespeichert. PHP {{version}}, Socket: {{socket}}",
+  "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+  "clearLogFailed": "Debug-Protokoll konnte nicht geleert werden",
+  "processManager": {
+    "ondemand": "ondemand (empfohlen, null Prozesse im Leerlauf)",
+    "dynamic": "dynamic (skaliert mit der Last)",
+    "static": "static (fester Pool)"
+  },
+  "version": {
+    "title": "PHP-Version",
+    "active": "Aktiv",
+    "saveToApply": "Zum Anwenden speichern"
+  },
+  "cards": {
+    "performance": "Leistung und Sicherheit",
+    "general": "Allgemein",
+    "debugMode": "PHP-Debug-Modus",
+    "lastErrors": "Letzte Fehler (Debug-Protokoll)",
+    "fpmPool": "PHP-FPM-Pool",
+    "installedModules": "Installierte PHP-Module",
+    "disableDangerous": "Gefährliche Funktionen deaktivieren",
+    "additionalDirectives": "Zusätzliche Konfigurationsdirektiven"
+  },
+  "help": {
+    "memoryLimit": "Maximaler Speicher, den ein Skript in Bytes zuweisen kann. Beispiel: 256M.",
+    "maxExecutionTime": "Maximale Ausführungszeit in Sekunden",
+    "maxInputTime": "Zeit zum Parsen von POST/GET-Daten in Sekunden",
+    "postMaxSize": "Maximale POST-Datengröße. Muss größer als upload_max_filesize sein.",
+    "uploadMaxFilesize": "Upload-Limit für einzelne Dateien",
+    "opcacheEnable": "OPcache-Opcode-Cache (empfohlen: EIN)",
+    "disableFunctions": "Zu deaktivierende PHP-Funktionen (durch Komma getrennt)",
+    "displayErrors": "Fehler in der Ausgabe anzeigen (in Produktion ausschalten)",
+    "logErrors": "Fehlerprotokollierung aktivieren",
+    "allowUrlFopen": "Dateien über HTTP/FTP öffnen",
+    "fileUploads": "HTTP-Datei-Uploads",
+    "shortOpenTag": "Unterstützung für <? ?>-Kurz-Tags",
+    "errorReporting": "Fehlerberichtsebene (zum Beispiel E_ALL & ~E_DEPRECATED)",
+    "includePath": "Skript-Include-Verzeichnisse (unter Linux mit : trennen)",
+    "openBasedir": "Verzeichnisse, auf die PHP zugreifen kann (leer bedeutet uneingeschränkt). Mit : trennen",
+    "sessionSavePath": "Session-Datei-Verzeichnis (leer bedeutet /home/{system_user}/tmp)",
+    "mailForceExtraParameters": "Zusätzliche Parameter für die mail()-Funktion",
+    "pm": "Strategie des Prozessmanagers",
+    "pmMaxChildren": "Maximale gleichzeitige PHP-Worker",
+    "pmMaxRequests": "Anfragen vor dem Neustart eines Workers (verhindert Speicherlecks)",
+    "pmStartServers": "Anfänglich gestartete Worker (nur dynamic)",
+    "pmMinSpareServers": "Minimale Anzahl inaktiver Worker",
+    "pmMaxSpareServers": "Maximale Anzahl inaktiver Worker"
+  },
+  "openBasedirPlaceholder": "zum Beispiel: /home/user/:/tmp/",
+  "debug": {
+    "disableTitle": "Debug-Modus deaktivieren",
+    "enableTitle": "Debug-Modus aktivieren",
+    "label": "Debug-Modus",
+    "on": "Ein",
+    "off": "Aus",
+    "descPre": "Wenn aktiviert, werden PHP-Fehler auf dem Bildschirm angezeigt und fatale Fehler (E_ERROR, E_PARSE, ...) werden zuverlässig über ",
+    "descMid": " abgefangen und protokolliert in ",
+    "descPost": ". Fatale Fehler werden selbst dann erfasst, wenn die Anwendung ",
+    "descEnd": " aufruft.",
+    "warningLabel": "Warnung:",
+    "warningPre": " Bei aktiviertem Debug-Modus werden ",
+    "warningBold1": "display_errors = on",
+    "warningMid": " und ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " erzwungen; Fehlerdetails können für Website-Besucher sichtbar sein. Aktivieren Sie dies nur zur Fehlersuche, ",
+    "warningBold3": "in Produktion deaktivieren",
+    "warningEnd": ". Änderungen werden nach dem Klick auf ",
+    "warningSave": "Speichern",
+    "warningDot": " wirksam."
+  },
+  "debugLog": {
+    "sourcePre": "Neueste fatale Fehler oben. Quelle: ",
+    "sourcePost": " (letzte 200 Zeilen).",
+    "loading": "Laden...",
+    "refresh": "Aktualisieren",
+    "clear": "Leeren",
+    "emptyOff": "Debug-Modus ist aus. Aktivieren Sie ihn oben und speichern Sie, um fatale Fehler zu protokollieren.",
+    "emptyOn": "Keine Fehler aufgezeichnet. Das Debug-Protokoll ist leer."
+  },
+  "modules": {
+    "countPre": "",
+    "countBold": "{{count}}",
+    "countPost": " Module sind für PHP {{version}} installiert. Module werden serverweit verwaltet und können nicht für eine einzelne Domain aktiviert oder deaktiviert werden.",
+    "manageServer": "↗ Servermodule verwalten"
+  },
+  "dangerous": {
+    "descPre": "Diese Funktionen bergen Risiken für Shell-Injection, RCE und Malware. Kategorie-Schalter aktualisieren ",
+    "descMid": ". ",
+    "descBoldOn": "Ein bedeutet aktiviert",
+    "descAnd": ", und ",
+    "descBoldOff": "aus bedeutet blockiert",
+    "descPost": ".",
+    "enableAll": "Alle aktivieren",
+    "blockAll": "Alle blockieren",
+    "blocked": "Blockiert",
+    "mixed": "Gemischt",
+    "active": "Aktiv",
+    "editManually": "Manuell bearbeiten (rohes disable_functions)",
+    "commaSeparated": "Durch Komma getrennte Funktionsnamen.",
+    "groups": {
+      "shellExecution": "Shell-Ausführung",
+      "fileExecution": "Dateiausführung",
+      "networkAccess": "Netzwerkzugriff (riskant)",
+      "systemDiscovery": "Systemerkundung",
+      "moduleLoading": "Modul-Laden"
+    }
+  },
+  "additional": {
+    "descPre": "Definieren Sie zusätzliche Parameter mit php.ini-Syntax. Beispiel: "
+  },
+  "save": {
+    "saving": "Speichern…",
+    "saveAndApply": "Speichern und anwenden",
+    "cancelReload": "Abbrechen / Neu laden"
+  },
+  "select": {
+    "custom": "Benutzerdefiniert…"
+  },
+  "flag": {
+    "on": "✓ Ein",
+    "off": "○ Aus"
+  }
+}

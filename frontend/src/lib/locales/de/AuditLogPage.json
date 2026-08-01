@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Startseite",
+  "title": "Sicherheitsprotokoll",
+  "subtitle": "Panel-Anmeldeversuche und administrative Aktionen. Neuester Eintrag oben.",
+  "stats": {
+    "entries": "Einträge",
+    "failed": "fehlgeschlagen"
+  },
+  "searchPlaceholder": "Benutzer, IP, Ziel suchen…",
+  "filters": {
+    "allActions": "Alle Aktionen",
+    "last": "Letzte {{n}}",
+    "failedOnly": "Nur fehlgeschlagene"
+  },
+  "loading": "Laden…",
+  "empty": {
+    "title": "Keine Einträge für diesen Filter",
+    "description": "Lockern Sie die Filter und versuchen Sie es erneut."
+  },
+  "noMatch": "Kein Eintrag entspricht Ihrer Suche.",
+  "columns": {
+    "time": "Zeit",
+    "result": "Ergebnis",
+    "action": "Aktion",
+    "user": "Benutzer",
+    "ip": "IP",
+    "target": "Ziel"
+  },
+  "status": {
+    "success": "Erfolgreich",
+    "failed": "Fehlgeschlagen"
+  },
+  "errors": {
+    "loadFailed": "Das Protokoll konnte nicht geladen werden"
+  }
+}

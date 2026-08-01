@@ -1,0 +1,52 @@
+{
+  "loading": "Laden…",
+  "notFound": "Nicht gefunden",
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "sshAccess": "SSH-Zugriff"
+  },
+  "title": "SSH-Zugriff",
+  "subtitle": "Shell-Zugriff auf das Konto.",
+  "badge": {
+    "on": "SSH EIN",
+    "off": "SSH AUS"
+  },
+  "toast": {
+    "accessActive": "SSH-Zugriff aktiv.",
+    "accessDisabled": "SSH-Zugriff deaktiviert.",
+    "operationFailed": "Vorgang fehlgeschlagen",
+    "keySaved": "SSH-Schlüssel gespeichert.",
+    "keysCleared": "SSH-Schlüssel gelöscht.",
+    "keySaveFailed": "Schlüssel konnte nicht gespeichert werden"
+  },
+  "shell": {
+    "title": "Shell-Zugriff",
+    "enabledPrefix": "Aktiviert:",
+    "disabledPrefix": "Deaktiviert:",
+    "currentPrefix": "Aktuell:",
+    "disable": "SSH deaktivieren",
+    "enable": "SSH aktivieren",
+    "demoNotice": "Der SSH-Zugriff kann für die Demo-Domain nicht geändert werden."
+  },
+  "connection": {
+    "title": "Verbindungsdetails",
+    "user": "Benutzer",
+    "host": "Host",
+    "port": "Port",
+    "commandLabel": "Verbindungsbefehl",
+    "copy": "Kopieren",
+    "passwordPrefix": "Passwort:",
+    "passwordBold": "dasselbe wie Ihr FTP-Konto",
+    "passwordSuffix": ". Es wird automatisch synchronisiert, während SSH aktiv ist. Alternativ können Sie unten einen öffentlichen SSH-Schlüssel hinzufügen."
+  },
+  "key": {
+    "title": "Öffentlicher SSH-Schlüssel (authorized_keys)",
+    "descPrefix": "Fügen Sie Ihren öffentlichen Schlüssel hinzu, um sich ohne Passwort anzumelden.",
+    "configured": "Ein Schlüssel ist derzeit konfiguriert.",
+    "notConfigured": "Noch kein Schlüssel konfiguriert.",
+    "removeHint": "Speichern Sie einen leeren Wert, um alle Schlüssel zu entfernen.",
+    "save": "Schlüssel speichern"
+  },
+  "backToSubscription": "← Zurück zum Abonnement"
+}

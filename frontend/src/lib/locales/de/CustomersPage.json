@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Startseite",
+  "title": "Kunden",
+  "subtitle": "Abrechnungs- und Kontaktdatensätze. Domains sind mit diesen verknüpft — dies ist kein Panel-Anmeldekonto.",
+  "newCustomer": "Neuer Kunde",
+  "loading": "Laden…",
+  "empty": {
+    "title": "Noch keine Kundendatensätze",
+    "description": "Erstellen Sie zuerst einen Kundendatensatz, um Domains mit einem Kunden zu verknüpfen."
+  },
+  "noMatch": "Kein Kunde entspricht Ihrer Suche.",
+  "columns": {
+    "name": "Name",
+    "email": "E-Mail",
+    "plan": "Plan",
+    "status": "Status",
+    "created": "Erstellt"
+  },
+  "status": {
+    "active": "Aktiv",
+    "passive": "Passiv"
+  },
+  "actions": {
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "modal": {
+    "editTitle": "Kunde bearbeiten",
+    "newTitle": "Neuer Kunde",
+    "name": "Name",
+    "email": "E-Mail",
+    "plan": "Plan",
+    "noPlan": "Kein Plan",
+    "status": "Status",
+    "notes": "Notizen",
+    "cancel": "Abbrechen",
+    "saving": "Speichern…",
+    "save": "Speichern"
+  },
+  "delete": {
+    "title": "Kunde löschen",
+    "message": "{{name}} wird gelöscht. Mit diesem Kunden verknüpfte Domains werden nicht entfernt — nur die Verknüpfung wird aufgehoben.",
+    "confirm": "Löschen"
+  },
+  "toast": {
+    "added": "{{name}} hinzugefügt.",
+    "updated": "{{name}} aktualisiert.",
+    "deleted": "{{name}} gelöscht."
+  },
+  "errors": {
+    "loadFailed": "Kunden konnten nicht geladen werden",
+    "nameEmailRequired": "Name und E-Mail sind erforderlich",
+    "saveFailed": "Konnte nicht gespeichert werden",
+    "deleteFailed": "Konnte nicht gelöscht werden"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "scheduledTasks": "Geplante Aufgaben"
+  },
+  "title": "Geplante Aufgaben",
+  "presets": {
+    "everyMinute": "Jede Minute",
+    "everyHour": "Jede Stunde",
+    "dailyAt3": "Täglich um 03:00",
+    "mondayAt9": "Montag um 09:00",
+    "every5Minutes": "Alle 5 Minuten",
+    "every15Minutes": "Alle 15 Minuten",
+    "firstOfMonth": "Erster Tag des Monats um 00:00"
+  },
+  "actions": {
+    "add": "Aufgabe hinzufügen",
+    "refresh": "↻ Aktualisieren"
+  },
+  "count": "{{count}} Aufgaben",
+  "loading": "Laden...",
+  "empty": "Noch keine Aufgaben. Fügen Sie oben eine hinzu.",
+  "columns": {
+    "min": "Min",
+    "hour": "Std",
+    "day": "Tag",
+    "month": "Monat",
+    "weekday": "Wochentag",
+    "command": "Befehl / Beschreibung",
+    "action": "Aktion"
+  },
+  "row": {
+    "delete": "Löschen"
+  },
+  "confirmDelete": "Die Aufgabe \"{{command}}...\" löschen?",
+  "errors": {
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "addFailed": "Element konnte nicht hinzugefügt werden"
+  },
+  "modal": {
+    "title": "Neue geplante Aufgabe",
+    "presetsLabel": "Voreinstellungen",
+    "fields": {
+      "minute": "Minute",
+      "hour": "Stunde",
+      "day": "Tag",
+      "month": "Monat",
+      "weekday": "Wochentag"
+    },
+    "cronHint": "Cron-Format:",
+    "cronHintPost": " beliebiger Wert,",
+    "cronEvery": " alle fünf,",
+    "cronList": " Liste,",
+    "cronRange": " Bereich.",
+    "commandLabel": "Befehl",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "Beschreibung (optional)",
+    "descriptionPlaceholder": "z. B. nächtliches Backup-Skript",
+    "cancel": "Abbrechen",
+    "adding": "Wird hinzugefügt...",
+    "addTask": "Aufgabe hinzufügen"
+  }
+}

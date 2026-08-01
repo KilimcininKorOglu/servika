@@ -1,0 +1,146 @@
+{
+  "shared": {
+    "more": "Mehr →",
+    "manage": "Verwalten →",
+    "loading": "Laden…"
+  },
+  "widgets": {
+    "load-chart": "Auslastungsdiagramm",
+    "memory-chart": "Speicherdiagramm",
+    "wordpress": "WordPress-Websites",
+    "panel-update": "Panel-Aktualisierung",
+    "last-backup": "Letztes Server-Backup",
+    "performance": "Leistung / Optimieren",
+    "cve-security": "Sicherheitshinweise (CVE)",
+    "services": "Dienste",
+    "domains": "Domains",
+    "server-info": "Server-Info",
+    "health": "Systemzustand",
+    "live-resources": "Live-Ressourcen",
+    "subscriptions": "Meine Abonnements",
+    "network": "Netzwerkverkehr"
+  },
+  "header": {
+    "welcome": "Willkommen zurück, {{name}}",
+    "dashboard": "Dashboard",
+    "subtitle": "Server-Übersicht und Schnellaktionen",
+    "saving": "Wird gespeichert…",
+    "saved": "Layout gespeichert",
+    "saveFailed": "Speichern fehlgeschlagen",
+    "resetLayout": "Layout zurücksetzen"
+  },
+  "quota": {
+    "unsupportedTitle": "Festplatten-Kontingent ist auf diesem Dateisystem nicht verfügbar",
+    "unsupportedBody": "Servika benötigt ein XFS-Root-Dateisystem für ein Festplatten-Kontingent pro Mandant. Ein Neustart aktiviert das Kontingent auf dem aktuellen Dateisystem nicht.",
+    "rebootTitle": "Das Festplatten-Kontingent wird nach dem Neustart aktiviert",
+    "rebootBody": "Das XFS-Benutzerkontingent ist konfiguriert, aber die Durchsetzung ist inaktiv. Starten Sie den Server einmal neu, um das Festplatten-Kontingent pro Mandant zu aktivieren.",
+    "dismiss": "Verwerfen"
+  },
+  "widgetNotFound": "Widget nicht gefunden",
+  "dragToReorder": "Zum Neuordnen ziehen",
+  "wp": {
+    "subtitle": "Installationen über alle Konten hinweg",
+    "installs": "Installationen",
+    "updates": "Aktualisierungen",
+    "current": "Aktuell",
+    "pendingUpdatesText_one": " Installation mit ausstehenden Aktualisierungen — veraltete Versionen bergen Sicherheitsrisiken.",
+    "pendingUpdatesText_other": " Installationen mit ausstehenden Aktualisierungen — veraltete Versionen bergen Sicherheitsrisiken.",
+    "empty": "Keine WordPress-Installationen gefunden",
+    "rootDir": "Stammverzeichnis",
+    "badgeUpdate": "Aktualisieren",
+    "badgeCurrent": "Aktuell",
+    "badgeUnknown": "Unbekannt",
+    "more_one": "+{{count}} weitere Installation →",
+    "more_other": "+{{count}} weitere Installationen →",
+    "unknownNote_one": "{{count}} Installation konnte nicht bestimmt werden (wp-cli-Timeout).",
+    "unknownNote_other": "{{count}} Installationen konnten nicht bestimmt werden (wp-cli-Timeout)."
+  },
+  "update": {
+    "subtitle": "Version und Systempakete",
+    "running": "Aktualisierung läuft",
+    "toolMissing": "Aktualisierungstool fehlt",
+    "upToDate": "Panel aktuell",
+    "noStatus": "Keine Statusinformationen",
+    "badgeRunning": "Läuft",
+    "badgeMissing": "Fehlt",
+    "badgeCurrent": "Aktuell",
+    "systemPackages": "Systempakete"
+  },
+  "backup": {
+    "subtitle": "Automatisches tägliches Backup",
+    "unavailable": "Backup-Zusammenfassung nicht verfügbar",
+    "count_one": "Backup · {{size}}",
+    "count_other": "Backups · {{size}}",
+    "lastBackup": "Letztes Backup",
+    "sitesBackedUp": "Gesicherte Websites",
+    "remoteTarget": "Remote-Ziel",
+    "remoteActive": "{{count}} aktiv",
+    "remoteNone": "Keine",
+    "schedule": "Zeitplan"
+  },
+  "performance": {
+    "subtitle": "Server-Einstellungen verbessern",
+    "running": "Optimierung läuft",
+    "ready": "Optimierung bereit",
+    "defaultStatus": "MariaDB · nginx · PHP-Einstellungen",
+    "badgeRunning": "Läuft",
+    "badgeIdle": "Inaktiv"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} Dienste laufen",
+    "subtitleStatus": "Dienststatus",
+    "allActive": "Alle aktiv",
+    "down": "{{count}} ausgefallen",
+    "active": "Aktiv",
+    "statusDown": "Ausgefallen"
+  },
+  "domains": {
+    "subtitle": "Gehostete Websites und SSL-Status",
+    "total": "Gesamt",
+    "active": "Aktiv",
+    "ssl": "SSL",
+    "empty": "Noch keine Domains",
+    "noSsl": "Kein SSL",
+    "badgeActive": "Aktiv",
+    "more_one": "+{{count}} weitere Domain →",
+    "more_other": "+{{count}} weitere Domains →"
+  },
+  "serverInfo": {
+    "subtitle": "Hardware und System",
+    "hostname": "Hostname",
+    "ip": "IP-Adresse",
+    "os": "OS",
+    "kernel": "Kernel",
+    "cpu": "CPU",
+    "cores": "Kerne",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "Gesamtstatusbewertung",
+    "servicesDown_one": "{{count}} Dienst ausgefallen",
+    "servicesDown_other": "{{count}} Dienste ausgefallen",
+    "isolationLoss_one": "{{count}} Isolationsverlust erkannt",
+    "isolationLoss_other": "{{count}} Isolationsverluste erkannt",
+    "memoryAt": "Speicher bei {{percent}}%",
+    "diskAt": "Festplatte bei {{percent}}%",
+    "healthy": "Gesund",
+    "fair": "Ausreichend",
+    "degraded": "Beeinträchtigt",
+    "critical": "Kritisch"
+  },
+  "live": {
+    "subtitle": "CPU und Speicher in Echtzeit",
+    "cpu": "CPU",
+    "memory": "Speicher",
+    "disk": "Festplatte ({{mount}})",
+    "freeGb": "{{value}} GB frei"
+  },
+  "subscriptions": {
+    "subtitle": "Ihre aktiven Dienste",
+    "body": "Kundenpanel-Übersicht"
+  },
+  "network": {
+    "subtitle": "Eingehende und ausgehende Daten",
+    "body": "Verkehrsstatistiken auf der Statistikseite verfügbar"
+  }
+}

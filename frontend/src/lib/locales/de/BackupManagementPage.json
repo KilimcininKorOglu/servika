@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "toolsSettings": "Tools und Einstellungen",
+    "backupManager": "Backup-Manager"
+  },
+  "title": "Backup-Manager",
+  "subtitle": "Sehen Sie Backups aller Domains an einem Ort. Tägliche automatische Backups laufen, und S3/SFTP-Ziele werden pro Domain konfiguriert.",
+  "toast": {
+    "triggered": "Geplante Backups wurden ausgelöst. Aktualisieren Sie in einigen Sekunden, um die Ergebnisse zu sehen.",
+    "triggerFailed": "Backups konnten nicht ausgelöst werden"
+  },
+  "kpi": {
+    "totalSize": "Backup-Gesamtgröße",
+    "totalBackups": "Backups gesamt",
+    "domainCount": "Anzahl Domains",
+    "remoteDestinations": "Aktive Remote-Ziele",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Automatische Backups:",
+    "default": "Täglich um 03:00",
+    "suffix": ". 7-Tage-Aufbewahrung",
+    "triggering": "Wird ausgelöst...",
+    "backupNow": "⏱ Alle Domains jetzt sichern",
+    "refresh": "↻ Aktualisieren"
+  },
+  "table": {
+    "title": "Domain-Backups",
+    "colDomain": "Domain",
+    "colCount": "Backup-Anzahl",
+    "colSize": "Gesamtgröße",
+    "colLatest": "Letztes Backup",
+    "colAction": "Aktion",
+    "loading": "Laden...",
+    "noDomains": "Keine Domains.",
+    "never": "nie",
+    "manage": "Verwalten"
+  },
+  "footnote": {
+    "pre": "ℹ️ Backups",
+    "post": "werden dort gespeichert. Backups bleiben verfügbar, wenn eine Domain gelöscht wird, was eine Wiederherstellung nach versehentlichem Löschen ermöglicht. Öffnen Sie „Verwalten“, um einzelne Backups herunterzuladen oder wiederherzustellen und Ziele zu konfigurieren."
+  }
+}

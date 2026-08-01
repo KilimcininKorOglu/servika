@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "Noch nicht geprüft",
+  "title": "Panel-Aktualisierung",
+  "badges": {
+    "server": "Server",
+    "critical": "Kritisch",
+    "updateAvailable": "Aktualisierung verfügbar"
+  },
+  "description": "Aktualisiert das Panel auf die neueste Version von GitHub. Umgebungseinstellungen, Datenbanken und Websites bleiben erhalten. Eine fehlerhafte Version wird automatisch zurückgesetzt.",
+  "toolMissing": " Das Aktualisierungstool fehlt und wird bei der ersten Verwendung automatisch heruntergeladen.",
+  "labels": {
+    "current": "Aktuell",
+    "latest": "Neueste",
+    "buildDate": "Build-Datum",
+    "lastCheck": "Letzte Prüfung"
+  },
+  "unknown": "Unbekannt",
+  "lastCheckFailed": "Letzte Versionsprüfung fehlgeschlagen: {{error}}",
+  "checksDisabled": "Versionsprüfungen sind deaktiviert.",
+  "running": "Die Aktualisierung läuft. Das Panel wird möglicherweise kurz neu gestartet; lassen Sie diese Seite geöffnet.",
+  "logStarted": "Aktualisierung gestartet...\n",
+  "checkAndInstall": "Nach Aktualisierungen suchen und installieren",
+  "checking": "Wird geprüft...",
+  "refreshStatus": "Versionsstatus aktualisieren",
+  "confirmPrompt": "Das Panel wird aktualisiert und sein Dienst wird neu gestartet. Bestätigen?",
+  "starting": "Wird gestartet...",
+  "confirmYes": "Ja, aktualisieren",
+  "cancel": "Abbrechen",
+  "errors": {
+    "refresh": "Versionsstatus konnte nicht aktualisiert werden",
+    "start": "Aktualisierung konnte nicht gestartet werden"
+  }
+}

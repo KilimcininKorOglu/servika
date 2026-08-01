@@ -1,0 +1,63 @@
+{
+  "breadcrumbHome": "Startseite",
+  "breadcrumbTitle": "WordPress",
+  "title": "WordPress",
+  "subtitle": "Alle WordPress-Installationen auf dem Server anzeigen und aktualisieren oder eine neue Installation erstellen.",
+  "outdated": {
+    "banner_one": "Für {{count}} Installation ist eine Aktualisierung verfügbar.",
+    "banner_other": "Für {{count}} Installationen ist eine Aktualisierung verfügbar.",
+    "warning": "Veraltete WordPress-Versionen enthalten bekannte Sicherheitslücken. Aktualisieren Sie sie so bald wie möglich."
+  },
+  "result": {
+    "installed": "WordPress {{version}} installiert",
+    "site": "Website",
+    "admin": "Admin",
+    "user": "Benutzer",
+    "password": "Passwort",
+    "savePassword": "⚠ Speichern Sie das Passwort jetzt. Es wird nicht erneut angezeigt."
+  },
+  "installedSites": "Installierte WordPress-Websites",
+  "refresh": "↻ Aktualisieren",
+  "table": {
+    "domain": "Domain",
+    "directory": "Verzeichnis",
+    "version": "Version",
+    "status": "Status",
+    "installed": "Installiert",
+    "actions": "Aktionen"
+  },
+  "scanning": "Installationen werden gescannt... (Versionen und Aktualisierungen werden geprüft)",
+  "emptyTitle": "Auf dem Server wurden keine WordPress-Installationen gefunden.",
+  "emptyHint": "Verwenden Sie das Formular unten, um eine neue Installation zu erstellen.",
+  "adminButton": "Admin",
+  "updateToVersion": "Aktualisieren auf v{{version}}",
+  "update": "Aktualisieren",
+  "delete": "Löschen",
+  "status": {
+    "updateAvailable": "Aktualisierung verfügbar",
+    "updateAvailableTo": "Aktualisierung auf v{{version}} verfügbar",
+    "upToDate": "Aktuell",
+    "unknown": "Unbekannt"
+  },
+  "form": {
+    "heading": "Neue Installation",
+    "domain": "Domain",
+    "siteTitle": "Website-Titel",
+    "siteTitlePlaceholder": "Mein Blog",
+    "subdirectory": "Unterverzeichnis (optional)",
+    "subdirectoryPlaceholder": "leer = Stamm, z. B. blog",
+    "adminUser": "Admin-Benutzer",
+    "adminEmail": "Admin-E-Mail",
+    "adminEmailPlaceholder": "admin@site.com"
+  },
+  "installing": "Wird installiert... (~30 Sek.)",
+  "installButton": "WordPress installieren",
+  "installButtonDomain": "WordPress installieren, {{domain}}",
+  "confirmDelete": "WordPress unter {{domain}}{{dir}} löschen?\nAlle Dateien und die Datenbank in diesem Verzeichnis werden entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "errors": {
+    "rootDelete": "WordPress im Stammverzeichnis kann nicht über das Panel gelöscht werden.",
+    "installFailed": "Installation fehlgeschlagen",
+    "updateFailed": "Aktualisierung nicht möglich",
+    "deleteFailed": "Löschen nicht möglich"
+  }
+}

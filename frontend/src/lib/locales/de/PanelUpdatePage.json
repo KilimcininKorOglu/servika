@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "toolsAndSettings": "Tools und Einstellungen",
+    "panelUpdate": "Panel-Aktualisierung"
+  },
+  "title": "Panel-Aktualisierung",
+  "description": "Aktualisiert das Panel auf die neueste Version von GitHub. Umgebungsvariablen, Datenbank und Websites bleiben erhalten; eine fehlgeschlagene Zustandsprüfung setzt automatisch auf die vorherige Version zurück. Der Vorgang läuft im Hintergrund, sodass Sie diese Seite schließen können und die Aktualisierung ununterbrochen fortgesetzt wird."
+}

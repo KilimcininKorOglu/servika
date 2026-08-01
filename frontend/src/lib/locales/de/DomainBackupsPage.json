@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "backups": "Backups"
+  },
+  "title": "Backups",
+  "subtitle": {
+    "prefix": "Home + MySQL-Dump = tar.gz, ",
+    "disabled": "Automatische Backups deaktiviert",
+    "enabled": "{{freq}} {{hour}}:00, letzte {{retention}} automatische Backups aufbewahrt"
+  },
+  "freq": {
+    "daily": "Täglich",
+    "weekly": "Wöchentlich"
+  },
+  "toast": {
+    "destinationSaved": "Remote-Ziel gespeichert",
+    "destinationSaveFailed": "Ziel konnte nicht gespeichert werden",
+    "destinationDeleted": "Remote-Ziel gelöscht",
+    "confirmDeleteDest": "Das Remote-Backup-Ziel löschen? Vorhandene Backups sind nicht betroffen, aber zukünftige automatische Uploads werden gestoppt.",
+    "autoDisabled": "Automatische Backups deaktiviert",
+    "autoEnabled": "Automatische Backups aktiviert: {{freq}}, {{hour}}:00; die letzten {{retention}} Backups werden aufbewahrt",
+    "scheduleSaveFailed": "Zeitplan konnte nicht gespeichert werden",
+    "backupCreated": "Backup erstellt",
+    "createFailed": "Backup konnte nicht erstellt werden",
+    "restored": "Wiederhergestellt: {{domain}}, Datenbank: {{database}}",
+    "restoreDbUnknown": "unbekannt",
+    "restoreFailed": "Wiederherstellung fehlgeschlagen"
+  },
+  "schedule": {
+    "heading": "Automatischer Backup-Zeitplan",
+    "description": "Wenn aktiviert, prüft das Panel stündlich. Zur ausgewählten Stunde wird ein Backup erstellt, und Backups über die Aufbewahrung hinaus werden gelöscht.",
+    "lastBackup": "Letztes automatisches Backup:",
+    "options": {
+      "none": {
+        "name": "Deaktiviert",
+        "description": "Keine automatischen Backups. Nur manuelles „Jetzt sichern“ läuft."
+      },
+      "daily": {
+        "name": "Täglich",
+        "description": "Erstellt täglich zur ausgewählten Stunde ein Backup und bewahrt die letzten N Backups auf."
+      },
+      "weekly": {
+        "name": "Wöchentlich",
+        "description": "Erstellt alle sieben Tage ein Backup, um die Festplattennutzung zu reduzieren."
+      }
+    },
+    "active": "● Aktiv",
+    "runTime": "Ausführungszeit (lokal)",
+    "retentionLabel": "Aufzubewahrende Backups",
+    "retentionHint": "Ältere automatische Backups über diese Anzahl hinaus werden gelöscht. Manuelle Backups werden aufbewahrt."
+  },
+  "destination": {
+    "heading": "Remote-Backup-Ziel (FTP / SFTP / S3 / B2)",
+    "description": "Nach der Erstellung werden Backups im Hintergrund zum Remote-Ziel hochgeladen, um sie extern vor Festplattenausfall zu schützen.",
+    "statusSuccessful": "● Letztes: erfolgreich",
+    "statusError": "✗ Letztes: Fehler",
+    "lastUpload": "Letzter Upload:",
+    "typeLabel": "Zieltyp",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "Bucket",
+    "region": "Region",
+    "regionHint": "(Standard ist us-east-1)",
+    "endpoint": "Endpunkt",
+    "endpointHint": "(für AWS S3 leer lassen)",
+    "accessKeyId": "Access-Key-ID",
+    "secretAccessKey": "Secret-Access-Key",
+    "secretKeepHint": "(leer lassen, um den aktuellen beizubehalten)",
+    "keyPrefix": "Schlüsselpräfix",
+    "pathStyle": "Path-Style-URLs",
+    "host": "Host",
+    "port": "Port",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "passwordKeepHint": "(leer lassen, um das aktuelle Passwort beizubehalten)",
+    "remoteDir": "Remote-Verzeichnis",
+    "activeLabel": "Aktiv (jedes Backup an dieses Ziel senden)",
+    "testSuccess": "✓ Verbindung erfolgreich",
+    "testError": "✗ ",
+    "testErrorFallback": "Fehler",
+    "testing": "Wird getestet...",
+    "testConnection": "Verbindung testen",
+    "save": "Speichern",
+    "deleteDestination": "Ziel löschen"
+  },
+  "backingUp": "Sicherung läuft...",
+  "backupNow": "+ Jetzt sichern",
+  "refresh": "↻ Aktualisieren",
+  "backupCount": "{{count}} Backups",
+  "loading": "Laden...",
+  "empty": "Noch keine Backups",
+  "columns": {
+    "file": "Datei",
+    "type": "Typ",
+    "size": "Größe",
+    "created": "Erstellt",
+    "actions": "Aktionen"
+  },
+  "typeScheduled": "Geplant",
+  "row": {
+    "download": "Herunterladen",
+    "restore": "↺ Wiederherstellen",
+    "delete": "Löschen"
+  },
+  "confirmDelete": {
+    "title": "Backup-Datei löschen",
+    "message": "Backup-Datei \"{{file}}\" löschen?",
+    "confirm": "Ja, löschen"
+  },
+  "confirmRestore": {
+    "title": "Aus Backup wiederherstellen",
+    "message": "\"{{file}}\" wiederherstellen?\n\nWARNUNG: Vorhandene public_html-Dateien werden überschrieben und MySQL-Tabellen neu erstellt. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirm": "Ja, wiederherstellen"
+  }
+}

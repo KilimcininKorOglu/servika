@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "Automatisches Kopieren fehlgeschlagen. Drücken Sie Strg+C, dann Enter:",
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "connectionDetails": "Verbindungsdetails"
+  },
+  "title": "Verbindungsdetails",
+  "subtitle": "Wählen Sie einen Wert aus, um ihn automatisch zu kopieren",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Host",
+    "port": "Port",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "homeDirectory": "Home-Verzeichnis",
+    "database": "Datenbank",
+    "webRoot": "Web-Stamm",
+    "ipv4": "IPv4",
+    "systemUser": "Systembenutzer",
+    "httpUrl": "HTTP-URL",
+    "httpsUrl": "HTTPS-URL"
+  },
+  "links": {
+    "ftp": "Zur FTP-Verwaltung →",
+    "database": "Zur Datenbankverwaltung →"
+  },
+  "row": {
+    "selectToCopy": "Zum Kopieren auswählen",
+    "copied": "✓ Kopiert"
+  },
+  "password": {
+    "button": "🔑 Passwort anzeigen / zurücksetzen"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Datenbank"
+  },
+  "modal": {
+    "titleSuffix": "Passwort",
+    "userLabel": "Benutzer:",
+    "notStored": "(nicht gespeichert)",
+    "notAuthorized": "(nicht autorisiert)",
+    "showCurrent": "👁 Aktuelles Passwort anzeigen",
+    "currentPasswordLabel": "Aktuelles Passwort",
+    "newPasswordGenerated": "✓ Neues Passwort generiert",
+    "copyWarning": "⚠ Kopieren Sie das Passwort jetzt. Nach dem Schließen dieses Fensters können Sie es möglicherweise nicht mehr anzeigen.",
+    "close": "Schließen",
+    "generating": "Wird generiert…",
+    "generateAgain": "↻ Erneut generieren",
+    "generateNew": "⚡ Neues Passwort generieren",
+    "errorGenerate": "Passwort konnte nicht generiert werden"
+  },
+  "copyButton": {
+    "copy": "Kopieren",
+    "copied": "✓ Kopiert"
+  }
+}

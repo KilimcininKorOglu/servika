@@ -1,0 +1,67 @@
+{
+  "loading": "Laden…",
+  "notFound": "Subdomain nicht gefunden.",
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "domain": "Domain",
+    "subdomains": "Subdomains",
+    "subdomain": "Subdomain"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "WordPress in diesem Dokumentenstamm installieren und verwalten"
+    },
+    "logs": {
+      "label": "Protokolle",
+      "description": "Access- und Error-Logs für diese Subdomain"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "Abhängigkeitsstatus für diesen Dokumentenstamm"
+    },
+    "protection": {
+      "label": "Passwortschutz",
+      "description": "Verzeichnisse mit HTTP-Authentifizierung einschränken"
+    },
+    "statistics": {
+      "label": "Statistiken",
+      "description": "Traffic-Analyse nur für diese Subdomain"
+    }
+  },
+  "toast": {
+    "phpSaved": "Diese Subdomain läuft jetzt mit PHP {{version}}.",
+    "phpChangeFailed": "PHP-Version konnte nicht geändert werden"
+  },
+  "ssl": {
+    "active": "🔒 SSL aktiv",
+    "none": "Kein SSL"
+  },
+  "intro": {
+    "pre": "Eine Subdomain von",
+    "post": ", bereitgestellt aus ihrem eigenen Dokumentenstamm mit ihrem eigenen PHP-Pool."
+  },
+  "details": {
+    "title": "Details",
+    "address": "Adresse",
+    "documentRoot": "Dokumentenstamm",
+    "diskUsage": "Festplattennutzung",
+    "phpVersion": "PHP-Version",
+    "created": "Erstellt",
+    "serverIp": "Server-IP"
+  },
+  "php": {
+    "title": "PHP-Version",
+    "note": "Diese Subdomain läuft mit ihrem eigenen FPM-Pool, sodass eine Änderung die übergeordnete Domain nicht beeinflusst.",
+    "versionLabel": "Version",
+    "applying": "Wird angewendet…",
+    "apply": "Anwenden",
+    "validationNote": "Der vhost wird vor dem Speichern der Änderung validiert, sodass eine abgelehnte Konfiguration die Website unberührt lässt."
+  },
+  "toolsSection": {
+    "title": "Tools",
+    "note": "Jedes Tool arbeitet mit dem Dokumentenstamm dieser Subdomain anstelle dem der übergeordneten Domain."
+  },
+  "backToSubdomains": "← Zurück zu den Subdomains"
+}

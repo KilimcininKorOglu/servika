@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "databases": "Datenbanken"
+  },
+  "title": "Datenbanken",
+  "actions": {
+    "new": "+ Neue Datenbank",
+    "refresh": "↻ Aktualisieren"
+  },
+  "count": "{{count}} Datenbanken",
+  "loading": "Laden...",
+  "empty": "Noch keine Datenbanken",
+  "columns": {
+    "database": "Datenbank",
+    "username": "Benutzername",
+    "host": "Host",
+    "password": "Passwort",
+    "created": "Erstellt",
+    "actions": "Aktionen"
+  },
+  "password": {
+    "show": "Anzeigen",
+    "hide": "Ausblenden",
+    "copy": "Kopieren"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "phpMyAdmin in einem neuen Tab öffnen",
+    "resetPassword": "🔑 Passwort zurücksetzen",
+    "delete": "Löschen"
+  },
+  "errors": {
+    "pmaToken": "phpMyAdmin-Token konnte nicht abgerufen werden",
+    "deleteFailed": "Löschen fehlgeschlagen"
+  },
+  "delete": {
+    "title": "Datenbank löschen",
+    "message": "Die Datenbank \"{{name}}\" und ihr Benutzer werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirm": "Ja, löschen"
+  },
+  "newModal": {
+    "title": "Neue Datenbank",
+    "created": "✓ Datenbank erstellt",
+    "saveHint": "Bewahren Sie diese an einem sicheren Ort auf. Möglicherweise können Sie das Passwort später nicht mehr im Klartext anzeigen:",
+    "labelDatabase": "Datenbank",
+    "labelUser": "Benutzer",
+    "labelPassword": "Passwort",
+    "done": "Fertig",
+    "autoPre": "Automatisch",
+    "autoPost": ", lassen Sie das Panel den Datenbanknamen, Benutzer und das Passwort generieren",
+    "dbNameLabel": "Datenbankname",
+    "dbSuffixPlaceholder": "blog",
+    "dbUserLabel": "Datenbankbenutzer",
+    "newUser": "Neuer Benutzer",
+    "selectExistingUser": "Vorhandenen Benutzer auswählen",
+    "userSuffixPlaceholder": "bloguser",
+    "passwordLabel": "Passwort",
+    "passwordOptional": "(leer lassen, um eines zu generieren)",
+    "passwordPlaceholder": "Mindestens 12 Zeichen, Buchstaben und Ziffern",
+    "generate": "Generieren",
+    "passwordStrength": "Das Passwort muss mindestens 12 Zeichen mit Buchstaben und Ziffern haben.",
+    "cancel": "Abbrechen",
+    "creating": "Wird erstellt...",
+    "create": "Erstellen",
+    "errors": {
+      "dbSuffix": "Datenbank-Suffix: nur Kleinbuchstaben, Ziffern, Unterstrich; 1-32 Zeichen",
+      "dbNameTooLong": "Datenbankname zu lang (Präfix + Suffix dürfen höchstens 64 Zeichen betragen)",
+      "userSuffix": "Benutzer-Suffix: nur Kleinbuchstaben, Ziffern, Unterstrich; 1-32 Zeichen",
+      "userNameTooLong": "Benutzername zu lang (Präfix + Suffix dürfen höchstens 64 Zeichen betragen)",
+      "passwordStrength": "Das Passwort muss mindestens 12 Zeichen mit Buchstaben und Ziffern haben",
+      "selectExisting": "Wählen Sie einen vorhandenen Benutzer aus",
+      "createFailed": "Erstellung fehlgeschlagen"
+    }
+  },
+  "resultRow": {
+    "copied": "✓",
+    "copy": "Kopieren"
+  },
+  "pwReset": {
+    "title": "Passwort zurücksetzen: {{name}}",
+    "introPre": " Das Passwort des Benutzers wird gleichzeitig in MariaDB und im Panel aktualisiert.",
+    "customLabel": "Eigenes Passwort (leer lassen, um eines zu generieren)",
+    "customPlaceholder": "Mindestens 6 Zeichen",
+    "cancel": "Abbrechen",
+    "useThis": "Dieses Passwort verwenden",
+    "resetting": "Wird zurückgesetzt...",
+    "generateRandom": "Zufälliges Passwort generieren",
+    "updated": "✓ Passwort aktualisiert",
+    "saveHint": "Bewahren Sie dies an einem sicheren Ort auf. Sie können es später nicht mehr anzeigen.",
+    "copy": "Kopieren",
+    "done": "Fertig",
+    "errors": {
+      "tooShort": "Das Passwort muss mindestens 6 Zeichen haben",
+      "resetFailed": "Passwort-Zurücksetzung fehlgeschlagen"
+    }
+  }
+}

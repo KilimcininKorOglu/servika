@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "Tools und Einstellungen",
+  "breadcrumbServices": "Dienste",
+  "title": "Dienstverwaltung",
+  "subtitle": "Verwaltete Web-, Datenbank-, DNS-, PHP- und unterstützende Dienste neu starten oder neu laden.",
+  "loading": "Laden…",
+  "reload": "Neu laden",
+  "restart": "Neu starten",
+  "working": "…",
+  "statuses": {
+    "active": "● Aktiv",
+    "inactive": "○ Inaktiv",
+    "failed": "✕ Fehlgeschlagen",
+    "absent": "Nicht installiert"
+  },
+  "errors": {
+    "loadFailed": "Dienste konnten nicht geladen werden",
+    "actionFailed": "Aktion {{label}} fehlgeschlagen"
+  },
+  "success": {
+    "reloaded": "{{label}} neu geladen.",
+    "restarted": "{{label}} neu gestartet."
+  }
+}

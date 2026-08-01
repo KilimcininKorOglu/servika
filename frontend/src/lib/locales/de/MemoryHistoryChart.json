@@ -1,0 +1,8 @@
+{
+  "title": "Speichernutzung",
+  "subtitle": "Prozentsatz des genutzten RAM · 0–100%",
+  "series": "Speicher",
+  "criticalReference": "85% kritisch",
+  "noData": "Noch keine Daten erfasst",
+  "noDataHint": "Stichproben werden jede Minute aufgezeichnet; das Diagramm füllt sich innerhalb weniger Minuten."
+}

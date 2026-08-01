@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains"
+  },
+  "title": "Domains",
+  "subtitle": "Alle registrierten Domains anzeigen, ihren Status in großen Mengen ändern oder sie löschen.",
+  "loading": "Laden...",
+  "searchPlaceholder": "🔍 Domains suchen...",
+  "newDomain": "Neue Domain",
+  "empty": {
+    "title": "Noch keine Domains",
+    "description": "Beginnen Sie mit dem Hinzufügen Ihrer ersten Domain. Ein Linux-Benutzer, ein nginx-vhost, ein PHP-FPM-Pool, ein FTP-Konto, eine MySQL-Datenbank und eine DNS-Zone werden automatisch erstellt.",
+    "button": "Domain erstellen"
+  },
+  "columns": {
+    "domainName": "Domainname",
+    "systemUser": "Systembenutzer",
+    "plan": "Plan",
+    "php": "PHP",
+    "disk": "Festplatte",
+    "status": "Status",
+    "created": "Erstellt",
+    "actions": "Aktionen"
+  },
+  "openInNewTab": "In neuem Tab öffnen",
+  "sslExpires": "Läuft ab: {{date}}",
+  "sslActive": "SSL aktiv",
+  "demoBadge": "DEMO",
+  "reseller": "Reseller: {{name}}",
+  "noPlan": "Keiner",
+  "subdomain": "SUB",
+  "subdomainStatus": "Subdomain",
+  "subdomainParentPlan": "Übergeordnet",
+  "manage": "Verwalten",
+  "addSubdomain": "+ Subdomain",
+  "bulk": {
+    "selected": "{{count}} ausgewählt",
+    "activate": "▶ Aktivieren",
+    "deactivate": "⏸ Deaktivieren",
+    "delete": "🗑 Löschen ({{count}})",
+    "clear": "Auswahl aufheben"
+  },
+  "deleteConfirm": {
+    "title": "⚠ Massenlöschung von Domains",
+    "messageMid": " Domains und alle abhängigen Ressourcen (Linux-Benutzer, Home-Verzeichnisse, Datenbanken, FTP-Konten, vhosts und DNS-Zonen) werden ",
+    "messageBold": "dauerhaft",
+    "messagePost": " gelöscht.",
+    "moreItems": "+ {{count}} weitere...",
+    "typeLabel": "Geben Sie ",
+    "typeSuffix": " ein, um zu bestätigen:",
+    "cancel": "Abbrechen",
+    "confirm": "Ja, löschen"
+  },
+  "createModal": {
+    "title": "Neue Domain erstellen",
+    "subtitle": "Der Linux-Benutzer, der nginx-vhost, der PHP-FPM-Pool, das FTP-Konto, die MySQL-Datenbank und die DNS-Zone werden automatisch konfiguriert.",
+    "domainName": "Domainname",
+    "domainNamePlaceholder": "example.com",
+    "loading": "Laden...",
+    "domainNameHintPre": "Kleinbuchstaben, Zahlen, Bindestriche und Punkte. Zum Beispiel: ",
+    "domainNameHintMid": " oder ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "panel.site.com",
+    "phpVersion": "PHP-Version",
+    "phpDefault": "PHP 8.3 (Standard)",
+    "servicePlan": "Serviceplan",
+    "planNone": "(keiner)",
+    "issueSsl": "Nach der Erstellung ein Let's-Encrypt-SSL-Zertifikat installieren",
+    "sslWarning": "⚠️ Der DNS-A-Eintrag der Domain muss bereits auf diesen Server verweisen, andernfalls schlägt die Ausstellung fehl und Sie können es später auf der SSL-Seite erneut versuchen.",
+    "cancel": "Abbrechen",
+    "creating": "Wird erstellt...",
+    "create": "Erstellen"
+  },
+  "resultModal": {
+    "title": "✓ Domain erstellt",
+    "readyPre": " ist bereit. Die Passwörter unten werden ",
+    "readyBold": "nur einmal",
+    "readyPost": " angezeigt. Bewahren Sie sie sicher auf.",
+    "ftp": "FTP",
+    "mysql": "MySQL-Datenbank",
+    "host": "Host",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "database": "Datenbank",
+    "systemUser": "Systembenutzer: ",
+    "ok": "OK"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "Zum Kopieren klicken",
+    "hide": "Ausblenden",
+    "show": "Anzeigen",
+    "copied": "Kopiert"
+  },
+  "toast": {
+    "created": "✓ \"{{name}}\" erstellt. Der Linux-Benutzer, der nginx-vhost, der PHP-FPM-Pool, das FTP-Konto, die MySQL-Datenbank und die DNS-Zone sind bereit.",
+    "sslInstalled": " Let's-Encrypt-SSL wurde installiert.",
+    "sslFailed": " (Let's-Encrypt-SSL konnte nicht ausgestellt werden — stellen Sie sicher, dass der DNS-A-Eintrag hierher verweist, und installieren Sie es dann auf der SSL-Seite.)",
+    "deleted": "✓ {{success}}/{{total}} Domains gelöscht",
+    "statusChanged": "✓ {{count}} Domains geändert auf \"{{status}}\""
+  },
+  "errors": {
+    "invalidDomain": "Ungültiger Domainname. Zum Beispiel: example.com oder panel.example.com",
+    "createFailed": "Domain konnte nicht erstellt werden",
+    "statusFailed": "Status konnte nicht geändert werden"
+  }
+}

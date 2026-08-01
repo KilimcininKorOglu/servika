@@ -1,0 +1,10 @@
+{
+  "breadcrumbHome": "Startseite",
+  "notReady": "Nicht bereit",
+  "construction": {
+    "heading": "In Arbeit",
+    "phasePre": "Dieses Modul wird verfügbar in ",
+    "phasePost": ".",
+    "laterPhase": "Dieses Modul wird in einer späteren Phase verfügbar."
+  }
+}

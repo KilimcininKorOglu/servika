@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "email": "E-Mail"
+  },
+  "title": "E-Mail-Konten",
+  "subtitle": "Verwalten Sie native Postfix- und Dovecot-Postfächer. Verwenden Sie SMTP-Port 587 mit STARTTLS für authentifiziertes Senden.",
+  "loading": "Laden…",
+  "back": "← Zurück zum Abonnement",
+  "generatedPassword": {
+    "title": "Passwort für {{email}}",
+    "saveNote": "Jetzt speichern. Es wird nicht erneut angezeigt.",
+    "copy": "Kopieren"
+  },
+  "enable": {
+    "notEnabled": "E-Mail-Hosting ist für diese Domain noch nicht aktiviert.",
+    "info": "Die Aktivierung fügt nach Möglichkeit MX-, SPF-, DKIM- und DMARC-DNS-Einträge hinzu.",
+    "enabling": "Wird aktiviert…",
+    "button": "E-Mail aktivieren"
+  },
+  "mailboxAdd": {
+    "title": "Postfach hinzufügen",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "Passwort, generiert wenn leer",
+    "adding": "Wird hinzugefügt…",
+    "add": "Hinzufügen"
+  },
+  "mailboxes": {
+    "title": "Postfächer",
+    "empty": "Noch keine Postfächer.",
+    "suspended": "gesperrt",
+    "suspend": "Sperren",
+    "activate": "Aktivieren",
+    "resetPassword": "Passwort zurücksetzen",
+    "delete": "Löschen"
+  },
+  "forwarders": {
+    "title": "Weiterleitungen und Catch-All",
+    "description": "Leiten Sie eingehende Mail an eine oder mehrere Zieladressen weiter, ohne ein Postfach zu erstellen. Catch-All leitet Mail für undefinierte Adressen dieser Domain weiter.",
+    "sourcePlaceholder": "support",
+    "catchAll": "Alle undefinierten Adressen dieser Domain weiterleiten",
+    "destinationPlaceholder": "ziel1@example.com, ziel2@example.com",
+    "adding": "Wird hinzugefügt…",
+    "add": "Hinzufügen",
+    "empty": "Noch keine Weiterleitungen.",
+    "suspended": "gesperrt",
+    "suspend": "Sperren",
+    "activate": "Aktivieren",
+    "delete": "Löschen"
+  },
+  "spam": {
+    "title": "Spam-Filterung",
+    "description": "Rspamd bewertet jede eingehende Nachricht. Greylisting verzögert vorübergehend, der Header-Schwellenwert markiert Mail als Spam, und der Ablehnungs-Schwellenwert verweigert die Zustellung.",
+    "notInstalled": " Rspamd ist auf diesem Server nicht installiert; Einstellungen werden gespeichert, aber nicht durchgesetzt.",
+    "enable": "Spam-Filterung für diese Domain aktivieren",
+    "greylist": "Greylist",
+    "addHeader": "Header hinzufügen",
+    "reject": "Ablehnen",
+    "applying": "Wird angewendet…",
+    "apply": "Spam-Richtlinie anwenden"
+  },
+  "autoresponder": {
+    "title": "Automatische Antwort",
+    "description": "Senden Sie eine Abwesenheitsantwort aus einem Postfach, höchstens einmal pro Intervall an denselben Absender.",
+    "mailbox": "Postfach",
+    "interval": "Antwortintervall (Tage)",
+    "subjectPlaceholder": "Betreff",
+    "bodyPlaceholder": "Nachrichtentext",
+    "enable": "Automatische Antwort aktivieren",
+    "saving": "Speichern…",
+    "save": "Autoresponder speichern",
+    "remove": "Entfernen"
+  },
+  "filters": {
+    "title": "Nachrichtenfilter",
+    "description": "Sortieren Sie eingehende Mail in Ordner, leiten Sie sie um oder verwerfen Sie sie mit Sieve-Regeln, die pro Postfach kompiliert werden.",
+    "namePlaceholder": "Filtername",
+    "subjectContains": "Betreff enthält",
+    "fromContains": "Von enthält",
+    "toContains": "An enthält",
+    "matchedTextPlaceholder": "Übereinstimmender Text",
+    "moveToFolder": "In Ordner verschieben",
+    "redirectTo": "Umleiten an",
+    "discard": "Verwerfen",
+    "folderPlaceholder": "Ordner (z. B. Rechnungen)",
+    "targetPlaceholder": "ziel@example.com",
+    "adding": "Wird hinzugefügt…",
+    "add": "Filter hinzufügen",
+    "empty": "Noch keine Filter.",
+    "delete": "Löschen"
+  },
+  "sendLimits": {
+    "title": "Sendelimits",
+    "description": "Begrenzen Sie ausgehende Empfänger pro Postfach. Bei Überschreitung eines Limits wird das Konto automatisch gesperrt, um eine kompromittierte Anmeldung einzudämmen. Verwenden Sie 0 für unbegrenzt.",
+    "mailbox": "Postfach",
+    "hourly": "Stündlich ({{count}} verwendet)",
+    "daily": "Täglich ({{count}} verwendet)",
+    "suspendedNote": "Automatisch gesperrt um {{time}}. Reaktivieren Sie das Postfach oben, um dies aufzuheben.",
+    "saving": "Speichern…",
+    "save": "Sendelimits speichern"
+  },
+  "messages": {
+    "enabled": "E-Mail-Hosting wurde für diese Domain aktiviert. MX-, SPF-, DKIM- und DMARC-Einträge wurden nach Möglichkeit zum DNS hinzugefügt.",
+    "forwarderAdded": "Die Mail-Weiterleitung wurde hinzugefügt.",
+    "spamApplied": "Die Rspamd-Spam-Richtlinie wurde validiert und angewendet.",
+    "autoresponderSaved": "Der Autoresponder und sein Sieve-Skript wurden angewendet.",
+    "autoresponderRemoved": "Der Autoresponder wurde entfernt.",
+    "filterAdded": "Der Mail-Filter wurde kompiliert und aktiviert.",
+    "sendLimitsSaved": "Die Sendelimits wurden gespeichert."
+  },
+  "confirm": {
+    "deleteMailbox": "Das Postfach \"{{email}}\" löschen? Das Maildir bleibt auf der Festplatte, nur die Kontozeile wird entfernt.",
+    "deleteForwarder": "Die Weiterleitung \"{{source}}\" löschen?",
+    "deleteFilter": "Den Filter \"{{name}}\" löschen?"
+  },
+  "errors": {
+    "loadDomainFailed": "Die Domain konnte nicht geladen werden",
+    "enableFailed": "E-Mail-Hosting konnte nicht aktiviert werden",
+    "createMailboxFailed": "Das Postfach konnte nicht erstellt werden",
+    "addForwarderFailed": "Die Mail-Weiterleitung konnte nicht hinzugefügt werden",
+    "deleteMailboxFailed": "Das Postfach konnte nicht gelöscht werden",
+    "deleteForwarderFailed": "Die Mail-Weiterleitung konnte nicht gelöscht werden",
+    "resetPasswordFailed": "Das Passwort konnte nicht zurückgesetzt werden",
+    "updateForwarderFailed": "Die Mail-Weiterleitung konnte nicht aktualisiert werden",
+    "updateMailboxFailed": "Das Postfach konnte nicht aktualisiert werden",
+    "applySpamFailed": "Die Spam-Einstellungen konnten nicht angewendet werden",
+    "readAutoresponderFailed": "Der Autoresponder konnte nicht gelesen werden",
+    "saveAutoresponderFailed": "Der Autoresponder konnte nicht gespeichert werden",
+    "addFilterFailed": "Der Mail-Filter konnte nicht hinzugefügt werden",
+    "readSendLimitsFailed": "Die Sendelimits konnten nicht gelesen werden",
+    "saveSendLimitsFailed": "Die Sendelimits konnten nicht gespeichert werden"
+  }
+}

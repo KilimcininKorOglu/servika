@@ -1,0 +1,12 @@
+{
+  "title": "Server-Optimierung",
+  "description": "Aktualisiert Systempakete (dnf/yum) und wendet MariaDB-, nginx- und PHP-Leistungsabstimmung an. Der Vorgang läuft im Hintergrund und kann lange dauern. Sie können die Seite schließen, während er fortgesetzt wird.",
+  "running": "Die Optimierung läuft. Paketaktualisierungen können eine Weile dauern; Sie können die Seite schließen, während sie im Hintergrund fortgesetzt wird.",
+  "logStarted": "Optimierung gestartet...\n",
+  "startButton": "Pakete aktualisieren und optimieren",
+  "confirmPrompt": "Dies kann Dienste kurz beeinflussen. Fortfahren?",
+  "starting": "Wird gestartet...",
+  "confirmYes": "Ja, starten",
+  "cancel": "Abbrechen",
+  "errorStart": "Optimierung konnte nicht gestartet werden"
+}

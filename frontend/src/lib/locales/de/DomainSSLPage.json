@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "sslCertificates": "SSL/TLS-Zertifikate"
+  },
+  "title": "SSL/TLS-Zertifikate",
+  "ipLabel": "IP:",
+  "confirm": {
+    "letsencrypt": "Die Domain muss mit einem DNS-A-Eintrag auf diesen Server verweisen, bevor ein Let's-Encrypt-Zertifikat ausgestellt werden kann. Fortfahren?",
+    "disable": "SSL entfernen? Die Website wechselt zurück zu HTTP."
+  },
+  "success": {
+    "installed": "Zertifikat installiert ({{type}}). Läuft ab: {{expires}}. Die Website verwendet jetzt HTTPS.",
+    "removed": "SSL entfernt. Die Website verwendet jetzt HTTP."
+  },
+  "errors": {
+    "installFailed": "SSL-Installation fehlgeschlagen",
+    "removeFailed": "SSL konnte nicht entfernt werden"
+  },
+  "status": {
+    "title": "Aktueller Status",
+    "protected": "Geschützt",
+    "unprotected": "Ungeschützt",
+    "loading": "Laden…",
+    "sourceLabel": "Quelle",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "Selbstsigniert",
+    "expiryLabel": "Ablauf",
+    "certPathLabel": "Zertifikatpfad",
+    "keyPathLabel": "Schlüsselpfad",
+    "empty": "—",
+    "remove": "SSL entfernen (zu HTTP wechseln)",
+    "noCert": "Es gibt kein aktives SSL-Zertifikat für diese Domain. Installieren Sie unten eines."
+  },
+  "selfSigned": {
+    "title": "Selbstsigniertes Zertifikat",
+    "description": "Erstellt ein selbstsigniertes Zertifikat auf dem Server. Browser zeigen eine Warnung an, aber die Verbindung ist verschlüsselt. Geeignet für Test- und Entwicklungsumgebungen.",
+    "bullet1": "✓ Keine DNS-Abhängigkeit",
+    "bullet2": "✓ Sofort installiert",
+    "bullet3": "✗ Browser zeigt eine Sicherheitswarnung an",
+    "installing": "Wird installiert…",
+    "install": "Selbstsigniertes Zertifikat installieren"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (kostenlos)",
+    "description": "Ein offizielles Let's-Encrypt-Zertifikat, dem alle Browser vertrauen. Es erneuert sich automatisch alle 90 Tage.",
+    "bullet1": "✓ Von Browsern vertraut",
+    "bullet2": "✓ Automatische Erneuerung (cron)",
+    "bullet3": "⚠ Die Domain muss per DNS auf diesen Server verweisen",
+    "installing": "Wird installiert…",
+    "install": "Let's-Encrypt-Zertifikat abrufen"
+  }
+}

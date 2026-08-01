@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Domain",
+    "mail": "Mail",
+    "mailboxes": "Postfächer",
+    "aliases": "Aliase",
+    "suspended": "Gesperrt"
+  },
+  "mailNone": "Keine",
+  "overview": {
+    "title": "E-Mail-Konten",
+    "description": "Anzahl der Postfächer und Aliase über alle Domains hinweg.",
+    "empty": "Keine Domains gefunden."
+  },
+  "summary": {
+    "mailDomains": "Mail-Domains",
+    "totalMailboxes": "Postfächer gesamt"
+  },
+  "queue": {
+    "title": "Postfix-Mail-Warteschlange",
+    "subtitle": "Nachrichten, die auf Zustellung warten, zurückgestellt oder von einem Administrator zurückgehalten wurden.",
+    "refresh": "↻ Aktualisieren",
+    "retry": "Warteschlange erneut versuchen",
+    "loading": "Warteschlange wird gelesen…",
+    "empty": "✓ Die Mail-Warteschlange ist leer",
+    "colId": "Warteschlangen-ID",
+    "colRoute": "Absender → Empfänger",
+    "colSizeTime": "Größe / Zeit",
+    "colActions": "Aktionen",
+    "release": "Freigeben",
+    "hold": "Zurückhalten",
+    "requeue": "Erneut einreihen",
+    "delete": "Löschen"
+  },
+  "confirmDelete": "Die in der Warteschlange befindliche Nachricht {{queueID}} dauerhaft löschen?",
+  "errors": {
+    "readFailed": "Die Postfix-Warteschlange konnte nicht gelesen werden",
+    "actionFailed": "Der Warteschlangenvorgang ist fehlgeschlagen"
+  }
+}

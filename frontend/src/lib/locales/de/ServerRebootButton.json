@@ -1,0 +1,14 @@
+{
+  "title": "Server-Neustart",
+  "description": "Starten Sie den gesamten Server erst neu, nachdem aktive Aufgaben und Kundenvorgänge sicher unterbrochen werden können.",
+  "confirmLabel": "Geben Sie REBOOT ein, um zu bestätigen",
+  "placeholder": "REBOOT",
+  "reboot": "Server neu starten",
+  "requesting": "Wird angefordert...",
+  "messages": {
+    "requested": "Neustart angefordert. Das Panel ist nicht verfügbar, während der Server neu startet."
+  },
+  "errors": {
+    "reboot": "Server-Neustart konnte nicht angefordert werden"
+  }
+}

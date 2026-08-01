@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "Startseite",
+  "breadcrumbServices": "Hosting-Dienste",
+  "breadcrumbTitle": "Kontoübertragung",
+  "title": "Konto importieren",
+  "subtitle": "Analysieren Sie ein cPanel-Vollkonto-Backup sicher. Das Archiv wird zu diesem Zeitpunkt nicht entpackt oder auf dem Server gespeichert.",
+  "fileLabel": "cPanel-Vollbackup (.tar.gz / .tgz)",
+  "uploading": "Hochladen {{progress}}%",
+  "analyzeButton": "Archiv analysieren",
+  "kpi": {
+    "primaryDomain": "Primäre Domain",
+    "undetermined": "Nicht ermittelt",
+    "webFiles": "Webdateien",
+    "databases": "Datenbanken",
+    "emailData": "E-Mail-Daten",
+    "emailFiles": "{{count}} Dateien",
+    "none": "Keine"
+  },
+  "detail": {
+    "title": "Kontoinformationen",
+    "sourcePanel": "Quellpanel",
+    "user": "Benutzer",
+    "archiveRoot": "Archivstamm",
+    "totalMembers": "Mitglieder gesamt",
+    "expandedSize": "Entpackte Größe",
+    "cron": "Cron",
+    "cronPresent": "Vorhanden",
+    "cronNone": "Keine",
+    "sslFiles": "SSL-Dateien",
+    "mailboxes": "Postfächer",
+    "forwarders": "Weiterleitungen",
+    "cronJobs": "Cron-Aufgaben"
+  },
+  "lists": {
+    "databases": "Datenbanken",
+    "dnsZones": "DNS-Zonen",
+    "cronJobs": "Cron-Aufgaben",
+    "noneFound": "Nichts gefunden"
+  },
+  "analysisComplete": "Analyse abgeschlossen. Der Import erstellt eine neue Domain; schlägt er fehl, wird das erstellte Konto automatisch zurückgesetzt.",
+  "targetAndPlan": "Ziel und Plan",
+  "fields": {
+    "targetCustomer": "Zielkunde",
+    "selectCustomer": "Kunde auswählen",
+    "servicePlan": "Serviceplan",
+    "defaultPlan": "Standardplan",
+    "primaryDomain": "Primäre Domain",
+    "phpVersion": "PHP-Version"
+  },
+  "importing": "Importieren… {{progress}}%",
+  "importButton": "Konto importieren",
+  "importResult": {
+    "title": "Import abgeschlossen",
+    "summary": "{{domain}} · {{webFiles}} Webdateien · {{count}} Datenbank(en)",
+    "newPasswords": "Neue Postfach-Passwörter — jetzt speichern",
+    "forwardersTransferred": "{{count}} Weiterleitung(en) übertragen.",
+    "cronTransferred": "{{count}} Cron-Aufgabe(n) übertragen.",
+    "sslTransferred": "SSL-Zertifikat übertragen · gültig bis {{expires}}",
+    "manageDomain": "Domain verwalten →"
+  },
+  "errors": {
+    "analyzeFailed": "Das Archiv konnte nicht analysiert werden",
+    "importFailed": "Das Konto konnte nicht importiert werden"
+  }
+}

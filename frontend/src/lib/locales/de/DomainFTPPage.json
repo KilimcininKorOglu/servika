@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "ftpAccount": "FTP-Konto"
+  },
+  "title": "FTP-Konto",
+  "errors": {
+    "resetFailed": "Passwort-Zurücksetzung fehlgeschlagen"
+  },
+  "info": {
+    "host": "Host",
+    "port": "Port",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Benutzername",
+    "homeDir": "Home-Verzeichnis"
+  },
+  "reset": {
+    "title": "Passwort zurücksetzen",
+    "placeholder": "Geben Sie ein eigenes Passwort ein oder lassen Sie es leer",
+    "setThis": "Dieses Passwort festlegen",
+    "generateRandom": "Zufälliges Passwort generieren",
+    "success": "✓ Neues Passwort festgelegt",
+    "saveHint": "Bewahren Sie dies an einem sicheren Ort auf. Sie können es später nicht mehr anzeigen.",
+    "copy": "Kopieren"
+  },
+  "note": {
+    "label": "Hinweis:",
+    "pre": " FTP verwendet derzeit ",
+    "code": "Klartext",
+    "post": "-Authentifizierung gegenüber der lokalen Datenbank. Verwenden Sie SFTP auf Port 22 für verschlüsselten Transport."
+  }
+}

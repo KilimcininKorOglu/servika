@@ -1,0 +1,21 @@
+{
+  "title": "DNS-Verwaltung",
+  "description": "Eintragszählungen und DNSSEC-Status über alle Domains hinweg.",
+  "emptyMessage": "Keine Domains gefunden.",
+  "column": {
+    "domain": "Domain",
+    "records": "Einträge",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "Ein",
+    "off": "Aus"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC ein",
+    "noMx": "Kein MX"
+  }
+}

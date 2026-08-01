@@ -1,0 +1,16 @@
+{
+  "title": "Server-Hostname",
+  "protected": "Gegen Anbieter geschützt",
+  "awaitingProtection": "Warten auf Schutz",
+  "descriptionPre": "Ändert den System-Hostnamen dauerhaft. Cloud-init und DHCP/NetworkManager werden daran gehindert, den vom Anbieter bereitgestellten Namen zu überschreiben. Ein vollständig qualifizierter Name wird empfohlen: ",
+  "placeholder": "server1.example.com",
+  "apply": "Hostname ändern",
+  "applying": "Wird angewendet…",
+  "messages": {
+    "changed": "Hostname geändert auf \"{{hostname}}\" und dauerhaft gemacht."
+  },
+  "errors": {
+    "load": "Der Hostname konnte nicht geladen werden",
+    "change": "Der Hostname konnte nicht geändert werden"
+  }
+}

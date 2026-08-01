@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "Anwendungen",
+    "domainAndDns": "Domain und DNS",
+    "email": "E-Mail",
+    "filesAndDatabases": "Dateien und Datenbanken",
+    "developmentTools": "Entwicklungswerkzeuge",
+    "security": "Sicherheit"
+  },
+  "wordpress": { "label": "WordPress", "desc": "Ein-Klick-Installation · Verwaltung" },
+  "laravel": { "label": "Laravel-Toolkit", "desc": "Installieren · bereitstellen · Queue" },
+  "dns": { "label": "DNS-Verwaltung", "desc": "A-, MX-, TXT-, CNAME-Einträge" },
+  "subdomains": { "label": "Subdomains", "desc": "Subdomains" },
+  "addonDomains": { "label": "Addon-Domains", "desc": "Addon- und geparkte Domains · Weiterleitungen" },
+  "mail": { "label": "E-Mail-Konten", "desc": "Postfix- und Dovecot-Postfächer · SMTP" },
+  "connection": { "label": "Verbindungsinformationen", "desc": "FTP, Datenbank" },
+  "files": { "label": "Dateien", "desc": "Dateimanager" },
+  "databases": { "label": "Datenbanken" },
+  "ftp": { "label": "FTP", "desc": "FTP-Konten" },
+  "backups": { "label": "Backup und Wiederherstellung", "desc": "Backup-Verwaltung" },
+  "copy": { "label": "Website kopieren", "desc": "Klonen" },
+  "php": { "label": "PHP", "desc": "Version {{version}}" },
+  "logs": { "label": "Protokolle", "desc": "access, error" },
+  "cron": { "label": "Geplante Aufgaben", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "Repository-Integration" },
+  "composer": { "label": "PHP Composer", "desc": "Paketmanager" },
+  "performance": { "label": "Leistung", "desc": "Beschleuniger" },
+  "redis": { "label": "Redis-Cache", "desc": "Isolierter Objekt-Cache · Beschleuniger" },
+  "ssl": {
+    "label": "SSL/TLS-Zertifikate",
+    "expires": "Läuft ab: {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "Domain ist nicht geschützt"
+  },
+  "passwordProtection": { "label": "Passwortgeschützte Verzeichnisse", "desc": ".htpasswd" },
+  "stats": { "label": "Statistiken", "desc": "Traffic-Analyse" },
+  "accessControl": { "label": "Zugriffssteuerung", "desc": "Hotlink-Schutz · IP zulassen/blockieren" },
+  "imunify": { "label": "Imunify", "desc": "Antivirus" },
+  "ssh": {
+    "label": "SSH-Zugriff",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert"
+  }
+}

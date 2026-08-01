@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "statistics": "Statistiken"
+  },
+  "title": "Statistiken",
+  "live": "● Live (10 Sek.)",
+  "subtitle": "Serverressourcennutzung, Domainanzahl und Systemzusammenfassung.",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "Speicher",
+    "disk": "Festplatte",
+    "load": "Auslastung (1 Min.)"
+  },
+  "coresValue": "{{cores}} Kerne",
+  "loadSub": "5 Min.: {{five}} · 15 Min.: {{fifteen}}",
+  "system": {
+    "title": "System",
+    "hostname": "Hostname",
+    "os": "Betriebssystem",
+    "kernel": "Kernel",
+    "processor": "Prozessor",
+    "swap": "Swap",
+    "panelVersion": "Panel-Version"
+  },
+  "processorValue": "{{model}} · {{cores}} Kerne",
+  "swapValue": "{{percent}}% · {{used}} / {{total}}",
+  "domains": {
+    "title": "Domains",
+    "total": "Domains gesamt",
+    "active": "Aktive Domains",
+    "inactive": "Inaktive Domains"
+  },
+  "footer": {
+    "pre": "Besuchen Sie die Seite ",
+    "link": "Überwachung",
+    "post": " für eine detailliertere Überwachung."
+  }
+}

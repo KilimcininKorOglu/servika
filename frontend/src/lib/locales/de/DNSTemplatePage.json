@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "tools": "Tools und Einstellungen",
+    "current": "DNS-Vorlage"
+  },
+  "title": "Serverweite DNS-Vorlage",
+  "subtitle": "Diese Einträge werden angewendet, wenn eine Domain erstellt oder ihre Standard-DNS-Vorlage wiederhergestellt wird.",
+  "placeholders": {
+    "label": "Platzhalter:",
+    "domain": " Domainname, ",
+    "ip": " Server-IP, ",
+    "selector": " DKIM-Selektor, ",
+    "dkim": " generierter öffentlicher DKIM-Eintrag"
+  },
+  "loading": "Laden...",
+  "table": {
+    "name": "Name",
+    "type": "Typ",
+    "value": "Wert",
+    "ttl": "TTL",
+    "priority": "Priorität",
+    "order": "Reihenfolge",
+    "enabled": "Aktiviert",
+    "priorityNone": "Keine",
+    "deleteTitle": "Eintrag löschen"
+  },
+  "addRecord": "Eintrag hinzufügen",
+  "soa": {
+    "title": "SOA-Einstellungen",
+    "fieldSeconds": "{{field}} (Sekunden)"
+  },
+  "dkim": {
+    "title": "DKIM-Einstellungen",
+    "selector": "Selektor",
+    "generate": "DKIM-Schlüssel für neue Domains generieren"
+  },
+  "discard": "Änderungen verwerfen",
+  "save": "Vorlage speichern",
+  "saving": "Speichern...",
+  "success": "DNS-Vorlage gespeichert. Neue Domains verwenden die aktualisierten Einträge und Einstellungen.",
+  "errors": {
+    "loadFailed": "Die DNS-Vorlage konnte nicht geladen werden",
+    "saveFailed": "Die DNS-Vorlage konnte nicht gespeichert werden"
+  }
+}

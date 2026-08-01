@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "Startseite",
+  "breadcrumbTitle": "Servicepläne",
+  "title": "Servicepläne",
+  "subtitle": "Definieren Sie Servicepläne für Domains. Jede Domain ist einem Plan zugeordnet, und Ressourcen wie Festplatte, Traffic, PHP-Version, Datenbankanzahl und Subdomain-Limits werden pro Plan konfiguriert.",
+  "addPlan": "Plan hinzufügen",
+  "loading": "Laden…",
+  "empty": {
+    "title": "Noch keine Servicepläne",
+    "descriptionAdmin": "Beginnen Sie mit der Definition Ihres ersten Plans.",
+    "descriptionUser": "Der Administrator hat noch keinen Plan definiert."
+  },
+  "badge": {
+    "default": "Standard"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "Festplatte",
+    "traffic": "Traffic",
+    "domains": "Domains",
+    "databases": "Datenbanken",
+    "ftp": "FTP"
+  },
+  "detailsButton": "Details und Ressourcenlimits",
+  "delete": "Löschen",
+  "confirmDelete": {
+    "title": "Plan löschen",
+    "message": "Den Plan \"{{name}}\" löschen?",
+    "confirmText": "Ja, löschen"
+  },
+  "errors": {
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "saveFailed": "Speichern fehlgeschlagen"
+  },
+  "limit": {
+    "unlimited": "unbegrenzt"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/Monat",
+    "domains": "Domains",
+    "databases": "Datenbanken",
+    "accounts": "Konten"
+  },
+  "modal": {
+    "newTitle": "Neuer Plan",
+    "editTitle": "Plan bearbeiten",
+    "planName": "Planname",
+    "description": "Beschreibung",
+    "diskMb": "Festplatte (MB)",
+    "trafficMb": "Traffic (MB)",
+    "phpVersionLabel": "PHP-Version",
+    "maxDomains": "Max. Domains",
+    "maxDatabases": "Max. Datenbanken",
+    "maxFtp": "Max. FTP-Konten",
+    "isDefault": "Standardplan für neue Domains",
+    "wafHeading": "WAF-Standard (ModSecurity + OWASP CRS)",
+    "wafEnabled": "In diesem Plan aktiviert",
+    "wafMode": {
+      "block": "Blockieren (Ein)",
+      "detect": "Erkennen (nur Log)"
+    },
+    "wafParanoia": {
+      "level1": "Stufe 1 (Niedrig)",
+      "level2": "Stufe 2 (Mittel)",
+      "level3": "Stufe 3 (Hoch)",
+      "level4": "Stufe 4 (Streng)"
+    },
+    "hint": "0 = unbegrenzt. Festplatten- und Traffic-Werte sind in MB. Neue Domains in diesem Plan werden mit der ausgewählten PHP-Version bereitgestellt.",
+    "cancel": "Abbrechen",
+    "saving": "Wird gespeichert…",
+    "add": "Hinzufügen",
+    "update": "Aktualisieren"
+  }
+}

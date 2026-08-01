@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "copyWebsite": "Website kopieren"
+  },
+  "title": "Website kopieren",
+  "subtitle": {
+    "pre": "Erstellt eine mit Zeitstempel versehene Momentaufnahme Ihrer Website-Dateien unter ",
+    "post": " und bietet einen sicheren Wiederherstellungspunkt vor Änderungen."
+  },
+  "note": {
+    "pre": "ℹ️ Dieses Tool kopiert nur ",
+    "bold1": "Dateien",
+    "mid": " und enthält nicht die Datenbank. Für ein vollständiges Backup verwenden Sie ",
+    "bold2": "Backup und Wiederherstellung",
+    "post": "."
+  },
+  "createDescription": "Erstellen Sie eine neue Kopie des public_html-Inhalts.",
+  "actions": {
+    "create": "Kopie erstellen",
+    "creating": "Wird kopiert…",
+    "delete": "Löschen"
+  },
+  "existingTitle": "Vorhandene Kopien",
+  "loading": "Laden…",
+  "empty": "Noch keine Kopien.",
+  "back": "← Zurück zum Abonnement",
+  "createdCopy": "Kopie erstellt: {{name}} ({{size}} MB)",
+  "confirmDelete": "Diese Kopie löschen?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "Kopie konnte nicht erstellt werden",
+    "deleteFailed": "Kopie konnte nicht gelöscht werden"
+  }
+}

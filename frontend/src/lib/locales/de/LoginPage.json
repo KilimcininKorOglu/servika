@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Hosting-Control-Panel"
+  },
+  "heading": "Willkommen",
+  "subtitle": "Melden Sie sich an, um fortzufahren.",
+  "field": {
+    "username": "Benutzername",
+    "password": "Passwort",
+    "twoFactorCode": "Zwei-Faktor-Authentifizierungscode"
+  },
+  "twoFactorHint": "Geben Sie den sechsstelligen Code aus Ihrer Authenticator-App ein.",
+  "button": {
+    "signingIn": "Anmeldung läuft…",
+    "verify": "Überprüfen und anmelden",
+    "signIn": "Anmelden"
+  },
+  "footer": "Servika · version 0.2.0-f1",
+  "error": {
+    "loginFailed": "Anmeldung fehlgeschlagen"
+  }
+}

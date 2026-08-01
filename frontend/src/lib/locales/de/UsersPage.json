@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "users": "Benutzer"
+  },
+  "title": "Benutzer",
+  "subtitleAdmin": "Panel-Konten: Administratoren, Reseller und Kunden.",
+  "subtitleReseller": "Die von Ihnen erstellten Kundenkonten.",
+  "newAccount": "Neues Konto",
+  "newCustomer": "Neuer Kunde",
+  "loading": "Laden…",
+  "empty": {
+    "titleAdmin": "Noch keine anderen Konten",
+    "titleReseller": "Noch keine Kundenkonten",
+    "description": "Beginnen Sie mit der Erstellung eines neuen Kontos."
+  },
+  "noMatch": "Kein Konto entspricht Ihrer Suche.",
+  "roles": {
+    "admin": "Administrator",
+    "reseller": "Reseller",
+    "user": "Kunde"
+  },
+  "columns": {
+    "user": "Benutzer",
+    "fullName": "Vollständiger Name",
+    "role": "Rolle",
+    "status": "Status",
+    "twoFa": "2FA",
+    "lastLogin": "Letzte Anmeldung"
+  },
+  "system": "(System)",
+  "systemAccount": "Systemkonto",
+  "status": {
+    "active": "Aktiv",
+    "suspended": "Gesperrt"
+  },
+  "noPassword": "Kein Passwort",
+  "noPasswordTitle": "Kein Passwort festgelegt — dieses Konto kann sich erst anmelden, wenn Sie eines zuweisen.",
+  "twoFaOn": "Ein",
+  "twoFaOff": "Aus",
+  "actions": {
+    "password": "Passwort",
+    "limits": "Limits",
+    "suspend": "Sperren",
+    "enable": "Aktivieren",
+    "delete": "Löschen"
+  },
+  "createModal": {
+    "titleAdmin": "Neues Konto",
+    "titleReseller": "Neues Kundenkonto",
+    "username": "Benutzername",
+    "usernamePlaceholder": "example_reseller",
+    "usernameHint": "3-32 Zeichen, beginnt mit einem Kleinbuchstaben; darf Buchstaben, Zahlen, _ und - enthalten.",
+    "password": "Passwort",
+    "passwordHint": "Mindestens 8 Zeichen. Das Passwort wird nur jetzt angezeigt — geben Sie es dem Benutzer.",
+    "role": "Rolle",
+    "resellerOnlyCustomers": "Reseller können nur Kundenkonten erstellen.",
+    "email": "E-Mail",
+    "fullName": "Vollständiger Name",
+    "cancel": "Abbrechen",
+    "creating": "Wird erstellt…",
+    "create": "Erstellen"
+  },
+  "passwordModal": {
+    "title": "Passwort festlegen",
+    "newFor": "Neues Passwort für ",
+    "customerNote": "Dies ist das Panel-Konto-Passwort des Kunden. Der Kunde meldet sich im Kundenportal mit diesem Benutzernamen und Passwort an; ohne eines kann sich das Konto nicht anmelden.",
+    "placeholder": "Mindestens 8 Zeichen",
+    "cancel": "Abbrechen",
+    "saving": "Wird gespeichert…",
+    "setPassword": "Passwort festlegen"
+  },
+  "limitsModal": {
+    "title": "Reseller-Limits",
+    "loading": "Laden…",
+    "upperBounds": "Obergrenzen für ",
+    "unlimitedNote": "0 = unbegrenzt. Wenn alle 0 sind, wird der Limit-Datensatz vollständig entfernt.",
+    "maxCustomers": "Max. Kunden",
+    "maxDomains": "Max. Domains",
+    "diskQuota": "Festplatten-Kontingent (MB)",
+    "trafficQuota": "Traffic-Kontingent (MB)",
+    "inUseNow": "{{count}} derzeit in Verwendung",
+    "mbInUseNow": "{{count}} MB derzeit in Verwendung",
+    "mbUsedNow": "{{count}} MB derzeit genutzt",
+    "limitBelowUsage": " — Limit liegt unter der aktuellen Nutzung",
+    "quotaBelowUsage": " — Kontingent liegt unter der aktuellen Nutzung",
+    "noLimit": "Für diesen Reseller ist kein Limit definiert — derzeit unbegrenzt.",
+    "loweringNote": "Ein Absenken eines Limits unter die aktuelle Nutzung löscht keine bestehenden Konten; es blockiert nur neue Hinzufügungen.",
+    "cancel": "Abbrechen",
+    "saving": "Wird gespeichert…",
+    "save": "Speichern"
+  },
+  "delete": {
+    "title": "Konto löschen",
+    "message": "Das Konto {{username}} wird gelöscht.",
+    "resellerNote": " Konten unter diesem Reseller werden nicht gelöscht; sie werden an den Administrator übertragen.",
+    "confirm": "Löschen"
+  },
+  "toast": {
+    "created": "Konto {{username}} erstellt.",
+    "passwordUpdated": "Passwort für {{username}} aktualisiert.",
+    "limitsUpdated": "Limits für {{username}} aktualisiert.",
+    "enabled": "{{username}} aktiviert.",
+    "suspended": "{{username}} gesperrt.",
+    "deleted": "{{username}} gelöscht."
+  },
+  "errors": {
+    "loadFailed": "Konten konnten nicht geladen werden",
+    "createFailed": "Konto konnte nicht erstellt werden",
+    "resetFailed": "Passwort konnte nicht zurückgesetzt werden",
+    "loadLimitsFailed": "Limits konnten nicht geladen werden",
+    "saveLimitsFailed": "Limits konnten nicht gespeichert werden",
+    "statusFailed": "Status konnte nicht geändert werden",
+    "deleteFailed": "Löschen nicht möglich"
+  }
+}

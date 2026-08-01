@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Startseite",
+  "breadcrumbTools": "Tools und Einstellungen",
+  "title": "Paketmanager",
+  "subtitle": "Serverpakete und Compiler-Umgebungen über DNF.",
+  "installedCount": "{{count}} Pakete installiert",
+  "quickInstallGroups": "Schnellinstallations-Gruppen",
+  "groups": {
+    "devtools": { "name": "Entwicklungstools", "description": "gcc, make, autoconf, automake, libtool, kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + Entwicklungs-Header" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Go-Compiler" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "Container / VM", "description": "Docker-kompatibel: podman + buildah + skopeo" },
+    "systools": { "name": "Systemtools", "description": "CLI-Produktivitätstools" },
+    "imaging": { "name": "Bildverarbeitung", "description": "ImageMagick + WebP + Optimierung" },
+    "dbclients": { "name": "Datenbank-Clients", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "Sicherheit", "description": "GnuPG, OpenSSL, fail2ban" }
+  },
+  "badges": {
+    "installed": "INSTALLIERT",
+    "protected": "GESCHÜTZT"
+  },
+  "tabs": {
+    "search": "Repositories durchsuchen",
+    "installed": "Installierte Pakete"
+  },
+  "searchPlaceholder": "z. B. mongodb, redis, nodejs, gcc, htop",
+  "installedPlaceholder": "Name oder Beschreibung des installierten Pakets",
+  "noResults": "Keine Ergebnisse.",
+  "resultsCount": "{{count}} Ergebnisse",
+  "actions": {
+    "processing": "Wird verarbeitet...",
+    "remove": "Entfernen",
+    "install": "Installieren",
+    "removing": "Wird entfernt...",
+    "installing": "Wird installiert...",
+    "search": "Suchen",
+    "searching": "Wird gesucht...",
+    "close": "Schließen"
+  },
+  "confirm": {
+    "install": "\"{{pkg}}\" wird systemweit installiert. Fortfahren?",
+    "remove": "\"{{pkg}}\" wird ENTFERNT. Fortfahren?"
+  },
+  "toast": {
+    "installed": "{{pkg}} installiert",
+    "removed": "{{pkg}} entfernt"
+  },
+  "output": {
+    "installTitle": "Installationsausgabe: {{pkg}}",
+    "removeTitle": "Entfernungsausgabe: {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "Installation fehlgeschlagen",
+    "removeFailed": "Entfernung fehlgeschlagen",
+    "toggleInstallFailed": "Paket konnte nicht installiert werden",
+    "toggleRemoveFailed": "Paket konnte nicht entfernt werden",
+    "searchFailed": "Suche fehlgeschlagen"
+  }
+}

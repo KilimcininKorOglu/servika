@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "git": "Git"
+  },
+  "title": "Git-Bereitstellung",
+  "loading": "Laden…",
+  "intro": {
+    "pre": " · ",
+    "text": "Verbinden Sie ein Repository, fügen Sie den Deploy-Key zu GitHub hinzu und verwenden Sie die Webhook-URL für automatische Pulls."
+  },
+  "errors": {
+    "patRequired": "Ein GitHub-PAT ist erforderlich",
+    "connectFailed": "Verbindung zu GitHub fehlgeschlagen",
+    "loadReposFailed": "Repositories konnten nicht geladen werden",
+    "selectRepoBranch": "Wählen Sie ein Repository und einen Branch aus",
+    "connectionFailed": "Verbindung fehlgeschlagen"
+  },
+  "messages": {
+    "connected": "Mit GitHub verbunden: @{{login}}",
+    "repoConnected": "Repository verbunden: {{repo}}@{{branch}}",
+    "webhookEnabled": " · Automatische Bereitstellung aktiviert (Webhook erstellt)",
+    "webhookError": " · Webhook-Fehler: {{error}}",
+    "ghDisconnected": "GitHub-Verbindung entfernt",
+    "connectHint": "Repository verbunden. Kopieren Sie den Deploy-Key, fügen Sie ihn zu Ihrem GitHub-Repository hinzu und klicken Sie dann auf „Klonen“.",
+    "cloned": "Geklont. Commit: {{commit}}",
+    "cloneFailed": "Klonen fehlgeschlagen",
+    "pullDone": "Pull abgeschlossen. Commit: {{commit}}",
+    "pullFailed": "Pull fehlgeschlagen",
+    "repoRemoved": "Repository-Verbindung entfernt"
+  },
+  "confirm": {
+    "ghDisconnect": "Die GitHub-Verbindung wird entfernt. Ein etwaiger Webhook wird gelöscht, aber vorhandene Repository-Dateien sind nicht betroffen."
+  },
+  "github": {
+    "title": "GitHub-Verbindung",
+    "subtitle": "Verbinden Sie sich mit einem PAT, wählen Sie ein Repository und aktivieren Sie die Ein-Klick-Bereitstellung mit einem automatischen Webhook.",
+    "removeConnection": "Verbindung entfernen",
+    "patLabel": "Personal Access Token (classic)",
+    "connecting": "Wird verbunden…",
+    "connect": "Verbinden",
+    "patHintLink": "github.com/settings/tokens",
+    "patHintPre": " →\n                  Fine-grained PAT → Scope: ",
+    "patHintScope1": "repo",
+    "patHintMid": " +",
+    "patHintScope2": "admin:repo_hook",
+    "patHintPost": " (für automatische Bereitstellung).",
+    "autoDeployBadge": "● Automatische Bereitstellung",
+    "repo": "Repo",
+    "selectPlaceholder": "— auswählen —",
+    "reposFound": "{{count}} Repositories gefunden",
+    "branch": "Branch",
+    "autoDeployLabel": "Bei Push automatisch bereitstellen (erstellt einen Webhook)",
+    "useRepo": "Dieses Repository verwenden",
+    "webhookLabel": "Webhook: {{url}}"
+  },
+  "repoCard": {
+    "settingsTitle": "Repository-Einstellungen",
+    "connectTitle": "Repository verbinden",
+    "gitUrl": "Git-URL (SSH)",
+    "gitUrlPlaceholder": "git@github.com:username/repo.git",
+    "gitUrlHint": "Verwenden Sie eine SSH-URL für private Repositories. HTTPS-Authentifizierung wird nicht unterstützt.",
+    "branch": "Branch",
+    "targetDir": "Zielverzeichnis",
+    "update": "Aktualisieren",
+    "connect": "Verbinden",
+    "clone": "⬇ Klonen (leert das Ziel)",
+    "pull": "↻ Pull",
+    "removeConnection": "Verbindung entfernen"
+  },
+  "deployKey": {
+    "title": "Deploy-Key (öffentlich)",
+    "copy": "Kopieren",
+    "hint": "GitHub → Repository → Settings → Deploy keys → Add deploy key, dann fügen Sie diesen Schlüssel ein (Schreibzugriff zulassen ist nicht erforderlich)."
+  },
+  "webhook": {
+    "title": "Webhook (automatischer Pull)",
+    "hintPre": "GitHub → Repository → Settings → Webhooks → Add webhook. Content type: ",
+    "hintPost": ". Das Push-Ereignis ist ausreichend.",
+    "payloadUrl": "Payload-URL",
+    "secret": "Secret",
+    "contentType": "Content type",
+    "contentTypeValue": "application/json",
+    "events": "Ereignisse",
+    "eventsValue": "Nur das Push-Ereignis"
+  },
+  "status": {
+    "title": "Synchronisierungsstatus",
+    "latestSync": "Letzte Synchronisierung",
+    "noneYet": "— (noch keine)",
+    "latestCommit": "Letzter Commit",
+    "statusLabel": "Status",
+    "successful": "✓ erfolgreich",
+    "error": "⚠ Fehler",
+    "latestLog": "Letztes Protokoll"
+  },
+  "cloneDialog": {
+    "title": "Erstes Klonen",
+    "message": "Das Zielverzeichnis ({{dir}}) wird vollständig geleert, dann wird der {{branch}}-Branch des Repositorys geklont. Fortfahren?",
+    "confirm": "Ja, klonen"
+  },
+  "deleteDialog": {
+    "title": "Repository-Verbindung entfernen",
+    "message": "Der Panel-Datensatz wird gelöscht. Geklonte Dateien bleiben auf der Festplatte.",
+    "confirm": "Ja, löschen"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "langPlainText": "Klartext",
+  "unsaved": "Ungespeicherte Änderungen",
+  "saving": "Speichern…",
+  "saved": "✓ Gespeichert",
+  "syntax": "Syntax",
+  "exitFullscreen": "Vollbild beenden",
+  "fullscreen": "Vollbild",
+  "save": "💾 Speichern",
+  "close": "Schließen",
+  "cursor": "Zeile {{line}}, Spalte {{column}}",
+  "lines": "{{count}} Zeilen",
+  "bytes": "{{count}} Bytes",
+  "shortcuts": "Strg+S: speichern · Esc: schließen"
+}

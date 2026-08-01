@@ -1,0 +1,25 @@
+{
+  "title": "Panel-Domain",
+  "description": "Verweisen Sie einen A-Eintrag auf diesen Server, bevor Sie ein Let's-Encrypt-Zertifikat anfordern. Nach der Ausstellung öffnet die Domain das Panel ohne Port 8443.",
+  "customDomainLabel": "Benutzerdefinierte Panel-Domain",
+  "customDomainPlaceholder": "panel.example.com",
+  "serverIpv4": "Server-IPv4:",
+  "sslStatus": "SSL-Status:",
+  "portlessUrl": "URL ohne Port:",
+  "expires": "Läuft ab:",
+  "unknown": "Unbekannt",
+  "sslNone": "keines",
+  "save": "Panel-Domain speichern",
+  "saving": "Wird gespeichert...",
+  "reset": "Zurücksetzen",
+  "resetting": "Wird zurückgesetzt...",
+  "messages": {
+    "saved": "Panel-Domain gespeichert. Sie können https://{{domain}} ohne Port 8443 öffnen.",
+    "reset": "Panel-Domain auf das Standardzertifikat zurückgesetzt."
+  },
+  "errors": {
+    "load": "Panel-Domain-Einstellungen konnten nicht geladen werden",
+    "save": "Panel-Domain konnte nicht gespeichert werden",
+    "reset": "Panel-Domain konnte nicht zurückgesetzt werden"
+  }
+}

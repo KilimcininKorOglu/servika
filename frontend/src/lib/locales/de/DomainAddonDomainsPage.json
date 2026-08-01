@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "addonDomains": "Addon-Domains"
+  },
+  "title": "Addon-Domains",
+  "subtitle": "Erstellen Sie Addon- oder geparkte Domains und konfigurieren Sie domainweite Weiterleitungen.",
+  "toast": {
+    "created": "{{domain}} wurde erstellt.",
+    "createFailed": "Addon-Domain konnte nicht erstellt werden",
+    "deleted": "{{domain}} wurde gelöscht.",
+    "deleteFailed": "Addon-Domain konnte nicht gelöscht werden",
+    "redirectSaved": "Weiterleitungseinstellungen wurden gespeichert.",
+    "redirectSaveFailed": "Weiterleitungseinstellungen konnten nicht gespeichert werden",
+    "redirectRemoved": "Weiterleitungseinstellungen wurden entfernt.",
+    "redirectRemoveFailed": "Weiterleitungseinstellungen konnten nicht entfernt werden"
+  },
+  "mode": {
+    "parked": "geparkte Domain",
+    "addon": "Addon-Domain"
+  },
+  "confirmDelete": "{{domain}} löschen?\nDie {{mode}}, der vhost, die DNS-Zone und die Panel-Datensätze werden entfernt. Dies kann nicht rückgängig gemacht werden.",
+  "confirmRemoveRedirect": "Die Domain-Weiterleitung entfernen?",
+  "form": {
+    "title": "Neue Addon-Domain",
+    "domainLabel": "Domain",
+    "parkedLabel": "Geparkte Domain",
+    "creating": "Wird erstellt…",
+    "add": "Domain hinzufügen",
+    "hint": "Addon-Domains verwenden ihren eigenen Dokumentenstamm. Geparkte Domains teilen sich den Dokumentenstamm der übergeordneten Domain."
+  },
+  "redirect": {
+    "title": "Domainweite Weiterleitung",
+    "active": "Aktiv",
+    "targetLabel": "Ziel-URL",
+    "statusLabel": "Status",
+    "status301": "301 Dauerhaft",
+    "status302": "302 Temporär",
+    "saving": "Speichern…",
+    "save": "Weiterleitung speichern",
+    "remove": "Entfernen"
+  },
+  "list": {
+    "title": "Vorhandene Domains",
+    "loading": "Laden…",
+    "empty": "Noch keine Addon-Domains.",
+    "parked": "Geparkt",
+    "phpPrefix": "PHP",
+    "delete": "Löschen"
+  },
+  "backToSubscription": "← Zurück zum Abonnement"
+}

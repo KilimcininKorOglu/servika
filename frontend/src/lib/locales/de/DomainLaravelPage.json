@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "laravel": "Laravel-Toolkit"
+  },
+  "loading": "Laden…",
+  "title": "Laravel-Toolkit",
+  "subtitle": "Installieren, bereitstellen und betreiben Sie eine Laravel-Anwendung für dieses Abonnement.",
+  "backToSubscription": "Zurück zum Abonnement",
+  "tabs": {
+    "overview": "Übersicht",
+    "install": "Installieren",
+    "commands": "Befehle",
+    "env": ".env",
+    "deploy": "Bereitstellen",
+    "workers": "Worker"
+  },
+  "messages": {
+    "actionCompleted": "Aktion abgeschlossen",
+    "actionFailed": "Aktion fehlgeschlagen"
+  },
+  "overview": {
+    "title": "Anwendungsstatus",
+    "installed": "Installiert",
+    "yes": "Ja",
+    "no": "Nein",
+    "appRoot": "Anwendungsstamm",
+    "documentPath": "Dokumentenpfad",
+    "php": "PHP",
+    "composerManifest": "Composer-Manifest",
+    "found": "Gefunden",
+    "missing": "Fehlt",
+    "git": "Git",
+    "repositoryFound": "Repository gefunden",
+    "notConnected": "Nicht verbunden",
+    "maintenance": "Wartung",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "schedule": "Zeitplan",
+    "queue": "Queue"
+  },
+  "install": {
+    "title": "Laravel installieren",
+    "mode": "Modus",
+    "modeRemote": "Remote-Repository klonen",
+    "modeScaffold": "Neues Laravel-Projekt erstellen",
+    "modeLocal": "Leeres Git-Repository initialisieren",
+    "appRoot": "Anwendungsstamm",
+    "repositoryUrl": "Repository-URL",
+    "repositoryUrlPlaceholder": "https://github.com/example/app.git",
+    "branch": "Branch",
+    "branchPlaceholder": "main",
+    "startInstall": "Installation starten",
+    "checkInstallStatus": "Installationsstatus prüfen"
+  },
+  "commands": {
+    "title": "Laravel-Befehle",
+    "packagePlaceholder": "vendor/package",
+    "scriptPlaceholder": "Skriptname",
+    "run": "Ausführen"
+  },
+  "env": {
+    "title": "Umgebungsdatei",
+    "load": ".env laden",
+    "save": ".env speichern"
+  },
+  "deploy": {
+    "title": "Bereitstellen",
+    "deployWithMigrate": "Mit Migrate und Build bereitstellen",
+    "checkDeployStatus": "Bereitstellungsstatus prüfen",
+    "disableMaintenance": "Wartung deaktivieren",
+    "enableMaintenance": "Wartung aktivieren"
+  },
+  "workers": {
+    "title": "Zeitplan- und Queue-Worker",
+    "queueTimeout": "Queue-Timeout",
+    "maxJobs": "Max. Jobs",
+    "connection": "Verbindung",
+    "disableSchedule": "Zeitplan deaktivieren",
+    "enableSchedule": "Zeitplan aktivieren",
+    "disableQueue": "Queue deaktivieren",
+    "enableQueue": "Queue aktivieren"
+  },
+  "common": {
+    "save": "Speichern"
+  }
+}

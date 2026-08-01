@@ -1,0 +1,52 @@
+{
+  "title": "Sicherheitshinweise",
+  "subtitleAudit": "CVE-Audit (AlmaLinux)",
+  "advisories": "{{count}} Sicherheitshinweise",
+  "rescan": "Erneut scannen",
+  "scanning": "Scannen…",
+  "scanningServer": "Server wird gescannt…",
+  "updating": "Sicherheitsupdates werden installiert… (läuft im Hintergrund)",
+  "kcApplying": "Live-Kernel-Patch wird angewendet… (KernelCare — kein Neustart erforderlich)",
+  "severity": {
+    "critical": "Kritisch",
+    "important": "Wichtig",
+    "moderate": "Mittel",
+    "low": "Niedrig"
+  },
+  "kcActive": {
+    "bold": "Der Kernel wird live gepatcht (KernelCare).",
+    "text": " Kernel-Schwachstellen werden ohne Neustart geschlossen.",
+    "effectivePre": " Effektiver Kernel: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVEs live gepatcht."
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare ist installiert, aber die Lizenz ist nicht registriert.",
+    "text": " Registrieren Sie sich mit einem TuxCare-Lizenzschlüssel für neustartfreies Kernel-Patching."
+  },
+  "rebootRequired": {
+    "bold1": "Neustart erforderlich.",
+    "text1": " Ein neuer sicherheitsgepatchter Kernel ist installiert, aber das System läuft noch mit dem alten Kernel — die meisten der folgenden CVEs sind kernelbezogen und erscheinen als ",
+    "bold2": "offen, bis der Server neu gestartet wird",
+    "text2": ". Planen Sie einen Neustart während eines Wartungsfensters."
+  },
+  "clean": {
+    "title": "System auf dem neuesten Stand",
+    "subtitle": "Keine bekannten Schwachstellen"
+  },
+  "totalPre": "Insgesamt ",
+  "totalPost": " eindeutige CVEs",
+  "lastScan": " · letzter Scan {{scan}}",
+  "installUpdates": "Sicherheitsupdates installieren",
+  "updateLiveKernel": "Live-Kernel-Patches aktualisieren (kein Neustart)",
+  "confirmUpdate": "Sicherheitsupdates (dnf --security) werden installiert. Für Kernel-Updates kann ein Neustart erforderlich sein. Fortfahren?",
+  "messages": {
+    "updatesComplete": "Sicherheitsupdates abgeschlossen.",
+    "livePatchApplied": "Live-Kernel-Patch angewendet."
+  },
+  "errors": {
+    "fetch": "CVE-Status konnte nicht abgerufen werden",
+    "startUpdate": "Update konnte nicht gestartet werden",
+    "startLivePatch": "Live-Patch konnte nicht gestartet werden"
+  }
+}

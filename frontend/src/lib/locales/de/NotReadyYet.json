@@ -1,0 +1,8 @@
+{
+  "notReady": "Nicht bereit",
+  "construction": {
+    "heading": "In Arbeit",
+    "availablePre": "Dieses Modul wird in der Phase ",
+    "availablePost": " verfügbar. Derzeit ist nur die Oberflächenhülle verfügbar."
+  }
+}

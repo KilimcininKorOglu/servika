@@ -1,0 +1,159 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "dnsSettings": "DNS-Einstellungen"
+  },
+  "title": "DNS-Einstellungen",
+  "ipLabel": "IP:",
+  "authoritative": {
+    "label": "Autoritatives DNS:",
+    "pre": " BIND veröffentlicht diese Einträge. Richten Sie die Domain auf ",
+    "mid": " und ",
+    "post": "."
+  },
+  "loading": "Laden...",
+  "recordCount": "{{count}} Einträge",
+  "valueHint": {
+    "A": "IPv4-Adresse, zum Beispiel 203.0.113.10",
+    "AAAA": "IPv6-Adresse, zum Beispiel 2a01:4f8:1c1c::1",
+    "CNAME": "Ziel-Domainname, zum Beispiel target.example.com",
+    "MX": "Mailserver, zum Beispiel mail.example.com (Priorität wird separat festgelegt)",
+    "TXT": "Freitext, zum Beispiel v=spf1 mx ~all",
+    "NS": "Nameserver, zum Beispiel ns1.example.com",
+    "SRV": "weight port target, zum Beispiel 5 5060 sip.example.com (Priorität wird separat festgelegt)",
+    "CAA": "flags tag \"value\", zum Beispiel 0 issue \"letsencrypt.org\"",
+    "PTR": "Ziel-Domainname, zum Beispiel host.example.com",
+    "DS": "keytag algorithm digest-type digest, zum Beispiel 12345 13 2 49FD46E6C4B45C55D4AC...",
+    "TLSA": "usage selector matching-type data, zum Beispiel 3 1 1 0B9FA5A59EED715C26C1020C...",
+    "SSHFP": "algorithm type fingerprint, zum Beispiel 4 2 123456789ABCDEF...",
+    "NAPTR": "order preference \"flags\" \"service\" \"regexp\" replacement"
+  },
+  "soa": {
+    "title": "SOA-Einstellungen",
+    "titleHint": "(authority, refresh, retry, expire und TTL)",
+    "hide": "▲ Ausblenden",
+    "edit": "▼ Bearbeiten",
+    "primaryNs": "Primärer NS",
+    "hostmasterEmail": "Hostmaster-E-Mail",
+    "fields": {
+      "refresh": "refresh",
+      "retry": "retry",
+      "expire": "expire",
+      "minimum": "minimum",
+      "ttl": "ttl"
+    },
+    "save": "SOA speichern",
+    "saved": "SOA-Einstellungen gespeichert",
+    "saveFailed": "SOA-Einstellungen konnten nicht gespeichert werden"
+  },
+  "dnssec": {
+    "title": "DNSSEC",
+    "signed": "Signiert",
+    "signing": "Wird signiert...",
+    "disabled": "Deaktiviert",
+    "description": "Signiert diese Zone mit BIND Inline-Signing. Fügen Sie den generierten DS-Eintrag bei Ihrem Domain-Registrar hinzu.",
+    "refreshStatus": "Status aktualisieren",
+    "disable": "Deaktivieren",
+    "enabling": "Wird aktiviert...",
+    "enable": "Aktivieren",
+    "dsForRegistrar": "DS-Eintrag für Ihren Registrar",
+    "copied": "Kopiert",
+    "copy": "Kopieren",
+    "dsHint": "Fügen Sie diesen DS-Eintrag in den DNSSEC-Einstellungen Ihres Registrars hinzu. Die Verbreitung kann bis zur TTL des Eintrags dauern.",
+    "signingInProgress": "Die Signierung läuft noch. Aktualisieren Sie den Status nach einigen Sekunden.",
+    "enabledMsg": "DNSSEC aktiviert. Fügen Sie den DS-Eintrag unten bei Ihrem Domain-Registrar hinzu.",
+    "disabledMsg": "DNSSEC deaktiviert.",
+    "updateFailed": "DNSSEC konnte nicht aktualisiert werden",
+    "refreshFailed": "DNSSEC-Status konnte nicht aktualisiert werden"
+  },
+  "actions": {
+    "newRecord": "Neuer Eintrag",
+    "applyTemplate": "📋 Standardvorlage anwenden",
+    "applyTemplateTitle": "Fügt die Standard-A/MX/TXT/NS-Einträge hinzu (idempotent)",
+    "refresh": "↻ Aktualisieren",
+    "export": "⬇ Exportieren",
+    "exportTitle": "Die DNS-Einträge als BIND-Zonendatei herunterladen",
+    "import": "⬆ Importieren",
+    "importTitle": "Eine BIND-Zonendatei hochladen"
+  },
+  "import": {
+    "title": "Zonendatei importieren",
+    "description": "Laden Sie eine standardmäßige BIND-Zonendatei (.zone / .txt) hoch. Die Einträge werden in diese Domain importiert, dann wird die Zone validiert und neu geschrieben.",
+    "overwriteLabel": "Vorhandene Einträge überschreiben — wenn nicht ausgewählt, werden die Einträge zusammengeführt (neue hinzugefügt)",
+    "replaceWarning": "⚠️ ALLE aktuellen DNS-Einträge für diese Domain werden gelöscht und durch die der Datei ersetzt. Es wird empfohlen, zuerst ein Backup zu exportieren.",
+    "cancel": "Abbrechen",
+    "importing": "Importieren…",
+    "import": "Importieren",
+    "complete": "Import abgeschlossen — {{added}} hinzugefügt, {{skipped}} übersprungen ({{mode}})",
+    "completeWarning": "Import abgeschlossen — {{added}} hinzugefügt, {{skipped}} übersprungen ({{mode}}) · {{warning}}",
+    "failed": "Import fehlgeschlagen"
+  },
+  "exportFailed": "Export fehlgeschlagen",
+  "bulk": {
+    "selected": "{{count}} Einträge ausgewählt",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "deleteSelected": "Ausgewählte löschen ({{count}})",
+    "clearSelection": "Auswahl aufheben",
+    "deleted": "{{count}} Einträge gelöscht",
+    "updated": "{{count}} Einträge aktualisiert",
+    "deleteFailed": "Massenlöschung fehlgeschlagen",
+    "updateFailed": "Massenaktualisierung fehlgeschlagen"
+  },
+  "table": {
+    "selectAll": "Alle auswählen",
+    "select": "{{name}} {{type}} auswählen",
+    "name": "Name",
+    "type": "Typ",
+    "value": "Wert",
+    "ttl": "TTL",
+    "priority": "Priorität",
+    "status": "Status",
+    "actions": "Aktionen",
+    "selectLabel": "Auswählen",
+    "noPriority": "Keine",
+    "active": "Aktiv",
+    "disabled": "Deaktiviert",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "empty": {
+    "text": "Noch keine DNS-Einträge.",
+    "applyTemplate": "Standardvorlage anwenden"
+  },
+  "templateAdded": "{{count}} Standardeinträge hinzugefügt",
+  "templateFailed": "Vorlage konnte nicht angewendet werden",
+  "delete": {
+    "title": "DNS-Eintrag löschen",
+    "message": "\"{{name}} {{type}} {{value}}\" löschen?",
+    "confirm": "Ja, löschen",
+    "failed": "Löschen fehlgeschlagen"
+  },
+  "bulkDelete": {
+    "title": "Ausgewählte DNS-Einträge löschen",
+    "message": "{{count}} DNS-Einträge werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden. Fortfahren?",
+    "confirm": "Ja, {{count}} Einträge löschen"
+  },
+  "dnssecDisable": {
+    "title": "DNSSEC deaktivieren",
+    "message": "Entfernen Sie den DS-Eintrag bei Ihrem Domain-Registrar und warten Sie dessen TTL ab, bevor Sie DNSSEC deaktivieren. Andernfalls kann die Domain mit SERVFAIL nicht mehr auflösen. Fahren Sie erst fort, nachdem der DS-Eintrag entfernt wurde.",
+    "confirm": "DS entfernt, DNSSEC deaktivieren"
+  },
+  "modal": {
+    "newTitle": "Neuer DNS-Eintrag",
+    "editTitle": "DNS-Eintrag bearbeiten",
+    "nameLabel": "Name (Subdomain)",
+    "nameHint": "„@“ ist die Root-Domain. Weitere Beispiele sind „www“ und „mail“.",
+    "typeLabel": "Typ",
+    "valueLabel": "Wert",
+    "ttlLabel": "TTL (Sek.)",
+    "priorityLabel": "Priorität",
+    "active": "Aktiv",
+    "cancel": "Abbrechen",
+    "saving": "Speichern...",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "saveFailed": "Eintrag konnte nicht gespeichert werden"
+  }
+}

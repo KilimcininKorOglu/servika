@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "logs": "Protokolle"
+  },
+  "title": "Protokolle",
+  "streamFailed": "Stream konnte nicht gestartet werden (HTTP {{status}})",
+  "view": {
+    "table": "Tabelle",
+    "raw": "Roh"
+  },
+  "autoScroll": "Automatisches Scrollen",
+  "stop": "■ Stopp",
+  "liveTail": "▶ Live-Tail",
+  "last200": "↻ Letzte 200",
+  "clear": "Leeren",
+  "searchPlaceholder": "Nach IP, Pfad, Statuscode, Browser suchen...",
+  "clearSearch": "Suche leeren",
+  "matches": "{{visible}} / {{total}} Treffer",
+  "waiting": "Warten... Neue Zeilen erscheinen, sobald sie eintreffen.",
+  "emptyFile": "(Protokolldatei ist leer oder wurde noch nicht erstellt)",
+  "noMatch": "\"{{search}}\" Keine Zeilen entsprechen dieser Suche.",
+  "linesFiltered": "{{visible}} / {{total}} Zeilen (gefiltert)",
+  "lines": "{{count}} Zeilen",
+  "windowSuffix": ", Fenster {{max}}",
+  "liveStream": "Live-Stream",
+  "access": {
+    "time": "Zeit",
+    "ip": "IP",
+    "method": "Methode",
+    "path": "Pfad",
+    "status": "Status",
+    "size": "Größe",
+    "browser": "Browser"
+  },
+  "error": {
+    "time": "Zeit",
+    "level": "Ebene",
+    "client": "Client",
+    "message": "Nachricht"
+  }
+}

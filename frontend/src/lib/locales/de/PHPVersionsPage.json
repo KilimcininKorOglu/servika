@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "tools": "Tools und Einstellungen",
+    "current": "PHP-Versionen"
+  },
+  "title": "PHP-Versionen",
+  "subtitle": "PHP-Versionen hinzufügen oder entfernen. Jede läuft in einem unabhängigen PHP-FPM-Pool und kann pro Domain ausgewählt werden. Die Installation umfasst 14 Pakete (fpm, cli, mysqlnd und 11 Erweiterungen).",
+  "alerts": {
+    "opInProgress": "Ein PHP-Vorgang läuft bereits. Warten Sie, bis er beendet ist.",
+    "appstreamCannotRemove": "AppStream PHP ist der Systemstandard und kann nicht entfernt werden."
+  },
+  "confirm": {
+    "install": "Vierzehn Pakete werden für PHP {{version}} ({{resource}}) installiert. Fortfahren?",
+    "remove": "PHP {{version}} (Remi) und ALLE Erweiterungen werden ENTFERNT.\nDer Vorgang wird abgelehnt, wenn eine Domain diese Version verwendet. Fortfahren?"
+  },
+  "success": {
+    "installed": "PHP {{version}} installiert",
+    "removed": "PHP {{version}} entfernt"
+  },
+  "errors": {
+    "startInstallFailed": "Installation konnte nicht gestartet werden",
+    "startRemoveFailed": "Entfernung konnte nicht gestartet werden"
+  },
+  "log": {
+    "installStarted": "Installation von PHP {{version}} gestartet...\n",
+    "removeStarted": "Entfernung von PHP {{version}} gestartet...\n",
+    "installInProgress": "Installation von PHP {{version}} läuft...",
+    "removeInProgress": "Entfernung von PHP {{version}} läuft...",
+    "waiting": "Warten auf Ausgabe..."
+  },
+  "filters": {
+    "all": "Alle ({{count}})",
+    "installed": "Installiert ({{count}})",
+    "available": "Verfügbar ({{count}})"
+  },
+  "loading": "Laden...",
+  "badges": {
+    "installed": "INSTALLIERT",
+    "eol": "EOL"
+  },
+  "card": {
+    "version": "Version:",
+    "extensions": "Erweiterungen:",
+    "service": "Dienst:"
+  },
+  "actions": {
+    "fixed": "Festgelegt (Systemstandard)",
+    "inProgress": "Läuft...",
+    "remove": "Entfernen",
+    "install": "Installieren"
+  }
+}

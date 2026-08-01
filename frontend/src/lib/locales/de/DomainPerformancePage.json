@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "performance": "Leistung"
+  },
+  "loading": "Laden…",
+  "notFound": "Nicht gefunden",
+  "title": "Leistung und Beschleuniger",
+  "subtitle": {
+    "post": ", aktueller Beschleunigerstatus und Vorschläge."
+  },
+  "scoreLabel": "Leistungswert",
+  "acceleratorsTitle": "Beschleuniger",
+  "cacheStat": "{{rate}}% Treffer · {{total}} Anfr.",
+  "configure": "Konfigurieren →",
+  "suggestionsTitle": "Vorschläge",
+  "open": "Öffnen →",
+  "back": "← Zurück zum Abonnement"
+}

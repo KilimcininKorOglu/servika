@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "accessControl": "Zugriffssteuerung"
+  },
+  "title": "Zugriffssteuerung",
+  "subtitle": "Konfigurieren Sie Hotlink-Schutz und domainweite IP-Zulassungs- oder Sperrregeln. Das Speichern rendert den nginx-vhost neu.",
+  "loading": "Laden…",
+  "modes": {
+    "off": {
+      "label": "Aus",
+      "description": "Es werden keine IP-Zulassungs- oder Sperrregeln in den nginx-vhost gerendert."
+    },
+    "block": {
+      "label": "Aufgelistete IPs blockieren",
+      "description": "Besucher von aufgelisteten IP-Adressen oder CIDR-Bereichen erhalten 403-Antworten."
+    },
+    "allow": {
+      "label": "Nur aufgelistete IPs zulassen",
+      "description": "Nur aufgelistete IP-Adressen oder CIDR-Bereiche sind zugelassen, wenn mindestens eine Regel existiert."
+    }
+  },
+  "hotlink": {
+    "title": "Hotlink-Schutz",
+    "description": "Verhindert, dass externe Websites von dieser Domain bereitgestellte Bilddateien einbetten.",
+    "enabled": "Aktiviert",
+    "allowedLabel": "Zusätzlich erlaubte Referrer-Domains",
+    "hint": "Die aktuelle Domain und ihr www-Host sind immer erlaubt. Fügen Sie eine Domain pro Zeile oder durch Komma getrennt hinzu.",
+    "save": "Hotlink-Einstellungen speichern",
+    "saving": "Speichern…"
+  },
+  "ipMode": {
+    "title": "IP-Zugriffsmodus",
+    "selected": "● Ausgewählt"
+  },
+  "newRule": {
+    "title": "Neue IP-Regel",
+    "label": "IP-Adresse oder CIDR",
+    "placeholder": "203.0.113.10 oder 203.0.113.0/24",
+    "add": "Regel hinzufügen",
+    "adding": "Wird hinzugefügt…"
+  },
+  "rules": {
+    "title": "Konfigurierte IP-Regeln",
+    "empty": "Noch keine IP-Regeln.",
+    "created": "Erstellt {{date}}",
+    "delete": "Löschen"
+  },
+  "back": "← Zurück zum Abonnement",
+  "messages": {
+    "hotlinkSaved": "Die Hotlink-Schutz-Einstellungen wurden gespeichert.",
+    "modeSaved": "Der IP-Zugriffsmodus wurde gespeichert.",
+    "ruleAdded": "Die IP-Regel wurde hinzugefügt.",
+    "ruleDeleted": "Die IP-Regel wurde gelöscht."
+  },
+  "confirmDelete": "IP-Regel {{ip}} löschen?",
+  "errors": {
+    "hotlinkFailed": "Hotlink-Einstellungen konnten nicht gespeichert werden",
+    "modeFailed": "IP-Zugriffsmodus konnte nicht gespeichert werden",
+    "addFailed": "IP-Regel konnte nicht hinzugefügt werden",
+    "deleteFailed": "IP-Regel konnte nicht gelöscht werden"
+  }
+}
