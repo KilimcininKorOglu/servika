@@ -1,0 +1,67 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "current": "Strumenti e Impostazioni"
+  },
+  "title": "Strumenti e Impostazioni",
+  "subtitle": "Gestione a livello di server, PHP, pacchetti di sistema, rete, sicurezza e manutenzione.",
+  "searchPlaceholder": "Cerca strumenti…",
+  "searchAria": "Cerca strumenti",
+  "maintenance": "Manutenzione Server",
+  "noResults": "Nessuno strumento trovato per \"{{q}}\"",
+  "noResultsHint": "Modifica o cancella il termine di ricerca.",
+  "footer_one": "{{count}} strumento · a livello di server",
+  "footer_other": "{{count}} strumenti · a livello di server",
+  "badges": {
+    "dynamic": "Dinamico",
+    "serverWide": "A livello di server"
+  },
+  "groups": {
+    "php": "PHP",
+    "system": "Sistema e Servizi",
+    "network": "Rete e DNS",
+    "security": "Sicurezza e Backup"
+  },
+  "tools": {
+    "phpVersions": {
+      "title": "Versioni PHP",
+      "description": "Aggiungi o rimuovi le versioni dalla 7.4 alla 8.6. Ogni dominio seleziona la propria versione in modo indipendente."
+    },
+    "phpExtensions": {
+      "title": "Estensioni PHP",
+      "description": "Abilita o disabilita estensioni a livello di server, cerca pacchetti PECL e compilali."
+    },
+    "packages": {
+      "title": "Gestione Pacchetti",
+      "description": "Pacchetti DNF, compiler e runtime. Gruppi di installazione pronti."
+    },
+    "services": {
+      "title": "Servizi",
+      "description": "Stato e riavvio di Nginx / Apache / MariaDB / DNS / PHP-FPM."
+    },
+    "servicePlans": {
+      "title": "Piani di Servizio",
+      "description": "Pacchetti hosting con quote di disco, database e FTP."
+    },
+    "dnsTemplate": {
+      "title": "Modello DNS",
+      "description": "Record DNS centrali applicati ai nuovi domini (A/MX/SPF/DMARC/DKIM) con SOA."
+    },
+    "domains": {
+      "title": "Domini",
+      "description": "Sfoglia, cerca e accedi rapidamente a tutti i domini."
+    },
+    "firewall": {
+      "title": "Firewall",
+      "description": "Blocco IP/porte, allowlist, chiusura porte. Le porte critiche sono protette."
+    },
+    "backupManager": {
+      "title": "Gestione Backup",
+      "description": "Visualizza le dimensioni dei backup per tutti i domini, backup con un clic, destinazioni S3/SFTP."
+    },
+    "monitoring": {
+      "title": "Monitoraggio e Log",
+      "description": "Grafici CPU/RAM/disco e log server da journald (pannello/nginx/SSH…)."
+    }
+  }
+}

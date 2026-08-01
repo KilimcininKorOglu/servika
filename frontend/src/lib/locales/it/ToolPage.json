@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini"
+  },
+  "fallback": {
+    "label": "Strumento",
+    "description": "Non ancora implementato."
+  },
+  "notReady": "Non Pronto",
+  "domainLabel": "Dominio: ",
+  "construction": {
+    "heading": "In costruzione",
+    "availablePrefix": "Questo modulo sarà disponibile nella fase ",
+    "availableSuffix": ".",
+    "availableLater": "Questo modulo sarà disponibile in una fase successiva.",
+    "returnToDashboard": "← Torna alla dashboard del dominio"
+  },
+  "tool": {
+    "connection": {
+      "label": "Dettagli di Connessione",
+      "description": "Server FTP, nome utente, stringa di connessione al database e azioni di copia rapida."
+    },
+    "files": {
+      "label": "Gestione File",
+      "description": "Elenca, carica, scarica e modifica i permessi dei file in public_html."
+    },
+    "databases": {
+      "label": "Database",
+      "description": "Database MySQL, utenti e integrazione phpMyAdmin."
+    },
+    "ftp": {
+      "label": "Account FTP",
+      "description": "Account FTP virtuali, password e directory home tramite Pure-FTPd."
+    },
+    "backups": {
+      "label": "Backup e Ripristino",
+      "description": "Backup tarball e dump del database su SFTP, S3 o archiviazione locale."
+    },
+    "copy": {
+      "label": "Copia Sito Web",
+      "description": "Clona un sito web esistente in un altro dominio."
+    },
+    "php": {
+      "label": "Impostazioni PHP",
+      "description": "Selezione pool PHP-FPM, cambio versione e parametri php.ini."
+    },
+    "logs": {
+      "label": "Log",
+      "description": "Monitoraggio live di access.log ed error.log con tailing WebSocket."
+    },
+    "cron": {
+      "label": "Attività Pianificate",
+      "description": "Editor crontab per utente."
+    },
+    "git": {
+      "label": "Git",
+      "description": "Connetti repository, configura chiavi di deploy e pull automatico con webhook."
+    },
+    "composer": {
+      "label": "PHP Composer",
+      "description": "Interfaccia web per composer install e update."
+    },
+    "performance": {
+      "label": "Prestazioni",
+      "description": "Acceleratori come OPcache, gzip e lazy loading."
+    },
+    "ssl": {
+      "label": "Certificato SSL/TLS",
+      "description": "Installazione e rinnovo automatico Let's Encrypt."
+    },
+    "password-protection": {
+      "label": "Directory Protette da Password",
+      "description": "Proteggi le directory con .htpasswd."
+    },
+    "stats": {
+      "label": "Statistiche",
+      "description": "Report su disco, traffico e visitatori."
+    },
+    "imunify": {
+      "label": "Imunify",
+      "description": "Integrazione antivirus e WAF."
+    }
+  }
+}

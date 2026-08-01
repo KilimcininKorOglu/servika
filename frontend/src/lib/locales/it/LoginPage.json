@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Pannello di Controllo Hosting"
+  },
+  "heading": "Benvenuto",
+  "subtitle": "Accedi per continuare.",
+  "field": {
+    "username": "Nome utente",
+    "password": "Password",
+    "twoFactorCode": "Codice di autenticazione a due fattori"
+  },
+  "twoFactorHint": "Inserisci il codice a sei cifre dall'app di autenticazione.",
+  "button": {
+    "signingIn": "Accesso in corso…",
+    "verify": "Verifica e accedi",
+    "signIn": "Accedi"
+  },
+  "footer": "Servika · versione 0.2.0-f1",
+  "error": {
+    "loginFailed": "Accesso non riuscito"
+  }
+}

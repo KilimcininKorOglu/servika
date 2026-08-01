@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "copyWebsite": "Copia sito web"
+  },
+  "title": "Copia sito web",
+  "subtitle": {
+    "pre": "Crea uno snapshot con marca temporale dei file del tuo sito in ",
+    "post": ", fornendo un punto di ripristino sicuro prima di apportare modifiche."
+  },
+  "note": {
+    "pre": "ℹ️ Questo strumento copia solo i ",
+    "bold1": "file",
+    "mid": " e non include il database. Per un backup completo, usa ",
+    "bold2": "Backup e ripristino",
+    "post": "."
+  },
+  "createDescription": "Crea una nuova copia del contenuto di public_html.",
+  "actions": {
+    "create": "Crea copia",
+    "creating": "Copia in corso…",
+    "delete": "Elimina"
+  },
+  "existingTitle": "Copie esistenti",
+  "loading": "Caricamento…",
+  "empty": "Ancora nessuna copia.",
+  "back": "← Torna all'abbonamento",
+  "createdCopy": "Copia creata: {{name}} ({{size}} MB)",
+  "confirmDelete": "Eliminare questa copia?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "Impossibile creare la copia",
+    "deleteFailed": "Impossibile eliminare la copia"
+  }
+}

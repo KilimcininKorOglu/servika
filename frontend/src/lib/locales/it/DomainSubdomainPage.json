@@ -1,0 +1,67 @@
+{
+  "loading": "Caricamento…",
+  "notFound": "Sottodominio non trovato.",
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "domain": "Dominio",
+    "subdomains": "Sottodomini",
+    "subdomain": "Sottodominio"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "Installa e gestisci WordPress in questa root del documento"
+    },
+    "logs": {
+      "label": "Log",
+      "description": "Log di accesso ed errore per questo sottodominio"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "Stato delle dipendenze per questa root del documento"
+    },
+    "protection": {
+      "label": "Protezione con password",
+      "description": "Limita le directory con l'autenticazione HTTP"
+    },
+    "statistics": {
+      "label": "Statistiche",
+      "description": "Analisi del traffico solo per questo sottodominio"
+    }
+  },
+  "toast": {
+    "phpSaved": "Questo sottodominio ora funziona con PHP {{version}}.",
+    "phpChangeFailed": "Impossibile modificare la versione PHP"
+  },
+  "ssl": {
+    "active": "🔒 SSL attivo",
+    "none": "Nessun SSL"
+  },
+  "intro": {
+    "pre": "Un sottodominio di",
+    "post": ", servito dalla propria root del documento con un proprio pool PHP."
+  },
+  "details": {
+    "title": "Dettagli",
+    "address": "Indirizzo",
+    "documentRoot": "Root del documento",
+    "diskUsage": "Uso del disco",
+    "phpVersion": "Versione PHP",
+    "created": "Creato",
+    "serverIp": "IP del server"
+  },
+  "php": {
+    "title": "Versione PHP",
+    "note": "Questo sottodominio funziona su un proprio pool FPM, quindi modificarlo non influisce sul dominio padre.",
+    "versionLabel": "Versione",
+    "applying": "Applicazione…",
+    "apply": "Applica",
+    "validationNote": "Il vhost viene convalidato prima che la modifica venga salvata, quindi una configurazione rifiutata lascia il sito intatto."
+  },
+  "toolsSection": {
+    "title": "Strumenti",
+    "note": "Ogni strumento opera sulla root del documento di questo sottodominio invece che su quella del dominio padre."
+  },
+  "backToSubdomains": "← Torna ai sottodomini"
+}

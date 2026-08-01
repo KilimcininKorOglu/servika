@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "laravel": "Toolkit Laravel"
+  },
+  "loading": "Caricamento…",
+  "title": "Toolkit Laravel",
+  "subtitle": "Installa, distribuisci e gestisci un'applicazione Laravel per questo abbonamento.",
+  "backToSubscription": "Torna all'abbonamento",
+  "tabs": {
+    "overview": "Panoramica",
+    "install": "Installa",
+    "commands": "Comandi",
+    "env": ".env",
+    "deploy": "Deploy",
+    "workers": "Worker"
+  },
+  "messages": {
+    "actionCompleted": "Azione completata",
+    "actionFailed": "Azione non riuscita"
+  },
+  "overview": {
+    "title": "Stato dell'applicazione",
+    "installed": "Installata",
+    "yes": "Sì",
+    "no": "No",
+    "appRoot": "Root dell'applicazione",
+    "documentPath": "Percorso del documento",
+    "php": "PHP",
+    "composerManifest": "Manifest Composer",
+    "found": "Trovato",
+    "missing": "Mancante",
+    "git": "Git",
+    "repositoryFound": "Repository trovato",
+    "notConnected": "Non connesso",
+    "maintenance": "Manutenzione",
+    "enabled": "Abilitata",
+    "disabled": "Disabilitata",
+    "schedule": "Pianificazione",
+    "queue": "Coda"
+  },
+  "install": {
+    "title": "Installa Laravel",
+    "mode": "Modalità",
+    "modeRemote": "Clona repository remoto",
+    "modeScaffold": "Crea nuovo progetto Laravel",
+    "modeLocal": "Inizializza repository Git vuoto",
+    "appRoot": "Root dell'applicazione",
+    "repositoryUrl": "URL del repository",
+    "repositoryUrlPlaceholder": "https://github.com/example/app.git",
+    "branch": "Branch",
+    "branchPlaceholder": "main",
+    "startInstall": "Avvia installazione",
+    "checkInstallStatus": "Verifica stato installazione"
+  },
+  "commands": {
+    "title": "Comandi Laravel",
+    "packagePlaceholder": "vendor/package",
+    "scriptPlaceholder": "nome script",
+    "run": "Esegui"
+  },
+  "env": {
+    "title": "File di ambiente",
+    "load": "Carica .env",
+    "save": "Salva .env"
+  },
+  "deploy": {
+    "title": "Deploy",
+    "deployWithMigrate": "Deploy con migrate e build",
+    "checkDeployStatus": "Verifica stato deploy",
+    "disableMaintenance": "Disabilita manutenzione",
+    "enableMaintenance": "Abilita manutenzione"
+  },
+  "workers": {
+    "title": "Scheduler e queue worker",
+    "queueTimeout": "Timeout coda",
+    "maxJobs": "Job massimi",
+    "connection": "Connessione",
+    "disableSchedule": "Disabilita pianificazione",
+    "enableSchedule": "Abilita pianificazione",
+    "disableQueue": "Disabilita coda",
+    "enableQueue": "Abilita coda"
+  },
+  "common": {
+    "save": "Salva"
+  }
+}

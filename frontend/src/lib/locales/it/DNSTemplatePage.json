@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "tools": "Strumenti e impostazioni",
+    "current": "Template DNS"
+  },
+  "title": "Template DNS a livello di server",
+  "subtitle": "Questi record vengono applicati quando un dominio viene creato o quando il suo template DNS predefinito viene ripristinato.",
+  "placeholders": {
+    "label": "Segnaposto:",
+    "domain": " nome dominio, ",
+    "ip": " IP del server, ",
+    "selector": " selettore DKIM, ",
+    "dkim": " record pubblico DKIM generato"
+  },
+  "loading": "Caricamento...",
+  "table": {
+    "name": "Nome",
+    "type": "Tipo",
+    "value": "Valore",
+    "ttl": "TTL",
+    "priority": "Priorità",
+    "order": "Ordine",
+    "enabled": "Abilitato",
+    "priorityNone": "Nessuna",
+    "deleteTitle": "Elimina record"
+  },
+  "addRecord": "Aggiungi record",
+  "soa": {
+    "title": "Impostazioni SOA",
+    "fieldSeconds": "{{field}} (secondi)"
+  },
+  "dkim": {
+    "title": "Impostazioni DKIM",
+    "selector": "Selettore",
+    "generate": "Genera chiavi DKIM per i nuovi domini"
+  },
+  "discard": "Annulla modifiche",
+  "save": "Salva template",
+  "saving": "Salvataggio...",
+  "success": "Template DNS salvato. I nuovi domini useranno i record e le impostazioni aggiornati.",
+  "errors": {
+    "loadFailed": "Impossibile caricare il template DNS",
+    "saveFailed": "Impossibile salvare il template DNS"
+  }
+}

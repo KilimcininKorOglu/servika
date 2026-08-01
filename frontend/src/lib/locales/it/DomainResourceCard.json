@@ -1,0 +1,31 @@
+{
+  "planAndResources": "Piano e risorse",
+  "refresh": "Aggiorna",
+  "servicePlan": "Piano di servizio",
+  "bars": {
+    "disk": "Disco",
+    "trafficMonthly": "Traffico (mensile)",
+    "database": "Database",
+    "ftpAccount": "Account FTP",
+    "emailMailbox": "Casella email",
+    "subdomain": "Sottodominio"
+  },
+  "units": {
+    "db": "DB",
+    "account": "account",
+    "mailbox": "casella",
+    "domain": "dominio"
+  },
+  "configuration": "Configurazione",
+  "ipAddress": "Indirizzo IP",
+  "systemUser": "Utente di sistema",
+  "phpVersion": "Versione PHP",
+  "sslTls": "SSL/TLS",
+  "active": "Attivo",
+  "none": "Nessuno",
+  "counters": "Contatori",
+  "dnsRecord": "Record DNS",
+  "cronJob": "Job cron",
+  "backup": "Backup",
+  "backupSize": "Dimensione backup"
+}

@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini"
+  },
+  "title": "Domini",
+  "subtitle": "Visualizza tutti i domini registrati, cambia il loro stato in blocco o eliminali.",
+  "loading": "Caricamento...",
+  "searchPlaceholder": "🔍 Cerca domini...",
+  "newDomain": "Nuovo dominio",
+  "empty": {
+    "title": "Ancora nessun dominio",
+    "description": "Inizia aggiungendo il tuo primo dominio. Un utente Linux, un vhost nginx, un pool PHP-FPM, un account FTP, un database MySQL e una zona DNS verranno creati automaticamente.",
+    "button": "Crea dominio"
+  },
+  "columns": {
+    "domainName": "Nome dominio",
+    "systemUser": "Utente di sistema",
+    "plan": "Piano",
+    "php": "PHP",
+    "disk": "Disco",
+    "status": "Stato",
+    "created": "Creato",
+    "actions": "Azioni"
+  },
+  "openInNewTab": "Apri in una nuova scheda",
+  "sslExpires": "Scade: {{date}}",
+  "sslActive": "SSL attivo",
+  "demoBadge": "DEMO",
+  "reseller": "Reseller: {{name}}",
+  "noPlan": "Nessuno",
+  "subdomain": "SUB",
+  "subdomainStatus": "sottodominio",
+  "subdomainParentPlan": "Padre",
+  "manage": "Gestisci",
+  "addSubdomain": "+ Sottodominio",
+  "bulk": {
+    "selected": "{{count}} selezionati",
+    "activate": "▶ Attiva",
+    "deactivate": "⏸ Disattiva",
+    "delete": "🗑 Elimina ({{count}})",
+    "clear": "Cancella selezione"
+  },
+  "deleteConfirm": {
+    "title": "⚠ Eliminazione domini in blocco",
+    "messageMid": " domini e tutte le risorse dipendenti (utenti Linux, directory home, database, account FTP, vhost e zone DNS) verranno eliminati ",
+    "messageBold": "definitivamente",
+    "messagePost": ".",
+    "moreItems": "+ {{count}} altri...",
+    "typeLabel": "Digita ",
+    "typeSuffix": " per confermare:",
+    "cancel": "Annulla",
+    "confirm": "Sì, elimina"
+  },
+  "createModal": {
+    "title": "Crea nuovo dominio",
+    "subtitle": "L'utente Linux, il vhost nginx, il pool PHP-FPM, l'account FTP, il database MySQL e la zona DNS vengono configurati automaticamente.",
+    "domainName": "Nome dominio",
+    "domainNamePlaceholder": "example.com",
+    "loading": "Caricamento...",
+    "domainNameHintPre": "Lettere minuscole, numeri, trattini e punti. Ad esempio: ",
+    "domainNameHintMid": " o ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "panel.site.com",
+    "phpVersion": "Versione PHP",
+    "phpDefault": "PHP 8.3 (predefinito)",
+    "servicePlan": "Piano di servizio",
+    "planNone": "(nessuno)",
+    "issueSsl": "Installa un certificato SSL Let's Encrypt dopo la creazione",
+    "sslWarning": "⚠️ Il record DNS A del dominio deve già puntare a questo server, altrimenti l'emissione non riesce e potrai riprovare in seguito dalla pagina SSL.",
+    "cancel": "Annulla",
+    "creating": "Creazione...",
+    "create": "Crea"
+  },
+  "resultModal": {
+    "title": "✓ Dominio creato",
+    "readyPre": " è pronto. Le password qui sotto vengono mostrate ",
+    "readyBold": "solo una volta",
+    "readyPost": ". Conservale in modo sicuro.",
+    "ftp": "FTP",
+    "mysql": "Database MySQL",
+    "host": "Host",
+    "username": "Nome utente",
+    "password": "Password",
+    "database": "Database",
+    "systemUser": "Utente di sistema: ",
+    "ok": "OK"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "Clicca per copiare",
+    "hide": "Nascondi",
+    "show": "Mostra",
+    "copied": "Copiato"
+  },
+  "toast": {
+    "created": "✓ \"{{name}}\" creato. L'utente Linux, il vhost nginx, il pool PHP-FPM, l'account FTP, il database MySQL e la zona DNS sono pronti.",
+    "sslInstalled": " L'SSL Let's Encrypt è stato installato.",
+    "sslFailed": " (Impossibile emettere l'SSL Let's Encrypt — assicurati che il record DNS A punti qui, poi installalo dalla pagina SSL.)",
+    "deleted": "✓ {{success}}/{{total}} domini eliminati",
+    "statusChanged": "✓ {{count}} domini cambiati in \"{{status}}\""
+  },
+  "errors": {
+    "invalidDomain": "Nome dominio non valido. Ad esempio: example.com o panel.example.com",
+    "createFailed": "Impossibile creare il dominio",
+    "statusFailed": "Impossibile cambiare lo stato"
+  }
+}

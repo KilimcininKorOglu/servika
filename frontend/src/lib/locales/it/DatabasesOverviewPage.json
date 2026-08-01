@@ -1,0 +1,16 @@
+{
+  "title": "Database",
+  "description": "Ogni database sul server con il dominio proprietario e la dimensione.",
+  "emptyMessage": "Nessun database trovato.",
+  "column": {
+    "domain": "Dominio",
+    "database": "Database",
+    "user": "Utente",
+    "size": "Dimensione",
+    "created": "Creato"
+  },
+  "summary": {
+    "databases": "Database",
+    "totalSize": "Dimensione totale"
+  }
+}

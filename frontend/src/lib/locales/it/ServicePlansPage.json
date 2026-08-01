@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "Home",
+  "breadcrumbTitle": "Piani di Servizio",
+  "title": "Piani di Servizio",
+  "subtitle": "Definisci i piani di servizio per i domini. Ogni dominio è associato a un piano e risorse come disco, traffico, versione PHP, numero di database e limiti dei sottodomini sono configurati per piano.",
+  "addPlan": "Aggiungi Piano",
+  "loading": "Caricamento…",
+  "empty": {
+    "title": "Nessun piano di servizio ancora",
+    "descriptionAdmin": "Inizia definendo il tuo primo piano.",
+    "descriptionUser": "L'amministratore non ha ancora definito un piano."
+  },
+  "badge": {
+    "default": "Predefinito"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "Disco",
+    "traffic": "Traffico",
+    "domains": "Domini",
+    "databases": "Database",
+    "ftp": "FTP"
+  },
+  "detailsButton": "Dettagli e Limiti Risorse",
+  "delete": "Elimina",
+  "confirmDelete": {
+    "title": "Elimina piano",
+    "message": "Eliminare il piano \"{{name}}\"?",
+    "confirmText": "Sì, elimina"
+  },
+  "errors": {
+    "deleteFailed": "Eliminazione non riuscita",
+    "saveFailed": "Salvataggio non riuscito"
+  },
+  "limit": {
+    "unlimited": "illimitato"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/mese",
+    "domains": "domini",
+    "databases": "database",
+    "accounts": "account"
+  },
+  "modal": {
+    "newTitle": "Nuovo Piano",
+    "editTitle": "Modifica Piano",
+    "planName": "Nome Piano",
+    "description": "Descrizione",
+    "diskMb": "Disco (MB)",
+    "trafficMb": "Traffico (MB)",
+    "phpVersionLabel": "Versione PHP",
+    "maxDomains": "Max Domini",
+    "maxDatabases": "Max Database",
+    "maxFtp": "Max Account FTP",
+    "isDefault": "Piano predefinito per nuovi domini",
+    "wafHeading": "WAF Predefinito (ModSecurity + OWASP CRS)",
+    "wafEnabled": "Abilitato in questo piano",
+    "wafMode": {
+      "block": "Blocca (On)",
+      "detect": "Rileva (solo log)"
+    },
+    "wafParanoia": {
+      "level1": "Livello 1 (Basso)",
+      "level2": "Livello 2 (Medio)",
+      "level3": "Livello 3 (Alto)",
+      "level4": "Livello 4 (Rigoroso)"
+    },
+    "hint": "0 = illimitato. I valori di disco e traffico sono in MB. I nuovi domini su questo piano vengono provisionati con la versione PHP selezionata.",
+    "cancel": "Annulla",
+    "saving": "Salvataggio…",
+    "add": "Aggiungi",
+    "update": "Aggiorna"
+  }
+}

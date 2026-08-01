@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "scheduledTasks": "Attività pianificate"
+  },
+  "title": "Attività pianificate",
+  "presets": {
+    "everyMinute": "Ogni minuto",
+    "everyHour": "Ogni ora",
+    "dailyAt3": "Ogni giorno alle 03:00",
+    "mondayAt9": "Lunedì alle 09:00",
+    "every5Minutes": "Ogni 5 minuti",
+    "every15Minutes": "Ogni 15 minuti",
+    "firstOfMonth": "Primo giorno del mese alle 00:00"
+  },
+  "actions": {
+    "add": "Aggiungi attività",
+    "refresh": "↻ Aggiorna"
+  },
+  "count": "{{count}} attività",
+  "loading": "Caricamento...",
+  "empty": "Ancora nessuna attività. Aggiungine una sopra.",
+  "columns": {
+    "min": "Min",
+    "hour": "Ora",
+    "day": "Giorno",
+    "month": "Mese",
+    "weekday": "Giorno sett.",
+    "command": "Comando / Descrizione",
+    "action": "Azione"
+  },
+  "row": {
+    "delete": "Elimina"
+  },
+  "confirmDelete": "Eliminare l'attività \"{{command}}...\"?",
+  "errors": {
+    "deleteFailed": "Eliminazione non riuscita",
+    "addFailed": "Impossibile aggiungere l'elemento"
+  },
+  "modal": {
+    "title": "Nuova attività pianificata",
+    "presetsLabel": "Preimpostazioni",
+    "fields": {
+      "minute": "Minuto",
+      "hour": "Ora",
+      "day": "Giorno",
+      "month": "Mese",
+      "weekday": "Giorno sett."
+    },
+    "cronHint": "Formato cron:",
+    "cronHintPost": " qualsiasi valore,",
+    "cronEvery": " ogni cinque,",
+    "cronList": " elenco,",
+    "cronRange": " intervallo.",
+    "commandLabel": "Comando",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "Descrizione (opzionale)",
+    "descriptionPlaceholder": "es. script di backup notturno",
+    "cancel": "Annulla",
+    "adding": "Aggiunta...",
+    "addTask": "Aggiungi attività"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "ftpAccount": "Account FTP"
+  },
+  "title": "Account FTP",
+  "errors": {
+    "resetFailed": "Reimpostazione della password non riuscita"
+  },
+  "info": {
+    "host": "Host",
+    "port": "Porta",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Nome utente",
+    "homeDir": "Directory home"
+  },
+  "reset": {
+    "title": "Reimposta password",
+    "placeholder": "Inserisci una password personalizzata o lascia vuoto",
+    "setThis": "Imposta questa password",
+    "generateRandom": "Genera password casuale",
+    "success": "✓ Nuova password impostata",
+    "saveHint": "Salvala in un luogo sicuro. Non potrai visualizzarla di nuovo in seguito.",
+    "copy": "Copia"
+  },
+  "note": {
+    "label": "Nota:",
+    "pre": " Attualmente FTP usa l'autenticazione ",
+    "code": "in chiaro",
+    "post": " sul database locale. Usa SFTP sulla porta 22 per un trasporto crittografato."
+  }
+}

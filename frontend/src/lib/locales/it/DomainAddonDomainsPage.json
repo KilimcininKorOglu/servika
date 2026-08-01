@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "addonDomains": "Domini aggiuntivi"
+  },
+  "title": "Domini aggiuntivi",
+  "subtitle": "Crea domini aggiuntivi o parcheggiati e configura reindirizzamenti dell'intero dominio.",
+  "toast": {
+    "created": "{{domain}} è stato creato.",
+    "createFailed": "Impossibile creare il dominio aggiuntivo",
+    "deleted": "{{domain}} è stato eliminato.",
+    "deleteFailed": "Impossibile eliminare il dominio aggiuntivo",
+    "redirectSaved": "Le impostazioni di reindirizzamento sono state salvate.",
+    "redirectSaveFailed": "Impossibile salvare le impostazioni di reindirizzamento",
+    "redirectRemoved": "Le impostazioni di reindirizzamento sono state rimosse.",
+    "redirectRemoveFailed": "Impossibile rimuovere le impostazioni di reindirizzamento"
+  },
+  "mode": {
+    "parked": "dominio parcheggiato",
+    "addon": "dominio aggiuntivo"
+  },
+  "confirmDelete": "Eliminare {{domain}}?\nIl {{mode}}, il vhost, la zona DNS e i record del pannello verranno rimossi. Questa azione non può essere annullata.",
+  "confirmRemoveRedirect": "Rimuovere il reindirizzamento del dominio?",
+  "form": {
+    "title": "Nuovo dominio aggiuntivo",
+    "domainLabel": "Dominio",
+    "parkedLabel": "Dominio parcheggiato",
+    "creating": "Creazione…",
+    "add": "Aggiungi dominio",
+    "hint": "I domini aggiuntivi utilizzano una propria root del documento. I domini parcheggiati condividono la root del documento del dominio padre."
+  },
+  "redirect": {
+    "title": "Reindirizzamento dell'intero dominio",
+    "active": "Attivo",
+    "targetLabel": "URL di destinazione",
+    "statusLabel": "Stato",
+    "status301": "301 Permanente",
+    "status302": "302 Temporaneo",
+    "saving": "Salvataggio…",
+    "save": "Salva reindirizzamento",
+    "remove": "Rimuovi"
+  },
+  "list": {
+    "title": "Domini esistenti",
+    "loading": "Caricamento…",
+    "empty": "Ancora nessun dominio aggiuntivo.",
+    "parked": "Parcheggiato",
+    "phpPrefix": "PHP",
+    "delete": "Elimina"
+  },
+  "backToSubscription": "← Torna all'abbonamento"
+}

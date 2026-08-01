@@ -1,0 +1,8 @@
+{
+  "title": "Utilizzo Memoria",
+  "subtitle": "Percentuale RAM utilizzata · 0–100%",
+  "series": "Memoria",
+  "criticalReference": "85% critico",
+  "noData": "Nessun dato raccolto ancora",
+  "noDataHint": "I campioni vengono registrati ogni minuto; il grafico si popola entro pochi minuti."
+}

@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "toolsSettings": "Strumenti e Impostazioni",
+    "backupManager": "Gestione Backup"
+  },
+  "title": "Gestione Backup",
+  "subtitle": "Visualizza i backup di tutti i domini in un unico posto. I backup automatici giornalieri vengono eseguiti e le destinazioni S3/SFTP sono configurate per dominio.",
+  "toast": {
+    "triggered": "I backup pianificati sono stati avviati. Aggiorna tra qualche secondo per vedere i risultati.",
+    "triggerFailed": "Impossibile avviare i backup"
+  },
+  "kpi": {
+    "totalSize": "Dimensione Totale Backup",
+    "totalBackups": "Backup Totali",
+    "domainCount": "Numero di Domini",
+    "remoteDestinations": "Destinazioni Remote Attive",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Backup automatici:",
+    "default": "Giornaliero alle 03:00",
+    "suffix": ". Conservazione 7 giorni",
+    "triggering": "Avvio in corso...",
+    "backupNow": "⏱ Esegui Backup di Tutti i Domini Ora",
+    "refresh": "↻ Aggiorna"
+  },
+  "table": {
+    "title": "Backup per Dominio",
+    "colDomain": "Dominio",
+    "colCount": "Numero Backup",
+    "colSize": "Dimensione Totale",
+    "colLatest": "Ultimo Backup",
+    "colAction": "Azione",
+    "loading": "Caricamento...",
+    "noDomains": "Nessun dominio.",
+    "never": "mai",
+    "manage": "Gestisci"
+  },
+  "footnote": {
+    "pre": "ℹ️ I backup",
+    "post": "sono archiviati lì. I backup rimangono disponibili anche se un dominio viene eliminato, consentendo il recupero da eliminazioni accidentali. Apri Gestisci per scaricare o ripristinare i singoli backup e configurare le destinazioni."
+  }
+}

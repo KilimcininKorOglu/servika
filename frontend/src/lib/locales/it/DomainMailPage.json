@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "email": "Email"
+  },
+  "title": "Account email",
+  "subtitle": "Gestisci le caselle native Postfix e Dovecot. Usa la porta SMTP 587 con STARTTLS per l'invio autenticato.",
+  "loading": "Caricamento…",
+  "back": "← Torna all'abbonamento",
+  "generatedPassword": {
+    "title": "Password per {{email}}",
+    "saveNote": "Salvala ora. Non verrà mostrata di nuovo.",
+    "copy": "Copia"
+  },
+  "enable": {
+    "notEnabled": "L'hosting email non è ancora abilitato per questo dominio.",
+    "info": "Abilitandolo si aggiungono i record DNS MX, SPF, DKIM e DMARC quando possibile.",
+    "enabling": "Abilitazione…",
+    "button": "Abilita email"
+  },
+  "mailboxAdd": {
+    "title": "Aggiungi casella di posta",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "password, generata se vuota",
+    "adding": "Aggiunta…",
+    "add": "Aggiungi"
+  },
+  "mailboxes": {
+    "title": "Caselle di posta",
+    "empty": "Ancora nessuna casella di posta.",
+    "suspended": "sospesa",
+    "suspend": "Sospendi",
+    "activate": "Attiva",
+    "resetPassword": "Reimposta password",
+    "delete": "Elimina"
+  },
+  "forwarders": {
+    "title": "Inoltri e catch-all",
+    "description": "Inoltra la posta in arrivo a uno o più indirizzi di destinazione senza creare una casella. Il catch-all inoltra la posta per gli indirizzi non definiti su questo dominio.",
+    "sourcePlaceholder": "support",
+    "catchAll": "Inoltra tutti gli indirizzi non definiti su questo dominio",
+    "destinationPlaceholder": "target1@example.com, target2@example.com",
+    "adding": "Aggiunta…",
+    "add": "Aggiungi",
+    "empty": "Ancora nessun inoltro.",
+    "suspended": "sospeso",
+    "suspend": "Sospendi",
+    "activate": "Attiva",
+    "delete": "Elimina"
+  },
+  "spam": {
+    "title": "Filtro antispam",
+    "description": "Rspamd assegna un punteggio a ogni messaggio in arrivo. Il greylisting rinvia temporaneamente, la soglia header contrassegna la posta come spam e la soglia di rifiuto rifiuta la consegna.",
+    "notInstalled": " Rspamd non è installato su questo server; le impostazioni vengono memorizzate ma non applicate.",
+    "enable": "Abilita il filtro antispam per questo dominio",
+    "greylist": "Greylist",
+    "addHeader": "Aggiungi header",
+    "reject": "Rifiuta",
+    "applying": "Applicazione…",
+    "apply": "Applica policy antispam"
+  },
+  "autoresponder": {
+    "title": "Risposta automatica",
+    "description": "Invia una risposta di assenza da una casella, al massimo una volta per intervallo allo stesso mittente.",
+    "mailbox": "Casella di posta",
+    "interval": "Intervallo di risposta (giorni)",
+    "subjectPlaceholder": "Oggetto",
+    "bodyPlaceholder": "Corpo del messaggio",
+    "enable": "Abilita la risposta automatica",
+    "saving": "Salvataggio…",
+    "save": "Salva risponditore automatico",
+    "remove": "Rimuovi"
+  },
+  "filters": {
+    "title": "Filtri messaggi",
+    "description": "Ordina la posta in arrivo in cartelle, reindirizzala o scartala con regole Sieve compilate per ogni casella.",
+    "namePlaceholder": "Nome filtro",
+    "subjectContains": "L'oggetto contiene",
+    "fromContains": "Il mittente contiene",
+    "toContains": "Il destinatario contiene",
+    "matchedTextPlaceholder": "Testo corrispondente",
+    "moveToFolder": "Sposta nella cartella",
+    "redirectTo": "Reindirizza a",
+    "discard": "Scarta",
+    "folderPlaceholder": "Cartella (es. Fatture)",
+    "targetPlaceholder": "target@example.com",
+    "adding": "Aggiunta…",
+    "add": "Aggiungi filtro",
+    "empty": "Ancora nessun filtro.",
+    "delete": "Elimina"
+  },
+  "sendLimits": {
+    "title": "Limiti di invio",
+    "description": "Limita i destinatari in uscita per casella. Il superamento di un limite sospende automaticamente l'account per contenere un accesso compromesso. Usa 0 per illimitato.",
+    "mailbox": "Casella di posta",
+    "hourly": "Orario ({{count}} usati)",
+    "daily": "Giornaliero ({{count}} usati)",
+    "suspendedNote": "Sospeso automaticamente il {{time}}. Riattiva la casella qui sopra per rimuoverlo.",
+    "saving": "Salvataggio…",
+    "save": "Salva limiti di invio"
+  },
+  "messages": {
+    "enabled": "L'hosting email è stato abilitato per questo dominio. I record MX, SPF, DKIM e DMARC sono stati aggiunti al DNS quando possibile.",
+    "forwarderAdded": "L'inoltro di posta è stato aggiunto.",
+    "spamApplied": "La policy antispam Rspamd è stata convalidata e applicata.",
+    "autoresponderSaved": "Il risponditore automatico e il suo script Sieve sono stati applicati.",
+    "autoresponderRemoved": "Il risponditore automatico è stato rimosso.",
+    "filterAdded": "Il filtro di posta è stato compilato e abilitato.",
+    "sendLimitsSaved": "I limiti di invio sono stati salvati."
+  },
+  "confirm": {
+    "deleteMailbox": "Eliminare la casella di posta \"{{email}}\"? La Maildir rimarrà sul disco e verrà rimossa solo la riga dell'account.",
+    "deleteForwarder": "Eliminare l'inoltro \"{{source}}\"?",
+    "deleteFilter": "Eliminare il filtro \"{{name}}\"?"
+  },
+  "errors": {
+    "loadDomainFailed": "Impossibile caricare il dominio",
+    "enableFailed": "Impossibile abilitare l'hosting email",
+    "createMailboxFailed": "Impossibile creare la casella di posta",
+    "addForwarderFailed": "Impossibile aggiungere l'inoltro di posta",
+    "deleteMailboxFailed": "Impossibile eliminare la casella di posta",
+    "deleteForwarderFailed": "Impossibile eliminare l'inoltro di posta",
+    "resetPasswordFailed": "Impossibile reimpostare la password",
+    "updateForwarderFailed": "Impossibile aggiornare l'inoltro di posta",
+    "updateMailboxFailed": "Impossibile aggiornare la casella di posta",
+    "applySpamFailed": "Impossibile applicare le impostazioni antispam",
+    "readAutoresponderFailed": "Impossibile leggere il risponditore automatico",
+    "saveAutoresponderFailed": "Impossibile salvare il risponditore automatico",
+    "addFilterFailed": "Impossibile aggiungere il filtro di posta",
+    "readSendLimitsFailed": "Impossibile leggere i limiti di invio",
+    "saveSendLimitsFailed": "Impossibile salvare i limiti di invio"
+  }
+}

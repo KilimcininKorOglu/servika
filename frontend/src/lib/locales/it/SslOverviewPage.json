@@ -1,0 +1,28 @@
+{
+  "title": "Certificati SSL",
+  "description": "Stato dei certificati a livello di server, ordinati per scadenza più vicina.",
+  "emptyMessage": "Nessun dominio trovato.",
+  "column": {
+    "domain": "Dominio",
+    "ssl": "SSL",
+    "expiry": "Scadenza",
+    "remaining": "Rimanente",
+    "status": "Stato"
+  },
+  "ssl": {
+    "enabled": "Abilitato",
+    "none": "Nessuno"
+  },
+  "status": {
+    "active": "Attivo",
+    "passive": "Passivo"
+  },
+  "remaining": {
+    "expiredAgo": "scaduto {{days}}g fa",
+    "days": "{{days}} giorni"
+  },
+  "summary": {
+    "withSsl": "Con SSL",
+    "expiring": "In scadenza ≤14g"
+  }
+}

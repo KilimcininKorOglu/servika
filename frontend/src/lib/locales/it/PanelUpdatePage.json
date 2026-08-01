@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "toolsAndSettings": "Strumenti e Impostazioni",
+    "panelUpdate": "Aggiornamento Pannello"
+  },
+  "title": "Aggiornamento Pannello",
+  "description": "Aggiorna il pannello all'ultima versione da GitHub. Le variabili d'ambiente, il database e i siti vengono preservati; un controllo di salute fallito ripristina automaticamente la versione precedente. L'operazione viene eseguita in background, quindi puoi chiudere questa pagina e l'aggiornamento continua senza interruzioni."
+}

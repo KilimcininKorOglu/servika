@@ -1,0 +1,153 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "files": "File"
+  },
+  "title": "Gestione file",
+  "loading": "Caricamento...",
+  "dropZone": {
+    "title": "Trascina qui i file",
+    "targetDir": "Directory di destinazione: "
+  },
+  "selection": {
+    "count": "{{count}} elementi selezionati",
+    "rightClick": "Clic destro per le azioni",
+    "delete": "Elimina ({{count}})",
+    "clear": "Cancella selezione"
+  },
+  "upload": {
+    "uploading": "Caricamento...",
+    "remaining": "Rimanente: {{eta}}"
+  },
+  "menu": {
+    "uploadFiles": "📤 Carica file",
+    "newFolder": "📁 Nuova cartella",
+    "newFile": "📄 Nuovo file"
+  },
+  "toolbar": {
+    "refresh": "↻ Aggiorna",
+    "delete": "Elimina ({{count}})",
+    "searchPlaceholder": "🔍 Cerca file...",
+    "itemCount": "{{count}} elementi"
+  },
+  "columns": {
+    "select": "Seleziona",
+    "name": "Nome",
+    "size": "Dimensione",
+    "permissions": "Permessi",
+    "modified": "Modificato",
+    "actions": "Azioni"
+  },
+  "parentFolder": "↑ cartella superiore",
+  "empty": "Questa cartella è vuota",
+  "actionsTitle": "Azioni",
+  "context": {
+    "open": "Apri",
+    "browse": "Apri nel browser",
+    "edit": "Modifica",
+    "download": "Scarica",
+    "rename": "Rinomina",
+    "permissions": "Permessi",
+    "calculateSize": "Calcola dimensione",
+    "extract": "Estrai archivio",
+    "copy": "Copia",
+    "move": "Sposta",
+    "delete": "Elimina"
+  },
+  "prompt": {
+    "deleteConfirm": "Eliminare \"{{name}}\"? Questa azione non può essere annullata.",
+    "newFolderName": "Nome della nuova cartella:"
+  },
+  "sizeModal": {
+    "title": "📏 Informazioni sulla dimensione",
+    "bytes": "{{bytes}} byte",
+    "done": "Fatto"
+  },
+  "bulkDelete": {
+    "title": "⚠ Eliminazione in blocco",
+    "messageBold": "{{count}}",
+    "messagePost": " elementi verranno eliminati definitivamente. Le cartelle e tutto il loro contenuto verranno rimossi.",
+    "moreItems": "+ {{count}} altri...",
+    "cancel": "Annulla",
+    "confirm": "Sì, elimina"
+  },
+  "renameModal": {
+    "title": "Rinomina",
+    "cancel": "Annulla",
+    "rename": "Rinomina"
+  },
+  "chmodModal": {
+    "title": "Permessi",
+    "owner": "Proprietario",
+    "group": "Gruppo",
+    "other": "Altri",
+    "read": "Lettura",
+    "write": "Scrittura",
+    "execute": "Esecuzione",
+    "octal": "Ottale: ",
+    "cancel": "Annulla",
+    "apply": "Applica"
+  },
+  "copyMoveModal": {
+    "titleCopy": "Copia",
+    "titleMove": "Sposta",
+    "heading": "{{title}} ({{count}} elementi)",
+    "moreItems": "+ {{count}} altri...",
+    "targetLabel": "Directory di destinazione (sotto home)",
+    "targetPlaceholder": "/public_html/backups",
+    "hintPre": "La destinazione deve già esistere. ",
+    "hintCopy": "Le cartelle vengono copiate con il loro contenuto.",
+    "hintMove": "Gli spostamenti sullo stesso disco sono immediati.",
+    "cancel": "Annulla"
+  },
+  "archiveModal": {
+    "title": "📦 Aggiungi all'archivio ({{count}} elementi)",
+    "fileName": "Nome file",
+    "format": "Formato",
+    "output": "Output: ",
+    "cancel": "Annulla",
+    "archive": "Archivia"
+  },
+  "newFileModal": {
+    "title": "📄 Nuovo file",
+    "fileNameLabel": "Nome file (inclusa l'estensione)",
+    "hint": "Viene creato un file vuoto, poi aperto nell'editor di codice.",
+    "cancel": "Annulla",
+    "createAndEdit": "Crea e modifica"
+  },
+  "eta": {
+    "lessThanSec": "<1 sec",
+    "sec": "{{count}} sec",
+    "minSec": "{{min}} min {{sec}} sec",
+    "hrMin": "{{hr}} h {{min}} min"
+  },
+  "toast": {
+    "uploadPartial": "{{success}}/{{total}} file caricati, alcuni non riusciti.",
+    "deletePartial": "{{success}}/{{total}} elementi eliminati.",
+    "someErrors": "Alcuni errori: {{errors}}",
+    "downloadFailed": "Download non riuscito: {{message}}"
+  },
+  "errors": {
+    "deleteFailed": "Eliminazione non riuscita",
+    "createFolderFailed": "Impossibile creare la cartella",
+    "openFailed": "Impossibile aprire",
+    "saveFailed": "Impossibile salvare",
+    "renameFailed": "Impossibile rinominare",
+    "chmodFailed": "Impossibile modificare i permessi",
+    "extractFailed": "Impossibile aprire l'archivio. Sono supportati gli archivi ZIP, RAR e TAR.",
+    "searchFailed": "Ricerca non riuscita",
+    "copyFailed": "Copia non riuscita",
+    "moveFailed": "Spostamento non riuscito",
+    "archiveFailed": "Archiviazione non riuscita",
+    "createFailed": "Creazione non riuscita",
+    "sizeFailed": "Calcolo della dimensione non riuscito"
+  },
+  "newFile": {
+    "title": "📄 Nuovo file",
+    "label": "Nome file (inclusa l'estensione)",
+    "hint": "Viene creato un file vuoto, poi aperto nell'editor di codice.",
+    "cancel": "Annulla",
+    "create": "Crea e modifica"
+  }
+}

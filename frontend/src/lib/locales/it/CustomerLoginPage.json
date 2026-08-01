@@ -1,0 +1,15 @@
+{
+  "heading": "Portale clienti",
+  "subtitle": "Accedi con le credenziali del tuo account",
+  "field": {
+    "username": "Nome utente",
+    "password": "Password"
+  },
+  "button": {
+    "signingIn": "Accesso in corso…",
+    "signIn": "Accedi"
+  },
+  "error": {
+    "loginFailed": "Accesso non riuscito"
+  }
+}

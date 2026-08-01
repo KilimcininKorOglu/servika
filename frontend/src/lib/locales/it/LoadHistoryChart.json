@@ -1,0 +1,9 @@
+{
+  "title": "Cronologia Carico di Sistema",
+  "subtitle": "Media del carico (1 / 5 / 15 min)",
+  "cores": "{{count}} core",
+  "scale": "scala √",
+  "coresCapacity": "{{count}} core · 100%",
+  "noData": "Nessun dato raccolto ancora",
+  "noDataHint": "I campioni vengono registrati ogni minuto; il grafico si popola entro pochi minuti."
+}

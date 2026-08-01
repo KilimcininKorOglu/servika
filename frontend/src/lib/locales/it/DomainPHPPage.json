@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "phpSettings": "Impostazioni PHP"
+  },
+  "title": "Impostazioni PHP",
+  "systemUser": "Utente di sistema: ",
+  "poolNotice": {
+    "pre": "Le impostazioni configurate qui vengono scritte nel pool PHP-FPM (",
+    "mid1": "). I file ",
+    "mid2": " e ",
+    "post": " del sito web possono sovrascriverle. Il salvataggio riavvia automaticamente PHP-FPM senza mettere offline il sito."
+  },
+  "loading": "Caricamento…",
+  "saved": "Salvato. PHP {{version}}, socket: {{socket}}",
+  "saveFailed": "Salvataggio delle impostazioni non riuscito",
+  "clearLogFailed": "Cancellazione del log di debug non riuscita",
+  "processManager": {
+    "ondemand": "ondemand (consigliato, zero processi quando inattivo)",
+    "dynamic": "dynamic (si adatta al carico)",
+    "static": "static (pool fisso)"
+  },
+  "version": {
+    "title": "Versione PHP",
+    "active": "Attiva",
+    "saveToApply": "Salva per applicare"
+  },
+  "cards": {
+    "performance": "Prestazioni e sicurezza",
+    "general": "Generale",
+    "debugMode": "Modalità debug PHP",
+    "lastErrors": "Ultimi errori (log di debug)",
+    "fpmPool": "Pool PHP-FPM",
+    "installedModules": "Moduli PHP installati",
+    "disableDangerous": "Disabilita funzioni pericolose",
+    "additionalDirectives": "Direttive di configurazione aggiuntive"
+  },
+  "help": {
+    "memoryLimit": "Memoria massima che uno script può allocare in byte. Esempio: 256M.",
+    "maxExecutionTime": "Tempo massimo di esecuzione in secondi",
+    "maxInputTime": "Tempo per analizzare i dati POST/GET in secondi",
+    "postMaxSize": "Dimensione massima dei dati POST. Deve essere maggiore di upload_max_filesize.",
+    "uploadMaxFilesize": "Limite di caricamento per singolo file",
+    "opcacheEnable": "Cache di opcode OPcache (consigliato: ON)",
+    "disableFunctions": "Funzioni PHP da disabilitare (separate da virgola)",
+    "displayErrors": "Mostra gli errori nell'output (mantieni disattivato in produzione)",
+    "logErrors": "Abilita la registrazione degli errori",
+    "allowUrlFopen": "Apri file su HTTP/FTP",
+    "fileUploads": "Caricamento file HTTP",
+    "shortOpenTag": "Supporto per i tag brevi <? ?>",
+    "errorReporting": "Livello di segnalazione errori (ad esempio, E_ALL & ~E_DEPRECATED)",
+    "includePath": "Directory di inclusione degli script (separate con : su Linux)",
+    "openBasedir": "Directory a cui PHP può accedere (vuoto significa nessuna restrizione). Separa con :",
+    "sessionSavePath": "Directory dei file di sessione (vuoto significa /home/{system_user}/tmp)",
+    "mailForceExtraParameters": "Parametri aggiuntivi per la funzione mail()",
+    "pm": "Strategia del gestore dei processi",
+    "pmMaxChildren": "Numero massimo di worker PHP simultanei",
+    "pmMaxRequests": "Richieste prima di riavviare un worker (previene le perdite di memoria)",
+    "pmStartServers": "Worker avviati inizialmente (solo dynamic)",
+    "pmMinSpareServers": "Numero minimo di worker inattivi",
+    "pmMaxSpareServers": "Numero massimo di worker inattivi"
+  },
+  "openBasedirPlaceholder": "ad esempio: /home/user/:/tmp/",
+  "debug": {
+    "disableTitle": "Disabilita modalità debug",
+    "enableTitle": "Abilita modalità debug",
+    "label": "Modalità debug",
+    "on": "Attiva",
+    "off": "Disattiva",
+    "descPre": "Quando è abilitata, gli errori PHP vengono visualizzati sullo schermo e gli errori fatali (E_ERROR, E_PARSE, ...) vengono intercettati in modo affidabile tramite ",
+    "descMid": " e registrati in ",
+    "descPost": ". Gli errori fatali vengono catturati anche quando l'applicazione chiama ",
+    "descEnd": ".",
+    "warningLabel": "Attenzione:",
+    "warningPre": " Con la modalità debug attiva, ",
+    "warningBold1": "display_errors = on",
+    "warningMid": " e ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " sono forzati; i dettagli degli errori potrebbero essere visibili ai visitatori del sito. Abilitala solo durante la risoluzione dei problemi, ",
+    "warningBold3": "disabilitala in produzione",
+    "warningEnd": ". Le modifiche hanno effetto dopo aver selezionato ",
+    "warningSave": "Salva",
+    "warningDot": "."
+  },
+  "debugLog": {
+    "sourcePre": "Gli errori fatali più recenti in cima. Origine: ",
+    "sourcePost": " (ultime 200 righe).",
+    "loading": "Caricamento...",
+    "refresh": "Aggiorna",
+    "clear": "Cancella",
+    "emptyOff": "La modalità debug è disattivata. Abilitala qui sopra e salva per iniziare a registrare gli errori fatali.",
+    "emptyOn": "Nessun errore registrato. Il log di debug è vuoto."
+  },
+  "modules": {
+    "countPre": "",
+    "countBold": "{{count}}",
+    "countPost": " moduli sono installati per PHP {{version}}. I moduli sono gestiti a livello di server e non possono essere abilitati o disabilitati per un singolo dominio.",
+    "manageServer": "↗ Gestisci moduli del server"
+  },
+  "dangerous": {
+    "descPre": "Queste funzioni comportano rischi di shell injection, RCE e malware. I selettori di categoria aggiornano ",
+    "descMid": ". ",
+    "descBoldOn": "Attiva significa abilitata",
+    "descAnd": " e ",
+    "descBoldOff": "disattiva significa bloccata",
+    "descPost": ".",
+    "enableAll": "Abilita tutte",
+    "blockAll": "Blocca tutte",
+    "blocked": "Bloccata",
+    "mixed": "Mista",
+    "active": "Attiva",
+    "editManually": "Modifica manualmente (disable_functions grezzo)",
+    "commaSeparated": "Nomi di funzione separati da virgola.",
+    "groups": {
+      "shellExecution": "Esecuzione shell",
+      "fileExecution": "Esecuzione file",
+      "networkAccess": "Accesso di rete (rischioso)",
+      "systemDiscovery": "Rilevamento sistema",
+      "moduleLoading": "Caricamento moduli"
+    }
+  },
+  "additional": {
+    "descPre": "Definisci parametri aggiuntivi usando la sintassi php.ini. Esempio: "
+  },
+  "save": {
+    "saving": "Salvataggio…",
+    "saveAndApply": "Salva e applica",
+    "cancelReload": "Annulla / Ricarica"
+  },
+  "select": {
+    "custom": "Personalizzato…"
+  },
+  "flag": {
+    "on": "✓ Attiva",
+    "off": "○ Disattiva"
+  }
+}

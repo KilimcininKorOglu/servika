@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "users": "Utenti"
+  },
+  "title": "Utenti",
+  "subtitleAdmin": "Account pannello: amministratori, reseller e clienti.",
+  "subtitleReseller": "Gli account clienti che hai creato.",
+  "newAccount": "Nuovo Account",
+  "newCustomer": "Nuovo Cliente",
+  "loading": "Caricamento…",
+  "empty": {
+    "titleAdmin": "Nessun altro account ancora",
+    "titleReseller": "Nessun account cliente ancora",
+    "description": "Inizia creando un nuovo account."
+  },
+  "noMatch": "Nessun account corrisponde alla ricerca.",
+  "roles": {
+    "admin": "Amministratore",
+    "reseller": "Reseller",
+    "user": "Cliente"
+  },
+  "columns": {
+    "user": "Utente",
+    "fullName": "Nome Completo",
+    "role": "Ruolo",
+    "status": "Stato",
+    "twoFa": "2FA",
+    "lastLogin": "Ultimo Accesso"
+  },
+  "system": "(sistema)",
+  "systemAccount": "account di sistema",
+  "status": {
+    "active": "Attivo",
+    "suspended": "Sospeso"
+  },
+  "noPassword": "Nessuna password",
+  "noPasswordTitle": "Nessuna password impostata — questo account non può accedere finché non ne assegni una.",
+  "twoFaOn": "Attiva",
+  "twoFaOff": "Disattiva",
+  "actions": {
+    "password": "Password",
+    "limits": "Limiti",
+    "suspend": "Sospendi",
+    "enable": "Abilita",
+    "delete": "Elimina"
+  },
+  "createModal": {
+    "titleAdmin": "Nuovo Account",
+    "titleReseller": "Nuovo Account Cliente",
+    "username": "Nome utente",
+    "usernamePlaceholder": "reseller_esempio",
+    "usernameHint": "3-32 caratteri, inizia con una lettera minuscola; può contenere lettere, cifre, _ e -.",
+    "password": "Password",
+    "passwordHint": "Almeno 8 caratteri. La password è visibile solo ora — consegnala all'utente.",
+    "role": "Ruolo",
+    "resellerOnlyCustomers": "I reseller possono creare solo account clienti.",
+    "email": "Email",
+    "fullName": "Nome Completo",
+    "cancel": "Annulla",
+    "creating": "Creazione in corso…",
+    "create": "Crea"
+  },
+  "passwordModal": {
+    "title": "Imposta Password",
+    "newFor": "Nuova password per ",
+    "customerNote": "Questa è la password dell'account pannello del cliente. Il cliente accede al portale clienti con questo nome utente e password; senza di essa l'account non può accedere.",
+    "placeholder": "Almeno 8 caratteri",
+    "cancel": "Annulla",
+    "saving": "Salvataggio…",
+    "setPassword": "Imposta Password"
+  },
+  "limitsModal": {
+    "title": "Limiti Reseller",
+    "loading": "Caricamento…",
+    "upperBounds": "Limiti massimi per ",
+    "unlimitedNote": "0 = illimitato. Se tutti sono 0, il record di limite viene rimosso completamente.",
+    "maxCustomers": "Max clienti",
+    "maxDomains": "Max domini",
+    "diskQuota": "Quota disco (MB)",
+    "trafficQuota": "Quota traffico (MB)",
+    "inUseNow": "{{count}} in uso ora",
+    "mbInUseNow": "{{count}} MB in uso ora",
+    "mbUsedNow": "{{count}} MB usati ora",
+    "limitBelowUsage": " — il limite è inferiore all'utilizzo corrente",
+    "quotaBelowUsage": " — la quota è inferiore all'utilizzo corrente",
+    "noLimit": "Nessun limite definito per questo reseller — attualmente illimitato.",
+    "loweringNote": "Abbassare un limite al di sotto dell'utilizzo corrente non elimina gli account esistenti; blocca solo nuove aggiunte.",
+    "cancel": "Annulla",
+    "saving": "Salvataggio…",
+    "save": "Salva"
+  },
+  "delete": {
+    "title": "Elimina account",
+    "message": "L'account {{username}} verrà eliminato.",
+    "resellerNote": " Gli account sotto questo reseller non vengono eliminati; vengono trasferiti all'amministratore.",
+    "confirm": "Elimina"
+  },
+  "toast": {
+    "created": "Account {{username}} creato.",
+    "passwordUpdated": "Password aggiornata per {{username}}.",
+    "limitsUpdated": "Limiti aggiornati per {{username}}.",
+    "enabled": "{{username}} abilitato.",
+    "suspended": "{{username}} sospeso.",
+    "deleted": "{{username}} eliminato."
+  },
+  "errors": {
+    "loadFailed": "Impossibile caricare gli account",
+    "createFailed": "Impossibile creare l'account",
+    "resetFailed": "Impossibile reimpostare la password",
+    "loadLimitsFailed": "Impossibile caricare i limiti",
+    "saveLimitsFailed": "Impossibile salvare i limiti",
+    "statusFailed": "Impossibile modificare lo stato",
+    "deleteFailed": "Impossibile eliminare"
+  }
+}

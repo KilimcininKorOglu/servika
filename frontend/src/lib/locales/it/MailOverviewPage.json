@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Dominio",
+    "mail": "Mail",
+    "mailboxes": "Caselle postali",
+    "aliases": "Alias",
+    "suspended": "Sospeso"
+  },
+  "mailNone": "Nessuna",
+  "overview": {
+    "title": "Account Email",
+    "description": "Conteggio caselle postali e alias per ogni dominio.",
+    "empty": "Nessun dominio trovato."
+  },
+  "summary": {
+    "mailDomains": "Domini mail",
+    "totalMailboxes": "Caselle postali totali"
+  },
+  "queue": {
+    "title": "Coda Postfix",
+    "subtitle": "Messaggi in attesa di consegna, differiti o in attesa per decisione dell'amministratore.",
+    "refresh": "↻ Aggiorna",
+    "retry": "Riprova coda",
+    "loading": "Lettura della coda…",
+    "empty": "✓ La coda di posta è vuota",
+    "colId": "ID Coda",
+    "colRoute": "Mittente → Destinatario",
+    "colSizeTime": "Dimensione / Ora",
+    "colActions": "Azioni",
+    "release": "Rilascia",
+    "hold": "Trattieni",
+    "requeue": "Reinserisci",
+    "delete": "Elimina"
+  },
+  "confirmDelete": "Eliminare definitivamente il messaggio in coda {{queueID}}?",
+  "errors": {
+    "readFailed": "Impossibile leggere la coda Postfix",
+    "actionFailed": "L'operazione sulla coda non è riuscita"
+  }
+}

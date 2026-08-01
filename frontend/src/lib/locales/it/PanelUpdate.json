@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "Non ancora verificato",
+  "title": "Aggiornamento Pannello",
+  "badges": {
+    "server": "Server",
+    "critical": "Critico",
+    "updateAvailable": "Aggiornamento disponibile"
+  },
+  "description": "Aggiorna il pannello all'ultima versione da GitHub. Le impostazioni d'ambiente, i database e i siti vengono preservati e un rilascio non funzionante viene ripristinato automaticamente.",
+  "toolMissing": " Lo strumento di aggiornamento è mancante e verrà scaricato automaticamente al primo utilizzo.",
+  "labels": {
+    "current": "Corrente",
+    "latest": "Ultimo",
+    "buildDate": "Data di build",
+    "lastCheck": "Ultima verifica"
+  },
+  "unknown": "Sconosciuto",
+  "lastCheckFailed": "Ultima verifica versione non riuscita: {{error}}",
+  "checksDisabled": "Le verifiche di versione sono disabilitate.",
+  "running": "L'aggiornamento è in corso. Il pannello potrebbe riavviarsi brevemente; tieni questa pagina aperta.",
+  "logStarted": "Aggiornamento avviato...\n",
+  "checkAndInstall": "Verifica aggiornamenti e installa",
+  "checking": "Verifica in corso...",
+  "refreshStatus": "Aggiorna stato versione",
+  "confirmPrompt": "Il pannello verrà aggiornato e il suo servizio riavviato. Confermare?",
+  "starting": "Avvio in corso...",
+  "confirmYes": "Sì, aggiorna",
+  "cancel": "Annulla",
+  "errors": {
+    "refresh": "Impossibile aggiornare lo stato della versione",
+    "start": "Impossibile avviare l'aggiornamento"
+  }
+}

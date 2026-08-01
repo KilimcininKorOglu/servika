@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "sslCertificates": "Certificati SSL/TLS"
+  },
+  "title": "Certificati SSL/TLS",
+  "ipLabel": "IP:",
+  "confirm": {
+    "letsencrypt": "Il dominio deve puntare a questo server con un record DNS A prima che sia possibile emettere un certificato Let's Encrypt. Continuare?",
+    "disable": "Rimuovere l'SSL? Il sito tornerà a HTTP."
+  },
+  "success": {
+    "installed": "Certificato installato ({{type}}). Scade: {{expires}}. Il sito ora usa HTTPS.",
+    "removed": "SSL rimosso. Il sito ora usa HTTP."
+  },
+  "errors": {
+    "installFailed": "Installazione SSL non riuscita",
+    "removeFailed": "Rimozione dell'SSL non riuscita"
+  },
+  "status": {
+    "title": "Stato attuale",
+    "protected": "Protetto",
+    "unprotected": "Non protetto",
+    "loading": "Caricamento…",
+    "sourceLabel": "Origine",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "Autofirmato",
+    "expiryLabel": "Scadenza",
+    "certPathLabel": "Percorso certificato",
+    "keyPathLabel": "Percorso chiave",
+    "empty": "—",
+    "remove": "Rimuovi SSL (passa a HTTP)",
+    "noCert": "Non c'è alcun certificato SSL attivo per questo dominio. Installane uno qui sotto."
+  },
+  "selfSigned": {
+    "title": "Certificato autofirmato",
+    "description": "Crea un certificato autofirmato sul server. I browser mostrano un avviso, ma la connessione è crittografata. Adatto ad ambienti di test e sviluppo.",
+    "bullet1": "✓ Nessuna dipendenza dal DNS",
+    "bullet2": "✓ Installazione immediata",
+    "bullet3": "✗ Il browser mostra un avviso di sicurezza",
+    "installing": "Installazione…",
+    "install": "Installa certificato autofirmato"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (gratuito)",
+    "description": "Un certificato Let's Encrypt ufficiale attendibile per tutti i browser. Si rinnova automaticamente ogni 90 giorni.",
+    "bullet1": "✓ Attendibile per i browser",
+    "bullet2": "✓ Rinnovo automatico (cron)",
+    "bullet3": "⚠ Il dominio deve puntare a questo server tramite DNS",
+    "installing": "Installazione…",
+    "install": "Ottieni certificato Let's Encrypt"
+  }
+}

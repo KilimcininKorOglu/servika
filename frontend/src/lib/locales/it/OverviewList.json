@@ -1,0 +1,7 @@
+{
+  "home": "Home",
+  "searchDomain": "Cerca dominio…",
+  "loading": "Caricamento…",
+  "noMatch": "Nessun dominio corrisponde alla ricerca.",
+  "errorLoad": "Impossibile caricare l'elenco"
+}

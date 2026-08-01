@@ -1,0 +1,146 @@
+{
+  "shared": {
+    "more": "Altro →",
+    "manage": "Gestisci →",
+    "loading": "Caricamento…"
+  },
+  "widgets": {
+    "load-chart": "Grafico Carico",
+    "memory-chart": "Grafico Memoria",
+    "wordpress": "Siti WordPress",
+    "panel-update": "Aggiornamento Pannello",
+    "last-backup": "Ultimo Backup Server",
+    "performance": "Prestazioni / Ottimizza",
+    "cve-security": "Avvisi di Sicurezza (CVE)",
+    "services": "Servizi",
+    "domains": "Domini",
+    "server-info": "Info Server",
+    "health": "Salute del Sistema",
+    "live-resources": "Risorse in Tempo Reale",
+    "subscriptions": "I Miei Abbonamenti",
+    "network": "Traffico di Rete"
+  },
+  "header": {
+    "welcome": "Bentornato, {{name}}",
+    "dashboard": "Dashboard",
+    "subtitle": "Panoramica server e azioni rapide",
+    "saving": "Salvataggio…",
+    "saved": "Layout salvato",
+    "saveFailed": "Salvataggio non riuscito",
+    "resetLayout": "Ripristina Layout"
+  },
+  "quota": {
+    "unsupportedTitle": "La quota disco non è disponibile su questo filesystem",
+    "unsupportedBody": "Servika richiede un filesystem root XFS per la quota disco per tenant. Un riavvio non abiliterà la quota sul filesystem corrente.",
+    "rebootTitle": "La quota disco sarà abilitata dopo il riavvio",
+    "rebootBody": "La quota utente XFS è configurata, ma il controllo non è attivo. Riavvia il server una volta per attivare la quota disco per tenant.",
+    "dismiss": "Ignora"
+  },
+  "widgetNotFound": "Widget non trovato",
+  "dragToReorder": "Trascina per riordinare",
+  "wp": {
+    "subtitle": "Installazioni su tutti gli account",
+    "installs": "Installazioni",
+    "updates": "Aggiornamenti",
+    "current": "Aggiornato",
+    "pendingUpdatesText_one": " installazione con aggiornamenti in attesa — le versioni obsolete presentano rischi di sicurezza.",
+    "pendingUpdatesText_other": " installazioni con aggiornamenti in attesa — le versioni obsolete presentano rischi di sicurezza.",
+    "empty": "Nessuna installazione WordPress trovata",
+    "rootDir": "directory radice",
+    "badgeUpdate": "Aggiorna",
+    "badgeCurrent": "Aggiornato",
+    "badgeUnknown": "Sconosciuto",
+    "more_one": "+{{count}} altra installazione →",
+    "more_other": "+{{count}} altre installazioni →",
+    "unknownNote_one": "{{count}} installazione non ha potuto essere determinata (timeout wp-cli).",
+    "unknownNote_other": "{{count}} installazioni non hanno potuto essere determinate (timeout wp-cli)."
+  },
+  "update": {
+    "subtitle": "Versione e pacchetti di sistema",
+    "running": "Aggiornamento in corso",
+    "toolMissing": "Strumento di aggiornamento mancante",
+    "upToDate": "Pannello aggiornato",
+    "noStatus": "Nessuna info sullo stato",
+    "badgeRunning": "In corso",
+    "badgeMissing": "Mancante",
+    "badgeCurrent": "Aggiornato",
+    "systemPackages": "Pacchetti di sistema"
+  },
+  "backup": {
+    "subtitle": "Backup automatico giornaliero",
+    "unavailable": "Riepilogo backup non disponibile",
+    "count_one": "backup · {{size}}",
+    "count_other": "backup · {{size}}",
+    "lastBackup": "Ultimo backup",
+    "sitesBackedUp": "Siti sottoposti a backup",
+    "remoteTarget": "Destinazione remota",
+    "remoteActive": "{{count}} attiva",
+    "remoteNone": "Nessuna",
+    "schedule": "Pianificazione"
+  },
+  "performance": {
+    "subtitle": "Migliora le impostazioni del server",
+    "running": "Ottimizzazione in corso",
+    "ready": "Ottimizzazione pronta",
+    "defaultStatus": "MariaDB · nginx · Impostazioni PHP",
+    "badgeRunning": "In corso",
+    "badgeIdle": "Inattivo"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} servizi attivi",
+    "subtitleStatus": "stato dei servizi",
+    "allActive": "Tutti attivi",
+    "down": "{{count}} inattivo",
+    "active": "Attivo",
+    "statusDown": "Inattivo"
+  },
+  "domains": {
+    "subtitle": "Siti ospitati e stato SSL",
+    "total": "Totale",
+    "active": "Attivo",
+    "ssl": "SSL",
+    "empty": "Nessun dominio ancora",
+    "noSsl": "Nessun SSL",
+    "badgeActive": "Attivo",
+    "more_one": "+{{count}} altro dominio →",
+    "more_other": "+{{count}} altri domini →"
+  },
+  "serverInfo": {
+    "subtitle": "Hardware e sistema",
+    "hostname": "Hostname",
+    "ip": "Indirizzo IP",
+    "os": "OS",
+    "kernel": "Kernel",
+    "cpu": "CPU",
+    "cores": "Core",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "Valutazione stato generale",
+    "servicesDown_one": "{{count}} servizio inattivo",
+    "servicesDown_other": "{{count}} servizi inattivi",
+    "isolationLoss_one": "{{count}} perdita di isolamento rilevata",
+    "isolationLoss_other": "{{count}} perdite di isolamento rilevate",
+    "memoryAt": "Memoria al {{percent}}%",
+    "diskAt": "Disco al {{percent}}%",
+    "healthy": "Sano",
+    "fair": "Discreto",
+    "degraded": "Degradato",
+    "critical": "Critico"
+  },
+  "live": {
+    "subtitle": "CPU e memoria in tempo reale",
+    "cpu": "CPU",
+    "memory": "Memoria",
+    "disk": "Disco ({{mount}})",
+    "freeGb": "{{value}} GB liberi"
+  },
+  "subscriptions": {
+    "subtitle": "I tuoi servizi attivi",
+    "body": "Panoramica del pannello cliente"
+  },
+  "network": {
+    "subtitle": "Dati in entrata e in uscita",
+    "body": "Statistiche del traffico disponibili nella pagina Statistiche"
+  }
+}

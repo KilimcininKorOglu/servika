@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "Applicazioni",
+    "domainAndDns": "Dominio e DNS",
+    "email": "Email",
+    "filesAndDatabases": "File e database",
+    "developmentTools": "Strumenti di sviluppo",
+    "security": "Sicurezza"
+  },
+  "wordpress": { "label": "WordPress", "desc": "Installazione con un clic · gestione" },
+  "laravel": { "label": "Toolkit Laravel", "desc": "Installazione · deploy · coda" },
+  "dns": { "label": "Gestione DNS", "desc": "Record A, MX, TXT, CNAME" },
+  "subdomains": { "label": "Sottodomini", "desc": "Sottodomini" },
+  "addonDomains": { "label": "Domini aggiuntivi", "desc": "Domini aggiuntivi e parcheggiati · reindirizzamenti" },
+  "mail": { "label": "Account email", "desc": "Caselle Postfix e Dovecot · SMTP" },
+  "connection": { "label": "Informazioni di connessione", "desc": "FTP, database" },
+  "files": { "label": "File", "desc": "Gestione file" },
+  "databases": { "label": "Database" },
+  "ftp": { "label": "FTP", "desc": "Account FTP" },
+  "backups": { "label": "Backup e ripristino", "desc": "Gestione backup" },
+  "copy": { "label": "Copia sito web", "desc": "Clonazione" },
+  "php": { "label": "PHP", "desc": "Versione {{version}}" },
+  "logs": { "label": "Log", "desc": "access, error" },
+  "cron": { "label": "Attività pianificate", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "Integrazione repository" },
+  "composer": { "label": "PHP Composer", "desc": "Gestore pacchetti" },
+  "performance": { "label": "Prestazioni", "desc": "Acceleratori" },
+  "redis": { "label": "Cache Redis", "desc": "Cache oggetti isolata · acceleratore" },
+  "ssl": {
+    "label": "Certificati SSL/TLS",
+    "expires": "Scade: {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "Il dominio non è protetto"
+  },
+  "passwordProtection": { "label": "Directory protette da password", "desc": ".htpasswd" },
+  "stats": { "label": "Statistiche", "desc": "Analisi del traffico" },
+  "accessControl": { "label": "Controllo accessi", "desc": "Protezione hotlink · autorizzazione/blocco IP" },
+  "imunify": { "label": "Imunify", "desc": "Antivirus" },
+  "ssh": {
+    "label": "Accesso SSH",
+    "enabled": "Abilitato",
+    "disabled": "Disabilitato"
+  }
+}

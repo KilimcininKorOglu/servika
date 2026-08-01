@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "Home",
+  "breadcrumbServices": "Servizi di hosting",
+  "breadcrumbTitle": "Trasferimento account",
+  "title": "Importa account",
+  "subtitle": "Analizza in sicurezza un backup completo di un account cPanel. In questa fase l'archivio non viene estratto né conservato sul server.",
+  "fileLabel": "Backup completo cPanel (.tar.gz / .tgz)",
+  "uploading": "Caricamento {{progress}}%",
+  "analyzeButton": "Analizza archivio",
+  "kpi": {
+    "primaryDomain": "Dominio primario",
+    "undetermined": "Non determinato",
+    "webFiles": "File web",
+    "databases": "Database",
+    "emailData": "Dati email",
+    "emailFiles": "{{count}} file",
+    "none": "Nessuno"
+  },
+  "detail": {
+    "title": "Informazioni account",
+    "sourcePanel": "Pannello di origine",
+    "user": "Utente",
+    "archiveRoot": "Radice dell'archivio",
+    "totalMembers": "Membri totali",
+    "expandedSize": "Dimensione espansa",
+    "cron": "Cron",
+    "cronPresent": "Presente",
+    "cronNone": "Nessuno",
+    "sslFiles": "File SSL",
+    "mailboxes": "Caselle di posta",
+    "forwarders": "Inoltri",
+    "cronJobs": "Job cron"
+  },
+  "lists": {
+    "databases": "Database",
+    "dnsZones": "Zone DNS",
+    "cronJobs": "Job cron",
+    "noneFound": "Nessuno trovato"
+  },
+  "analysisComplete": "Analisi completata. L'importazione crea un nuovo dominio; se non riesce, l'account creato viene ripristinato automaticamente.",
+  "targetAndPlan": "Destinazione e piano",
+  "fields": {
+    "targetCustomer": "Cliente di destinazione",
+    "selectCustomer": "Seleziona un cliente",
+    "servicePlan": "Piano di servizio",
+    "defaultPlan": "Piano predefinito",
+    "primaryDomain": "Dominio primario",
+    "phpVersion": "Versione PHP"
+  },
+  "importing": "Importazione… {{progress}}%",
+  "importButton": "Importa account",
+  "importResult": {
+    "title": "Importazione completata",
+    "summary": "{{domain}} · {{webFiles}} file web · {{count}} database",
+    "newPasswords": "Nuove password delle caselle di posta — salvale ora",
+    "forwardersTransferred": "{{count}} inoltri trasferiti.",
+    "cronTransferred": "{{count}} job cron trasferiti.",
+    "sslTransferred": "Certificato SSL trasferito · valido fino al {{expires}}",
+    "manageDomain": "Gestisci dominio →"
+  },
+  "errors": {
+    "analyzeFailed": "Impossibile analizzare l'archivio",
+    "importFailed": "Impossibile importare l'account"
+  }
+}

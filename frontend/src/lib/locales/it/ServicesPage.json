@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "Strumenti e Impostazioni",
+  "breadcrumbServices": "Servizi",
+  "title": "Gestione Servizi",
+  "subtitle": "Riavvia o ricarica i servizi web, database, DNS, PHP e di supporto gestiti.",
+  "loading": "Caricamento…",
+  "reload": "Ricarica",
+  "restart": "Riavvia",
+  "working": "…",
+  "statuses": {
+    "active": "● Attivo",
+    "inactive": "○ Inattivo",
+    "failed": "✕ Non riuscito",
+    "absent": "Non installato"
+  },
+  "errors": {
+    "loadFailed": "Impossibile caricare i servizi",
+    "actionFailed": "Azione {{label}} non riuscita"
+  },
+  "success": {
+    "reloaded": "{{label}} ricaricato.",
+    "restarted": "{{label}} riavviato."
+  }
+}

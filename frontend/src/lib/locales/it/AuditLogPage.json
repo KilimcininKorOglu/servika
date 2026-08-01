@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Home",
+  "title": "Registro di sicurezza",
+  "subtitle": "Tentativi di accesso al pannello e azioni amministrative. La voce più recente è in cima.",
+  "stats": {
+    "entries": "voci",
+    "failed": "non riusciti"
+  },
+  "searchPlaceholder": "Cerca utente, IP, destinazione…",
+  "filters": {
+    "allActions": "Tutte le azioni",
+    "last": "Ultimi {{n}}",
+    "failedOnly": "Solo non riusciti"
+  },
+  "loading": "Caricamento…",
+  "empty": {
+    "title": "Nessuna voce per questo filtro",
+    "description": "Allenta i filtri e riprova."
+  },
+  "noMatch": "Nessuna voce corrisponde alla tua ricerca.",
+  "columns": {
+    "time": "Ora",
+    "result": "Risultato",
+    "action": "Azione",
+    "user": "Utente",
+    "ip": "IP",
+    "target": "Destinazione"
+  },
+  "status": {
+    "success": "Riuscito",
+    "failed": "Non riuscito"
+  },
+  "errors": {
+    "loadFailed": "Impossibile caricare il registro"
+  }
+}

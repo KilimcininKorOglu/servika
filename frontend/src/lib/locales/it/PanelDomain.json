@@ -1,0 +1,25 @@
+{
+  "title": "Dominio del Pannello",
+  "description": "Punta un record A a questo server prima di richiedere un certificato Let's Encrypt. Dopo l'emissione, il dominio apre il pannello senza la porta 8443.",
+  "customDomainLabel": "Dominio pannello personalizzato",
+  "customDomainPlaceholder": "panel.example.com",
+  "serverIpv4": "IPv4 Server:",
+  "sslStatus": "Stato SSL:",
+  "portlessUrl": "URL senza porta:",
+  "expires": "Scadenza:",
+  "unknown": "Sconosciuto",
+  "sslNone": "nessuno",
+  "save": "Salva Dominio Pannello",
+  "saving": "Salvataggio...",
+  "reset": "Ripristina",
+  "resetting": "Ripristino...",
+  "messages": {
+    "saved": "Dominio pannello salvato. Puoi aprire https://{{domain}} senza la porta 8443.",
+    "reset": "Dominio pannello ripristinato al certificato predefinito."
+  },
+  "errors": {
+    "load": "Impossibile caricare le impostazioni del dominio pannello",
+    "save": "Impossibile salvare il dominio pannello",
+    "reset": "Impossibile ripristinare il dominio pannello"
+  }
+}

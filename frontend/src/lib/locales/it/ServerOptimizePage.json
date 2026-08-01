@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "toolsAndSettings": "Strumenti e Impostazioni",
+    "serverOptimize": "Ottimizza Server"
+  },
+  "title": "Ottimizza Server",
+  "description": "Aggiorna i pacchetti di sistema e ottimizza nuovamente le impostazioni di MariaDB / Nginx / PHP in base alle risorse del server. L'operazione viene eseguita in background, puoi chiudere questa pagina; potrebbe richiedere tempo e influire brevemente sui servizi."
+}

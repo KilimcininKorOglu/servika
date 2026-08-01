@@ -1,0 +1,14 @@
+{
+  "title": "Riavvio Server",
+  "description": "Riavvia l'intero server solo dopo che i lavori attivi e le operazioni dei clienti possono essere interrotti in sicurezza.",
+  "confirmLabel": "Digita REBOOT per confermare",
+  "placeholder": "REBOOT",
+  "reboot": "Riavvia Server",
+  "requesting": "Richiesta in corso...",
+  "messages": {
+    "requested": "Riavvio richiesto. Il pannello non sarà disponibile durante il riavvio del server."
+  },
+  "errors": {
+    "reboot": "Impossibile richiedere il riavvio del server"
+  }
+}

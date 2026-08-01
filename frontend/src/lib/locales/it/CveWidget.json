@@ -1,0 +1,52 @@
+{
+  "title": "Avvisi di sicurezza",
+  "subtitleAudit": "Audit CVE (AlmaLinux)",
+  "advisories": "{{count}} avvisi di sicurezza",
+  "rescan": "Riesegui scansione",
+  "scanning": "Scansione…",
+  "scanningServer": "Scansione del server…",
+  "updating": "Installazione degli aggiornamenti di sicurezza… (in esecuzione in background)",
+  "kcApplying": "Applicazione della patch del kernel a caldo… (KernelCare — nessun riavvio necessario)",
+  "severity": {
+    "critical": "Critica",
+    "important": "Importante",
+    "moderate": "Moderata",
+    "low": "Bassa"
+  },
+  "kcActive": {
+    "bold": "Il kernel è sottoposto a patch a caldo (KernelCare).",
+    "text": " Le vulnerabilità del kernel vengono risolte senza riavvio.",
+    "effectivePre": " Kernel effettivo: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVE corretti a caldo."
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare è installato ma la licenza non è registrata.",
+    "text": " Registrati con una chiave di licenza TuxCare per applicare patch al kernel senza riavvio."
+  },
+  "rebootRequired": {
+    "bold1": "Riavvio necessario.",
+    "text1": " È installato un nuovo kernel con patch di sicurezza ma il sistema sta ancora eseguendo il vecchio kernel — la maggior parte dei CVE seguenti riguarda il kernel e risulterà ",
+    "bold2": "aperta finché il server non viene riavviato",
+    "text2": ". Pianifica un riavvio durante una finestra di manutenzione."
+  },
+  "clean": {
+    "title": "Sistema aggiornato",
+    "subtitle": "Nessuna vulnerabilità nota"
+  },
+  "totalPre": "Totale ",
+  "totalPost": " CVE unici",
+  "lastScan": " · ultima scansione {{scan}}",
+  "installUpdates": "Installa aggiornamenti di sicurezza",
+  "updateLiveKernel": "Aggiorna le patch del kernel a caldo (nessun riavvio)",
+  "confirmUpdate": "Verranno installati gli aggiornamenti di sicurezza (dnf --security). Potrebbe essere necessario un riavvio affinché gli aggiornamenti del kernel abbiano effetto. Continuare?",
+  "messages": {
+    "updatesComplete": "Aggiornamenti di sicurezza completati.",
+    "livePatchApplied": "Patch del kernel a caldo applicata."
+  },
+  "errors": {
+    "fetch": "Impossibile recuperare lo stato dei CVE",
+    "startUpdate": "Impossibile avviare l'aggiornamento",
+    "startLivePatch": "Impossibile avviare la patch a caldo"
+  }
+}

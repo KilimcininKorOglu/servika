@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "statistics": "Statistiche"
+  },
+  "title": "Statistiche",
+  "live": "● Live (10 sec)",
+  "subtitle": "Utilizzo risorse server, conteggio domini e riepilogo del sistema.",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "Memoria",
+    "disk": "Disco",
+    "load": "Carico (1 min)"
+  },
+  "coresValue": "{{cores}} core",
+  "loadSub": "5 min: {{five}} · 15 min: {{fifteen}}",
+  "system": {
+    "title": "Sistema",
+    "hostname": "Hostname",
+    "os": "Sistema operativo",
+    "kernel": "Kernel",
+    "processor": "Processore",
+    "swap": "Swap",
+    "panelVersion": "Versione pannello"
+  },
+  "processorValue": "{{model}} · {{cores}} core",
+  "swapValue": "{{percent}}% · {{used}} / {{total}}",
+  "domains": {
+    "title": "Domini",
+    "total": "Domini totali",
+    "active": "Domini attivi",
+    "inactive": "Domini inattivi"
+  },
+  "footer": {
+    "pre": "Visita la pagina ",
+    "link": "Monitoraggio",
+    "post": " per un monitoraggio più dettagliato."
+  }
+}

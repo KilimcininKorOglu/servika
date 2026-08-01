@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Home",
+  "title": "Clienti",
+  "subtitle": "Record di fatturazione e contatto. I domini sono collegati a questi — non è un account di accesso al pannello.",
+  "newCustomer": "Nuovo cliente",
+  "loading": "Caricamento…",
+  "empty": {
+    "title": "Ancora nessun record cliente",
+    "description": "Crea prima un record cliente per collegare i domini a un cliente."
+  },
+  "noMatch": "Nessun cliente corrisponde alla tua ricerca.",
+  "columns": {
+    "name": "Nome",
+    "email": "Email",
+    "plan": "Piano",
+    "status": "Stato",
+    "created": "Creato"
+  },
+  "status": {
+    "active": "Attivo",
+    "passive": "Passivo"
+  },
+  "actions": {
+    "edit": "Modifica",
+    "delete": "Elimina"
+  },
+  "modal": {
+    "editTitle": "Modifica cliente",
+    "newTitle": "Nuovo cliente",
+    "name": "Nome",
+    "email": "Email",
+    "plan": "Piano",
+    "noPlan": "Nessun piano",
+    "status": "Stato",
+    "notes": "Note",
+    "cancel": "Annulla",
+    "saving": "Salvataggio…",
+    "save": "Salva"
+  },
+  "delete": {
+    "title": "Elimina cliente",
+    "message": "{{name}} verrà eliminato. I domini collegati a questo cliente non vengono rimossi — viene cancellato solo il collegamento.",
+    "confirm": "Elimina"
+  },
+  "toast": {
+    "added": "{{name}} aggiunto.",
+    "updated": "{{name}} aggiornato.",
+    "deleted": "{{name}} eliminato."
+  },
+  "errors": {
+    "loadFailed": "Impossibile caricare i clienti",
+    "nameEmailRequired": "Nome ed email sono obbligatori",
+    "saveFailed": "Impossibile salvare",
+    "deleteFailed": "Impossibile eliminare"
+  }
+}
