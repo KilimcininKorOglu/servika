@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "Aplicações",
+    "domainAndDns": "Domínio e DNS",
+    "email": "E-mail",
+    "filesAndDatabases": "Ficheiros e Bases de Dados",
+    "developmentTools": "Ferramentas de Desenvolvimento",
+    "security": "Segurança"
+  },
+  "wordpress": { "label": "WordPress", "desc": "Instalação a um clique · gestão" },
+  "laravel": { "label": "Toolkit Laravel", "desc": "Instalar · deploy · queue" },
+  "dns": { "label": "Gestão DNS", "desc": "Registos A, MX, TXT, CNAME" },
+  "subdomains": { "label": "Subdomínios", "desc": "Subdomínios" },
+  "addonDomains": { "label": "Domínios Adicionais", "desc": "Domínios adicionais e estacionados · redireccionamentos" },
+  "mail": { "label": "Contas de E-mail", "desc": "Caixas Postfix e Dovecot · SMTP" },
+  "connection": { "label": "Informações de Ligação", "desc": "FTP, base de dados" },
+  "files": { "label": "Ficheiros", "desc": "Gestor de ficheiros" },
+  "databases": { "label": "Bases de Dados" },
+  "ftp": { "label": "FTP", "desc": "Contas FTP" },
+  "backups": { "label": "Cópia de Segurança e Restauro", "desc": "Gestão de cópias" },
+  "copy": { "label": "Copiar Website", "desc": "Clonagem" },
+  "php": { "label": "PHP", "desc": "Versão {{version}}" },
+  "logs": { "label": "Registos", "desc": "acesso, erro" },
+  "cron": { "label": "Tarefas Agendadas", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "Integração de repositório" },
+  "composer": { "label": "PHP Composer", "desc": "Gestor de pacotes" },
+  "performance": { "label": "Desempenho", "desc": "Aceleradores" },
+  "redis": { "label": "Cache Redis", "desc": "Cache de objetos isolada · acelerador" },
+  "ssl": {
+    "label": "Certificados SSL/TLS",
+    "expires": "Expira: {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "O domínio não está protegido"
+  },
+  "passwordProtection": { "label": "Diretórios Protegidos por Palavra-passe", "desc": ".htpasswd" },
+  "stats": { "label": "Estatísticas", "desc": "Análise de tráfego" },
+  "accessControl": { "label": "Controlo de Acesso", "desc": "Proteção hotlink · permitir/bloquear IP" },
+  "imunify": { "label": "Imunify", "desc": "Antivírus" },
+  "ssh": {
+    "label": "Acesso SSH",
+    "enabled": "Ativado",
+    "disabled": "Desativado"
+  }
+}

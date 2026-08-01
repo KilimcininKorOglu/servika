@@ -1,0 +1,15 @@
+{
+  "heading": "Portal do Cliente",
+  "subtitle": "Inicie sessão com as suas credenciais",
+  "field": {
+    "username": "Utilizador",
+    "password": "Palavra-passe"
+  },
+  "button": {
+    "signingIn": "A iniciar sessão…",
+    "signIn": "Iniciar Sessão"
+  },
+  "error": {
+    "loginFailed": "Falha no início de sessão"
+  }
+}

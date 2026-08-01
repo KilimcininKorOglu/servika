@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios"
+  },
+  "title": "Domínios",
+  "subtitle": "Ver todos os domínios registados, alterar o seu estado em massa ou eliminá-los.",
+  "loading": "A carregar...",
+  "searchPlaceholder": "🔍 Pesquisar domínios...",
+  "newDomain": "Novo Domínio",
+  "empty": {
+    "title": "Ainda não há domínios",
+    "description": "Comece adicionando o seu primeiro domínio. Um utilizador Linux, vhost nginx, pool PHP-FPM, conta FTP, base de dados MySQL e zona DNS serão criados automaticamente.",
+    "button": "Criar Domínio"
+  },
+  "columns": {
+    "domainName": "Nome do Domínio",
+    "systemUser": "Utilizador do Sistema",
+    "plan": "Plano",
+    "php": "PHP",
+    "disk": "Disco",
+    "status": "Estado",
+    "created": "Criado",
+    "actions": "Ações"
+  },
+  "openInNewTab": "Abrir em novo separador",
+  "sslExpires": "Expira: {{date}}",
+  "sslActive": "SSL ativo",
+  "demoBadge": "DEMO",
+  "reseller": "Revendedor: {{name}}",
+  "noPlan": "Nenhum",
+  "subdomain": "SUB",
+  "subdomainStatus": "subdomínio",
+  "subdomainParentPlan": "Pai",
+  "manage": "Gerir",
+  "addSubdomain": "+ Subdomínio",
+  "bulk": {
+    "selected": "{{count}} selecionados",
+    "activate": "▶ Ativar",
+    "deactivate": "⏸ Desativar",
+    "delete": "🗑 Eliminar ({{count}})",
+    "clear": "Limpar seleção"
+  },
+  "deleteConfirm": {
+    "title": "⚠ Eliminação em Massa de Domínios",
+    "messageMid": " domínios e todos os recursos dependentes (utilizadores Linux, diretórios home, bases de dados, contas FTP, vhosts e zonas DNS) serão ",
+    "messageBold": "permanentemente",
+    "messagePost": " eliminados.",
+    "moreItems": "+ {{count}} mais...",
+    "typeLabel": "Escreva ",
+    "typeSuffix": " para confirmar:",
+    "cancel": "Cancelar",
+    "confirm": "Sim, Eliminar"
+  },
+  "createModal": {
+    "title": "Criar Novo Domínio",
+    "subtitle": "O utilizador Linux, vhost nginx, pool PHP-FPM, conta FTP, base de dados MySQL e zona DNS são configurados automaticamente.",
+    "domainName": "Nome do domínio",
+    "domainNamePlaceholder": "exemplo.com",
+    "loading": "A carregar...",
+    "domainNameHintPre": "Letras minúsculas, números, hífenes e pontos. Por exemplo: ",
+    "domainNameHintMid": " ou ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "painel.site.com",
+    "phpVersion": "Versão PHP",
+    "phpDefault": "PHP 8.3 (predefinido)",
+    "servicePlan": "Plano de Serviço",
+    "planNone": "(nenhum)",
+    "issueSsl": "Instalar um certificado SSL Let's Encrypt após a criação",
+    "sslWarning": "⚠️ O registo DNS A do domínio já deve apontar para este servidor, caso contrário a emissão falha e pode tentar novamente mais tarde na página SSL.",
+    "cancel": "Cancelar",
+    "creating": "A criar...",
+    "create": "Criar"
+  },
+  "resultModal": {
+    "title": "✓ Domínio Criado",
+    "readyPre": " está pronto. As palavras-passe abaixo são mostradas ",
+    "readyBold": "apenas uma vez",
+    "readyPost": ". Guarde-as em segurança.",
+    "ftp": "FTP",
+    "mysql": "Base de Dados MySQL",
+    "host": "Anfitrião",
+    "username": "Utilizador",
+    "password": "Palavra-passe",
+    "database": "Base de dados",
+    "systemUser": "Utilizador do sistema: ",
+    "ok": "OK"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "Clique para copiar",
+    "hide": "Ocultar",
+    "show": "Mostrar",
+    "copied": "Copiado"
+  },
+  "toast": {
+    "created": "✓ \"{{name}}\" criado. O utilizador Linux, vhost nginx, pool PHP-FPM, conta FTP, base de dados MySQL e zona DNS estão prontos.",
+    "sslInstalled": " SSL Let's Encrypt instalado.",
+    "sslFailed": " (Não foi possível emitir o SSL Let's Encrypt — certifique-se de que o registo DNS A aponta aqui e instale-o pela página SSL.)",
+    "deleted": "✓ {{success}}/{{total}} domínios eliminados",
+    "statusChanged": "✓ {{count}} domínios alterados para \"{{status}}\""
+  },
+  "errors": {
+    "invalidDomain": "Nome de domínio inválido. Por exemplo: example.com ou panel.example.com",
+    "createFailed": "Não foi possível criar o domínio",
+    "statusFailed": "Não foi possível alterar o estado"
+  }
+}

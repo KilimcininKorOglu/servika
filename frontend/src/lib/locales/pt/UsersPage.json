@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "users": "Utilizadores"
+  },
+  "title": "Utilizadores",
+  "subtitleAdmin": "Contas do painel: administradores, revendedores e clientes.",
+  "subtitleReseller": "As contas de clientes que criou.",
+  "newAccount": "Nova Conta",
+  "newCustomer": "Novo Cliente",
+  "loading": "A carregar…",
+  "empty": {
+    "titleAdmin": "Ainda não há outras contas",
+    "titleReseller": "Ainda não há contas de clientes",
+    "description": "Comece por criar uma nova conta."
+  },
+  "noMatch": "Nenhuma conta corresponde à sua pesquisa.",
+  "roles": {
+    "admin": "Administrador",
+    "reseller": "Revendedor",
+    "user": "Cliente"
+  },
+  "columns": {
+    "user": "Utilizador",
+    "fullName": "Nome Completo",
+    "role": "Função",
+    "status": "Estado",
+    "twoFa": "2FA",
+    "lastLogin": "Último Acesso"
+  },
+  "system": "(sistema)",
+  "systemAccount": "conta do sistema",
+  "status": {
+    "active": "Ativo",
+    "suspended": "Suspenso"
+  },
+  "noPassword": "Sem palavra-passe",
+  "noPasswordTitle": "Sem palavra-passe definida — esta conta não pode iniciar sessão até atribuir uma.",
+  "twoFaOn": "Ativo",
+  "twoFaOff": "Inativo",
+  "actions": {
+    "password": "Palavra-passe",
+    "limits": "Limites",
+    "suspend": "Suspender",
+    "enable": "Ativar",
+    "delete": "Eliminar"
+  },
+  "createModal": {
+    "titleAdmin": "Nova Conta",
+    "titleReseller": "Nova Conta de Cliente",
+    "username": "Utilizador",
+    "usernamePlaceholder": "exemplo_revendedor",
+    "usernameHint": "3-32 caracteres, começa com letra minúscula; pode conter letras, dígitos, _ e -.",
+    "password": "Palavra-passe",
+    "passwordHint": "Pelo menos 8 caracteres. A palavra-passe é mostrada apenas agora — entregue-a ao utilizador.",
+    "role": "Função",
+    "resellerOnlyCustomers": "Os revendedores só podem criar contas de clientes.",
+    "email": "E-mail",
+    "fullName": "Nome Completo",
+    "cancel": "Cancelar",
+    "creating": "A criar…",
+    "create": "Criar"
+  },
+  "passwordModal": {
+    "title": "Definir Palavra-passe",
+    "newFor": "Nova palavra-passe para ",
+    "customerNote": "Esta é a palavra-passe da conta de painel do cliente. O cliente inicia sessão no portal do cliente com este utilizador e palavra-passe; sem uma, a conta não pode iniciar sessão.",
+    "placeholder": "Pelo menos 8 caracteres",
+    "cancel": "Cancelar",
+    "saving": "A guardar…",
+    "setPassword": "Definir Palavra-passe"
+  },
+  "limitsModal": {
+    "title": "Limites do Revendedor",
+    "loading": "A carregar…",
+    "upperBounds": "Limites máximos para ",
+    "unlimitedNote": "0 = ilimitado. Se todos forem 0, o registo de limite é completamente removido.",
+    "maxCustomers": "Máximo de clientes",
+    "maxDomains": "Máximo de domínios",
+    "diskQuota": "Quota de disco (MB)",
+    "trafficQuota": "Quota de tráfego (MB)",
+    "inUseNow": "{{count}} em uso agora",
+    "mbInUseNow": "{{count}} MB em uso agora",
+    "mbUsedNow": "{{count}} MB usados agora",
+    "limitBelowUsage": " — limite está abaixo do uso atual",
+    "quotaBelowUsage": " — quota está abaixo do uso atual",
+    "noLimit": "Nenhum limite definido para este revendedor — atualmente ilimitado.",
+    "loweringNote": "Baixar um limite abaixo do uso atual não elimina as contas existentes; apenas bloqueia novas adições.",
+    "cancel": "Cancelar",
+    "saving": "A guardar…",
+    "save": "Guardar"
+  },
+  "delete": {
+    "title": "Eliminar conta",
+    "message": "A conta {{username}} será eliminada.",
+    "resellerNote": " As contas sob este revendedor não são eliminadas; são transferidas para o administrador.",
+    "confirm": "Eliminar"
+  },
+  "toast": {
+    "created": "Conta {{username}} criada.",
+    "passwordUpdated": "Palavra-passe atualizada para {{username}}.",
+    "limitsUpdated": "Limites atualizados para {{username}}.",
+    "enabled": "{{username}} ativado.",
+    "suspended": "{{username}} suspenso.",
+    "deleted": "{{username}} eliminado."
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar as contas",
+    "createFailed": "Não foi possível criar a conta",
+    "resetFailed": "Não foi possível redefinir a palavra-passe",
+    "loadLimitsFailed": "Não foi possível carregar os limites",
+    "saveLimitsFailed": "Não foi possível guardar os limites",
+    "statusFailed": "Não foi possível alterar o estado",
+    "deleteFailed": "Não foi possível eliminar"
+  }
+}

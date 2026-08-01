@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "copyWebsite": "Copiar Website"
+  },
+  "title": "Copiar Website",
+  "subtitle": {
+    "pre": "Cria uma cópia com data e hora dos ficheiros do seu site em ",
+    "post": ", fornecendo um ponto de restauro seguro antes de fazer alterações."
+  },
+  "note": {
+    "pre": "ℹ️ Esta ferramenta copia apenas ",
+    "bold1": "ficheiros",
+    "mid": " e não inclui a base de dados. Para uma cópia completa, use ",
+    "bold2": "Cópia de Segurança e Restauro",
+    "post": "."
+  },
+  "createDescription": "Criar uma nova cópia do conteúdo de public_html.",
+  "actions": {
+    "create": "Criar Cópia",
+    "creating": "A copiar…",
+    "delete": "Eliminar"
+  },
+  "existingTitle": "Cópias Existentes",
+  "loading": "A carregar…",
+  "empty": "Ainda não há cópias.",
+  "back": "← Voltar à Subscrição",
+  "createdCopy": "Cópia criada: {{name}} ({{size}} MB)",
+  "confirmDelete": "Eliminar esta cópia?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "Não foi possível criar a cópia",
+    "deleteFailed": "Não foi possível eliminar a cópia"
+  }
+}

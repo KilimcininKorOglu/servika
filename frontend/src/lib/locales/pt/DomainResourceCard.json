@@ -1,0 +1,31 @@
+{
+  "planAndResources": "Plano e Recursos",
+  "refresh": "Atualizar",
+  "servicePlan": "Plano de Serviço",
+  "bars": {
+    "disk": "Disco",
+    "trafficMonthly": "Tráfego (mensal)",
+    "database": "Base de Dados",
+    "ftpAccount": "Conta FTP",
+    "emailMailbox": "Caixa de Correio",
+    "subdomain": "Subdomínio"
+  },
+  "units": {
+    "db": "BD",
+    "account": "conta",
+    "mailbox": "caixa",
+    "domain": "domínio"
+  },
+  "configuration": "Configuração",
+  "ipAddress": "Endereço IP",
+  "systemUser": "Utilizador do Sistema",
+  "phpVersion": "Versão PHP",
+  "sslTls": "SSL/TLS",
+  "active": "Ativo",
+  "none": "Nenhum",
+  "counters": "Contadores",
+  "dnsRecord": "Registo DNS",
+  "cronJob": "Tarefa cron",
+  "backup": "Cópia de segurança",
+  "backupSize": "Tamanho da cópia"
+}

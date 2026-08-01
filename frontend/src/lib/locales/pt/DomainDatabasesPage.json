@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "databases": "Bases de Dados"
+  },
+  "title": "Bases de Dados",
+  "actions": {
+    "new": "+ Nova Base de Dados",
+    "refresh": "↻ Atualizar"
+  },
+  "count": "{{count}} bases de dados",
+  "loading": "A carregar...",
+  "empty": "Ainda não há bases de dados",
+  "columns": {
+    "database": "Base de Dados",
+    "username": "Utilizador",
+    "host": "Anfitrião",
+    "password": "Palavra-passe",
+    "created": "Criado",
+    "actions": "Ações"
+  },
+  "password": {
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "copy": "Copiar"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Abrir phpMyAdmin num novo separador",
+    "resetPassword": "🔑 Redefinir Palavra-passe",
+    "delete": "Eliminar"
+  },
+  "errors": {
+    "pmaToken": "Não foi possível obter o token phpMyAdmin",
+    "deleteFailed": "Falha na eliminação"
+  },
+  "delete": {
+    "title": "Eliminar base de dados",
+    "message": "A base de dados \"{{name}}\" e o seu utilizador serão eliminados permanentemente. Esta ação não pode ser desfeita.",
+    "confirm": "Sim, eliminar"
+  },
+  "newModal": {
+    "title": "Nova Base de Dados",
+    "created": "✓ Base de dados criada",
+    "saveHint": "Guarde estes dados num local seguro. Pode não ser possível ver a palavra-passe em texto simples mais tarde:",
+    "labelDatabase": "Base de dados",
+    "labelUser": "Utilizador",
+    "labelPassword": "Palavra-passe",
+    "done": "Concluído",
+    "autoPre": "Automático",
+    "autoPost": ", deixar o painel gerar o nome da base de dados, utilizador e palavra-passe",
+    "dbNameLabel": "Nome da base de dados",
+    "dbSuffixPlaceholder": "blog",
+    "dbUserLabel": "Utilizador da base de dados",
+    "newUser": "Novo utilizador",
+    "selectExistingUser": "Selecionar utilizador existente",
+    "userSuffixPlaceholder": "bloguser",
+    "passwordLabel": "Palavra-passe",
+    "passwordOptional": "(deixar em branco para gerar uma)",
+    "passwordPlaceholder": "Mínimo 12 caracteres, letras e dígitos",
+    "generate": "Gerar",
+    "passwordStrength": "A palavra-passe deve ter pelo menos 12 caracteres com letras e dígitos.",
+    "cancel": "Cancelar",
+    "creating": "A criar...",
+    "create": "Criar",
+    "errors": {
+      "dbSuffix": "Sufixo da base de dados: apenas letras minúsculas, dígitos e underscore; 1-32 caracteres",
+      "dbNameTooLong": "Nome da base de dados demasiado longo (prefixo + sufixo deve ter no máximo 64 caracteres)",
+      "userSuffix": "Sufixo do utilizador: apenas letras minúsculas, dígitos e underscore; 1-32 caracteres",
+      "userNameTooLong": "Nome de utilizador demasiado longo (prefixo + sufixo deve ter no máximo 64 caracteres)",
+      "passwordStrength": "A palavra-passe deve ter pelo menos 12 caracteres com letras e dígitos",
+      "selectExisting": "Selecionar um utilizador existente",
+      "createFailed": "Falha na criação"
+    }
+  },
+  "resultRow": {
+    "copied": "✓",
+    "copy": "Copiar"
+  },
+  "pwReset": {
+    "title": "Redefinir Palavra-passe: {{name}}",
+    "introPre": " a palavra-passe do utilizador é atualizada no MariaDB e no painel ao mesmo tempo.",
+    "customLabel": "Palavra-passe personalizada (deixar em branco para gerar uma)",
+    "customPlaceholder": "Mínimo 6 caracteres",
+    "cancel": "Cancelar",
+    "useThis": "Usar Esta Palavra-passe",
+    "resetting": "A redefinir...",
+    "generateRandom": "Gerar Palavra-passe Aleatória",
+    "updated": "✓ Palavra-passe atualizada",
+    "saveHint": "Guarde-a num local seguro. Não poderá visualizá-la novamente mais tarde.",
+    "copy": "Copiar",
+    "done": "Concluído",
+    "errors": {
+      "tooShort": "A palavra-passe deve ter pelo menos 6 caracteres",
+      "resetFailed": "Falha na redefinição da palavra-passe"
+    }
+  }
+}

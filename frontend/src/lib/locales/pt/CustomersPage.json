@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Início",
+  "title": "Clientes",
+  "subtitle": "Registos de faturação e contacto. Os domínios associam-se a estes — não é uma conta de acesso ao painel.",
+  "newCustomer": "Novo Cliente",
+  "loading": "A carregar…",
+  "empty": {
+    "title": "Ainda não há registos de clientes",
+    "description": "Crie primeiro um registo de cliente para associar domínios a um cliente."
+  },
+  "noMatch": "Nenhum cliente corresponde à sua pesquisa.",
+  "columns": {
+    "name": "Nome",
+    "email": "E-mail",
+    "plan": "Plano",
+    "status": "Estado",
+    "created": "Criado"
+  },
+  "status": {
+    "active": "Ativo",
+    "passive": "Inativo"
+  },
+  "actions": {
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "modal": {
+    "editTitle": "Editar Cliente",
+    "newTitle": "Novo Cliente",
+    "name": "Nome",
+    "email": "E-mail",
+    "plan": "Plano",
+    "noPlan": "Sem plano",
+    "status": "Estado",
+    "notes": "Notas",
+    "cancel": "Cancelar",
+    "saving": "A guardar…",
+    "save": "Guardar"
+  },
+  "delete": {
+    "title": "Eliminar cliente",
+    "message": "{{name}} será eliminado. Os domínios associados a este cliente não são removidos — apenas a associação é limpa.",
+    "confirm": "Eliminar"
+  },
+  "toast": {
+    "added": "{{name}} adicionado.",
+    "updated": "{{name}} atualizado.",
+    "deleted": "{{name}} eliminado."
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar os clientes",
+    "nameEmailRequired": "O nome e o e-mail são obrigatórios",
+    "saveFailed": "Não foi possível guardar",
+    "deleteFailed": "Não foi possível eliminar"
+  }
+}

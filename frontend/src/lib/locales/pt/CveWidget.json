@@ -1,0 +1,52 @@
+{
+  "title": "Avisos de Segurança",
+  "subtitleAudit": "Auditoria CVE (AlmaLinux)",
+  "advisories": "{{count}} avisos de segurança",
+  "rescan": "Reanalisar",
+  "scanning": "A analisar…",
+  "scanningServer": "A analisar o servidor…",
+  "updating": "A instalar atualizações de segurança… (executa em segundo plano)",
+  "kcApplying": "A aplicar patch ao kernel em tempo real… (KernelCare — sem reinicialização)",
+  "severity": {
+    "critical": "Crítico",
+    "important": "Importante",
+    "moderate": "Moderado",
+    "low": "Baixo"
+  },
+  "kcActive": {
+    "bold": "O kernel tem patch em tempo real (KernelCare).",
+    "text": " As vulnerabilidades do kernel estão fechadas sem reinicialização.",
+    "effectivePre": " Kernel efetivo: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVEs com patch em tempo real."
+  },
+  "kcUnregistered": {
+    "bold": "O KernelCare está instalado mas a licença não está registada.",
+    "text": " Registe com uma chave de licença TuxCare para patches de kernel sem reinicialização."
+  },
+  "rebootRequired": {
+    "bold1": "Reinicialização necessária.",
+    "text1": " Um novo kernel com patches de segurança está instalado mas o sistema ainda está a executar o kernel antigo — a maioria dos CVEs abaixo são relacionados com o kernel e aparecerão ",
+    "bold2": "abertos até o servidor ser reiniciado",
+    "text2": ". Agende uma reinicialização numa janela de manutenção."
+  },
+  "clean": {
+    "title": "Sistema atualizado",
+    "subtitle": "Sem vulnerabilidades conhecidas"
+  },
+  "totalPre": "Total de ",
+  "totalPost": " CVEs únicos",
+  "lastScan": " · última análise {{scan}}",
+  "installUpdates": "Instalar atualizações de segurança",
+  "updateLiveKernel": "Atualizar patches de kernel em tempo real (sem reinicialização)",
+  "confirmUpdate": "As atualizações de segurança (dnf --security) serão instaladas. Pode ser necessária uma reinicialização para que as atualizações do kernel entrem em vigor. Continuar?",
+  "messages": {
+    "updatesComplete": "Atualizações de segurança concluídas.",
+    "livePatchApplied": "Patch de kernel em tempo real aplicado."
+  },
+  "errors": {
+    "fetch": "Não foi possível obter o estado CVE",
+    "startUpdate": "Não foi possível iniciar a atualização",
+    "startLivePatch": "Não foi possível iniciar o patch em tempo real"
+  }
+}

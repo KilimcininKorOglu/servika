@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "scheduledTasks": "Tarefas Agendadas"
+  },
+  "title": "Tarefas Agendadas",
+  "presets": {
+    "everyMinute": "A cada minuto",
+    "everyHour": "A cada hora",
+    "dailyAt3": "Diariamente às 03:00",
+    "mondayAt9": "Segunda-feira às 09:00",
+    "every5Minutes": "A cada 5 minutos",
+    "every15Minutes": "A cada 15 minutos",
+    "firstOfMonth": "Primeiro dia do mês às 00:00"
+  },
+  "actions": {
+    "add": "Adicionar Tarefa",
+    "refresh": "↻ Atualizar"
+  },
+  "count": "{{count}} tarefas",
+  "loading": "A carregar...",
+  "empty": "Ainda não há tarefas. Adicione uma acima.",
+  "columns": {
+    "min": "Min",
+    "hour": "Hora",
+    "day": "Dia",
+    "month": "Mês",
+    "weekday": "Dia da semana",
+    "command": "Comando / Descrição",
+    "action": "Ação"
+  },
+  "row": {
+    "delete": "Eliminar"
+  },
+  "confirmDelete": "Eliminar a tarefa \"{{command}}...\"?",
+  "errors": {
+    "deleteFailed": "Falha na eliminação",
+    "addFailed": "Não foi possível adicionar o item"
+  },
+  "modal": {
+    "title": "Nova Tarefa Agendada",
+    "presetsLabel": "Predefinições",
+    "fields": {
+      "minute": "Minuto",
+      "hour": "Hora",
+      "day": "Dia",
+      "month": "Mês",
+      "weekday": "Dia da semana"
+    },
+    "cronHint": "Formato cron:",
+    "cronHintPost": " qualquer valor,",
+    "cronEvery": " a cada cinco,",
+    "cronList": " lista,",
+    "cronRange": " intervalo.",
+    "commandLabel": "Comando",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "Descrição (opcional)",
+    "descriptionPlaceholder": "ex.: script de cópia noturna",
+    "cancel": "Cancelar",
+    "adding": "A adicionar...",
+    "addTask": "Adicionar Tarefa"
+  }
+}

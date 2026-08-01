@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Painel de Controlo de Alojamento"
+  },
+  "heading": "Bem-vindo",
+  "subtitle": "Inicie sessão para continuar.",
+  "field": {
+    "username": "Utilizador",
+    "password": "Palavra-passe",
+    "twoFactorCode": "Código de autenticação de dois fatores"
+  },
+  "twoFactorHint": "Introduza o código de seis dígitos da sua aplicação de autenticação.",
+  "button": {
+    "signingIn": "A iniciar sessão…",
+    "verify": "Verificar e iniciar sessão",
+    "signIn": "Iniciar sessão"
+  },
+  "footer": "Servika · versão 0.2.0-f1",
+  "error": {
+    "loginFailed": "Falha no início de sessão"
+  }
+}

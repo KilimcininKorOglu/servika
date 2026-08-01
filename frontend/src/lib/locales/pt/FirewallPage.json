@@ -1,0 +1,133 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "firewall": "Firewall"
+  },
+  "title": "Firewall",
+  "subtitle": {
+    "pre": "Controle ",
+    "bold": "quem pode aceder ao seu servidor a partir da internet",
+    "post": ". Aplique uma predefinição ou adicione uma regra personalizada."
+  },
+  "info": {
+    "pre": "As regras afetam apenas ",
+    "bold": "novas ligações",
+    "mid": ". A sua sessão SSH ou de painel ativa permanecerá ligada. As portas protegidas ",
+    "post": " não podem ser fechadas."
+  },
+  "templates": {
+    "sectionTitle": "Predefinições",
+    "sectionHint": "aplicar a um clique",
+    "portLabel": "Porta: {{ports}}",
+    "apply": "Aplicar",
+    "applying": "...",
+    "close_mysql": {
+      "name": "Fechar Acesso MySQL Externo",
+      "description": "Fecha a porta 3306 da base de dados à internet. O MySQL permanece acessível a partir do servidor."
+    },
+    "close_ftp": {
+      "name": "Fechar FTP",
+      "description": "Fecha a porta FTP 21. Pode fechar o FTP com segurança se usar SFTP."
+    },
+    "close_mail": {
+      "name": "Fechar Portas de Correio",
+      "description": "Fecha as portas SMTP, POP3 e IMAP. Reduz o risco de relay de spam quando não há servidor de correio presente."
+    },
+    "close_rpc": {
+      "name": "Fechar RPC / NFS",
+      "description": "Fecha a porta rpcbind 111 e a porta NFS 2049 quando a partilha de ficheiros não está em uso."
+    }
+  },
+  "modes": {
+    "ban": {
+      "name": "Bloquear IP",
+      "description": "Bloquear um endereço IP específico. Introduza uma porta para bloquear o acesso apenas a essa porta, ou deixe em branco para bloquear o acesso a todas as portas.",
+      "example": "Exemplo: Bloquear completamente 45.9.1.2 após tentativas SSH repetidas."
+    },
+    "whitelist": {
+      "name": "Permitir IP",
+      "description": "Introduza uma porta para permitir o acesso apenas a partir destes endereços IP e bloquear todos os outros. Deixe a porta em branco para dar a este IP acesso prioritário a todas as portas.",
+      "example": "Exemplo: Introduza a porta 8443 e o IP do seu escritório para que apenas você possa aceder ao painel."
+    },
+    "close": {
+      "name": "Fechar Porta",
+      "description": "Fechar uma porta a todos exceto os endereços permitidos. As portas críticas para SSH, web, painel e DNS são protegidas e não podem ser fechadas.",
+      "example": "Exemplo: Fechar a porta 3306 da base de dados ao acesso externo."
+    }
+  },
+  "form": {
+    "sectionTitle": "Regra Personalizada",
+    "step1": "1. O que pretende fazer?",
+    "step2": "2. Detalhes",
+    "ipLabel": "Endereço IP ou intervalo",
+    "ipPlaceholder": "1.2.3.4 ou 1.2.3.0/24",
+    "portLabel": "Porta",
+    "portBlankHint": "(vazio = todas)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "ex.: 22",
+    "protocolLabel": "Protocolo",
+    "noteLabel": "Nota (opcional)",
+    "notePlaceholder": "ex.: IP a tentar força bruta SSH",
+    "previewLabel": "Pré-visualização:",
+    "submit": "Adicionar e Aplicar Regra",
+    "submitting": "A aplicar..."
+  },
+  "warning": {
+    "pre": "",
+    "bold": "Aviso:",
+    "mid": " Esta porta estará aberta apenas para o endereço IP acima. Se o seu IP for ",
+    "boldDynamic": "dinâmico",
+    "post": ", perderá o acesso quando ele mudar. A porta SSH 22 permanece aberta, para que possa ligar via SSH e eliminar esta regra se ficar bloqueado. Em alternativa, use um endereço IP estático."
+  },
+  "preview": {
+    "closeReady": "A porta {{port}} será fechada a todos exceto os endereços permitidos.",
+    "closeEmpty": "Introduza a porta a fechar.",
+    "banPort": "{{address}} ficará bloqueado de aceder à porta {{port}}.",
+    "banAll": "{{address}} ficará bloqueado de aceder a todas as portas.",
+    "whitelistPort": "A porta {{port}} estará aberta apenas para {{address}}. Todos os outros serão bloqueados.",
+    "whitelistAll": "{{address}} terá acesso prioritário a todas as portas.",
+    "enterIp": "(introduza um endereço IP)"
+  },
+  "rules": {
+    "title": "Regras Ativas",
+    "count": "({{count}})",
+    "refresh": "↻ Atualizar",
+    "colType": "Tipo",
+    "colIp": "IP / CIDR",
+    "colPort": "Porta",
+    "colProto": "Proto",
+    "colNote": "Nota",
+    "colAction": "Ação",
+    "loading": "A carregar...",
+    "emptyTitle": "Ainda não há regras. O servidor está aberto a todas as ligações.",
+    "emptyHint": "Aplique uma predefinição acima para começar.",
+    "everyone": "todos",
+    "allPorts": "todas",
+    "delete": "Eliminar",
+    "deleting": "..."
+  },
+  "badge": {
+    "ban": "🚫 Bloqueado",
+    "whitelist": "✅ Permitido",
+    "close": "🔒 Fechado"
+  },
+  "confirm": {
+    "applyTemplate": "Aplicar o modelo \"{{name}}\"?\nPortas a fechar: {{ports}}\nEstas portas deixarão de ser acessíveis a partir da internet.",
+    "removeClose": "fechar porta {{port}}",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "Eliminar a regra \"{{summary}}\"?"
+  },
+  "success": {
+    "templateApplied_one": "\"{{name}}\" aplicado. {{count}} regra adicionada.",
+    "templateApplied_other": "\"{{name}}\" aplicado. {{count}} regras adicionadas.",
+    "templateAlreadyApplied": "\"{{name}}\" já está aplicado. Nenhuma nova regra foi adicionada.",
+    "ruleAdded": "A regra foi adicionada e aplicada à firewall."
+  },
+  "error": {
+    "applyTemplate": "Não foi possível aplicar o modelo",
+    "addRule": "Não foi possível adicionar a regra",
+    "deleteRule": "Não foi possível eliminar a regra"
+  },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

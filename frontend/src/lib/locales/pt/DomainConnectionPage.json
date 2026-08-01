@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "A cópia automática falhou. Prima Ctrl+C e depois Enter:",
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "connectionDetails": "Detalhes de Ligação"
+  },
+  "title": "Detalhes de Ligação",
+  "subtitle": "Selecione um valor para o copiar automaticamente",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Anfitrião",
+    "port": "Porta",
+    "username": "Utilizador",
+    "password": "Palavra-passe",
+    "homeDirectory": "Diretório home",
+    "database": "Base de dados",
+    "webRoot": "Raiz web",
+    "ipv4": "IPv4",
+    "systemUser": "Utilizador do sistema",
+    "httpUrl": "URL HTTP",
+    "httpsUrl": "URL HTTPS"
+  },
+  "links": {
+    "ftp": "Ir para a gestão FTP →",
+    "database": "Ir para a gestão de bases de dados →"
+  },
+  "row": {
+    "selectToCopy": "Selecionar para copiar",
+    "copied": "✓ Copiado"
+  },
+  "password": {
+    "button": "🔑 Mostrar / Redefinir Palavra-passe"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Base de dados"
+  },
+  "modal": {
+    "titleSuffix": "Palavra-passe",
+    "userLabel": "Utilizador:",
+    "notStored": "(não armazenado)",
+    "notAuthorized": "(não autorizado)",
+    "showCurrent": "👁 Mostrar palavra-passe atual",
+    "currentPasswordLabel": "Palavra-passe atual",
+    "newPasswordGenerated": "✓ Nova palavra-passe gerada",
+    "copyWarning": "⚠ Copie a palavra-passe agora. Pode não ser possível visualizá-la novamente após fechar esta janela.",
+    "close": "Fechar",
+    "generating": "A gerar…",
+    "generateAgain": "↻ Gerar novamente",
+    "generateNew": "⚡ Gerar nova palavra-passe",
+    "errorGenerate": "Não foi possível gerar a palavra-passe"
+  },
+  "copyButton": {
+    "copy": "Copiar",
+    "copied": "✓ Copiado"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "backups": "Cópias de Segurança"
+  },
+  "title": "Cópias de Segurança",
+  "subtitle": {
+    "prefix": "home + dump MySQL = tar.gz, ",
+    "disabled": "Cópias automáticas desativadas",
+    "enabled": "{{freq}} {{hour}}:00, últimas {{retention}} cópias automáticas retidas"
+  },
+  "freq": {
+    "daily": "Diariamente",
+    "weekly": "Semanalmente"
+  },
+  "toast": {
+    "destinationSaved": "Destino remoto guardado",
+    "destinationSaveFailed": "Não foi possível guardar o destino",
+    "destinationDeleted": "Destino remoto eliminado",
+    "confirmDeleteDest": "Eliminar o destino remoto de cópias de segurança? As cópias existentes não são afetadas, mas os carregamentos automáticos futuros serão interrompidos.",
+    "autoDisabled": "Cópias automáticas desativadas",
+    "autoEnabled": "Cópias automáticas ativadas: {{freq}}, {{hour}}:00; as últimas {{retention}} cópias serão retidas",
+    "scheduleSaveFailed": "Não foi possível guardar o agendamento",
+    "backupCreated": "Cópia de segurança criada",
+    "createFailed": "Não foi possível criar a cópia de segurança",
+    "restored": "Restaurado: {{domain}}, base de dados: {{database}}",
+    "restoreDbUnknown": "desconhecido",
+    "restoreFailed": "Falha no restauro"
+  },
+  "schedule": {
+    "heading": "Agendamento de Cópias Automáticas",
+    "description": "Quando ativado, o painel verifica a cada hora. Uma cópia é criada à hora selecionada e as cópias além da retenção são eliminadas.",
+    "lastBackup": "Última cópia automática:",
+    "options": {
+      "none": {
+        "name": "Desativado",
+        "description": "Sem cópias automáticas. Apenas \"Fazer Cópia Agora\" manual é executado."
+      },
+      "daily": {
+        "name": "Diariamente",
+        "description": "Cria uma cópia diariamente à hora selecionada e retém as últimas N cópias."
+      },
+      "weekly": {
+        "name": "Semanalmente",
+        "description": "Cria uma cópia a cada sete dias para reduzir o uso de disco."
+      }
+    },
+    "active": "● Ativo",
+    "runTime": "Hora de execução (local)",
+    "retentionLabel": "Cópias a reter",
+    "retentionHint": "As cópias automáticas mais antigas além deste número são eliminadas. As cópias manuais são retidas."
+  },
+  "destination": {
+    "heading": "Destino Remoto (FTP / SFTP / S3 / B2)",
+    "description": "Após a criação, as cópias são carregadas para o destino remoto em segundo plano para proteção fora do site contra falhas de disco.",
+    "statusSuccessful": "● Mais recente: bem-sucedido",
+    "statusError": "✗ Mais recente: erro",
+    "lastUpload": "Último carregamento:",
+    "typeLabel": "Tipo de destino",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "Bucket",
+    "region": "Região",
+    "regionHint": "(predefinido: us-east-1)",
+    "endpoint": "Endpoint",
+    "endpointHint": "(deixar em branco para AWS S3)",
+    "accessKeyId": "ID da chave de acesso",
+    "secretAccessKey": "Chave de acesso secreta",
+    "secretKeepHint": "(deixar em branco para manter a atual)",
+    "keyPrefix": "Prefixo de chave",
+    "pathStyle": "URLs em estilo de caminho",
+    "host": "Anfitrião",
+    "port": "Porta",
+    "username": "Utilizador",
+    "password": "Palavra-passe",
+    "passwordKeepHint": "(deixar em branco para manter a palavra-passe atual)",
+    "remoteDir": "Diretório remoto",
+    "activeLabel": "Ativo (enviar cada cópia para este destino)",
+    "testSuccess": "✓ Ligação bem-sucedida",
+    "testError": "✗ ",
+    "testErrorFallback": "Erro",
+    "testing": "A testar...",
+    "testConnection": "Testar Ligação",
+    "save": "Guardar",
+    "deleteDestination": "Eliminar Destino"
+  },
+  "backingUp": "A criar cópia...",
+  "backupNow": "+ Fazer Cópia Agora",
+  "refresh": "↻ Atualizar",
+  "backupCount": "{{count}} cópias",
+  "loading": "A carregar...",
+  "empty": "Ainda não há cópias",
+  "columns": {
+    "file": "Ficheiro",
+    "type": "Tipo",
+    "size": "Tamanho",
+    "created": "Criado",
+    "actions": "Ações"
+  },
+  "typeScheduled": "Agendado",
+  "row": {
+    "download": "Transferir",
+    "restore": "↺ Restaurar",
+    "delete": "Eliminar"
+  },
+  "confirmDelete": {
+    "title": "Eliminar ficheiro de cópia",
+    "message": "Eliminar o ficheiro de cópia \"{{file}}\"?",
+    "confirm": "Sim, eliminar"
+  },
+  "confirmRestore": {
+    "title": "Restaurar a partir de cópia",
+    "message": "Restaurar \"{{file}}\"?\n\nAVISO: Os ficheiros public_html existentes serão substituídos e as tabelas MySQL serão recriadas. Esta ação não pode ser desfeita.",
+    "confirm": "Sim, restaurar"
+  }
+}

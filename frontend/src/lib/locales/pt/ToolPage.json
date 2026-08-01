@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios"
+  },
+  "fallback": {
+    "label": "Ferramenta",
+    "description": "Ainda não implementado."
+  },
+  "notReady": "Não Disponível",
+  "domainLabel": "Domínio: ",
+  "construction": {
+    "heading": "Em construção",
+    "availablePrefix": "Este módulo ficará disponível na fase ",
+    "availableSuffix": ".",
+    "availableLater": "Este módulo ficará disponível numa fase posterior.",
+    "returnToDashboard": "← Voltar ao painel do domínio"
+  },
+  "tool": {
+    "connection": {
+      "label": "Detalhes de Ligação",
+      "description": "Servidor FTP, utilizador, string de ligação à base de dados e ações de cópia rápida."
+    },
+    "files": {
+      "label": "Gestor de Ficheiros",
+      "description": "Listar, carregar, transferir e alterar permissões de ficheiros em public_html."
+    },
+    "databases": {
+      "label": "Bases de Dados",
+      "description": "Bases de dados MySQL, utilizadores e integração phpMyAdmin."
+    },
+    "ftp": {
+      "label": "Contas FTP",
+      "description": "Contas FTP virtuais, palavras-passe e diretórios home via Pure-FTPd."
+    },
+    "backups": {
+      "label": "Cópia de Segurança e Restauro",
+      "description": "Cópias em tarballs e dumps de bases de dados para SFTP, S3 ou armazenamento local."
+    },
+    "copy": {
+      "label": "Copiar Website",
+      "description": "Clonar um site existente para outro domínio."
+    },
+    "php": {
+      "label": "Definições PHP",
+      "description": "Seleção de pool PHP-FPM, alterações de versão e parâmetros php.ini."
+    },
+    "logs": {
+      "label": "Registos",
+      "description": "Monitorização em tempo real de access.log e error.log com WebSocket."
+    },
+    "cron": {
+      "label": "Tarefas Agendadas",
+      "description": "Editor de crontab por utilizador."
+    },
+    "git": {
+      "label": "Git",
+      "description": "Ligar repositórios, configurar chaves de deploy e fazer pull automaticamente com webhooks."
+    },
+    "composer": {
+      "label": "PHP Composer",
+      "description": "Interface web para composer install e update."
+    },
+    "performance": {
+      "label": "Desempenho",
+      "description": "Aceleradores como OPcache, gzip e carregamento diferido."
+    },
+    "ssl": {
+      "label": "Certificado SSL/TLS",
+      "description": "Instalação e renovação automática Let's Encrypt."
+    },
+    "password-protection": {
+      "label": "Diretórios Protegidos por Palavra-passe",
+      "description": "Proteger diretórios com .htpasswd."
+    },
+    "stats": {
+      "label": "Estatísticas",
+      "description": "Relatórios de disco, tráfego e visitantes."
+    },
+    "imunify": {
+      "label": "Imunify",
+      "description": "Integração de antivírus e WAF."
+    }
+  }
+}

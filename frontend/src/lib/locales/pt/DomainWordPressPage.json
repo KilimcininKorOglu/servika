@@ -1,0 +1,124 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "subscription": "Subscrição",
+    "wordpress": "WordPress"
+  },
+  "title": "Toolkit WordPress",
+  "subtitle": "Gerir versões, plugins, temas e utilizadores num único local.",
+  "loading": "A carregar…",
+  "actions": {
+    "new": "Novo WordPress"
+  },
+  "empty": {
+    "title": "Ainda não existe instalação WordPress neste domínio",
+    "subtitle": "Instale a um clique com o formulário abaixo."
+  },
+  "tabs": {
+    "overview": "Visão Geral",
+    "extensions": "Plugins",
+    "themes": "Temas",
+    "users": "Utilizadores"
+  },
+  "toolkit": {
+    "adminPanel": "Painel de administração",
+    "remove": "Remover"
+  },
+  "metrics": {
+    "version": "Versão",
+    "php": "PHP",
+    "database": "Base de dados",
+    "maintenance": "Modo de manutenção",
+    "upToDate": "atualizado",
+    "active": "ativo",
+    "on": "Ativo",
+    "off": "Inativo"
+  },
+  "overview": {
+    "updateVersion": "Atualizar versão · v{{version}}",
+    "updateAll": "Atualizar tudo",
+    "disableMaintenance": "Desativar modo de manutenção",
+    "enableMaintenance": "Ativar modo de manutenção",
+    "clearCache": "Limpar cache",
+    "repairCore": "Reparar núcleo",
+    "hint": "Ações de manutenção rápidas. As atualizações de versão disponíveis aparecem na métrica acima."
+  },
+  "messages": {
+    "coreUpdated": "Núcleo WordPress atualizado.",
+    "allUpdated": "Núcleo, plugins e temas atualizados.",
+    "maintenanceEnabled": "Modo de manutenção ativado.",
+    "maintenanceDisabled": "Modo de manutenção desativado.",
+    "cacheCleared": "Cache limpa.",
+    "repairDone": "Reparação do núcleo concluída.",
+    "packageUpdated": "{{name}} atualizado.",
+    "allUpdatesDone": "Todas as atualizações concluídas.",
+    "activated": "{{name}} ativado.",
+    "deactivated": "{{name}} desativado."
+  },
+  "errors": {
+    "installFailed": "Falha na instalação",
+    "operationFailed": "Operação falhou",
+    "resetFailed": "Não foi possível redefinir a palavra-passe",
+    "removeFailed": "Não foi possível remover a instalação"
+  },
+  "output": {
+    "title": "Saída da operação"
+  },
+  "btn": {
+    "processing": "A processar…"
+  },
+  "packages": {
+    "loading": "A carregar…",
+    "noPlugins": "Nenhum plugin encontrado.",
+    "noThemes": "Nenhum tema encontrado.",
+    "updateSingular": "{{count}} atualização disponível",
+    "updatePlural": "{{count}} atualizações disponíveis",
+    "updateAll": "Atualizar tudo",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "version": "Versão {{version}}",
+    "updateAvailable": " → {{version}} disponível",
+    "update": "Atualizar",
+    "activate": "Ativar",
+    "deactivate": "Desativar",
+    "activeTheme": "Tema ativo"
+  },
+  "usersTab": {
+    "loading": "A carregar…",
+    "empty": "Nenhum utilizador encontrado.",
+    "resetPassword": "Redefinir palavra-passe"
+  },
+  "confirm": {
+    "resetPassword": "Gerar uma nova palavra-passe para \"{{user}}\"?\nA palavra-passe atual ficará inválida.",
+    "rootRemove": "As instalações WordPress no diretório raiz não podem ser eliminadas pelo painel.",
+    "remove": "Eliminar a instalação WordPress em {{dir}}?\nTodos os ficheiros neste diretório e a sua base de dados serão removidos. Esta ação não pode ser desfeita."
+  },
+  "installForm": {
+    "title": "Nova instalação WordPress",
+    "close": "✕ Fechar",
+    "siteTitle": "Título do site",
+    "siteTitlePlaceholder": "O Meu Blogue",
+    "subdirectory": "Subdiretório (opcional)",
+    "subdirectoryPlaceholder": "vazio = raiz · exemplo: blog",
+    "adminUser": "Nome de utilizador do administrador",
+    "adminEmail": "E-mail do administrador",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "A instalar… (~30 seg)",
+    "install": "Instalar WordPress"
+  },
+  "result": {
+    "installed": "WordPress {{version}} instalado",
+    "site": "Site",
+    "admin": "Admin",
+    "username": "Utilizador",
+    "password": "Palavra-passe",
+    "savePassword": "Guarde a palavra-passe agora. Não será mostrada novamente."
+  },
+  "passwordModal": {
+    "title": "Nova palavra-passe criada",
+    "user": "Utilizador:",
+    "copy": "Copiar",
+    "notice": "Esta palavra-passe não será mostrada novamente. Guarde-a agora.",
+    "ok": "OK"
+  }
+}

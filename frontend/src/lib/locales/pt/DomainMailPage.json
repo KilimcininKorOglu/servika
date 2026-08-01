@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "email": "E-mail"
+  },
+  "title": "Contas de E-mail",
+  "subtitle": "Gerir caixas de correio Postfix e Dovecot nativas. Use a porta SMTP 587 com STARTTLS para envio autenticado.",
+  "loading": "A carregar…",
+  "back": "← Voltar à subscrição",
+  "generatedPassword": {
+    "title": "Palavra-passe para {{email}}",
+    "saveNote": "Guarde-a agora. Não será mostrada novamente.",
+    "copy": "Copiar"
+  },
+  "enable": {
+    "notEnabled": "O alojamento de e-mail ainda não está ativado para este domínio.",
+    "info": "A ativação adiciona registos DNS MX, SPF, DKIM e DMARC quando possível.",
+    "enabling": "A ativar…",
+    "button": "Ativar E-mail"
+  },
+  "mailboxAdd": {
+    "title": "Adicionar caixa de correio",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "palavra-passe, gerada se vazio",
+    "adding": "A adicionar…",
+    "add": "Adicionar"
+  },
+  "mailboxes": {
+    "title": "Caixas de Correio",
+    "empty": "Ainda não há caixas de correio.",
+    "suspended": "suspensa",
+    "suspend": "Suspender",
+    "activate": "Ativar",
+    "resetPassword": "Redefinir palavra-passe",
+    "delete": "Eliminar"
+  },
+  "forwarders": {
+    "title": "Reencaminhamentos e Catch-All",
+    "description": "Reencaminhe correio recebido para um ou mais endereços de destino sem criar uma caixa de correio. O catch-all reencaminha correio para endereços indefinidos neste domínio.",
+    "sourcePlaceholder": "support",
+    "catchAll": "Reencaminhar todos os endereços indefinidos neste domínio",
+    "destinationPlaceholder": "destino1@exemplo.com, destino2@exemplo.com",
+    "adding": "A adicionar…",
+    "add": "Adicionar",
+    "empty": "Ainda não há reencaminhamentos.",
+    "suspended": "suspenso",
+    "suspend": "Suspender",
+    "activate": "Ativar",
+    "delete": "Eliminar"
+  },
+  "spam": {
+    "title": "Filtragem de Spam",
+    "description": "O Rspamd pontua cada mensagem recebida. A lista cinzenta adia temporariamente, o limiar de cabeçalho sinaliza o correio como spam e o limiar de rejeição recusa a entrega.",
+    "notInstalled": " O Rspamd não está instalado neste servidor; as definições são guardadas mas não aplicadas.",
+    "enable": "Ativar filtragem de spam para este domínio",
+    "greylist": "Lista cinzenta",
+    "addHeader": "Adicionar cabeçalho",
+    "reject": "Rejeitar",
+    "applying": "A aplicar…",
+    "apply": "Aplicar política de spam"
+  },
+  "autoresponder": {
+    "title": "Resposta Automática",
+    "description": "Envie uma resposta de férias a partir de uma caixa de correio, no máximo uma vez por intervalo para o mesmo remetente.",
+    "mailbox": "Caixa de correio",
+    "interval": "Intervalo de resposta (dias)",
+    "subjectPlaceholder": "Assunto",
+    "bodyPlaceholder": "Corpo da mensagem",
+    "enable": "Ativar a resposta automática",
+    "saving": "A guardar…",
+    "save": "Guardar resposta automática",
+    "remove": "Remover"
+  },
+  "filters": {
+    "title": "Filtros de Mensagens",
+    "description": "Ordene o correio recebido em pastas, redirecione-o ou descarte-o com regras Sieve compiladas por caixa de correio.",
+    "namePlaceholder": "Nome do filtro",
+    "subjectContains": "Assunto contém",
+    "fromContains": "De contém",
+    "toContains": "Para contém",
+    "matchedTextPlaceholder": "Texto correspondente",
+    "moveToFolder": "Mover para pasta",
+    "redirectTo": "Redirecionar para",
+    "discard": "Descartar",
+    "folderPlaceholder": "Pasta (ex.: Faturas)",
+    "targetPlaceholder": "destino@exemplo.com",
+    "adding": "A adicionar…",
+    "add": "Adicionar filtro",
+    "empty": "Ainda não há filtros.",
+    "delete": "Eliminar"
+  },
+  "sendLimits": {
+    "title": "Limites de Envio",
+    "description": "Limite os destinatários de saída por caixa de correio. Exceder um limite suspende a conta automaticamente para conter um login comprometido. Use 0 para ilimitado.",
+    "mailbox": "Caixa de correio",
+    "hourly": "Por hora ({{count}} usados)",
+    "daily": "Por dia ({{count}} usados)",
+    "suspendedNote": "Suspensa automaticamente às {{time}}. Reative a caixa de correio acima para limpar.",
+    "saving": "A guardar…",
+    "save": "Guardar limites de envio"
+  },
+  "messages": {
+    "enabled": "O alojamento de e-mail foi ativado para este domínio. Os registos MX, SPF, DKIM e DMARC foram adicionados ao DNS quando possível.",
+    "forwarderAdded": "O reencaminhamento de correio foi adicionado.",
+    "spamApplied": "A política de spam Rspamd foi validada e aplicada.",
+    "autoresponderSaved": "A resposta automática e o seu script Sieve foram aplicados.",
+    "autoresponderRemoved": "A resposta automática foi removida.",
+    "filterAdded": "O filtro de correio foi compilado e ativado.",
+    "sendLimitsSaved": "Os limites de envio foram guardados."
+  },
+  "confirm": {
+    "deleteMailbox": "Eliminar a caixa de correio \"{{email}}\"? O Maildir permanecerá no disco e apenas o registo da conta será removido.",
+    "deleteForwarder": "Eliminar o reencaminhamento \"{{source}}\"?",
+    "deleteFilter": "Eliminar o filtro \"{{name}}\"?"
+  },
+  "errors": {
+    "loadDomainFailed": "Não foi possível carregar o domínio",
+    "enableFailed": "Não foi possível ativar o alojamento de e-mail",
+    "createMailboxFailed": "Não foi possível criar a caixa de correio",
+    "addForwarderFailed": "Não foi possível adicionar o reencaminhamento",
+    "deleteMailboxFailed": "Não foi possível eliminar a caixa de correio",
+    "deleteForwarderFailed": "Não foi possível eliminar o reencaminhamento",
+    "resetPasswordFailed": "Não foi possível redefinir a palavra-passe",
+    "updateForwarderFailed": "Não foi possível atualizar o reencaminhamento",
+    "updateMailboxFailed": "Não foi possível atualizar a caixa de correio",
+    "applySpamFailed": "Não foi possível aplicar as definições de spam",
+    "readAutoresponderFailed": "Não foi possível ler a resposta automática",
+    "saveAutoresponderFailed": "Não foi possível guardar a resposta automática",
+    "addFilterFailed": "Não foi possível adicionar o filtro de correio",
+    "readSendLimitsFailed": "Não foi possível ler os limites de envio",
+    "saveSendLimitsFailed": "Não foi possível guardar os limites de envio"
+  }
+}

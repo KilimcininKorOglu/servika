@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "toolsSettings": "Ferramentas e Definições",
+    "backupManager": "Gestor de Cópias de Segurança"
+  },
+  "title": "Gestor de Cópias de Segurança",
+  "subtitle": "Veja as cópias de segurança de todos os domínios num único local. As cópias automáticas diárias são executadas e os destinos S3/SFTP são configurados por domínio.",
+  "toast": {
+    "triggered": "As cópias de segurança agendadas foram iniciadas. Atualize em alguns segundos para ver os resultados.",
+    "triggerFailed": "Não foi possível iniciar as cópias de segurança"
+  },
+  "kpi": {
+    "totalSize": "Tamanho Total das Cópias",
+    "totalBackups": "Total de Cópias",
+    "domainCount": "Número de Domínios",
+    "remoteDestinations": "Destinos Remotos Ativos",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Cópias automáticas:",
+    "default": "Diariamente às 03:00",
+    "suffix": ". Retenção de 7 dias",
+    "triggering": "A iniciar...",
+    "backupNow": "⏱ Fazer Cópia de Todos os Domínios Agora",
+    "refresh": "↻ Atualizar"
+  },
+  "table": {
+    "title": "Cópias de Segurança por Domínio",
+    "colDomain": "Domínio",
+    "colCount": "Número de Cópias",
+    "colSize": "Tamanho Total",
+    "colLatest": "Cópia Mais Recente",
+    "colAction": "Ação",
+    "loading": "A carregar...",
+    "noDomains": "Sem domínios.",
+    "never": "nunca",
+    "manage": "Gerir"
+  },
+  "footnote": {
+    "pre": "ℹ️ As cópias de segurança",
+    "post": "são armazenadas aqui. Ficam disponíveis mesmo após a eliminação de um domínio, permitindo recuperação de eliminações acidentais. Abra Gerir para transferir ou restaurar cópias individuais e configurar destinos."
+  }
+}

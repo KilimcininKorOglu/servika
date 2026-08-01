@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "addonDomains": "Domínios Adicionais"
+  },
+  "title": "Domínios Adicionais",
+  "subtitle": "Crie domínios adicionais ou estacionados e configure redireccionamentos de domínio completo.",
+  "toast": {
+    "created": "{{domain}} foi criado.",
+    "createFailed": "Não foi possível criar o domínio adicional",
+    "deleted": "{{domain}} foi eliminado.",
+    "deleteFailed": "Não foi possível eliminar o domínio adicional",
+    "redirectSaved": "As definições de redireccionamento foram guardadas.",
+    "redirectSaveFailed": "Não foi possível guardar as definições de redireccionamento",
+    "redirectRemoved": "As definições de redireccionamento foram removidas.",
+    "redirectRemoveFailed": "Não foi possível remover as definições de redireccionamento"
+  },
+  "mode": {
+    "parked": "domínio estacionado",
+    "addon": "domínio adicional"
+  },
+  "confirmDelete": "Eliminar {{domain}}?\nO {{mode}}, vhost, zona DNS e registos do painel serão removidos. Esta ação não pode ser desfeita.",
+  "confirmRemoveRedirect": "Remover o redireccionamento do domínio?",
+  "form": {
+    "title": "Novo Domínio Adicional",
+    "domainLabel": "Domínio",
+    "parkedLabel": "Domínio estacionado",
+    "creating": "A criar…",
+    "add": "Adicionar Domínio",
+    "hint": "Os domínios adicionais utilizam a sua própria raiz de documentos. Os domínios estacionados partilham a raiz de documentos do domínio pai."
+  },
+  "redirect": {
+    "title": "Redireccionamento de Domínio Completo",
+    "active": "Ativo",
+    "targetLabel": "URL de destino",
+    "statusLabel": "Estado",
+    "status301": "301 Permanente",
+    "status302": "302 Temporário",
+    "saving": "A guardar…",
+    "save": "Guardar Redireccionamento",
+    "remove": "Remover"
+  },
+  "list": {
+    "title": "Domínios Existentes",
+    "loading": "A carregar…",
+    "empty": "Ainda não há domínios adicionais.",
+    "parked": "Estacionado",
+    "phpPrefix": "PHP",
+    "delete": "Eliminar"
+  },
+  "backToSubscription": "← Voltar à subscrição"
+}

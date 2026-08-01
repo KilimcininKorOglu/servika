@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "tools": "Ferramentas e Definições",
+    "current": "Modelo DNS"
+  },
+  "title": "Modelo DNS do Servidor",
+  "subtitle": "Estes registos são aplicados quando um domínio é criado ou quando o seu modelo DNS predefinido é restaurado.",
+  "placeholders": {
+    "label": "Marcadores de posição:",
+    "domain": " nome do domínio, ",
+    "ip": " IP do servidor, ",
+    "selector": " seletor DKIM, ",
+    "dkim": " registo público DKIM gerado"
+  },
+  "loading": "A carregar...",
+  "table": {
+    "name": "Nome",
+    "type": "Tipo",
+    "value": "Valor",
+    "ttl": "TTL",
+    "priority": "Prioridade",
+    "order": "Ordem",
+    "enabled": "Ativo",
+    "priorityNone": "Nenhuma",
+    "deleteTitle": "Eliminar registo"
+  },
+  "addRecord": "Adicionar registo",
+  "soa": {
+    "title": "Definições SOA",
+    "fieldSeconds": "{{field}} (segundos)"
+  },
+  "dkim": {
+    "title": "Definições DKIM",
+    "selector": "Seletor",
+    "generate": "Gerar chaves DKIM para novos domínios"
+  },
+  "discard": "Descartar alterações",
+  "save": "Guardar modelo",
+  "saving": "A guardar...",
+  "success": "Modelo DNS guardado. Os novos domínios utilizarão os registos e definições atualizados.",
+  "errors": {
+    "loadFailed": "Não foi possível carregar o modelo DNS",
+    "saveFailed": "Não foi possível guardar o modelo DNS"
+  }
+}

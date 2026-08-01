@@ -1,0 +1,21 @@
+{
+  "title": "Gestão DNS",
+  "description": "Contagem de registos e estado DNSSEC em todos os domínios.",
+  "emptyMessage": "Nenhum domínio encontrado.",
+  "column": {
+    "domain": "Domínio",
+    "records": "Registos",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "Ativo",
+    "off": "Inativo"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC ativo",
+    "noMx": "Sem MX"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "ftpAccount": "Conta FTP"
+  },
+  "title": "Conta FTP",
+  "errors": {
+    "resetFailed": "Falha na redefinição da palavra-passe"
+  },
+  "info": {
+    "host": "Anfitrião",
+    "port": "Porta",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Utilizador",
+    "homeDir": "Diretório home"
+  },
+  "reset": {
+    "title": "Redefinir Palavra-passe",
+    "placeholder": "Introduza uma palavra-passe personalizada ou deixe em branco",
+    "setThis": "Definir Esta Palavra-passe",
+    "generateRandom": "Gerar Palavra-passe Aleatória",
+    "success": "✓ Nova palavra-passe definida",
+    "saveHint": "Guarde-a num local seguro. Não poderá visualizá-la novamente mais tarde.",
+    "copy": "Copiar"
+  },
+  "note": {
+    "label": "Nota:",
+    "pre": " O FTP utiliza atualmente autenticação ",
+    "code": "em texto simples",
+    "post": " contra a base de dados local. Use SFTP na porta 22 para transporte encriptado."
+  }
+}

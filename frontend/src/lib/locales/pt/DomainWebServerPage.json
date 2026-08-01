@@ -1,0 +1,132 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "settings": "Definições Apache e nginx"
+  },
+  "title": "Definições Apache e nginx",
+  "subtitle": "Cabeçalhos de segurança e diretivas personalizadas. Guardar volta a gerar o vhost nginx.",
+  "loading": "A carregar…",
+  "applying": "A aplicar…",
+  "reload": "Recarregar",
+  "saveApply": "💾 Guardar e Aplicar",
+  "backend": {
+    "php-fpm": {
+      "name": "nginx + PHP-FPM",
+      "description": "Predefinido. O nginx chama o PHP-FPM diretamente via FastCGI. Ideal para WordPress, Laravel e sites PHP dinâmicos com menor latência."
+    },
+    "apache": {
+      "name": "nginx + Apache",
+      "description": "O nginx termina o TLS na extremidade, enquanto o Apache (10080) serve o vhost por trás. Suporte completo a .htaccess para Joomla, sites WordPress mais antigos e CMSs legados."
+    },
+    "static": {
+      "name": "Estático (sem PHP)",
+      "description": "Serve apenas ficheiros. Destinado a SPAs React, Vue ou Angular, geradores de sites estáticos como Hugo e Jekyll, e conteúdo CDN. Os pedidos PHP devolvem 404."
+    }
+  },
+  "headers": {
+    "hdr_x_content_type": "Impede a deteção de MIME como defesa contra XSS",
+    "hdr_x_xss": "Proteção XSS de browsers legados",
+    "hdr_referrer": "Restringe informações Referer entre sites",
+    "hdr_permissions": "Desativa APIs de câmara, microfone e localização por predefinição",
+    "hdr_csp_upgrade": "Atualiza automaticamente ligações HTTP para HTTPS"
+  },
+  "stack": {
+    "title": "Stack do Servidor Web",
+    "description": "O nginx permanece como terminador TLS na extremidade. A seleção abaixo encaminha o domínio para o motor de backend escolhido.",
+    "active": "● Ativo"
+  },
+  "docRoot": {
+    "title": "Raiz de Documentos",
+    "description": "Escolha qual subdiretório de public_html o nginx serve. As aplicações Laravel geralmente usam o diretório public.",
+    "subdirLabel": "Subdiretório sob public_html",
+    "placeholder": "public",
+    "save": "Guardar Raiz de Documentos",
+    "currentLabel": "Raiz de documentos atual:"
+  },
+  "hstsNote": {
+    "pre": " só é relevante para sites com HTTPS ativado. Não é enviado ao browser quando o site usa apenas HTTP. As alterações acionam automaticamente ",
+    "mid": " e ",
+    "post": " sem downtime."
+  },
+  "customVhostActive": {
+    "boldPre": "Vhost personalizado ativo",
+    "post": " — as definições de cabeçalhos de segurança, cache e diretivas adicionais abaixo ",
+    "boldNot": "não são aplicadas",
+    "tail": " agora. As alterações aqui são guardadas mas não chegam ao ficheiro vhost; para tornar estas definições efetivas novamente, prima \"Voltar à Gestão do Painel\" no cartão do ficheiro vhost abaixo."
+  },
+  "cards": {
+    "securityHeaders": "Cabeçalhos de Segurança (HTTP + HTTPS)",
+    "hsts": "HTTP Strict Transport Security (apenas HTTPS)",
+    "performanceCache": "Cache de Desempenho",
+    "vhostFile": "Ficheiro Vhost nginx",
+    "additionalDirectives": "Diretivas nginx Adicionais"
+  },
+  "hsts": {
+    "description": "Os browsers ligam-se ao site apenas via HTTPS. A configuração incorreta é difícil de reverter, por isso ative-o apenas quando apropriado.",
+    "maxAgeLabel": "max-age (segundos)",
+    "maxAge300": "5 minutos (para testes)",
+    "maxAge86400": "1 dia",
+    "maxAge604800": "1 semana",
+    "maxAge2592000": "30 dias",
+    "maxAge15768000": "6 meses",
+    "maxAge31536000": "1 ano (recomendado)",
+    "maxAge63072000": "2 anos (para pré-carregamento)",
+    "includeSubDomainsDesc": "Aplicar a todos os subdomínios após confirmar que cada um suporta HTTPS",
+    "preloadDesc": "Incluir o site nos browsers por predefinição (registo em hstspreload.org é necessário)"
+  },
+  "cache": {
+    "fastcgiLabel": "Cache FastCGI nginx",
+    "fastcgiValue": "cabeçalho x-cache-status · duração de cache de {{minutes}} minutos",
+    "fastcgiDesc": "Coloca em cache páginas WordPress e PHP no disco. Pedidos POST, cookies, páginas de login e pré-visualizações são ignorados automaticamente. Resolve o aviso de cache de página do WP Site Health.",
+    "durationMinutes": "Duração da cache (minutos)",
+    "min5": "5 minutos",
+    "min15": "15 minutos",
+    "min60": "1 hora (recomendado)",
+    "min360": "6 horas",
+    "min1440": "1 dia",
+    "browserLabel": "Cache do Browser (ficheiros estáticos)",
+    "browserValue": "Cache-Control: public, immutable · expira {{days}}d",
+    "browserDesc": "Ficheiros estáticos como CSS, JS, PNG, JPG e WOFF são colocados em cache no browser, tornando as visitas repetidas muito mais rápidas.",
+    "durationDays": "Duração da cache (dias)",
+    "day1": "1 dia",
+    "day7": "1 semana",
+    "day30": "30 dias (recomendado)",
+    "day90": "3 meses",
+    "day365": "1 ano"
+  },
+  "vhost": {
+    "warningPre": "Este é o ficheiro que o nginx ",
+    "warningBoldActually": "realmente serve",
+    "warningMid": " para este domínio. Pode editá-lo diretamente e guardar — no momento em que guarda, o ficheiro vhost ",
+    "warningBoldEntire": "completo",
+    "warningPost": " (incluindo o redireccionamento HTTP→HTTPS e a localização de validação Let's Encrypt) fica sob a sua responsabilidade; as definições de cabeçalhos/cache/diretivas adicionais acima e o painel não tocam mais neste ficheiro. ",
+    "warningTail": " — se remover este bloco, o certificado não pode ser renovado automaticamente após 90 dias.",
+    "activeState": "🟢 Vhost personalizado ativo — o painel não toca neste ficheiro",
+    "managedState": "⚪ Gerido pelo painel — o ficheiro ativo atualmente é mostrado abaixo",
+    "unsaved": "Alterações não guardadas",
+    "working": "A trabalhar…",
+    "returnToPanel": "Voltar à Gestão do Painel",
+    "saving": "A guardar…",
+    "confirmReturn": "Devolver este ficheiro à gestão padrão do painel?\n\nAs suas edições NÃO são eliminadas — voltar ao modo personalizado retoma onde parou."
+  },
+  "directives": {
+    "pre": "Este texto é acrescentado ao fim do bloco ",
+    "mid": ". Exemplo: ",
+    "placeholder": "# Exemplo:\nclient_max_body_size 200m;\nrewrite ^/old/(.*)$ /new/$1 permanent;"
+  },
+  "success": {
+    "backendChanged": "✓ Servidor web alterado para \"{{name}}\"",
+    "docRootUpdated": "✓ Raiz de documentos atualizada e nginx recarregado",
+    "settingsApplied": "✓ Definições aplicadas e nginx recarregado",
+    "customVhostSaved": "✓ Vhost personalizado guardado e nginx recarregado",
+    "returnedToPanel": "✓ Devolvido à gestão do painel, vhost regenerado"
+  },
+  "errors": {
+    "changeBackendFailed": "Não foi possível alterar o backend",
+    "updateDocRootFailed": "Não foi possível atualizar a raiz de documentos",
+    "saveSettingsFailed": "Não foi possível guardar as definições",
+    "saveCustomVhostFailed": "Não foi possível guardar o vhost personalizado",
+    "returnManagedFailed": "Não foi possível voltar ao vhost gerido"
+  }
+}

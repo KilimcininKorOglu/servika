@@ -1,0 +1,32 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "statistics": "Estatísticas"
+  },
+  "loading": "A carregar…",
+  "notFound": "Não encontrado",
+  "title": "Estatísticas de Tráfego",
+  "subtitle": {
+    "pre": ", análise do registo de acesso nginx.",
+    "subdomainNote": " O tráfego de subdomínios está incluído nestes totais."
+  },
+  "refresh": "↻ Atualizar",
+  "emptyLog": "Ainda não há dados de registo de acesso. Aparecerão aqui assim que o site começar a receber tráfego.",
+  "kpi": {
+    "totalRequests": "Total de Pedidos",
+    "bandwidth": "Uso de Largura de Banda",
+    "uniqueIps": "IPs Únicos",
+    "botRatio": "Rácio de Bots"
+  },
+  "statusTitle": "Distribuição de Estados HTTP",
+  "dailyTitle": "Pedidos Diários (últimos 7 dias)",
+  "dailyRequests": "{{count}} pedidos",
+  "topPathsTitle": "Caminhos Mais Pedidos",
+  "topIpsTitle": "IPs Mais Ativos",
+  "latestTitle": "Últimos Pedidos",
+  "unit": {
+    "requests": "pedidos"
+  },
+  "noData": "Sem dados."
+}

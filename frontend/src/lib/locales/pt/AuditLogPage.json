@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Início",
+  "title": "Registo de Segurança",
+  "subtitle": "Tentativas de início de sessão no painel e ações administrativas. Entrada mais recente no topo.",
+  "stats": {
+    "entries": "entradas",
+    "failed": "falhadas"
+  },
+  "searchPlaceholder": "Pesquisar utilizador, IP, destino…",
+  "filters": {
+    "allActions": "Todas as ações",
+    "last": "Últimas {{n}}",
+    "failedOnly": "Apenas falhadas"
+  },
+  "loading": "A carregar…",
+  "empty": {
+    "title": "Sem entradas para este filtro",
+    "description": "Relaxe os filtros e tente novamente."
+  },
+  "noMatch": "Nenhuma entrada corresponde à sua pesquisa.",
+  "columns": {
+    "time": "Hora",
+    "result": "Resultado",
+    "action": "Ação",
+    "user": "Utilizador",
+    "ip": "IP",
+    "target": "Destino"
+  },
+  "status": {
+    "success": "Sucesso",
+    "failed": "Falhado"
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar o registo"
+  }
+}
