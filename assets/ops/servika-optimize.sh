@@ -37,6 +37,16 @@ for a in "$@"; do case "$a" in --no-restart) NO_RESTART=1;; --dry-run) DRY=1;; e
 log(){ printf '  %s\n' "$*"; }
 error(){ printf '  ✗ %s\n' "$*" >&2; }
 
+# The panel's own maintenance jobs (Optimize button) call this with a PANEL_LANG env;
+# run manually from SSH it reads panel_settings.default_lang from the DB. English is
+# the primary language and the fail-safe. t <english> <turkish> picks by DBLANG.
+DBLANG="${PANEL_LANG:-}"
+if [ -z "$DBLANG" ]; then
+  DBLANG=$(mysql -N -B panel -e "SELECT default_lang FROM panel_settings WHERE id=1;" 2>/dev/null || echo "")
+fi
+[ "$DBLANG" = "tr" ] || DBLANG="en"
+t(){ if [ "$DBLANG" = "tr" ]; then printf '%s' "$2"; else printf '%s' "$1"; fi; }
+
 # ---------- Resource detection ----------
 RAM_MB=$(free -m | awk '/^Mem:/{print $2}')
 CPU=$(nproc)
@@ -63,11 +73,11 @@ IO_THREADS=$CPU; [ "$IO_THREADS" -gt 8 ] && IO_THREADS=8; [ "$IO_THREADS" -lt 4 
 # ---------- nginx values ----------
 NGX_CONN=4096; [ "$RAM_MB" -lt 2048 ] && NGX_CONN=2048
 
-echo "════════ Calculated values (RAM=${RAM_MB}MB, CPU=${CPU}) ════════"
+echo "$(t "════════ Calculated values (RAM=${RAM_MB}MB, CPU=${CPU}) ════════" "════════ Hesaplanan değerler (RAM=${RAM_MB}MB, CPU=${CPU}) ════════")"
 log "MariaDB: buffer_pool=${BP_MB}M (${BP_PCT}%, ${BP_INST} instance) · redo_log=${LOG_MB}M · thread_cache=${THREAD_CACHE} · io_threads=${IO_THREADS}"
 log "MariaDB: flush_log_at_trx_commit=2 (performance) · io_capacity=1000/2000 (SSD) · skip_name_resolve=ON · utf8mb4"
 log "nginx: worker_connections=${NGX_CONN} · worker_rlimit_nofile=65535 · multi_accept+epoll · HTTP tuning"
-[ "$DRY" = 1 ] && { echo "  (dry-run; no changes made)"; exit 0; }
+[ "$DRY" = 1 ] && { echo "  $(t "(dry-run; no changes made)" "(deneme; değişiklik yapılmadı)")"; exit 0; }
 
 TS=$(date +%s)
 
@@ -128,7 +138,7 @@ collation-server                 = utf8mb4_unicode_ci
 query_cache_type                 = 0
 query_cache_size                 = 0
 CNF
-log "written: $MYSQL_CNF"
+log "$(t "written: $MYSQL_CNF" "yazıldı: $MYSQL_CNF")"
 
 # Apply dynamic values immediately so they remain active even if a restart fails.
 mysql -u root 2>/dev/null <<SQL
@@ -144,7 +154,7 @@ SET GLOBAL wait_timeout                = 31536000;
 SET GLOBAL innodb_buffer_pool_dump_at_shutdown = ON;
 SET GLOBAL innodb_buffer_pool_load_at_startup  = ON;
 SQL
-log "dynamic settings applied with SET GLOBAL (without restart)"
+log "$(t "dynamic settings applied with SET GLOBAL (without restart)" "dinamik ayarlar SET GLOBAL ile uygulandı (restart'sız)")"
 
 # systemd LimitNOFILE is required for open_files_limit=4294967295 to take effect.
 # Do not use infinity because MariaDB can reduce open_files_limit to 64; use a high integer.
@@ -155,22 +165,22 @@ cat > "$LIMITS_DIR/servika-limits.conf" <<LIM
 LimitNOFILE=1048576
 LIM
 systemctl daemon-reload
-log "systemd LimitNOFILE=1048576 (for open_files_limit)"
+log "$(t "systemd LimitNOFILE=1048576 (for open_files_limit)" "systemd LimitNOFILE=1048576 (open_files_limit için)")"
 
 if [ "$NO_RESTART" = 0 ]; then
   # A restart fully applies buffer_pool, redo_log, and skip_name_resolve.
-  log "Restarting MariaDB to activate buffer_pool, redo_log, and skip_name_resolve..."
+  log "$(t "Restarting MariaDB to activate buffer_pool, redo_log, and skip_name_resolve..." "buffer_pool, redo_log ve skip_name_resolve için MariaDB yeniden başlatılıyor…")"
   if systemctl restart mariadb && sleep 3 && systemctl is-active --quiet mariadb && mysql -u root -e "SELECT 1" >/dev/null 2>&1; then
-    log "✓ MariaDB restart OK ($(mysql -u root -N -e "SELECT CONCAT(ROUND(@@innodb_buffer_pool_size/1048576),'M buffer_pool, ',@@innodb_flush_log_at_trx_commit,' flush, skip_name_resolve=',@@skip_name_resolve)" 2>/dev/null))"
+    log "✓ $(t "MariaDB restart OK" "MariaDB restart OK"): ($(mysql -u root -N -e "SELECT CONCAT(ROUND(@@innodb_buffer_pool_size/1048576),'M buffer_pool, ',@@innodb_flush_log_at_trx_commit,' flush, skip_name_resolve=',@@skip_name_resolve)" 2>/dev/null))"
   else
-    error "MariaDB restart FAILED; rolling back tuning"
+    error "$(t "MariaDB restart FAILED; rolling back tuning" "MariaDB restart BAŞARISIZ; ayarlar geri alınıyor")"
     rm -f "$MYSQL_CNF"; [ -f "${MYSQL_CNF}.bak.${TS}" ] && cp -a "${MYSQL_CNF}.bak.${TS}" "$MYSQL_CNF"
     systemctl restart mariadb; sleep 3
-    systemctl is-active --quiet mariadb && log "restored the previous configuration" || error "MariaDB is STILL DOWN; manual intervention required!"
+    systemctl is-active --quiet mariadb && log "$(t "restored the previous configuration" "eski yapılandırmaya geri dönüldü")" || error "$(t "MariaDB is STILL DOWN; manual intervention required!" "MariaDB HÂLÂ ÇALIŞMIYOR; elle müdahale gerekli!")"
     exit 1
   fi
 else
-  log "(--no-restart) configuration written; buffer_pool, redo_log, and skip_name_resolve will activate on the next restart"
+  log "$(t "(--no-restart) configuration written; buffer_pool, redo_log, and skip_name_resolve will activate on the next restart" "(--no-restart) yapılandırma yazıldı; buffer_pool, redo_log ve skip_name_resolve sonraki restart'ta aktifleşir")"
 fi
 
 # ================= NGINX =================
@@ -221,11 +231,11 @@ NGX
 # 3) Validate and roll back on failure.
 if nginx -t >/dev/null 2>&1; then
   systemctl reload nginx
-  log "✓ nginx -t OK, reloaded (worker_connections=${NGX_CONN}, HTTP tuning active)"
+  log "$(t "✓ nginx -t OK, reloaded (worker_connections=${NGX_CONN}, HTTP tuning active)" "✓ nginx -t OK, reload edildi (worker_connections=${NGX_CONN}, HTTP tuning aktif)")"
 else
-  error "nginx -t FAILED; rolling back"
+  error "$(t "nginx -t FAILED; rolling back" "nginx -t BAŞARISIZ; geri alınıyor")"
   cp -a "${NGINX_CONF}.bak.${TS}" "$NGINX_CONF"; rm -f "$NGX_PERF"
-  nginx -t >/dev/null 2>&1 && systemctl reload nginx && log "restored the previous nginx configuration" || error "nginx configuration is still invalid!"
+  nginx -t >/dev/null 2>&1 && systemctl reload nginx && log "$(t "restored the previous nginx configuration" "eski nginx yapılandırmasına geri dönüldü")" || error "$(t "nginx configuration is still invalid!" "nginx yapılandırması hâlâ geçersiz!")"
   exit 1
 fi
 
@@ -277,7 +287,7 @@ if [ "$PHP_RESTART" = 1 ]; then
   for svc in php-fpm php74-php-fpm php80-php-fpm php81-php-fpm php82-php-fpm php83-php-fpm php84-php-fpm php85-php-fpm; do
     systemctl is-active --quiet "$svc" 2>/dev/null && systemctl reload-or-restart "$svc" 2>/dev/null
   done
-  log "✓ PHP max_input_vars=10000 applied to all versions and phpMyAdmin"
+  log "$(t "✓ PHP max_input_vars=10000 applied to all versions and phpMyAdmin" "✓ PHP max_input_vars=10000 tüm sürümlere ve phpMyAdmin'e uygulandı")"
 fi
 
-echo "════════ ✓ Optimization complete ════════"
+echo "$(t "════════ ✓ Optimization complete ════════" "════════ ✓ Optimizasyon tamamlandı ════════")"
