@@ -1,0 +1,43 @@
+{
+  "loading": "Chargement...",
+  "notFound": "Introuvable",
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "antivirus": "Antivirus"
+  },
+  "title": "Analyse antivirus des logiciels malveillants",
+  "subtitlePrefix": "est analysé à l'aide des signatures ClamAV et d'heuristiques webshell intégrées.",
+  "toast": {
+    "startScanFailed": "Impossible de démarrer l'analyse",
+    "quarantineFailed": "Impossible de mettre le fichier en quarantaine",
+    "updateSignatureFailed": "Impossible de mettre à jour les signatures"
+  },
+  "confirmQuarantine": "Mettre ce fichier en quarantaine ?\n{{file}}\n\n(Le fichier sera déplacé sous ~/.quarantined et deviendra inaccessible.)",
+  "status": {
+    "enginePrefix": "Moteur :",
+    "engineFull": "ClamAV + heuristiques",
+    "engineHeuristics": "Heuristiques uniquement",
+    "signatureDatabase": "Base de signatures : {{date}}",
+    "latestScan": "Dernière analyse : {{date}}. {{scanned}} fichiers. {{infected}} résultats",
+    "updating": "Mise à jour...",
+    "updateSignatures": "Mettre à jour les signatures",
+    "scanning": "Analyse...",
+    "scanNow": "Analyser maintenant",
+    "inProgress": "Analyse en cours. Les grands sites peuvent prendre plusieurs minutes."
+  },
+  "findings": {
+    "title": "Résultats",
+    "fromLatest": "de la dernière analyse",
+    "noScans": "Aucune analyse pour l'instant. Sélectionnez « Analyser maintenant » pour commencer.",
+    "clean": "Propre. Aucun logiciel malveillant trouvé.",
+    "colFile": "Fichier",
+    "colSignature": "Signature",
+    "colEngine": "Moteur",
+    "colStatus": "Statut",
+    "quarantined": "🔒 En quarantaine",
+    "active": "⚠ Actif",
+    "quarantine": "Quarantaine"
+  },
+  "backToSubscription": "← Retour à l'abonnement"
+}

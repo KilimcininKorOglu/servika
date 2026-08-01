@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Accueil",
+  "breadcrumbTools": "Outils et paramètres",
+  "title": "Gestionnaire de paquets",
+  "subtitle": "Paquets serveur et environnements de compilation via DNF.",
+  "installedCount": "{{count}} paquets installés",
+  "quickInstallGroups": "Groupes d'installation rapide",
+  "groups": {
+    "devtools": { "name": "Outils de développement", "description": "gcc, make, autoconf, automake, libtool, kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + en-têtes de développement" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Compilateur Go" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "Conteneur / VM", "description": "Compatible Docker : podman + buildah + skopeo" },
+    "systools": { "name": "Outils système", "description": "Outils de productivité en ligne de commande" },
+    "imaging": { "name": "Traitement d'images", "description": "ImageMagick + WebP + optimisation" },
+    "dbclients": { "name": "Clients de base de données", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "Sécurité", "description": "GnuPG, OpenSSL, fail2ban" }
+  },
+  "badges": {
+    "installed": "INSTALLÉ",
+    "protected": "PROTÉGÉ"
+  },
+  "tabs": {
+    "search": "Rechercher dans les dépôts",
+    "installed": "Paquets installés"
+  },
+  "searchPlaceholder": "ex. mongodb, redis, nodejs, gcc, htop",
+  "installedPlaceholder": "nom ou description du paquet installé",
+  "noResults": "Aucun résultat.",
+  "resultsCount": "{{count}} résultats",
+  "actions": {
+    "processing": "Traitement…",
+    "remove": "Supprimer",
+    "install": "Installer",
+    "removing": "Suppression…",
+    "installing": "Installation…",
+    "search": "Rechercher",
+    "searching": "Recherche…",
+    "close": "Fermer"
+  },
+  "confirm": {
+    "install": "« {{pkg}} » sera installé sur tout le système. Continuer ?",
+    "remove": "« {{pkg}} » sera SUPPRIMÉ. Continuer ?"
+  },
+  "toast": {
+    "installed": "{{pkg}} installé",
+    "removed": "{{pkg}} supprimé"
+  },
+  "output": {
+    "installTitle": "Sortie d'installation : {{pkg}}",
+    "removeTitle": "Sortie de suppression : {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "Échec de l'installation",
+    "removeFailed": "Échec de la suppression",
+    "toggleInstallFailed": "Impossible d'installer le paquet",
+    "toggleRemoveFailed": "Impossible de supprimer le paquet",
+    "searchFailed": "Échec de la recherche"
+  }
+}

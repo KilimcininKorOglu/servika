@@ -1,0 +1,133 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "firewall": "Pare-feu"
+  },
+  "title": "Pare-feu",
+  "subtitle": {
+    "pre": "Contrôlez ",
+    "bold": "qui peut accéder à votre serveur depuis internet",
+    "post": ". Appliquez un préréglage ou ajoutez une règle personnalisée."
+  },
+  "info": {
+    "pre": "Les règles n'affectent que les ",
+    "bold": "nouvelles connexions",
+    "mid": ". Votre session SSH ou panneau active restera connectée. Les ports protégés ",
+    "post": " ne peuvent pas être fermés."
+  },
+  "templates": {
+    "sectionTitle": "Préréglages",
+    "sectionHint": "appliquer en un clic",
+    "portLabel": "Port : {{ports}}",
+    "apply": "Appliquer",
+    "applying": "…",
+    "close_mysql": {
+      "name": "Fermer l'accès externe à MySQL",
+      "description": "Ferme le port de base de données 3306 à internet. MySQL reste accessible depuis le serveur."
+    },
+    "close_ftp": {
+      "name": "Fermer le FTP",
+      "description": "Ferme le port FTP 21. Vous pouvez fermer le FTP en toute sécurité si vous utilisez SFTP."
+    },
+    "close_mail": {
+      "name": "Fermer les ports de messagerie",
+      "description": "Ferme les ports SMTP, POP3 et IMAP. Cela réduit le risque de relais de spam lorsqu'aucun serveur de messagerie n'est présent."
+    },
+    "close_rpc": {
+      "name": "Fermer RPC / NFS",
+      "description": "Ferme le port rpcbind 111 et le port NFS 2049 lorsque le partage de fichiers n'est pas utilisé."
+    }
+  },
+  "modes": {
+    "ban": {
+      "name": "Bloquer une IP",
+      "description": "Bloque une adresse IP spécifique. Saisissez un port pour bloquer l'accès uniquement à ce port, ou laissez vide pour bloquer l'accès à tous les ports.",
+      "example": "Exemple : bloquer complètement 45.9.1.2 après des tentatives SSH répétées."
+    },
+    "whitelist": {
+      "name": "Autoriser une IP",
+      "description": "Saisissez un port pour autoriser l'accès uniquement depuis ces adresses IP et bloquer tous les autres. Laissez le port vide pour donner à cette IP un accès prioritaire à tous les ports.",
+      "example": "Exemple : saisissez le port 8443 et l'IP de votre bureau afin que vous seul puissiez accéder au panneau."
+    },
+    "close": {
+      "name": "Fermer un port",
+      "description": "Ferme un port à tout le monde sauf aux adresses autorisées. Les ports critiques pour SSH, le web, le panneau et le DNS sont protégés et ne peuvent pas être fermés.",
+      "example": "Exemple : fermer le port de base de données 3306 à l'accès externe."
+    }
+  },
+  "form": {
+    "sectionTitle": "Règle personnalisée",
+    "step1": "1. Que voulez-vous faire ?",
+    "step2": "2. Détails",
+    "ipLabel": "Adresse IP ou plage",
+    "ipPlaceholder": "1.2.3.4 ou 1.2.3.0/24",
+    "portLabel": "Port",
+    "portBlankHint": "(vide = tous)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "ex. 22",
+    "protocolLabel": "Protocole",
+    "noteLabel": "Note (facultatif)",
+    "notePlaceholder": "ex. IP tentant une attaque SSH par force brute",
+    "previewLabel": "Aperçu :",
+    "submit": "Ajouter et appliquer la règle",
+    "submitting": "Application…"
+  },
+  "warning": {
+    "pre": "",
+    "bold": "Attention :",
+    "mid": " Ce port ne sera ouvert qu'à l'adresse IP ci-dessus. Si votre IP est ",
+    "boldDynamic": "dynamique",
+    "post": ", vous perdrez l'accès lorsqu'elle changera. Le port SSH 22 reste ouvert, vous pouvez donc vous connecter via SSH et supprimer cette règle si vous êtes bloqué. Vous pouvez aussi utiliser une adresse IP statique."
+  },
+  "preview": {
+    "closeReady": "Le port {{port}} sera fermé à tout le monde sauf aux adresses autorisées.",
+    "closeEmpty": "Saisissez le port à fermer.",
+    "banPort": "{{address}} sera bloqué de l'accès au port {{port}}.",
+    "banAll": "{{address}} sera bloqué de l'accès à tous les ports.",
+    "whitelistPort": "Le port {{port}} ne sera ouvert qu'à {{address}}. Tous les autres seront bloqués.",
+    "whitelistAll": "{{address}} aura un accès prioritaire à tous les ports.",
+    "enterIp": "(saisissez une adresse IP)"
+  },
+  "rules": {
+    "title": "Règles actives",
+    "count": "({{count}})",
+    "refresh": "↻ Actualiser",
+    "colType": "Type",
+    "colIp": "IP / CIDR",
+    "colPort": "Port",
+    "colProto": "Proto",
+    "colNote": "Note",
+    "colAction": "Action",
+    "loading": "Chargement…",
+    "emptyTitle": "Aucune règle pour l'instant. Le serveur est ouvert à toutes les connexions.",
+    "emptyHint": "Appliquez un préréglage ci-dessus pour commencer.",
+    "everyone": "tout le monde",
+    "allPorts": "tous",
+    "delete": "Supprimer",
+    "deleting": "…"
+  },
+  "badge": {
+    "ban": "🚫 Bloqué",
+    "whitelist": "✅ Autorisé",
+    "close": "🔒 Fermé"
+  },
+  "confirm": {
+    "applyTemplate": "Appliquer le modèle « {{name}} » ?\nPorts à fermer : {{ports}}\nCes ports ne seront plus accessibles depuis internet.",
+    "removeClose": "fermer le port {{port}}",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "Supprimer la règle « {{summary}} » ?"
+  },
+  "success": {
+    "templateApplied_one": "« {{name}} » appliqué. {{count}} règle ajoutée.",
+    "templateApplied_other": "« {{name}} » appliqué. {{count}} règles ajoutées.",
+    "templateAlreadyApplied": "« {{name}} » est déjà appliqué. Aucune nouvelle règle n'a été ajoutée.",
+    "ruleAdded": "La règle a été ajoutée et appliquée au pare-feu."
+  },
+  "error": {
+    "applyTemplate": "Impossible d'appliquer le modèle",
+    "addRule": "Impossible d'ajouter la règle",
+    "deleteRule": "Impossible de supprimer la règle"
+  },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

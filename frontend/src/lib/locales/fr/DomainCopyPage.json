@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "copyWebsite": "Copier le site web"
+  },
+  "title": "Copier le site web",
+  "subtitle": {
+    "pre": "Crée un instantané horodaté des fichiers de votre site sous ",
+    "post": ", fournissant un point de restauration sûr avant d'apporter des modifications."
+  },
+  "note": {
+    "pre": "ℹ️ Cet outil copie uniquement les ",
+    "bold1": "fichiers",
+    "mid": " et n'inclut pas la base de données. Pour une sauvegarde complète, utilisez ",
+    "bold2": "Sauvegarde et restauration",
+    "post": "."
+  },
+  "createDescription": "Créer une nouvelle copie du contenu de public_html.",
+  "actions": {
+    "create": "Créer une copie",
+    "creating": "Copie…",
+    "delete": "Supprimer"
+  },
+  "existingTitle": "Copies existantes",
+  "loading": "Chargement…",
+  "empty": "Aucune copie pour l'instant.",
+  "back": "← Retour à l'abonnement",
+  "createdCopy": "Copie créée : {{name}} ({{size}} Mo)",
+  "confirmDelete": "Supprimer cette copie ?\n{{name}} ({{size}} Mo)",
+  "errors": {
+    "createFailed": "Impossible de créer la copie",
+    "deleteFailed": "Impossible de supprimer la copie"
+  }
+}

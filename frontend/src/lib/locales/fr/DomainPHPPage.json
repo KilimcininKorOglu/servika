@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "phpSettings": "Paramètres PHP"
+  },
+  "title": "Paramètres PHP",
+  "systemUser": "Utilisateur système : ",
+  "poolNotice": {
+    "pre": "Les paramètres configurés ici sont écrits dans le pool PHP-FPM (",
+    "mid1": "). Les fichiers ",
+    "mid2": " et ",
+    "post": " du site web peuvent les remplacer. L'enregistrement redémarre automatiquement PHP-FPM sans mettre le site hors ligne."
+  },
+  "loading": "Chargement…",
+  "saved": "Enregistré. PHP {{version}}, socket : {{socket}}",
+  "saveFailed": "Échec de l'enregistrement des paramètres",
+  "clearLogFailed": "Échec de la suppression du journal de débogage",
+  "processManager": {
+    "ondemand": "ondemand (recommandé, aucun processus au repos)",
+    "dynamic": "dynamic (s'adapte à la charge)",
+    "static": "static (pool fixe)"
+  },
+  "version": {
+    "title": "Version PHP",
+    "active": "Active",
+    "saveToApply": "Enregistrer pour appliquer"
+  },
+  "cards": {
+    "performance": "Performance et sécurité",
+    "general": "Général",
+    "debugMode": "Mode débogage PHP",
+    "lastErrors": "Dernières erreurs (journal de débogage)",
+    "fpmPool": "Pool PHP-FPM",
+    "installedModules": "Modules PHP installés",
+    "disableDangerous": "Désactiver les fonctions dangereuses",
+    "additionalDirectives": "Directives de configuration supplémentaires"
+  },
+  "help": {
+    "memoryLimit": "Mémoire maximale qu'un script peut allouer, en octets. Exemple : 256M.",
+    "maxExecutionTime": "Temps d'exécution maximal en secondes",
+    "maxInputTime": "Temps d'analyse des données POST/GET en secondes",
+    "postMaxSize": "Taille maximale des données POST. Doit être supérieure à upload_max_filesize.",
+    "uploadMaxFilesize": "Limite de téléversement d'un seul fichier",
+    "opcacheEnable": "Cache d'opcodes OPcache (recommandé : ACTIVÉ)",
+    "disableFunctions": "Fonctions PHP à désactiver (séparées par des virgules)",
+    "displayErrors": "Afficher les erreurs dans la sortie (garder désactivé en production)",
+    "logErrors": "Activer la journalisation des erreurs",
+    "allowUrlFopen": "Ouvrir des fichiers via HTTP/FTP",
+    "fileUploads": "Téléversements de fichiers HTTP",
+    "shortOpenTag": "Prise en charge des balises courtes <? ?>",
+    "errorReporting": "Niveau de signalement des erreurs (par exemple E_ALL & ~E_DEPRECATED)",
+    "includePath": "Répertoires d'inclusion des scripts (séparés par : sous Linux)",
+    "openBasedir": "Répertoires auxquels PHP peut accéder (vide = illimité). Séparez avec :",
+    "sessionSavePath": "Répertoire des fichiers de session (vide = /home/{system_user}/tmp)",
+    "mailForceExtraParameters": "Paramètres supplémentaires pour la fonction mail()",
+    "pm": "Stratégie du gestionnaire de processus",
+    "pmMaxChildren": "Nombre maximal de workers PHP simultanés",
+    "pmMaxRequests": "Requêtes avant le redémarrage d'un worker (évite les fuites de mémoire)",
+    "pmStartServers": "Workers démarrés initialement (dynamic uniquement)",
+    "pmMinSpareServers": "Nombre minimal de workers inactifs",
+    "pmMaxSpareServers": "Nombre maximal de workers inactifs"
+  },
+  "openBasedirPlaceholder": "par exemple : /home/user/:/tmp/",
+  "debug": {
+    "disableTitle": "Désactiver le mode débogage",
+    "enableTitle": "Activer le mode débogage",
+    "label": "Mode débogage",
+    "on": "Activé",
+    "off": "Désactivé",
+    "descPre": "Lorsqu'il est activé, les erreurs PHP sont affichées à l'écran et les erreurs fatales (E_ERROR, E_PARSE, ...) sont capturées de manière fiable via ",
+    "descMid": " et enregistrées dans ",
+    "descPost": ". Les erreurs fatales sont capturées même lorsque l'application appelle ",
+    "descEnd": ".",
+    "warningLabel": "Avertissement :",
+    "warningPre": " Avec le mode débogage activé, ",
+    "warningBold1": "display_errors = on",
+    "warningMid": " et ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " sont forcés ; les détails des erreurs peuvent être visibles par les visiteurs du site. Activez-le uniquement pendant le dépannage, ",
+    "warningBold3": "désactivez en production",
+    "warningEnd": ". Les modifications prennent effet après avoir cliqué sur ",
+    "warningSave": "Enregistrer",
+    "warningDot": "."
+  },
+  "debugLog": {
+    "sourcePre": "Les erreurs fatales les plus récentes en haut. Source : ",
+    "sourcePost": " (200 dernières lignes).",
+    "loading": "Chargement...",
+    "refresh": "Actualiser",
+    "clear": "Effacer",
+    "emptyOff": "Le mode débogage est désactivé. Activez-le ci-dessus et enregistrez pour commencer à journaliser les erreurs fatales.",
+    "emptyOn": "Aucune erreur enregistrée. Le journal de débogage est vide."
+  },
+  "modules": {
+    "countPre": "",
+    "countBold": "{{count}}",
+    "countPost": " modules sont installés pour PHP {{version}}. Les modules sont gérés à l'échelle du serveur et ne peuvent pas être activés ou désactivés pour un domaine individuel.",
+    "manageServer": "↗ Gérer les modules du serveur"
+  },
+  "dangerous": {
+    "descPre": "Ces fonctions présentent des risques d'injection shell, de RCE et de logiciels malveillants. Les bascules de catégorie mettent à jour ",
+    "descMid": ". ",
+    "descBoldOn": "Activé signifie autorisé",
+    "descAnd": ", et ",
+    "descBoldOff": "désactivé signifie bloqué",
+    "descPost": ".",
+    "enableAll": "Tout activer",
+    "blockAll": "Tout bloquer",
+    "blocked": "Bloqué",
+    "mixed": "Mixte",
+    "active": "Actif",
+    "editManually": "Modifier manuellement (disable_functions brut)",
+    "commaSeparated": "Noms de fonctions séparés par des virgules.",
+    "groups": {
+      "shellExecution": "Exécution shell",
+      "fileExecution": "Exécution de fichiers",
+      "networkAccess": "Accès réseau (risqué)",
+      "systemDiscovery": "Découverte système",
+      "moduleLoading": "Chargement de modules"
+    }
+  },
+  "additional": {
+    "descPre": "Définissez des paramètres supplémentaires en utilisant la syntaxe php.ini. Exemple : "
+  },
+  "save": {
+    "saving": "Enregistrement…",
+    "saveAndApply": "Enregistrer et appliquer",
+    "cancelReload": "Annuler / recharger"
+  },
+  "select": {
+    "custom": "Personnalisé…"
+  },
+  "flag": {
+    "on": "✓ Activé",
+    "off": "○ Désactivé"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "heading": "Portail client",
+  "subtitle": "Connectez-vous avec les identifiants de votre compte",
+  "field": {
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe"
+  },
+  "button": {
+    "signingIn": "Connexion…",
+    "signIn": "Se connecter"
+  },
+  "error": {
+    "loginFailed": "Échec de la connexion"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "loading": "Chargement…",
+  "notFound": "Sous-domaine introuvable.",
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "domain": "Domaine",
+    "subdomains": "Sous-domaines",
+    "subdomain": "Sous-domaine"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "Installez et gérez WordPress dans cette racine de document"
+    },
+    "logs": {
+      "label": "Journaux",
+      "description": "Journaux d'accès et d'erreurs de ce sous-domaine"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "État des dépendances de cette racine de document"
+    },
+    "protection": {
+      "label": "Protection par mot de passe",
+      "description": "Restreignez des répertoires avec l'authentification HTTP"
+    },
+    "statistics": {
+      "label": "Statistiques",
+      "description": "Analyse du trafic pour ce sous-domaine uniquement"
+    }
+  },
+  "toast": {
+    "phpSaved": "Ce sous-domaine fonctionne désormais avec PHP {{version}}.",
+    "phpChangeFailed": "Impossible de changer la version PHP"
+  },
+  "ssl": {
+    "active": "🔒 SSL actif",
+    "none": "Aucun SSL"
+  },
+  "intro": {
+    "pre": "Un sous-domaine de",
+    "post": ", servi depuis sa propre racine de document avec son propre pool PHP."
+  },
+  "details": {
+    "title": "Détails",
+    "address": "Adresse",
+    "documentRoot": "Racine de document",
+    "diskUsage": "Utilisation du disque",
+    "phpVersion": "Version PHP",
+    "created": "Créé le",
+    "serverIp": "IP du serveur"
+  },
+  "php": {
+    "title": "Version PHP",
+    "note": "Ce sous-domaine fonctionne sur son propre pool FPM, donc le modifier n'affecte pas le domaine parent.",
+    "versionLabel": "Version",
+    "applying": "Application…",
+    "apply": "Appliquer",
+    "validationNote": "Le vhost est validé avant l'enregistrement de la modification, donc une configuration rejetée laisse le site intact."
+  },
+  "toolsSection": {
+    "title": "Outils",
+    "note": "Chaque outil opère sur la racine de document de ce sous-domaine au lieu de celle du domaine parent."
+  },
+  "backToSubdomains": "← Retour aux sous-domaines"
+}

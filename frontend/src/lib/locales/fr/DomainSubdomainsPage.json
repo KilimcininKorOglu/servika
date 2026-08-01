@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "subdomains": "Sous-domaines"
+  },
+  "title": "Sous-domaines",
+  "subtitlePre": "Créez des sous-domaines (tels que",
+  "subtitlePost": ") sous ce domaine. Chacun dispose d'un répertoire web distinct.",
+  "toast": {
+    "created": "{{fqdn}} a été créé. Un enregistrement DNS A a été ajouté.",
+    "createFailed": "Impossible de créer le sous-domaine",
+    "deleteFailed": "Impossible de supprimer le sous-domaine",
+    "sslInstalled": "Le SSL de {{fqdn}} a été installé avec {{method}}.",
+    "sslInstallFailed": "Impossible d'installer le SSL"
+  },
+  "sslMethod": {
+    "letsencrypt": "Let's Encrypt",
+    "selfSigned": "un certificat auto-signé"
+  },
+  "confirmDelete": "Supprimer {{fqdn}} ?\nLe vhost, les fichiers (racine de document) et l'enregistrement DNS seront supprimés. Cette action est irréversible.",
+  "form": {
+    "title": "Nouveau sous-domaine",
+    "label": "Sous-domaine",
+    "creating": "Création…",
+    "add": "Ajouter un sous-domaine",
+    "hintPre": "Lettres minuscules, chiffres et tirets. Exemples :"
+  },
+  "list": {
+    "title": "Sous-domaines existants",
+    "loading": "Chargement…",
+    "empty": "Aucun sous-domaine pour l'instant.",
+    "phpPrefix": "PHP",
+    "manage": "Gérer",
+    "manageTitle": "Gérer ce sous-domaine",
+    "letsencryptTitle": "Installer un SSL Let's Encrypt",
+    "letsencrypt": "🔒 Let's Encrypt",
+    "selfSignedTitle": "Installer un SSL auto-signé",
+    "selfSigned": "Auto-signé",
+    "delete": "Supprimer",
+    "dnsNote": "ℹ️ Le sous-domaine est configuré immédiatement sur le serveur web. L'enregistrement DNS A de votre domaine doit pointer vers ce serveur avant qu'il puisse être accessible."
+  },
+  "backToSubscription": "← Retour à l'abonnement"
+}

@@ -1,0 +1,52 @@
+{
+  "loading": "Chargement…",
+  "notFound": "Introuvable",
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "sshAccess": "Accès SSH"
+  },
+  "title": "Accès SSH",
+  "subtitle": "accès shell du compte.",
+  "badge": {
+    "on": "SSH ACTIVÉ",
+    "off": "SSH DÉSACTIVÉ"
+  },
+  "toast": {
+    "accessActive": "Accès SSH actif.",
+    "accessDisabled": "Accès SSH désactivé.",
+    "operationFailed": "Échec de l'opération",
+    "keySaved": "Clé SSH enregistrée.",
+    "keysCleared": "Clés SSH effacées.",
+    "keySaveFailed": "Impossible d'enregistrer la clé"
+  },
+  "shell": {
+    "title": "Accès shell",
+    "enabledPrefix": "Activé :",
+    "disabledPrefix": "Désactivé :",
+    "currentPrefix": "Actuel :",
+    "disable": "Désactiver SSH",
+    "enable": "Activer SSH",
+    "demoNotice": "L'accès SSH ne peut pas être modifié pour le domaine de démonstration."
+  },
+  "connection": {
+    "title": "Détails de connexion",
+    "user": "Utilisateur",
+    "host": "Hôte",
+    "port": "Port",
+    "commandLabel": "Commande de connexion",
+    "copy": "Copier",
+    "passwordPrefix": "Mot de passe :",
+    "passwordBold": "le même que celui de votre compte FTP",
+    "passwordSuffix": ". Il est synchronisé automatiquement tant que SSH est actif. Vous pouvez aussi ajouter une clé publique SSH ci-dessous."
+  },
+  "key": {
+    "title": "Clé publique SSH (authorized_keys)",
+    "descPrefix": "Ajoutez votre clé publique pour vous connecter sans mot de passe.",
+    "configured": "Une clé est actuellement configurée.",
+    "notConfigured": "Aucune clé n'est encore configurée.",
+    "removeHint": "Enregistrez une valeur vide pour supprimer toutes les clés.",
+    "save": "Enregistrer la clé"
+  },
+  "backToSubscription": "← Retour à l'abonnement"
+}

@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "logs": "Journaux"
+  },
+  "title": "Journaux",
+  "streamFailed": "Le flux n'a pas pu démarrer (HTTP {{status}})",
+  "view": {
+    "table": "Tableau",
+    "raw": "Brut"
+  },
+  "autoScroll": "Défilement automatique",
+  "stop": "■ Arrêter",
+  "liveTail": "▶ Suivi en direct",
+  "last200": "↻ Dernières 200",
+  "clear": "Effacer",
+  "searchPlaceholder": "Rechercher par IP, chemin, code de statut, navigateur...",
+  "clearSearch": "Effacer la recherche",
+  "matches": "{{visible}} / {{total}} correspondances",
+  "waiting": "En attente... Les nouvelles lignes apparaîtront à leur arrivée.",
+  "emptyFile": "(le fichier journal est vide ou n'a pas encore été créé)",
+  "noMatch": "« {{search}} » Aucune ligne ne correspond à cette recherche.",
+  "linesFiltered": "{{visible}} / {{total}} lignes (filtrées)",
+  "lines": "{{count}} lignes",
+  "windowSuffix": ", fenêtre {{max}}",
+  "liveStream": "flux en direct",
+  "access": {
+    "time": "Heure",
+    "ip": "IP",
+    "method": "Méthode",
+    "path": "Chemin",
+    "status": "Statut",
+    "size": "Taille",
+    "browser": "Navigateur"
+  },
+  "error": {
+    "time": "Heure",
+    "level": "Niveau",
+    "client": "Client",
+    "message": "Message"
+  }
+}

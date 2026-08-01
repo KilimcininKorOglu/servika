@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Accueil",
+  "title": "Clients",
+  "subtitle": "Fiches de facturation et de contact. Les domaines y sont liés — ce n'est pas un compte de connexion au panneau.",
+  "newCustomer": "Nouveau client",
+  "loading": "Chargement…",
+  "empty": {
+    "title": "Aucune fiche client pour l'instant",
+    "description": "Créez d'abord une fiche client pour lier des domaines à un client."
+  },
+  "noMatch": "Aucun client ne correspond à votre recherche.",
+  "columns": {
+    "name": "Nom",
+    "email": "E-mail",
+    "plan": "Forfait",
+    "status": "Statut",
+    "created": "Créé le"
+  },
+  "status": {
+    "active": "Actif",
+    "passive": "Passif"
+  },
+  "actions": {
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  },
+  "modal": {
+    "editTitle": "Modifier le client",
+    "newTitle": "Nouveau client",
+    "name": "Nom",
+    "email": "E-mail",
+    "plan": "Forfait",
+    "noPlan": "Aucun forfait",
+    "status": "Statut",
+    "notes": "Notes",
+    "cancel": "Annuler",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer"
+  },
+  "delete": {
+    "title": "Supprimer le client",
+    "message": "{{name}} sera supprimé. Les domaines liés à ce client ne sont pas supprimés — seul le lien est effacé.",
+    "confirm": "Supprimer"
+  },
+  "toast": {
+    "added": "{{name}} ajouté.",
+    "updated": "{{name}} mis à jour.",
+    "deleted": "{{name}} supprimé."
+  },
+  "errors": {
+    "loadFailed": "Impossible de charger les clients",
+    "nameEmailRequired": "Le nom et l'e-mail sont obligatoires",
+    "saveFailed": "Impossible d'enregistrer",
+    "deleteFailed": "Impossible de supprimer"
+  }
+}

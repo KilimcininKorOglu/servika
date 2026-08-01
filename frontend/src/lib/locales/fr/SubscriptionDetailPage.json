@@ -1,0 +1,100 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "error": "Erreur"
+  },
+  "errors": {
+    "loadFailed": "Impossible de charger l'abonnement",
+    "suspendFailed": "Impossible de mettre à jour l'état de suspension du domaine"
+  },
+  "loading": "Chargement…",
+  "confirmSuspend": "Suspendre « {{domain}} » ? Le site web retournera HTTP 503 jusqu'à sa reprise.",
+  "notice": {
+    "suspended": "Le domaine a été suspendu.",
+    "resumed": "Le domaine a été repris."
+  },
+  "header": {
+    "switchSubscription": "Changer d'abonnement",
+    "suspended": "Suspendu",
+    "moreActions": "Plus d'actions",
+    "resumeDomain": "Reprendre le domaine",
+    "suspendDomain": "Suspendre le domaine"
+  },
+  "tabs": {
+    "dashboard": "Tableau de bord",
+    "hosting": "Hébergement et DNS"
+  },
+  "stats": {
+    "title": "Statistiques",
+    "refresh": "Actualiser",
+    "disk": "Espace disque",
+    "traffic": "Trafic mensuel",
+    "created": "Créé le",
+    "phpVersion": "Version PHP"
+  },
+  "footer": {
+    "website": "Site web :",
+    "ip": "IP :",
+    "systemUser": "Utilisateur système :",
+    "addDescription": "Ajouter une description"
+  },
+  "preview": {
+    "httpsOnly": "L'aperçu est disponible uniquement pour les sites HTTPS",
+    "autoAppear": "Il apparaît automatiquement lorsque le SSL est activé",
+    "website": "Site web",
+    "refresh": "Actualiser",
+    "refreshTitle": "Actualiser l'aperçu",
+    "sslRequired": "Le SSL est requis pour l'aperçu",
+    "open": "Ouvrir",
+    "previewAlt": "Aperçu de {{domain}}"
+  },
+  "groups": {
+    "filesAndDatabases": "Fichiers et bases de données",
+    "developmentTools": "Outils de développement",
+    "security": "Sécurité",
+    "hostingServices": "Services d'hébergement"
+  },
+  "tools": {
+    "connection": "Informations de connexion",
+    "connectionDesc": "FTP et base de données",
+    "files": "Fichiers",
+    "filesDesc": "Gestionnaire de fichiers",
+    "databases": "Bases de données",
+    "ftp": "FTP",
+    "ftpDesc": "Comptes FTP",
+    "backup": "Sauvegarde et restauration",
+    "backupDesc": "Gestion des sauvegardes",
+    "copy": "Copier le site web",
+    "copyDesc": "Clonage",
+    "php": "PHP",
+    "phpDesc": "Version {{version}}",
+    "logs": "Journaux",
+    "logsDesc": "Journaux d'accès et d'erreurs",
+    "cron": "Tâches planifiées",
+    "cronDesc": "Cron",
+    "git": "Git",
+    "gitDesc": "Intégration de dépôt",
+    "composer": "PHP Composer",
+    "composerDesc": "Gestionnaire de paquets",
+    "performance": "Performance",
+    "performanceDesc": "Accélérateurs",
+    "ssl": "Certificats SSL/TLS",
+    "sslExpires": "Expire le : {{expiry}}",
+    "sslLetsEncrypt": "Let's Encrypt",
+    "sslNotProtected": "Le domaine n'est pas protégé",
+    "passwordProtect": "Répertoires protégés par mot de passe",
+    "statistics": "Statistiques",
+    "statisticsDesc": "Analyse du trafic",
+    "imunify": "Imunify",
+    "imunifyDesc": "Antivirus",
+    "waf": "WAF (pare-feu applicatif web)",
+    "wafDesc": "ModSecurity + OWASP CRS",
+    "hostingSettings": "Paramètres d'hébergement",
+    "hostingSettingsDesc": "Racine de document et options",
+    "apacheNginx": "Apache et nginx",
+    "apacheNginxDesc": "En-têtes de sécurité et directives supplémentaires",
+    "dns": "Paramètres DNS",
+    "dnsDesc": "A, CNAME, MX"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "Applications",
+    "domainAndDns": "Domaine et DNS",
+    "email": "E-mail",
+    "filesAndDatabases": "Fichiers et bases de données",
+    "developmentTools": "Outils de développement",
+    "security": "Sécurité"
+  },
+  "wordpress": { "label": "WordPress", "desc": "Installation en un clic · gestion" },
+  "laravel": { "label": "Boîte à outils Laravel", "desc": "Installer · déployer · file d'attente" },
+  "dns": { "label": "Gestion DNS", "desc": "Enregistrements A, MX, TXT, CNAME" },
+  "subdomains": { "label": "Sous-domaines", "desc": "Sous-domaines" },
+  "addonDomains": { "label": "Domaines additionnels", "desc": "Domaines additionnels et parqués · redirections" },
+  "mail": { "label": "Comptes e-mail", "desc": "Boîtes aux lettres Postfix et Dovecot · SMTP" },
+  "connection": { "label": "Informations de connexion", "desc": "FTP, base de données" },
+  "files": { "label": "Fichiers", "desc": "Gestionnaire de fichiers" },
+  "databases": { "label": "Bases de données" },
+  "ftp": { "label": "FTP", "desc": "Comptes FTP" },
+  "backups": { "label": "Sauvegarde et restauration", "desc": "Gestion des sauvegardes" },
+  "copy": { "label": "Copier le site web", "desc": "Clonage" },
+  "php": { "label": "PHP", "desc": "Version {{version}}" },
+  "logs": { "label": "Journaux", "desc": "access, error" },
+  "cron": { "label": "Tâches planifiées", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "Intégration de dépôt" },
+  "composer": { "label": "PHP Composer", "desc": "Gestionnaire de paquets" },
+  "performance": { "label": "Performance", "desc": "Accélérateurs" },
+  "redis": { "label": "Cache Redis", "desc": "Cache objet isolé · accélérateur" },
+  "ssl": {
+    "label": "Certificats SSL/TLS",
+    "expires": "Expire le : {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "Le domaine n'est pas protégé"
+  },
+  "passwordProtection": { "label": "Répertoires protégés par mot de passe", "desc": ".htpasswd" },
+  "stats": { "label": "Statistiques", "desc": "Analyse du trafic" },
+  "accessControl": { "label": "Contrôle d'accès", "desc": "Protection anti-hotlink · autoriser/bloquer les IP" },
+  "imunify": { "label": "Imunify", "desc": "Antivirus" },
+  "ssh": {
+    "label": "Accès SSH",
+    "enabled": "Activé",
+    "disabled": "Désactivé"
+  }
+}

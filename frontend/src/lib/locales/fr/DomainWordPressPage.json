@@ -1,0 +1,124 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "subscription": "Abonnement",
+    "wordpress": "WordPress"
+  },
+  "title": "Boîte à outils WordPress",
+  "subtitle": "Gérez les versions, les extensions, les thèmes et les utilisateurs au même endroit.",
+  "loading": "Chargement…",
+  "actions": {
+    "new": "Nouveau WordPress"
+  },
+  "empty": {
+    "title": "Aucune installation WordPress n'existe encore sur ce domaine",
+    "subtitle": "Installez-la en un clic à l'aide du formulaire ci-dessous."
+  },
+  "tabs": {
+    "overview": "Aperçu",
+    "extensions": "Extensions",
+    "themes": "Thèmes",
+    "users": "Utilisateurs"
+  },
+  "toolkit": {
+    "adminPanel": "Panneau d'administration",
+    "remove": "Supprimer"
+  },
+  "metrics": {
+    "version": "Version",
+    "php": "PHP",
+    "database": "Base de données",
+    "maintenance": "Mode maintenance",
+    "upToDate": "à jour",
+    "active": "actif",
+    "on": "Activé",
+    "off": "Désactivé"
+  },
+  "overview": {
+    "updateVersion": "Mettre à jour la version · v{{version}}",
+    "updateAll": "Tout mettre à jour",
+    "disableMaintenance": "Désactiver le mode maintenance",
+    "enableMaintenance": "Activer le mode maintenance",
+    "clearCache": "Vider le cache",
+    "repairCore": "Réparer le cœur",
+    "hint": "Actions de maintenance rapides. Les mises à jour de version disponibles apparaissent dans la métrique ci-dessus."
+  },
+  "messages": {
+    "coreUpdated": "Cœur de WordPress mis à jour.",
+    "allUpdated": "Cœur, extensions et thèmes mis à jour.",
+    "maintenanceEnabled": "Mode maintenance activé.",
+    "maintenanceDisabled": "Mode maintenance désactivé.",
+    "cacheCleared": "Cache vidé.",
+    "repairDone": "Réparation du cœur terminée.",
+    "packageUpdated": "{{name}} mis à jour.",
+    "allUpdatesDone": "Toutes les mises à jour terminées.",
+    "activated": "{{name}} activé.",
+    "deactivated": "{{name}} désactivé."
+  },
+  "errors": {
+    "installFailed": "Échec de l'installation",
+    "operationFailed": "Échec de l'opération",
+    "resetFailed": "Impossible de réinitialiser le mot de passe",
+    "removeFailed": "Impossible de supprimer l'installation"
+  },
+  "output": {
+    "title": "Sortie de l'opération"
+  },
+  "btn": {
+    "processing": "Traitement…"
+  },
+  "packages": {
+    "loading": "Chargement…",
+    "noPlugins": "Aucune extension trouvée.",
+    "noThemes": "Aucun thème trouvé.",
+    "updateSingular": "{{count}} mise à jour disponible",
+    "updatePlural": "{{count}} mises à jour disponibles",
+    "updateAll": "Tout mettre à jour",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "version": "Version {{version}}",
+    "updateAvailable": " → {{version}} disponible",
+    "update": "Mettre à jour",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "activeTheme": "Thème actif"
+  },
+  "usersTab": {
+    "loading": "Chargement…",
+    "empty": "Aucun utilisateur trouvé.",
+    "resetPassword": "Réinitialiser le mot de passe"
+  },
+  "confirm": {
+    "resetPassword": "Générer un nouveau mot de passe pour « {{user}} » ?\nLe mot de passe actuel deviendra invalide.",
+    "rootRemove": "Les installations WordPress dans le répertoire racine ne peuvent pas être supprimées depuis le panneau.",
+    "remove": "Supprimer l'installation WordPress sous {{dir}} ?\nTous les fichiers de ce répertoire et sa base de données seront supprimés. Cette action est irréversible."
+  },
+  "installForm": {
+    "title": "Nouvelle installation WordPress",
+    "close": "✕ Fermer",
+    "siteTitle": "Titre du site",
+    "siteTitlePlaceholder": "Mon blog",
+    "subdirectory": "Sous-répertoire (facultatif)",
+    "subdirectoryPlaceholder": "vide = racine · exemple : blog",
+    "adminUser": "Nom d'utilisateur admin",
+    "adminEmail": "E-mail de l'admin",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "Installation… (~30 s)",
+    "install": "Installer WordPress"
+  },
+  "result": {
+    "installed": "WordPress {{version}} installé",
+    "site": "Site",
+    "admin": "Admin",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "savePassword": "Enregistrez le mot de passe maintenant. Il ne sera plus affiché."
+  },
+  "passwordModal": {
+    "title": "Nouveau mot de passe créé",
+    "user": "Utilisateur :",
+    "copy": "Copier",
+    "notice": "Ce mot de passe ne sera plus affiché. Enregistrez-le maintenant.",
+    "ok": "OK"
+  }
+}

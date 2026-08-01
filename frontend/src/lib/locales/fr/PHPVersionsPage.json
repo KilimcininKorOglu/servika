@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "tools": "Outils et paramètres",
+    "current": "Versions PHP"
+  },
+  "title": "Versions PHP",
+  "subtitle": "Ajoutez ou supprimez des versions PHP. Chacune s'exécute dans un pool PHP-FPM indépendant et peut être sélectionnée par domaine. L'installation comprend 14 paquets (fpm, cli, mysqlnd et 11 extensions).",
+  "alerts": {
+    "opInProgress": "Une opération PHP est déjà en cours. Attendez qu'elle se termine.",
+    "appstreamCannotRemove": "PHP AppStream est le défaut système et ne peut pas être supprimé."
+  },
+  "confirm": {
+    "install": "Quatorze paquets seront installés pour PHP {{version}} ({{resource}}). Continuer ?",
+    "remove": "PHP {{version}} (Remi) et TOUTES ses extensions seront SUPPRIMÉS.\nL'opération sera rejetée si un domaine utilise cette version. Continuer ?"
+  },
+  "success": {
+    "installed": "PHP {{version}} installé",
+    "removed": "PHP {{version}} supprimé"
+  },
+  "errors": {
+    "startInstallFailed": "Impossible de démarrer l'installation",
+    "startRemoveFailed": "Impossible de démarrer la suppression"
+  },
+  "log": {
+    "installStarted": "Installation de PHP {{version}} démarrée…\n",
+    "removeStarted": "Suppression de PHP {{version}} démarrée…\n",
+    "installInProgress": "Installation de PHP {{version}} en cours…",
+    "removeInProgress": "Suppression de PHP {{version}} en cours…",
+    "waiting": "En attente de la sortie…"
+  },
+  "filters": {
+    "all": "Tous ({{count}})",
+    "installed": "Installés ({{count}})",
+    "available": "Disponibles ({{count}})"
+  },
+  "loading": "Chargement…",
+  "badges": {
+    "installed": "INSTALLÉ",
+    "eol": "EOL"
+  },
+  "card": {
+    "version": "Version :",
+    "extensions": "Extensions :",
+    "service": "Service :"
+  },
+  "actions": {
+    "fixed": "Fixe (défaut système)",
+    "inProgress": "En cours…",
+    "remove": "Supprimer",
+    "install": "Installer"
+  }
+}

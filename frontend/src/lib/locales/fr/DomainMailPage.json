@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "email": "E-mail"
+  },
+  "title": "Comptes e-mail",
+  "subtitle": "Gérez les boîtes aux lettres natives Postfix et Dovecot. Utilisez le port SMTP 587 avec STARTTLS pour l'envoi authentifié.",
+  "loading": "Chargement…",
+  "back": "← Retour à l'abonnement",
+  "generatedPassword": {
+    "title": "Mot de passe pour {{email}}",
+    "saveNote": "Enregistrez-le maintenant. Il ne sera plus affiché.",
+    "copy": "Copier"
+  },
+  "enable": {
+    "notEnabled": "L'hébergement e-mail n'est pas encore activé pour ce domaine.",
+    "info": "Son activation ajoute les enregistrements DNS MX, SPF, DKIM et DMARC lorsque c'est possible.",
+    "enabling": "Activation…",
+    "button": "Activer l'e-mail"
+  },
+  "mailboxAdd": {
+    "title": "Ajouter une boîte aux lettres",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "mot de passe, généré si vide",
+    "adding": "Ajout…",
+    "add": "Ajouter"
+  },
+  "mailboxes": {
+    "title": "Boîtes aux lettres",
+    "empty": "Aucune boîte aux lettres pour l'instant.",
+    "suspended": "suspendue",
+    "suspend": "Suspendre",
+    "activate": "Activer",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "delete": "Supprimer"
+  },
+  "forwarders": {
+    "title": "Redirecteurs et catch-all",
+    "description": "Redirigez le courrier entrant vers une ou plusieurs adresses de destination sans créer de boîte aux lettres. Le catch-all redirige le courrier des adresses non définies de ce domaine.",
+    "sourcePlaceholder": "support",
+    "catchAll": "Rediriger toutes les adresses non définies de ce domaine",
+    "destinationPlaceholder": "cible1@example.com, cible2@example.com",
+    "adding": "Ajout…",
+    "add": "Ajouter",
+    "empty": "Aucun redirecteur pour l'instant.",
+    "suspended": "suspendu",
+    "suspend": "Suspendre",
+    "activate": "Activer",
+    "delete": "Supprimer"
+  },
+  "spam": {
+    "title": "Filtrage du spam",
+    "description": "Rspamd attribue un score à chaque message entrant. Le greylisting diffère temporairement, le seuil d'en-tête marque le courrier comme spam, et le seuil de rejet refuse la livraison.",
+    "notInstalled": " Rspamd n'est pas installé sur ce serveur ; les paramètres sont enregistrés mais non appliqués.",
+    "enable": "Activer le filtrage du spam pour ce domaine",
+    "greylist": "Greylist",
+    "addHeader": "Ajouter un en-tête",
+    "reject": "Rejeter",
+    "applying": "Application…",
+    "apply": "Appliquer la politique anti-spam"
+  },
+  "autoresponder": {
+    "title": "Réponse automatique",
+    "description": "Envoie une réponse d'absence depuis une boîte aux lettres, au plus une fois par intervalle au même expéditeur.",
+    "mailbox": "Boîte aux lettres",
+    "interval": "Intervalle de réponse (jours)",
+    "subjectPlaceholder": "Objet",
+    "bodyPlaceholder": "Corps du message",
+    "enable": "Activer la réponse automatique",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer la réponse automatique",
+    "remove": "Supprimer"
+  },
+  "filters": {
+    "title": "Filtres de messages",
+    "description": "Triez le courrier entrant dans des dossiers, redirigez-le ou supprimez-le avec des règles Sieve compilées par boîte aux lettres.",
+    "namePlaceholder": "Nom du filtre",
+    "subjectContains": "L'objet contient",
+    "fromContains": "L'expéditeur contient",
+    "toContains": "Le destinataire contient",
+    "matchedTextPlaceholder": "Texte correspondant",
+    "moveToFolder": "Déplacer vers un dossier",
+    "redirectTo": "Rediriger vers",
+    "discard": "Supprimer",
+    "folderPlaceholder": "Dossier (par ex. Factures)",
+    "targetPlaceholder": "cible@example.com",
+    "adding": "Ajout…",
+    "add": "Ajouter un filtre",
+    "empty": "Aucun filtre pour l'instant.",
+    "delete": "Supprimer"
+  },
+  "sendLimits": {
+    "title": "Limites d'envoi",
+    "description": "Plafonnez les destinataires sortants par boîte aux lettres. Le dépassement d'une limite suspend automatiquement le compte pour contenir une connexion compromise. Utilisez 0 pour illimité.",
+    "mailbox": "Boîte aux lettres",
+    "hourly": "Par heure ({{count}} utilisés)",
+    "daily": "Par jour ({{count}} utilisés)",
+    "suspendedNote": "Suspendu automatiquement à {{time}}. Réactivez la boîte aux lettres ci-dessus pour l'effacer.",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer les limites d'envoi"
+  },
+  "messages": {
+    "enabled": "L'hébergement e-mail a été activé pour ce domaine. Les enregistrements MX, SPF, DKIM et DMARC ont été ajoutés au DNS lorsque c'était possible.",
+    "forwarderAdded": "Le redirecteur de courrier a été ajouté.",
+    "spamApplied": "La politique anti-spam Rspamd a été validée et appliquée.",
+    "autoresponderSaved": "La réponse automatique et son script Sieve ont été appliqués.",
+    "autoresponderRemoved": "La réponse automatique a été supprimée.",
+    "filterAdded": "Le filtre de courrier a été compilé et activé.",
+    "sendLimitsSaved": "Les limites d'envoi ont été enregistrées."
+  },
+  "confirm": {
+    "deleteMailbox": "Supprimer la boîte aux lettres « {{email}} » ? Le Maildir restera sur le disque, et seule la fiche du compte sera supprimée.",
+    "deleteForwarder": "Supprimer le redirecteur « {{source}} » ?",
+    "deleteFilter": "Supprimer le filtre « {{name}} » ?"
+  },
+  "errors": {
+    "loadDomainFailed": "Impossible de charger le domaine",
+    "enableFailed": "Impossible d'activer l'hébergement e-mail",
+    "createMailboxFailed": "Impossible de créer la boîte aux lettres",
+    "addForwarderFailed": "Impossible d'ajouter le redirecteur de courrier",
+    "deleteMailboxFailed": "Impossible de supprimer la boîte aux lettres",
+    "deleteForwarderFailed": "Impossible de supprimer le redirecteur de courrier",
+    "resetPasswordFailed": "Impossible de réinitialiser le mot de passe",
+    "updateForwarderFailed": "Impossible de mettre à jour le redirecteur de courrier",
+    "updateMailboxFailed": "Impossible de mettre à jour la boîte aux lettres",
+    "applySpamFailed": "Impossible d'appliquer les paramètres anti-spam",
+    "readAutoresponderFailed": "Impossible de lire la réponse automatique",
+    "saveAutoresponderFailed": "Impossible d'enregistrer la réponse automatique",
+    "addFilterFailed": "Impossible d'ajouter le filtre de courrier",
+    "readSendLimitsFailed": "Impossible de lire les limites d'envoi",
+    "saveSendLimitsFailed": "Impossible d'enregistrer les limites d'envoi"
+  }
+}

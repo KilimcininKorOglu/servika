@@ -1,0 +1,61 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "redisCache": "Cache Redis"
+  },
+  "title": "Cache Redis",
+  "status": {
+    "active": "● Actif",
+    "disabled": "Désactivé"
+  },
+  "subtitle": {
+    "pre": "Alloue un ",
+    "bold": "cache d'objets Redis isolé et dédié",
+    "post": " à ce domaine. WordPress et les applications dynamiques peuvent réduire la charge de la base de données et répondre plus vite. Les autres sites ne peuvent pas accéder à ce cache."
+  },
+  "loading": "Chargement…",
+  "empty": {
+    "message": "Le cache Redis est désactivé pour ce domaine.",
+    "hint": "Son activation crée un utilisateur ACL isolé et des détails de connexion.",
+    "enable": "Activer le cache Redis",
+    "enabling": "Activation…"
+  },
+  "connection": {
+    "title": "Détails de connexion",
+    "disable": "Désactiver",
+    "host": "Hôte",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "keyPrefix": "Préfixe de clé"
+  },
+  "wp": {
+    "title": "Configuration WordPress",
+    "copy": "Copier",
+    "copied": "Copié ✓",
+    "instructionsPre": "1) Ajoutez les lignes suivantes à votre fichier ",
+    "instructionsFile": "wp-config.php",
+    "instructionsMid": ". 2) Installez l'extension ",
+    "instructionsBold": "Redis Object Cache",
+    "instructionsPost": " depuis le tableau de bord WordPress, puis sélectionnez « Enable Object Cache »."
+  },
+  "row": {
+    "show": "afficher",
+    "hide": "masquer",
+    "copy": "copier",
+    "copied": "✓"
+  },
+  "success": {
+    "enabledWithWp_one": "Le cache Redis a été activé et {{count}} installation WordPress a été connectée automatiquement. Aucune configuration supplémentaire n'est requise.",
+    "enabledWithWp_other": "Le cache Redis a été activé et {{count}} installations WordPress ont été connectées automatiquement. Aucune configuration supplémentaire n'est requise.",
+    "enabled": "Le cache Redis a été activé. Configurez les applications non-WordPress avec les détails de connexion ci-dessous.",
+    "disabled": "Le cache Redis a été désactivé."
+  },
+  "confirm": {
+    "disable": "Désactiver le cache Redis ? L'utilisateur ACL de ce domaine sera supprimé."
+  },
+  "error": {
+    "enable": "Impossible d'activer le cache Redis",
+    "disable": "Impossible de désactiver le cache Redis"
+  }
+}

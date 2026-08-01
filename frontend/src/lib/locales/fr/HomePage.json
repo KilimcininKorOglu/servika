@@ -1,0 +1,146 @@
+{
+  "shared": {
+    "more": "Plus →",
+    "manage": "Gérer →",
+    "loading": "Chargement…"
+  },
+  "widgets": {
+    "load-chart": "Graphique de charge",
+    "memory-chart": "Graphique de mémoire",
+    "wordpress": "Sites WordPress",
+    "panel-update": "Mise à jour du panneau",
+    "last-backup": "Dernière sauvegarde serveur",
+    "performance": "Performance / Optimisation",
+    "cve-security": "Avis de sécurité (CVE)",
+    "services": "Services",
+    "domains": "Domaines",
+    "server-info": "Informations serveur",
+    "health": "État du système",
+    "live-resources": "Ressources en direct",
+    "subscriptions": "Mes abonnements",
+    "network": "Trafic réseau"
+  },
+  "header": {
+    "welcome": "Bon retour, {{name}}",
+    "dashboard": "Tableau de bord",
+    "subtitle": "Aperçu du serveur et actions rapides",
+    "saving": "Enregistrement…",
+    "saved": "Disposition enregistrée",
+    "saveFailed": "Échec de l'enregistrement",
+    "resetLayout": "Réinitialiser la disposition"
+  },
+  "quota": {
+    "unsupportedTitle": "Le quota disque n'est pas disponible sur ce système de fichiers",
+    "unsupportedBody": "Servika nécessite un système de fichiers racine XFS pour le quota disque par locataire. Un redémarrage n'activera pas le quota sur le système de fichiers actuel.",
+    "rebootTitle": "Le quota disque sera activé après le redémarrage",
+    "rebootBody": "Le quota utilisateur XFS est configuré, mais son application est inactive. Redémarrez le serveur une fois pour activer le quota disque par locataire.",
+    "dismiss": "Ignorer"
+  },
+  "widgetNotFound": "Widget introuvable",
+  "dragToReorder": "Faites glisser pour réorganiser",
+  "wp": {
+    "subtitle": "Installations sur tous les comptes",
+    "installs": "Installations",
+    "updates": "Mises à jour",
+    "current": "À jour",
+    "pendingUpdatesText_one": " installation avec des mises à jour en attente, les versions obsolètes présentent des risques de sécurité.",
+    "pendingUpdatesText_other": " installations avec des mises à jour en attente, les versions obsolètes présentent des risques de sécurité.",
+    "empty": "Aucune installation WordPress trouvée",
+    "rootDir": "répertoire racine",
+    "badgeUpdate": "Mise à jour",
+    "badgeCurrent": "À jour",
+    "badgeUnknown": "Inconnu",
+    "more_one": "+{{count}} autre installation →",
+    "more_other": "+{{count}} autres installations →",
+    "unknownNote_one": "{{count}} installation n'a pas pu être déterminée (délai wp-cli dépassé).",
+    "unknownNote_other": "{{count}} installations n'ont pas pu être déterminées (délai wp-cli dépassé)."
+  },
+  "update": {
+    "subtitle": "Version et paquets système",
+    "running": "Mise à jour en cours",
+    "toolMissing": "Outil de mise à jour manquant",
+    "upToDate": "Panneau à jour",
+    "noStatus": "Aucune information de statut",
+    "badgeRunning": "En cours",
+    "badgeMissing": "Manquant",
+    "badgeCurrent": "À jour",
+    "systemPackages": "Paquets système"
+  },
+  "backup": {
+    "subtitle": "Sauvegarde quotidienne automatique",
+    "unavailable": "Résumé de sauvegarde indisponible",
+    "count_one": "sauvegarde · {{size}}",
+    "count_other": "sauvegardes · {{size}}",
+    "lastBackup": "Dernière sauvegarde",
+    "sitesBackedUp": "Sites sauvegardés",
+    "remoteTarget": "Cible distante",
+    "remoteActive": "{{count}} actif(s)",
+    "remoteNone": "Aucune",
+    "schedule": "Planification"
+  },
+  "performance": {
+    "subtitle": "Améliorer les paramètres du serveur",
+    "running": "Optimisation en cours",
+    "ready": "Optimisation prête",
+    "defaultStatus": "MariaDB · nginx · paramètres PHP",
+    "badgeRunning": "En cours",
+    "badgeIdle": "Inactif"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} services en cours d'exécution",
+    "subtitleStatus": "statut des services",
+    "allActive": "Tous actifs",
+    "down": "{{count}} arrêté(s)",
+    "active": "Actif",
+    "statusDown": "Arrêté"
+  },
+  "domains": {
+    "subtitle": "Sites hébergés et statut SSL",
+    "total": "Total",
+    "active": "Actif",
+    "ssl": "SSL",
+    "empty": "Aucun domaine pour l'instant",
+    "noSsl": "Aucun SSL",
+    "badgeActive": "Actif",
+    "more_one": "+{{count}} autre domaine →",
+    "more_other": "+{{count}} autres domaines →"
+  },
+  "serverInfo": {
+    "subtitle": "Matériel et système",
+    "hostname": "Nom d'hôte",
+    "ip": "Adresse IP",
+    "os": "OS",
+    "kernel": "Noyau",
+    "cpu": "CPU",
+    "cores": "Cœurs",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "Évaluation globale de l'état",
+    "servicesDown_one": "{{count}} service arrêté",
+    "servicesDown_other": "{{count}} services arrêtés",
+    "isolationLoss_one": "{{count}} perte d'isolation détectée",
+    "isolationLoss_other": "{{count}} pertes d'isolation détectées",
+    "memoryAt": "Mémoire à {{percent}} %",
+    "diskAt": "Disque à {{percent}} %",
+    "healthy": "Sain",
+    "fair": "Correct",
+    "degraded": "Dégradé",
+    "critical": "Critique"
+  },
+  "live": {
+    "subtitle": "CPU et mémoire en temps réel",
+    "cpu": "CPU",
+    "memory": "Mémoire",
+    "disk": "Disque ({{mount}})",
+    "freeGb": "{{value}} Go libres"
+  },
+  "subscriptions": {
+    "subtitle": "Vos services actifs",
+    "body": "Aperçu du panneau client"
+  },
+  "network": {
+    "subtitle": "Données entrantes et sortantes",
+    "body": "Statistiques de trafic disponibles dans la page Statistiques"
+  }
+}

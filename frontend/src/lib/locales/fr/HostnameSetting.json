@@ -1,0 +1,16 @@
+{
+  "title": "Nom d'hôte du serveur",
+  "protected": "Protégé contre le fournisseur",
+  "awaitingProtection": "En attente de protection",
+  "descriptionPre": "Change le nom d'hôte système de façon permanente. Cloud-init et DHCP/NetworkManager sont empêchés de réécrire le nom fourni par le fournisseur. Un nom pleinement qualifié est recommandé : ",
+  "placeholder": "server1.example.com",
+  "apply": "Changer le nom d'hôte",
+  "applying": "Application…",
+  "messages": {
+    "changed": "Nom d'hôte changé en « {{hostname}} » et rendu permanent."
+  },
+  "errors": {
+    "load": "Impossible de charger le nom d'hôte",
+    "change": "Impossible de changer le nom d'hôte"
+  }
+}

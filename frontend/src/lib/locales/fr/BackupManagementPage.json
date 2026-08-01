@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "toolsSettings": "Outils et paramètres",
+    "backupManager": "Gestionnaire de sauvegardes"
+  },
+  "title": "Gestionnaire de sauvegardes",
+  "subtitle": "Consultez les sauvegardes de tous les domaines au même endroit. Des sauvegardes automatiques quotidiennes sont effectuées, et les destinations S3/SFTP sont configurées par domaine.",
+  "toast": {
+    "triggered": "Les sauvegardes planifiées ont été déclenchées. Actualisez dans quelques secondes pour voir les résultats.",
+    "triggerFailed": "Impossible de déclencher les sauvegardes"
+  },
+  "kpi": {
+    "totalSize": "Taille totale des sauvegardes",
+    "totalBackups": "Total des sauvegardes",
+    "domainCount": "Nombre de domaines",
+    "remoteDestinations": "Destinations distantes actives",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Sauvegardes automatiques :",
+    "default": "Chaque jour à 03:00",
+    "suffix": ". Rétention de 7 jours",
+    "triggering": "Déclenchement...",
+    "backupNow": "⏱ Sauvegarder tous les domaines maintenant",
+    "refresh": "↻ Actualiser"
+  },
+  "table": {
+    "title": "Sauvegardes de domaines",
+    "colDomain": "Domaine",
+    "colCount": "Nombre de sauvegardes",
+    "colSize": "Taille totale",
+    "colLatest": "Dernière sauvegarde",
+    "colAction": "Action",
+    "loading": "Chargement...",
+    "noDomains": "Aucun domaine.",
+    "never": "jamais",
+    "manage": "Gérer"
+  },
+  "footnote": {
+    "pre": "ℹ️ Les sauvegardes",
+    "post": "y sont stockées. Les sauvegardes restent disponibles si un domaine est supprimé, ce qui permet une récupération après une suppression accidentelle. Ouvrez Gérer pour télécharger ou restaurer des sauvegardes individuelles et configurer les destinations."
+  }
+}

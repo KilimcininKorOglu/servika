@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "Pas encore vérifié",
+  "title": "Mise à jour du panneau",
+  "badges": {
+    "server": "Serveur",
+    "critical": "Critique",
+    "updateAvailable": "Mise à jour disponible"
+  },
+  "description": "Met à jour le panneau vers la dernière version depuis GitHub. Les paramètres d'environnement, les bases de données et les sites sont préservés, et une version défaillante est annulée automatiquement.",
+  "toolMissing": " L'outil de mise à jour est manquant et sera téléchargé automatiquement à la première utilisation.",
+  "labels": {
+    "current": "Actuelle",
+    "latest": "Dernière",
+    "buildDate": "Date de compilation",
+    "lastCheck": "Dernière vérification"
+  },
+  "unknown": "Inconnu",
+  "lastCheckFailed": "La dernière vérification de version a échoué : {{error}}",
+  "checksDisabled": "Les vérifications de version sont désactivées.",
+  "running": "La mise à jour est en cours. Le panneau peut redémarrer brièvement ; gardez cette page ouverte.",
+  "logStarted": "Mise à jour démarrée…\n",
+  "checkAndInstall": "Rechercher des mises à jour et installer",
+  "checking": "Vérification…",
+  "refreshStatus": "Actualiser le statut de version",
+  "confirmPrompt": "Le panneau sera mis à jour et son service redémarré. Confirmer ?",
+  "starting": "Démarrage…",
+  "confirmYes": "Oui, mettre à jour",
+  "cancel": "Annuler",
+  "errors": {
+    "refresh": "Impossible d'actualiser le statut de version",
+    "start": "Impossible de démarrer la mise à jour"
+  }
+}

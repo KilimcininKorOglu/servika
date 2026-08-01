@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "databases": "Bases de données"
+  },
+  "title": "Bases de données",
+  "actions": {
+    "new": "+ Nouvelle base de données",
+    "refresh": "↻ Actualiser"
+  },
+  "count": "{{count}} bases de données",
+  "loading": "Chargement...",
+  "empty": "Aucune base de données pour l'instant",
+  "columns": {
+    "database": "Base de données",
+    "username": "Nom d'utilisateur",
+    "host": "Hôte",
+    "password": "Mot de passe",
+    "created": "Créé le",
+    "actions": "Actions"
+  },
+  "password": {
+    "show": "Afficher",
+    "hide": "Masquer",
+    "copy": "Copier"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Ouvrir phpMyAdmin dans un nouvel onglet",
+    "resetPassword": "🔑 Réinitialiser le mot de passe",
+    "delete": "Supprimer"
+  },
+  "errors": {
+    "pmaToken": "Impossible d'obtenir le jeton phpMyAdmin",
+    "deleteFailed": "Échec de la suppression"
+  },
+  "delete": {
+    "title": "Supprimer la base de données",
+    "message": "La base de données « {{name}} » et son utilisateur seront définitivement supprimés. Cette action est irréversible.",
+    "confirm": "Oui, supprimer"
+  },
+  "newModal": {
+    "title": "Nouvelle base de données",
+    "created": "✓ Base de données créée",
+    "saveHint": "Enregistrez-les dans un endroit sûr. Vous ne pourrez peut-être plus consulter le mot de passe en clair par la suite :",
+    "labelDatabase": "Base de données",
+    "labelUser": "Utilisateur",
+    "labelPassword": "Mot de passe",
+    "done": "Terminé",
+    "autoPre": "Automatique",
+    "autoPost": ", laissez le panneau générer le nom de la base, l'utilisateur et le mot de passe",
+    "dbNameLabel": "Nom de la base de données",
+    "dbSuffixPlaceholder": "blog",
+    "dbUserLabel": "Utilisateur de la base de données",
+    "newUser": "Nouvel utilisateur",
+    "selectExistingUser": "Sélectionner un utilisateur existant",
+    "userSuffixPlaceholder": "bloguser",
+    "passwordLabel": "Mot de passe",
+    "passwordOptional": "(laisser vide pour en générer un)",
+    "passwordPlaceholder": "Au moins 12 caractères, lettres et chiffres",
+    "generate": "Générer",
+    "passwordStrength": "Le mot de passe doit comporter au moins 12 caractères, avec des lettres et des chiffres.",
+    "cancel": "Annuler",
+    "creating": "Création...",
+    "create": "Créer",
+    "errors": {
+      "dbSuffix": "Suffixe de base : lettres minuscules, chiffres, tiret bas uniquement ; 1 à 32 caractères",
+      "dbNameTooLong": "Nom de base trop long (préfixe + suffixe doivent faire au plus 64 caractères)",
+      "userSuffix": "Suffixe d'utilisateur : lettres minuscules, chiffres, tiret bas uniquement ; 1 à 32 caractères",
+      "userNameTooLong": "Nom d'utilisateur trop long (préfixe + suffixe doivent faire au plus 64 caractères)",
+      "passwordStrength": "Le mot de passe doit comporter au moins 12 caractères, avec des lettres et des chiffres",
+      "selectExisting": "Sélectionnez un utilisateur existant",
+      "createFailed": "Échec de la création"
+    }
+  },
+  "resultRow": {
+    "copied": "✓",
+    "copy": "Copier"
+  },
+  "pwReset": {
+    "title": "Réinitialiser le mot de passe : {{name}}",
+    "introPre": " le mot de passe de l'utilisateur est mis à jour dans MariaDB et le panneau en même temps.",
+    "customLabel": "Mot de passe personnalisé (laisser vide pour en générer un)",
+    "customPlaceholder": "Au moins 6 caractères",
+    "cancel": "Annuler",
+    "useThis": "Utiliser ce mot de passe",
+    "resetting": "Réinitialisation...",
+    "generateRandom": "Générer un mot de passe aléatoire",
+    "updated": "✓ Mot de passe mis à jour",
+    "saveHint": "Enregistrez-le dans un endroit sûr. Vous ne pourrez plus le consulter par la suite.",
+    "copy": "Copier",
+    "done": "Terminé",
+    "errors": {
+      "tooShort": "Le mot de passe doit comporter au moins 6 caractères",
+      "resetFailed": "Échec de la réinitialisation du mot de passe"
+    }
+  }
+}

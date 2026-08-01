@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Domaine",
+    "mail": "Messagerie",
+    "mailboxes": "Boîtes aux lettres",
+    "aliases": "Alias",
+    "suspended": "Suspendu"
+  },
+  "mailNone": "Aucun",
+  "overview": {
+    "title": "Comptes de messagerie",
+    "description": "Nombre de boîtes aux lettres et d'alias pour chaque domaine.",
+    "empty": "Aucun domaine trouvé."
+  },
+  "summary": {
+    "mailDomains": "Domaines de messagerie",
+    "totalMailboxes": "Total des boîtes aux lettres"
+  },
+  "queue": {
+    "title": "File d'attente de messagerie Postfix",
+    "subtitle": "Messages en attente de livraison, différés ou mis en attente par un administrateur.",
+    "refresh": "↻ Actualiser",
+    "retry": "Réessayer la file",
+    "loading": "Lecture de la file…",
+    "empty": "✓ La file d'attente de messagerie est vide",
+    "colId": "ID de file",
+    "colRoute": "Expéditeur → Destinataire",
+    "colSizeTime": "Taille / Heure",
+    "colActions": "Actions",
+    "release": "Libérer",
+    "hold": "Mettre en attente",
+    "requeue": "Remettre en file",
+    "delete": "Supprimer"
+  },
+  "confirmDelete": "Supprimer définitivement le message en file {{queueID}} ?",
+  "errors": {
+    "readFailed": "Impossible de lire la file Postfix",
+    "actionFailed": "L'opération sur la file a échoué"
+  }
+}

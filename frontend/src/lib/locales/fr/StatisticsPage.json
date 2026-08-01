@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "statistics": "Statistiques"
+  },
+  "title": "Statistiques",
+  "live": "● En direct (10 s)",
+  "subtitle": "Utilisation des ressources serveur, nombre de domaines et résumé système.",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "Mémoire",
+    "disk": "Disque",
+    "load": "Charge (1 min)"
+  },
+  "coresValue": "{{cores}} cœurs",
+  "loadSub": "5 min : {{five}} · 15 min : {{fifteen}}",
+  "system": {
+    "title": "Système",
+    "hostname": "Nom d'hôte",
+    "os": "Système d'exploitation",
+    "kernel": "Noyau",
+    "processor": "Processeur",
+    "swap": "Swap",
+    "panelVersion": "Version du panneau"
+  },
+  "processorValue": "{{model}} · {{cores}} cœurs",
+  "swapValue": "{{percent}} % · {{used}} / {{total}}",
+  "domains": {
+    "title": "Domaines",
+    "total": "Total des domaines",
+    "active": "Domaines actifs",
+    "inactive": "Domaines inactifs"
+  },
+  "footer": {
+    "pre": "Visitez la page ",
+    "link": "Surveillance",
+    "post": " pour une surveillance plus détaillée."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "addonDomains": "Domaines additionnels"
+  },
+  "title": "Domaines additionnels",
+  "subtitle": "Créez des domaines additionnels ou parqués et configurez des redirections de domaine complètes.",
+  "toast": {
+    "created": "{{domain}} a été créé.",
+    "createFailed": "Impossible de créer le domaine additionnel",
+    "deleted": "{{domain}} a été supprimé.",
+    "deleteFailed": "Impossible de supprimer le domaine additionnel",
+    "redirectSaved": "Les paramètres de redirection ont été enregistrés.",
+    "redirectSaveFailed": "Impossible d'enregistrer les paramètres de redirection",
+    "redirectRemoved": "Les paramètres de redirection ont été supprimés.",
+    "redirectRemoveFailed": "Impossible de supprimer les paramètres de redirection"
+  },
+  "mode": {
+    "parked": "domaine parqué",
+    "addon": "domaine additionnel"
+  },
+  "confirmDelete": "Supprimer {{domain}} ?\nLe {{mode}}, le vhost, la zone DNS et les fiches du panneau seront supprimés. Cette action est irréversible.",
+  "confirmRemoveRedirect": "Supprimer la redirection du domaine ?",
+  "form": {
+    "title": "Nouveau domaine additionnel",
+    "domainLabel": "Domaine",
+    "parkedLabel": "Domaine parqué",
+    "creating": "Création…",
+    "add": "Ajouter le domaine",
+    "hint": "Les domaines additionnels utilisent leur propre racine de document. Les domaines parqués partagent la racine de document du domaine parent."
+  },
+  "redirect": {
+    "title": "Redirection de domaine complète",
+    "active": "Active",
+    "targetLabel": "URL cible",
+    "statusLabel": "Statut",
+    "status301": "301 Permanente",
+    "status302": "302 Temporaire",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer la redirection",
+    "remove": "Supprimer"
+  },
+  "list": {
+    "title": "Domaines existants",
+    "loading": "Chargement…",
+    "empty": "Aucun domaine additionnel pour l'instant.",
+    "parked": "Parqué",
+    "phpPrefix": "PHP",
+    "delete": "Supprimer"
+  },
+  "backToSubscription": "← Retour à l'abonnement"
+}

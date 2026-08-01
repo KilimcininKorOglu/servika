@@ -1,0 +1,37 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines"
+  },
+  "fallback": {
+    "label": "Outil",
+    "description": "Pas encore implémenté."
+  },
+  "notReady": "Pas prêt",
+  "domainLabel": "Domaine : ",
+  "construction": {
+    "heading": "En construction",
+    "availablePrefix": "Ce module sera disponible dans la phase ",
+    "availableSuffix": ".",
+    "availableLater": "Ce module sera disponible dans une phase ultérieure.",
+    "returnToDashboard": "← Retour au tableau de bord du domaine"
+  },
+  "tool": {
+    "connection": { "label": "Détails de connexion", "description": "Serveur FTP, nom d'utilisateur, chaîne de connexion à la base de données et actions de copie rapide." },
+    "files": { "label": "Gestionnaire de fichiers", "description": "Lister, téléverser, télécharger et modifier les permissions des fichiers sous public_html." },
+    "databases": { "label": "Bases de données", "description": "Bases de données MySQL, utilisateurs et intégration phpMyAdmin." },
+    "ftp": { "label": "Comptes FTP", "description": "Comptes FTP virtuels, mots de passe et répertoires personnels via Pure-FTPd." },
+    "backups": { "label": "Sauvegarde et restauration", "description": "Sauvegarder les archives tarball et les exports de base de données vers SFTP, S3 ou le stockage local." },
+    "copy": { "label": "Copier le site web", "description": "Cloner un site web existant vers un autre domaine." },
+    "php": { "label": "Paramètres PHP", "description": "Sélection du pool PHP-FPM, changements de version et paramètres php.ini." },
+    "logs": { "label": "Journaux", "description": "Surveillance en direct de access.log et error.log avec suivi WebSocket." },
+    "cron": { "label": "Tâches planifiées", "description": "Éditeur crontab par utilisateur." },
+    "git": { "label": "Git", "description": "Connecter des dépôts, configurer des clés de déploiement et tirer automatiquement avec des webhooks." },
+    "composer": { "label": "PHP Composer", "description": "Interface web pour composer install et update." },
+    "performance": { "label": "Performance", "description": "Accélérateurs tels que OPcache, gzip et le chargement différé." },
+    "ssl": { "label": "Certificat SSL/TLS", "description": "Installation et renouvellement automatiques de Let's Encrypt." },
+    "password-protection": { "label": "Répertoires protégés par mot de passe", "description": "Protéger les répertoires avec .htpasswd." },
+    "stats": { "label": "Statistiques", "description": "Rapports de disque, trafic et visiteurs." },
+    "imunify": { "label": "Imunify", "description": "Intégration antivirus et WAF." }
+  }
+}

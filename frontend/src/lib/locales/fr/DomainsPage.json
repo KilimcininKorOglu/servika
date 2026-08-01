@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines"
+  },
+  "title": "Domaines",
+  "subtitle": "Consultez tous les domaines enregistrés, modifiez leur statut en masse ou supprimez-les.",
+  "loading": "Chargement…",
+  "searchPlaceholder": "🔍 Rechercher des domaines…",
+  "newDomain": "Nouveau domaine",
+  "empty": {
+    "title": "Aucun domaine pour l'instant",
+    "description": "Commencez par ajouter votre premier domaine. Un utilisateur Linux, un vhost nginx, un pool PHP-FPM, un compte FTP, une base de données MySQL et une zone DNS seront créés automatiquement.",
+    "button": "Créer un domaine"
+  },
+  "columns": {
+    "domainName": "Nom de domaine",
+    "systemUser": "Utilisateur système",
+    "plan": "Forfait",
+    "php": "PHP",
+    "disk": "Disque",
+    "status": "Statut",
+    "created": "Créé le",
+    "actions": "Actions"
+  },
+  "openInNewTab": "Ouvrir dans un nouvel onglet",
+  "sslExpires": "Expire le : {{date}}",
+  "sslActive": "SSL actif",
+  "demoBadge": "DÉMO",
+  "reseller": "Revendeur : {{name}}",
+  "noPlan": "Aucun",
+  "subdomain": "SOUS",
+  "subdomainStatus": "sous-domaine",
+  "subdomainParentPlan": "Parent",
+  "manage": "Gérer",
+  "addSubdomain": "+ Sous-domaine",
+  "bulk": {
+    "selected": "{{count}} sélectionné(s)",
+    "activate": "▶ Activer",
+    "deactivate": "⏸ Désactiver",
+    "delete": "🗑 Supprimer ({{count}})",
+    "clear": "Effacer la sélection"
+  },
+  "deleteConfirm": {
+    "title": "⚠ Suppression groupée de domaines",
+    "messageMid": " domaines et toutes les ressources dépendantes (utilisateurs Linux, répertoires personnels, bases de données, comptes FTP, vhosts et zones DNS) seront ",
+    "messageBold": "définitivement",
+    "messagePost": " supprimés.",
+    "moreItems": "+ {{count}} de plus…",
+    "typeLabel": "Saisissez ",
+    "typeSuffix": " pour confirmer :",
+    "cancel": "Annuler",
+    "confirm": "Oui, supprimer"
+  },
+  "createModal": {
+    "title": "Créer un nouveau domaine",
+    "subtitle": "L'utilisateur Linux, le vhost nginx, le pool PHP-FPM, le compte FTP, la base de données MySQL et la zone DNS sont configurés automatiquement.",
+    "domainName": "Nom de domaine",
+    "domainNamePlaceholder": "example.com",
+    "loading": "Chargement…",
+    "domainNameHintPre": "Lettres minuscules, chiffres, tirets et points. Par exemple : ",
+    "domainNameHintMid": " ou ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "panel.site.com",
+    "phpVersion": "Version PHP",
+    "phpDefault": "PHP 8.3 (par défaut)",
+    "servicePlan": "Forfait de service",
+    "planNone": "(aucun)",
+    "issueSsl": "Installer un certificat SSL Let's Encrypt après la création",
+    "sslWarning": "⚠️ L'enregistrement DNS A du domaine doit déjà pointer vers ce serveur, sinon l'émission échoue et vous pourrez réessayer plus tard depuis la page SSL.",
+    "cancel": "Annuler",
+    "creating": "Création…",
+    "create": "Créer"
+  },
+  "resultModal": {
+    "title": "✓ Domaine créé",
+    "readyPre": " est prêt. Les mots de passe ci-dessous ne sont affichés ",
+    "readyBold": "qu'une seule fois",
+    "readyPost": ". Conservez-les en lieu sûr.",
+    "ftp": "FTP",
+    "mysql": "Base de données MySQL",
+    "host": "Hôte",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "database": "Base de données",
+    "systemUser": "Utilisateur système : ",
+    "ok": "OK"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "Cliquez pour copier",
+    "hide": "Masquer",
+    "show": "Afficher",
+    "copied": "Copié"
+  },
+  "toast": {
+    "created": "✓ « {{name}} » créé. L'utilisateur Linux, le vhost nginx, le pool PHP-FPM, le compte FTP, la base de données MySQL et la zone DNS sont prêts.",
+    "sslInstalled": " Le SSL Let's Encrypt a été installé.",
+    "sslFailed": " (Le SSL Let's Encrypt n'a pas pu être émis — assurez-vous que l'enregistrement DNS A pointe ici, puis installez-le depuis la page SSL.)",
+    "deleted": "✓ {{success}}/{{total}} domaines supprimés",
+    "statusChanged": "✓ {{count}} domaines passés à « {{status}} »"
+  },
+  "errors": {
+    "invalidDomain": "Nom de domaine invalide. Par exemple : example.com ou panel.example.com",
+    "createFailed": "Impossible de créer le domaine",
+    "statusFailed": "Impossible de changer le statut"
+  }
+}

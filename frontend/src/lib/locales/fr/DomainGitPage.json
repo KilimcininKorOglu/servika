@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "git": "Git"
+  },
+  "title": "Déploiement Git",
+  "loading": "Chargement…",
+  "intro": {
+    "pre": " · ",
+    "text": "Connectez un dépôt, ajoutez la clé de déploiement à GitHub et utilisez l'URL du webhook pour des pulls automatiques."
+  },
+  "errors": {
+    "patRequired": "Un PAT GitHub est requis",
+    "connectFailed": "Impossible de se connecter à GitHub",
+    "loadReposFailed": "Impossible de charger les dépôts",
+    "selectRepoBranch": "Sélectionnez un dépôt et une branche",
+    "connectionFailed": "Échec de la connexion"
+  },
+  "messages": {
+    "connected": "Connecté à GitHub : @{{login}}",
+    "repoConnected": "Dépôt connecté : {{repo}}@{{branch}}",
+    "webhookEnabled": " · Déploiement automatique activé (webhook créé)",
+    "webhookError": " · Erreur de webhook : {{error}}",
+    "ghDisconnected": "Connexion GitHub supprimée",
+    "connectHint": "Dépôt connecté. Copiez la clé de déploiement, ajoutez-la à votre dépôt GitHub, puis cliquez sur « Cloner ».",
+    "cloned": "Cloné. Commit : {{commit}}",
+    "cloneFailed": "Échec du clonage",
+    "pullDone": "Pull terminé. Commit : {{commit}}",
+    "pullFailed": "Échec du pull",
+    "repoRemoved": "Connexion au dépôt supprimée"
+  },
+  "confirm": {
+    "ghDisconnect": "La connexion GitHub sera supprimée. Tout webhook sera supprimé, mais les fichiers existants du dépôt ne seront pas affectés."
+  },
+  "github": {
+    "title": "Connexion GitHub",
+    "subtitle": "Connectez-vous avec un PAT, choisissez un dépôt et activez le déploiement en un clic avec un webhook automatique.",
+    "removeConnection": "Supprimer la connexion",
+    "patLabel": "Jeton d'accès personnel (classic)",
+    "connecting": "Connexion…",
+    "connect": "Connecter",
+    "patHintLink": "github.com/settings/tokens",
+    "patHintPre": " →\n                  PAT à granularité fine → portée : ",
+    "patHintScope1": "repo",
+    "patHintMid": " +",
+    "patHintScope2": "admin:repo_hook",
+    "patHintPost": " (pour le déploiement automatique).",
+    "autoDeployBadge": "● Déploiement automatique",
+    "repo": "Dépôt",
+    "selectPlaceholder": "— sélectionner —",
+    "reposFound": "{{count}} dépôts trouvés",
+    "branch": "Branche",
+    "autoDeployLabel": "Déployer automatiquement au push (crée un webhook)",
+    "useRepo": "Utiliser ce dépôt",
+    "webhookLabel": "Webhook : {{url}}"
+  },
+  "repoCard": {
+    "settingsTitle": "Paramètres du dépôt",
+    "connectTitle": "Connecter le dépôt",
+    "gitUrl": "URL Git (SSH)",
+    "gitUrlPlaceholder": "git@github.com:username/repo.git",
+    "gitUrlHint": "Utilisez une URL SSH pour les dépôts privés. L'authentification HTTPS n'est pas prise en charge.",
+    "branch": "Branche",
+    "targetDir": "Répertoire cible",
+    "update": "Mettre à jour",
+    "connect": "Connecter",
+    "clone": "⬇ Cloner (efface la cible)",
+    "pull": "↻ Pull",
+    "removeConnection": "Supprimer la connexion"
+  },
+  "deployKey": {
+    "title": "Clé de déploiement (publique)",
+    "copy": "Copier",
+    "hint": "GitHub → Dépôt → Settings → Deploy keys → Add deploy key, puis collez cette clé (l'accès en écriture n'est pas requis)."
+  },
+  "webhook": {
+    "title": "Webhook (pull automatique)",
+    "hintPre": "GitHub → Dépôt → Settings → Webhooks → Add webhook. Content type : ",
+    "hintPost": ". L'événement push est suffisant.",
+    "payloadUrl": "URL de charge utile",
+    "secret": "Secret",
+    "contentType": "Content type",
+    "contentTypeValue": "application/json",
+    "events": "Événements",
+    "eventsValue": "Uniquement l'événement push"
+  },
+  "status": {
+    "title": "État de synchronisation",
+    "latestSync": "Dernière synchronisation",
+    "noneYet": "— (aucune pour l'instant)",
+    "latestCommit": "Dernier commit",
+    "statusLabel": "Statut",
+    "successful": "✓ réussie",
+    "error": "⚠ erreur",
+    "latestLog": "Dernier journal"
+  },
+  "cloneDialog": {
+    "title": "Clone initial",
+    "message": "Le répertoire cible ({{dir}}) sera entièrement vidé, puis la branche {{branch}} du dépôt sera clonée. Continuer ?",
+    "confirm": "Oui, cloner"
+  },
+  "deleteDialog": {
+    "title": "Supprimer la connexion au dépôt",
+    "message": "La fiche du panneau sera supprimée. Les fichiers clonés resteront sur le disque.",
+    "confirm": "Oui, supprimer"
+  }
+}

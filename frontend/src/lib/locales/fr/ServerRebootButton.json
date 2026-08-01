@@ -1,0 +1,14 @@
+{
+  "title": "Redémarrage du serveur",
+  "description": "Redémarrez l'ensemble du serveur uniquement après que les tâches actives et les opérations clients peuvent être interrompues en toute sécurité.",
+  "confirmLabel": "Saisissez REBOOT pour confirmer",
+  "placeholder": "REBOOT",
+  "reboot": "Redémarrer le serveur",
+  "requesting": "Demande en cours…",
+  "messages": {
+    "requested": "Redémarrage demandé. Le panneau sera indisponible pendant que le serveur redémarre."
+  },
+  "errors": {
+    "reboot": "Impossible de demander le redémarrage du serveur"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Historique de charge du système",
+  "subtitle": "Charge moyenne (1 / 5 / 15 min)",
+  "cores": "{{count}} cœurs",
+  "scale": "échelle √",
+  "coresCapacity": "{{count}} cœurs · 100 %",
+  "noData": "Aucune donnée collectée pour l'instant",
+  "noDataHint": "Les échantillons sont enregistrés chaque minute ; le graphique se remplit en quelques minutes."
+}

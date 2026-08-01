@@ -1,0 +1,25 @@
+{
+  "breadcrumbHome": "Accueil",
+  "breadcrumbServerStatus": "État du serveur",
+  "title": "État du serveur",
+  "subtitle": "Un instantané en direct du serveur. Cet écran est en lecture seule, la gestion des services relève de l'administrateur.",
+  "loading": "Chargement…",
+  "errorLoad": "Impossible de charger l'état du serveur",
+  "cards": {
+    "cpu": "CPU",
+    "memory": "Mémoire",
+    "disk": "Disque",
+    "panelVersion": "Version du panneau"
+  },
+  "loadText": "charge {{values}}",
+  "updateAvailable": "mise à jour disponible : v{{version}}",
+  "upToDate": "à jour",
+  "servicesHeading": "Services",
+  "noServices": "Aucune information sur les services.",
+  "statuses": {
+    "active": "En cours d'exécution",
+    "inactive": "Arrêté",
+    "failed": "Échoué",
+    "absent": "Non installé"
+  }
+}

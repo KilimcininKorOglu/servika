@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "laravel": "Boîte à outils Laravel"
+  },
+  "loading": "Chargement…",
+  "title": "Boîte à outils Laravel",
+  "subtitle": "Installez, déployez et exploitez une application Laravel pour cet abonnement.",
+  "backToSubscription": "Retour à l'abonnement",
+  "tabs": {
+    "overview": "Aperçu",
+    "install": "Installer",
+    "commands": "Commandes",
+    "env": ".env",
+    "deploy": "Déployer",
+    "workers": "Workers"
+  },
+  "messages": {
+    "actionCompleted": "Action terminée",
+    "actionFailed": "Échec de l'action"
+  },
+  "overview": {
+    "title": "État de l'application",
+    "installed": "Installée",
+    "yes": "Oui",
+    "no": "Non",
+    "appRoot": "Racine de l'application",
+    "documentPath": "Chemin du document",
+    "php": "PHP",
+    "composerManifest": "Manifeste Composer",
+    "found": "Trouvé",
+    "missing": "Manquant",
+    "git": "Git",
+    "repositoryFound": "Dépôt trouvé",
+    "notConnected": "Non connecté",
+    "maintenance": "Maintenance",
+    "enabled": "Activée",
+    "disabled": "Désactivée",
+    "schedule": "Planification",
+    "queue": "File d'attente"
+  },
+  "install": {
+    "title": "Installer Laravel",
+    "mode": "Mode",
+    "modeRemote": "Cloner un dépôt distant",
+    "modeScaffold": "Créer un nouveau projet Laravel",
+    "modeLocal": "Initialiser un dépôt Git vide",
+    "appRoot": "Racine de l'application",
+    "repositoryUrl": "URL du dépôt",
+    "repositoryUrlPlaceholder": "https://github.com/example/app.git",
+    "branch": "Branche",
+    "branchPlaceholder": "main",
+    "startInstall": "Démarrer l'installation",
+    "checkInstallStatus": "Vérifier l'état de l'installation"
+  },
+  "commands": {
+    "title": "Commandes Laravel",
+    "packagePlaceholder": "vendor/package",
+    "scriptPlaceholder": "nom du script",
+    "run": "Exécuter"
+  },
+  "env": {
+    "title": "Fichier d'environnement",
+    "load": "Charger .env",
+    "save": "Enregistrer .env"
+  },
+  "deploy": {
+    "title": "Déployer",
+    "deployWithMigrate": "Déployer avec migrate et build",
+    "checkDeployStatus": "Vérifier l'état du déploiement",
+    "disableMaintenance": "Désactiver la maintenance",
+    "enableMaintenance": "Activer la maintenance"
+  },
+  "workers": {
+    "title": "Worker de planification et de file d'attente",
+    "queueTimeout": "Délai d'attente de la file",
+    "maxJobs": "Nombre max de jobs",
+    "connection": "Connexion",
+    "disableSchedule": "Désactiver la planification",
+    "enableSchedule": "Activer la planification",
+    "disableQueue": "Désactiver la file d'attente",
+    "enableQueue": "Activer la file d'attente"
+  },
+  "common": {
+    "save": "Enregistrer"
+  }
+}

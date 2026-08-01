@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "La copie automatique a échoué. Appuyez sur Ctrl+C, puis sur Entrée :",
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "connectionDetails": "Détails de connexion"
+  },
+  "title": "Détails de connexion",
+  "subtitle": "Sélectionnez une valeur pour la copier automatiquement",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Hôte",
+    "port": "Port",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "homeDirectory": "Répertoire personnel",
+    "database": "Base de données",
+    "webRoot": "Racine web",
+    "ipv4": "IPv4",
+    "systemUser": "Utilisateur système",
+    "httpUrl": "URL HTTP",
+    "httpsUrl": "URL HTTPS"
+  },
+  "links": {
+    "ftp": "Aller à la gestion FTP →",
+    "database": "Aller à la gestion des bases de données →"
+  },
+  "row": {
+    "selectToCopy": "Sélectionner pour copier",
+    "copied": "✓ Copié"
+  },
+  "password": {
+    "button": "🔑 Afficher / réinitialiser le mot de passe"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Base de données"
+  },
+  "modal": {
+    "titleSuffix": "Mot de passe",
+    "userLabel": "Utilisateur :",
+    "notStored": "(non stocké)",
+    "notAuthorized": "(non autorisé)",
+    "showCurrent": "👁 Afficher le mot de passe actuel",
+    "currentPasswordLabel": "Mot de passe actuel",
+    "newPasswordGenerated": "✓ Nouveau mot de passe généré",
+    "copyWarning": "⚠ Copiez le mot de passe maintenant. Vous ne pourrez peut-être plus le consulter après avoir fermé cette fenêtre.",
+    "close": "Fermer",
+    "generating": "Génération…",
+    "generateAgain": "↻ Générer à nouveau",
+    "generateNew": "⚡ Générer un nouveau mot de passe",
+    "errorGenerate": "Impossible de générer le mot de passe"
+  },
+  "copyButton": {
+    "copy": "Copier",
+    "copied": "✓ Copié"
+  }
+}

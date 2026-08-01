@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "Accueil",
+  "breadcrumbTitle": "Forfaits de service",
+  "title": "Forfaits de service",
+  "subtitle": "Définissez des forfaits de service pour les domaines. Chaque domaine est associé à un forfait, et des ressources telles que le disque, le trafic, la version PHP, le nombre de bases de données et les limites de sous-domaines sont configurées par forfait.",
+  "addPlan": "Ajouter un forfait",
+  "loading": "Chargement…",
+  "empty": {
+    "title": "Aucun forfait de service pour l'instant",
+    "descriptionAdmin": "Commencez par définir votre premier forfait.",
+    "descriptionUser": "L'administrateur n'a pas encore défini de forfait."
+  },
+  "badge": {
+    "default": "Par défaut"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "Disque",
+    "traffic": "Trafic",
+    "domains": "Domaines",
+    "databases": "Bases de données",
+    "ftp": "FTP"
+  },
+  "detailsButton": "Détails et limites de ressources",
+  "delete": "Supprimer",
+  "confirmDelete": {
+    "title": "Supprimer le forfait",
+    "message": "Supprimer le forfait « {{name}} » ?",
+    "confirmText": "Oui, supprimer"
+  },
+  "errors": {
+    "deleteFailed": "Échec de la suppression",
+    "saveFailed": "Échec de l'enregistrement"
+  },
+  "limit": {
+    "unlimited": "illimité"
+  },
+  "units": {
+    "mb": "Mo",
+    "mbPerMonth": "Mo/mois",
+    "domains": "domaines",
+    "databases": "bases de données",
+    "accounts": "comptes"
+  },
+  "modal": {
+    "newTitle": "Nouveau forfait",
+    "editTitle": "Modifier le forfait",
+    "planName": "Nom du forfait",
+    "description": "Description",
+    "diskMb": "Disque (Mo)",
+    "trafficMb": "Trafic (Mo)",
+    "phpVersionLabel": "Version PHP",
+    "maxDomains": "Domaines max",
+    "maxDatabases": "Bases de données max",
+    "maxFtp": "Comptes FTP max",
+    "isDefault": "Forfait par défaut pour les nouveaux domaines",
+    "wafHeading": "WAF par défaut (ModSecurity + OWASP CRS)",
+    "wafEnabled": "Activé dans ce forfait",
+    "wafMode": {
+      "block": "Bloquer (activé)",
+      "detect": "Détecter (journal uniquement)"
+    },
+    "wafParanoia": {
+      "level1": "Niveau 1 (Faible)",
+      "level2": "Niveau 2 (Moyen)",
+      "level3": "Niveau 3 (Élevé)",
+      "level4": "Niveau 4 (Strict)"
+    },
+    "hint": "0 = illimité. Les valeurs de disque et de trafic sont en Mo. Les nouveaux domaines de ce forfait sont provisionnés avec la version PHP sélectionnée.",
+    "cancel": "Annuler",
+    "saving": "Enregistrement…",
+    "add": "Ajouter",
+    "update": "Mettre à jour"
+  }
+}

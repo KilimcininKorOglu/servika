@@ -1,0 +1,15 @@
+{
+  "langPlainText": "Texte brut",
+  "unsaved": "Modifications non enregistrées",
+  "saving": "Enregistrement…",
+  "saved": "✓ Enregistré",
+  "syntax": "Syntaxe",
+  "exitFullscreen": "Quitter le plein écran",
+  "fullscreen": "Plein écran",
+  "save": "💾 Enregistrer",
+  "close": "Fermer",
+  "cursor": "Ligne {{line}}, colonne {{column}}",
+  "lines": "{{count}} lignes",
+  "bytes": "{{count}} octets",
+  "shortcuts": "Ctrl+S : enregistrer · Échap : fermer"
+}

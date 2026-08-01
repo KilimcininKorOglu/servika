@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "ftpAccount": "Compte FTP"
+  },
+  "title": "Compte FTP",
+  "errors": {
+    "resetFailed": "Échec de la réinitialisation du mot de passe"
+  },
+  "info": {
+    "host": "Hôte",
+    "port": "Port",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Nom d'utilisateur",
+    "homeDir": "Répertoire personnel"
+  },
+  "reset": {
+    "title": "Réinitialiser le mot de passe",
+    "placeholder": "Saisissez un mot de passe personnalisé ou laissez vide",
+    "setThis": "Définir ce mot de passe",
+    "generateRandom": "Générer un mot de passe aléatoire",
+    "success": "✓ Nouveau mot de passe défini",
+    "saveHint": "Enregistrez-le dans un endroit sûr. Vous ne pourrez plus le consulter par la suite.",
+    "copy": "Copier"
+  },
+  "note": {
+    "label": "Remarque :",
+    "pre": " Le FTP utilise actuellement une authentification en ",
+    "code": "clair",
+    "post": " auprès de la base de données locale. Utilisez SFTP sur le port 22 pour un transport chiffré."
+  }
+}

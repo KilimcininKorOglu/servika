@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "tools": "Outils et paramètres",
+    "current": "Modèle DNS"
+  },
+  "title": "Modèle DNS à l'échelle du serveur",
+  "subtitle": "Ces enregistrements sont appliqués lorsqu'un domaine est créé ou lorsque son modèle DNS par défaut est restauré.",
+  "placeholders": {
+    "label": "Espaces réservés :",
+    "domain": " nom de domaine, ",
+    "ip": " IP du serveur, ",
+    "selector": " sélecteur DKIM, ",
+    "dkim": " enregistrement public DKIM généré"
+  },
+  "loading": "Chargement...",
+  "table": {
+    "name": "Nom",
+    "type": "Type",
+    "value": "Valeur",
+    "ttl": "TTL",
+    "priority": "Priorité",
+    "order": "Ordre",
+    "enabled": "Activé",
+    "priorityNone": "Aucune",
+    "deleteTitle": "Supprimer l'enregistrement"
+  },
+  "addRecord": "Ajouter un enregistrement",
+  "soa": {
+    "title": "Paramètres SOA",
+    "fieldSeconds": "{{field}} (secondes)"
+  },
+  "dkim": {
+    "title": "Paramètres DKIM",
+    "selector": "Sélecteur",
+    "generate": "Générer des clés DKIM pour les nouveaux domaines"
+  },
+  "discard": "Abandonner les modifications",
+  "save": "Enregistrer le modèle",
+  "saving": "Enregistrement...",
+  "success": "Modèle DNS enregistré. Les nouveaux domaines utiliseront les enregistrements et paramètres mis à jour.",
+  "errors": {
+    "loadFailed": "Impossible de charger le modèle DNS",
+    "saveFailed": "Impossible d'enregistrer le modèle DNS"
+  }
+}

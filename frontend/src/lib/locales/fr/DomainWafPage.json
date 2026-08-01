@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "waf": "Pare-feu applicatif web (WAF)"
+  },
+  "title": "Pare-feu applicatif web",
+  "subtitle": " · ModSecurity v3 + OWASP Core Rule Set. L'enregistrement régénère le vhost nginx (sans interruption).",
+  "loading": "Chargement…",
+  "moduleWarning": {
+    "bold": "Le module ModSecurity n'est pas installé sur ce serveur.",
+    "pre": " Les paramètres sont enregistrés mais le WAF n'est pas appliqué. Exécutez ",
+    "post": " sur le serveur pour l'activer (les sites existants ne sont pas affectés)."
+  },
+  "modes": {
+    "inherit": {
+      "name": "Hériter du forfait",
+      "description": "Ce domaine utilise le WAF par défaut de son forfait de service attribué."
+    },
+    "block": {
+      "name": "Bloquer",
+      "description": "Les requêtes malveillantes (SQLi, XSS, RCE…) sont bloquées avec un 403. SecRuleEngine On."
+    },
+    "detect": {
+      "name": "Détecter",
+      "description": "Les requêtes ne sont pas bloquées ; les règles correspondantes sont uniquement écrites dans le journal d'audit. DetectionOnly — idéal pour l'ajustement des règles."
+    },
+    "off": {
+      "name": "Désactivé",
+      "description": "Le WAF est complètement désactivé pour ce domaine (même si le forfait l'active)."
+    }
+  },
+  "paranoiaDescription": {
+    "0": "Le paramètre par défaut du forfait est utilisé.",
+    "1": "Faible — signatures d'attaque de base. Presque aucun faux positif. (recommandé)",
+    "2": "Moyen — plus de règles. Certaines requêtes légitimes peuvent être bloquées.",
+    "3": "Élevé — agressif. Des exclusions par application peuvent être nécessaires.",
+    "4": "Strict — le plus agressif. Uniquement pour des scénarios audités avec soin."
+  },
+  "effective": {
+    "label": "État effectif :",
+    "blocking": "Actif · Blocage",
+    "detection": "Actif · Détection",
+    "paranoia": "Paranoïa {{level}}",
+    "passive": "Passif",
+    "planDefault": "Par défaut du forfait ({{name}}) : ",
+    "planBlock": "Blocage · PL{{paranoia}}",
+    "planDetect": "Détection · PL{{paranoia}}",
+    "planOff": "Désactivé"
+  },
+  "modeCard": {
+    "title": "Mode WAF",
+    "selected": "Sélectionné"
+  },
+  "paranoiaCard": {
+    "title": "Niveau de paranoïa (CRS)",
+    "hint": {
+      "pre": "Un niveau plus élevé = plus de règles + protection renforcée, mais aussi une plus grande probabilité de faux positifs. Efficace uniquement lorsque le WAF est en mode ",
+      "block": "Blocage",
+      "mid": " ou ",
+      "detect": "Détection",
+      "post": "."
+    },
+    "options": {
+      "inherit": "Hériter du forfait",
+      "level1": "Niveau 1 (Faible)",
+      "level2": "Niveau 2 (Moyen)",
+      "level3": "Niveau 3 (Élevé)",
+      "level4": "Niveau 4 (Strict)"
+    }
+  },
+  "actions": {
+    "save": "Enregistrer et appliquer",
+    "saving": "Application…",
+    "reload": "Recharger"
+  },
+  "messages": {
+    "appliedBlocking": "WAF appliqué — mode Blocage, paranoïa {{paranoia}}",
+    "appliedDetection": "WAF appliqué — mode Détection, paranoïa {{paranoia}}",
+    "savedPassive": "Paramètres enregistrés — le WAF est passif pour ce domaine"
+  },
+  "errors": {
+    "saveFailed": "Échec de l'enregistrement"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "accessControl": "Contrôle d'accès"
+  },
+  "title": "Contrôle d'accès",
+  "subtitle": "Configurez la protection anti-hotlink et les règles d'autorisation ou de blocage d'IP au niveau du domaine. L'enregistrement régénère le vhost nginx.",
+  "loading": "Chargement…",
+  "modes": {
+    "off": {
+      "label": "Désactivé",
+      "description": "Aucune règle d'autorisation ou de blocage d'IP n'est appliquée au vhost nginx."
+    },
+    "block": {
+      "label": "Bloquer les IP listées",
+      "description": "Les visiteurs provenant des adresses IP ou plages CIDR listées reçoivent une réponse 403."
+    },
+    "allow": {
+      "label": "Autoriser uniquement les IP listées",
+      "description": "Seules les adresses IP ou plages CIDR listées sont autorisées lorsqu'au moins une règle existe."
+    }
+  },
+  "hotlink": {
+    "title": "Protection anti-hotlink",
+    "description": "Empêche des sites externes d'intégrer les fichiers image servis par ce domaine.",
+    "enabled": "Activé",
+    "allowedLabel": "Domaines référents autorisés supplémentaires",
+    "hint": "Le domaine actuel et son hôte www sont toujours autorisés. Ajoutez un domaine par ligne ou séparés par des virgules.",
+    "save": "Enregistrer les paramètres anti-hotlink",
+    "saving": "Enregistrement…"
+  },
+  "ipMode": {
+    "title": "Mode d'accès IP",
+    "selected": "● Sélectionné"
+  },
+  "newRule": {
+    "title": "Nouvelle règle IP",
+    "label": "Adresse IP ou CIDR",
+    "placeholder": "203.0.113.10 ou 203.0.113.0/24",
+    "add": "Ajouter la règle",
+    "adding": "Ajout…"
+  },
+  "rules": {
+    "title": "Règles IP configurées",
+    "empty": "Aucune règle IP pour l'instant.",
+    "created": "Créé le {{date}}",
+    "delete": "Supprimer"
+  },
+  "back": "← Retour à l'abonnement",
+  "messages": {
+    "hotlinkSaved": "Les paramètres de protection anti-hotlink ont été enregistrés.",
+    "modeSaved": "Le mode d'accès IP a été enregistré.",
+    "ruleAdded": "La règle IP a été ajoutée.",
+    "ruleDeleted": "La règle IP a été supprimée."
+  },
+  "confirmDelete": "Supprimer la règle IP {{ip}} ?",
+  "errors": {
+    "hotlinkFailed": "Impossible d'enregistrer les paramètres anti-hotlink",
+    "modeFailed": "Impossible d'enregistrer le mode d'accès IP",
+    "addFailed": "Impossible d'ajouter la règle IP",
+    "deleteFailed": "Impossible de supprimer la règle IP"
+  }
+}

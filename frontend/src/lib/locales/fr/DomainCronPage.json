@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "scheduledTasks": "Tâches planifiées"
+  },
+  "title": "Tâches planifiées",
+  "presets": {
+    "everyMinute": "Chaque minute",
+    "everyHour": "Chaque heure",
+    "dailyAt3": "Chaque jour à 03:00",
+    "mondayAt9": "Le lundi à 09:00",
+    "every5Minutes": "Toutes les 5 minutes",
+    "every15Minutes": "Toutes les 15 minutes",
+    "firstOfMonth": "Le premier jour du mois à 00:00"
+  },
+  "actions": {
+    "add": "Ajouter une tâche",
+    "refresh": "↻ Actualiser"
+  },
+  "count": "{{count}} tâches",
+  "loading": "Chargement...",
+  "empty": "Aucune tâche pour l'instant. Ajoutez-en une ci-dessus.",
+  "columns": {
+    "min": "Min",
+    "hour": "Heure",
+    "day": "Jour",
+    "month": "Mois",
+    "weekday": "Jour de la semaine",
+    "command": "Commande / description",
+    "action": "Action"
+  },
+  "row": {
+    "delete": "Supprimer"
+  },
+  "confirmDelete": "Supprimer la tâche « {{command}}... » ?",
+  "errors": {
+    "deleteFailed": "Échec de la suppression",
+    "addFailed": "Impossible d'ajouter l'élément"
+  },
+  "modal": {
+    "title": "Nouvelle tâche planifiée",
+    "presetsLabel": "Préréglages",
+    "fields": {
+      "minute": "Minute",
+      "hour": "Heure",
+      "day": "Jour",
+      "month": "Mois",
+      "weekday": "Jour de la semaine"
+    },
+    "cronHint": "Format cron :",
+    "cronHintPost": " toute valeur,",
+    "cronEvery": " toutes les cinq,",
+    "cronList": " liste,",
+    "cronRange": " plage.",
+    "commandLabel": "Commande",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "Description (facultative)",
+    "descriptionPlaceholder": "par ex. script de sauvegarde nocturne",
+    "cancel": "Annuler",
+    "adding": "Ajout...",
+    "addTask": "Ajouter une tâche"
+  }
+}

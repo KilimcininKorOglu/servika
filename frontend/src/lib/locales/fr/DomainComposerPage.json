@@ -1,0 +1,29 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "composer": "Composer"
+  },
+  "title": "PHP Composer",
+  "subtitle": {
+    "pre": "",
+    "mid": " dans ",
+    "post": " en tant qu'utilisateur système."
+  },
+  "loading": "Chargement…",
+  "notFound": "Introuvable",
+  "notInstalled": "Composer n'est pas installé sur le serveur. Un administrateur doit l'installer.",
+  "composerJsonFound": "✓ composer.json trouvé",
+  "composerJsonNotFound": "composer.json introuvable",
+  "packagePlaceholder": "vendor/package ou vendor/package:^1.2",
+  "run": {
+    "header": "$ composer {{cmd}}",
+    "running": "Exécution…",
+    "noOutput": "(aucune sortie)",
+    "completed": "✓ Terminé",
+    "failed": "✗ Échec"
+  },
+  "errors": {
+    "runFailed": "Impossible d'exécuter la commande"
+  }
+}

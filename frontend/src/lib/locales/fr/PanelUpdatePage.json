@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "toolsAndSettings": "Outils et paramètres",
+    "panelUpdate": "Mise à jour du panneau"
+  },
+  "title": "Mise à jour du panneau",
+  "description": "Met à jour le panneau vers la dernière version depuis GitHub. Les variables d'environnement, la base de données et les sites sont préservés ; un contrôle de santé échoué revient automatiquement à la version précédente. L'opération s'exécute en arrière-plan, vous pouvez donc fermer cette page et la mise à jour continue sans interruption."
+}

@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Accueil",
+  "title": "Journal de sécurité",
+  "subtitle": "Tentatives de connexion au panneau et actions administratives. L'entrée la plus récente en haut.",
+  "stats": {
+    "entries": "entrées",
+    "failed": "échouées"
+  },
+  "searchPlaceholder": "Rechercher un utilisateur, une IP, une cible…",
+  "filters": {
+    "allActions": "Toutes les actions",
+    "last": "Dernières {{n}}",
+    "failedOnly": "Échouées uniquement"
+  },
+  "loading": "Chargement…",
+  "empty": {
+    "title": "Aucune entrée pour ce filtre",
+    "description": "Assouplissez les filtres et réessayez."
+  },
+  "noMatch": "Aucune entrée ne correspond à votre recherche.",
+  "columns": {
+    "time": "Heure",
+    "result": "Résultat",
+    "action": "Action",
+    "user": "Utilisateur",
+    "ip": "IP",
+    "target": "Cible"
+  },
+  "status": {
+    "success": "Succès",
+    "failed": "Échec"
+  },
+  "errors": {
+    "loadFailed": "Impossible de charger le journal"
+  }
+}

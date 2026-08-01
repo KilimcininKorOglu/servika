@@ -1,0 +1,52 @@
+{
+  "title": "Avis de sécurité",
+  "subtitleAudit": "Audit CVE (AlmaLinux)",
+  "advisories": "{{count}} avis de sécurité",
+  "rescan": "Réanalyser",
+  "scanning": "Analyse…",
+  "scanningServer": "Analyse du serveur…",
+  "updating": "Installation des mises à jour de sécurité… (en arrière-plan)",
+  "kcApplying": "Application du correctif noyau à chaud… (KernelCare — aucun redémarrage requis)",
+  "severity": {
+    "critical": "Critique",
+    "important": "Important",
+    "moderate": "Modéré",
+    "low": "Faible"
+  },
+  "kcActive": {
+    "bold": "Le noyau est corrigé à chaud (KernelCare).",
+    "text": " Les vulnérabilités du noyau sont corrigées sans redémarrage.",
+    "effectivePre": " Noyau effectif : ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVE corrigées à chaud."
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare est installé mais la licence n'est pas enregistrée.",
+    "text": " Enregistrez une clé de licence TuxCare pour corriger le noyau sans redémarrage."
+  },
+  "rebootRequired": {
+    "bold1": "Redémarrage requis.",
+    "text1": " Un nouveau noyau corrigé est installé mais le système exécute encore l'ancien noyau — la plupart des CVE ci-dessous sont liées au noyau et apparaîtront ",
+    "bold2": "ouvertes tant que le serveur n'est pas redémarré",
+    "text2": ". Planifiez un redémarrage pendant une fenêtre de maintenance."
+  },
+  "clean": {
+    "title": "Système à jour",
+    "subtitle": "Aucune vulnérabilité connue"
+  },
+  "totalPre": "Total ",
+  "totalPost": " CVE uniques",
+  "lastScan": " · dernière analyse {{scan}}",
+  "installUpdates": "Installer les mises à jour de sécurité",
+  "updateLiveKernel": "Mettre à jour les correctifs noyau à chaud (sans redémarrage)",
+  "confirmUpdate": "Les mises à jour de sécurité (dnf --security) seront installées. Un redémarrage peut être nécessaire pour que les mises à jour du noyau prennent effet. Continuer ?",
+  "messages": {
+    "updatesComplete": "Mises à jour de sécurité terminées.",
+    "livePatchApplied": "Correctif noyau à chaud appliqué."
+  },
+  "errors": {
+    "fetch": "Impossible de récupérer l'état des CVE",
+    "startUpdate": "Impossible de démarrer la mise à jour",
+    "startLivePatch": "Impossible de démarrer le correctif à chaud"
+  }
+}

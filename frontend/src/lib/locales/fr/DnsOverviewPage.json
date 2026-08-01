@@ -1,0 +1,21 @@
+{
+  "title": "Gestion DNS",
+  "description": "Nombre d'enregistrements et état DNSSEC de chaque domaine.",
+  "emptyMessage": "Aucun domaine trouvé.",
+  "column": {
+    "domain": "Domaine",
+    "records": "Enregistrements",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "Activé",
+    "off": "Désactivé"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC activé",
+    "noMx": "Aucun MX"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Panneau de contrôle d'hébergement"
+  },
+  "heading": "Bienvenue",
+  "subtitle": "Connectez-vous pour continuer.",
+  "field": {
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "twoFactorCode": "Code d'authentification à deux facteurs"
+  },
+  "twoFactorHint": "Saisissez le code à six chiffres de votre application d'authentification.",
+  "button": {
+    "signingIn": "Connexion…",
+    "verify": "Vérifier et se connecter",
+    "signIn": "Se connecter"
+  },
+  "footer": "Servika · version 0.2.0-f1",
+  "error": {
+    "loginFailed": "Échec de la connexion"
+  }
+}

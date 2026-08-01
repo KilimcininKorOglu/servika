@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "backups": "Sauvegardes"
+  },
+  "title": "Sauvegardes",
+  "subtitle": {
+    "prefix": "home + dump MySQL = tar.gz, ",
+    "disabled": "Sauvegardes automatiques désactivées",
+    "enabled": "{{freq}} à {{hour}}:00, les {{retention}} dernières sauvegardes automatiques conservées"
+  },
+  "freq": {
+    "daily": "Quotidienne",
+    "weekly": "Hebdomadaire"
+  },
+  "toast": {
+    "destinationSaved": "Destination distante enregistrée",
+    "destinationSaveFailed": "Impossible d'enregistrer la destination",
+    "destinationDeleted": "Destination distante supprimée",
+    "confirmDeleteDest": "Supprimer la destination de sauvegarde distante ? Les sauvegardes existantes ne sont pas affectées, mais les futurs envois automatiques s'arrêteront.",
+    "autoDisabled": "Sauvegardes automatiques désactivées",
+    "autoEnabled": "Sauvegardes automatiques activées : {{freq}}, {{hour}}:00 ; les {{retention}} dernières sauvegardes seront conservées",
+    "scheduleSaveFailed": "Impossible d'enregistrer la planification",
+    "backupCreated": "Sauvegarde créée",
+    "createFailed": "Impossible de créer la sauvegarde",
+    "restored": "Restauré : {{domain}}, base de données : {{database}}",
+    "restoreDbUnknown": "inconnue",
+    "restoreFailed": "Échec de la restauration"
+  },
+  "schedule": {
+    "heading": "Planification des sauvegardes automatiques",
+    "description": "Lorsqu'elle est activée, le panneau vérifie chaque heure. Une sauvegarde est créée à l'heure sélectionnée, et les sauvegardes au-delà de la rétention sont supprimées.",
+    "lastBackup": "Dernière sauvegarde automatique :",
+    "options": {
+      "none": {
+        "name": "Désactivée",
+        "description": "Aucune sauvegarde automatique. Seule la sauvegarde manuelle « Sauvegarder maintenant » s'exécute."
+      },
+      "daily": {
+        "name": "Quotidienne",
+        "description": "Crée une sauvegarde chaque jour à l'heure sélectionnée et conserve les N dernières sauvegardes."
+      },
+      "weekly": {
+        "name": "Hebdomadaire",
+        "description": "Crée une sauvegarde tous les sept jours pour réduire l'utilisation du disque."
+      }
+    },
+    "active": "● Active",
+    "runTime": "Heure d'exécution (locale)",
+    "retentionLabel": "Sauvegardes à conserver",
+    "retentionHint": "Les sauvegardes automatiques plus anciennes au-delà de ce nombre sont supprimées. Les sauvegardes manuelles sont conservées."
+  },
+  "destination": {
+    "heading": "Destination de sauvegarde distante (FTP / SFTP / S3 / B2)",
+    "description": "Après leur création, les sauvegardes sont envoyées vers la destination distante en arrière-plan pour une protection hors site contre les pannes de disque.",
+    "statusSuccessful": "● Dernière : réussie",
+    "statusError": "✗ Dernière : erreur",
+    "lastUpload": "Dernier envoi :",
+    "typeLabel": "Type de destination",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "Bucket",
+    "region": "Région",
+    "regionHint": "(par défaut us-east-1)",
+    "endpoint": "Endpoint",
+    "endpointHint": "(laisser vide pour AWS S3)",
+    "accessKeyId": "ID de clé d'accès",
+    "secretAccessKey": "Clé d'accès secrète",
+    "secretKeepHint": "(laisser vide pour conserver l'actuelle)",
+    "keyPrefix": "Préfixe de clé",
+    "pathStyle": "URL de type path-style",
+    "host": "Hôte",
+    "port": "Port",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "passwordKeepHint": "(laisser vide pour conserver le mot de passe actuel)",
+    "remoteDir": "Répertoire distant",
+    "activeLabel": "Active (envoyer chaque sauvegarde vers cette destination)",
+    "testSuccess": "✓ Connexion réussie",
+    "testError": "✗ ",
+    "testErrorFallback": "Erreur",
+    "testing": "Test en cours...",
+    "testConnection": "Tester la connexion",
+    "save": "Enregistrer",
+    "deleteDestination": "Supprimer la destination"
+  },
+  "backingUp": "Sauvegarde en cours...",
+  "backupNow": "+ Sauvegarder maintenant",
+  "refresh": "↻ Actualiser",
+  "backupCount": "{{count}} sauvegardes",
+  "loading": "Chargement...",
+  "empty": "Aucune sauvegarde pour l'instant",
+  "columns": {
+    "file": "Fichier",
+    "type": "Type",
+    "size": "Taille",
+    "created": "Créé le",
+    "actions": "Actions"
+  },
+  "typeScheduled": "Planifiée",
+  "row": {
+    "download": "Télécharger",
+    "restore": "↺ Restaurer",
+    "delete": "Supprimer"
+  },
+  "confirmDelete": {
+    "title": "Supprimer le fichier de sauvegarde",
+    "message": "Supprimer le fichier de sauvegarde « {{file}} » ?",
+    "confirm": "Oui, supprimer"
+  },
+  "confirmRestore": {
+    "title": "Restaurer depuis une sauvegarde",
+    "message": "Restaurer « {{file}} » ?\n\nAVERTISSEMENT : les fichiers public_html existants seront écrasés et les tables MySQL seront recréées. Cette action est irréversible.",
+    "confirm": "Oui, restaurer"
+  }
+}

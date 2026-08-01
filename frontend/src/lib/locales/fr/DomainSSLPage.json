@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "sslCertificates": "Certificats SSL/TLS"
+  },
+  "title": "Certificats SSL/TLS",
+  "ipLabel": "IP :",
+  "confirm": {
+    "letsencrypt": "Le domaine doit pointer vers ce serveur avec un enregistrement DNS A avant qu'un certificat Let's Encrypt puisse être émis. Continuer ?",
+    "disable": "Supprimer le SSL ? Le site repassera en HTTP."
+  },
+  "success": {
+    "installed": "Certificat installé ({{type}}). Expire le : {{expires}}. Le site utilise désormais HTTPS.",
+    "removed": "SSL supprimé. Le site utilise désormais HTTP."
+  },
+  "errors": {
+    "installFailed": "Échec de l'installation SSL",
+    "removeFailed": "Échec de la suppression du SSL"
+  },
+  "status": {
+    "title": "État actuel",
+    "protected": "Protégé",
+    "unprotected": "Non protégé",
+    "loading": "Chargement…",
+    "sourceLabel": "Source",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "Auto-signé",
+    "expiryLabel": "Expiration",
+    "certPathLabel": "Chemin du certificat",
+    "keyPathLabel": "Chemin de la clé",
+    "empty": "—",
+    "remove": "Supprimer le SSL (passer en HTTP)",
+    "noCert": "Il n'y a aucun certificat SSL actif pour ce domaine. Installez-en un ci-dessous."
+  },
+  "selfSigned": {
+    "title": "Certificat auto-signé",
+    "description": "Crée un certificat auto-signé sur le serveur. Les navigateurs affichent un avertissement, mais la connexion est chiffrée. Convient aux environnements de test et de développement.",
+    "bullet1": "✓ Aucune dépendance DNS",
+    "bullet2": "✓ Installation immédiate",
+    "bullet3": "✗ Le navigateur affiche un avertissement de sécurité",
+    "installing": "Installation…",
+    "install": "Installer un certificat auto-signé"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (gratuit)",
+    "description": "Un certificat officiel Let's Encrypt approuvé par tous les navigateurs. Il se renouvelle automatiquement tous les 90 jours.",
+    "bullet1": "✓ Approuvé par les navigateurs",
+    "bullet2": "✓ Renouvellement automatique (cron)",
+    "bullet3": "⚠ Le domaine doit pointer vers ce serveur via DNS",
+    "installing": "Installation…",
+    "install": "Obtenir un certificat Let's Encrypt"
+  }
+}

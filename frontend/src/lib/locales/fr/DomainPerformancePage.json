@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "performance": "Performance"
+  },
+  "loading": "Chargement…",
+  "notFound": "Introuvable",
+  "title": "Performance et accélérateurs",
+  "subtitle": {
+    "post": ", état actuel des accélérateurs et suggestions."
+  },
+  "scoreLabel": "Score de performance",
+  "acceleratorsTitle": "Accélérateurs",
+  "cacheStat": "{{rate}}% de hit · {{total}} req",
+  "configure": "Configurer →",
+  "suggestionsTitle": "Suggestions",
+  "open": "Ouvrir →",
+  "back": "← Retour à l'abonnement"
+}

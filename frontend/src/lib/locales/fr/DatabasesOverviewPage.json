@@ -1,0 +1,16 @@
+{
+  "title": "Bases de données",
+  "description": "Chaque base de données du serveur avec son domaine propriétaire et sa taille.",
+  "emptyMessage": "Aucune base de données trouvée.",
+  "column": {
+    "domain": "Domaine",
+    "database": "Base de données",
+    "user": "Utilisateur",
+    "size": "Taille",
+    "created": "Créé le"
+  },
+  "summary": {
+    "databases": "Bases de données",
+    "totalSize": "Taille totale"
+  }
+}

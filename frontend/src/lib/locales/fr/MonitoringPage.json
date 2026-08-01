@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "monitoring": "Surveillance"
+  },
+  "title": "Surveillance de bout en bout",
+  "liveRefresh": "En direct, actualisation toutes les {{seconds}} s",
+  "tabs": {
+    "server": "Serveur",
+    "domain": "Par domaine",
+    "logs": "Journaux du serveur"
+  },
+  "snap": {
+    "cpu": "CPU",
+    "cpuCores": "{{count}} cœurs",
+    "memory": "Mémoire",
+    "load1m": "Charge (1 min)",
+    "loadAlt": "5 min {{load5m}}, 15 min {{load15m}}",
+    "diskRoot": "Disque (/)"
+  },
+  "chart": {
+    "systemResources": "Ressources système",
+    "samples": "{{count}}/{{max}} échantillons, {{minutes}} min",
+    "legendCpu": "CPU",
+    "legendMemory": "Mémoire",
+    "legendSwap": "Swap",
+    "legendLoad": "Charge (normalisée)",
+    "networkTraffic": "Trafic réseau",
+    "interface": "Interface : {{name}}",
+    "legendRx": "↓ RX (Ko/s)",
+    "legendTx": "↑ TX (Ko/s)",
+    "collecting": "Collecte des données…"
+  },
+  "services": {
+    "title": "Services",
+    "enabledCount": "{{enabled}}/{{total}} activés",
+    "active": "Actif",
+    "stopped": "Arrêté"
+  },
+  "processes": {
+    "title": "Principaux processus",
+    "sortCpu": "CPU",
+    "sortMem": "Mémoire",
+    "colPid": "PID",
+    "colUser": "Utilisateur",
+    "colCpu": "CPU%",
+    "colMem": "MÉM%",
+    "colCommand": "Commande",
+    "loading": "Chargement…"
+  },
+  "domain": {
+    "selectionTitle": "Sélection du domaine",
+    "noActiveDomains": "Aucun domaine actif",
+    "probing": "Sondage…",
+    "healthProbe": "↻ Sonde de santé",
+    "openSite": "Ouvrir le site ↗",
+    "accessLog": "Journal d'accès",
+    "errorLog": "Journal d'erreurs",
+    "lastLines": "{{count}} dernières lignes",
+    "noAccessEntries": "Aucune entrée de journal pour l'instant…",
+    "noErrorEntries": "Aucune entrée d'erreur pour l'instant"
+  },
+  "health": {
+    "reachable": "Accessible",
+    "unreachable": "Inaccessible",
+    "server": "Serveur : ",
+    "noSslTitle": "⚠ Aucun SSL",
+    "noSslBody": "Ce domaine n'est pas accessible via HTTPS.",
+    "sslValid": "🔒 SSL valide",
+    "sslInvalid": "✗ SSL invalide",
+    "days": "jours",
+    "expires": "Expire le : ",
+    "issuer": "Émetteur : ",
+    "responseTime": "Temps de réponse",
+    "ms": "ms",
+    "fast": "Rapide",
+    "acceptable": "Acceptable",
+    "slow": "Lent"
+  },
+  "logs": {
+    "searchPlaceholder": "Rechercher…",
+    "lastLineCount": "{{count}} derniers",
+    "refresh": "↻ Actualiser",
+    "loading": "Chargement…",
+    "notFound": "« {{query}} » introuvable.",
+    "noEntries": "(aucune entrée)",
+    "footerFiltered": "{{filtered}} / {{total}} lignes, journald, {{source}}",
+    "footer": "{{total}} lignes, journald, {{source}}"
+  },
+  "logSources": {
+    "panel": "Panneau",
+    "nginx": "nginx",
+    "mariadb": "MariaDB",
+    "named": "DNS (named)",
+    "sshd": "SSH",
+    "cron": "Cron",
+    "system": "Système entier"
+  }
+}

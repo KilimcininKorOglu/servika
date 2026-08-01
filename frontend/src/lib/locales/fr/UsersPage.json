@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "users": "Utilisateurs"
+  },
+  "title": "Utilisateurs",
+  "subtitleAdmin": "Comptes du panneau : administrateurs, revendeurs et clients.",
+  "subtitleReseller": "Les comptes clients que vous avez créés.",
+  "newAccount": "Nouveau compte",
+  "newCustomer": "Nouveau client",
+  "loading": "Chargement…",
+  "empty": {
+    "titleAdmin": "Aucun autre compte pour l'instant",
+    "titleReseller": "Aucun compte client pour l'instant",
+    "description": "Commencez par créer un nouveau compte."
+  },
+  "noMatch": "Aucun compte ne correspond à votre recherche.",
+  "roles": {
+    "admin": "Administrateur",
+    "reseller": "Revendeur",
+    "user": "Client"
+  },
+  "columns": {
+    "user": "Utilisateur",
+    "fullName": "Nom complet",
+    "role": "Rôle",
+    "status": "Statut",
+    "twoFa": "2FA",
+    "lastLogin": "Dernière connexion"
+  },
+  "system": "(système)",
+  "systemAccount": "compte système",
+  "status": {
+    "active": "Actif",
+    "suspended": "Suspendu"
+  },
+  "noPassword": "Aucun mot de passe",
+  "noPasswordTitle": "Aucun mot de passe défini, ce compte ne peut pas se connecter tant que vous n'en assignez pas un.",
+  "twoFaOn": "Activé",
+  "twoFaOff": "Désactivé",
+  "actions": {
+    "password": "Mot de passe",
+    "limits": "Limites",
+    "suspend": "Suspendre",
+    "enable": "Activer",
+    "delete": "Supprimer"
+  },
+  "createModal": {
+    "titleAdmin": "Nouveau compte",
+    "titleReseller": "Nouveau compte client",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "exemple_revendeur",
+    "usernameHint": "3-32 caractères, commence par une lettre minuscule ; peut contenir des lettres, des chiffres, _ et -.",
+    "password": "Mot de passe",
+    "passwordHint": "Au moins 8 caractères. Le mot de passe n'est affiché qu'une seule fois, remettez-le à l'utilisateur.",
+    "role": "Rôle",
+    "resellerOnlyCustomers": "Les revendeurs ne peuvent créer que des comptes clients.",
+    "email": "E-mail",
+    "fullName": "Nom complet",
+    "cancel": "Annuler",
+    "creating": "Création…",
+    "create": "Créer"
+  },
+  "passwordModal": {
+    "title": "Définir le mot de passe",
+    "newFor": "Nouveau mot de passe pour ",
+    "customerNote": "Il s'agit du mot de passe du compte panneau du client. Le client se connecte au portail client avec ce nom d'utilisateur et ce mot de passe ; sans mot de passe, le compte ne peut pas se connecter.",
+    "placeholder": "Au moins 8 caractères",
+    "cancel": "Annuler",
+    "saving": "Enregistrement…",
+    "setPassword": "Définir le mot de passe"
+  },
+  "limitsModal": {
+    "title": "Limites du revendeur",
+    "loading": "Chargement…",
+    "upperBounds": "Limites supérieures pour ",
+    "unlimitedNote": "0 = illimité. Si toutes sont à 0, l'enregistrement de limite est entièrement supprimé.",
+    "maxCustomers": "Clients max",
+    "maxDomains": "Domaines max",
+    "diskQuota": "Quota disque (Mo)",
+    "trafficQuota": "Quota trafic (Mo)",
+    "inUseNow": "{{count}} utilisé(s) actuellement",
+    "mbInUseNow": "{{count}} Mo utilisé(s) actuellement",
+    "mbUsedNow": "{{count}} Mo utilisé(s) actuellement",
+    "limitBelowUsage": " — la limite est inférieure à l'utilisation actuelle",
+    "quotaBelowUsage": " — le quota est inférieur à l'utilisation actuelle",
+    "noLimit": "Aucune limite définie pour ce revendeur, actuellement illimité.",
+    "loweringNote": "Réduire une limite en dessous de l'utilisation actuelle ne supprime pas les comptes existants ; cela bloque uniquement les nouveaux ajouts.",
+    "cancel": "Annuler",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer"
+  },
+  "delete": {
+    "title": "Supprimer le compte",
+    "message": "Le compte {{username}} sera supprimé.",
+    "resellerNote": " Les comptes sous ce revendeur ne sont pas supprimés ; ils sont transférés à l'administrateur.",
+    "confirm": "Supprimer"
+  },
+  "toast": {
+    "created": "Compte {{username}} créé.",
+    "passwordUpdated": "Mot de passe mis à jour pour {{username}}.",
+    "limitsUpdated": "Limites mises à jour pour {{username}}.",
+    "enabled": "{{username}} activé.",
+    "suspended": "{{username}} suspendu.",
+    "deleted": "{{username}} supprimé."
+  },
+  "errors": {
+    "loadFailed": "Impossible de charger les comptes",
+    "createFailed": "Impossible de créer le compte",
+    "resetFailed": "Impossible de réinitialiser le mot de passe",
+    "loadLimitsFailed": "Impossible de charger les limites",
+    "saveLimitsFailed": "Impossible d'enregistrer les limites",
+    "statusFailed": "Impossible de changer le statut",
+    "deleteFailed": "Impossible de supprimer"
+  }
+}

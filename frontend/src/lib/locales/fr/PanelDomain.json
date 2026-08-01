@@ -1,0 +1,25 @@
+{
+  "title": "Domaine du panneau",
+  "description": "Faites pointer un enregistrement A vers ce serveur avant de demander un certificat Let's Encrypt. Après l'émission, le domaine ouvre le panneau sans le port 8443.",
+  "customDomainLabel": "Domaine de panneau personnalisé",
+  "customDomainPlaceholder": "panel.example.com",
+  "serverIpv4": "IPv4 du serveur :",
+  "sslStatus": "Statut SSL :",
+  "portlessUrl": "URL sans port :",
+  "expires": "Expire le :",
+  "unknown": "Inconnu",
+  "sslNone": "aucun",
+  "save": "Enregistrer le domaine du panneau",
+  "saving": "Enregistrement…",
+  "reset": "Réinitialiser",
+  "resetting": "Réinitialisation…",
+  "messages": {
+    "saved": "Domaine du panneau enregistré. Vous pouvez ouvrir https://{{domain}} sans le port 8443.",
+    "reset": "Domaine du panneau réinitialisé au certificat par défaut."
+  },
+  "errors": {
+    "load": "Impossible de charger les paramètres du domaine du panneau",
+    "save": "Impossible d'enregistrer le domaine du panneau",
+    "reset": "Impossible de réinitialiser le domaine du panneau"
+  }
+}

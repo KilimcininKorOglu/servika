@@ -1,0 +1,32 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "statistics": "Statistiques"
+  },
+  "loading": "Chargement…",
+  "notFound": "Introuvable",
+  "title": "Statistiques de trafic",
+  "subtitle": {
+    "pre": ", analyse du journal d'accès nginx.",
+    "subdomainNote": " Le trafic des sous-domaines est inclus dans ces totaux."
+  },
+  "refresh": "↻ Actualiser",
+  "emptyLog": "Aucune donnée de journal d'accès pour l'instant. Elle apparaîtra ici une fois que le site commencera à recevoir du trafic.",
+  "kpi": {
+    "totalRequests": "Total des requêtes",
+    "bandwidth": "Utilisation de la bande passante",
+    "uniqueIps": "IP uniques",
+    "botRatio": "Proportion de bots"
+  },
+  "statusTitle": "Répartition des statuts HTTP",
+  "dailyTitle": "Requêtes quotidiennes (7 derniers jours)",
+  "dailyRequests": "{{count}} requêtes",
+  "topPathsTitle": "Chemins les plus demandés",
+  "topIpsTitle": "IP les plus actives",
+  "latestTitle": "Dernières requêtes",
+  "unit": {
+    "requests": "requêtes"
+  },
+  "noData": "Aucune donnée."
+}
