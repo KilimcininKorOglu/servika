@@ -1,0 +1,67 @@
+{
+  "loading": "Carregando…",
+  "notFound": "Subdomínio não encontrado.",
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "domain": "Domínio",
+    "subdomains": "Subdomínios",
+    "subdomain": "Subdomínio"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "Instale e gerencie o WordPress nesta raiz de documento"
+    },
+    "logs": {
+      "label": "Registros",
+      "description": "Logs de acesso e erro para este subdomínio"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "Status das dependências para esta raiz de documento"
+    },
+    "protection": {
+      "label": "Proteção por senha",
+      "description": "Restrinja diretórios com autenticação HTTP"
+    },
+    "statistics": {
+      "label": "Estatísticas",
+      "description": "Análise de tráfego apenas deste subdomínio"
+    }
+  },
+  "toast": {
+    "phpSaved": "Este subdomínio agora executa PHP {{version}}.",
+    "phpChangeFailed": "Não foi possível alterar a versão do PHP"
+  },
+  "ssl": {
+    "active": "🔒 SSL ativo",
+    "none": "Sem SSL"
+  },
+  "intro": {
+    "pre": "Um subdomínio de",
+    "post": ", servido por sua própria raiz de documento com seu próprio pool PHP."
+  },
+  "details": {
+    "title": "Detalhes",
+    "address": "Endereço",
+    "documentRoot": "Raiz do documento",
+    "diskUsage": "Uso de disco",
+    "phpVersion": "Versão do PHP",
+    "created": "Criado em",
+    "serverIp": "IP do servidor"
+  },
+  "php": {
+    "title": "Versão do PHP",
+    "note": "Este subdomínio executa em seu próprio pool FPM, portanto alterá-lo não afeta o domínio pai.",
+    "versionLabel": "Versão",
+    "applying": "Aplicando…",
+    "apply": "Aplicar",
+    "validationNote": "O vhost é validado antes de a alteração ser salva, portanto uma configuração rejeitada não altera o site."
+  },
+  "toolsSection": {
+    "title": "Ferramentas",
+    "note": "Cada ferramenta opera na raiz de documento deste subdomínio, em vez da raiz do domínio pai."
+  },
+  "backToSubdomains": "← Voltar aos subdomínios"
+}

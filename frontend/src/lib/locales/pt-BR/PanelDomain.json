@@ -1,0 +1,25 @@
+{
+  "title": "Domínio do painel",
+  "description": "Aponte um registro A para este servidor antes de solicitar um certificado Let's Encrypt. Após a emissão, o domínio abre o painel sem a porta 8443.",
+  "customDomainLabel": "Domínio personalizado do painel",
+  "customDomainPlaceholder": "painel.exemplo.com",
+  "serverIpv4": "IPv4 do servidor:",
+  "sslStatus": "Status SSL:",
+  "portlessUrl": "URL sem porta:",
+  "expires": "Vence em:",
+  "unknown": "Desconhecido",
+  "sslNone": "nenhum",
+  "save": "Salvar domínio do painel",
+  "saving": "Salvando...",
+  "reset": "Redefinir",
+  "resetting": "Redefinindo...",
+  "messages": {
+    "saved": "Domínio do painel salvo. Você pode abrir https://{{domain}} sem a porta 8443.",
+    "reset": "Domínio do painel redefinido para o certificado padrão."
+  },
+  "errors": {
+    "load": "Não foi possível carregar as configurações do domínio do painel",
+    "save": "Não foi possível salvar o domínio do painel",
+    "reset": "Não foi possível redefinir o domínio do painel"
+  }
+}

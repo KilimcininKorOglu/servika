@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "users": "Usuários"
+  },
+  "title": "Usuários",
+  "subtitleAdmin": "Contas do painel: administradores, revendedores e clientes.",
+  "subtitleReseller": "As contas de clientes que você criou.",
+  "newAccount": "Nova conta",
+  "newCustomer": "Novo cliente",
+  "loading": "Carregando…",
+  "empty": {
+    "titleAdmin": "Nenhuma outra conta ainda",
+    "titleReseller": "Nenhuma conta de cliente ainda",
+    "description": "Comece criando uma nova conta."
+  },
+  "noMatch": "Nenhuma conta corresponde à sua pesquisa.",
+  "roles": {
+    "admin": "Administrador",
+    "reseller": "Revendedor",
+    "user": "Cliente"
+  },
+  "columns": {
+    "user": "Usuário",
+    "fullName": "Nome completo",
+    "role": "Função",
+    "status": "Status",
+    "twoFa": "2FA",
+    "lastLogin": "Último login"
+  },
+  "system": "(sistema)",
+  "systemAccount": "conta do sistema",
+  "status": {
+    "active": "Ativo",
+    "suspended": "Suspenso"
+  },
+  "noPassword": "Sem senha",
+  "noPasswordTitle": "Nenhuma senha definida — esta conta não pode fazer login até que você atribua uma.",
+  "twoFaOn": "Ativado",
+  "twoFaOff": "Desativado",
+  "actions": {
+    "password": "Senha",
+    "limits": "Limites",
+    "suspend": "Suspender",
+    "enable": "Ativar",
+    "delete": "Excluir"
+  },
+  "createModal": {
+    "titleAdmin": "Nova conta",
+    "titleReseller": "Nova conta de cliente",
+    "username": "Nome de usuário",
+    "usernamePlaceholder": "revendedor_exemplo",
+    "usernameHint": "3-32 caracteres, começa com letra minúscula; pode conter letras, dígitos, _ e -.",
+    "password": "Senha",
+    "passwordHint": "Mínimo de 8 caracteres. A senha é exibida apenas agora — entregue-a ao usuário.",
+    "role": "Função",
+    "resellerOnlyCustomers": "Revendedores podem criar apenas contas de clientes.",
+    "email": "E-mail",
+    "fullName": "Nome completo",
+    "cancel": "Cancelar",
+    "creating": "Criando…",
+    "create": "Criar"
+  },
+  "passwordModal": {
+    "title": "Definir senha",
+    "newFor": "Nova senha para ",
+    "customerNote": "Esta é a senha da conta do painel do cliente. O cliente entra no portal do cliente com este nome de usuário e senha; sem ela, a conta não pode fazer login.",
+    "placeholder": "Mínimo de 8 caracteres",
+    "cancel": "Cancelar",
+    "saving": "Salvando…",
+    "setPassword": "Definir senha"
+  },
+  "limitsModal": {
+    "title": "Limites do revendedor",
+    "loading": "Carregando…",
+    "upperBounds": "Limites máximos para ",
+    "unlimitedNote": "0 = ilimitado. Se todos forem 0, o registro de limite é removido completamente.",
+    "maxCustomers": "Máximo de clientes",
+    "maxDomains": "Máximo de domínios",
+    "diskQuota": "Cota de disco (MB)",
+    "trafficQuota": "Cota de tráfego (MB)",
+    "inUseNow": "{{count}} em uso agora",
+    "mbInUseNow": "{{count}} MB em uso agora",
+    "mbUsedNow": "{{count}} MB usados agora",
+    "limitBelowUsage": " — limite está abaixo do uso atual",
+    "quotaBelowUsage": " — cota está abaixo do uso atual",
+    "noLimit": "Nenhum limite definido para este revendedor — atualmente ilimitado.",
+    "loweringNote": "Diminuir um limite abaixo do uso atual não exclui contas existentes; apenas bloqueia novas adições.",
+    "cancel": "Cancelar",
+    "saving": "Salvando…",
+    "save": "Salvar"
+  },
+  "delete": {
+    "title": "Excluir conta",
+    "message": "A conta {{username}} será excluída.",
+    "resellerNote": " As contas abaixo deste revendedor não são excluídas; elas são transferidas para o administrador.",
+    "confirm": "Excluir"
+  },
+  "toast": {
+    "created": "Conta {{username}} criada.",
+    "passwordUpdated": "Senha atualizada para {{username}}.",
+    "limitsUpdated": "Limites atualizados para {{username}}.",
+    "enabled": "{{username}} ativado.",
+    "suspended": "{{username}} suspenso.",
+    "deleted": "{{username}} excluído."
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar as contas",
+    "createFailed": "Não foi possível criar a conta",
+    "resetFailed": "Não foi possível redefinir a senha",
+    "loadLimitsFailed": "Não foi possível carregar os limites",
+    "saveLimitsFailed": "Não foi possível salvar os limites",
+    "statusFailed": "Não foi possível alterar o status",
+    "deleteFailed": "Não foi possível excluir"
+  }
+}

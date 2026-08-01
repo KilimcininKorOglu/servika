@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "git": "Git"
+  },
+  "title": "Git Deploy",
+  "loading": "Carregando…",
+  "intro": {
+    "pre": " · ",
+    "text": "Conecte um repositório, adicione a chave de deploy ao GitHub e use a URL do webhook para pulls automáticos."
+  },
+  "errors": {
+    "patRequired": "Um PAT do GitHub é obrigatório",
+    "connectFailed": "Não foi possível conectar ao GitHub",
+    "loadReposFailed": "Não foi possível carregar os repositórios",
+    "selectRepoBranch": "Selecione um repositório e uma branch",
+    "connectionFailed": "Falha na conexão"
+  },
+  "messages": {
+    "connected": "Conectado ao GitHub: @{{login}}",
+    "repoConnected": "Repositório conectado: {{repo}}@{{branch}}",
+    "webhookEnabled": " · Deploy automático ativado (webhook criado)",
+    "webhookError": " · Erro no webhook: {{error}}",
+    "ghDisconnected": "Conexão com GitHub removida",
+    "connectHint": "Repositório conectado. Copie a chave de deploy, adicione-a ao seu repositório no GitHub e clique em \"Clonar\".",
+    "cloned": "Clonado. Commit: {{commit}}",
+    "cloneFailed": "Falha ao clonar",
+    "pullDone": "Pull concluído. Commit: {{commit}}",
+    "pullFailed": "Falha ao fazer pull",
+    "repoRemoved": "Conexão com repositório removida"
+  },
+  "confirm": {
+    "ghDisconnect": "A conexão com o GitHub será removida. Qualquer webhook será excluído, mas os arquivos do repositório existentes não serão afetados."
+  },
+  "github": {
+    "title": "Conexão com GitHub",
+    "subtitle": "Conecte com um PAT, escolha um repositório e ative o deploy com um clique via webhook automático.",
+    "removeConnection": "Remover conexão",
+    "patLabel": "Token de acesso pessoal (clássico)",
+    "connecting": "Conectando…",
+    "connect": "Conectar",
+    "patHintLink": "github.com/settings/tokens",
+    "patHintPre": " →\n                  PAT refinado → escopo: ",
+    "patHintScope1": "repo",
+    "patHintMid": " +",
+    "patHintScope2": "admin:repo_hook",
+    "patHintPost": " (para deploy automático).",
+    "autoDeployBadge": "● Deploy automático",
+    "repo": "Repositório",
+    "selectPlaceholder": "— selecione —",
+    "reposFound": "{{count}} repositórios encontrados",
+    "branch": "Branch",
+    "autoDeployLabel": "Fazer deploy automaticamente no push (cria um webhook)",
+    "useRepo": "Usar este repositório",
+    "webhookLabel": "Webhook: {{url}}"
+  },
+  "repoCard": {
+    "settingsTitle": "Configurações do repositório",
+    "connectTitle": "Conectar repositório",
+    "gitUrl": "URL Git (SSH)",
+    "gitUrlPlaceholder": "git@github.com:usuario/repo.git",
+    "gitUrlHint": "Use uma URL SSH para repositórios privados. A autenticação HTTPS não é suportada.",
+    "branch": "Branch",
+    "targetDir": "Diretório de destino",
+    "update": "Atualizar",
+    "connect": "Conectar",
+    "clone": "⬇ Clonar (limpa o destino)",
+    "pull": "↻ Pull",
+    "removeConnection": "Remover conexão"
+  },
+  "deployKey": {
+    "title": "Chave de deploy (pública)",
+    "copy": "Copiar",
+    "hint": "GitHub → Repositório → Settings → Deploy keys → Add deploy key, depois cole esta chave (Allow write access não é necessário)."
+  },
+  "webhook": {
+    "title": "Webhook (pull automático)",
+    "hintPre": "GitHub → Repositório → Settings → Webhooks → Add webhook. Content type: ",
+    "hintPost": ". O evento push é suficiente.",
+    "payloadUrl": "URL do payload",
+    "secret": "Segredo",
+    "contentType": "Content type",
+    "contentTypeValue": "application/json",
+    "events": "Eventos",
+    "eventsValue": "Somente o evento push"
+  },
+  "status": {
+    "title": "Status de sincronização",
+    "latestSync": "Última sincronização",
+    "noneYet": "— (nenhuma ainda)",
+    "latestCommit": "Último commit",
+    "statusLabel": "Status",
+    "successful": "✓ bem-sucedido",
+    "error": "⚠ erro",
+    "latestLog": "Último registro"
+  },
+  "cloneDialog": {
+    "title": "Clone inicial",
+    "message": "O diretório de destino ({{dir}}) será completamente limpo e depois a branch {{branch}} do repositório será clonada. Continuar?",
+    "confirm": "Sim, clonar"
+  },
+  "deleteDialog": {
+    "title": "Remover conexão com repositório",
+    "message": "O registro do painel será excluído. Os arquivos clonados permanecerão no disco.",
+    "confirm": "Sim, excluir"
+  }
+}

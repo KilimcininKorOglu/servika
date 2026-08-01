@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "laravel": "Ferramentas Laravel"
+  },
+  "loading": "Carregando…",
+  "title": "Ferramentas Laravel",
+  "subtitle": "Instale, faça deploy e opere uma aplicação Laravel para esta assinatura.",
+  "backToSubscription": "Voltar à assinatura",
+  "tabs": {
+    "overview": "Visão geral",
+    "install": "Instalar",
+    "commands": "Comandos",
+    "env": ".env",
+    "deploy": "Deploy",
+    "workers": "Workers"
+  },
+  "messages": {
+    "actionCompleted": "Ação concluída",
+    "actionFailed": "Falha na ação"
+  },
+  "overview": {
+    "title": "Status da aplicação",
+    "installed": "Instalado",
+    "yes": "Sim",
+    "no": "Não",
+    "appRoot": "Raiz da aplicação",
+    "documentPath": "Caminho do documento",
+    "php": "PHP",
+    "composerManifest": "Manifesto Composer",
+    "found": "Encontrado",
+    "missing": "Não encontrado",
+    "git": "Git",
+    "repositoryFound": "Repositório encontrado",
+    "notConnected": "Não conectado",
+    "maintenance": "Manutenção",
+    "enabled": "Ativado",
+    "disabled": "Desativado",
+    "schedule": "Agendamento",
+    "queue": "Fila"
+  },
+  "install": {
+    "title": "Instalar Laravel",
+    "mode": "Modo",
+    "modeRemote": "Clonar repositório remoto",
+    "modeScaffold": "Criar novo projeto Laravel",
+    "modeLocal": "Inicializar repositório Git vazio",
+    "appRoot": "Raiz da aplicação",
+    "repositoryUrl": "URL do repositório",
+    "repositoryUrlPlaceholder": "https://github.com/exemplo/app.git",
+    "branch": "Branch",
+    "branchPlaceholder": "main",
+    "startInstall": "Iniciar instalação",
+    "checkInstallStatus": "Verificar status da instalação"
+  },
+  "commands": {
+    "title": "Comandos Laravel",
+    "packagePlaceholder": "vendor/pacote",
+    "scriptPlaceholder": "nome do script",
+    "run": "Executar"
+  },
+  "env": {
+    "title": "Arquivo de ambiente",
+    "load": "Carregar .env",
+    "save": "Salvar .env"
+  },
+  "deploy": {
+    "title": "Deploy",
+    "deployWithMigrate": "Deploy com migrate e build",
+    "checkDeployStatus": "Verificar status do deploy",
+    "disableMaintenance": "Desativar manutenção",
+    "enableMaintenance": "Ativar manutenção"
+  },
+  "workers": {
+    "title": "Agendamento e worker de fila",
+    "queueTimeout": "Timeout da fila",
+    "maxJobs": "Máximo de jobs",
+    "connection": "Conexão",
+    "disableSchedule": "Desativar agendamento",
+    "enableSchedule": "Ativar agendamento",
+    "disableQueue": "Desativar fila",
+    "enableQueue": "Ativar fila"
+  },
+  "common": {
+    "save": "Salvar"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Adicionar novo domínio",
+  "domainName": "Nome do domínio",
+  "domainHint": "Exemplo:",
+  "plan": "Plano (pacote)",
+  "noPlan": "Nenhum plano selecionado",
+  "defaultSuffix": " (padrão)",
+  "planHint": "Os limites de recursos e a versão padrão do PHP vêm deste plano.",
+  "phpVersion": "Versão do PHP",
+  "fromPlan": "✓ Do plano ({{name}})",
+  "phpIndependent": "Você pode alterar isto independentemente do plano.",
+  "provisioning": "Provisionamento automático:",
+  "provisioningDetail": "Usuário Linux + diretório inicial + vhost nginx + página de boas-vindas",
+  "cancel": "Cancelar",
+  "addDomain": "Adicionar domínio",
+  "provisioningState": "Provisionando…",
+  "createdSuccess": "{{domain}} foi criado com sucesso (usuário do sistema: {{user}})",
+  "addFailed": "Não foi possível adicionar o domínio"
+}

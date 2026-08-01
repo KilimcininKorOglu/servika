@@ -1,0 +1,25 @@
+{
+  "breadcrumbHome": "Início",
+  "breadcrumbServerStatus": "Status do servidor",
+  "title": "Status do servidor",
+  "subtitle": "Um instantâneo ao vivo do servidor. Esta tela é somente leitura — o gerenciamento de serviços é responsabilidade do administrador.",
+  "loading": "Carregando…",
+  "errorLoad": "Não foi possível carregar o status do servidor",
+  "cards": {
+    "cpu": "CPU",
+    "memory": "Memória",
+    "disk": "Disco",
+    "panelVersion": "Versão do painel"
+  },
+  "loadText": "carga {{values}}",
+  "updateAvailable": "atualização disponível: v{{version}}",
+  "upToDate": "atualizado",
+  "servicesHeading": "Serviços",
+  "noServices": "Sem informações de serviço.",
+  "statuses": {
+    "active": "Em execução",
+    "inactive": "Parado",
+    "failed": "Falhou",
+    "absent": "Não instalado"
+  }
+}

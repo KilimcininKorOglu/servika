@@ -1,0 +1,146 @@
+{
+  "shared": {
+    "more": "Ver mais →",
+    "manage": "Gerenciar →",
+    "loading": "Carregando…"
+  },
+  "widgets": {
+    "load-chart": "Gráfico de carga",
+    "memory-chart": "Gráfico de memória",
+    "wordpress": "Sites WordPress",
+    "panel-update": "Atualização do painel",
+    "last-backup": "Último backup do servidor",
+    "performance": "Desempenho / Otimizar",
+    "cve-security": "Avisos de segurança (CVE)",
+    "services": "Serviços",
+    "domains": "Domínios",
+    "server-info": "Informações do servidor",
+    "health": "Saúde do sistema",
+    "live-resources": "Recursos em tempo real",
+    "subscriptions": "Minhas assinaturas",
+    "network": "Tráfego de rede"
+  },
+  "header": {
+    "welcome": "Boas-vindas de volta, {{name}}",
+    "dashboard": "Painel",
+    "subtitle": "Visão geral do servidor e ações rápidas",
+    "saving": "Salvando…",
+    "saved": "Layout salvo",
+    "saveFailed": "Falha ao salvar",
+    "resetLayout": "Redefinir layout"
+  },
+  "quota": {
+    "unsupportedTitle": "A cota de disco não está disponível neste sistema de arquivos",
+    "unsupportedBody": "O Servika precisa de um sistema de arquivos raiz XFS para cota de disco por tenant. Uma reinicialização não ativará a cota no sistema de arquivos atual.",
+    "rebootTitle": "A cota de disco será ativada após reinicialização",
+    "rebootBody": "A cota de usuário XFS está configurada, mas a aplicação está inativa. Reinicie o servidor uma vez para ativar a cota de disco por tenant.",
+    "dismiss": "Dispensar"
+  },
+  "widgetNotFound": "Widget não encontrado",
+  "dragToReorder": "Arraste para reordenar",
+  "wp": {
+    "subtitle": "Instalações em todas as contas",
+    "installs": "Instalações",
+    "updates": "Atualizações",
+    "current": "Atual",
+    "pendingUpdatesText_one": " instalação com atualizações pendentes — versões desatualizadas representam riscos de segurança.",
+    "pendingUpdatesText_other": " instalações com atualizações pendentes — versões desatualizadas representam riscos de segurança.",
+    "empty": "Nenhuma instalação WordPress encontrada",
+    "rootDir": "diretório raiz",
+    "badgeUpdate": "Atualizar",
+    "badgeCurrent": "Atual",
+    "badgeUnknown": "Desconhecido",
+    "more_one": "+{{count}} instalação a mais →",
+    "more_other": "+{{count}} instalações a mais →",
+    "unknownNote_one": "{{count}} instalação não pôde ser determinada (timeout do wp-cli).",
+    "unknownNote_other": "{{count}} instalações não puderam ser determinadas (timeout do wp-cli)."
+  },
+  "update": {
+    "subtitle": "Versão e pacotes do sistema",
+    "running": "Atualização em execução",
+    "toolMissing": "Ferramenta de atualização ausente",
+    "upToDate": "Painel atualizado",
+    "noStatus": "Sem informações de status",
+    "badgeRunning": "Em execução",
+    "badgeMissing": "Ausente",
+    "badgeCurrent": "Atual",
+    "systemPackages": "Pacotes do sistema"
+  },
+  "backup": {
+    "subtitle": "Backup automático diário",
+    "unavailable": "Resumo de backup indisponível",
+    "count_one": "backup · {{size}}",
+    "count_other": "backups · {{size}}",
+    "lastBackup": "Último backup",
+    "sitesBackedUp": "Sites com backup",
+    "remoteTarget": "Destino remoto",
+    "remoteActive": "{{count}} ativo",
+    "remoteNone": "Nenhum",
+    "schedule": "Agendamento"
+  },
+  "performance": {
+    "subtitle": "Melhorar as configurações do servidor",
+    "running": "Otimização em execução",
+    "ready": "Otimização pronta",
+    "defaultStatus": "MariaDB · nginx · Configurações do PHP",
+    "badgeRunning": "Em execução",
+    "badgeIdle": "Ocioso"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} serviços em execução",
+    "subtitleStatus": "status dos serviços",
+    "allActive": "Todos ativos",
+    "down": "{{count}} inativo(s)",
+    "active": "Ativo",
+    "statusDown": "Inativo"
+  },
+  "domains": {
+    "subtitle": "Sites hospedados e status SSL",
+    "total": "Total",
+    "active": "Ativo",
+    "ssl": "SSL",
+    "empty": "Nenhum domínio ainda",
+    "noSsl": "Sem SSL",
+    "badgeActive": "Ativo",
+    "more_one": "+{{count}} domínio a mais →",
+    "more_other": "+{{count}} domínios a mais →"
+  },
+  "serverInfo": {
+    "subtitle": "Hardware e sistema",
+    "hostname": "Hostname",
+    "ip": "Endereço IP",
+    "os": "SO",
+    "kernel": "Kernel",
+    "cpu": "CPU",
+    "cores": "Núcleos",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "Avaliação geral do status",
+    "servicesDown_one": "{{count}} serviço inativo",
+    "servicesDown_other": "{{count}} serviços inativos",
+    "isolationLoss_one": "{{count}} perda de isolamento detectada",
+    "isolationLoss_other": "{{count}} perdas de isolamento detectadas",
+    "memoryAt": "Memória em {{percent}}%",
+    "diskAt": "Disco em {{percent}}%",
+    "healthy": "Saudável",
+    "fair": "Razoável",
+    "degraded": "Degradado",
+    "critical": "Crítico"
+  },
+  "live": {
+    "subtitle": "CPU e memória em tempo real",
+    "cpu": "CPU",
+    "memory": "Memória",
+    "disk": "Disco ({{mount}})",
+    "freeGb": "{{value}} GB livres"
+  },
+  "subscriptions": {
+    "subtitle": "Seus serviços ativos",
+    "body": "Visão geral do painel do cliente"
+  },
+  "network": {
+    "subtitle": "Dados de entrada e saída",
+    "body": "Estatísticas de tráfego disponíveis na página Estatísticas"
+  }
+}

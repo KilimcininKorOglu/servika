@@ -1,0 +1,61 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "redisCache": "Cache Redis"
+  },
+  "title": "Cache Redis",
+  "status": {
+    "active": "● Ativo",
+    "disabled": "Desativado"
+  },
+  "subtitle": {
+    "pre": "Aloca um ",
+    "bold": "cache de objetos Redis isolado e dedicado",
+    "post": " para este domínio. WordPress e aplicações dinâmicas podem reduzir a carga do banco de dados e responder mais rápido. Outros sites não podem acessar este cache."
+  },
+  "loading": "Carregando…",
+  "empty": {
+    "message": "O cache Redis está desativado para este domínio.",
+    "hint": "Ao ativar, um usuário ACL isolado e detalhes de conexão são criados.",
+    "enable": "Ativar cache Redis",
+    "enabling": "Ativando…"
+  },
+  "connection": {
+    "title": "Detalhes de conexão",
+    "disable": "Desativar",
+    "host": "Host",
+    "username": "Nome de usuário",
+    "password": "Senha",
+    "keyPrefix": "Prefixo da chave"
+  },
+  "wp": {
+    "title": "Configuração do WordPress",
+    "copy": "Copiar",
+    "copied": "Copiado ✓",
+    "instructionsPre": "1) Adicione as linhas a seguir ao arquivo ",
+    "instructionsFile": "wp-config.php",
+    "instructionsMid": ". 2) Instale o plugin ",
+    "instructionsBold": "Redis Object Cache",
+    "instructionsPost": " pelo painel do WordPress e selecione \"Enable Object Cache\"."
+  },
+  "row": {
+    "show": "mostrar",
+    "hide": "ocultar",
+    "copy": "copiar",
+    "copied": "✓"
+  },
+  "success": {
+    "enabledWithWp_one": "O cache Redis foi ativado e {{count}} instalação WordPress foi conectada automaticamente. Nenhuma configuração adicional é necessária.",
+    "enabledWithWp_other": "O cache Redis foi ativado e {{count}} instalações WordPress foram conectadas automaticamente. Nenhuma configuração adicional é necessária.",
+    "enabled": "O cache Redis foi ativado. Configure aplicações que não usam WordPress com os detalhes de conexão abaixo.",
+    "disabled": "O cache Redis foi desativado."
+  },
+  "confirm": {
+    "disable": "Desativar o cache Redis? O usuário ACL deste domínio será excluído."
+  },
+  "error": {
+    "enable": "Não foi possível ativar o cache Redis",
+    "disable": "Não foi possível desativar o cache Redis"
+  }
+}

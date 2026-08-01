@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Início",
+  "title": "Registro de segurança",
+  "subtitle": "Tentativas de login no painel e ações administrativas. A entrada mais recente aparece primeiro.",
+  "stats": {
+    "entries": "entradas",
+    "failed": "falhas"
+  },
+  "searchPlaceholder": "Pesquisar usuário, IP, destino…",
+  "filters": {
+    "allActions": "Todas as ações",
+    "last": "Últimas {{n}}",
+    "failedOnly": "Somente com falha"
+  },
+  "loading": "Carregando…",
+  "empty": {
+    "title": "Nenhuma entrada para este filtro",
+    "description": "Reduza os filtros e tente novamente."
+  },
+  "noMatch": "Nenhuma entrada corresponde à sua pesquisa.",
+  "columns": {
+    "time": "Data e hora",
+    "result": "Resultado",
+    "action": "Ação",
+    "user": "Usuário",
+    "ip": "IP",
+    "target": "Destino"
+  },
+  "status": {
+    "success": "Sucesso",
+    "failed": "Falha"
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar o registro"
+  }
+}

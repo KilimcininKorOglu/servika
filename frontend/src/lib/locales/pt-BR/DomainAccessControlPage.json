@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "accessControl": "Controle de acesso"
+  },
+  "title": "Controle de acesso",
+  "subtitle": "Configure a proteção contra hotlinks e regras de permissão ou bloqueio de IP no nível do domínio. Ao salvar, o vhost nginx é regenerado.",
+  "loading": "Carregando…",
+  "modes": {
+    "off": {
+      "label": "Desativado",
+      "description": "Nenhuma regra de permissão ou bloqueio de IP é aplicada ao vhost nginx."
+    },
+    "block": {
+      "label": "Bloquear IPs listados",
+      "description": "Visitantes dos endereços IP ou intervalos CIDR listados recebem respostas 403."
+    },
+    "allow": {
+      "label": "Permitir somente IPs listados",
+      "description": "Apenas os endereços IP ou intervalos CIDR listados são permitidos quando há pelo menos uma regra."
+    }
+  },
+  "hotlink": {
+    "title": "Proteção contra hotlinks",
+    "description": "Bloqueia sites externos de incorporar arquivos de imagem servidos por este domínio.",
+    "enabled": "Ativado",
+    "allowedLabel": "Domínios de referência adicionais permitidos",
+    "hint": "O domínio atual e seu host www são sempre permitidos. Adicione um domínio por linha ou separados por vírgula.",
+    "save": "Salvar configurações de hotlink",
+    "saving": "Salvando…"
+  },
+  "ipMode": {
+    "title": "Modo de acesso por IP",
+    "selected": "● Selecionado"
+  },
+  "newRule": {
+    "title": "Nova regra de IP",
+    "label": "Endereço IP ou CIDR",
+    "placeholder": "203.0.113.10 ou 203.0.113.0/24",
+    "add": "Adicionar regra",
+    "adding": "Adicionando…"
+  },
+  "rules": {
+    "title": "Regras de IP configuradas",
+    "empty": "Nenhuma regra de IP ainda.",
+    "created": "Criado em {{date}}",
+    "delete": "Excluir"
+  },
+  "back": "← Voltar à assinatura",
+  "messages": {
+    "hotlinkSaved": "Configurações de proteção contra hotlinks foram salvas.",
+    "modeSaved": "Modo de acesso por IP foi salvo.",
+    "ruleAdded": "Regra de IP foi adicionada.",
+    "ruleDeleted": "Regra de IP foi excluída."
+  },
+  "confirmDelete": "Excluir regra de IP {{ip}}?",
+  "errors": {
+    "hotlinkFailed": "Não foi possível salvar as configurações de hotlink",
+    "modeFailed": "Não foi possível salvar o modo de acesso por IP",
+    "addFailed": "Não foi possível adicionar a regra de IP",
+    "deleteFailed": "Não foi possível excluir a regra de IP"
+  }
+}

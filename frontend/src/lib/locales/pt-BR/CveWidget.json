@@ -1,0 +1,52 @@
+{
+  "title": "Avisos de segurança",
+  "subtitleAudit": "Auditoria de CVE (AlmaLinux)",
+  "advisories": "{{count}} avisos de segurança",
+  "rescan": "Verificar novamente",
+  "scanning": "Verificando…",
+  "scanningServer": "Verificando o servidor…",
+  "updating": "Instalando atualizações de segurança… (executado em segundo plano)",
+  "kcApplying": "Aplicando patch ativo do kernel… (KernelCare — não é necessário reiniciar)",
+  "severity": {
+    "critical": "Crítica",
+    "important": "Importante",
+    "moderate": "Moderada",
+    "low": "Baixa"
+  },
+  "kcActive": {
+    "bold": "O kernel recebeu patch ativo (KernelCare).",
+    "text": " As vulnerabilidades do kernel são corrigidas sem reinicialização.",
+    "effectivePre": " Kernel efetivo: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVEs corrigidas com patch ativo."
+  },
+  "kcUnregistered": {
+    "bold": "O KernelCare está instalado, mas a licença não está registrada.",
+    "text": " Registre com uma chave de licença TuxCare para aplicar patches no kernel sem reinicialização."
+  },
+  "rebootRequired": {
+    "bold1": "Reinicialização necessária.",
+    "text1": " Um novo kernel com patch de segurança está instalado, mas o sistema ainda executa o kernel antigo — a maioria das CVEs abaixo está relacionada ao kernel e aparecerá como ",
+    "bold2": "aberta até o servidor ser reiniciado",
+    "text2": ". Agende uma reinicialização durante uma janela de manutenção."
+  },
+  "clean": {
+    "title": "Sistema atualizado",
+    "subtitle": "Nenhuma vulnerabilidade conhecida"
+  },
+  "totalPre": "Total de ",
+  "totalPost": " CVEs únicas",
+  "lastScan": " · última verificação {{scan}}",
+  "installUpdates": "Instalar atualizações de segurança",
+  "updateLiveKernel": "Atualizar patches ativos do kernel (sem reinicializar)",
+  "confirmUpdate": "As atualizações de segurança (dnf --security) serão instaladas. Uma reinicialização pode ser necessária para que as atualizações do kernel entrem em vigor. Continuar?",
+  "messages": {
+    "updatesComplete": "Atualizações de segurança concluídas.",
+    "livePatchApplied": "Patch ativo do kernel aplicado."
+  },
+  "errors": {
+    "fetch": "Não foi possível obter o status das CVEs",
+    "startUpdate": "Não foi possível iniciar a atualização",
+    "startLivePatch": "Não foi possível iniciar o patch ativo"
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "files": "Arquivos"
+  },
+  "title": "Gerenciador de arquivos",
+  "loading": "Carregando...",
+  "dropZone": {
+    "title": "Solte os arquivos aqui",
+    "targetDir": "Diretório de destino: "
+  },
+  "selection": {
+    "count": "{{count}} itens selecionados",
+    "rightClick": "Clique com o botão direito para ações",
+    "delete": "Excluir ({{count}})",
+    "clear": "Limpar seleção"
+  },
+  "upload": {
+    "uploading": "Enviando...",
+    "remaining": "Restante: {{eta}}"
+  },
+  "menu": {
+    "uploadFiles": "📤 Enviar arquivos",
+    "newFolder": "📁 Nova pasta",
+    "newFile": "📄 Novo arquivo"
+  },
+  "toolbar": {
+    "refresh": "↻ Atualizar",
+    "delete": "Excluir ({{count}})",
+    "searchPlaceholder": "🔍 Pesquisar arquivos...",
+    "itemCount": "{{count}} itens"
+  },
+  "columns": {
+    "select": "Selecionar",
+    "name": "Nome",
+    "size": "Tamanho",
+    "permissions": "Permissões",
+    "modified": "Modificado",
+    "actions": "Ações"
+  },
+  "parentFolder": "↑ pasta acima",
+  "empty": "Esta pasta está vazia",
+  "actionsTitle": "Ações",
+  "context": {
+    "open": "Abrir",
+    "browse": "Abrir no navegador",
+    "edit": "Editar",
+    "download": "Baixar",
+    "rename": "Renomear",
+    "permissions": "Permissões",
+    "calculateSize": "Calcular tamanho",
+    "extract": "Extrair arquivo",
+    "copy": "Copiar",
+    "move": "Mover",
+    "delete": "Excluir"
+  },
+  "prompt": {
+    "deleteConfirm": "Excluir \"{{name}}\"? Esta ação não pode ser desfeita.",
+    "newFolderName": "Nome da nova pasta:"
+  },
+  "sizeModal": {
+    "title": "📏 Informações de tamanho",
+    "bytes": "{{bytes}} bytes",
+    "done": "Concluído"
+  },
+  "bulkDelete": {
+    "title": "⚠ Exclusão em massa",
+    "messageBold": "{{count}}",
+    "messagePost": " itens serão excluídos permanentemente. Pastas e todo o seu conteúdo serão removidos.",
+    "moreItems": "+ {{count}} mais...",
+    "cancel": "Cancelar",
+    "confirm": "Sim, excluir"
+  },
+  "renameModal": {
+    "title": "Renomear",
+    "cancel": "Cancelar",
+    "rename": "Renomear"
+  },
+  "chmodModal": {
+    "title": "Permissões",
+    "owner": "Proprietário",
+    "group": "Grupo",
+    "other": "Outros",
+    "read": "Leitura",
+    "write": "Escrita",
+    "execute": "Execução",
+    "octal": "Octal: ",
+    "cancel": "Cancelar",
+    "apply": "Aplicar"
+  },
+  "copyMoveModal": {
+    "titleCopy": "Copiar",
+    "titleMove": "Mover",
+    "heading": "{{title}} ({{count}} itens)",
+    "moreItems": "+ {{count}} mais...",
+    "targetLabel": "Diretório de destino (dentro do home)",
+    "targetPlaceholder": "/public_html/backups",
+    "hintPre": "O destino já deve existir. ",
+    "hintCopy": "Pastas são copiadas com seu conteúdo.",
+    "hintMove": "Movimentações no mesmo disco são imediatas.",
+    "cancel": "Cancelar"
+  },
+  "archiveModal": {
+    "title": "📦 Adicionar ao arquivo ({{count}} itens)",
+    "fileName": "Nome do arquivo",
+    "format": "Formato",
+    "output": "Saída: ",
+    "cancel": "Cancelar",
+    "archive": "Arquivar"
+  },
+  "newFileModal": {
+    "title": "📄 Novo arquivo",
+    "fileNameLabel": "Nome do arquivo (incluindo extensão)",
+    "hint": "Um arquivo vazio é criado e depois aberto no editor de código.",
+    "cancel": "Cancelar",
+    "createAndEdit": "Criar e editar"
+  },
+  "eta": {
+    "lessThanSec": "<1 seg",
+    "sec": "{{count}} seg",
+    "minSec": "{{min}} min {{sec}} seg",
+    "hrMin": "{{hr}} h {{min}} min"
+  },
+  "toast": {
+    "uploadPartial": "{{success}}/{{total}} arquivos enviados, alguns falharam.",
+    "deletePartial": "{{success}}/{{total}} itens excluídos.",
+    "someErrors": "Alguns erros: {{errors}}",
+    "downloadFailed": "Falha no download: {{message}}"
+  },
+  "errors": {
+    "deleteFailed": "Falha ao excluir",
+    "createFolderFailed": "Não foi possível criar a pasta",
+    "openFailed": "Não foi possível abrir",
+    "saveFailed": "Não foi possível salvar",
+    "renameFailed": "Não foi possível renomear",
+    "chmodFailed": "Não foi possível alterar as permissões",
+    "extractFailed": "Não foi possível abrir o arquivo. São suportados arquivos ZIP, RAR e TAR.",
+    "searchFailed": "Falha na pesquisa",
+    "copyFailed": "Falha ao copiar",
+    "moveFailed": "Falha ao mover",
+    "archiveFailed": "Falha ao arquivar",
+    "createFailed": "Falha ao criar",
+    "sizeFailed": "Falha ao calcular o tamanho"
+  },
+  "newFile": {
+    "title": "📄 Novo arquivo",
+    "label": "Nome do arquivo (incluindo extensão)",
+    "hint": "Um arquivo vazio é criado e depois aberto no editor de código.",
+    "cancel": "Cancelar",
+    "create": "Criar e editar"
+  }
+}

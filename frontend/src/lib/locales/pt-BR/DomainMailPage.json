@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "email": "E-mail"
+  },
+  "title": "Contas de e-mail",
+  "subtitle": "Gerencie caixas de e-mail nativas do Postfix e Dovecot. Use a porta SMTP 587 com STARTTLS para envio autenticado.",
+  "loading": "Carregando…",
+  "back": "← Voltar à assinatura",
+  "generatedPassword": {
+    "title": "Senha para {{email}}",
+    "saveNote": "Salve agora. Não será exibida novamente.",
+    "copy": "Copiar"
+  },
+  "enable": {
+    "notEnabled": "A hospedagem de e-mail ainda não está ativada para este domínio.",
+    "info": "Ao ativar, registros DNS MX, SPF, DKIM e DMARC são adicionados quando possível.",
+    "enabling": "Ativando…",
+    "button": "Ativar e-mail"
+  },
+  "mailboxAdd": {
+    "title": "Adicionar caixa de e-mail",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "senha, gerada se em branco",
+    "adding": "Adicionando…",
+    "add": "Adicionar"
+  },
+  "mailboxes": {
+    "title": "Caixas de e-mail",
+    "empty": "Nenhuma caixa de e-mail ainda.",
+    "suspended": "suspensa",
+    "suspend": "Suspender",
+    "activate": "Ativar",
+    "resetPassword": "Redefinir senha",
+    "delete": "Excluir"
+  },
+  "forwarders": {
+    "title": "Encaminhamentos e catch-all",
+    "description": "Encaminhe e-mails recebidos para um ou mais endereços sem criar uma caixa de e-mail. O catch-all encaminha e-mails para endereços indefinidos neste domínio.",
+    "sourcePlaceholder": "suporte",
+    "catchAll": "Encaminhar todos os endereços indefinidos neste domínio",
+    "destinationPlaceholder": "destino1@exemplo.com, destino2@exemplo.com",
+    "adding": "Adicionando…",
+    "add": "Adicionar",
+    "empty": "Nenhum encaminhamento ainda.",
+    "suspended": "suspenso",
+    "suspend": "Suspender",
+    "activate": "Ativar",
+    "delete": "Excluir"
+  },
+  "spam": {
+    "title": "Filtragem de spam",
+    "description": "O Rspamd pontua cada mensagem recebida. O greylist adia temporariamente, o limiar de cabeçalho marca como spam e o limiar de rejeição recusa a entrega.",
+    "notInstalled": " O Rspamd não está instalado neste servidor; as configurações são salvas mas não aplicadas.",
+    "enable": "Ativar filtragem de spam para este domínio",
+    "greylist": "Greylist",
+    "addHeader": "Adicionar cabeçalho",
+    "reject": "Rejeitar",
+    "applying": "Aplicando…",
+    "apply": "Aplicar política de spam"
+  },
+  "autoresponder": {
+    "title": "Resposta automática",
+    "description": "Envie uma resposta de ausência de uma caixa de e-mail, no máximo uma vez por intervalo para o mesmo remetente.",
+    "mailbox": "Caixa de e-mail",
+    "interval": "Intervalo de resposta (dias)",
+    "subjectPlaceholder": "Assunto",
+    "bodyPlaceholder": "Corpo da mensagem",
+    "enable": "Ativar resposta automática",
+    "saving": "Salvando…",
+    "save": "Salvar resposta automática",
+    "remove": "Remover"
+  },
+  "filters": {
+    "title": "Filtros de mensagem",
+    "description": "Classifique e-mails recebidos em pastas, redirecione ou descarte-os com regras Sieve compiladas por caixa de e-mail.",
+    "namePlaceholder": "Nome do filtro",
+    "subjectContains": "Assunto contém",
+    "fromContains": "De contém",
+    "toContains": "Para contém",
+    "matchedTextPlaceholder": "Texto correspondente",
+    "moveToFolder": "Mover para pasta",
+    "redirectTo": "Redirecionar para",
+    "discard": "Descartar",
+    "folderPlaceholder": "Pasta (ex.: Faturas)",
+    "targetPlaceholder": "destino@exemplo.com",
+    "adding": "Adicionando…",
+    "add": "Adicionar filtro",
+    "empty": "Nenhum filtro ainda.",
+    "delete": "Excluir"
+  },
+  "sendLimits": {
+    "title": "Limites de envio",
+    "description": "Limite destinatários por caixa de e-mail. Exceder um limite suspende a conta automaticamente para conter um login comprometido. Use 0 para ilimitado.",
+    "mailbox": "Caixa de e-mail",
+    "hourly": "Por hora ({{count}} usados)",
+    "daily": "Por dia ({{count}} usados)",
+    "suspendedNote": "Suspensa automaticamente em {{time}}. Reative a caixa acima para liberar.",
+    "saving": "Salvando…",
+    "save": "Salvar limites de envio"
+  },
+  "messages": {
+    "enabled": "A hospedagem de e-mail foi ativada para este domínio. Registros MX, SPF, DKIM e DMARC foram adicionados ao DNS quando possível.",
+    "forwarderAdded": "Encaminhamento de e-mail adicionado.",
+    "spamApplied": "A política de spam do Rspamd foi validada e aplicada.",
+    "autoresponderSaved": "A resposta automática e seu script Sieve foram aplicados.",
+    "autoresponderRemoved": "A resposta automática foi removida.",
+    "filterAdded": "O filtro de e-mail foi compilado e ativado.",
+    "sendLimitsSaved": "Os limites de envio foram salvos."
+  },
+  "confirm": {
+    "deleteMailbox": "Excluir a caixa \"{{email}}\"? O Maildir permanecerá no disco e somente o registro da conta será removido.",
+    "deleteForwarder": "Excluir o encaminhamento \"{{source}}\"?",
+    "deleteFilter": "Excluir o filtro \"{{name}}\"?"
+  },
+  "errors": {
+    "loadDomainFailed": "Não foi possível carregar o domínio",
+    "enableFailed": "Não foi possível ativar a hospedagem de e-mail",
+    "createMailboxFailed": "Não foi possível criar a caixa de e-mail",
+    "addForwarderFailed": "Não foi possível adicionar o encaminhamento",
+    "deleteMailboxFailed": "Não foi possível excluir a caixa de e-mail",
+    "deleteForwarderFailed": "Não foi possível excluir o encaminhamento",
+    "resetPasswordFailed": "Não foi possível redefinir a senha",
+    "updateForwarderFailed": "Não foi possível atualizar o encaminhamento",
+    "updateMailboxFailed": "Não foi possível atualizar a caixa de e-mail",
+    "applySpamFailed": "Não foi possível aplicar as configurações de spam",
+    "readAutoresponderFailed": "Não foi possível ler a resposta automática",
+    "saveAutoresponderFailed": "Não foi possível salvar a resposta automática",
+    "addFilterFailed": "Não foi possível adicionar o filtro de e-mail",
+    "readSendLimitsFailed": "Não foi possível ler os limites de envio",
+    "saveSendLimitsFailed": "Não foi possível salvar os limites de envio"
+  }
+}

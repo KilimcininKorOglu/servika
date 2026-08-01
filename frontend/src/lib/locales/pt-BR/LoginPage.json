@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Painel de controle de hospedagem"
+  },
+  "heading": "Bem-vindo",
+  "subtitle": "Entre para continuar.",
+  "field": {
+    "username": "Nome de usuário",
+    "password": "Senha",
+    "twoFactorCode": "Código de autenticação de dois fatores"
+  },
+  "twoFactorHint": "Digite o código de seis dígitos do seu aplicativo autenticador.",
+  "button": {
+    "signingIn": "Entrando…",
+    "verify": "Verificar e entrar",
+    "signIn": "Entrar"
+  },
+  "footer": "Servika · versão 0.2.0-f1",
+  "error": {
+    "loginFailed": "Falha no login"
+  }
+}

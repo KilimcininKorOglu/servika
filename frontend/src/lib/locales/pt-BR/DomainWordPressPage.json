@@ -1,0 +1,124 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "subscription": "Assinatura",
+    "wordpress": "WordPress"
+  },
+  "title": "Ferramentas WordPress",
+  "subtitle": "Gerencie versões, plugins, temas e usuários em um só lugar.",
+  "loading": "Carregando…",
+  "actions": {
+    "new": "Novo WordPress"
+  },
+  "empty": {
+    "title": "Nenhuma instalação WordPress existe neste domínio ainda",
+    "subtitle": "Instale com um clique usando o formulário abaixo."
+  },
+  "tabs": {
+    "overview": "Visão geral",
+    "extensions": "Plugins",
+    "themes": "Temas",
+    "users": "Usuários"
+  },
+  "toolkit": {
+    "adminPanel": "Painel admin",
+    "remove": "Remover"
+  },
+  "metrics": {
+    "version": "Versão",
+    "php": "PHP",
+    "database": "Banco de dados",
+    "maintenance": "Modo de manutenção",
+    "upToDate": "atualizado",
+    "active": "ativo",
+    "on": "Ativado",
+    "off": "Desativado"
+  },
+  "overview": {
+    "updateVersion": "Atualizar versão · v{{version}}",
+    "updateAll": "Atualizar tudo",
+    "disableMaintenance": "Desativar modo de manutenção",
+    "enableMaintenance": "Ativar modo de manutenção",
+    "clearCache": "Limpar cache",
+    "repairCore": "Reparar núcleo",
+    "hint": "Ações rápidas de manutenção. Atualizações de versão disponíveis aparecem na métrica acima."
+  },
+  "messages": {
+    "coreUpdated": "Núcleo do WordPress atualizado.",
+    "allUpdated": "Núcleo, plugins e temas atualizados.",
+    "maintenanceEnabled": "Modo de manutenção ativado.",
+    "maintenanceDisabled": "Modo de manutenção desativado.",
+    "cacheCleared": "Cache limpo.",
+    "repairDone": "Reparo do núcleo concluído.",
+    "packageUpdated": "{{name}} atualizado.",
+    "allUpdatesDone": "Todas as atualizações concluídas.",
+    "activated": "{{name}} ativado.",
+    "deactivated": "{{name}} desativado."
+  },
+  "errors": {
+    "installFailed": "Falha na instalação",
+    "operationFailed": "Falha na operação",
+    "resetFailed": "Não foi possível redefinir a senha",
+    "removeFailed": "Não foi possível remover a instalação"
+  },
+  "output": {
+    "title": "Saída da operação"
+  },
+  "btn": {
+    "processing": "Processando…"
+  },
+  "packages": {
+    "loading": "Carregando…",
+    "noPlugins": "Nenhum plugin encontrado.",
+    "noThemes": "Nenhum tema encontrado.",
+    "updateSingular": "{{count}} atualização disponível",
+    "updatePlural": "{{count}} atualizações disponíveis",
+    "updateAll": "Atualizar tudo",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "version": "Versão {{version}}",
+    "updateAvailable": " → {{version}} disponível",
+    "update": "Atualizar",
+    "activate": "Ativar",
+    "deactivate": "Desativar",
+    "activeTheme": "Tema ativo"
+  },
+  "usersTab": {
+    "loading": "Carregando…",
+    "empty": "Nenhum usuário encontrado.",
+    "resetPassword": "Redefinir senha"
+  },
+  "confirm": {
+    "resetPassword": "Gerar uma nova senha para \"{{user}}\"?\nA senha atual ficará inválida.",
+    "rootRemove": "Instalações WordPress no diretório raiz não podem ser excluídas pelo painel.",
+    "remove": "Excluir a instalação WordPress em {{dir}}?\nTodos os arquivos neste diretório e seu banco de dados serão removidos. Esta ação não pode ser desfeita."
+  },
+  "installForm": {
+    "title": "Nova instalação WordPress",
+    "close": "✕ Fechar",
+    "siteTitle": "Título do site",
+    "siteTitlePlaceholder": "Meu Blog",
+    "subdirectory": "Subdiretório (opcional)",
+    "subdirectoryPlaceholder": "em branco = raiz · exemplo: blog",
+    "adminUser": "Nome de usuário admin",
+    "adminEmail": "E-mail do admin",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "Instalando… (~30 seg)",
+    "install": "Instalar WordPress"
+  },
+  "result": {
+    "installed": "WordPress {{version}} instalado",
+    "site": "Site",
+    "admin": "Admin",
+    "username": "Nome de usuário",
+    "password": "Senha",
+    "savePassword": "Salve a senha agora. Não será exibida novamente."
+  },
+  "passwordModal": {
+    "title": "Nova senha criada",
+    "user": "Usuário:",
+    "copy": "Copiar",
+    "notice": "Esta senha não será exibida novamente. Salve agora.",
+    "ok": "OK"
+  }
+}

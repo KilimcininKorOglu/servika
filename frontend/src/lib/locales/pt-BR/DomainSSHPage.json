@@ -1,0 +1,52 @@
+{
+  "loading": "Carregando…",
+  "notFound": "Não encontrado",
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "sshAccess": "Acesso SSH"
+  },
+  "title": "Acesso SSH",
+  "subtitle": "acesso shell da conta.",
+  "badge": {
+    "on": "SSH ATIVADO",
+    "off": "SSH DESATIVADO"
+  },
+  "toast": {
+    "accessActive": "Acesso SSH ativado.",
+    "accessDisabled": "Acesso SSH desativado.",
+    "operationFailed": "Falha na operação",
+    "keySaved": "Chave SSH salva.",
+    "keysCleared": "Chaves SSH removidas.",
+    "keySaveFailed": "Não foi possível salvar a chave"
+  },
+  "shell": {
+    "title": "Acesso ao shell",
+    "enabledPrefix": "Ativado:",
+    "disabledPrefix": "Desativado:",
+    "currentPrefix": "Atual:",
+    "disable": "Desativar SSH",
+    "enable": "Ativar SSH",
+    "demoNotice": "O acesso SSH não pode ser alterado para o domínio de demonstração."
+  },
+  "connection": {
+    "title": "Detalhes de conexão",
+    "user": "Usuário",
+    "host": "Host",
+    "port": "Porta",
+    "commandLabel": "Comando de conexão",
+    "copy": "Copiar",
+    "passwordPrefix": "Senha:",
+    "passwordBold": "a mesma da sua conta FTP",
+    "passwordSuffix": ". É sincronizada automaticamente enquanto o SSH está ativo. Alternativamente, adicione uma chave pública SSH abaixo."
+  },
+  "key": {
+    "title": "Chave pública SSH (authorized_keys)",
+    "descPrefix": "Adicione sua chave pública para entrar sem senha.",
+    "configured": "Uma chave está configurada atualmente.",
+    "notConfigured": "Nenhuma chave configurada ainda.",
+    "removeHint": "Salve um valor vazio para remover todas as chaves.",
+    "save": "Salvar chave"
+  },
+  "backToSubscription": "← Voltar à assinatura"
+}

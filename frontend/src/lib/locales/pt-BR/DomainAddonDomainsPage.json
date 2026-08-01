@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "addonDomains": "Domínios adicionais"
+  },
+  "title": "Domínios adicionais",
+  "subtitle": "Crie domínios adicionais ou estacionados e configure redirecionamentos de domínio completo.",
+  "toast": {
+    "created": "{{domain}} foi criado.",
+    "createFailed": "Não foi possível criar o domínio adicional",
+    "deleted": "{{domain}} foi excluído.",
+    "deleteFailed": "Não foi possível excluir o domínio adicional",
+    "redirectSaved": "Configurações de redirecionamento foram salvas.",
+    "redirectSaveFailed": "Não foi possível salvar as configurações de redirecionamento",
+    "redirectRemoved": "Configurações de redirecionamento foram removidas.",
+    "redirectRemoveFailed": "Não foi possível remover as configurações de redirecionamento"
+  },
+  "mode": {
+    "parked": "domínio estacionado",
+    "addon": "domínio adicional"
+  },
+  "confirmDelete": "Excluir {{domain}}?\nO {{mode}}, vhost, zona DNS e registros do painel serão removidos. Esta ação não pode ser desfeita.",
+  "confirmRemoveRedirect": "Remover o redirecionamento do domínio?",
+  "form": {
+    "title": "Novo domínio adicional",
+    "domainLabel": "Domínio",
+    "parkedLabel": "Domínio estacionado",
+    "creating": "Criando…",
+    "add": "Adicionar domínio",
+    "hint": "Domínios adicionais usam seu próprio diretório raiz. Domínios estacionados compartilham o diretório raiz do domínio pai."
+  },
+  "redirect": {
+    "title": "Redirecionamento de domínio completo",
+    "active": "Ativo",
+    "targetLabel": "URL de destino",
+    "statusLabel": "Status",
+    "status301": "301 Permanente",
+    "status302": "302 Temporário",
+    "saving": "Salvando…",
+    "save": "Salvar redirecionamento",
+    "remove": "Remover"
+  },
+  "list": {
+    "title": "Domínios existentes",
+    "loading": "Carregando…",
+    "empty": "Nenhum domínio adicional ainda.",
+    "parked": "Estacionado",
+    "phpPrefix": "PHP",
+    "delete": "Excluir"
+  },
+  "backToSubscription": "← Voltar à assinatura"
+}

@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "Falha ao copiar automaticamente. Pressione Ctrl+C e depois Enter:",
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "connectionDetails": "Detalhes de conexão"
+  },
+  "title": "Detalhes de conexão",
+  "subtitle": "Selecione um valor para copiá-lo automaticamente",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Host",
+    "port": "Porta",
+    "username": "Nome de usuário",
+    "password": "Senha",
+    "homeDirectory": "Diretório home",
+    "database": "Banco de dados",
+    "webRoot": "Raiz da web",
+    "ipv4": "IPv4",
+    "systemUser": "Usuário do sistema",
+    "httpUrl": "URL HTTP",
+    "httpsUrl": "URL HTTPS"
+  },
+  "links": {
+    "ftp": "Ir para gerenciamento FTP →",
+    "database": "Ir para gerenciamento de banco de dados →"
+  },
+  "row": {
+    "selectToCopy": "Selecionar para copiar",
+    "copied": "✓ Copiado"
+  },
+  "password": {
+    "button": "🔑 Mostrar / Redefinir senha"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Banco de dados"
+  },
+  "modal": {
+    "titleSuffix": "Senha",
+    "userLabel": "Usuário:",
+    "notStored": "(não armazenado)",
+    "notAuthorized": "(não autorizado)",
+    "showCurrent": "👁 Mostrar senha atual",
+    "currentPasswordLabel": "Senha atual",
+    "newPasswordGenerated": "✓ Nova senha gerada",
+    "copyWarning": "⚠ Copie a senha agora. Pode não ser possível visualizá-la novamente após fechar esta janela.",
+    "close": "Fechar",
+    "generating": "Gerando…",
+    "generateAgain": "↻ Gerar novamente",
+    "generateNew": "⚡ Gerar nova senha",
+    "errorGenerate": "Não foi possível gerar a senha"
+  },
+  "copyButton": {
+    "copy": "Copiar",
+    "copied": "✓ Copiado"
+  }
+}

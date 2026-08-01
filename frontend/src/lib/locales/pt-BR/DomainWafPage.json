@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "waf": "Firewall de Aplicação Web (WAF)"
+  },
+  "title": "Firewall de Aplicação Web",
+  "subtitle": " · ModSecurity v3 + OWASP Core Rule Set. Salvar regenera o vhost nginx (sem tempo de inatividade).",
+  "loading": "Carregando…",
+  "moduleWarning": {
+    "bold": "O módulo ModSecurity não está instalado neste servidor.",
+    "pre": " As configurações são salvas, mas o WAF não é aplicado. Execute ",
+    "post": " no servidor para habilitá-lo (sites existentes não são afetados)."
+  },
+  "modes": {
+    "inherit": {
+      "name": "Herdar do plano",
+      "description": "Este domínio usa o padrão de WAF do plano de serviço atribuído."
+    },
+    "block": {
+      "name": "Bloquear",
+      "description": "Requisições maliciosas (SQLi, XSS, RCE…) são bloqueadas com 403. SecRuleEngine On."
+    },
+    "detect": {
+      "name": "Detectar",
+      "description": "As requisições não são bloqueadas; as regras correspondentes são escritas somente no log de auditoria. DetectionOnly — ideal para ajuste de regras."
+    },
+    "off": {
+      "name": "Desativado",
+      "description": "O WAF está completamente desativado para este domínio (mesmo que o plano o tenha ativado)."
+    }
+  },
+  "paranoiaDescription": {
+    "0": "O padrão do plano é usado.",
+    "1": "Baixo — assinaturas básicas de ataque. Quase nenhum falso positivo. (recomendado)",
+    "2": "Médio — mais regras. Algumas requisições legítimas podem ser bloqueadas.",
+    "3": "Alto — agressivo. Exclusões por aplicação podem ser necessárias.",
+    "4": "Estrito — mais agressivo. Somente para cenários com auditoria rigorosa."
+  },
+  "effective": {
+    "label": "Status efetivo:",
+    "blocking": "Ativo · Bloqueando",
+    "detection": "Ativo · Detectando",
+    "paranoia": "Paranoia {{level}}",
+    "passive": "Passivo",
+    "planDefault": "Padrão do plano ({{name}}): ",
+    "planBlock": "Bloquear · PL{{paranoia}}",
+    "planDetect": "Detectar · PL{{paranoia}}",
+    "planOff": "Desativado"
+  },
+  "modeCard": {
+    "title": "Modo WAF",
+    "selected": "Selecionado"
+  },
+  "paranoiaCard": {
+    "title": "Nível de paranoia (CRS)",
+    "hint": {
+      "pre": "Nível mais alto = mais regras + proteção mais forte, mas também maior chance de falsos positivos. Somente efetivo quando o WAF está em modo ",
+      "block": "Bloquear",
+      "mid": " ou ",
+      "detect": "Detectar",
+      "post": "."
+    },
+    "options": {
+      "inherit": "Herdar do plano",
+      "level1": "Nível 1 (Baixo)",
+      "level2": "Nível 2 (Médio)",
+      "level3": "Nível 3 (Alto)",
+      "level4": "Nível 4 (Estrito)"
+    }
+  },
+  "actions": {
+    "save": "Salvar e aplicar",
+    "saving": "Aplicando…",
+    "reload": "Recarregar"
+  },
+  "messages": {
+    "appliedBlocking": "WAF aplicado — modo Bloqueando, paranoia {{paranoia}}",
+    "appliedDetection": "WAF aplicado — modo Detectando, paranoia {{paranoia}}",
+    "savedPassive": "Configurações salvas — WAF está passivo para este domínio"
+  },
+  "errors": {
+    "saveFailed": "Falha ao salvar"
+  }
+}

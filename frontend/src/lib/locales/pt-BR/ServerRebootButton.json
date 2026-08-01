@@ -1,0 +1,14 @@
+{
+  "title": "Reinicialização do servidor",
+  "description": "Reinicie o servidor inteiro somente após confirmar que as operações ativas e dos clientes podem ser interrompidas com segurança.",
+  "confirmLabel": "Digite REINICIAR para confirmar",
+  "placeholder": "REINICIAR",
+  "reboot": "Reiniciar servidor",
+  "requesting": "Solicitando...",
+  "messages": {
+    "requested": "Reinicialização solicitada. O painel ficará indisponível enquanto o servidor reinicia."
+  },
+  "errors": {
+    "reboot": "Não foi possível solicitar a reinicialização do servidor"
+  }
+}

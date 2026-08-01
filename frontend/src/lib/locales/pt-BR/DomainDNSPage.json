@@ -1,0 +1,159 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "dnsSettings": "Configurações de DNS"
+  },
+  "title": "Configurações de DNS",
+  "ipLabel": "IP:",
+  "authoritative": {
+    "label": "DNS autoritativo:",
+    "pre": " O BIND publica esses registros. Aponte o domínio para ",
+    "mid": " e ",
+    "post": "."
+  },
+  "loading": "Carregando...",
+  "recordCount": "{{count}} registros",
+  "valueHint": {
+    "A": "Endereço IPv4, por exemplo 203.0.113.10",
+    "AAAA": "Endereço IPv6, por exemplo 2a01:4f8:1c1c::1",
+    "CNAME": "Nome de domínio de destino, por exemplo target.example.com",
+    "MX": "Servidor de e-mail, por exemplo mail.example.com (prioridade é definida separadamente)",
+    "TXT": "Texto livre, por exemplo v=spf1 mx ~all",
+    "NS": "Servidor de nomes, por exemplo ns1.example.com",
+    "SRV": "weight port target, por exemplo 5 5060 sip.example.com (prioridade é definida separadamente)",
+    "CAA": "flags tag \"valor\", por exemplo 0 issue \"letsencrypt.org\"",
+    "PTR": "Nome de domínio de destino, por exemplo host.example.com",
+    "DS": "keytag algorithm digest-type digest, por exemplo 12345 13 2 49FD46E6C4B45C55D4AC...",
+    "TLSA": "usage selector matching-type data, por exemplo 3 1 1 0B9FA5A59EED715C26C1020C...",
+    "SSHFP": "algorithm type fingerprint, por exemplo 4 2 123456789ABCDEF...",
+    "NAPTR": "order preference \"flags\" \"service\" \"regexp\" replacement"
+  },
+  "soa": {
+    "title": "Configurações SOA",
+    "titleHint": "(autoridade, refresh, retry, expire e TTL)",
+    "hide": "▲ Ocultar",
+    "edit": "▼ Editar",
+    "primaryNs": "NS primário",
+    "hostmasterEmail": "E-mail do hostmaster",
+    "fields": {
+      "refresh": "refresh",
+      "retry": "retry",
+      "expire": "expire",
+      "minimum": "minimum",
+      "ttl": "ttl"
+    },
+    "save": "Salvar SOA",
+    "saved": "Configurações SOA salvas",
+    "saveFailed": "Não foi possível salvar as configurações SOA"
+  },
+  "dnssec": {
+    "title": "DNSSEC",
+    "signed": "Assinado",
+    "signing": "Assinando...",
+    "disabled": "Desativado",
+    "description": "Assina esta zona com assinatura inline do BIND. Adicione o registro DS gerado no seu registrador de domínio.",
+    "refreshStatus": "Atualizar status",
+    "disable": "Desativar",
+    "enabling": "Ativando...",
+    "enable": "Ativar",
+    "dsForRegistrar": "Registro DS para o seu registrador",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "dsHint": "Adicione este registro DS nas configurações DNSSEC do seu registrador. A propagação pode levar até o TTL do registro.",
+    "signingInProgress": "A assinatura ainda está em andamento. Atualize o status após alguns segundos.",
+    "enabledMsg": "DNSSEC ativado. Adicione o registro DS abaixo no seu registrador de domínio.",
+    "disabledMsg": "DNSSEC desativado.",
+    "updateFailed": "Não foi possível atualizar o DNSSEC",
+    "refreshFailed": "Não foi possível atualizar o status do DNSSEC"
+  },
+  "actions": {
+    "newRecord": "Novo registro",
+    "applyTemplate": "📋 Aplicar template padrão",
+    "applyTemplateTitle": "Adiciona os registros padrão A/MX/TXT/NS (idempotente)",
+    "refresh": "↻ Atualizar",
+    "export": "⬇ Exportar",
+    "exportTitle": "Baixar os registros DNS como arquivo de zona BIND",
+    "import": "⬆ Importar",
+    "importTitle": "Carregar um arquivo de zona BIND"
+  },
+  "import": {
+    "title": "Importar arquivo de zona",
+    "description": "Carregue um arquivo de zona BIND padrão (.zone / .txt). Os registros são importados para este domínio, depois a zona é validada e reescrita.",
+    "overwriteLabel": "Sobrescrever registros existentes — quando desmarcado, os registros são mesclados (novos adicionados)",
+    "replaceWarning": "⚠️ TODOS os registros DNS atuais deste domínio serão excluídos e substituídos pelos do arquivo. Recomenda-se exportar um backup primeiro.",
+    "cancel": "Cancelar",
+    "importing": "Importando…",
+    "import": "Importar",
+    "complete": "Importação concluída — {{added}} adicionados, {{skipped}} ignorados ({{mode}})",
+    "completeWarning": "Importação concluída — {{added}} adicionados, {{skipped}} ignorados ({{mode}}) · {{warning}}",
+    "failed": "Falha na importação"
+  },
+  "exportFailed": "Falha na exportação",
+  "bulk": {
+    "selected": "{{count}} registros selecionados",
+    "enable": "Ativar",
+    "disable": "Desativar",
+    "deleteSelected": "Excluir selecionados ({{count}})",
+    "clearSelection": "Limpar seleção",
+    "deleted": "{{count}} registros excluídos",
+    "updated": "{{count}} registros atualizados",
+    "deleteFailed": "Falha na exclusão em massa",
+    "updateFailed": "Falha na atualização em massa"
+  },
+  "table": {
+    "selectAll": "Selecionar todos",
+    "select": "Selecionar {{name}} {{type}}",
+    "name": "Nome",
+    "type": "Tipo",
+    "value": "Valor",
+    "ttl": "TTL",
+    "priority": "Prioridade",
+    "status": "Status",
+    "actions": "Ações",
+    "selectLabel": "Selecionar",
+    "noPriority": "Nenhuma",
+    "active": "Ativo",
+    "disabled": "Desativado",
+    "edit": "Editar",
+    "delete": "Excluir"
+  },
+  "empty": {
+    "text": "Nenhum registro DNS ainda.",
+    "applyTemplate": "Aplicar template padrão"
+  },
+  "templateAdded": "{{count}} registros padrão adicionados",
+  "templateFailed": "Não foi possível aplicar o template",
+  "delete": {
+    "title": "Excluir registro DNS",
+    "message": "Excluir \"{{name}} {{type}} {{value}}\"?",
+    "confirm": "Sim, excluir",
+    "failed": "Falha ao excluir"
+  },
+  "bulkDelete": {
+    "title": "Excluir registros DNS selecionados",
+    "message": "{{count}} registros DNS serão permanentemente excluídos. Esta ação não pode ser desfeita. Continuar?",
+    "confirm": "Sim, excluir {{count}} registros"
+  },
+  "dnssecDisable": {
+    "title": "Desativar DNSSEC",
+    "message": "Remova o registro DS no seu registrador de domínio e aguarde o TTL antes de desativar o DNSSEC. Caso contrário, o domínio pode parar de resolver com SERVFAIL. Continue somente após o registro DS ter sido removido.",
+    "confirm": "DS removido, desativar DNSSEC"
+  },
+  "modal": {
+    "newTitle": "Novo registro DNS",
+    "editTitle": "Editar registro DNS",
+    "nameLabel": "Nome (subdomínio)",
+    "nameHint": "\"@\" é o domínio raiz. Outros exemplos incluem \"www\" e \"mail\".",
+    "typeLabel": "Tipo",
+    "valueLabel": "Valor",
+    "ttlLabel": "TTL (seg)",
+    "priorityLabel": "Prioridade",
+    "active": "Ativo",
+    "cancel": "Cancelar",
+    "saving": "Salvando...",
+    "create": "Criar",
+    "update": "Atualizar",
+    "saveFailed": "Não foi possível salvar o registro"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "heading": "Portal do cliente",
+  "subtitle": "Entre com as credenciais da sua conta",
+  "field": {
+    "username": "Nome de usuário",
+    "password": "Senha"
+  },
+  "button": {
+    "signingIn": "Entrando…",
+    "signIn": "Entrar"
+  },
+  "error": {
+    "loginFailed": "Falha no login"
+  }
+}

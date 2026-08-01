@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "subdomains": "Subdomínios"
+  },
+  "title": "Subdomínios",
+  "subtitlePre": "Crie subdomínios (como",
+  "subtitlePost": ") neste domínio. Cada um tem um diretório web separado.",
+  "toast": {
+    "created": "{{fqdn}} foi criado. Um registro DNS A foi adicionado.",
+    "createFailed": "Não foi possível criar o subdomínio",
+    "deleteFailed": "Não foi possível excluir o subdomínio",
+    "sslInstalled": "SSL do {{fqdn}} foi instalado usando {{method}}.",
+    "sslInstallFailed": "Não foi possível instalar o SSL"
+  },
+  "sslMethod": {
+    "letsencrypt": "Let's Encrypt",
+    "selfSigned": "um certificado autoassinado"
+  },
+  "confirmDelete": "Excluir {{fqdn}}?\nO vhost, os arquivos (raiz do documento) e o registro DNS serão removidos. Esta ação não pode ser desfeita.",
+  "form": {
+    "title": "Novo subdomínio",
+    "label": "Subdomínio",
+    "creating": "Criando…",
+    "add": "Adicionar subdomínio",
+    "hintPre": "Letras minúsculas, números e hífens. Exemplos:"
+  },
+  "list": {
+    "title": "Subdomínios existentes",
+    "loading": "Carregando…",
+    "empty": "Nenhum subdomínio ainda.",
+    "phpPrefix": "PHP",
+    "manage": "Gerenciar",
+    "manageTitle": "Gerenciar este subdomínio",
+    "letsencryptTitle": "Instalar SSL Let's Encrypt",
+    "letsencrypt": "🔒 Let's Encrypt",
+    "selfSignedTitle": "Instalar SSL autoassinado",
+    "selfSigned": "Autoassinado",
+    "delete": "Excluir",
+    "dnsNote": "ℹ️ O subdomínio é configurado no servidor web imediatamente. O registro DNS A do domínio deve apontar para este servidor antes de ser acessível."
+  },
+  "backToSubscription": "← Voltar à assinatura"
+}

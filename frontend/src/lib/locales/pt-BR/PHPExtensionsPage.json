@@ -1,0 +1,62 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "system": "Gerenciamento do sistema",
+    "current": "Extensões PHP"
+  },
+  "title": "Extensões PHP",
+  "subtitle": {
+    "pre": "Gerencie extensões PHP em todo o servidor. Use o botão para ativar ou desativar uma extensão e o PHP-FPM reinicia automaticamente. ",
+    "bold": "Em todo o servidor",
+    "post": ", afeta todos os domínios."
+  },
+  "removeIonCube": "⊗ Remover IonCube",
+  "installIonCube": "🔐 Instalar IonCube",
+  "installFromPecl": "📦 Instalar do PECL",
+  "versionTab": "PHP {{version}}",
+  "counters": {
+    "enabled": "{{count}} ativas",
+    "inactive": "{{count}} inativas",
+    "total": "Total {{count}}"
+  },
+  "searchPlaceholder": "🔍 Pesquisar extensões...",
+  "loading": "Carregando…",
+  "coreExtension": "extensão principal",
+  "toggleTitle": {
+    "core": "Extensão principal, não pode ser desativada",
+    "disable": "Desativar",
+    "enable": "Ativar"
+  },
+  "alerts": {
+    "coreCannotDisable": "Esta extensão é parte essencial do PHP e não pode ser desativada.",
+    "invalidPackage": "Nome de pacote inválido"
+  },
+  "confirm": {
+    "ionCubeInstall": "O IonCube Loader será instalado para PHP {{version}}.\n\nUm arquivo tar.gz será baixado de ioncube.com, o arquivo .so será copiado e será carregado como zend_extension.\nContinuar?",
+    "ionCubeRemove": "O IonCube Loader será removido do PHP {{version}}. Continuar?",
+    "peclInstall": "O pacote PECL \"{{package}}\" será compilado e instalado para PHP {{version}}. Continuar?"
+  },
+  "success": {
+    "toggleEnabled": "✓ {{name}} ativado · PHP-FPM reiniciado",
+    "toggleDisabled": "✓ {{name}} desativado · PHP-FPM reiniciado",
+    "ionCubeLoaded": "✓ IonCube instalado · CARREGADO",
+    "ionCubeNotLoaded": "✓ IonCube instalado · O arquivo INI foi escrito, mas a extensão não foi detectada em tempo de execução",
+    "ionCubeRemoved": "✓ IonCube removido",
+    "peclInstalled": "✓ {{package}} instalado"
+  },
+  "errors": {
+    "toggleFailed": "Falha na alternância",
+    "ionCubeInstallFailed": "Falha na instalação do IonCube",
+    "ionCubeRemoveFailed": "Falha ao remover o IonCube",
+    "peclInstallFailed": "Falha na instalação do PECL"
+  },
+  "peclModal": {
+    "title": "Instalar uma extensão do PECL",
+    "descPre": "Baixa e compila uma extensão do repositório PECL. Exemplos: ",
+    "warnPre": "⚠ A extensão será compilada para PHP {{version}}. Destino: ",
+    "warnMid": " ou o diretório Remi",
+    "inputPlaceholder": "ex.: mongodb",
+    "cancel": "Cancelar",
+    "install": "Instalar"
+  }
+}

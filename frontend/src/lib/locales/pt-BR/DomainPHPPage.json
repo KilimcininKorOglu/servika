@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "phpSettings": "Configurações do PHP"
+  },
+  "title": "Configurações do PHP",
+  "systemUser": "Usuário do sistema: ",
+  "poolNotice": {
+    "pre": "As configurações aqui definidas são escritas no pool do PHP-FPM (",
+    "mid1": "). Os arquivos ",
+    "mid2": " e ",
+    "post": " do site podem sobrescrevê-las. Salvar reinicia o PHP-FPM automaticamente sem tirar o site do ar."
+  },
+  "loading": "Carregando…",
+  "saved": "Salvo. PHP {{version}}, socket: {{socket}}",
+  "saveFailed": "Falha ao salvar as configurações",
+  "clearLogFailed": "Falha ao limpar o log de depuração",
+  "processManager": {
+    "ondemand": "ondemand (recomendado, zero processos em inatividade)",
+    "dynamic": "dynamic (escala conforme a carga)",
+    "static": "static (pool fixo)"
+  },
+  "version": {
+    "title": "Versão do PHP",
+    "active": "Ativo",
+    "saveToApply": "Salvar para aplicar"
+  },
+  "cards": {
+    "performance": "Desempenho e segurança",
+    "general": "Geral",
+    "debugMode": "Modo de depuração do PHP",
+    "lastErrors": "Últimos erros (log de depuração)",
+    "fpmPool": "Pool PHP-FPM",
+    "installedModules": "Módulos PHP instalados",
+    "disableDangerous": "Desativar funções perigosas",
+    "additionalDirectives": "Diretivas de configuração adicionais"
+  },
+  "help": {
+    "memoryLimit": "Memória máxima que um script pode alocar em bytes. Exemplo: 256M.",
+    "maxExecutionTime": "Tempo máximo de execução em segundos",
+    "maxInputTime": "Tempo para analisar dados POST/GET em segundos",
+    "postMaxSize": "Tamanho máximo dos dados POST. Deve ser maior que upload_max_filesize.",
+    "uploadMaxFilesize": "Limite de upload por arquivo",
+    "opcacheEnable": "Cache de opcode OPcache (recomendado: ativado)",
+    "disableFunctions": "Funções PHP a desativar (separadas por vírgula)",
+    "displayErrors": "Exibir erros na saída (manter desativado em produção)",
+    "logErrors": "Ativar log de erros",
+    "allowUrlFopen": "Abrir arquivos via HTTP/FTP",
+    "fileUploads": "Uploads de arquivo via HTTP",
+    "shortOpenTag": "Suporte a tags curtas <? ?>",
+    "errorReporting": "Nível de relatório de erros (por exemplo, E_ALL & ~E_DEPRECATED)",
+    "includePath": "Diretórios de inclusão de scripts (separe com : no Linux)",
+    "openBasedir": "Diretórios acessíveis ao PHP (vazio significa irrestrito). Separe com :",
+    "sessionSavePath": "Diretório de arquivos de sessão (vazio significa /home/{system_user}/tmp)",
+    "mailForceExtraParameters": "Parâmetros adicionais para a função mail()",
+    "pm": "Estratégia do gerenciador de processos",
+    "pmMaxChildren": "Máximo de workers PHP concorrentes",
+    "pmMaxRequests": "Requisições antes de reiniciar um worker (previne vazamentos de memória)",
+    "pmStartServers": "Workers iniciados inicialmente (somente dynamic)",
+    "pmMinSpareServers": "Mínimo de workers ociosos",
+    "pmMaxSpareServers": "Máximo de workers ociosos"
+  },
+  "openBasedirPlaceholder": "por exemplo: /home/usuario/:/tmp/",
+  "debug": {
+    "disableTitle": "Desativar modo de depuração",
+    "enableTitle": "Ativar modo de depuração",
+    "label": "Modo de depuração",
+    "on": "Ativado",
+    "off": "Desativado",
+    "descPre": "Quando ativado, os erros do PHP são exibidos na tela e erros fatais (E_ERROR, E_PARSE, ...) são capturados de forma confiável via ",
+    "descMid": " e registrados em ",
+    "descPost": ". Erros fatais são capturados mesmo quando a aplicação chama ",
+    "descEnd": ".",
+    "warningLabel": "Aviso:",
+    "warningPre": " Com o modo de depuração ativado, ",
+    "warningBold1": "display_errors = on",
+    "warningMid": " e ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " são forçados; detalhes de erros podem ser visíveis aos visitantes do site. Ative somente durante a solução de problemas, ",
+    "warningBold3": "desative em produção",
+    "warningEnd": ". As alterações entram em vigor após clicar em ",
+    "warningSave": "Salvar",
+    "warningDot": "."
+  },
+  "debugLog": {
+    "sourcePre": "Erros fatais mais recentes no topo. Fonte: ",
+    "sourcePost": " (últimas 200 linhas).",
+    "loading": "Carregando...",
+    "refresh": "Atualizar",
+    "clear": "Limpar",
+    "emptyOff": "Modo de depuração desativado. Ative acima e salve para começar a registrar erros fatais.",
+    "emptyOn": "Nenhum erro registrado. O log de depuração está vazio."
+  },
+  "modules": {
+    "countPre": "",
+    "countBold": "{{count}}",
+    "countPost": " módulos estão instalados para o PHP {{version}}. Os módulos são gerenciados globalmente no servidor e não podem ser ativados ou desativados por domínio.",
+    "manageServer": "↗ Gerenciar módulos do servidor"
+  },
+  "dangerous": {
+    "descPre": "Estas funções representam riscos de injeção de shell, RCE e malware. Os seletores de categoria atualizam ",
+    "descMid": ". ",
+    "descBoldOn": "Ativado significa habilitado",
+    "descAnd": ", e ",
+    "descBoldOff": "desativado significa bloqueado",
+    "descPost": ".",
+    "enableAll": "Ativar tudo",
+    "blockAll": "Bloquear tudo",
+    "blocked": "Bloqueado",
+    "mixed": "Misto",
+    "active": "Ativo",
+    "editManually": "Editar manualmente (disable_functions bruto)",
+    "commaSeparated": "Nomes de funções separados por vírgula.",
+    "groups": {
+      "shellExecution": "Execução de shell",
+      "fileExecution": "Execução de arquivo",
+      "networkAccess": "Acesso à rede (arriscado)",
+      "systemDiscovery": "Descoberta do sistema",
+      "moduleLoading": "Carregamento de módulos"
+    }
+  },
+  "additional": {
+    "descPre": "Defina parâmetros adicionais usando a sintaxe php.ini. Exemplo: "
+  },
+  "save": {
+    "saving": "Salvando…",
+    "saveAndApply": "Salvar e aplicar",
+    "cancelReload": "Cancelar / Recarregar"
+  },
+  "select": {
+    "custom": "Personalizado…"
+  },
+  "flag": {
+    "on": "✓ Ativado",
+    "off": "○ Desativado"
+  }
+}

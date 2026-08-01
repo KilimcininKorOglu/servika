@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "toolsSettings": "Ferramentas e configurações",
+    "backupManager": "Gerenciador de backups"
+  },
+  "title": "Gerenciador de backups",
+  "subtitle": "Visualize backups de todos os domínios em um só lugar. Backups automáticos diários são executados e destinos S3/SFTP são configurados por domínio.",
+  "toast": {
+    "triggered": "Os backups agendados foram iniciados. Atualize a página em alguns segundos para ver os resultados.",
+    "triggerFailed": "Não foi possível iniciar os backups"
+  },
+  "kpi": {
+    "totalSize": "Tamanho total dos backups",
+    "totalBackups": "Total de backups",
+    "domainCount": "Total de domínios",
+    "remoteDestinations": "Destinos remotos ativos",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Backups automáticos:",
+    "default": "Diariamente às 03:00",
+    "suffix": ". Retenção de 7 dias",
+    "triggering": "Iniciando...",
+    "backupNow": "⏱ Fazer backup de todos os domínios agora",
+    "refresh": "↻ Atualizar"
+  },
+  "table": {
+    "title": "Backups de domínios",
+    "colDomain": "Domínio",
+    "colCount": "Quantidade de backups",
+    "colSize": "Tamanho total",
+    "colLatest": "Backup mais recente",
+    "colAction": "Ação",
+    "loading": "Carregando...",
+    "noDomains": "Nenhum domínio.",
+    "never": "nunca",
+    "manage": "Gerenciar"
+  },
+  "footnote": {
+    "pre": "ℹ️ Os backups",
+    "post": "são armazenados neste local. Os backups permanecem disponíveis mesmo após a exclusão de um domínio, permitindo a recuperação em caso de exclusão acidental. Clique em Gerenciar para baixar ou restaurar backups individuais e configurar destinos."
+  }
+}

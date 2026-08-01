@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "Início",
+  "breadcrumbServices": "Serviços de hospedagem",
+  "breadcrumbTitle": "Transferência de conta",
+  "title": "Importar conta",
+  "subtitle": "Analise com segurança um backup completo de conta do cPanel. Nesta fase, o arquivo não é extraído nem armazenado no servidor.",
+  "fileLabel": "Backup completo do cPanel (.tar.gz / .tgz)",
+  "uploading": "Enviando {{progress}}%",
+  "analyzeButton": "Analisar arquivo",
+  "kpi": {
+    "primaryDomain": "Domínio principal",
+    "undetermined": "Não determinado",
+    "webFiles": "Arquivos da web",
+    "databases": "Bancos de dados",
+    "emailData": "Dados de e-mail",
+    "emailFiles": "{{count}} arquivos",
+    "none": "Nenhum"
+  },
+  "detail": {
+    "title": "Informações da conta",
+    "sourcePanel": "Painel de origem",
+    "user": "Usuário",
+    "archiveRoot": "Raiz do arquivo",
+    "totalMembers": "Total de membros",
+    "expandedSize": "Tamanho expandido",
+    "cron": "Cron",
+    "cronPresent": "Presente",
+    "cronNone": "Nenhum",
+    "sslFiles": "Arquivos SSL",
+    "mailboxes": "Caixas de e-mail",
+    "forwarders": "Encaminhamentos",
+    "cronJobs": "Tarefas cron"
+  },
+  "lists": {
+    "databases": "Bancos de dados",
+    "dnsZones": "Zonas DNS",
+    "cronJobs": "Tarefas cron",
+    "noneFound": "Nenhum encontrado"
+  },
+  "analysisComplete": "Análise concluída. A importação cria um novo domínio. Se ela falhar, a conta criada será revertida automaticamente.",
+  "targetAndPlan": "Destino e plano",
+  "fields": {
+    "targetCustomer": "Cliente de destino",
+    "selectCustomer": "Selecione um cliente",
+    "servicePlan": "Plano de serviço",
+    "defaultPlan": "Plano padrão",
+    "primaryDomain": "Domínio principal",
+    "phpVersion": "Versão do PHP"
+  },
+  "importing": "Importando… {{progress}}%",
+  "importButton": "Importar conta",
+  "importResult": {
+    "title": "Importação concluída",
+    "summary": "{{domain}} · {{webFiles}} arquivos da web · {{count}} banco(s) de dados",
+    "newPasswords": "Novas senhas de caixa de e-mail, salve-as agora",
+    "forwardersTransferred": "{{count}} encaminhamento(s) transferido(s).",
+    "cronTransferred": "{{count}} tarefa(s) cron transferida(s).",
+    "sslTransferred": "Certificado SSL transferido · válido até {{expires}}",
+    "manageDomain": "Gerenciar domínio →"
+  },
+  "errors": {
+    "analyzeFailed": "Não foi possível analisar o arquivo",
+    "importFailed": "Não foi possível importar a conta"
+  }
+}

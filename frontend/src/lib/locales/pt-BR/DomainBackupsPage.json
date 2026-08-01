@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "backups": "Backups"
+  },
+  "title": "Backups",
+  "subtitle": {
+    "prefix": "home + dump MySQL = tar.gz, ",
+    "disabled": "Backups automáticos desativados",
+    "enabled": "{{freq}} {{hour}}:00, últimos {{retention}} backups automáticos retidos"
+  },
+  "freq": {
+    "daily": "Diário",
+    "weekly": "Semanal"
+  },
+  "toast": {
+    "destinationSaved": "Destino remoto salvo",
+    "destinationSaveFailed": "Não foi possível salvar o destino",
+    "destinationDeleted": "Destino remoto excluído",
+    "confirmDeleteDest": "Excluir o destino de backup remoto? Os backups existentes não serão afetados, mas os uploads automáticos futuros serão interrompidos.",
+    "autoDisabled": "Backups automáticos desativados",
+    "autoEnabled": "Backups automáticos ativados: {{freq}}, {{hour}}:00; os últimos {{retention}} backups serão retidos",
+    "scheduleSaveFailed": "Não foi possível salvar o agendamento",
+    "backupCreated": "Backup criado",
+    "createFailed": "Não foi possível criar o backup",
+    "restored": "Restaurado: {{domain}}, banco de dados: {{database}}",
+    "restoreDbUnknown": "desconhecido",
+    "restoreFailed": "Falha na restauração"
+  },
+  "schedule": {
+    "heading": "Agendamento de backup automático",
+    "description": "Quando ativado, o painel verifica a cada hora. Um backup é criado no horário selecionado e os backups além do período de retenção são excluídos.",
+    "lastBackup": "Último backup automático:",
+    "options": {
+      "none": {
+        "name": "Desativado",
+        "description": "Sem backups automáticos. Somente o \"Fazer backup agora\" manual é executado."
+      },
+      "daily": {
+        "name": "Diário",
+        "description": "Cria um backup diariamente no horário selecionado e retém os últimos N backups."
+      },
+      "weekly": {
+        "name": "Semanal",
+        "description": "Cria um backup a cada sete dias para reduzir o uso de disco."
+      }
+    },
+    "active": "● Ativo",
+    "runTime": "Horário de execução (local)",
+    "retentionLabel": "Backups a reter",
+    "retentionHint": "Backups automáticos mais antigos além desta quantidade são excluídos. Backups manuais são retidos."
+  },
+  "destination": {
+    "heading": "Destino de backup remoto (FTP / SFTP / S3 / B2)",
+    "description": "Após a criação, os backups são enviados ao destino remoto em segundo plano para proteção externa contra falhas de disco.",
+    "statusSuccessful": "● Último: bem-sucedido",
+    "statusError": "✗ Último: erro",
+    "lastUpload": "Último envio:",
+    "typeLabel": "Tipo de destino",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "Bucket",
+    "region": "Região",
+    "regionHint": "(padrão: us-east-1)",
+    "endpoint": "Endpoint",
+    "endpointHint": "(deixe em branco para AWS S3)",
+    "accessKeyId": "ID da chave de acesso",
+    "secretAccessKey": "Chave de acesso secreta",
+    "secretKeepHint": "(deixe em branco para manter a atual)",
+    "keyPrefix": "Prefixo da chave",
+    "pathStyle": "URLs com estilo de caminho",
+    "host": "Host",
+    "port": "Porta",
+    "username": "Nome de usuário",
+    "password": "Senha",
+    "passwordKeepHint": "(deixe em branco para manter a senha atual)",
+    "remoteDir": "Diretório remoto",
+    "activeLabel": "Ativo (enviar cada backup para este destino)",
+    "testSuccess": "✓ Conexão bem-sucedida",
+    "testError": "✗ ",
+    "testErrorFallback": "Erro",
+    "testing": "Testando...",
+    "testConnection": "Testar conexão",
+    "save": "Salvar",
+    "deleteDestination": "Excluir destino"
+  },
+  "backingUp": "Fazendo backup...",
+  "backupNow": "+ Fazer backup agora",
+  "refresh": "↻ Atualizar",
+  "backupCount": "{{count}} backups",
+  "loading": "Carregando...",
+  "empty": "Nenhum backup ainda",
+  "columns": {
+    "file": "Arquivo",
+    "type": "Tipo",
+    "size": "Tamanho",
+    "created": "Criado em",
+    "actions": "Ações"
+  },
+  "typeScheduled": "Agendado",
+  "row": {
+    "download": "Baixar",
+    "restore": "↺ Restaurar",
+    "delete": "Excluir"
+  },
+  "confirmDelete": {
+    "title": "Excluir arquivo de backup",
+    "message": "Excluir o arquivo de backup \"{{file}}\"?",
+    "confirm": "Sim, excluir"
+  },
+  "confirmRestore": {
+    "title": "Restaurar a partir do backup",
+    "message": "Restaurar \"{{file}}\"?\n\nAVISO: Os arquivos existentes em public_html serão sobrescritos e as tabelas MySQL serão recriadas. Esta ação não pode ser desfeita.",
+    "confirm": "Sim, restaurar"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "sslCertificates": "Certificados SSL/TLS"
+  },
+  "title": "Certificados SSL/TLS",
+  "ipLabel": "IP:",
+  "confirm": {
+    "letsencrypt": "O domínio deve apontar para este servidor com um registro DNS A antes que um certificado Let's Encrypt possa ser emitido. Continuar?",
+    "disable": "Remover SSL? O site voltará a usar HTTP."
+  },
+  "success": {
+    "installed": "Certificado instalado ({{type}}). Vence em: {{expires}}. O site agora usa HTTPS.",
+    "removed": "SSL removido. O site agora usa HTTP."
+  },
+  "errors": {
+    "installFailed": "Falha na instalação do SSL",
+    "removeFailed": "Falha ao remover o SSL"
+  },
+  "status": {
+    "title": "Status atual",
+    "protected": "Protegido",
+    "unprotected": "Desprotegido",
+    "loading": "Carregando…",
+    "sourceLabel": "Origem",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "Autoassinado",
+    "expiryLabel": "Vencimento",
+    "certPathLabel": "Caminho do certificado",
+    "keyPathLabel": "Caminho da chave",
+    "empty": "—",
+    "remove": "Remover SSL (voltar para HTTP)",
+    "noCert": "Não há certificado SSL ativo para este domínio. Instale um abaixo."
+  },
+  "selfSigned": {
+    "title": "Certificado autoassinado",
+    "description": "Cria um certificado autoassinado no servidor. Os navegadores exibem um aviso, mas a conexão é criptografada. Adequado para ambientes de teste e desenvolvimento.",
+    "bullet1": "✓ Sem dependência de DNS",
+    "bullet2": "✓ Instala imediatamente",
+    "bullet3": "✗ O navegador exibe um aviso de segurança",
+    "installing": "Instalando…",
+    "install": "Instalar certificado autoassinado"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (gratuito)",
+    "description": "Um certificado oficial Let's Encrypt confiável em todos os navegadores. Renova automaticamente a cada 90 dias.",
+    "bullet1": "✓ Confiável pelos navegadores",
+    "bullet2": "✓ Renovação automática (cron)",
+    "bullet3": "⚠ O domínio deve apontar para este servidor via DNS",
+    "installing": "Instalando…",
+    "install": "Obter certificado Let's Encrypt"
+  }
+}

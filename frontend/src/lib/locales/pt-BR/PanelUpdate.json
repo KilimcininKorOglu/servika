@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "Ainda não verificado",
+  "title": "Atualização do painel",
+  "badges": {
+    "server": "Servidor",
+    "critical": "Crítico",
+    "updateAvailable": "Atualização disponível"
+  },
+  "description": "Atualiza o painel para a versão mais recente do GitHub. As configurações de ambiente, bancos de dados e sites são preservados, e uma versão não saudável é revertida automaticamente.",
+  "toolMissing": " A ferramenta de atualização está ausente e será baixada automaticamente no primeiro uso.",
+  "labels": {
+    "current": "Atual",
+    "latest": "Mais recente",
+    "buildDate": "Data da compilação",
+    "lastCheck": "Última verificação"
+  },
+  "unknown": "Desconhecido",
+  "lastCheckFailed": "A última verificação de versão falhou: {{error}}",
+  "checksDisabled": "As verificações de versão estão desativadas.",
+  "running": "A atualização está em execução. O painel pode reiniciar brevemente; mantenha esta página aberta.",
+  "logStarted": "Atualização iniciada...\n",
+  "checkAndInstall": "Verificar atualizações e instalar",
+  "checking": "Verificando...",
+  "refreshStatus": "Atualizar status da versão",
+  "confirmPrompt": "O painel será atualizado e seu serviço reiniciado. Confirmar?",
+  "starting": "Iniciando...",
+  "confirmYes": "Sim, atualizar",
+  "cancel": "Cancelar",
+  "errors": {
+    "refresh": "Não foi possível atualizar o status da versão",
+    "start": "Não foi possível iniciar a atualização"
+  }
+}

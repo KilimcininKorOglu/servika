@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Domínio",
+    "mail": "E-mail",
+    "mailboxes": "Caixas de e-mail",
+    "aliases": "Aliases",
+    "suspended": "Suspenso"
+  },
+  "mailNone": "Nenhum",
+  "overview": {
+    "title": "Contas de e-mail",
+    "description": "Contagem de caixas de e-mail e aliases em todos os domínios.",
+    "empty": "Nenhum domínio encontrado."
+  },
+  "summary": {
+    "mailDomains": "Domínios de e-mail",
+    "totalMailboxes": "Total de caixas de e-mail"
+  },
+  "queue": {
+    "title": "Fila de e-mails do Postfix",
+    "subtitle": "Mensagens aguardando entrega, adiadas ou retidas por um administrador.",
+    "refresh": "↻ Atualizar",
+    "retry": "Tentar novamente",
+    "loading": "Lendo a fila…",
+    "empty": "✓ A fila de e-mails está vazia",
+    "colId": "ID da fila",
+    "colRoute": "Remetente → Destinatário",
+    "colSizeTime": "Tamanho / Hora",
+    "colActions": "Ações",
+    "release": "Liberar",
+    "hold": "Reter",
+    "requeue": "Recolocar na fila",
+    "delete": "Excluir"
+  },
+  "confirmDelete": "Excluir permanentemente a mensagem na fila {{queueID}}?",
+  "errors": {
+    "readFailed": "Não foi possível ler a fila do Postfix",
+    "actionFailed": "A operação na fila falhou"
+  }
+}

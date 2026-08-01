@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Início",
+  "title": "Clientes",
+  "subtitle": "Registros de cobrança e contato. Os domínios são vinculados a estes registros — isto não é uma conta de acesso ao painel.",
+  "newCustomer": "Novo cliente",
+  "loading": "Carregando…",
+  "empty": {
+    "title": "Nenhum registro de cliente ainda",
+    "description": "Crie um registro de cliente primeiro para vincular domínios a um cliente."
+  },
+  "noMatch": "Nenhum cliente corresponde à sua pesquisa.",
+  "columns": {
+    "name": "Nome",
+    "email": "E-mail",
+    "plan": "Plano",
+    "status": "Status",
+    "created": "Criado em"
+  },
+  "status": {
+    "active": "Ativo",
+    "passive": "Inativo"
+  },
+  "actions": {
+    "edit": "Editar",
+    "delete": "Excluir"
+  },
+  "modal": {
+    "editTitle": "Editar cliente",
+    "newTitle": "Novo cliente",
+    "name": "Nome",
+    "email": "E-mail",
+    "plan": "Plano",
+    "noPlan": "Sem plano",
+    "status": "Status",
+    "notes": "Observações",
+    "cancel": "Cancelar",
+    "saving": "Salvando…",
+    "save": "Salvar"
+  },
+  "delete": {
+    "title": "Excluir cliente",
+    "message": "{{name}} será excluído. Os domínios vinculados a este cliente não serão removidos — apenas o vínculo será desfeito.",
+    "confirm": "Excluir"
+  },
+  "toast": {
+    "added": "{{name}} adicionado.",
+    "updated": "{{name}} atualizado.",
+    "deleted": "{{name}} excluído."
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar os clientes",
+    "nameEmailRequired": "Nome e e-mail são obrigatórios",
+    "saveFailed": "Não foi possível salvar",
+    "deleteFailed": "Não foi possível excluir"
+  }
+}

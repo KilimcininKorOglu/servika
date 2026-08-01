@@ -1,0 +1,16 @@
+{
+  "title": "Bancos de dados",
+  "description": "Todos os bancos de dados no servidor com o domínio proprietário e o tamanho.",
+  "emptyMessage": "Nenhum banco de dados encontrado.",
+  "column": {
+    "domain": "Domínio",
+    "database": "Banco de dados",
+    "user": "Usuário",
+    "size": "Tamanho",
+    "created": "Criado em"
+  },
+  "summary": {
+    "databases": "Bancos de dados",
+    "totalSize": "Tamanho total"
+  }
+}

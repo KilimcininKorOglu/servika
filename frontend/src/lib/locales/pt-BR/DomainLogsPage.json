@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "logs": "Registros"
+  },
+  "title": "Registros",
+  "streamFailed": "Falha ao iniciar o stream (HTTP {{status}})",
+  "view": {
+    "table": "Tabela",
+    "raw": "Bruto"
+  },
+  "autoScroll": "Rolagem automática",
+  "stop": "■ Parar",
+  "liveTail": "▶ Acompanhamento ao vivo",
+  "last200": "↻ Últimas 200",
+  "clear": "Limpar",
+  "searchPlaceholder": "Pesquisar por IP, caminho, código de status, navegador...",
+  "clearSearch": "Limpar pesquisa",
+  "matches": "{{visible}} / {{total}} correspondências",
+  "waiting": "Aguardando... Novas linhas aparecerão à medida que chegarem.",
+  "emptyFile": "(o arquivo de log está vazio ou ainda não foi criado)",
+  "noMatch": "\"{{search}}\" Nenhuma linha corresponde a esta pesquisa.",
+  "linesFiltered": "{{visible}} / {{total}} linhas (filtradas)",
+  "lines": "{{count}} linhas",
+  "windowSuffix": ", janela {{max}}",
+  "liveStream": "stream ao vivo",
+  "access": {
+    "time": "Data e hora",
+    "ip": "IP",
+    "method": "Método",
+    "path": "Caminho",
+    "status": "Status",
+    "size": "Tamanho",
+    "browser": "Navegador"
+  },
+  "error": {
+    "time": "Data e hora",
+    "level": "Nível",
+    "client": "Cliente",
+    "message": "Mensagem"
+  }
+}

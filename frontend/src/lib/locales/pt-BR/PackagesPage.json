@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Início",
+  "breadcrumbTools": "Ferramentas e configurações",
+  "title": "Gerenciador de pacotes",
+  "subtitle": "Pacotes do servidor e ambientes de compilação via DNF.",
+  "installedCount": "{{count}} pacotes instalados",
+  "quickInstallGroups": "Grupos de instalação rápida",
+  "groups": {
+    "devtools": { "name": "Ferramentas de desenvolvimento", "description": "gcc, make, autoconf, automake, libtool, kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + headers de desenvolvimento" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Compilador Go" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "Container / VM", "description": "Compatível com Docker: podman + buildah + skopeo" },
+    "systools": { "name": "Ferramentas do sistema", "description": "Ferramentas de produtividade via CLI" },
+    "imaging": { "name": "Processamento de imagens", "description": "ImageMagick + WebP + otimização" },
+    "dbclients": { "name": "Clientes de banco de dados", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "Segurança", "description": "GnuPG, OpenSSL, fail2ban" }
+  },
+  "badges": {
+    "installed": "INSTALADO",
+    "protected": "PROTEGIDO"
+  },
+  "tabs": {
+    "search": "Pesquisar repositórios",
+    "installed": "Pacotes instalados"
+  },
+  "searchPlaceholder": "ex.: mongodb, redis, nodejs, gcc, htop",
+  "installedPlaceholder": "nome ou descrição do pacote instalado",
+  "noResults": "Sem resultados.",
+  "resultsCount": "{{count}} resultados",
+  "actions": {
+    "processing": "Processando...",
+    "remove": "Remover",
+    "install": "Instalar",
+    "removing": "Removendo...",
+    "installing": "Instalando...",
+    "search": "Pesquisar",
+    "searching": "Pesquisando...",
+    "close": "Fechar"
+  },
+  "confirm": {
+    "install": "\"{{pkg}}\" será instalado em todo o sistema. Continuar?",
+    "remove": "\"{{pkg}}\" será REMOVIDO. Continuar?"
+  },
+  "toast": {
+    "installed": "{{pkg}} instalado",
+    "removed": "{{pkg}} removido"
+  },
+  "output": {
+    "installTitle": "Saída da instalação: {{pkg}}",
+    "removeTitle": "Saída da remoção: {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "Falha na instalação",
+    "removeFailed": "Falha na remoção",
+    "toggleInstallFailed": "Falha ao instalar o pacote",
+    "toggleRemoveFailed": "Falha ao remover o pacote",
+    "searchFailed": "Falha na pesquisa"
+  }
+}

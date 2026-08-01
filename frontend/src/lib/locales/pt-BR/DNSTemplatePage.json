@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "tools": "Ferramentas e configurações",
+    "current": "Template DNS"
+  },
+  "title": "Template DNS global do servidor",
+  "subtitle": "Estes registros são aplicados quando um domínio é criado ou quando seu template DNS padrão é restaurado.",
+  "placeholders": {
+    "label": "Placeholders:",
+    "domain": " nome do domínio, ",
+    "ip": " IP do servidor, ",
+    "selector": " seletor DKIM, ",
+    "dkim": " registro público DKIM gerado"
+  },
+  "loading": "Carregando...",
+  "table": {
+    "name": "Nome",
+    "type": "Tipo",
+    "value": "Valor",
+    "ttl": "TTL",
+    "priority": "Prioridade",
+    "order": "Ordem",
+    "enabled": "Ativado",
+    "priorityNone": "Nenhuma",
+    "deleteTitle": "Excluir registro"
+  },
+  "addRecord": "Adicionar registro",
+  "soa": {
+    "title": "Configurações SOA",
+    "fieldSeconds": "{{field}} (segundos)"
+  },
+  "dkim": {
+    "title": "Configurações DKIM",
+    "selector": "Seletor",
+    "generate": "Gerar chaves DKIM para novos domínios"
+  },
+  "discard": "Descartar alterações",
+  "save": "Salvar template",
+  "saving": "Salvando...",
+  "success": "Template DNS salvo. Novos domínios usarão os registros e configurações atualizados.",
+  "errors": {
+    "loadFailed": "Não foi possível carregar o template DNS",
+    "saveFailed": "Não foi possível salvar o template DNS"
+  }
+}

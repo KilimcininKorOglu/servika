@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "toolsAndSettings": "Ferramentas e configurações",
+    "panelUpdate": "Atualização do painel"
+  },
+  "title": "Atualização do painel",
+  "description": "Atualize o painel para a versão mais recente do GitHub. As variáveis de ambiente, banco de dados e sites são preservados; uma verificação de saúde com falha reverte automaticamente para a versão anterior. A operação é executada em segundo plano, portanto você pode fechar esta página e a atualização continua sem interrupção."
+}

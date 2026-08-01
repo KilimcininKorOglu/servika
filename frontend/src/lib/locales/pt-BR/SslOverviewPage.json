@@ -1,0 +1,28 @@
+{
+  "title": "Certificados SSL",
+  "description": "Status dos certificados em todo o servidor, ordenados pelo vencimento mais próximo.",
+  "emptyMessage": "Nenhum domínio encontrado.",
+  "column": {
+    "domain": "Domínio",
+    "ssl": "SSL",
+    "expiry": "Vencimento",
+    "remaining": "Restante",
+    "status": "Status"
+  },
+  "ssl": {
+    "enabled": "Ativado",
+    "none": "Nenhum"
+  },
+  "status": {
+    "active": "Ativo",
+    "passive": "Inativo"
+  },
+  "remaining": {
+    "expiredAgo": "vencido há {{days}}d",
+    "days": "{{days}} dias"
+  },
+  "summary": {
+    "withSsl": "Com SSL",
+    "expiring": "Vencendo em ≤14d"
+  }
+}

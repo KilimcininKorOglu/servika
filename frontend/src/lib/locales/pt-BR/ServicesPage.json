@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "Ferramentas e configurações",
+  "breadcrumbServices": "Serviços",
+  "title": "Gerenciamento de serviços",
+  "subtitle": "Reinicie ou recarregue serviços gerenciados de web, banco de dados, DNS, PHP e suporte.",
+  "loading": "Carregando…",
+  "reload": "Recarregar",
+  "restart": "Reiniciar",
+  "working": "…",
+  "statuses": {
+    "active": "● Ativo",
+    "inactive": "○ Inativo",
+    "failed": "✕ Falhou",
+    "absent": "Não instalado"
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar os serviços",
+    "actionFailed": "Falha na ação de {{label}}"
+  },
+  "success": {
+    "reloaded": "{{label}} recarregado.",
+    "restarted": "{{label}} reiniciado."
+  }
+}

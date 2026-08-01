@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "ftpAccount": "Conta FTP"
+  },
+  "title": "Conta FTP",
+  "errors": {
+    "resetFailed": "Falha ao redefinir senha"
+  },
+  "info": {
+    "host": "Host",
+    "port": "Porta",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Nome de usuário",
+    "homeDir": "Diretório home"
+  },
+  "reset": {
+    "title": "Redefinir senha",
+    "placeholder": "Digite uma senha personalizada ou deixe em branco",
+    "setThis": "Definir esta senha",
+    "generateRandom": "Gerar senha aleatória",
+    "success": "✓ Nova senha definida",
+    "saveHint": "Salve em um lugar seguro. Não será possível visualizá-la novamente.",
+    "copy": "Copiar"
+  },
+  "note": {
+    "label": "Nota:",
+    "pre": " O FTP usa atualmente autenticação em ",
+    "code": "texto simples",
+    "post": " contra o banco de dados local. Use SFTP na porta 22 para transporte criptografado."
+  }
+}
