@@ -97,11 +97,16 @@ The manifest format is:
 ```json
 {
   "latest": "1.1.3",
-  "announcement": "",
+  "announcement": {
+    "en": "",
+    "tr": ""
+  },
   "critical": false,
   "release_date": ""
 }
 ```
+
+`announcement` is keyed by the supported interface language codes (`en`, `tr`, `de`, `fr`, `it`, `pt`, `pt-BR`, `es`, `cs`, `ro`, `ja`, `zh`), so the update notice reads in the language the panel is displaying. The `en` entry is required: any language without its own text falls back to it. The panel sends its active language as the `lang` query value on its own `GET /api/v1/system/version-check` endpoint; the language is never sent to the public manifest endpoint.
 
 If version checks are disabled, manual update from SSH and panel-triggered update still work.
 

@@ -24,11 +24,28 @@ const (
 )
 
 // VersionManifest is the public update and announcement manifest schema.
+//
+// Announcement is keyed by the supported UI language codes (config.NormalizeLang),
+// so the update notice reads in the language the panel is displaying. English is
+// the required entry and the fallback for every other code.
 type VersionManifest struct {
-	Latest       string `json:"latest"`
-	Announcement string `json:"announcement"`
-	Critical     bool   `json:"critical"`
-	ReleaseDate  string `json:"release_date"`
+	Latest       string            `json:"latest"`
+	Announcement map[string]string `json:"announcement"`
+	Critical     bool              `json:"critical"`
+	ReleaseDate  string            `json:"release_date"`
+}
+
+// localizedAnnouncement returns the announcement for lang, falling back to English
+// when the manifest carries no usable text for that language. It normalizes the
+// code itself so an unvetted request parameter can never reach the map as-is; an
+// unsupported or missing code collapses to English rather than being rejected.
+func (m VersionManifest) localizedAnnouncement(lang string) string {
+	if text, ok := m.Announcement[config.NormalizeLang(lang)]; ok {
+		if trimmed := strings.TrimSpace(text); trimmed != "" {
+			return trimmed
+		}
+	}
+	return strings.TrimSpace(m.Announcement["en"])
 }
 
 type versionCache struct {
@@ -224,8 +241,10 @@ func VersionCheckRefresh(w http.ResponseWriter, r *http.Request) {
 	VersionCheckStatus(w, r)
 }
 
-// VersionCheckStatus returns the current version check state.
-func VersionCheckStatus(w http.ResponseWriter, _ *http.Request) {
+// VersionCheckStatus returns the current version check state. The optional lang
+// parameter carries the language the panel is displaying, which selects the
+// announcement translation; the response itself always holds a single string.
+func VersionCheckStatus(w http.ResponseWriter, r *http.Request) {
 	versionMu.RLock()
 	current := versionCurrent
 	buildDate := versionBuildDate
@@ -242,7 +261,7 @@ func VersionCheckStatus(w http.ResponseWriter, _ *http.Request) {
 		"build_date":       buildDate,
 		"latest":           manifest.Latest,
 		"update_available": updateAvailable,
-		"announcement":     manifest.Announcement,
+		"announcement":     manifest.localizedAnnouncement(r.URL.Query().Get("lang")),
 		"critical":         manifest.Critical && updateAvailable,
 		"release_date":     manifest.ReleaseDate,
 		"error":            message,

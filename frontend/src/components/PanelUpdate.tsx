@@ -57,7 +57,7 @@ function finishedOutcome(log: string): 'done' | 'failed' | null {
 
 /** Displays update status, starts an update, and follows its persistent log. */
 export default function PanelUpdate() {
-  const { t } = useTranslation('PanelUpdate')
+  const { t, i18n } = useTranslation('PanelUpdate')
   const [status, setStatus] = useState<UpdateStatus | null>(null)
   const [version, setVersion] = useState<VersionStatus | null>(null)
   const [log, setLog] = useState('')
@@ -79,14 +79,19 @@ export default function PanelUpdate() {
     }
   }, [])
 
+  // The announcement is published per language in the manifest, so the server needs
+  // the language the panel is actually displaying to pick the right translation.
+  // i18n.language is that value; users.pref_lang is only its persisted seed. Keeping
+  // it in the dependency array re-fetches the notice when the language switches, so
+  // the text follows the switcher without a reload.
   const loadVersion = useCallback(async () => {
     try {
-      const response = await api.get<VersionStatus>('/system/version-check')
+      const response = await api.get<VersionStatus>('/system/version-check', { params: { lang: i18n.language } })
       setVersion(response.data)
     } catch {
       // Version checks are informational and must not block updates.
     }
-  }, [])
+  }, [i18n.language])
 
   // Reads the log, and stops the spinner as soon as EITHER the server reports
   // the update as finished OR the log itself says so. The second condition is
@@ -143,7 +148,7 @@ export default function PanelUpdate() {
     setError(null)
     setRefreshing(true)
     try {
-      const response = await api.post<VersionStatus>('/system/version-check/refresh')
+      const response = await api.post<VersionStatus>('/system/version-check/refresh', null, { params: { lang: i18n.language } })
       setVersion(response.data)
     } catch (caughtError) {
       setError(apiError(caughtError, t('errors.refresh')))
