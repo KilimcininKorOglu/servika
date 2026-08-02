@@ -1,0 +1,25 @@
+{
+  "title": "面板域名",
+  "description": "在申请 Let's Encrypt 证书前，先将 A 记录指向此服务器。签发后，该域名可无需 8443 端口即可打开面板。",
+  "customDomainLabel": "自定义面板域名",
+  "customDomainPlaceholder": "panel.example.com",
+  "serverIpv4": "服务器 IPv4：",
+  "sslStatus": "SSL 状态：",
+  "portlessUrl": "无端口 URL：",
+  "expires": "到期时间：",
+  "unknown": "未知",
+  "sslNone": "无",
+  "save": "保存面板域名",
+  "saving": "保存中...",
+  "reset": "重置",
+  "resetting": "重置中...",
+  "messages": {
+    "saved": "面板域名已保存。您可以无需 8443 端口打开 https://{{domain}}。",
+    "reset": "面板域名已重置为默认证书。"
+  },
+  "errors": {
+    "load": "无法加载面板域名设置",
+    "save": "无法保存面板域名",
+    "reset": "无法重置面板域名"
+  }
+}

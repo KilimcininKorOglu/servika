@@ -1,0 +1,67 @@
+{
+  "loading": "加载中…",
+  "notFound": "未找到子域名。",
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "domain": "域名",
+    "subdomains": "子域名",
+    "subdomain": "子域名"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "在此文档根目录中安装和管理 WordPress"
+    },
+    "logs": {
+      "label": "日志",
+      "description": "此子域名的访问和错误日志"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "此文档根目录的依赖状态"
+    },
+    "protection": {
+      "label": "密码保护",
+      "description": "使用 HTTP 认证限制目录访问"
+    },
+    "statistics": {
+      "label": "统计",
+      "description": "仅此子域名的流量分析"
+    }
+  },
+  "toast": {
+    "phpSaved": "此子域名现运行于 PHP {{version}}。",
+    "phpChangeFailed": "无法更改 PHP 版本"
+  },
+  "ssl": {
+    "active": "🔒 SSL 活动",
+    "none": "无 SSL"
+  },
+  "intro": {
+    "pre": "这是",
+    "post": " 的子域名，从其自己的文档根目录提供服务，并使用独立的 PHP 池。"
+  },
+  "details": {
+    "title": "详情",
+    "address": "地址",
+    "documentRoot": "文档根目录",
+    "diskUsage": "磁盘使用量",
+    "phpVersion": "PHP 版本",
+    "created": "创建时间",
+    "serverIp": "服务器 IP"
+  },
+  "php": {
+    "title": "PHP 版本",
+    "note": "此子域名运行于自己的 FPM 池，因此更改它不会影响父域名。",
+    "versionLabel": "版本",
+    "applying": "应用中…",
+    "apply": "应用",
+    "validationNote": "更改保存前会先验证 vhost，因此被拒绝的配置不会影响站点。"
+  },
+  "toolsSection": {
+    "title": "工具",
+    "note": "每个工具都作用于此子域名的文档根目录，而非父域名的。"
+  },
+  "backToSubdomains": "← 返回子域名"
+}

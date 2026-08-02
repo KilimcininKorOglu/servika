@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "应用程序",
+    "domainAndDns": "域名与 DNS",
+    "email": "电子邮件",
+    "filesAndDatabases": "文件与数据库",
+    "developmentTools": "开发工具",
+    "security": "安全"
+  },
+  "wordpress": { "label": "WordPress", "desc": "一键安装 · 管理" },
+  "laravel": { "label": "Laravel 工具包", "desc": "安装 · 部署 · 队列" },
+  "dns": { "label": "DNS 管理", "desc": "A、MX、TXT、CNAME 记录" },
+  "subdomains": { "label": "子域名", "desc": "子域名" },
+  "addonDomains": { "label": "附加域名", "desc": "附加和停放域名 · 重定向" },
+  "mail": { "label": "电子邮件账户", "desc": "Postfix 和 Dovecot 邮箱 · SMTP" },
+  "connection": { "label": "连接信息", "desc": "FTP、数据库" },
+  "files": { "label": "文件", "desc": "文件管理器" },
+  "databases": { "label": "数据库" },
+  "ftp": { "label": "FTP", "desc": "FTP 账户" },
+  "backups": { "label": "备份与还原", "desc": "备份管理" },
+  "copy": { "label": "复制网站", "desc": "克隆" },
+  "php": { "label": "PHP", "desc": "版本 {{version}}" },
+  "logs": { "label": "日志", "desc": "访问、错误" },
+  "cron": { "label": "计划任务", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "仓库集成" },
+  "composer": { "label": "PHP Composer", "desc": "包管理器" },
+  "performance": { "label": "性能", "desc": "加速器" },
+  "redis": { "label": "Redis 缓存", "desc": "隔离的对象缓存 · 加速器" },
+  "ssl": {
+    "label": "SSL/TLS 证书",
+    "expires": "到期时间：{{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "域名未受保护"
+  },
+  "passwordProtection": { "label": "密码保护目录", "desc": ".htpasswd" },
+  "stats": { "label": "统计", "desc": "流量分析" },
+  "accessControl": { "label": "访问控制", "desc": "防盗链 · IP 允许/阻止" },
+  "imunify": { "label": "Imunify", "desc": "杀毒" },
+  "ssh": {
+    "label": "SSH 访问",
+    "enabled": "已启用",
+    "disabled": "已禁用"
+  }
+}

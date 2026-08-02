@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "tools": "工具与设置",
+    "current": "DNS 模板"
+  },
+  "title": "全服务器 DNS 模板",
+  "subtitle": "这些记录会在创建域名或还原其默认 DNS 模板时应用。",
+  "placeholders": {
+    "label": "占位符：",
+    "domain": " 域名，",
+    "ip": " 服务器 IP，",
+    "selector": " DKIM 选择器，",
+    "dkim": " 生成的 DKIM 公钥记录"
+  },
+  "loading": "加载中...",
+  "table": {
+    "name": "名称",
+    "type": "类型",
+    "value": "值",
+    "ttl": "TTL",
+    "priority": "优先级",
+    "order": "顺序",
+    "enabled": "已启用",
+    "priorityNone": "无",
+    "deleteTitle": "删除记录"
+  },
+  "addRecord": "添加记录",
+  "soa": {
+    "title": "SOA 设置",
+    "fieldSeconds": "{{field}}（秒）"
+  },
+  "dkim": {
+    "title": "DKIM 设置",
+    "selector": "选择器",
+    "generate": "为新域名生成 DKIM 密钥"
+  },
+  "discard": "放弃更改",
+  "save": "保存模板",
+  "saving": "保存中...",
+  "success": "DNS 模板已保存。新域名将使用更新后的记录和设置。",
+  "errors": {
+    "loadFailed": "无法加载 DNS 模板",
+    "saveFailed": "无法保存 DNS 模板"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "scheduledTasks": "计划任务"
+  },
+  "title": "计划任务",
+  "presets": {
+    "everyMinute": "每分钟",
+    "everyHour": "每小时",
+    "dailyAt3": "每日 03:00",
+    "mondayAt9": "周一 09:00",
+    "every5Minutes": "每 5 分钟",
+    "every15Minutes": "每 15 分钟",
+    "firstOfMonth": "每月第一天 00:00"
+  },
+  "actions": {
+    "add": "添加任务",
+    "refresh": "↻ 刷新"
+  },
+  "count": "{{count}} 个任务",
+  "loading": "加载中...",
+  "empty": "尚无任务。请在上方添加。",
+  "columns": {
+    "min": "分",
+    "hour": "时",
+    "day": "日",
+    "month": "月",
+    "weekday": "星期",
+    "command": "命令 / 描述",
+    "action": "操作"
+  },
+  "row": {
+    "delete": "删除"
+  },
+  "confirmDelete": "删除任务“{{command}}...”？",
+  "errors": {
+    "deleteFailed": "删除失败",
+    "addFailed": "无法添加项目"
+  },
+  "modal": {
+    "title": "新建计划任务",
+    "presetsLabel": "预设",
+    "fields": {
+      "minute": "分钟",
+      "hour": "小时",
+      "day": "日",
+      "month": "月",
+      "weekday": "星期"
+    },
+    "cronHint": "Cron 格式：",
+    "cronHintPost": " 任意值，",
+    "cronEvery": " 每五个，",
+    "cronList": " 列表，",
+    "cronRange": " 范围。",
+    "commandLabel": "命令",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "描述（可选）",
+    "descriptionPlaceholder": "例如 每晚备份脚本",
+    "cancel": "取消",
+    "adding": "添加中...",
+    "addTask": "添加任务"
+  }
+}

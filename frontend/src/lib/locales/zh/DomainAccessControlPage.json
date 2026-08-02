@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "accessControl": "访问控制"
+  },
+  "title": "访问控制",
+  "subtitle": "配置防盗链保护和域名级 IP 允许或阻止规则。保存会重新渲染 nginx vhost。",
+  "loading": "加载中…",
+  "modes": {
+    "off": {
+      "label": "关闭",
+      "description": "不向 nginx vhost 渲染任何 IP 允许或阻止规则。"
+    },
+    "block": {
+      "label": "阻止列表中的 IP",
+      "description": "来自列表中 IP 地址或 CIDR 范围的访客将收到 403 响应。"
+    },
+    "allow": {
+      "label": "仅允许列表中的 IP",
+      "description": "当存在至少一条规则时，仅允许列表中的 IP 地址或 CIDR 范围。"
+    }
+  },
+  "hotlink": {
+    "title": "防盗链保护",
+    "description": "阻止外部站点嵌入此域名提供的图片文件。",
+    "enabled": "已启用",
+    "allowedLabel": "额外允许的引用来源域名",
+    "hint": "当前域名及其 www 主机始终被允许。每行添加一个域名或以逗号分隔。",
+    "save": "保存防盗链设置",
+    "saving": "保存中…"
+  },
+  "ipMode": {
+    "title": "IP 访问模式",
+    "selected": "● 已选择"
+  },
+  "newRule": {
+    "title": "新建 IP 规则",
+    "label": "IP 地址或 CIDR",
+    "placeholder": "203.0.113.10 或 203.0.113.0/24",
+    "add": "添加规则",
+    "adding": "添加中…"
+  },
+  "rules": {
+    "title": "已配置的 IP 规则",
+    "empty": "尚无 IP 规则。",
+    "created": "创建于 {{date}}",
+    "delete": "删除"
+  },
+  "back": "← 返回订阅",
+  "messages": {
+    "hotlinkSaved": "防盗链保护设置已保存。",
+    "modeSaved": "IP 访问模式已保存。",
+    "ruleAdded": "IP 规则已添加。",
+    "ruleDeleted": "IP 规则已删除。"
+  },
+  "confirmDelete": "删除 IP 规则 {{ip}}？",
+  "errors": {
+    "hotlinkFailed": "无法保存防盗链设置",
+    "modeFailed": "无法保存 IP 访问模式",
+    "addFailed": "无法添加 IP 规则",
+    "deleteFailed": "无法删除 IP 规则"
+  }
+}

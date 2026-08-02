@@ -1,0 +1,28 @@
+{
+  "title": "SSL 证书",
+  "description": "全服务器证书状态，按最近到期时间排序。",
+  "emptyMessage": "未找到域名。",
+  "column": {
+    "domain": "域名",
+    "ssl": "SSL",
+    "expiry": "到期时间",
+    "remaining": "剩余",
+    "status": "状态"
+  },
+  "ssl": {
+    "enabled": "已启用",
+    "none": "无"
+  },
+  "status": {
+    "active": "活动",
+    "passive": "被动"
+  },
+  "remaining": {
+    "expiredAgo": "已于 {{days}} 天前到期",
+    "days": "{{days}} 天"
+  },
+  "summary": {
+    "withSsl": "已启用 SSL",
+    "expiring": "≤14 天内到期"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "toolsSettings": "工具与设置",
+    "backupManager": "备份管理器"
+  },
+  "title": "备份管理器",
+  "subtitle": "在一处查看所有域名的备份。每日自动备份运行，S3/SFTP 目标按域名配置。",
+  "toast": {
+    "triggered": "已触发计划备份。请在几秒后刷新以查看结果。",
+    "triggerFailed": "无法触发备份"
+  },
+  "kpi": {
+    "totalSize": "备份总大小",
+    "totalBackups": "备份总数",
+    "domainCount": "域名数量",
+    "remoteDestinations": "活动的远程目标",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 自动备份：",
+    "default": "每日 03:00",
+    "suffix": "。保留 7 天",
+    "triggering": "触发中...",
+    "backupNow": "⏱ 立即备份所有域名",
+    "refresh": "↻ 刷新"
+  },
+  "table": {
+    "title": "域名备份",
+    "colDomain": "域名",
+    "colCount": "备份数量",
+    "colSize": "总大小",
+    "colLatest": "最近备份",
+    "colAction": "操作",
+    "loading": "加载中...",
+    "noDomains": "无域名。",
+    "never": "从不",
+    "manage": "管理"
+  },
+  "footnote": {
+    "pre": "ℹ️ 备份",
+    "post": "存储在那里。域名删除后备份仍然可用，可从误删中恢复。打开“管理”以下载或还原单个备份并配置目标。"
+  }
+}

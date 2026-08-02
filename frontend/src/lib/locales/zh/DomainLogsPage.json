@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "logs": "日志"
+  },
+  "title": "日志",
+  "streamFailed": "数据流启动失败（HTTP {{status}}）",
+  "view": {
+    "table": "表格",
+    "raw": "原始"
+  },
+  "autoScroll": "自动滚动",
+  "stop": "■ 停止",
+  "liveTail": "▶ 实时跟踪",
+  "last200": "↻ 最近 200 条",
+  "clear": "清空",
+  "searchPlaceholder": "按 IP、路径、状态码、浏览器搜索...",
+  "clearSearch": "清除搜索",
+  "matches": "{{visible}} / {{total}} 条匹配",
+  "waiting": "等待中... 新行到达时将显示。",
+  "emptyFile": "（日志文件为空或尚未创建）",
+  "noMatch": "“{{search}}” 没有行与此搜索匹配。",
+  "linesFiltered": "{{visible}} / {{total}} 行（已筛选）",
+  "lines": "{{count}} 行",
+  "windowSuffix": "，窗口 {{max}}",
+  "liveStream": "实时流",
+  "access": {
+    "time": "时间",
+    "ip": "IP",
+    "method": "方法",
+    "path": "路径",
+    "status": "状态",
+    "size": "大小",
+    "browser": "浏览器"
+  },
+  "error": {
+    "time": "时间",
+    "level": "级别",
+    "client": "客户端",
+    "message": "消息"
+  }
+}

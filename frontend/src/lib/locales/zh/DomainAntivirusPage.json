@@ -1,0 +1,43 @@
+{
+  "loading": "加载中...",
+  "notFound": "未找到",
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "antivirus": "杀毒"
+  },
+  "title": "杀毒恶意软件扫描",
+  "subtitlePrefix": "使用 ClamAV 特征库和内置 webshell 启发式规则进行扫描。",
+  "toast": {
+    "startScanFailed": "无法启动扫描",
+    "quarantineFailed": "无法隔离文件",
+    "updateSignatureFailed": "无法更新特征库"
+  },
+  "confirmQuarantine": "隔离此文件？\n{{file}}\n\n（该文件将被移至 ~/.quarantined 下并变为不可访问。）",
+  "status": {
+    "enginePrefix": "引擎：",
+    "engineFull": "ClamAV + 启发式",
+    "engineHeuristics": "仅启发式",
+    "signatureDatabase": "特征库：{{date}}",
+    "latestScan": "最近扫描：{{date}}。{{scanned}} 个文件。{{infected}} 项发现",
+    "updating": "更新中...",
+    "updateSignatures": "更新特征库",
+    "scanning": "扫描中...",
+    "scanNow": "立即扫描",
+    "inProgress": "扫描进行中。大型站点可能需要几分钟。"
+  },
+  "findings": {
+    "title": "发现结果",
+    "fromLatest": "来自最近的扫描",
+    "noScans": "尚无扫描。选择“立即扫描”开始。",
+    "clean": "干净。未发现恶意软件。",
+    "colFile": "文件",
+    "colSignature": "特征",
+    "colEngine": "引擎",
+    "colStatus": "状态",
+    "quarantined": "🔒 已隔离",
+    "active": "⚠ 活动",
+    "quarantine": "隔离"
+  },
+  "backToSubscription": "← 返回订阅"
+}

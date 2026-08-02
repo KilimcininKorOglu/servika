@@ -1,0 +1,8 @@
+{
+  "title": "内存使用率",
+  "subtitle": "已用 RAM 百分比 · 0–100%",
+  "series": "内存",
+  "criticalReference": "85% 临界值",
+  "noData": "尚未采集到数据",
+  "noDataHint": "每分钟记录一次采样；图表将在几分钟内填充。"
+}

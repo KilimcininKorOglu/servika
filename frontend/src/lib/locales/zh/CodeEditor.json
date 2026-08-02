@@ -1,0 +1,15 @@
+{
+  "langPlainText": "纯文本",
+  "unsaved": "未保存的更改",
+  "saving": "保存中…",
+  "saved": "✓ 已保存",
+  "syntax": "语法",
+  "exitFullscreen": "退出全屏",
+  "fullscreen": "全屏",
+  "save": "💾 保存",
+  "close": "关闭",
+  "cursor": "第 {{line}} 行，第 {{column}} 列",
+  "lines": "{{count}} 行",
+  "bytes": "{{count}} 字节",
+  "shortcuts": "Ctrl+S：保存 · Esc：关闭"
+}

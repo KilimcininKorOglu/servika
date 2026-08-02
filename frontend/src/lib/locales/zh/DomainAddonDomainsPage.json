@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "addonDomains": "附加域名"
+  },
+  "title": "附加域名",
+  "subtitle": "创建附加或停放域名，并配置整域重定向。",
+  "toast": {
+    "created": "{{domain}} 已创建。",
+    "createFailed": "无法创建附加域名",
+    "deleted": "{{domain}} 已删除。",
+    "deleteFailed": "无法删除附加域名",
+    "redirectSaved": "重定向设置已保存。",
+    "redirectSaveFailed": "无法保存重定向设置",
+    "redirectRemoved": "重定向设置已移除。",
+    "redirectRemoveFailed": "无法移除重定向设置"
+  },
+  "mode": {
+    "parked": "停放域名",
+    "addon": "附加域名"
+  },
+  "confirmDelete": "删除 {{domain}}？\n{{mode}}、vhost、DNS 区域和面板记录将被移除。此操作无法撤销。",
+  "confirmRemoveRedirect": "移除域名重定向？",
+  "form": {
+    "title": "新建附加域名",
+    "domainLabel": "域名",
+    "parkedLabel": "停放域名",
+    "creating": "创建中…",
+    "add": "添加域名",
+    "hint": "附加域名使用自己的文档根目录。停放域名与父域名共享文档根目录。"
+  },
+  "redirect": {
+    "title": "整域重定向",
+    "active": "活动",
+    "targetLabel": "目标 URL",
+    "statusLabel": "状态",
+    "status301": "301 永久",
+    "status302": "302 临时",
+    "saving": "保存中…",
+    "save": "保存重定向",
+    "remove": "移除"
+  },
+  "list": {
+    "title": "现有域名",
+    "loading": "加载中…",
+    "empty": "尚无附加域名。",
+    "parked": "已停放",
+    "phpPrefix": "PHP",
+    "delete": "删除"
+  },
+  "backToSubscription": "← 返回订阅"
+}

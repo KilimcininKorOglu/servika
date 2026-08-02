@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "主机控制面板"
+  },
+  "heading": "欢迎",
+  "subtitle": "登录以继续。",
+  "field": {
+    "username": "用户名",
+    "password": "密码",
+    "twoFactorCode": "双因素认证码"
+  },
+  "twoFactorHint": "请输入您认证器应用中的六位验证码。",
+  "button": {
+    "signingIn": "登录中…",
+    "verify": "验证并登录",
+    "signIn": "登录"
+  },
+  "footer": "Servika · 版本 0.2.0-f1",
+  "error": {
+    "loginFailed": "登录失败"
+  }
+}

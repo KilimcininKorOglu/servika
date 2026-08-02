@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "statistics": "统计"
+  },
+  "title": "统计",
+  "live": "● 实时（10 秒）",
+  "subtitle": "服务器资源使用、域名数量和系统摘要。",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "内存",
+    "disk": "磁盘",
+    "load": "负载（1 分钟）"
+  },
+  "coresValue": "{{cores}} 个核心",
+  "loadSub": "5 分钟：{{five}} · 15 分钟：{{fifteen}}",
+  "system": {
+    "title": "系统",
+    "hostname": "主机名",
+    "os": "操作系统",
+    "kernel": "内核",
+    "processor": "处理器",
+    "swap": "交换空间",
+    "panelVersion": "面板版本"
+  },
+  "processorValue": "{{model}} · {{cores}} 个核心",
+  "swapValue": "{{percent}}% · {{used}} / {{total}}",
+  "domains": {
+    "title": "域名",
+    "total": "域名总数",
+    "active": "活动域名",
+    "inactive": "非活动域名"
+  },
+  "footer": {
+    "pre": "访问",
+    "link": "监控",
+    "post": "页面以获取更详细的监控信息。"
+  }
+}

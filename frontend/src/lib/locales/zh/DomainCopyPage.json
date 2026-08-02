@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "copyWebsite": "复制网站"
+  },
+  "title": "复制网站",
+  "subtitle": {
+    "pre": "在 ",
+    "post": " 下创建带时间戳的站点文件快照，在进行更改前提供一个安全的还原点。"
+  },
+  "note": {
+    "pre": "ℹ️ 此工具仅复制",
+    "bold1": "文件",
+    "mid": "，不包含数据库。如需完整备份，请使用",
+    "bold2": "备份与还原",
+    "post": "。"
+  },
+  "createDescription": "创建 public_html 内容的新副本。",
+  "actions": {
+    "create": "创建副本",
+    "creating": "复制中…",
+    "delete": "删除"
+  },
+  "existingTitle": "现有副本",
+  "loading": "加载中…",
+  "empty": "尚无副本。",
+  "back": "← 返回订阅",
+  "createdCopy": "已创建副本：{{name}}（{{size}} MB）",
+  "confirmDelete": "删除此副本？\n{{name}}（{{size}} MB）",
+  "errors": {
+    "createFailed": "无法创建副本",
+    "deleteFailed": "无法删除副本"
+  }
+}

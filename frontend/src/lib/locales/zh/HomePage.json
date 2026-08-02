@@ -1,0 +1,139 @@
+{
+  "shared": {
+    "more": "更多 →",
+    "manage": "管理 →",
+    "loading": "加载中…"
+  },
+  "widgets": {
+    "load-chart": "负载图表",
+    "memory-chart": "内存图表",
+    "wordpress": "WordPress 站点",
+    "panel-update": "面板更新",
+    "last-backup": "上次服务器备份",
+    "performance": "性能 / 优化",
+    "cve-security": "安全公告 (CVE)",
+    "services": "服务",
+    "domains": "域名",
+    "server-info": "服务器信息",
+    "health": "系统健康",
+    "live-resources": "实时资源",
+    "subscriptions": "我的订阅",
+    "network": "网络流量"
+  },
+  "header": {
+    "welcome": "欢迎回来，{{name}}",
+    "dashboard": "仪表盘",
+    "subtitle": "服务器概览与快速操作",
+    "saving": "保存中…",
+    "saved": "布局已保存",
+    "saveFailed": "保存失败",
+    "resetLayout": "重置布局"
+  },
+  "quota": {
+    "unsupportedTitle": "此文件系统不支持磁盘配额",
+    "unsupportedBody": "Servika 需要 XFS 根文件系统才能实现按租户的磁盘配额。重启不会在当前文件系统上启用配额。",
+    "rebootTitle": "重启后将启用磁盘配额",
+    "rebootBody": "XFS 用户配额已配置，但强制执行尚未激活。请重启服务器一次以激活按租户的磁盘配额。",
+    "dismiss": "忽略"
+  },
+  "widgetNotFound": "未找到小组件",
+  "dragToReorder": "拖动以重新排序",
+  "wp": {
+    "subtitle": "所有账户中的安装",
+    "installs": "安装数",
+    "updates": "更新",
+    "current": "最新",
+    "pendingUpdatesText_other": " 个安装有待处理的更新，过时的版本存在安全风险。",
+    "empty": "未找到 WordPress 安装",
+    "rootDir": "根目录",
+    "badgeUpdate": "更新",
+    "badgeCurrent": "最新",
+    "badgeUnknown": "未知",
+    "more_other": "+还有 {{count}} 个安装 →",
+    "unknownNote_other": "{{count}} 个安装无法确定 (wp-cli 超时)。"
+  },
+  "update": {
+    "subtitle": "版本与系统软件包",
+    "running": "更新运行中",
+    "toolMissing": "缺少更新工具",
+    "upToDate": "面板已是最新",
+    "noStatus": "无状态信息",
+    "badgeRunning": "运行中",
+    "badgeMissing": "缺失",
+    "badgeCurrent": "最新",
+    "systemPackages": "系统软件包"
+  },
+  "backup": {
+    "subtitle": "每日自动备份",
+    "unavailable": "备份摘要不可用",
+    "count_other": "个备份 · {{size}}",
+    "lastBackup": "上次备份",
+    "sitesBackedUp": "已备份站点",
+    "remoteTarget": "远程目标",
+    "remoteActive": "{{count}} 个活动",
+    "remoteNone": "无",
+    "schedule": "计划"
+  },
+  "performance": {
+    "subtitle": "改进服务器设置",
+    "running": "优化运行中",
+    "ready": "优化就绪",
+    "defaultStatus": "MariaDB · nginx · PHP 设置",
+    "badgeRunning": "运行中",
+    "badgeIdle": "空闲"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} 个服务运行中",
+    "subtitleStatus": "服务状态",
+    "allActive": "全部活动",
+    "down": "{{count}} 个已停止",
+    "active": "活动",
+    "statusDown": "已停止"
+  },
+  "domains": {
+    "subtitle": "托管站点与 SSL 状态",
+    "total": "总计",
+    "active": "活动",
+    "ssl": "SSL",
+    "empty": "暂无域名",
+    "noSsl": "无 SSL",
+    "badgeActive": "活动",
+    "more_other": "+还有 {{count}} 个域名 →"
+  },
+  "serverInfo": {
+    "subtitle": "硬件与系统",
+    "hostname": "主机名",
+    "ip": "IP 地址",
+    "os": "操作系统",
+    "kernel": "内核",
+    "cpu": "CPU",
+    "cores": "核心",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "整体状态评估",
+    "servicesDown_other": "{{count}} 个服务已停止",
+    "isolationLoss_other": "检测到 {{count}} 处隔离丢失",
+    "memoryAt": "内存使用 {{percent}}%",
+    "diskAt": "磁盘使用 {{percent}}%",
+    "healthy": "健康",
+    "fair": "一般",
+    "degraded": "降级",
+    "critical": "严重"
+  },
+  "live": {
+    "subtitle": "实时 CPU 与内存",
+    "cpu": "CPU",
+    "memory": "内存",
+    "disk": "磁盘 ({{mount}})",
+    "freeGb": "{{value}} GB 可用"
+  },
+  "subscriptions": {
+    "subtitle": "您的活动服务",
+    "body": "客户面板概览"
+  },
+  "network": {
+    "subtitle": "入站与出站数据",
+    "body": "流量统计信息可在统计页面查看"
+  }
+}

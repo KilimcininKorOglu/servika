@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "users": "用户"
+  },
+  "title": "用户",
+  "subtitleAdmin": "面板账户：管理员、分销商和客户。",
+  "subtitleReseller": "您创建的客户账户。",
+  "newAccount": "新建账户",
+  "newCustomer": "新建客户",
+  "loading": "加载中…",
+  "empty": {
+    "titleAdmin": "暂无其他账户",
+    "titleReseller": "暂无客户账户",
+    "description": "先创建一个新账户。"
+  },
+  "noMatch": "没有账户匹配您的搜索。",
+  "roles": {
+    "admin": "管理员",
+    "reseller": "分销商",
+    "user": "客户"
+  },
+  "columns": {
+    "user": "用户",
+    "fullName": "全名",
+    "role": "角色",
+    "status": "状态",
+    "twoFa": "2FA",
+    "lastLogin": "上次登录"
+  },
+  "system": "(系统)",
+  "systemAccount": "系统账户",
+  "status": {
+    "active": "活动",
+    "suspended": "已暂停"
+  },
+  "noPassword": "无密码",
+  "noPasswordTitle": "未设置密码，在您为其分配密码之前此账户无法登录。",
+  "twoFaOn": "开启",
+  "twoFaOff": "关闭",
+  "actions": {
+    "password": "密码",
+    "limits": "限额",
+    "suspend": "暂停",
+    "enable": "启用",
+    "delete": "删除"
+  },
+  "createModal": {
+    "titleAdmin": "新建账户",
+    "titleReseller": "新建客户账户",
+    "username": "用户名",
+    "usernamePlaceholder": "example_reseller",
+    "usernameHint": "3-32 个字符，以小写字母开头；可包含字母、数字、_ 和 -。",
+    "password": "密码",
+    "passwordHint": "至少 8 个字符。密码仅此刻显示，请交给用户。",
+    "role": "角色",
+    "resellerOnlyCustomers": "分销商只能创建客户账户。",
+    "email": "电子邮箱",
+    "fullName": "全名",
+    "cancel": "取消",
+    "creating": "创建中…",
+    "create": "创建"
+  },
+  "passwordModal": {
+    "title": "设置密码",
+    "newFor": "新密码，用于 ",
+    "customerNote": "这是客户的面板账户密码。客户使用此用户名和密码登录客户门户；没有密码则无法登录。",
+    "placeholder": "至少 8 个字符",
+    "cancel": "取消",
+    "saving": "保存中…",
+    "setPassword": "设置密码"
+  },
+  "limitsModal": {
+    "title": "分销商限额",
+    "loading": "加载中…",
+    "upperBounds": "上限，用于 ",
+    "unlimitedNote": "0 = 无限制。如果全部为 0，则完全移除限额记录。",
+    "maxCustomers": "最大客户数",
+    "maxDomains": "最大域名数",
+    "diskQuota": "磁盘配额 (MB)",
+    "trafficQuota": "流量配额 (MB)",
+    "inUseNow": "当前已使用 {{count}} 个",
+    "mbInUseNow": "当前已使用 {{count}} MB",
+    "mbUsedNow": "当前已用 {{count}} MB",
+    "limitBelowUsage": " — 限额低于当前使用量",
+    "quotaBelowUsage": " — 配额低于当前使用量",
+    "noLimit": "此分销商未定义限额，当前无限制。",
+    "loweringNote": "将限额降至当前使用量以下不会删除现有账户，仅阻止新增。",
+    "cancel": "取消",
+    "saving": "保存中…",
+    "save": "保存"
+  },
+  "delete": {
+    "title": "删除账户",
+    "message": "账户 {{username}} 将被删除。",
+    "resellerNote": " 此分销商下的账户不会被删除，它们将转移给管理员。",
+    "confirm": "删除"
+  },
+  "toast": {
+    "created": "账户 {{username}} 已创建。",
+    "passwordUpdated": "{{username}} 的密码已更新。",
+    "limitsUpdated": "{{username}} 的限额已更新。",
+    "enabled": "{{username}} 已启用。",
+    "suspended": "{{username}} 已暂停。",
+    "deleted": "{{username}} 已删除。"
+  },
+  "errors": {
+    "loadFailed": "无法加载账户",
+    "createFailed": "无法创建账户",
+    "resetFailed": "无法重置密码",
+    "loadLimitsFailed": "无法加载限额",
+    "saveLimitsFailed": "无法保存限额",
+    "statusFailed": "无法更改状态",
+    "deleteFailed": "无法删除"
+  }
+}

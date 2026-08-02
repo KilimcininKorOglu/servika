@@ -1,0 +1,16 @@
+{
+  "title": "服务器主机名",
+  "protected": "已防止服务商覆盖",
+  "awaitingProtection": "等待保护",
+  "descriptionPre": "永久更改系统主机名。将阻止 cloud-init 和 DHCP/NetworkManager 重写服务商提供的名称。建议使用完全限定名称：",
+  "placeholder": "server1.example.com",
+  "apply": "更改主机名",
+  "applying": "应用中…",
+  "messages": {
+    "changed": "主机名已更改为“{{hostname}}”并设为永久。"
+  },
+  "errors": {
+    "load": "无法加载主机名",
+    "change": "无法更改主机名"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "firewall": "防火墙"
+  },
+  "title": "防火墙",
+  "subtitle": {
+    "pre": "控制 ",
+    "bold": "谁可以从互联网访问您的服务器",
+    "post": "。应用预设或添加自定义规则。"
+  },
+  "info": {
+    "pre": "规则仅影响 ",
+    "bold": "新连接",
+    "mid": "。您当前的 SSH 或面板会话将保持连接。受保护的端口 ",
+    "post": " 无法关闭。"
+  },
+  "templates": {
+    "sectionTitle": "预设",
+    "sectionHint": "一键应用",
+    "portLabel": "端口：{{ports}}",
+    "apply": "应用",
+    "applying": "...",
+    "close_mysql": {
+      "name": "关闭外部 MySQL 访问",
+      "description": "对互联网关闭数据库端口 3306。MySQL 仍可从服务器访问。"
+    },
+    "close_ftp": {
+      "name": "关闭 FTP",
+      "description": "关闭 FTP 端口 21。如果您使用 SFTP，可以安全地关闭 FTP。"
+    },
+    "close_mail": {
+      "name": "关闭邮件端口",
+      "description": "关闭 SMTP、POP3 和 IMAP 端口。在没有邮件服务器时，这可降低垃圾邮件中继风险。"
+    },
+    "close_rpc": {
+      "name": "关闭 RPC / NFS",
+      "description": "在不使用文件共享时关闭 rpcbind 端口 111 和 NFS 端口 2049。"
+    }
+  },
+  "modes": {
+    "ban": {
+      "name": "封锁 IP",
+      "description": "封锁特定 IP 地址。输入端口以仅封锁对该端口的访问，或留空以封锁对所有端口的访问。",
+      "example": "示例：在反复的 SSH 尝试后完全封锁 45.9.1.2。"
+    },
+    "whitelist": {
+      "name": "允许 IP",
+      "description": "输入端口以仅允许来自这些 IP 地址的访问并封锁其他所有人。将端口留空以赋予此 IP 对所有端口的优先访问权。",
+      "example": "示例：输入端口 8443 和您的办公室 IP，这样只有您能访问面板。"
+    },
+    "close": {
+      "name": "关闭端口",
+      "description": "对除允许列表地址之外的所有人关闭端口。SSH、Web、面板和 DNS 的关键端口受保护且无法关闭。",
+      "example": "示例：对外部访问关闭数据库端口 3306。"
+    }
+  },
+  "form": {
+    "sectionTitle": "自定义规则",
+    "step1": "1. 您想做什么？",
+    "step2": "2. 详情",
+    "ipLabel": "IP 地址或范围",
+    "ipPlaceholder": "1.2.3.4 或 1.2.3.0/24",
+    "portLabel": "端口",
+    "portBlankHint": "(留空 = 全部)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "例如 22",
+    "protocolLabel": "协议",
+    "noteLabel": "备注 (可选)",
+    "notePlaceholder": "例如 尝试 SSH 暴力破解的 IP",
+    "previewLabel": "预览：",
+    "submit": "添加并应用规则",
+    "submitting": "应用中..."
+  },
+  "warning": {
+    "pre": "",
+    "bold": "警告：",
+    "mid": " 此端口将仅对上述 IP 地址开放。如果您的 IP 是",
+    "boldDynamic": "动态的",
+    "post": "，则在其变更时您将失去访问权限。SSH 端口 22 保持开放，因此如果您被锁定，可以通过 SSH 连接并删除此规则。或者，使用静态 IP 地址。"
+  },
+  "preview": {
+    "closeReady": "端口 {{port}} 将对除允许列表地址之外的所有人关闭。",
+    "closeEmpty": "输入要关闭的端口。",
+    "banPort": "{{address}} 将被禁止访问端口 {{port}}。",
+    "banAll": "{{address}} 将被禁止访问所有端口。",
+    "whitelistPort": "端口 {{port}} 将仅对 {{address}} 开放。其他所有人将被封锁。",
+    "whitelistAll": "{{address}} 将拥有对所有端口的优先访问权。",
+    "enterIp": "(输入一个 IP 地址)"
+  },
+  "rules": {
+    "title": "活动规则",
+    "count": "({{count}})",
+    "refresh": "↻ 刷新",
+    "colType": "类型",
+    "colIp": "IP / CIDR",
+    "colPort": "端口",
+    "colProto": "协议",
+    "colNote": "备注",
+    "colAction": "操作",
+    "loading": "加载中...",
+    "emptyTitle": "暂无规则。服务器对所有连接开放。",
+    "emptyHint": "应用上方的预设以开始。",
+    "everyone": "所有人",
+    "allPorts": "全部",
+    "delete": "删除",
+    "deleting": "..."
+  },
+  "badge": {
+    "ban": "🚫 已封锁",
+    "whitelist": "✅ 已允许",
+    "close": "🔒 已关闭"
+  },
+  "confirm": {
+    "applyTemplate": "应用 \"{{name}}\" 模板吗？\n要关闭的端口：{{ports}}\n这些端口将无法再从互联网访问。",
+    "removeClose": "关闭端口 {{port}}",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "删除 \"{{summary}}\" 规则吗？"
+  },
+  "success": {
+    "templateApplied_other": "\"{{name}}\" 已应用。已添加 {{count}} 条规则。",
+    "templateAlreadyApplied": "\"{{name}}\" 已应用。未添加新规则。",
+    "ruleAdded": "规则已添加并应用到防火墙。"
+  },
+  "error": {
+    "applyTemplate": "无法应用模板",
+    "addRule": "无法添加规则",
+    "deleteRule": "无法删除规则"
+  },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

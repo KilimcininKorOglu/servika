@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "尚未检查",
+  "title": "面板更新",
+  "badges": {
+    "server": "服务器",
+    "critical": "严重",
+    "updateAvailable": "有可用更新"
+  },
+  "description": "将面板更新到 GitHub 上的最新版本。环境设置、数据库和站点均会保留，不健康的版本会自动回滚。",
+  "toolMissing": " 更新工具缺失，将在首次使用时自动下载。",
+  "labels": {
+    "current": "当前",
+    "latest": "最新",
+    "buildDate": "构建日期",
+    "lastCheck": "上次检查"
+  },
+  "unknown": "未知",
+  "lastCheckFailed": "上次版本检查失败：{{error}}",
+  "checksDisabled": "版本检查已禁用。",
+  "running": "更新正在运行。面板可能会短暂重启；请保持此页面打开。",
+  "logStarted": "更新已启动...\n",
+  "checkAndInstall": "检查更新并安装",
+  "checking": "检查中...",
+  "refreshStatus": "刷新版本状态",
+  "confirmPrompt": "面板将被更新，其服务将重启。是否确认？",
+  "starting": "正在启动...",
+  "confirmYes": "是，更新",
+  "cancel": "取消",
+  "errors": {
+    "refresh": "无法刷新版本状态",
+    "start": "无法启动更新"
+  }
+}

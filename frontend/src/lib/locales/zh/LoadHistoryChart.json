@@ -1,0 +1,9 @@
+{
+  "title": "系统负载历史",
+  "subtitle": "平均负载（1 / 5 / 15 分钟）",
+  "cores": "{{count}} 个核心",
+  "scale": "√ 刻度",
+  "coresCapacity": "{{count}} 个核心 · 100%",
+  "noData": "尚未采集到数据",
+  "noDataHint": "每分钟记录一次采样；图表将在几分钟内填充。"
+}

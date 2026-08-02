@@ -1,0 +1,29 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "composer": "Composer"
+  },
+  "title": "PHP Composer",
+  "subtitle": {
+    "pre": "以系统用户身份运行 ",
+    "mid": "，位于 ",
+    "post": "。"
+  },
+  "loading": "加载中…",
+  "notFound": "未找到",
+  "notInstalled": "服务器上未安装 Composer。需由管理员安装。",
+  "composerJsonFound": "✓ 已找到 composer.json",
+  "composerJsonNotFound": "未找到 composer.json",
+  "packagePlaceholder": "vendor/package 或 vendor/package:^1.2",
+  "run": {
+    "header": "$ composer {{cmd}}",
+    "running": "运行中…",
+    "noOutput": "（无输出）",
+    "completed": "✓ 已完成",
+    "failed": "✗ 失败"
+  },
+  "errors": {
+    "runFailed": "无法运行命令"
+  }
+}

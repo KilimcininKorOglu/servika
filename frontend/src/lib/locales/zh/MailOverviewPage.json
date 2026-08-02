@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "域名",
+    "mail": "邮件",
+    "mailboxes": "邮箱",
+    "aliases": "别名",
+    "suspended": "已暂停"
+  },
+  "mailNone": "无",
+  "overview": {
+    "title": "电子邮件账户",
+    "description": "所有域名的邮箱和别名数量。",
+    "empty": "未找到域名。"
+  },
+  "summary": {
+    "mailDomains": "邮件域名",
+    "totalMailboxes": "邮箱总数"
+  },
+  "queue": {
+    "title": "Postfix 邮件队列",
+    "subtitle": "等待投递、已延迟或由管理员置于保留状态的邮件。",
+    "refresh": "↻ 刷新",
+    "retry": "重试队列",
+    "loading": "正在读取队列…",
+    "empty": "✓ 邮件队列为空",
+    "colId": "队列 ID",
+    "colRoute": "发件人 → 收件人",
+    "colSizeTime": "大小 / 时间",
+    "colActions": "操作",
+    "release": "释放",
+    "hold": "保留",
+    "requeue": "重新入队",
+    "delete": "删除"
+  },
+  "confirmDelete": "永久删除队列中的邮件 {{queueID}}？",
+  "errors": {
+    "readFailed": "无法读取 Postfix 队列",
+    "actionFailed": "队列操作失败"
+  }
+}

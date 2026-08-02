@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名"
+  },
+  "fallback": {
+    "label": "工具",
+    "description": "尚未实现。"
+  },
+  "notReady": "尚未就绪",
+  "domainLabel": "域名：",
+  "construction": {
+    "heading": "建设中",
+    "availablePrefix": "此模块将在 ",
+    "availableSuffix": " 中可用。",
+    "availableLater": "此模块将在后续阶段可用。",
+    "returnToDashboard": "← 返回域名仪表盘"
+  },
+  "tool": {
+    "connection": {
+      "label": "连接详情",
+      "description": "FTP 服务器、用户名、数据库连接字符串以及快速复制操作。"
+    },
+    "files": {
+      "label": "文件管理器",
+      "description": "列出、上传、下载 public_html 下的文件并更改其权限。"
+    },
+    "databases": {
+      "label": "数据库",
+      "description": "MySQL 数据库、用户以及 phpMyAdmin 集成。"
+    },
+    "ftp": {
+      "label": "FTP 账户",
+      "description": "通过 Pure-FTPd 提供的虚拟 FTP 账户、密码和主目录。"
+    },
+    "backups": {
+      "label": "备份与还原",
+      "description": "将 tarball 和数据库转储备份到 SFTP、S3 或本地存储。"
+    },
+    "copy": {
+      "label": "复制网站",
+      "description": "将现有网站克隆到另一个域名。"
+    },
+    "php": {
+      "label": "PHP 设置",
+      "description": "PHP-FPM 池选择、版本更改以及 php.ini 参数。"
+    },
+    "logs": {
+      "label": "日志",
+      "description": "通过 WebSocket 实时监控 access.log 和 error.log。"
+    },
+    "cron": {
+      "label": "计划任务",
+      "description": "按用户的 crontab 编辑器。"
+    },
+    "git": {
+      "label": "Git",
+      "description": "连接仓库、配置部署密钥并通过 webhook 自动拉取。"
+    },
+    "composer": {
+      "label": "PHP Composer",
+      "description": "用于 composer install 和 update 的 Web 界面。"
+    },
+    "performance": {
+      "label": "性能",
+      "description": "OPcache、gzip 和延迟加载等加速器。"
+    },
+    "ssl": {
+      "label": "SSL/TLS 证书",
+      "description": "自动安装和续期 Let's Encrypt。"
+    },
+    "password-protection": {
+      "label": "密码保护目录",
+      "description": "使用 .htpasswd 保护目录。"
+    },
+    "stats": {
+      "label": "统计",
+      "description": "磁盘、流量和访客报告。"
+    },
+    "imunify": {
+      "label": "Imunify",
+      "description": "防病毒和 WAF 集成。"
+    }
+  }
+}

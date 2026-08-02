@@ -1,0 +1,31 @@
+{
+  "planAndResources": "套餐与资源",
+  "refresh": "刷新",
+  "servicePlan": "服务套餐",
+  "bars": {
+    "disk": "磁盘",
+    "trafficMonthly": "流量（每月）",
+    "database": "数据库",
+    "ftpAccount": "FTP 账户",
+    "emailMailbox": "电子邮件邮箱",
+    "subdomain": "子域名"
+  },
+  "units": {
+    "db": "个数据库",
+    "account": "个账户",
+    "mailbox": "个邮箱",
+    "domain": "个域名"
+  },
+  "configuration": "配置",
+  "ipAddress": "IP 地址",
+  "systemUser": "系统用户",
+  "phpVersion": "PHP 版本",
+  "sslTls": "SSL/TLS",
+  "active": "活动",
+  "none": "无",
+  "counters": "计数器",
+  "dnsRecord": "DNS 记录",
+  "cronJob": "cron 任务",
+  "backup": "备份",
+  "backupSize": "备份大小"
+}

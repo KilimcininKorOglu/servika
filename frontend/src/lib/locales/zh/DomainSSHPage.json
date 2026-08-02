@@ -1,0 +1,52 @@
+{
+  "loading": "加载中…",
+  "notFound": "未找到",
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "sshAccess": "SSH 访问"
+  },
+  "title": "SSH 访问",
+  "subtitle": "账户 shell 访问。",
+  "badge": {
+    "on": "SSH 开",
+    "off": "SSH 关"
+  },
+  "toast": {
+    "accessActive": "SSH 访问已启用。",
+    "accessDisabled": "SSH 访问已禁用。",
+    "operationFailed": "操作失败",
+    "keySaved": "SSH 密钥已保存。",
+    "keysCleared": "SSH 密钥已清除。",
+    "keySaveFailed": "无法保存密钥"
+  },
+  "shell": {
+    "title": "Shell 访问",
+    "enabledPrefix": "已启用：",
+    "disabledPrefix": "已禁用：",
+    "currentPrefix": "当前：",
+    "disable": "禁用 SSH",
+    "enable": "启用 SSH",
+    "demoNotice": "演示域名无法更改 SSH 访问。"
+  },
+  "connection": {
+    "title": "连接详情",
+    "user": "用户",
+    "host": "主机",
+    "port": "端口",
+    "commandLabel": "连接命令",
+    "copy": "复制",
+    "passwordPrefix": "密码：",
+    "passwordBold": "与您的 FTP 账户相同",
+    "passwordSuffix": "。SSH 启用期间会自动同步。或者，您也可以在下方添加 SSH 公钥。"
+  },
+  "key": {
+    "title": "SSH 公钥（authorized_keys）",
+    "descPrefix": "添加您的公钥以免密登录。",
+    "configured": "当前已配置密钥。",
+    "notConfigured": "尚未配置密钥。",
+    "removeHint": "保存空值以移除所有密钥。",
+    "save": "保存密钥"
+  },
+  "backToSubscription": "← 返回订阅"
+}

@@ -1,0 +1,7 @@
+{
+  "home": "首页",
+  "searchDomain": "搜索域名…",
+  "loading": "加载中…",
+  "noMatch": "没有域名与您的搜索匹配。",
+  "errorLoad": "无法加载列表"
+}

@@ -1,0 +1,9 @@
+{
+  "domains": "域名",
+  "addDomain": "+ 添加域名",
+  "addDomainHint": "将在 F2 中推出",
+  "loading": "加载中…",
+  "noDomains": "尚无域名",
+  "ssl": "SSL",
+  "noSsl": "无 SSL"
+}

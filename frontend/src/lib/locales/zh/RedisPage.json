@@ -1,0 +1,60 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "redisCache": "Redis 缓存"
+  },
+  "title": "Redis 缓存",
+  "status": {
+    "active": "● 活动",
+    "disabled": "已禁用"
+  },
+  "subtitle": {
+    "pre": "为此域名分配一个",
+    "bold": "隔离的专用 Redis 对象缓存",
+    "post": "。WordPress 和动态应用程序可以减少数据库负载并更快响应。其他站点无法访问此缓存。"
+  },
+  "loading": "加载中…",
+  "empty": {
+    "message": "此域名的 Redis 缓存已禁用。",
+    "hint": "启用后会创建一个隔离的 ACL 用户和连接详情。",
+    "enable": "启用 Redis 缓存",
+    "enabling": "启用中…"
+  },
+  "connection": {
+    "title": "连接详情",
+    "disable": "禁用",
+    "host": "主机",
+    "username": "用户名",
+    "password": "密码",
+    "keyPrefix": "键前缀"
+  },
+  "wp": {
+    "title": "WordPress 设置",
+    "copy": "复制",
+    "copied": "已复制 ✓",
+    "instructionsPre": "1）将以下行添加到您的 ",
+    "instructionsFile": "wp-config.php",
+    "instructionsMid": " 文件中。2）从 WordPress 仪表盘安装 ",
+    "instructionsBold": "Redis Object Cache",
+    "instructionsPost": " 插件，然后选择“启用对象缓存”。"
+  },
+  "row": {
+    "show": "显示",
+    "hide": "隐藏",
+    "copy": "复制",
+    "copied": "✓"
+  },
+  "success": {
+    "enabledWithWp_other": "Redis 缓存已启用，{{count}} 个 WordPress 安装已自动连接。无需额外设置。",
+    "enabled": "Redis 缓存已启用。请使用下方连接详情配置非 WordPress 应用程序。",
+    "disabled": "Redis 缓存已禁用。"
+  },
+  "confirm": {
+    "disable": "禁用 Redis 缓存？此域名的 ACL 用户将被删除。"
+  },
+  "error": {
+    "enable": "无法启用 Redis 缓存",
+    "disable": "无法禁用 Redis 缓存"
+  }
+}

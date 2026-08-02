@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "首页",
+  "breadcrumbTitle": "WordPress",
+  "title": "WordPress",
+  "subtitle": "查看并更新服务器上的所有 WordPress 安装，或创建新安装。",
+  "outdated": {
+    "banner_other": "{{count}} 个安装有可用更新。",
+    "warning": "过时的 WordPress 版本存在已知安全漏洞。请尽快更新。"
+  },
+  "result": {
+    "installed": "WordPress {{version}} 已安装",
+    "site": "站点",
+    "admin": "管理后台",
+    "user": "用户",
+    "password": "密码",
+    "savePassword": "⚠ 请立即保存密码。它不会再次显示。"
+  },
+  "installedSites": "已安装的 WordPress 站点",
+  "refresh": "↻ 刷新",
+  "table": {
+    "domain": "域名",
+    "directory": "目录",
+    "version": "版本",
+    "status": "状态",
+    "installed": "安装时间",
+    "actions": "操作"
+  },
+  "scanning": "正在扫描安装...（检查版本和更新）",
+  "emptyTitle": "服务器上未找到 WordPress 安装。",
+  "emptyHint": "使用下方表单创建新安装。",
+  "adminButton": "管理后台",
+  "updateToVersion": "更新到 v{{version}}",
+  "update": "更新",
+  "delete": "删除",
+  "status": {
+    "updateAvailable": "有可用更新",
+    "updateAvailableTo": "可更新到 v{{version}}",
+    "upToDate": "已是最新",
+    "unknown": "未知"
+  },
+  "form": {
+    "heading": "新建安装",
+    "domain": "域名",
+    "siteTitle": "站点标题",
+    "siteTitlePlaceholder": "我的博客",
+    "subdirectory": "子目录（可选）",
+    "subdirectoryPlaceholder": "留空 = 根目录，例如 blog",
+    "adminUser": "管理员用户",
+    "adminEmail": "管理员邮箱",
+    "adminEmailPlaceholder": "admin@site.com"
+  },
+  "installing": "安装中...（约 30 秒）",
+  "installButton": "安装 WordPress",
+  "installButtonDomain": "安装 WordPress，{{domain}}",
+  "confirmDelete": "删除 {{domain}}{{dir}} 处的 WordPress？\n此目录中的所有文件和数据库将被移除。此操作无法撤销。",
+  "errors": {
+    "rootDelete": "无法从面板删除根目录中的 WordPress。",
+    "installFailed": "安装失败",
+    "updateFailed": "无法更新",
+    "deleteFailed": "无法删除"
+  }
+}

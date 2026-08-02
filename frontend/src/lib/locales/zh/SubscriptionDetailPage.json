@@ -1,0 +1,100 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "error": "错误"
+  },
+  "errors": {
+    "loadFailed": "无法加载订阅",
+    "suspendFailed": "无法更新域名暂停状态"
+  },
+  "loading": "加载中…",
+  "confirmSuspend": "暂停 \"{{domain}}\" 吗？在恢复之前，网站将返回 HTTP 503。",
+  "notice": {
+    "suspended": "域名已暂停。",
+    "resumed": "域名已恢复。"
+  },
+  "header": {
+    "switchSubscription": "切换订阅",
+    "suspended": "已暂停",
+    "moreActions": "更多操作",
+    "resumeDomain": "恢复域名",
+    "suspendDomain": "暂停域名"
+  },
+  "tabs": {
+    "dashboard": "仪表盘",
+    "hosting": "主机与 DNS"
+  },
+  "stats": {
+    "title": "统计",
+    "refresh": "刷新",
+    "disk": "磁盘空间",
+    "traffic": "每月流量",
+    "created": "创建时间",
+    "phpVersion": "PHP 版本"
+  },
+  "footer": {
+    "website": "网站：",
+    "ip": "IP：",
+    "systemUser": "系统用户：",
+    "addDescription": "添加描述"
+  },
+  "preview": {
+    "httpsOnly": "预览仅适用于 HTTPS 站点",
+    "autoAppear": "启用 SSL 后会自动显示",
+    "website": "网站",
+    "refresh": "刷新",
+    "refreshTitle": "刷新预览",
+    "sslRequired": "预览需要 SSL",
+    "open": "打开",
+    "previewAlt": "{{domain}} 预览"
+  },
+  "groups": {
+    "filesAndDatabases": "文件与数据库",
+    "developmentTools": "开发工具",
+    "security": "安全",
+    "hostingServices": "主机服务"
+  },
+  "tools": {
+    "connection": "连接信息",
+    "connectionDesc": "FTP 与数据库",
+    "files": "文件",
+    "filesDesc": "文件管理器",
+    "databases": "数据库",
+    "ftp": "FTP",
+    "ftpDesc": "FTP 账户",
+    "backup": "备份与还原",
+    "backupDesc": "备份管理",
+    "copy": "复制网站",
+    "copyDesc": "克隆",
+    "php": "PHP",
+    "phpDesc": "版本 {{version}}",
+    "logs": "日志",
+    "logsDesc": "访问和错误日志",
+    "cron": "计划任务",
+    "cronDesc": "Cron",
+    "git": "Git",
+    "gitDesc": "仓库集成",
+    "composer": "PHP Composer",
+    "composerDesc": "包管理器",
+    "performance": "性能",
+    "performanceDesc": "加速器",
+    "ssl": "SSL/TLS 证书",
+    "sslExpires": "过期时间：{{expiry}}",
+    "sslLetsEncrypt": "Let's Encrypt",
+    "sslNotProtected": "域名未受保护",
+    "passwordProtect": "密码保护目录",
+    "statistics": "统计",
+    "statisticsDesc": "流量分析",
+    "imunify": "Imunify",
+    "imunifyDesc": "防病毒",
+    "waf": "WAF (Web 应用防火墙)",
+    "wafDesc": "ModSecurity + OWASP CRS",
+    "hostingSettings": "主机设置",
+    "hostingSettingsDesc": "文档根目录与选项",
+    "apacheNginx": "Apache 与 nginx",
+    "apacheNginxDesc": "安全标头与附加指令",
+    "dns": "DNS 设置",
+    "dnsDesc": "A、CNAME、MX"
+  }
+}

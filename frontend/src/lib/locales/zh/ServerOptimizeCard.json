@@ -1,0 +1,12 @@
+{
+  "title": "服务器优化",
+  "description": "更新系统软件包（dnf/yum），并应用 MariaDB、nginx 和 PHP 性能调优。该过程在后台运行，可能耗时较长。您可以在其继续时关闭页面。",
+  "running": "优化正在运行。软件包更新可能需要一段时间；您可以关闭页面，它将在后台继续。",
+  "logStarted": "优化已启动...\n",
+  "startButton": "更新软件包并优化",
+  "confirmPrompt": "这可能会短暂影响服务。是否继续？",
+  "starting": "正在启动...",
+  "confirmYes": "是，开始",
+  "cancel": "取消",
+  "errorStart": "启动优化失败"
+}

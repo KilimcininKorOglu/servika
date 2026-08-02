@@ -1,0 +1,66 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "current": "工具与设置"
+  },
+  "title": "工具与设置",
+  "subtitle": "全服务器管理 — PHP、系统软件包、网络、安全和维护。",
+  "searchPlaceholder": "搜索工具…",
+  "searchAria": "搜索工具",
+  "maintenance": "服务器维护",
+  "noResults": "未找到与“{{q}}”相关的工具",
+  "noResultsHint": "请更改或清除搜索词。",
+  "footer_other": "{{count}} 个工具 · 全服务器范围",
+  "badges": {
+    "dynamic": "动态",
+    "serverWide": "全服务器范围"
+  },
+  "groups": {
+    "php": "PHP",
+    "system": "系统与服务",
+    "network": "网络与 DNS",
+    "security": "安全与备份"
+  },
+  "tools": {
+    "phpVersions": {
+      "title": "PHP 版本",
+      "description": "添加或移除 7.4 至 8.6 版本。每个域名可独立选择其版本。"
+    },
+    "phpExtensions": {
+      "title": "PHP 扩展",
+      "description": "切换全服务器扩展、搜索 PECL 软件包并编译它们。"
+    },
+    "packages": {
+      "title": "软件包管理器",
+      "description": "DNF 软件包 — 编译器和运行时。现成的安装组。"
+    },
+    "services": {
+      "title": "服务",
+      "description": "Nginx / Apache / MariaDB / DNS / PHP-FPM 状态和重启。"
+    },
+    "servicePlans": {
+      "title": "服务套餐",
+      "description": "带磁盘、数据库和 FTP 配额的主机套餐。"
+    },
+    "dnsTemplate": {
+      "title": "DNS 模板",
+      "description": "应用于新域名的中央 DNS 记录（A/MX/SPF/DMARC/DKIM）及 SOA。"
+    },
+    "domains": {
+      "title": "域名",
+      "description": "浏览、搜索并快速访问所有域名。"
+    },
+    "firewall": {
+      "title": "防火墙",
+      "description": "IP/端口阻止、允许列表、端口关闭。关键端口受保护。"
+    },
+    "backupManager": {
+      "title": "备份管理器",
+      "description": "查看所有域名的备份大小、一键备份、S3/SFTP 目标。"
+    },
+    "monitoring": {
+      "title": "监控与日志",
+      "description": "CPU/RAM/磁盘图表以及来自 journald 的服务器日志（panel/nginx/SSH…）。"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "title": "DNS 管理",
+  "description": "所有域名的记录数量和 DNSSEC 状态。",
+  "emptyMessage": "未找到域名。",
+  "column": {
+    "domain": "域名",
+    "records": "记录",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "开启",
+    "off": "关闭"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC 已开启",
+    "noMx": "无 MX"
+  }
+}

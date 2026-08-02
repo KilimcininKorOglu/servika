@@ -1,0 +1,16 @@
+{
+  "title": "数据库",
+  "description": "服务器上的每个数据库及其所属域名和大小。",
+  "emptyMessage": "未找到数据库。",
+  "column": {
+    "domain": "域名",
+    "database": "数据库",
+    "user": "用户",
+    "size": "大小",
+    "created": "创建时间"
+  },
+  "summary": {
+    "databases": "数据库",
+    "totalSize": "总大小"
+  }
+}

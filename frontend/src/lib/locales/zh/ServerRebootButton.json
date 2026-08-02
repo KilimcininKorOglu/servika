@@ -1,0 +1,14 @@
+{
+  "title": "服务器重启",
+  "description": "仅在活动任务和客户操作可以安全中断后，才重启整个服务器。",
+  "confirmLabel": "输入 REBOOT 以确认",
+  "placeholder": "REBOOT",
+  "reboot": "重启服务器",
+  "requesting": "正在请求...",
+  "messages": {
+    "requested": "已请求重启。服务器重启期间面板将不可用。"
+  },
+  "errors": {
+    "reboot": "无法请求服务器重启"
+  }
+}

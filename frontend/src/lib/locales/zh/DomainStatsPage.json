@@ -1,0 +1,32 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "statistics": "统计"
+  },
+  "loading": "加载中…",
+  "notFound": "未找到",
+  "title": "流量统计",
+  "subtitle": {
+    "pre": " 的 nginx 访问日志分析。",
+    "subdomainNote": " 子域名流量已计入这些总计。"
+  },
+  "refresh": "↻ 刷新",
+  "emptyLog": "尚无访问日志数据。站点开始接收流量后将显示在此处。",
+  "kpi": {
+    "totalRequests": "总请求数",
+    "bandwidth": "带宽使用量",
+    "uniqueIps": "独立 IP 数",
+    "botRatio": "机器人占比"
+  },
+  "statusTitle": "HTTP 状态分布",
+  "dailyTitle": "每日请求数（最近 7 天）",
+  "dailyRequests": "{{count}} 次请求",
+  "topPathsTitle": "请求最多的路径",
+  "topIpsTitle": "最活跃的 IP",
+  "latestTitle": "最新请求",
+  "unit": {
+    "requests": "次请求"
+  },
+  "noData": "无数据。"
+}

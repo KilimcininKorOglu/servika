@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "monitoring": "监控"
+  },
+  "title": "端到端监控",
+  "liveRefresh": "实时，每 {{seconds}} 秒刷新",
+  "tabs": {
+    "server": "服务器",
+    "domain": "按域名",
+    "logs": "服务器日志"
+  },
+  "snap": {
+    "cpu": "CPU",
+    "cpuCores": "{{count}} 核",
+    "memory": "内存",
+    "load1m": "负载 (1 分钟)",
+    "loadAlt": "5 分钟 {{load5m}}，15 分钟 {{load15m}}",
+    "diskRoot": "磁盘 (/)"
+  },
+  "chart": {
+    "systemResources": "系统资源",
+    "samples": "{{count}}/{{max}} 个采样，{{minutes}} 分钟",
+    "legendCpu": "CPU",
+    "legendMemory": "内存",
+    "legendSwap": "交换空间",
+    "legendLoad": "负载 (已归一化)",
+    "networkTraffic": "网络流量",
+    "interface": "网卡：{{name}}",
+    "legendRx": "↓ RX (KB/s)",
+    "legendTx": "↑ TX (KB/s)",
+    "collecting": "正在收集数据..."
+  },
+  "services": {
+    "title": "服务",
+    "enabledCount": "已启用 {{enabled}}/{{total}}",
+    "active": "运行中",
+    "stopped": "已停止"
+  },
+  "processes": {
+    "title": "占用最高的进程",
+    "sortCpu": "CPU",
+    "sortMem": "内存",
+    "colPid": "PID",
+    "colUser": "用户",
+    "colCpu": "CPU%",
+    "colMem": "内存%",
+    "colCommand": "命令",
+    "loading": "加载中..."
+  },
+  "domain": {
+    "selectionTitle": "域名选择",
+    "noActiveDomains": "无活动域名",
+    "probing": "探测中...",
+    "healthProbe": "↻ 健康探测",
+    "openSite": "打开站点 ↗",
+    "accessLog": "访问日志",
+    "errorLog": "错误日志",
+    "lastLines": "最后 {{count}} 行",
+    "noAccessEntries": "暂无日志条目...",
+    "noErrorEntries": "暂无错误条目"
+  },
+  "health": {
+    "reachable": "可访问",
+    "unreachable": "无法访问",
+    "server": "服务器：",
+    "noSslTitle": "⚠ 无 SSL",
+    "noSslBody": "此域名无法通过 HTTPS 访问。",
+    "sslValid": "🔒 SSL 有效",
+    "sslInvalid": "✗ SSL 无效",
+    "days": "天",
+    "expires": "过期时间：",
+    "issuer": "颁发者：",
+    "responseTime": "响应时间",
+    "ms": "毫秒",
+    "fast": "快",
+    "acceptable": "可接受",
+    "slow": "慢"
+  },
+  "logs": {
+    "searchPlaceholder": "搜索...",
+    "lastLineCount": "最后 {{count}}",
+    "refresh": "↻ 刷新",
+    "loading": "加载中...",
+    "notFound": "未找到 \"{{query}}\"。",
+    "noEntries": "(无条目)",
+    "footerFiltered": "{{filtered}} / {{total}} 行，journald，{{source}}",
+    "footer": "{{total}} 行，journald，{{source}}"
+  },
+  "logSources": {
+    "panel": "面板",
+    "nginx": "nginx",
+    "mariadb": "MariaDB",
+    "named": "DNS (named)",
+    "sshd": "SSH",
+    "cron": "Cron",
+    "system": "整个系统"
+  }
+}

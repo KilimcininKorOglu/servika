@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "ftpAccount": "FTP 账户"
+  },
+  "title": "FTP 账户",
+  "errors": {
+    "resetFailed": "密码重置失败"
+  },
+  "info": {
+    "host": "主机",
+    "port": "端口",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "用户名",
+    "homeDir": "主目录"
+  },
+  "reset": {
+    "title": "重置密码",
+    "placeholder": "输入自定义密码或留空",
+    "setThis": "设置此密码",
+    "generateRandom": "生成随机密码",
+    "success": "✓ 已设置新密码",
+    "saveHint": "请妥善保存。之后将无法再次查看。",
+    "copy": "复制"
+  },
+  "note": {
+    "label": "注意：",
+    "pre": " FTP 目前使用 ",
+    "code": "明文",
+    "post": " 认证连接本地数据库。请在 22 端口使用 SFTP 以获得加密传输。"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "首页",
+  "title": "安全日志",
+  "subtitle": "面板登录尝试和管理操作。最新条目位于顶部。",
+  "stats": {
+    "entries": "条目",
+    "failed": "失败"
+  },
+  "searchPlaceholder": "搜索用户、IP、目标…",
+  "filters": {
+    "allActions": "所有操作",
+    "last": "最近 {{n}} 条",
+    "failedOnly": "仅失败"
+  },
+  "loading": "加载中…",
+  "empty": {
+    "title": "此筛选条件下没有条目",
+    "description": "请放宽筛选条件后重试。"
+  },
+  "noMatch": "没有条目与您的搜索匹配。",
+  "columns": {
+    "time": "时间",
+    "result": "结果",
+    "action": "操作",
+    "user": "用户",
+    "ip": "IP",
+    "target": "目标"
+  },
+  "status": {
+    "success": "成功",
+    "failed": "失败"
+  },
+  "errors": {
+    "loadFailed": "无法加载日志"
+  }
+}

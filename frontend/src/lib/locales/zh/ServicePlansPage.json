@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "首页",
+  "breadcrumbTitle": "服务套餐",
+  "title": "服务套餐",
+  "subtitle": "为域名定义服务套餐。每个域名关联一个套餐，磁盘、流量、PHP 版本、数据库数量和子域名限制等资源均按套餐配置。",
+  "addPlan": "添加套餐",
+  "loading": "加载中…",
+  "empty": {
+    "title": "暂无服务套餐",
+    "descriptionAdmin": "先定义您的第一个套餐。",
+    "descriptionUser": "管理员尚未定义套餐。"
+  },
+  "badge": {
+    "default": "默认"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "磁盘",
+    "traffic": "流量",
+    "domains": "域名",
+    "databases": "数据库",
+    "ftp": "FTP"
+  },
+  "detailsButton": "详情与资源限制",
+  "delete": "删除",
+  "confirmDelete": {
+    "title": "删除套餐",
+    "message": "确定删除套餐 \"{{name}}\" 吗？",
+    "confirmText": "是的，删除"
+  },
+  "errors": {
+    "deleteFailed": "删除失败",
+    "saveFailed": "保存失败"
+  },
+  "limit": {
+    "unlimited": "无限制"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/月",
+    "domains": "个域名",
+    "databases": "个数据库",
+    "accounts": "个账户"
+  },
+  "modal": {
+    "newTitle": "新建套餐",
+    "editTitle": "编辑套餐",
+    "planName": "套餐名称",
+    "description": "描述",
+    "diskMb": "磁盘 (MB)",
+    "trafficMb": "流量 (MB)",
+    "phpVersionLabel": "PHP 版本",
+    "maxDomains": "最大域名数",
+    "maxDatabases": "最大数据库数",
+    "maxFtp": "最大 FTP 账户数",
+    "isDefault": "新域名的默认套餐",
+    "wafHeading": "WAF 默认设置 (ModSecurity + OWASP CRS)",
+    "wafEnabled": "在此套餐中启用",
+    "wafMode": {
+      "block": "拦截 (开启)",
+      "detect": "检测 (仅记录日志)"
+    },
+    "wafParanoia": {
+      "level1": "级别 1 (低)",
+      "level2": "级别 2 (中)",
+      "level3": "级别 3 (高)",
+      "level4": "级别 4 (严格)"
+    },
+    "hint": "0 = 无限制。磁盘和流量值以 MB 为单位。使用此套餐的新域名将以所选 PHP 版本进行配置。",
+    "cancel": "取消",
+    "saving": "保存中…",
+    "add": "添加",
+    "update": "更新"
+  }
+}

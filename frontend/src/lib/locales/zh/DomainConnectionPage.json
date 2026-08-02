@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "自动复制失败。请按 Ctrl+C，然后按 Enter：",
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "connectionDetails": "连接详情"
+  },
+  "title": "连接详情",
+  "subtitle": "选择一个值即可自动复制",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "主机",
+    "port": "端口",
+    "username": "用户名",
+    "password": "密码",
+    "homeDirectory": "主目录",
+    "database": "数据库",
+    "webRoot": "Web 根目录",
+    "ipv4": "IPv4",
+    "systemUser": "系统用户",
+    "httpUrl": "HTTP URL",
+    "httpsUrl": "HTTPS URL"
+  },
+  "links": {
+    "ftp": "前往 FTP 管理 →",
+    "database": "前往数据库管理 →"
+  },
+  "row": {
+    "selectToCopy": "选择以复制",
+    "copied": "✓ 已复制"
+  },
+  "password": {
+    "button": "🔑 显示 / 重置密码"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "数据库"
+  },
+  "modal": {
+    "titleSuffix": "密码",
+    "userLabel": "用户：",
+    "notStored": "（未存储）",
+    "notAuthorized": "（未授权）",
+    "showCurrent": "👁 显示当前密码",
+    "currentPasswordLabel": "当前密码",
+    "newPasswordGenerated": "✓ 已生成新密码",
+    "copyWarning": "⚠ 请立即复制密码。关闭此窗口后可能无法再次查看。",
+    "close": "关闭",
+    "generating": "生成中…",
+    "generateAgain": "↻ 重新生成",
+    "generateNew": "⚡ 生成新密码",
+    "errorGenerate": "无法生成密码"
+  },
+  "copyButton": {
+    "copy": "复制",
+    "copied": "✓ 已复制"
+  }
+}

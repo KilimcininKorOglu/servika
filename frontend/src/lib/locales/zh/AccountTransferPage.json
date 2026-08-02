@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "首页",
+  "breadcrumbServices": "主机服务",
+  "breadcrumbTitle": "账户迁移",
+  "title": "导入账户",
+  "subtitle": "安全地分析 cPanel 完整账户备份。此阶段不会在服务器上解压或持久化归档文件。",
+  "fileLabel": "cPanel 完整备份（.tar.gz / .tgz）",
+  "uploading": "上传中 {{progress}}%",
+  "analyzeButton": "分析归档",
+  "kpi": {
+    "primaryDomain": "主域名",
+    "undetermined": "未确定",
+    "webFiles": "Web 文件",
+    "databases": "数据库",
+    "emailData": "电子邮件数据",
+    "emailFiles": "{{count}} 个文件",
+    "none": "无"
+  },
+  "detail": {
+    "title": "账户信息",
+    "sourcePanel": "源面板",
+    "user": "用户",
+    "archiveRoot": "归档根目录",
+    "totalMembers": "成员总数",
+    "expandedSize": "展开后大小",
+    "cron": "Cron",
+    "cronPresent": "存在",
+    "cronNone": "无",
+    "sslFiles": "SSL 文件",
+    "mailboxes": "邮箱",
+    "forwarders": "转发器",
+    "cronJobs": "cron 任务"
+  },
+  "lists": {
+    "databases": "数据库",
+    "dnsZones": "DNS 区域",
+    "cronJobs": "cron 任务",
+    "noneFound": "未找到"
+  },
+  "analysisComplete": "分析完成。导入会创建一个新域名；如果失败，创建的账户将自动回滚。",
+  "targetAndPlan": "目标与套餐",
+  "fields": {
+    "targetCustomer": "目标客户",
+    "selectCustomer": "选择客户",
+    "servicePlan": "服务套餐",
+    "defaultPlan": "默认套餐",
+    "primaryDomain": "主域名",
+    "phpVersion": "PHP 版本"
+  },
+  "importing": "导入中… {{progress}}%",
+  "importButton": "导入账户",
+  "importResult": {
+    "title": "导入完成",
+    "summary": "{{domain}} · {{webFiles}} 个 Web 文件 · {{count}} 个数据库",
+    "newPasswords": "新邮箱密码 — 请立即保存",
+    "forwardersTransferred": "已迁移 {{count}} 个转发器。",
+    "cronTransferred": "已迁移 {{count}} 个 cron 任务。",
+    "sslTransferred": "SSL 证书已迁移 · 有效期至 {{expires}}",
+    "manageDomain": "管理域名 →"
+  },
+  "errors": {
+    "analyzeFailed": "无法分析归档",
+    "importFailed": "无法导入账户"
+  }
+}

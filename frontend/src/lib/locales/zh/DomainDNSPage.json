@@ -1,0 +1,19 @@
+{
+  "breadcrumb": {"home":"主页","domains":"域名","dnsSettings":"DNS 设置"},
+  "title":"DNS 设置","ipLabel":"IP：",
+  "authoritative":{"label":"权威 DNS：","pre":" BIND 发布这些记录。请将域名指向 ","mid":" 和 ","post":"。"},
+  "loading":"加载中...","recordCount":"{{count}} 条记录",
+  "valueHint":{"A":"IPv4 地址，例如 203.0.113.10","AAAA":"IPv6 地址，例如 2a01:4f8:1c1c::1","CNAME":"目标域名，例如 target.example.com","MX":"邮件服务器，例如 mail.example.com（优先级单独设置）","TXT":"自由格式文本，例如 v=spf1 mx ~all","NS":"名称服务器，例如 ns1.example.com","SRV":"权重 端口 目标，例如 5 5060 sip.example.com（优先级单独设置）","CAA":"标志 标签 \"值\"，例如 0 issue \"letsencrypt.org\"","PTR":"目标域名，例如 host.example.com","DS":"密钥标签 算法 摘要类型 摘要，例如 12345 13 2 49FD46E6C4B45C55D4AC...","TLSA":"用途 选择器 匹配类型 数据，例如 3 1 1 0B9FA5A59EED715C26C1020C...","SSHFP":"算法 类型 指纹，例如 4 2 123456789ABCDEF...","NAPTR":"顺序 偏好 \"标志\" \"服务\" \"正则表达式\" 替换"},
+  "soa":{"title":"SOA 设置","titleHint":"（权威、刷新、重试、过期和 TTL）","hide":"▲ 隐藏","edit":"▼ 编辑","primaryNs":"主 NS","hostmasterEmail":"主机管理员电子邮件","fields":{"refresh":"刷新","retry":"重试","expire":"过期","minimum":"最小值","ttl":"ttl"},"save":"保存 SOA","saved":"SOA 设置已保存","saveFailed":"无法保存 SOA 设置"},
+  "dnssec":{"title":"DNSSEC","signed":"已签名","signing":"签名中...","disabled":"已禁用","description":"使用 BIND 内联签名对此区域签名。在域名注册商处添加生成的 DS 记录。","refreshStatus":"刷新状态","disable":"禁用","enabling":"启用中...","enable":"启用","dsForRegistrar":"注册商的 DS 记录","copied":"已复制","copy":"复制","dsHint":"请在注册商的 DNSSEC 设置中添加此 DS 记录。传播最多可能需要记录 TTL 的时间。","signingInProgress":"签名仍在进行中。请在几秒后刷新状态。","enabledMsg":"DNSSEC 已启用。请在域名注册商处添加下方的 DS 记录。","disabledMsg":"DNSSEC 已禁用。","updateFailed":"无法更新 DNSSEC","refreshFailed":"无法刷新 DNSSEC 状态"},
+  "actions":{"newRecord":"新建记录","applyTemplate":"📋 应用默认模板","applyTemplateTitle":"添加默认 A/MX/TXT/NS 记录（幂等）","refresh":"↻ 刷新","export":"⬇ 导出","exportTitle":"将 DNS 记录下载为 BIND 区域文件","import":"⬆ 导入","importTitle":"上传 BIND 区域文件"},
+  "import":{"title":"导入区域文件","description":"上传标准 BIND 区域文件（.zone / .txt）。记录将导入此域名，然后验证并重写区域。","overwriteLabel":"覆盖现有记录，未选中时会合并记录（添加新记录）","replaceWarning":"⚠️ 此域名的所有当前 DNS 记录将被删除并替换为文件中的记录。建议先导出备份。","cancel":"取消","importing":"导入中…","import":"导入","complete":"导入完成，已添加 {{added}} 条，已跳过 {{skipped}} 条（{{mode}}）","completeWarning":"导入完成，已添加 {{added}} 条，已跳过 {{skipped}} 条（{{mode}}）· {{warning}}","failed":"导入失败"},
+  "exportFailed":"导出失败",
+  "bulk":{"selected":"已选择 {{count}} 条记录","enable":"启用","disable":"禁用","deleteSelected":"删除所选项（{{count}}）","clearSelection":"清除选择","deleted":"已删除 {{count}} 条记录","updated":"已更新 {{count}} 条记录","deleteFailed":"批量删除失败","updateFailed":"批量更新失败"},
+  "table":{"selectAll":"全选","select":"选择 {{name}} {{type}}","name":"名称","type":"类型","value":"值","ttl":"TTL","priority":"优先级","status":"状态","actions":"操作","selectLabel":"选择","noPriority":"无","active":"启用","disabled":"已禁用","edit":"编辑","delete":"删除"},
+  "empty":{"text":"尚无 DNS 记录。","applyTemplate":"应用默认模板"},"templateAdded":"已添加 {{count}} 条默认记录","templateFailed":"无法应用模板",
+  "delete":{"title":"删除 DNS 记录","message":"删除“{{name}} {{type}} {{value}}”？","confirm":"是，删除","failed":"删除失败"},
+  "bulkDelete":{"title":"删除所选 DNS 记录","message":"将永久删除 {{count}} 条 DNS 记录。此操作无法撤销。是否继续？","confirm":"是，删除 {{count}} 条记录"},
+  "dnssecDisable":{"title":"禁用 DNSSEC","message":"请在域名注册商处删除 DS 记录，并在禁用 DNSSEC 前等待其 TTL。否则域名可能停止解析并显示 SERVFAIL。仅在 DS 记录已删除后继续。","confirm":"DS 已删除，禁用 DNSSEC"},
+  "modal":{"newTitle":"新建 DNS 记录","editTitle":"编辑 DNS 记录","nameLabel":"名称（子域名）","nameHint":"“@”是根域名。其他示例包括“www”和“mail”。","typeLabel":"类型","valueLabel":"值","ttlLabel":"TTL（秒）","priorityLabel":"优先级","active":"启用","cancel":"取消","saving":"保存中...","create":"创建","update":"更新","saveFailed":"无法保存记录"}
+}

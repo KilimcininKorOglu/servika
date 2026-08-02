@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "工具与设置",
+  "breadcrumbServices": "服务",
+  "title": "服务管理",
+  "subtitle": "重启或重新加载受管的 Web、数据库、DNS、PHP 及支持服务。",
+  "loading": "加载中…",
+  "reload": "重新加载",
+  "restart": "重启",
+  "working": "…",
+  "statuses": {
+    "active": "● 活动",
+    "inactive": "○ 未活动",
+    "failed": "✕ 失败",
+    "absent": "未安装"
+  },
+  "errors": {
+    "loadFailed": "无法加载服务",
+    "actionFailed": "{{label}} 操作失败"
+  },
+  "success": {
+    "reloaded": "{{label}} 已重新加载。",
+    "restarted": "{{label}} 已重启。"
+  }
+}

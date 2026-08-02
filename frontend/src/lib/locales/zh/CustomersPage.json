@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "首页",
+  "title": "客户",
+  "subtitle": "账单和联系人记录。域名与这些记录关联 — 这不是面板登录账户。",
+  "newCustomer": "新建客户",
+  "loading": "加载中…",
+  "empty": {
+    "title": "尚无客户记录",
+    "description": "请先创建客户记录，以便将域名关联到客户。"
+  },
+  "noMatch": "没有客户与您的搜索匹配。",
+  "columns": {
+    "name": "名称",
+    "email": "电子邮件",
+    "plan": "套餐",
+    "status": "状态",
+    "created": "创建时间"
+  },
+  "status": {
+    "active": "活动",
+    "passive": "被动"
+  },
+  "actions": {
+    "edit": "编辑",
+    "delete": "删除"
+  },
+  "modal": {
+    "editTitle": "编辑客户",
+    "newTitle": "新建客户",
+    "name": "名称",
+    "email": "电子邮件",
+    "plan": "套餐",
+    "noPlan": "无套餐",
+    "status": "状态",
+    "notes": "备注",
+    "cancel": "取消",
+    "saving": "保存中…",
+    "save": "保存"
+  },
+  "delete": {
+    "title": "删除客户",
+    "message": "{{name}} 将被删除。关联到此客户的域名不会被移除 — 仅清除关联。",
+    "confirm": "删除"
+  },
+  "toast": {
+    "added": "{{name}} 已添加。",
+    "updated": "{{name}} 已更新。",
+    "deleted": "{{name}} 已删除。"
+  },
+  "errors": {
+    "loadFailed": "无法加载客户",
+    "nameEmailRequired": "名称和电子邮件为必填项",
+    "saveFailed": "无法保存",
+    "deleteFailed": "无法删除"
+  }
+}

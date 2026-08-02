@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "toolsAndSettings": "工具与设置",
+    "serverOptimize": "服务器优化"
+  },
+  "title": "服务器优化",
+  "description": "更新系统软件包，并根据服务器资源重新调优 MariaDB / Nginx / PHP 设置。该操作在后台运行，您可以关闭此页面；它可能需要一段时间，并会短暂影响服务。"
+}

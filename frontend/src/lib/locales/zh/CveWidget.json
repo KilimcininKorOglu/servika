@@ -1,0 +1,52 @@
+{
+  "title": "安全公告",
+  "subtitleAudit": "CVE 审计（AlmaLinux）",
+  "advisories": "{{count}} 条安全公告",
+  "rescan": "重新扫描",
+  "scanning": "扫描中…",
+  "scanningServer": "正在扫描服务器…",
+  "updating": "正在安装安全更新…（在后台运行）",
+  "kcApplying": "正在应用实时内核补丁…（KernelCare — 无需重启）",
+  "severity": {
+    "critical": "严重",
+    "important": "重要",
+    "moderate": "中等",
+    "low": "低"
+  },
+  "kcActive": {
+    "bold": "内核已实时打补丁（KernelCare）。",
+    "text": " 内核漏洞已无需重启即被修复。",
+    "effectivePre": " 生效内核：",
+    "effectivePost": "。",
+    "patched": " 已实时修补 {{count}} 个 CVE。"
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare 已安装，但许可证未注册。",
+    "text": " 请使用 TuxCare 许可证密钥注册，以实现无需重启的内核打补丁。"
+  },
+  "rebootRequired": {
+    "bold1": "需要重启。",
+    "text1": " 已安装新的安全补丁内核，但系统仍在运行旧内核 — 以下大部分 CVE 与内核相关，将显示为",
+    "bold2": "在服务器重启前处于开放状态",
+    "text2": "。请在维护窗口期安排重启。"
+  },
+  "clean": {
+    "title": "系统已是最新",
+    "subtitle": "无已知漏洞"
+  },
+  "totalPre": "共 ",
+  "totalPost": " 个唯一 CVE",
+  "lastScan": " · 上次扫描 {{scan}}",
+  "installUpdates": "安装安全更新",
+  "updateLiveKernel": "更新实时内核补丁（无需重启）",
+  "confirmUpdate": "将安装安全更新（dnf --security）。内核更新可能需要重启才能生效。是否继续？",
+  "messages": {
+    "updatesComplete": "安全更新已完成。",
+    "livePatchApplied": "实时内核补丁已应用。"
+  },
+  "errors": {
+    "fetch": "无法获取 CVE 状态",
+    "startUpdate": "无法启动更新",
+    "startLivePatch": "无法启动实时补丁"
+  }
+}

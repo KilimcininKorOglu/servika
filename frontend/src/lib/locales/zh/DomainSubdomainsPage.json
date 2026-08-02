@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "subdomains": "子域名"
+  },
+  "title": "子域名",
+  "subtitlePre": "在此域名下创建子域名（例如",
+  "subtitlePost": "）。每个子域名都有独立的 Web 目录。",
+  "toast": {
+    "created": "{{fqdn}} 已创建。已添加 DNS A 记录。",
+    "createFailed": "无法创建子域名",
+    "deleteFailed": "无法删除子域名",
+    "sslInstalled": "{{fqdn}} 的 SSL 已使用 {{method}} 安装。",
+    "sslInstallFailed": "无法安装 SSL"
+  },
+  "sslMethod": {
+    "letsencrypt": "Let's Encrypt",
+    "selfSigned": "自签名证书"
+  },
+  "confirmDelete": "删除 {{fqdn}}？\nvhost、文件（文档根目录）和 DNS 记录将被移除。此操作无法撤销。",
+  "form": {
+    "title": "新建子域名",
+    "label": "子域名",
+    "creating": "创建中…",
+    "add": "添加子域名",
+    "hintPre": "小写字母、数字和连字符。示例："
+  },
+  "list": {
+    "title": "现有子域名",
+    "loading": "加载中…",
+    "empty": "尚无子域名。",
+    "phpPrefix": "PHP",
+    "manage": "管理",
+    "manageTitle": "管理此子域名",
+    "letsencryptTitle": "安装 Let's Encrypt SSL",
+    "letsencrypt": "🔒 Let's Encrypt",
+    "selfSignedTitle": "安装自签名 SSL",
+    "selfSigned": "自签名",
+    "delete": "删除",
+    "dnsNote": "ℹ️ 子域名会立即在 Web 服务器上配置。您域名的 DNS A 记录必须先指向此服务器才能访问。"
+  },
+  "backToSubscription": "← 返回订阅"
+}

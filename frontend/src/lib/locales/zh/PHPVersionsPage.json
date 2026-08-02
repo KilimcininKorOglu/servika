@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "tools": "工具与设置",
+    "current": "PHP 版本"
+  },
+  "title": "PHP 版本",
+  "subtitle": "添加或移除 PHP 版本。每个版本运行在独立的 PHP-FPM 池中，可按域名选择。安装包含 14 个软件包（fpm、cli、mysqlnd 和 11 个扩展）。",
+  "alerts": {
+    "opInProgress": "已有 PHP 操作正在进行。请等待其完成。",
+    "appstreamCannotRemove": "AppStream PHP 是系统默认版本，无法移除。"
+  },
+  "confirm": {
+    "install": "将为 PHP {{version}}（{{resource}}）安装 14 个软件包。是否继续？",
+    "remove": "PHP {{version}}（Remi）及其所有扩展将被移除。\n如果有域名正在使用此版本，操作将被拒绝。是否继续？"
+  },
+  "success": {
+    "installed": "PHP {{version}} 已安装",
+    "removed": "PHP {{version}} 已移除"
+  },
+  "errors": {
+    "startInstallFailed": "无法启动安装",
+    "startRemoveFailed": "无法启动移除"
+  },
+  "log": {
+    "installStarted": "PHP {{version}} 安装已启动...\n",
+    "removeStarted": "PHP {{version}} 移除已启动...\n",
+    "installInProgress": "PHP {{version}} 安装进行中...",
+    "removeInProgress": "PHP {{version}} 移除进行中...",
+    "waiting": "等待输出..."
+  },
+  "filters": {
+    "all": "全部（{{count}}）",
+    "installed": "已安装（{{count}}）",
+    "available": "可用（{{count}}）"
+  },
+  "loading": "加载中...",
+  "badges": {
+    "installed": "已安装",
+    "eol": "已停止支持"
+  },
+  "card": {
+    "version": "版本：",
+    "extensions": "扩展：",
+    "service": "服务："
+  },
+  "actions": {
+    "fixed": "固定（系统默认）",
+    "inProgress": "进行中...",
+    "remove": "移除",
+    "install": "安装"
+  }
+}

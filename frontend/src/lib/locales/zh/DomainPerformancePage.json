@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "performance": "性能"
+  },
+  "loading": "加载中…",
+  "notFound": "未找到",
+  "title": "性能与加速器",
+  "subtitle": {
+    "post": " 的当前加速器状态和建议。"
+  },
+  "scoreLabel": "性能评分",
+  "acceleratorsTitle": "加速器",
+  "cacheStat": "{{rate}}% 命中 · {{total}} 次请求",
+  "configure": "配置 →",
+  "suggestionsTitle": "建议",
+  "open": "打开 →",
+  "back": "← 返回订阅"
+}

@@ -1,0 +1,25 @@
+{
+  "breadcrumbHome": "首页",
+  "breadcrumbServerStatus": "服务器状态",
+  "title": "服务器状态",
+  "subtitle": "服务器的实时快照。此页面为只读 — 服务管理归管理员所有。",
+  "loading": "加载中…",
+  "errorLoad": "无法加载服务器状态",
+  "cards": {
+    "cpu": "CPU",
+    "memory": "内存",
+    "disk": "磁盘",
+    "panelVersion": "面板版本"
+  },
+  "loadText": "负载 {{values}}",
+  "updateAvailable": "有可用更新：v{{version}}",
+  "upToDate": "已是最新",
+  "servicesHeading": "服务",
+  "noServices": "无服务信息。",
+  "statuses": {
+    "active": "运行中",
+    "inactive": "已停止",
+    "failed": "失败",
+    "absent": "未安装"
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名"
+  },
+  "title": "域名",
+  "subtitle": "查看所有已注册域名，批量更改其状态或删除它们。",
+  "loading": "加载中...",
+  "searchPlaceholder": "🔍 搜索域名...",
+  "newDomain": "新建域名",
+  "empty": {
+    "title": "暂无域名",
+    "description": "先添加您的第一个域名。系统将自动创建 Linux 用户、nginx vhost、PHP-FPM 池、FTP 账户、MySQL 数据库和 DNS 区域。",
+    "button": "创建域名"
+  },
+  "columns": {
+    "domainName": "域名",
+    "systemUser": "系统用户",
+    "plan": "套餐",
+    "php": "PHP",
+    "disk": "磁盘",
+    "status": "状态",
+    "created": "创建时间",
+    "actions": "操作"
+  },
+  "openInNewTab": "在新标签页中打开",
+  "sslExpires": "过期时间：{{date}}",
+  "sslActive": "SSL 已启用",
+  "demoBadge": "演示",
+  "reseller": "分销商：{{name}}",
+  "noPlan": "无",
+  "subdomain": "子域",
+  "subdomainStatus": "子域名",
+  "subdomainParentPlan": "父级",
+  "manage": "管理",
+  "addSubdomain": "+ 子域名",
+  "bulk": {
+    "selected": "已选择 {{count}} 个",
+    "activate": "▶ 激活",
+    "deactivate": "⏸ 停用",
+    "delete": "🗑 删除 ({{count}})",
+    "clear": "清除选择"
+  },
+  "deleteConfirm": {
+    "title": "⚠ 批量删除域名",
+    "messageMid": " 个域名及其所有依赖资源 (Linux 用户、主目录、数据库、FTP 账户、vhost 和 DNS 区域) 将被",
+    "messageBold": "永久",
+    "messagePost": "删除。",
+    "moreItems": "+ 还有 {{count}} 个...",
+    "typeLabel": "输入 ",
+    "typeSuffix": " 以确认：",
+    "cancel": "取消",
+    "confirm": "是的，删除"
+  },
+  "createModal": {
+    "title": "创建新域名",
+    "subtitle": "系统将自动配置 Linux 用户、nginx vhost、PHP-FPM 池、FTP 账户、MySQL 数据库和 DNS 区域。",
+    "domainName": "域名",
+    "domainNamePlaceholder": "example.com",
+    "loading": "加载中...",
+    "domainNameHintPre": "小写字母、数字、连字符和句点。例如：",
+    "domainNameHintMid": " 或 ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "panel.site.com",
+    "phpVersion": "PHP 版本",
+    "phpDefault": "PHP 8.3 (默认)",
+    "servicePlan": "服务套餐",
+    "planNone": "(无)",
+    "issueSsl": "创建后安装 Let's Encrypt SSL 证书",
+    "sslWarning": "⚠️ 域名的 DNS A 记录必须已指向此服务器，否则签发将失败，稍后您可以在 SSL 页面重试。",
+    "cancel": "取消",
+    "creating": "创建中...",
+    "create": "创建"
+  },
+  "resultModal": {
+    "title": "✓ 域名已创建",
+    "readyPre": " 已就绪。以下密码",
+    "readyBold": "仅显示一次",
+    "readyPost": "。请妥善保管。",
+    "ftp": "FTP",
+    "mysql": "MySQL 数据库",
+    "host": "主机",
+    "username": "用户名",
+    "password": "密码",
+    "database": "数据库",
+    "systemUser": "系统用户：",
+    "ok": "确定"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "点击复制",
+    "hide": "隐藏",
+    "show": "显示",
+    "copied": "已复制"
+  },
+  "toast": {
+    "created": "✓ \"{{name}}\" 已创建。Linux 用户、nginx vhost、PHP-FPM 池、FTP 账户、MySQL 数据库和 DNS 区域均已就绪。",
+    "sslInstalled": " Let's Encrypt SSL 已安装。",
+    "sslFailed": " (无法签发 Let's Encrypt SSL，请确认 DNS A 记录指向此处，然后在 SSL 页面安装。)",
+    "deleted": "✓ 已删除 {{success}}/{{total}} 个域名",
+    "statusChanged": "✓ {{count}} 个域名已更改为 \"{{status}}\""
+  },
+  "errors": {
+    "invalidDomain": "无效的域名。例如：example.com 或 panel.example.com",
+    "createFailed": "无法创建域名",
+    "statusFailed": "无法更改状态"
+  }
+}

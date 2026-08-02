@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "主页",
+    "domains": "域名",
+    "backups": "备份"
+  },
+  "title": "备份",
+  "subtitle": {
+    "prefix": "home 目录 + MySQL 转储 = tar.gz，",
+    "disabled": "已禁用自动备份",
+    "enabled": "{{freq}} {{hour}}:00，保留最近 {{retention}} 个自动备份"
+  },
+  "freq": {
+    "daily": "每天",
+    "weekly": "每周"
+  },
+  "toast": {
+    "destinationSaved": "远程目标已保存",
+    "destinationSaveFailed": "无法保存目标",
+    "destinationDeleted": "远程目标已删除",
+    "confirmDeleteDest": "删除远程备份目标？现有备份不受影响，但将停止后续的自动上传。",
+    "autoDisabled": "已禁用自动备份",
+    "autoEnabled": "已启用自动备份：{{freq}}，{{hour}}:00；将保留最近 {{retention}} 个备份",
+    "scheduleSaveFailed": "无法保存计划",
+    "backupCreated": "备份已创建",
+    "createFailed": "无法创建备份",
+    "restored": "已还原：{{domain}}，数据库：{{database}}",
+    "restoreDbUnknown": "未知",
+    "restoreFailed": "还原失败"
+  },
+  "schedule": {
+    "heading": "自动备份计划",
+    "description": "启用后，面板每小时检查一次。在所选小时创建备份，并删除超过保留数量的备份。",
+    "lastBackup": "最近的自动备份：",
+    "options": {
+      "none": {
+        "name": "已禁用",
+        "description": "不进行自动备份。仅执行手动“立即备份”。"
+      },
+      "daily": {
+        "name": "每天",
+        "description": "每天在所选小时创建备份，并保留最近 N 个备份。"
+      },
+      "weekly": {
+        "name": "每周",
+        "description": "每七天创建一次备份，以减少磁盘占用。"
+      }
+    },
+    "active": "● 已启用",
+    "runTime": "运行时间（本地）",
+    "retentionLabel": "保留的备份数",
+    "retentionHint": "超过此数量的旧自动备份将被删除。手动备份将被保留。"
+  },
+  "destination": {
+    "heading": "远程备份目标（FTP / SFTP / S3 / B2）",
+    "description": "创建后，备份会在后台上传到远程目标，用于异地保护以防磁盘故障。",
+    "statusSuccessful": "● 最近：成功",
+    "statusError": "✗ 最近：错误",
+    "lastUpload": "最近上传：",
+    "typeLabel": "目标类型",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "存储桶",
+    "region": "区域",
+    "regionHint": "（默认为 us-east-1）",
+    "endpoint": "端点",
+    "endpointHint": "（AWS S3 请留空）",
+    "accessKeyId": "访问密钥 ID",
+    "secretAccessKey": "私有访问密钥",
+    "secretKeepHint": "（留空以保留当前值）",
+    "keyPrefix": "键前缀",
+    "pathStyle": "路径样式 URL",
+    "host": "主机",
+    "port": "端口",
+    "username": "用户名",
+    "password": "密码",
+    "passwordKeepHint": "（留空以保留当前密码）",
+    "remoteDir": "远程目录",
+    "activeLabel": "启用（将每个备份发送到此目标）",
+    "testSuccess": "✓ 连接成功",
+    "testError": "✗ ",
+    "testErrorFallback": "错误",
+    "testing": "测试中...",
+    "testConnection": "测试连接",
+    "save": "保存",
+    "deleteDestination": "删除目标"
+  },
+  "backingUp": "备份中...",
+  "backupNow": "+ 立即备份",
+  "refresh": "↻ 刷新",
+  "backupCount": "{{count}} 个备份",
+  "loading": "加载中...",
+  "empty": "尚无备份",
+  "columns": {
+    "file": "文件",
+    "type": "类型",
+    "size": "大小",
+    "created": "创建时间",
+    "actions": "操作"
+  },
+  "typeScheduled": "计划",
+  "row": {
+    "download": "下载",
+    "restore": "↺ 还原",
+    "delete": "删除"
+  },
+  "confirmDelete": {
+    "title": "删除备份文件",
+    "message": "删除备份文件“{{file}}”？",
+    "confirm": "是，删除"
+  },
+  "confirmRestore": {
+    "title": "从备份还原",
+    "message": "还原“{{file}}”？\n\n警告：现有的 public_html 文件将被覆盖，MySQL 表将被重新创建。此操作无法撤销。",
+    "confirm": "是，还原"
+  }
+}
