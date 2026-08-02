@@ -244,8 +244,17 @@ sec_domains() {
     [ -d "$home" ] || continue
     system_user=$(basename "$home")
     if ! getent passwd "$system_user" >/dev/null; then warn "$system_user: system user absent, skipping"; continue; fi
-    ensure_owner "$home" "$system_user:$system_user"
-    ensure_mode  "$home" 711
+    # The home group is the tenant in the ACL model and nginx in the group
+    # fallback below. Accept whichever is in place so a repair run does not flip
+    # the two back and forth; the owner is still enforced either way.
+    local home_group
+    home_group=$(stat -c '%G' "$home" 2>/dev/null || echo "$system_user")
+    if [ "$home_group" = "nginx" ]; then
+      ensure_owner "$home" "$system_user:nginx"
+    else
+      ensure_owner "$home" "$system_user:$system_user"
+    fi
+    ensure_mode  "$home" 710
     # Keep .quarantined owned by root so tenants cannot access quarantined malware.
     local child bn
     while IFS= read -r child; do
@@ -254,7 +263,45 @@ sec_domains() {
       [ "$bn" = ".quarantined" ] && continue
       ensure_owner "$child" "$system_user:$system_user" -R
     done < <(find "$home" -maxdepth 1 -mindepth 1 ! -user "$system_user" 2>/dev/null)
-    [ -d "$home/public_html" ] && ensure_mode "$home/public_html" 755
+    # Isolation model (identical to internal/provisioner): home 0710,
+    # public_html 0750, nothing for other. nginx reaches the document root
+    # through a per-user ACL so the files stay owned by the tenant; when the
+    # filesystem ignores ACLs the nginx group takes over with setgid. The mode
+    # bits NEVER loosen to 0711/0755, which would expose every tenant's document
+    # root to every other tenant.
+    local public_html="$home/public_html" doc_group
+    if [ -d "$public_html" ]; then
+      # Which model is already in place decides the expected group and mode, so a
+      # repair run reinforces it instead of flipping to the other one every time.
+      doc_group=$(stat -c '%G' "$public_html" 2>/dev/null || echo "$system_user")
+      if [ "$doc_group" = "nginx" ]; then
+        ensure_owner "$public_html" "$system_user:nginx"
+        ensure_mode  "$public_html" 2750   # setgid: new content inherits the nginx group
+      else
+        ensure_owner "$public_html" "$system_user:$system_user"
+        ensure_mode  "$public_html" 750
+      fi
+      if [ $DRY -eq 0 ] && command -v setfacl >/dev/null 2>&1; then
+        setfacl -m u:nginx:--x "$home"          2>/dev/null || true
+        setfacl -m u:nginx:rX  "$public_html"   2>/dev/null || true
+        setfacl -d -m u:nginx:rX "$public_html" 2>/dev/null || true
+      fi
+      # setfacl can exit 0 while the filesystem ignores the entry, so verify with
+      # a real read as nginx. Nothing is granted to other, so a successful read
+      # proves that either the ACL or the group is carrying the access.
+      if [ $DRY -eq 1 ]; then
+        ok "isolation $public_html (710/750, unchanged in dry run)"
+      elif command -v runuser >/dev/null 2>&1 &&
+           { runuser -u nginx -- test -r "$public_html/index.html" 2>/dev/null ||
+             runuser -u nginx -- test -r "$public_html" 2>/dev/null; }; then
+        ok "isolation $public_html (nginx can read, 710/750)"
+      else
+        act "nginx cannot read through the ACL, falling back to the nginx group with setgid: $public_html (710/750 preserved)"
+        chown "$system_user:nginx" "$home" 2>/dev/null || true
+        chown -R -h -P "$system_user:nginx" "$public_html" 2>/dev/null || true
+        chmod 2750 "$public_html" 2>/dev/null || true
+      fi
+    fi
     [ -d "$home/.ssh" ]        && ensure_mode "$home/.ssh" 700
     # Keep the quarantine directory locked and owned by root.
     if [ -d "$home/.quarantined" ]; then ensure_owner "$home/.quarantined" "root:root"; ensure_mode "$home/.quarantined" 700; fi
