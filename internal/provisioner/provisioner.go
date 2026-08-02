@@ -209,6 +209,7 @@ func Init(db *sql.DB) {
 	healPanelIndexNoCacheOnStartup()
 	ensurePMAStartup()
 	healVhostsOnStartup()
+	HealNginxLogPerms() // close /var/log/nginx to tenants (cross-tenant log reading)
 	HealHomePerms()
 	ensureFPMSELinuxFcontext()
 	ensureHTTPDHomeBooleans()
