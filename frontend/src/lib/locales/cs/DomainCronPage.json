@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "scheduledTasks": "Naplánované úlohy"
+  },
+  "title": "Naplánované úlohy",
+  "presets": {
+    "everyMinute": "Každou minutu",
+    "everyHour": "Každou hodinu",
+    "dailyAt3": "Denně v 03:00",
+    "mondayAt9": "V pondělí v 09:00",
+    "every5Minutes": "Každých 5 minut",
+    "every15Minutes": "Každých 15 minut",
+    "firstOfMonth": "První den v měsíci v 00:00"
+  },
+  "actions": {
+    "add": "Přidat úlohu",
+    "refresh": "↻ Obnovit"
+  },
+  "count": "{{count}} úloh",
+  "loading": "Načítání...",
+  "empty": "Zatím žádné úlohy. Přidejte jednu výše.",
+  "columns": {
+    "min": "Min",
+    "hour": "Hod",
+    "day": "Den",
+    "month": "Měsíc",
+    "weekday": "Den v týdnu",
+    "command": "Příkaz / popis",
+    "action": "Akce"
+  },
+  "row": {
+    "delete": "Smazat"
+  },
+  "confirmDelete": "Smazat úlohu „{{command}}...“?",
+  "errors": {
+    "deleteFailed": "Smazání se nezdařilo",
+    "addFailed": "Položku nelze přidat"
+  },
+  "modal": {
+    "title": "Nová naplánovaná úloha",
+    "presetsLabel": "Předvolby",
+    "fields": {
+      "minute": "Minuta",
+      "hour": "Hodina",
+      "day": "Den",
+      "month": "Měsíc",
+      "weekday": "Den v týdnu"
+    },
+    "cronHint": "Formát cron:",
+    "cronHintPost": " libovolná hodnota,",
+    "cronEvery": " každých pět,",
+    "cronList": " seznam,",
+    "cronRange": " rozsah.",
+    "commandLabel": "Příkaz",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "Popis (volitelné)",
+    "descriptionPlaceholder": "např. noční zálohovací skript",
+    "cancel": "Zrušit",
+    "adding": "Přidávání...",
+    "addTask": "Přidat úlohu"
+  }
+}

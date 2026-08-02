@@ -1,0 +1,132 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "settings": "Nastavení Apache a nginx"
+  },
+  "title": "Nastavení Apache a nginx",
+  "subtitle": "Bezpečnostní hlavičky a vlastní direktivy. Uložení znovu vykreslí nginx vhost.",
+  "loading": "Načítání…",
+  "applying": "Použití…",
+  "reload": "Znovu načíst",
+  "saveApply": "💾 Uložit a použít",
+  "backend": {
+    "php-fpm": {
+      "name": "nginx + PHP-FPM",
+      "description": "Výchozí. nginx volá PHP-FPM přímo přes FastCGI. Ideální pro WordPress, Laravel a dynamické weby PHP s nejnižší latencí."
+    },
+    "apache": {
+      "name": "nginx + Apache",
+      "description": "nginx ukončuje TLS na okraji, zatímco Apache (10080) obsluhuje vhost za ním. Plná podpora .htaccess pro Joomlu, starší weby WordPress a starší CMS."
+    },
+    "static": {
+      "name": "Statické (bez PHP)",
+      "description": "Obsluhuje pouze soubory. Určeno pro SPA React, Vue nebo Angular, generátory statických webů jako Hugo a Jekyll a obsah CDN. Požadavky PHP vrací 404."
+    }
+  },
+  "headers": {
+    "hdr_x_content_type": "Zabraňuje čichání MIME jako obrana proti XSS",
+    "hdr_x_xss": "Ochrana proti XSS ve starších prohlížečích",
+    "hdr_referrer": "Omezuje informace Referer mezi weby",
+    "hdr_permissions": "Ve výchozím nastavení zakazuje API kamery, mikrofonu a polohy",
+    "hdr_csp_upgrade": "Automaticky povyšuje odkazy HTTP na HTTPS"
+  },
+  "stack": {
+    "title": "Sada webového serveru",
+    "description": "nginx zůstává ukončovačem TLS na okraji. Výběr níže směruje doménu na zvolené backendové jádro.",
+    "active": "● Aktivní"
+  },
+  "docRoot": {
+    "title": "Kořen dokumentů",
+    "description": "Vyberte, který podadresář public_html nginx obsluhuje. Aplikace Laravel obvykle používají adresář public.",
+    "subdirLabel": "Podadresář pod public_html",
+    "placeholder": "public",
+    "save": "Uložit kořen dokumentů",
+    "currentLabel": "Aktuální kořen dokumentů:"
+  },
+  "hstsNote": {
+    "pre": " je relevantní pouze pro weby s povoleným HTTPS. Když web používá pouze HTTP, do prohlížeče se neodesílá. Změny automaticky spustí ",
+    "mid": " a ",
+    "post": " bez výpadku."
+  },
+  "customVhostActive": {
+    "boldPre": "Vlastní vhost je aktivní",
+    "post": " — bezpečnostní hlavičky, cache a nastavení dodatečných direktiv níže ",
+    "boldNot": "nejsou použity",
+    "tail": " právě teď. Změny zde se ukládají, ale nedostanou se do souboru vhost; abyste tato nastavení opět zprovoznili, stiskněte „Vrátit ke správě panelem“ v kartě souboru vhost níže."
+  },
+  "cards": {
+    "securityHeaders": "Bezpečnostní hlavičky (HTTP + HTTPS)",
+    "hsts": "HTTP Strict Transport Security (pouze HTTPS)",
+    "performanceCache": "Výkonová cache",
+    "vhostFile": "Soubor vhost nginx",
+    "additionalDirectives": "Další direktivy nginx"
+  },
+  "hsts": {
+    "description": "Prohlížeče se k webu připojují pouze přes HTTPS. Nesprávná konfigurace se obtížně vrací zpět, proto ji povolte pouze tehdy, když je to vhodné.",
+    "maxAgeLabel": "max-age (sekundy)",
+    "maxAge300": "5 minut (pro testování)",
+    "maxAge86400": "1 den",
+    "maxAge604800": "1 týden",
+    "maxAge2592000": "30 dní",
+    "maxAge15768000": "6 měsíců",
+    "maxAge31536000": "1 rok (doporučeno)",
+    "maxAge63072000": "2 roky (pro preload)",
+    "includeSubDomainsDesc": "Použít na všechny subdomény po ověření, že každá z nich podporuje HTTPS",
+    "preloadDesc": "Zahrnout web do prohlížečů ve výchozím nastavení (vyžaduje registraci na hstspreload.org)"
+  },
+  "cache": {
+    "fastcgiLabel": "Cache FastCGI nginx",
+    "fastcgiValue": "hlavička x-cache-status · doba cache {{minutes}} minut",
+    "fastcgiDesc": "Ukládá stránky WordPress a PHP na disk. Požadavky POST, cookies, přihlašovací stránky a náhledy se automaticky přeskakují. Řeší varování mezipaměti stránek ve WP Site Health.",
+    "durationMinutes": "Doba cache (minuty)",
+    "min5": "5 minut",
+    "min15": "15 minut",
+    "min60": "1 hodina (doporučeno)",
+    "min360": "6 hodin",
+    "min1440": "1 den",
+    "browserLabel": "Cache prohlížeče (statické soubory)",
+    "browserValue": "Cache-Control: public, immutable · vyprší {{days}} d",
+    "browserDesc": "Statické soubory jako CSS, JS, PNG, JPG a WOFF se ukládají do cache prohlížeče, čímž se opakované návštěvy načítají mnohem rychleji.",
+    "durationDays": "Doba cache (dny)",
+    "day1": "1 den",
+    "day7": "1 týden",
+    "day30": "30 dní (doporučeno)",
+    "day90": "3 měsíce",
+    "day365": "1 rok"
+  },
+  "vhost": {
+    "warningPre": "Toto je soubor, který nginx ",
+    "warningBoldActually": "skutečně obsluhuje",
+    "warningMid": " pro tuto doménu. Můžete ho přímo upravit a uložit — jakmile uložíte, ",
+    "warningBoldEntire": "celý",
+    "warningPost": " soubor vhost (včetně přesměrování HTTP→HTTPS a umístění validace Let's Encrypt) přechází do vaší odpovědnosti; nastavení hlaviček/cache/dodatečných direktiv výše a panel se již tohoto souboru nedotknou. ",
+    "warningTail": " — pokud tento blok odeberete, certifikát se po 90 dnech nemůže automaticky obnovit.",
+    "activeState": "🟢 Vlastní vhost aktivní — panel se tohoto souboru nedotýká",
+    "managedState": "⚪ Spravováno panelem — níže je zobrazen aktuálně aktivní soubor",
+    "unsaved": "Neuložené změny",
+    "working": "Pracuji…",
+    "returnToPanel": "Vrátit ke správě panelem",
+    "saving": "Ukládání…",
+    "confirmReturn": "Vrátit tento soubor ke standardní správě panelem?\n\nVaše úpravy NEBUDOU smazány — přepnutí zpět do vlastního režimu pokračuje tam, kde jste skončili."
+  },
+  "directives": {
+    "pre": "Tento text se připojí na konec bloku ",
+    "mid": ". Příklad: ",
+    "placeholder": "# Příklad:\nclient_max_body_size 200m;\nrewrite ^/old/(.*)$ /new/$1 permanent;"
+  },
+  "success": {
+    "backendChanged": "✓ Webový server změněn na „{{name}}“",
+    "docRootUpdated": "✓ Kořen dokumentů aktualizován a nginx znovu načten",
+    "settingsApplied": "✓ Nastavení použita a nginx znovu načten",
+    "customVhostSaved": "✓ Vlastní vhost uložen a nginx znovu načten",
+    "returnedToPanel": "✓ Vráceno ke správě panelem, vhost znovu vykreslen"
+  },
+  "errors": {
+    "changeBackendFailed": "Backend nelze změnit",
+    "updateDocRootFailed": "Kořen dokumentů nelze aktualizovat",
+    "saveSettingsFailed": "Nastavení nelze uložit",
+    "saveCustomVhostFailed": "Vlastní vhost nelze uložit",
+    "returnManagedFailed": "Nelze se vrátit ke spravovanému vhost"
+  }
+}

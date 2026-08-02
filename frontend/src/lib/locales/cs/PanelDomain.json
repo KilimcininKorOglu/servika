@@ -1,0 +1,25 @@
+{
+  "title": "Doména panelu",
+  "description": "Před vyžádáním certifikátu Let's Encrypt nasměrujte na tento server záznam A. Po vydání otevírá doména panel bez portu 8443.",
+  "customDomainLabel": "Vlastní doména panelu",
+  "customDomainPlaceholder": "panel.example.com",
+  "serverIpv4": "IPv4 serveru:",
+  "sslStatus": "Stav SSL:",
+  "portlessUrl": "URL bez portu:",
+  "expires": "Vyprší:",
+  "unknown": "Neznámé",
+  "sslNone": "žádné",
+  "save": "Uložit doménu panelu",
+  "saving": "Ukládání...",
+  "reset": "Obnovit",
+  "resetting": "Obnovování...",
+  "messages": {
+    "saved": "Doména panelu uložena. Můžete otevřít https://{{domain}} bez portu 8443.",
+    "reset": "Doména panelu obnovena na výchozí certifikát."
+  },
+  "errors": {
+    "load": "Nastavení domény panelu nelze načíst",
+    "save": "Doménu panelu nelze uložit",
+    "reset": "Doménu panelu nelze obnovit"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Domů",
+  "title": "Zákazníci",
+  "subtitle": "Fakturační a kontaktní záznamy. Domény se k nim vážou — nejde o přihlašovací účet do panelu.",
+  "newCustomer": "Nový zákazník",
+  "loading": "Načítání…",
+  "empty": {
+    "title": "Zatím žádné záznamy zákazníků",
+    "description": "Nejprve vytvořte záznam zákazníka, abyste k němu mohli navázat domény."
+  },
+  "noMatch": "Vašemu hledání neodpovídá žádný zákazník.",
+  "columns": {
+    "name": "Jméno",
+    "email": "E-mail",
+    "plan": "Tarif",
+    "status": "Stav",
+    "created": "Vytvořeno"
+  },
+  "status": {
+    "active": "Aktivní",
+    "passive": "Pasivní"
+  },
+  "actions": {
+    "edit": "Upravit",
+    "delete": "Smazat"
+  },
+  "modal": {
+    "editTitle": "Upravit zákazníka",
+    "newTitle": "Nový zákazník",
+    "name": "Jméno",
+    "email": "E-mail",
+    "plan": "Tarif",
+    "noPlan": "Žádný tarif",
+    "status": "Stav",
+    "notes": "Poznámky",
+    "cancel": "Zrušit",
+    "saving": "Ukládání…",
+    "save": "Uložit"
+  },
+  "delete": {
+    "title": "Smazat zákazníka",
+    "message": "{{name}} bude smazán. Domény navázané na tohoto zákazníka se neodstraní — vymaže se pouze vazba.",
+    "confirm": "Smazat"
+  },
+  "toast": {
+    "added": "{{name}} přidán.",
+    "updated": "{{name}} aktualizován.",
+    "deleted": "{{name}} smazán."
+  },
+  "errors": {
+    "loadFailed": "Zákazníky nelze načíst",
+    "nameEmailRequired": "Jméno a e-mail jsou povinné",
+    "saveFailed": "Nelze uložit",
+    "deleteFailed": "Nelze smazat"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "laravel": "Sada nástrojů Laravel"
+  },
+  "loading": "Načítání…",
+  "title": "Sada nástrojů Laravel",
+  "subtitle": "Nainstalujte, nasaďte a provozujte aplikaci Laravel pro toto předplatné.",
+  "backToSubscription": "Zpět na předplatné",
+  "tabs": {
+    "overview": "Přehled",
+    "install": "Instalace",
+    "commands": "Příkazy",
+    "env": ".env",
+    "deploy": "Nasazení",
+    "workers": "Workery"
+  },
+  "messages": {
+    "actionCompleted": "Akce dokončena",
+    "actionFailed": "Akce se nezdařila"
+  },
+  "overview": {
+    "title": "Stav aplikace",
+    "installed": "Nainstalováno",
+    "yes": "Ano",
+    "no": "Ne",
+    "appRoot": "Kořen aplikace",
+    "documentPath": "Cesta dokumentů",
+    "php": "PHP",
+    "composerManifest": "Manifest Composer",
+    "found": "Nalezen",
+    "missing": "Chybí",
+    "git": "Git",
+    "repositoryFound": "Repozitář nalezen",
+    "notConnected": "Nepřipojeno",
+    "maintenance": "Údržba",
+    "enabled": "Povoleno",
+    "disabled": "Zakázáno",
+    "schedule": "Plán",
+    "queue": "Fronta"
+  },
+  "install": {
+    "title": "Nainstalovat Laravel",
+    "mode": "Režim",
+    "modeRemote": "Klonovat vzdálený repozitář",
+    "modeScaffold": "Vytvořit nový projekt Laravel",
+    "modeLocal": "Inicializovat prázdný repozitář Git",
+    "appRoot": "Kořen aplikace",
+    "repositoryUrl": "URL repozitáře",
+    "repositoryUrlPlaceholder": "https://github.com/example/app.git",
+    "branch": "Větev",
+    "branchPlaceholder": "main",
+    "startInstall": "Zahájit instalaci",
+    "checkInstallStatus": "Zkontrolovat stav instalace"
+  },
+  "commands": {
+    "title": "Příkazy Laravel",
+    "packagePlaceholder": "vendor/package",
+    "scriptPlaceholder": "název skriptu",
+    "run": "Spustit"
+  },
+  "env": {
+    "title": "Soubor prostředí",
+    "load": "Načíst .env",
+    "save": "Uložit .env"
+  },
+  "deploy": {
+    "title": "Nasazení",
+    "deployWithMigrate": "Nasadit s migrací a sestavením",
+    "checkDeployStatus": "Zkontrolovat stav nasazení",
+    "disableMaintenance": "Zakázat údržbu",
+    "enableMaintenance": "Povolit údržbu"
+  },
+  "workers": {
+    "title": "Worker plánu a fronty",
+    "queueTimeout": "Časový limit fronty",
+    "maxJobs": "Max. úloh",
+    "connection": "Připojení",
+    "disableSchedule": "Zakázat plán",
+    "enableSchedule": "Povolit plán",
+    "disableQueue": "Zakázat frontu",
+    "enableQueue": "Povolit frontu"
+  },
+  "common": {
+    "save": "Uložit"
+  }
+}

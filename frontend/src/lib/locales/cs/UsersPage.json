@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "users": "Uživatelé"
+  },
+  "title": "Uživatelé",
+  "subtitleAdmin": "Účty panelu: administrátoři, reselleři a zákazníci.",
+  "subtitleReseller": "Zákaznické účty, které jste vytvořili.",
+  "newAccount": "Nový účet",
+  "newCustomer": "Nový zákazník",
+  "loading": "Načítání…",
+  "empty": {
+    "titleAdmin": "Zatím žádné další účty",
+    "titleReseller": "Zatím žádné zákaznické účty",
+    "description": "Začněte vytvořením nového účtu."
+  },
+  "noMatch": "Vašemu hledání neodpovídá žádný účet.",
+  "roles": {
+    "admin": "Administrátor",
+    "reseller": "Reseller",
+    "user": "Zákazník"
+  },
+  "columns": {
+    "user": "Uživatel",
+    "fullName": "Celé jméno",
+    "role": "Role",
+    "status": "Stav",
+    "twoFa": "2FA",
+    "lastLogin": "Poslední přihlášení"
+  },
+  "system": "(systém)",
+  "systemAccount": "systémový účet",
+  "status": {
+    "active": "Aktivní",
+    "suspended": "Pozastaveno"
+  },
+  "noPassword": "Bez hesla",
+  "noPasswordTitle": "Není nastaveno heslo — tento účet se nemůže přihlásit, dokud mu nějaké nepřidělíte.",
+  "twoFaOn": "Zapnuto",
+  "twoFaOff": "Vypnuto",
+  "actions": {
+    "password": "Heslo",
+    "limits": "Limity",
+    "suspend": "Pozastavit",
+    "enable": "Povolit",
+    "delete": "Smazat"
+  },
+  "createModal": {
+    "titleAdmin": "Nový účet",
+    "titleReseller": "Nový zákaznický účet",
+    "username": "Uživatelské jméno",
+    "usernamePlaceholder": "example_reseller",
+    "usernameHint": "3-32 znaků, začíná malým písmenem; může obsahovat písmena, číslice, _ a -.",
+    "password": "Heslo",
+    "passwordHint": "Alespoň 8 znaků. Heslo se zobrazuje jen nyní — předejte ho uživateli.",
+    "role": "Role",
+    "resellerOnlyCustomers": "Reselleři mohou vytvářet pouze zákaznické účty.",
+    "email": "E-mail",
+    "fullName": "Celé jméno",
+    "cancel": "Zrušit",
+    "creating": "Vytváření…",
+    "create": "Vytvořit"
+  },
+  "passwordModal": {
+    "title": "Nastavit heslo",
+    "newFor": "Nové heslo pro ",
+    "customerNote": "Toto je heslo zákazníkova účtu v panelu. Zákazník se přihlašuje do zákaznického portálu tímto uživatelským jménem a heslem; bez něj se účet nemůže přihlásit.",
+    "placeholder": "Alespoň 8 znaků",
+    "cancel": "Zrušit",
+    "saving": "Ukládání…",
+    "setPassword": "Nastavit heslo"
+  },
+  "limitsModal": {
+    "title": "Limity resellera",
+    "loading": "Načítání…",
+    "upperBounds": "Horní meze pro ",
+    "unlimitedNote": "0 = neomezeno. Pokud jsou všechny 0, záznam limitu se zcela odstraní.",
+    "maxCustomers": "Max. zákazníků",
+    "maxDomains": "Max. domén",
+    "diskQuota": "Kvóta disku (MB)",
+    "trafficQuota": "Kvóta provozu (MB)",
+    "inUseNow": "{{count}} nyní využito",
+    "mbInUseNow": "{{count}} MB nyní využito",
+    "mbUsedNow": "{{count}} MB nyní využito",
+    "limitBelowUsage": " — limit je pod aktuálním využitím",
+    "quotaBelowUsage": " — kvóta je pod aktuálním využitím",
+    "noLimit": "Pro tohoto resellera není definován žádný limit — nyní neomezeno.",
+    "loweringNote": "Snížení limitu pod aktuální využití nesmaže existující účty; pouze zablokuje nová přidání.",
+    "cancel": "Zrušit",
+    "saving": "Ukládání…",
+    "save": "Uložit"
+  },
+  "delete": {
+    "title": "Smazat účet",
+    "message": "Účet {{username}} bude smazán.",
+    "resellerNote": " Účty pod tímto resellerem se nesmažou; převedou se na administrátora.",
+    "confirm": "Smazat"
+  },
+  "toast": {
+    "created": "Účet {{username}} vytvořen.",
+    "passwordUpdated": "Heslo aktualizováno pro {{username}}.",
+    "limitsUpdated": "Limity aktualizovány pro {{username}}.",
+    "enabled": "{{username}} povolen.",
+    "suspended": "{{username}} pozastaven.",
+    "deleted": "{{username}} smazán."
+  },
+  "errors": {
+    "loadFailed": "Účty nelze načíst",
+    "createFailed": "Účet nelze vytvořit",
+    "resetFailed": "Heslo nelze obnovit",
+    "loadLimitsFailed": "Limity nelze načíst",
+    "saveLimitsFailed": "Limity nelze uložit",
+    "statusFailed": "Stav nelze změnit",
+    "deleteFailed": "Nelze smazat"
+  }
+}

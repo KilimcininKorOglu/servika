@@ -1,0 +1,32 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "statistics": "Statistiky"
+  },
+  "loading": "Načítání…",
+  "notFound": "Nenalezeno",
+  "title": "Statistiky provozu",
+  "subtitle": {
+    "pre": ", analýza přístupového protokolu nginx.",
+    "subdomainNote": " Provoz subdomén je zahrnut v těchto součtech."
+  },
+  "refresh": "↻ Obnovit",
+  "emptyLog": "Zatím žádná data přístupového protokolu. Zobrazí se zde, jakmile web začne přijímat provoz.",
+  "kpi": {
+    "totalRequests": "Celkem požadavků",
+    "bandwidth": "Využití šířky pásma",
+    "uniqueIps": "Jedinečné IP",
+    "botRatio": "Podíl botů"
+  },
+  "statusTitle": "Rozložení stavů HTTP",
+  "dailyTitle": "Denní požadavky (posledních 7 dní)",
+  "dailyRequests": "{{count}} požadavků",
+  "topPathsTitle": "Nejžádanější cesty",
+  "topIpsTitle": "Nejaktivnější IP",
+  "latestTitle": "Poslední požadavky",
+  "unit": {
+    "requests": "požadavků"
+  },
+  "noData": "Žádná data."
+}

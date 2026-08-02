@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "Domů",
+  "breadcrumbTitle": "Tarify služeb",
+  "title": "Tarify služeb",
+  "subtitle": "Definujte tarify služeb pro domény. Každá doména je přidružena k tarifu a zdroje jako disk, provoz, verze PHP, počet databází a limity subdomén se nastavují pro každý tarif.",
+  "addPlan": "Přidat tarif",
+  "loading": "Načítání…",
+  "empty": {
+    "title": "Zatím žádné tarify služeb",
+    "descriptionAdmin": "Začněte definováním svého prvního tarifu.",
+    "descriptionUser": "Administrátor zatím nedefinoval žádný tarif."
+  },
+  "badge": {
+    "default": "Výchozí"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "Disk",
+    "traffic": "Provoz",
+    "domains": "Domény",
+    "databases": "Databáze",
+    "ftp": "FTP"
+  },
+  "detailsButton": "Podrobnosti a limity zdrojů",
+  "delete": "Smazat",
+  "confirmDelete": {
+    "title": "Smazat tarif",
+    "message": "Smazat tarif „{{name}}“?",
+    "confirmText": "Ano, smazat"
+  },
+  "errors": {
+    "deleteFailed": "Smazání se nezdařilo",
+    "saveFailed": "Uložení se nezdařilo"
+  },
+  "limit": {
+    "unlimited": "neomezeno"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/měsíc",
+    "domains": "domén",
+    "databases": "databází",
+    "accounts": "účtů"
+  },
+  "modal": {
+    "newTitle": "Nový tarif",
+    "editTitle": "Upravit tarif",
+    "planName": "Název tarifu",
+    "description": "Popis",
+    "diskMb": "Disk (MB)",
+    "trafficMb": "Provoz (MB)",
+    "phpVersionLabel": "Verze PHP",
+    "maxDomains": "Max. domén",
+    "maxDatabases": "Max. databází",
+    "maxFtp": "Max. účtů FTP",
+    "isDefault": "Výchozí tarif pro nové domény",
+    "wafHeading": "Výchozí WAF (ModSecurity + OWASP CRS)",
+    "wafEnabled": "Povoleno v tomto tarifu",
+    "wafMode": {
+      "block": "Blokovat (zapnuto)",
+      "detect": "Detekovat (pouze protokol)"
+    },
+    "wafParanoia": {
+      "level1": "Úroveň 1 (nízká)",
+      "level2": "Úroveň 2 (střední)",
+      "level3": "Úroveň 3 (vysoká)",
+      "level4": "Úroveň 4 (přísná)"
+    },
+    "hint": "0 = neomezeno. Hodnoty disku a provozu jsou v MB. Nové domény na tomto tarifu se zřizují s vybranou verzí PHP.",
+    "cancel": "Zrušit",
+    "saving": "Ukládání…",
+    "add": "Přidat",
+    "update": "Aktualizovat"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "system": "Správa systému",
+    "current": "Rozšíření PHP"
+  },
+  "title": "Rozšíření PHP",
+  "subtitle": {
+    "pre": "Spravujte rozšíření PHP napříč serverem. Přepínačem povolte nebo zakažte rozšíření a PHP-FPM se restartuje automaticky. ",
+    "bold": "Pro celý server",
+    "post": ", ovlivňuje všechny domény."
+  },
+  "removeIonCube": "⊗ Odebrat IonCube",
+  "installIonCube": "🔐 Nainstalovat IonCube",
+  "installFromPecl": "📦 Nainstalovat z PECL",
+  "versionTab": "PHP {{version}}",
+  "counters": {
+    "enabled": "{{count}} povoleno",
+    "inactive": "{{count}} neaktivních",
+    "total": "Celkem {{count}}"
+  },
+  "searchPlaceholder": "🔍 Hledat rozšíření...",
+  "loading": "Načítání…",
+  "coreExtension": "základní rozšíření",
+  "toggleTitle": {
+    "core": "Základní rozšíření, nelze zakázat",
+    "disable": "Zakázat",
+    "enable": "Povolit"
+  },
+  "alerts": {
+    "coreCannotDisable": "Toto rozšíření je základní součástí PHP a nelze ho zakázat.",
+    "invalidPackage": "Neplatný název balíčku"
+  },
+  "confirm": {
+    "ionCubeInstall": "IonCube Loader bude nainstalován pro PHP {{version}}.\n\nZ ioncube.com se stáhne archiv tar.gz, zkopíruje se soubor .so a načte se jako zend_extension.\nPokračovat?",
+    "ionCubeRemove": "IonCube Loader bude odebrán z PHP {{version}}. Pokračovat?",
+    "peclInstall": "Balíček PECL „{{package}}“ bude zkompilován a nainstalován pro PHP {{version}}. Pokračovat?"
+  },
+  "success": {
+    "toggleEnabled": "✓ {{name}} povoleno · PHP-FPM restartován",
+    "toggleDisabled": "✓ {{name}} zakázáno · PHP-FPM restartován",
+    "ionCubeLoaded": "✓ IonCube nainstalován · NAČTEN",
+    "ionCubeNotLoaded": "✓ IonCube nainstalován · Soubor INI byl zapsán, ale rozšíření nebylo za běhu detekováno",
+    "ionCubeRemoved": "✓ IonCube odebrán",
+    "peclInstalled": "✓ {{package}} nainstalován"
+  },
+  "errors": {
+    "toggleFailed": "Přepnutí se nezdařilo",
+    "ionCubeInstallFailed": "Instalace IonCube se nezdařila",
+    "ionCubeRemoveFailed": "Odebrání IonCube se nezdařilo",
+    "peclInstallFailed": "Instalace PECL se nezdařila"
+  },
+  "peclModal": {
+    "title": "Nainstalovat rozšíření z PECL",
+    "descPre": "Stáhne a zkompiluje rozšíření z repozitáře PECL. Příklady: ",
+    "warnPre": "⚠ Rozšíření bude zkompilováno pro PHP {{version}}. Cíl: ",
+    "warnMid": " nebo adresář Remi",
+    "inputPlaceholder": "např. mongodb",
+    "cancel": "Zrušit",
+    "install": "Nainstalovat"
+  }
+}

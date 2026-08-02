@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Domů",
+  "title": "Bezpečnostní protokol",
+  "subtitle": "Pokusy o přihlášení do panelu a administrativní akce. Nejnovější záznam nahoře.",
+  "stats": {
+    "entries": "záznamů",
+    "failed": "neúspěšných"
+  },
+  "searchPlaceholder": "Hledat uživatele, IP, cíl…",
+  "filters": {
+    "allActions": "Všechny akce",
+    "last": "Posledních {{n}}",
+    "failedOnly": "Jen neúspěšné"
+  },
+  "loading": "Načítání…",
+  "empty": {
+    "title": "Pro tento filtr nejsou žádné záznamy",
+    "description": "Uvolněte filtry a zkuste to znovu."
+  },
+  "noMatch": "Vašemu hledání neodpovídá žádný záznam.",
+  "columns": {
+    "time": "Čas",
+    "result": "Výsledek",
+    "action": "Akce",
+    "user": "Uživatel",
+    "ip": "IP",
+    "target": "Cíl"
+  },
+  "status": {
+    "success": "Úspěch",
+    "failed": "Neúspěch"
+  },
+  "errors": {
+    "loadFailed": "Protokol nelze načíst"
+  }
+}

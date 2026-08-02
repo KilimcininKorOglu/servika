@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "tools": "Nástroje a nastavení",
+    "current": "Verze PHP"
+  },
+  "title": "Verze PHP",
+  "subtitle": "Přidejte nebo odeberte verze PHP. Každá běží v nezávislém poolu PHP-FPM a lze ji vybrat pro každou doménu. Instalace zahrnuje 14 balíčků (fpm, cli, mysqlnd a 11 rozšíření).",
+  "alerts": {
+    "opInProgress": "Operace PHP již probíhá. Počkejte na její dokončení.",
+    "appstreamCannotRemove": "AppStream PHP je výchozím systémem a nelze ho odebrat."
+  },
+  "confirm": {
+    "install": "Pro PHP {{version}} ({{resource}}) bude nainstalováno čtrnáct balíčků. Pokračovat?",
+    "remove": "PHP {{version}} (Remi) a VŠECHNA jeho rozšíření budou ODEBRÁNA.\nOperace bude odmítnuta, pokud tuto verzi používá nějaká doména. Pokračovat?"
+  },
+  "success": {
+    "installed": "PHP {{version}} nainstalováno",
+    "removed": "PHP {{version}} odebráno"
+  },
+  "errors": {
+    "startInstallFailed": "Instalaci nelze spustit",
+    "startRemoveFailed": "Odebrání nelze spustit"
+  },
+  "log": {
+    "installStarted": "Instalace PHP {{version}} zahájena...\n",
+    "removeStarted": "Odebrání PHP {{version}} zahájeno...\n",
+    "installInProgress": "Instalace PHP {{version}} probíhá...",
+    "removeInProgress": "Odebrání PHP {{version}} probíhá...",
+    "waiting": "Čekání na výstup..."
+  },
+  "filters": {
+    "all": "Vše ({{count}})",
+    "installed": "Nainstalováno ({{count}})",
+    "available": "Dostupné ({{count}})"
+  },
+  "loading": "Načítání...",
+  "badges": {
+    "installed": "NAINSTALOVÁNO",
+    "eol": "EOL"
+  },
+  "card": {
+    "version": "Verze:",
+    "extensions": "Rozšíření:",
+    "service": "Služba:"
+  },
+  "actions": {
+    "fixed": "Pevná (výchozí systém)",
+    "inProgress": "Probíhá...",
+    "remove": "Odebrat",
+    "install": "Nainstalovat"
+  }
+}

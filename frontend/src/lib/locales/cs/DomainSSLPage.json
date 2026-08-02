@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "sslCertificates": "Certifikáty SSL/TLS"
+  },
+  "title": "Certifikáty SSL/TLS",
+  "ipLabel": "IP:",
+  "confirm": {
+    "letsencrypt": "Doména musí před vydáním certifikátu Let's Encrypt směřovat na tento server pomocí záznamu DNS A. Pokračovat?",
+    "disable": "Odebrat SSL? Web se přepne zpět na HTTP."
+  },
+  "success": {
+    "installed": "Certifikát nainstalován ({{type}}). Vyprší: {{expires}}. Web nyní používá HTTPS.",
+    "removed": "SSL odebráno. Web nyní používá HTTP."
+  },
+  "errors": {
+    "installFailed": "Instalace SSL se nezdařila",
+    "removeFailed": "Odebrání SSL se nezdařilo"
+  },
+  "status": {
+    "title": "Aktuální stav",
+    "protected": "Chráněno",
+    "unprotected": "Nechráněno",
+    "loading": "Načítání…",
+    "sourceLabel": "Zdroj",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "Podepsáno svým vlastníkem",
+    "expiryLabel": "Vypršení",
+    "certPathLabel": "Cesta k certifikátu",
+    "keyPathLabel": "Cesta ke klíči",
+    "empty": "—",
+    "remove": "Odebrat SSL (přepnout na HTTP)",
+    "noCert": "Pro tuto doménu není aktivní žádný certifikát SSL. Nainstalujte jej níže."
+  },
+  "selfSigned": {
+    "title": "Certifikát podepsaný svým vlastníkem",
+    "description": "Vytvoří na serveru certifikát podepsaný svým vlastníkem. Prohlížeče zobrazí varování, ale připojení je šifrované. Vhodné pro testovací a vývojová prostředí.",
+    "bullet1": "✓ Bez závislosti na DNS",
+    "bullet2": "✓ Instaluje se okamžitě",
+    "bullet3": "✗ Prohlížeč zobrazí bezpečnostní varování",
+    "installing": "Instalace…",
+    "install": "Nainstalovat certifikát podepsaný svým vlastníkem"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (zdarma)",
+    "description": "Oficiální certifikát Let's Encrypt důvěryhodný pro všechny prohlížeče. Automaticky se obnovuje každých 90 dní.",
+    "bullet1": "✓ Důvěryhodný pro prohlížeče",
+    "bullet2": "✓ Automatické obnovení (cron)",
+    "bullet3": "⚠ Doména musí směřovat na tento server přes DNS",
+    "installing": "Instalace…",
+    "install": "Získat certifikát Let's Encrypt"
+  }
+}

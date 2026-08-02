@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "subdomains": "Subdomény"
+  },
+  "title": "Subdomény",
+  "subtitlePre": "Vytvořte subdomény (jako například",
+  "subtitlePost": ") pod touto doménou. Každá z nich má samostatný webový adresář.",
+  "toast": {
+    "created": "{{fqdn}} byla vytvořena. Byl přidán záznam DNS A.",
+    "createFailed": "Subdoménu nelze vytvořit",
+    "deleteFailed": "Subdoménu nelze smazat",
+    "sslInstalled": "SSL pro {{fqdn}} bylo nainstalováno pomocí {{method}}.",
+    "sslInstallFailed": "SSL nelze nainstalovat"
+  },
+  "sslMethod": {
+    "letsencrypt": "Let's Encrypt",
+    "selfSigned": "certifikátu podepsaného svým vlastníkem"
+  },
+  "confirmDelete": "Smazat {{fqdn}}?\nBudou odebrány vhost, soubory (kořen dokumentů) a záznam DNS. Toto nelze vrátit zpět.",
+  "form": {
+    "title": "Nová subdoména",
+    "label": "Subdoména",
+    "creating": "Vytváření…",
+    "add": "Přidat subdoménu",
+    "hintPre": "Malá písmena, číslice a pomlčky. Příklady:"
+  },
+  "list": {
+    "title": "Existující subdomény",
+    "loading": "Načítání…",
+    "empty": "Zatím žádné subdomény.",
+    "phpPrefix": "PHP",
+    "manage": "Spravovat",
+    "manageTitle": "Spravovat tuto subdoménu",
+    "letsencryptTitle": "Nainstalovat SSL Let's Encrypt",
+    "letsencrypt": "🔒 Let's Encrypt",
+    "selfSignedTitle": "Nainstalovat SSL podepsané svým vlastníkem",
+    "selfSigned": "Podepsáno svým vlastníkem",
+    "delete": "Smazat",
+    "dnsNote": "ℹ️ Subdoména se na webovém serveru nakonfiguruje okamžitě. Záznam DNS A vaší domény musí před přístupem směřovat na tento server."
+  },
+  "backToSubscription": "← Zpět na předplatné"
+}

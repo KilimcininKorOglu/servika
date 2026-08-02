@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "firewall": "Firewall"
+  },
+  "title": "Firewall",
+  "subtitle": {
+    "pre": "Řiďte, ",
+    "bold": "kdo má z internetu přístup k vašemu serveru",
+    "post": ". Použijte předvolbu nebo přidejte vlastní pravidlo."
+  },
+  "info": {
+    "pre": "Pravidla ovlivňují pouze ",
+    "bold": "nová připojení",
+    "mid": ". Vaše aktivní relace SSH nebo panelu zůstane připojena. Chráněné porty ",
+    "post": " nelze zavřít."
+  },
+  "templates": {
+    "sectionTitle": "Předvolby",
+    "sectionHint": "použít jedním kliknutím",
+    "portLabel": "Port: {{ports}}",
+    "apply": "Použít",
+    "applying": "...",
+    "close_mysql": {
+      "name": "Zavřít externí přístup MySQL",
+      "description": "Zavře databázový port 3306 pro internet. MySQL zůstane dostupné ze serveru."
+    },
+    "close_ftp": {
+      "name": "Zavřít FTP",
+      "description": "Zavře port FTP 21. Pokud používáte SFTP, můžete FTP bezpečně zavřít."
+    },
+    "close_mail": {
+      "name": "Zavřít porty pošty",
+      "description": "Zavře porty SMTP, POP3 a IMAP. To snižuje riziko přeposílání spamu, když není přítomen žádný poštovní server."
+    },
+    "close_rpc": {
+      "name": "Zavřít RPC / NFS",
+      "description": "Zavře port rpcbind 111 a port NFS 2049, když se sdílení souborů nepoužívá."
+    }
+  },
+  "modes": {
+    "ban": {
+      "name": "Blokovat IP",
+      "description": "Zablokujte konkrétní IP adresu. Zadejte port pro blokování přístupu pouze k tomuto portu, nebo nechte prázdné pro blokování přístupu ke všem portům.",
+      "example": "Příklad: Zcela zablokovat 45.9.1.2 po opakovaných pokusech o SSH."
+    },
+    "whitelist": {
+      "name": "Povolit IP",
+      "description": "Zadejte port pro povolení přístupu pouze z těchto IP adres a zablokování všech ostatních. Nechte port prázdný, abyste této IP dali přednostní přístup ke všem portům.",
+      "example": "Příklad: Zadejte port 8443 a IP vaší kanceláře, aby k panelu měl přístup jen vy."
+    },
+    "close": {
+      "name": "Zavřít port",
+      "description": "Zavřete port pro všechny kromě adres na seznamu povolených. Kritické porty pro SSH, web, panel a DNS jsou chráněny a nelze je zavřít.",
+      "example": "Příklad: Zavřít databázový port 3306 pro externí přístup."
+    }
+  },
+  "form": {
+    "sectionTitle": "Vlastní pravidlo",
+    "step1": "1. Co chcete udělat?",
+    "step2": "2. Podrobnosti",
+    "ipLabel": "IP adresa nebo rozsah",
+    "ipPlaceholder": "1.2.3.4 nebo 1.2.3.0/24",
+    "portLabel": "Port",
+    "portBlankHint": "(prázdné = vše)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "např. 22",
+    "protocolLabel": "Protokol",
+    "noteLabel": "Poznámka (volitelné)",
+    "notePlaceholder": "např. IP pokoušející se o SSH brute force",
+    "previewLabel": "Náhled:",
+    "submit": "Přidat a použít pravidlo",
+    "submitting": "Použití..."
+  },
+  "warning": {
+    "pre": "",
+    "bold": "Varování:",
+    "mid": " Tento port bude otevřen pouze pro IP adresu výše. Pokud je vaše IP ",
+    "boldDynamic": "dynamická",
+    "post": ", ztratíte přístup, když se změní. Port SSH 22 zůstane otevřený, takže se můžete připojit přes SSH a toto pravidlo smazat, pokud budete uzamčeni. Případně použijte statickou IP adresu."
+  },
+  "preview": {
+    "closeReady": "Port {{port}} bude zavřen pro všechny kromě adres na seznamu povolených.",
+    "closeEmpty": "Zadejte port k zavření.",
+    "banPort": "{{address}} bude zablokován v přístupu k portu {{port}}.",
+    "banAll": "{{address}} bude zablokován v přístupu ke všem portům.",
+    "whitelistPort": "Port {{port}} bude otevřen pouze pro {{address}}. Všichni ostatní budou zablokováni.",
+    "whitelistAll": "{{address}} bude mít přednostní přístup ke všem portům.",
+    "enterIp": "(zadejte IP adresu)"
+  },
+  "rules": {
+    "title": "Aktivní pravidla",
+    "count": "({{count}})",
+    "refresh": "↻ Obnovit",
+    "colType": "Typ",
+    "colIp": "IP / CIDR",
+    "colPort": "Port",
+    "colProto": "Proto",
+    "colNote": "Poznámka",
+    "colAction": "Akce",
+    "loading": "Načítání...",
+    "emptyTitle": "Zatím žádná pravidla. Server je otevřen všem připojením.",
+    "emptyHint": "Pro začátek použijte předvolbu výše.",
+    "everyone": "všichni",
+    "allPorts": "vše",
+    "delete": "Smazat",
+    "deleting": "..."
+  },
+  "badge": {
+    "ban": "🚫 Blokováno",
+    "whitelist": "✅ Povoleno",
+    "close": "🔒 Zavřeno"
+  },
+  "confirm": {
+    "applyTemplate": "Použít šablonu „{{name}}“?\nPorty k zavření: {{ports}}\nTyto porty již nebudou dostupné z internetu.",
+    "removeClose": "zavřít port {{port}}",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "Smazat pravidlo „{{summary}}“?"
+  },
+  "success": {
+    "templateApplied_one": "„{{name}}“ použito. Přidáno {{count}} pravidlo.",
+    "templateApplied_few": "„{{name}}“ použito. Přidána {{count}} pravidla.",
+    "templateApplied_other": "„{{name}}“ použito. Přidáno {{count}} pravidel.",
+    "templateAlreadyApplied": "„{{name}}“ je již použito. Nebyla přidána žádná nová pravidla.",
+    "ruleAdded": "Pravidlo bylo přidáno a použito na firewall."
+  },
+  "error": {
+    "applyTemplate": "Šablonu nelze použít",
+    "addRule": "Pravidlo nelze přidat",
+    "deleteRule": "Pravidlo nelze smazat"
+  },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

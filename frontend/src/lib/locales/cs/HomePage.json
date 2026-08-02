@@ -1,0 +1,153 @@
+{
+  "shared": {
+    "more": "Více →",
+    "manage": "Spravovat →",
+    "loading": "Načítání…"
+  },
+  "widgets": {
+    "load-chart": "Graf zatížení",
+    "memory-chart": "Graf paměti",
+    "wordpress": "Weby WordPress",
+    "panel-update": "Aktualizace panelu",
+    "last-backup": "Poslední záloha serveru",
+    "performance": "Výkon / optimalizace",
+    "cve-security": "Bezpečnostní upozornění (CVE)",
+    "services": "Služby",
+    "domains": "Domény",
+    "server-info": "Informace o serveru",
+    "health": "Zdraví systému",
+    "live-resources": "Živé zdroje",
+    "subscriptions": "Má předplatná",
+    "network": "Síťový provoz"
+  },
+  "header": {
+    "welcome": "Vítejte zpět, {{name}}",
+    "dashboard": "Nástěnka",
+    "subtitle": "Přehled serveru a rychlé akce",
+    "saving": "Ukládání…",
+    "saved": "Rozvržení uloženo",
+    "saveFailed": "Uložení se nezdařilo",
+    "resetLayout": "Obnovit rozvržení"
+  },
+  "quota": {
+    "unsupportedTitle": "Disková kvóta není na tomto souborovém systému dostupná",
+    "unsupportedBody": "Servika potřebuje kořenový souborový systém XFS pro diskovou kvótu na tenanta. Restart kvótu na aktuálním souborovém systému nepovolí.",
+    "rebootTitle": "Disková kvóta bude povolena po restartu",
+    "rebootBody": "Uživatelská kvóta XFS je nastavena, ale vynucování je neaktivní. Jednou restartujte server pro aktivaci diskové kvóty na tenanta.",
+    "dismiss": "Zavřít"
+  },
+  "widgetNotFound": "Widget nenalezen",
+  "dragToReorder": "Přetáhněte pro změnu pořadí",
+  "wp": {
+    "subtitle": "Instalace napříč všemi účty",
+    "installs": "Instalace",
+    "updates": "Aktualizace",
+    "current": "Aktuální",
+    "pendingUpdatesText_one": " instalace s čekajícími aktualizacemi — zastaralé verze nesou bezpečnostní rizika.",
+    "pendingUpdatesText_few": " instalace s čekajícími aktualizacemi — zastaralé verze nesou bezpečnostní rizika.",
+    "pendingUpdatesText_other": " instalací s čekajícími aktualizacemi — zastaralé verze nesou bezpečnostní rizika.",
+    "empty": "Nebyly nalezeny žádné instalace WordPress",
+    "rootDir": "kořenový adr.",
+    "badgeUpdate": "Aktualizace",
+    "badgeCurrent": "Aktuální",
+    "badgeUnknown": "Neznámé",
+    "more_one": "+{{count}} další instalace →",
+    "more_few": "+{{count}} další instalace →",
+    "more_other": "+{{count}} dalších instalací →",
+    "unknownNote_one": "{{count}} instalaci nelze určit (vypršení wp-cli).",
+    "unknownNote_few": "{{count}} instalace nelze určit (vypršení wp-cli).",
+    "unknownNote_other": "{{count}} instalací nelze určit (vypršení wp-cli)."
+  },
+  "update": {
+    "subtitle": "Verze a systémové balíčky",
+    "running": "Probíhá aktualizace",
+    "toolMissing": "Chybí nástroj aktualizace",
+    "upToDate": "Panel je aktuální",
+    "noStatus": "Žádné informace o stavu",
+    "badgeRunning": "Probíhá",
+    "badgeMissing": "Chybí",
+    "badgeCurrent": "Aktuální",
+    "systemPackages": "Systémové balíčky"
+  },
+  "backup": {
+    "subtitle": "Automatická denní záloha",
+    "unavailable": "Souhrn záloh není dostupný",
+    "count_one": "záloha · {{size}}",
+    "count_few": "zálohy · {{size}}",
+    "count_other": "záloh · {{size}}",
+    "lastBackup": "Poslední záloha",
+    "sitesBackedUp": "Zálohované weby",
+    "remoteTarget": "Vzdálený cíl",
+    "remoteActive": "{{count}} aktivní",
+    "remoteNone": "Žádný",
+    "schedule": "Plán"
+  },
+  "performance": {
+    "subtitle": "Vylepšit nastavení serveru",
+    "running": "Probíhá optimalizace",
+    "ready": "Optimalizace připravena",
+    "defaultStatus": "Nastavení MariaDB · nginx · PHP",
+    "badgeRunning": "Probíhá",
+    "badgeIdle": "Nečinné"
+  },
+  "services": {
+    "subtitleCount": "Běží {{active}}/{{total}} služeb",
+    "subtitleStatus": "stav služeb",
+    "allActive": "Vše aktivní",
+    "down": "{{count}} mimo provoz",
+    "active": "Aktivní",
+    "statusDown": "Mimo provoz"
+  },
+  "domains": {
+    "subtitle": "Hostované weby a stav SSL",
+    "total": "Celkem",
+    "active": "Aktivní",
+    "ssl": "SSL",
+    "empty": "Zatím žádné domény",
+    "noSsl": "Bez SSL",
+    "badgeActive": "Aktivní",
+    "more_one": "+{{count}} další doména →",
+    "more_few": "+{{count}} další domény →",
+    "more_other": "+{{count}} dalších domén →"
+  },
+  "serverInfo": {
+    "subtitle": "Hardware a systém",
+    "hostname": "Název hostitele",
+    "ip": "IP adresa",
+    "os": "OS",
+    "kernel": "Jádro",
+    "cpu": "CPU",
+    "cores": "Jádra",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "Celkové posouzení stavu",
+    "servicesDown_one": "{{count}} služba mimo provoz",
+    "servicesDown_few": "{{count}} služby mimo provoz",
+    "servicesDown_other": "{{count}} služeb mimo provoz",
+    "isolationLoss_one": "Zjištěna {{count}} ztráta izolace",
+    "isolationLoss_few": "Zjištěny {{count}} ztráty izolace",
+    "isolationLoss_other": "Zjištěno {{count}} ztrát izolace",
+    "memoryAt": "Paměť na {{percent}} %",
+    "diskAt": "Disk na {{percent}} %",
+    "healthy": "Zdravé",
+    "fair": "Uspokojivé",
+    "degraded": "Zhoršené",
+    "critical": "Kritické"
+  },
+  "live": {
+    "subtitle": "CPU a paměť v reálném čase",
+    "cpu": "CPU",
+    "memory": "Paměť",
+    "disk": "Disk ({{mount}})",
+    "freeGb": "{{value}} GB volných"
+  },
+  "subscriptions": {
+    "subtitle": "Vaše aktivní služby",
+    "body": "Přehled zákaznického panelu"
+  },
+  "network": {
+    "subtitle": "Příchozí a odchozí data",
+    "body": "Statistiky provozu jsou dostupné na stránce Statistiky"
+  }
+}

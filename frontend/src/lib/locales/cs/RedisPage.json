@@ -1,0 +1,62 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "redisCache": "Cache Redis"
+  },
+  "title": "Cache Redis",
+  "status": {
+    "active": "● Aktivní",
+    "disabled": "Zakázáno"
+  },
+  "subtitle": {
+    "pre": "Přiděluje této doméně ",
+    "bold": "izolovanou, vyhrazenou objektovou cache Redis",
+    "post": ". WordPress a dynamické aplikace mohou snížit zátěž databáze a rychleji reagovat. Jiné weby k této cache nemají přístup."
+  },
+  "loading": "Načítání…",
+  "empty": {
+    "message": "Cache Redis je pro tuto doménu zakázána.",
+    "hint": "Její povolení vytvoří izolovaného uživatele ACL a údaje o připojení.",
+    "enable": "Povolit cache Redis",
+    "enabling": "Povolování…"
+  },
+  "connection": {
+    "title": "Údaje o připojení",
+    "disable": "Zakázat",
+    "host": "Host",
+    "username": "Uživatelské jméno",
+    "password": "Heslo",
+    "keyPrefix": "Prefix klíče"
+  },
+  "wp": {
+    "title": "Nastavení WordPress",
+    "copy": "Kopírovat",
+    "copied": "Zkopírováno ✓",
+    "instructionsPre": "1) Přidejte následující řádky do souboru ",
+    "instructionsFile": "wp-config.php",
+    "instructionsMid": ". 2) Nainstalujte plugin ",
+    "instructionsBold": "Redis Object Cache",
+    "instructionsPost": " z nástěnky WordPress a poté zvolte „Enable Object Cache“."
+  },
+  "row": {
+    "show": "zobrazit",
+    "hide": "skrýt",
+    "copy": "kopírovat",
+    "copied": "✓"
+  },
+  "success": {
+    "enabledWithWp_one": "Cache Redis byla povolena a {{count}} instalace WordPress byla připojena automaticky. Není potřeba žádné další nastavení.",
+    "enabledWithWp_few": "Cache Redis byla povolena a {{count}} instalace WordPress byly připojeny automaticky. Není potřeba žádné další nastavení.",
+    "enabledWithWp_other": "Cache Redis byla povolena a {{count}} instalací WordPress bylo připojeno automaticky. Není potřeba žádné další nastavení.",
+    "enabled": "Cache Redis byla povolena. Aplikace mimo WordPress nastavte pomocí údajů o připojení níže.",
+    "disabled": "Cache Redis byla zakázána."
+  },
+  "confirm": {
+    "disable": "Zakázat cache Redis? Uživatel ACL pro tuto doménu bude smazán."
+  },
+  "error": {
+    "enable": "Cache Redis nelze povolit",
+    "disable": "Cache Redis nelze zakázat"
+  }
+}

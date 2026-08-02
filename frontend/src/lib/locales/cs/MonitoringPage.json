@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "monitoring": "Monitorování"
+  },
+  "title": "Komplexní monitorování",
+  "liveRefresh": "Živě, obnovení každých {{seconds}} s",
+  "tabs": {
+    "server": "Server",
+    "domain": "Podle domény",
+    "logs": "Protokoly serveru"
+  },
+  "snap": {
+    "cpu": "CPU",
+    "cpuCores": "{{count}} jader",
+    "memory": "Paměť",
+    "load1m": "Zatížení (1 min)",
+    "loadAlt": "5 min {{load5m}}, 15 min {{load15m}}",
+    "diskRoot": "Disk (/)"
+  },
+  "chart": {
+    "systemResources": "Systémové zdroje",
+    "samples": "{{count}}/{{max}} vzorků, {{minutes}} min",
+    "legendCpu": "CPU",
+    "legendMemory": "Paměť",
+    "legendSwap": "Swap",
+    "legendLoad": "Zatížení (normalizované)",
+    "networkTraffic": "Síťový provoz",
+    "interface": "Rozhraní: {{name}}",
+    "legendRx": "↓ RX (KB/s)",
+    "legendTx": "↑ TX (KB/s)",
+    "collecting": "Shromažďování dat..."
+  },
+  "services": {
+    "title": "Služby",
+    "enabledCount": "{{enabled}}/{{total}} povoleno",
+    "active": "Aktivní",
+    "stopped": "Zastaveno"
+  },
+  "processes": {
+    "title": "Nejnáročnější procesy",
+    "sortCpu": "CPU",
+    "sortMem": "Paměť",
+    "colPid": "PID",
+    "colUser": "Uživatel",
+    "colCpu": "CPU %",
+    "colMem": "PAMĚŤ %",
+    "colCommand": "Příkaz",
+    "loading": "Načítání..."
+  },
+  "domain": {
+    "selectionTitle": "Výběr domény",
+    "noActiveDomains": "Žádné aktivní domény",
+    "probing": "Testování...",
+    "healthProbe": "↻ Test zdraví",
+    "openSite": "Otevřít web ↗",
+    "accessLog": "Přístupový protokol",
+    "errorLog": "Chybový protokol",
+    "lastLines": "posledních {{count}} řádků",
+    "noAccessEntries": "Zatím žádné záznamy protokolu...",
+    "noErrorEntries": "Zatím žádné chybové záznamy"
+  },
+  "health": {
+    "reachable": "Dostupné",
+    "unreachable": "Nedostupné",
+    "server": "Server: ",
+    "noSslTitle": "⚠ Bez SSL",
+    "noSslBody": "Tato doména není dostupná přes HTTPS.",
+    "sslValid": "🔒 SSL platné",
+    "sslInvalid": "✗ SSL neplatné",
+    "days": "dní",
+    "expires": "Vyprší: ",
+    "issuer": "Vydavatel: ",
+    "responseTime": "Doba odezvy",
+    "ms": "ms",
+    "fast": "Rychlá",
+    "acceptable": "Přijatelná",
+    "slow": "Pomalá"
+  },
+  "logs": {
+    "searchPlaceholder": "Hledat...",
+    "lastLineCount": "posledních {{count}}",
+    "refresh": "↻ Obnovit",
+    "loading": "Načítání...",
+    "notFound": "„{{query}}“ nenalezeno.",
+    "noEntries": "(žádné záznamy)",
+    "footerFiltered": "{{filtered}} / {{total}} řádků, journald, {{source}}",
+    "footer": "{{total}} řádků, journald, {{source}}"
+  },
+  "logSources": {
+    "panel": "Panel",
+    "nginx": "nginx",
+    "mariadb": "MariaDB",
+    "named": "DNS (named)",
+    "sshd": "SSH",
+    "cron": "Cron",
+    "system": "Celý systém"
+  }
+}

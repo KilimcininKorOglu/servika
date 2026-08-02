@@ -1,0 +1,159 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "dnsSettings": "Nastavení DNS"
+  },
+  "title": "Nastavení DNS",
+  "ipLabel": "IP:",
+  "authoritative": {
+    "label": "Autoritativní DNS:",
+    "pre": " BIND publikuje tyto záznamy. Nasměrujte doménu na ",
+    "mid": " a ",
+    "post": "."
+  },
+  "loading": "Načítání...",
+  "recordCount": "{{count}} záznamů",
+  "valueHint": {
+    "A": "IPv4 adresa, například 203.0.113.10",
+    "AAAA": "IPv6 adresa, například 2a01:4f8:1c1c::1",
+    "CNAME": "Cílový název domény, například target.example.com",
+    "MX": "Poštovní server, například mail.example.com (priorita se nastavuje zvlášť)",
+    "TXT": "Volný text, například v=spf1 mx ~all",
+    "NS": "Jmenný server, například ns1.example.com",
+    "SRV": "váha port cíl, například 5 5060 sip.example.com (priorita se nastavuje zvlášť)",
+    "CAA": "flags tag \"value\", například 0 issue \"letsencrypt.org\"",
+    "PTR": "Cílový název domény, například host.example.com",
+    "DS": "keytag algorithm digest-type digest, například 12345 13 2 49FD46E6C4B45C55D4AC...",
+    "TLSA": "usage selector matching-type data, například 3 1 1 0B9FA5A59EED715C26C1020C...",
+    "SSHFP": "algorithm type fingerprint, například 4 2 123456789ABCDEF...",
+    "NAPTR": "order preference \"flags\" \"service\" \"regexp\" replacement"
+  },
+  "soa": {
+    "title": "Nastavení SOA",
+    "titleHint": "(autorita, refresh, retry, expire a TTL)",
+    "hide": "▲ Skrýt",
+    "edit": "▼ Upravit",
+    "primaryNs": "Primární NS",
+    "hostmasterEmail": "E-mail hostmastera",
+    "fields": {
+      "refresh": "refresh",
+      "retry": "retry",
+      "expire": "expire",
+      "minimum": "minimum",
+      "ttl": "ttl"
+    },
+    "save": "Uložit SOA",
+    "saved": "Nastavení SOA uloženo",
+    "saveFailed": "Nastavení SOA nelze uložit"
+  },
+  "dnssec": {
+    "title": "DNSSEC",
+    "signed": "Podepsáno",
+    "signing": "Podepisování...",
+    "disabled": "Zakázáno",
+    "description": "Podepíše tuto zónu pomocí inline podepisování BIND. Přidejte vygenerovaný záznam DS u svého registrátora domén.",
+    "refreshStatus": "Obnovit stav",
+    "disable": "Zakázat",
+    "enabling": "Povolování...",
+    "enable": "Povolit",
+    "dsForRegistrar": "Záznam DS pro vašeho registrátora",
+    "copied": "Zkopírováno",
+    "copy": "Kopírovat",
+    "dsHint": "Přidejte tento záznam DS v nastavení DNSSEC u svého registrátora. Šíření může trvat až do TTL záznamu.",
+    "signingInProgress": "Podepisování stále probíhá. Za pár sekund obnovte stav.",
+    "enabledMsg": "DNSSEC povolen. Přidejte níže uvedený záznam DS u svého registrátora domén.",
+    "disabledMsg": "DNSSEC zakázán.",
+    "updateFailed": "DNSSEC nelze aktualizovat",
+    "refreshFailed": "Stav DNSSEC nelze obnovit"
+  },
+  "actions": {
+    "newRecord": "Nový záznam",
+    "applyTemplate": "📋 Použít výchozí šablonu",
+    "applyTemplateTitle": "Přidá výchozí záznamy A/MX/TXT/NS (idempotentní)",
+    "refresh": "↻ Obnovit",
+    "export": "⬇ Exportovat",
+    "exportTitle": "Stáhnout záznamy DNS jako zónový soubor BIND",
+    "import": "⬆ Importovat",
+    "importTitle": "Nahrát zónový soubor BIND"
+  },
+  "import": {
+    "title": "Import zónového souboru",
+    "description": "Nahrajte standardní zónový soubor BIND (.zone / .txt). Záznamy se naimportují do této domény, poté se zóna ověří a přepíše.",
+    "overwriteLabel": "Přepsat stávající záznamy — pokud není zaškrtnuto, záznamy se sloučí (přidají se nové)",
+    "replaceWarning": "⚠️ VŠECHNY aktuální záznamy DNS této domény budou smazány a nahrazeny záznamy ze souboru. Doporučujeme nejprve exportovat zálohu.",
+    "cancel": "Zrušit",
+    "importing": "Import…",
+    "import": "Importovat",
+    "complete": "Import dokončen — {{added}} přidáno, {{skipped}} přeskočeno ({{mode}})",
+    "completeWarning": "Import dokončen — {{added}} přidáno, {{skipped}} přeskočeno ({{mode}}) · {{warning}}",
+    "failed": "Import se nezdařil"
+  },
+  "exportFailed": "Export se nezdařil",
+  "bulk": {
+    "selected": "Vybráno záznamů: {{count}}",
+    "enable": "Povolit",
+    "disable": "Zakázat",
+    "deleteSelected": "Smazat vybrané ({{count}})",
+    "clearSelection": "Zrušit výběr",
+    "deleted": "Smazáno záznamů: {{count}}",
+    "updated": "Aktualizováno záznamů: {{count}}",
+    "deleteFailed": "Hromadné smazání se nezdařilo",
+    "updateFailed": "Hromadná aktualizace se nezdařila"
+  },
+  "table": {
+    "selectAll": "Vybrat vše",
+    "select": "Vybrat {{name}} {{type}}",
+    "name": "Název",
+    "type": "Typ",
+    "value": "Hodnota",
+    "ttl": "TTL",
+    "priority": "Priorita",
+    "status": "Stav",
+    "actions": "Akce",
+    "selectLabel": "Vybrat",
+    "noPriority": "Žádná",
+    "active": "Aktivní",
+    "disabled": "Zakázáno",
+    "edit": "Upravit",
+    "delete": "Smazat"
+  },
+  "empty": {
+    "text": "Zatím žádné záznamy DNS.",
+    "applyTemplate": "Použít výchozí šablonu"
+  },
+  "templateAdded": "Přidáno výchozích záznamů: {{count}}",
+  "templateFailed": "Šablonu nelze použít",
+  "delete": {
+    "title": "Smazat záznam DNS",
+    "message": "Smazat „{{name}} {{type}} {{value}}“?",
+    "confirm": "Ano, smazat",
+    "failed": "Smazání se nezdařilo"
+  },
+  "bulkDelete": {
+    "title": "Smazat vybrané záznamy DNS",
+    "message": "Bude trvale smazáno {{count}} záznamů DNS. Tuto akci nelze vrátit zpět. Pokračovat?",
+    "confirm": "Ano, smazat {{count}} záznamů"
+  },
+  "dnssecDisable": {
+    "title": "Zakázat DNSSEC",
+    "message": "Před zakázáním DNSSEC odeberte záznam DS u svého registrátora domén a počkejte na jeho TTL. Jinak se doména může přestat překládat s chybou SERVFAIL. Pokračujte až po odebrání záznamu DS.",
+    "confirm": "DS odebrán, zakázat DNSSEC"
+  },
+  "modal": {
+    "newTitle": "Nový záznam DNS",
+    "editTitle": "Upravit záznam DNS",
+    "nameLabel": "Název (subdoména)",
+    "nameHint": "„@“ je kořenová doména. Další příklady jsou „www“ a „mail“.",
+    "typeLabel": "Typ",
+    "valueLabel": "Hodnota",
+    "ttlLabel": "TTL (s)",
+    "priorityLabel": "Priorita",
+    "active": "Aktivní",
+    "cancel": "Zrušit",
+    "saving": "Ukládání...",
+    "create": "Vytvořit",
+    "update": "Aktualizovat",
+    "saveFailed": "Záznam nelze uložit"
+  }
+}

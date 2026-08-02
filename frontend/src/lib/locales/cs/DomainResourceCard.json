@@ -1,0 +1,31 @@
+{
+  "planAndResources": "Tarif a zdroje",
+  "refresh": "Obnovit",
+  "servicePlan": "Tarif služby",
+  "bars": {
+    "disk": "Disk",
+    "trafficMonthly": "Provoz (měsíčně)",
+    "database": "Databáze",
+    "ftpAccount": "Účet FTP",
+    "emailMailbox": "E-mailová schránka",
+    "subdomain": "Subdoména"
+  },
+  "units": {
+    "db": "DB",
+    "account": "účet",
+    "mailbox": "schránka",
+    "domain": "doména"
+  },
+  "configuration": "Konfigurace",
+  "ipAddress": "IP adresa",
+  "systemUser": "Systémový uživatel",
+  "phpVersion": "Verze PHP",
+  "sslTls": "SSL/TLS",
+  "active": "Aktivní",
+  "none": "Žádný",
+  "counters": "Počítadla",
+  "dnsRecord": "Záznam DNS",
+  "cronJob": "Úloha cron",
+  "backup": "Záloha",
+  "backupSize": "Velikost zálohy"
+}

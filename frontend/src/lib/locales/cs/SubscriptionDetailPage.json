@@ -1,0 +1,100 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "error": "Chyba"
+  },
+  "errors": {
+    "loadFailed": "Předplatné nelze načíst",
+    "suspendFailed": "Stav pozastavení domény nelze aktualizovat"
+  },
+  "loading": "Načítání…",
+  "confirmSuspend": "Pozastavit „{{domain}}“? Web bude vracet HTTP 503, dokud nebude obnoven.",
+  "notice": {
+    "suspended": "Doména byla pozastavena.",
+    "resumed": "Doména byla obnovena."
+  },
+  "header": {
+    "switchSubscription": "Přepnout předplatné",
+    "suspended": "Pozastaveno",
+    "moreActions": "Další akce",
+    "resumeDomain": "Obnovit doménu",
+    "suspendDomain": "Pozastavit doménu"
+  },
+  "tabs": {
+    "dashboard": "Nástěnka",
+    "hosting": "Hosting a DNS"
+  },
+  "stats": {
+    "title": "Statistiky",
+    "refresh": "Obnovit",
+    "disk": "Místo na disku",
+    "traffic": "Měsíční provoz",
+    "created": "Vytvořeno",
+    "phpVersion": "Verze PHP"
+  },
+  "footer": {
+    "website": "Web:",
+    "ip": "IP:",
+    "systemUser": "Systémový uživatel:",
+    "addDescription": "Přidat popis"
+  },
+  "preview": {
+    "httpsOnly": "Náhled je dostupný pouze pro weby HTTPS",
+    "autoAppear": "Zobrazí se automaticky po povolení SSL",
+    "website": "Web",
+    "refresh": "Obnovit",
+    "refreshTitle": "Obnovit náhled",
+    "sslRequired": "Pro náhled je vyžadováno SSL",
+    "open": "Otevřít",
+    "previewAlt": "Náhled {{domain}}"
+  },
+  "groups": {
+    "filesAndDatabases": "Soubory a databáze",
+    "developmentTools": "Vývojové nástroje",
+    "security": "Zabezpečení",
+    "hostingServices": "Hostingové služby"
+  },
+  "tools": {
+    "connection": "Informace o připojení",
+    "connectionDesc": "FTP a databáze",
+    "files": "Soubory",
+    "filesDesc": "Správce souborů",
+    "databases": "Databáze",
+    "ftp": "FTP",
+    "ftpDesc": "Účty FTP",
+    "backup": "Zálohování a obnovení",
+    "backupDesc": "Správa záloh",
+    "copy": "Kopírovat web",
+    "copyDesc": "Klonování",
+    "php": "PHP",
+    "phpDesc": "Verze {{version}}",
+    "logs": "Protokoly",
+    "logsDesc": "Přístupové a chybové protokoly",
+    "cron": "Naplánované úlohy",
+    "cronDesc": "Cron",
+    "git": "Git",
+    "gitDesc": "Integrace repozitáře",
+    "composer": "PHP Composer",
+    "composerDesc": "Správce balíčků",
+    "performance": "Výkon",
+    "performanceDesc": "Akcelerátory",
+    "ssl": "Certifikáty SSL/TLS",
+    "sslExpires": "Vyprší: {{expiry}}",
+    "sslLetsEncrypt": "Let's Encrypt",
+    "sslNotProtected": "Doména není chráněna",
+    "passwordProtect": "Heslem chráněné adresáře",
+    "statistics": "Statistiky",
+    "statisticsDesc": "Analýza provozu",
+    "imunify": "Imunify",
+    "imunifyDesc": "Antivirus",
+    "waf": "WAF (firewall webových aplikací)",
+    "wafDesc": "ModSecurity + OWASP CRS",
+    "hostingSettings": "Nastavení hostingu",
+    "hostingSettingsDesc": "Kořen dokumentů a možnosti",
+    "apacheNginx": "Apache a nginx",
+    "apacheNginxDesc": "Bezpečnostní hlavičky a další direktivy",
+    "dns": "Nastavení DNS",
+    "dnsDesc": "A, CNAME, MX"
+  }
+}

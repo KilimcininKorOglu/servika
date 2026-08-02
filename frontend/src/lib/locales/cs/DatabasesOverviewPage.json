@@ -1,0 +1,16 @@
+{
+  "title": "Databáze",
+  "description": "Každá databáze na serveru se svou vlastnící doménou a velikostí.",
+  "emptyMessage": "Nebyly nalezeny žádné databáze.",
+  "column": {
+    "domain": "Doména",
+    "database": "Databáze",
+    "user": "Uživatel",
+    "size": "Velikost",
+    "created": "Vytvořeno"
+  },
+  "summary": {
+    "databases": "Databáze",
+    "totalSize": "Celková velikost"
+  }
+}

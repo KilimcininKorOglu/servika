@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "statistics": "Statistiky"
+  },
+  "title": "Statistiky",
+  "live": "● Živě (10 s)",
+  "subtitle": "Využití zdrojů serveru, počty domén a souhrn systému.",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "Paměť",
+    "disk": "Disk",
+    "load": "Zatížení (1 min)"
+  },
+  "coresValue": "{{cores}} jader",
+  "loadSub": "5 min: {{five}} · 15 min: {{fifteen}}",
+  "system": {
+    "title": "Systém",
+    "hostname": "Název hostitele",
+    "os": "Operační systém",
+    "kernel": "Jádro",
+    "processor": "Procesor",
+    "swap": "Swap",
+    "panelVersion": "Verze panelu"
+  },
+  "processorValue": "{{model}} · {{cores}} jader",
+  "swapValue": "{{percent}} % · {{used}} / {{total}}",
+  "domains": {
+    "title": "Domény",
+    "total": "Celkem domén",
+    "active": "Aktivní domény",
+    "inactive": "Neaktivní domény"
+  },
+  "footer": {
+    "pre": "Pro podrobnější monitorování navštivte stránku ",
+    "link": "Monitorování",
+    "post": "."
+  }
+}

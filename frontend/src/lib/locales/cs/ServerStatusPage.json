@@ -1,0 +1,25 @@
+{
+  "breadcrumbHome": "Domů",
+  "breadcrumbServerStatus": "Stav serveru",
+  "title": "Stav serveru",
+  "subtitle": "Živý snímek serveru. Tato obrazovka je jen ke čtení — správa služeb náleží administrátorovi.",
+  "loading": "Načítání…",
+  "errorLoad": "Stav serveru nelze načíst",
+  "cards": {
+    "cpu": "CPU",
+    "memory": "Paměť",
+    "disk": "Disk",
+    "panelVersion": "Verze panelu"
+  },
+  "loadText": "zatížení {{values}}",
+  "updateAvailable": "aktualizace k dispozici: v{{version}}",
+  "upToDate": "aktuální",
+  "servicesHeading": "Služby",
+  "noServices": "Žádné informace o službách.",
+  "statuses": {
+    "active": "Běží",
+    "inactive": "Zastaveno",
+    "failed": "Selhalo",
+    "absent": "Nenainstalováno"
+  }
+}

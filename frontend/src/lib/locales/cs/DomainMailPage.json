@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "email": "E-mail"
+  },
+  "title": "E-mailové účty",
+  "subtitle": "Spravujte nativní schránky Postfix a Dovecot. Pro ověřené odesílání použijte SMTP port 587 se STARTTLS.",
+  "loading": "Načítání…",
+  "back": "← Zpět na předplatné",
+  "generatedPassword": {
+    "title": "Heslo pro {{email}}",
+    "saveNote": "Uložte ho nyní. Znovu se nezobrazí.",
+    "copy": "Kopírovat"
+  },
+  "enable": {
+    "notEnabled": "E-mailový hosting zatím není pro tuto doménu povolen.",
+    "info": "Jeho povolení přidá pokud možno záznamy DNS MX, SPF, DKIM a DMARC.",
+    "enabling": "Povolování…",
+    "button": "Povolit e-mail"
+  },
+  "mailboxAdd": {
+    "title": "Přidat schránku",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "heslo, vygenerováno pokud prázdné",
+    "adding": "Přidávání…",
+    "add": "Přidat"
+  },
+  "mailboxes": {
+    "title": "Schránky",
+    "empty": "Zatím žádné schránky.",
+    "suspended": "pozastaveno",
+    "suspend": "Pozastavit",
+    "activate": "Aktivovat",
+    "resetPassword": "Obnovit heslo",
+    "delete": "Smazat"
+  },
+  "forwarders": {
+    "title": "Přesměrování a catch-all",
+    "description": "Přesměrujte příchozí poštu na jednu nebo více cílových adres bez vytvoření schránky. Catch-all přesměrovává poštu pro nedefinované adresy na této doméně.",
+    "sourcePlaceholder": "support",
+    "catchAll": "Přesměrovat všechny nedefinované adresy na této doméně",
+    "destinationPlaceholder": "target1@example.com, target2@example.com",
+    "adding": "Přidávání…",
+    "add": "Přidat",
+    "empty": "Zatím žádná přesměrování.",
+    "suspended": "pozastaveno",
+    "suspend": "Pozastavit",
+    "activate": "Aktivovat",
+    "delete": "Smazat"
+  },
+  "spam": {
+    "title": "Filtrování spamu",
+    "description": "Rspamd hodnotí každou příchozí zprávu. Greylisting dočasně odloží, prahová hodnota hlavičky označí poštu jako spam a prahová hodnota odmítnutí odmítne doručení.",
+    "notInstalled": " Rspamd není na tomto serveru nainstalován; nastavení se ukládají, ale nevynucují.",
+    "enable": "Povolit filtrování spamu pro tuto doménu",
+    "greylist": "Greylist",
+    "addHeader": "Přidat hlavičku",
+    "reject": "Odmítnout",
+    "applying": "Použití…",
+    "apply": "Použít politiku spamu"
+  },
+  "autoresponder": {
+    "title": "Automatická odpověď",
+    "description": "Odešle odpověď o nepřítomnosti ze schránky, nejvýše jednou za interval stejnému odesílateli.",
+    "mailbox": "Schránka",
+    "interval": "Interval odpovědi (dny)",
+    "subjectPlaceholder": "Předmět",
+    "bodyPlaceholder": "Text zprávy",
+    "enable": "Povolit automatickou odpověď",
+    "saving": "Ukládání…",
+    "save": "Uložit automatickou odpověď",
+    "remove": "Odebrat"
+  },
+  "filters": {
+    "title": "Filtry zpráv",
+    "description": "Třiďte příchozí poštu do složek, přesměrujte ji nebo ji zahoďte pomocí pravidel Sieve kompilovaných pro každou schránku.",
+    "namePlaceholder": "Název filtru",
+    "subjectContains": "Předmět obsahuje",
+    "fromContains": "Od obsahuje",
+    "toContains": "Komu obsahuje",
+    "matchedTextPlaceholder": "Shodný text",
+    "moveToFolder": "Přesunout do složky",
+    "redirectTo": "Přesměrovat na",
+    "discard": "Zahodit",
+    "folderPlaceholder": "Složka (např. Faktury)",
+    "targetPlaceholder": "target@example.com",
+    "adding": "Přidávání…",
+    "add": "Přidat filtr",
+    "empty": "Zatím žádné filtry.",
+    "delete": "Smazat"
+  },
+  "sendLimits": {
+    "title": "Limity odesílání",
+    "description": "Omezte počet příjemců odchozí pošty pro každou schránku. Překročení limitu automaticky pozastaví účet, aby se omezil kompromitovaný účet. Použijte 0 pro neomezeno.",
+    "mailbox": "Schránka",
+    "hourly": "Za hodinu (využito {{count}})",
+    "daily": "Za den (využito {{count}})",
+    "suspendedNote": "Automaticky pozastaveno v {{time}}. Pro odblokování aktivujte schránku výše.",
+    "saving": "Ukládání…",
+    "save": "Uložit limity odesílání"
+  },
+  "messages": {
+    "enabled": "E-mailový hosting byl pro tuto doménu povolen. Pokud to bylo možné, byly do DNS přidány záznamy MX, SPF, DKIM a DMARC.",
+    "forwarderAdded": "Přesměrování pošty bylo přidáno.",
+    "spamApplied": "Politika spamu Rspamd byla ověřena a použita.",
+    "autoresponderSaved": "Automatická odpověď a její skript Sieve byly použity.",
+    "autoresponderRemoved": "Automatická odpověď byla odebrána.",
+    "filterAdded": "Filtr pošty byl zkompilován a povolen.",
+    "sendLimitsSaved": "Limity odesílání byly uloženy."
+  },
+  "confirm": {
+    "deleteMailbox": "Smazat schránku „{{email}}“? Maildir zůstane na disku, odebere se pouze záznam účtu.",
+    "deleteForwarder": "Smazat přesměrování „{{source}}“?",
+    "deleteFilter": "Smazat filtr „{{name}}“?"
+  },
+  "errors": {
+    "loadDomainFailed": "Doménu nelze načíst",
+    "enableFailed": "E-mailový hosting nelze povolit",
+    "createMailboxFailed": "Schránku nelze vytvořit",
+    "addForwarderFailed": "Přesměrování pošty nelze přidat",
+    "deleteMailboxFailed": "Schránku nelze smazat",
+    "deleteForwarderFailed": "Přesměrování pošty nelze smazat",
+    "resetPasswordFailed": "Heslo nelze obnovit",
+    "updateForwarderFailed": "Přesměrování pošty nelze aktualizovat",
+    "updateMailboxFailed": "Schránku nelze aktualizovat",
+    "applySpamFailed": "Nastavení spamu nelze použít",
+    "readAutoresponderFailed": "Automatickou odpověď nelze načíst",
+    "saveAutoresponderFailed": "Automatickou odpověď nelze uložit",
+    "addFilterFailed": "Filtr pošty nelze přidat",
+    "readSendLimitsFailed": "Limity odesílání nelze načíst",
+    "saveSendLimitsFailed": "Limity odesílání nelze uložit"
+  }
+}

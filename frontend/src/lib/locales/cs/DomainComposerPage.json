@@ -1,0 +1,29 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "composer": "Composer"
+  },
+  "title": "PHP Composer",
+  "subtitle": {
+    "pre": "",
+    "mid": " v ",
+    "post": " jako systémový uživatel."
+  },
+  "loading": "Načítání…",
+  "notFound": "Nenalezeno",
+  "notInstalled": "Composer není na serveru nainstalován. Musí ho nainstalovat administrátor.",
+  "composerJsonFound": "✓ composer.json nalezen",
+  "composerJsonNotFound": "composer.json nenalezen",
+  "packagePlaceholder": "vendor/package nebo vendor/package:^1.2",
+  "run": {
+    "header": "$ composer {{cmd}}",
+    "running": "Spouštění…",
+    "noOutput": "(žádný výstup)",
+    "completed": "✓ Dokončeno",
+    "failed": "✗ Selhalo"
+  },
+  "errors": {
+    "runFailed": "Příkaz nelze spustit"
+  }
+}

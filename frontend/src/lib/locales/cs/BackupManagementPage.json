@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "toolsSettings": "Nástroje a nastavení",
+    "backupManager": "Správce záloh"
+  },
+  "title": "Správce záloh",
+  "subtitle": "Prohlížejte zálohy všech domén na jednom místě. Denní automatické zálohy běží a cíle S3/SFTP se nastavují pro každou doménu.",
+  "toast": {
+    "triggered": "Naplánované zálohy byly spuštěny. Za pár sekund obnovte stránku a zobrazte výsledky.",
+    "triggerFailed": "Zálohy nelze spustit"
+  },
+  "kpi": {
+    "totalSize": "Celková velikost záloh",
+    "totalBackups": "Celkem záloh",
+    "domainCount": "Počet domén",
+    "remoteDestinations": "Aktivní vzdálené cíle",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Automatické zálohy:",
+    "default": "Denně v 03:00",
+    "suffix": ". Uchovávání 7 dní",
+    "triggering": "Spouštění...",
+    "backupNow": "⏱ Zálohovat všechny domény nyní",
+    "refresh": "↻ Obnovit"
+  },
+  "table": {
+    "title": "Zálohy domén",
+    "colDomain": "Doména",
+    "colCount": "Počet záloh",
+    "colSize": "Celková velikost",
+    "colLatest": "Poslední záloha",
+    "colAction": "Akce",
+    "loading": "Načítání...",
+    "noDomains": "Žádné domény.",
+    "never": "nikdy",
+    "manage": "Spravovat"
+  },
+  "footnote": {
+    "pre": "ℹ️ Zálohy",
+    "post": "jsou uloženy tam. Zálohy zůstávají dostupné i po smazání domény, což umožňuje obnovu po nechtěném smazání. Otevřete Spravovat a stáhněte nebo obnovte jednotlivé zálohy a nastavte cíle."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "langPlainText": "Prostý text",
+  "unsaved": "Neuložené změny",
+  "saving": "Ukládání…",
+  "saved": "✓ Uloženo",
+  "syntax": "Syntaxe",
+  "exitFullscreen": "Ukončit celou obrazovku",
+  "fullscreen": "Celá obrazovka",
+  "save": "💾 Uložit",
+  "close": "Zavřít",
+  "cursor": "Řádek {{line}}, sloupec {{column}}",
+  "lines": "{{count}} řádků",
+  "bytes": "{{count}} bajtů",
+  "shortcuts": "Ctrl+S: uložit · Esc: zavřít"
+}

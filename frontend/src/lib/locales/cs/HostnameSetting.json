@@ -1,0 +1,16 @@
+{
+  "title": "Název hostitele serveru",
+  "protected": "Chráněno proti poskytovateli",
+  "awaitingProtection": "Čeká na ochranu",
+  "descriptionPre": "Trvale změní název hostitele systému. Cloud-init a DHCP/NetworkManager mají zabráněno v přepsání názvu dodaného poskytovatelem. Doporučuje se plně kvalifikovaný název: ",
+  "placeholder": "server1.example.com",
+  "apply": "Změnit název hostitele",
+  "applying": "Použití…",
+  "messages": {
+    "changed": "Název hostitele změněn na „{{hostname}}“ a nastaven trvale."
+  },
+  "errors": {
+    "load": "Název hostitele nelze načíst",
+    "change": "Název hostitele nelze změnit"
+  }
+}

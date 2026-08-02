@@ -1,0 +1,124 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "subscription": "Předplatné",
+    "wordpress": "WordPress"
+  },
+  "title": "Sada nástrojů WordPress",
+  "subtitle": "Spravujte verze, pluginy, šablony a uživatele na jednom místě.",
+  "loading": "Načítání…",
+  "actions": {
+    "new": "Nový WordPress"
+  },
+  "empty": {
+    "title": "Na této doméně zatím neexistuje žádná instalace WordPress",
+    "subtitle": "Nainstalujte ho jedním kliknutím pomocí formuláře níže."
+  },
+  "tabs": {
+    "overview": "Přehled",
+    "extensions": "Pluginy",
+    "themes": "Šablony",
+    "users": "Uživatelé"
+  },
+  "toolkit": {
+    "adminPanel": "Administrace",
+    "remove": "Odebrat"
+  },
+  "metrics": {
+    "version": "Verze",
+    "php": "PHP",
+    "database": "Databáze",
+    "maintenance": "Režim údržby",
+    "upToDate": "aktuální",
+    "active": "aktivní",
+    "on": "Zapnuto",
+    "off": "Vypnuto"
+  },
+  "overview": {
+    "updateVersion": "Aktualizovat verzi · v{{version}}",
+    "updateAll": "Aktualizovat vše",
+    "disableMaintenance": "Zakázat režim údržby",
+    "enableMaintenance": "Povolit režim údržby",
+    "clearCache": "Vymazat cache",
+    "repairCore": "Opravit jádro",
+    "hint": "Rychlé akce údržby. Dostupné aktualizace verzí se zobrazí v metrice výše."
+  },
+  "messages": {
+    "coreUpdated": "Jádro WordPress aktualizováno.",
+    "allUpdated": "Jádro, pluginy a šablony aktualizovány.",
+    "maintenanceEnabled": "Režim údržby povolen.",
+    "maintenanceDisabled": "Režim údržby zakázán.",
+    "cacheCleared": "Cache vymazána.",
+    "repairDone": "Oprava jádra dokončena.",
+    "packageUpdated": "{{name}} aktualizován.",
+    "allUpdatesDone": "Všechny aktualizace dokončeny.",
+    "activated": "{{name}} aktivován.",
+    "deactivated": "{{name}} deaktivován."
+  },
+  "errors": {
+    "installFailed": "Instalace se nezdařila",
+    "operationFailed": "Operace se nezdařila",
+    "resetFailed": "Heslo nelze obnovit",
+    "removeFailed": "Instalaci nelze odebrat"
+  },
+  "output": {
+    "title": "Výstup operace"
+  },
+  "btn": {
+    "processing": "Zpracování…"
+  },
+  "packages": {
+    "loading": "Načítání…",
+    "noPlugins": "Nebyly nalezeny žádné pluginy.",
+    "noThemes": "Nebyly nalezeny žádné šablony.",
+    "updateSingular": "{{count}} dostupná aktualizace",
+    "updatePlural": "{{count}} dostupných aktualizací",
+    "updateAll": "Aktualizovat vše",
+    "active": "Aktivní",
+    "inactive": "Neaktivní",
+    "version": "Verze {{version}}",
+    "updateAvailable": " → {{version}} k dispozici",
+    "update": "Aktualizovat",
+    "activate": "Aktivovat",
+    "deactivate": "Deaktivovat",
+    "activeTheme": "Aktivní šablona"
+  },
+  "usersTab": {
+    "loading": "Načítání…",
+    "empty": "Nebyli nalezeni žádní uživatelé.",
+    "resetPassword": "Obnovit heslo"
+  },
+  "confirm": {
+    "resetPassword": "Vygenerovat nové heslo pro „{{user}}“?\nAktuální heslo přestane platit.",
+    "rootRemove": "Instalace WordPress v kořenovém adresáři nelze z panelu smazat.",
+    "remove": "Smazat instalaci WordPress v {{dir}}?\nVšechny soubory v tomto adresáři a jeho databáze budou odebrány. Toto nelze vrátit zpět."
+  },
+  "installForm": {
+    "title": "Nová instalace WordPress",
+    "close": "✕ Zavřít",
+    "siteTitle": "Název webu",
+    "siteTitlePlaceholder": "Můj blog",
+    "subdirectory": "Podadresář (volitelné)",
+    "subdirectoryPlaceholder": "prázdné = kořen · příklad: blog",
+    "adminUser": "Uživatelské jméno administrátora",
+    "adminEmail": "E-mail administrátora",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "Instalace… (~30 s)",
+    "install": "Nainstalovat WordPress"
+  },
+  "result": {
+    "installed": "WordPress {{version}} nainstalován",
+    "site": "Web",
+    "admin": "Administrace",
+    "username": "Uživatelské jméno",
+    "password": "Heslo",
+    "savePassword": "Heslo si nyní uložte. Znovu se nezobrazí."
+  },
+  "passwordModal": {
+    "title": "Nové heslo vytvořeno",
+    "user": "Uživatel:",
+    "copy": "Kopírovat",
+    "notice": "Toto heslo se znovu nezobrazí. Uložte si ho nyní.",
+    "ok": "OK"
+  }
+}

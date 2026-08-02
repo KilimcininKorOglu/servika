@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "phpSettings": "Nastavení PHP"
+  },
+  "title": "Nastavení PHP",
+  "systemUser": "Systémový uživatel: ",
+  "poolNotice": {
+    "pre": "Zde nastavené hodnoty se zapisují do poolu PHP-FPM (",
+    "mid1": "). Soubory ",
+    "mid2": " a ",
+    "post": " webu je mohou přepsat. Uložení automaticky restartuje PHP-FPM bez odstavení webu."
+  },
+  "loading": "Načítání…",
+  "saved": "Uloženo. PHP {{version}}, socket: {{socket}}",
+  "saveFailed": "Nastavení se nepodařilo uložit",
+  "clearLogFailed": "Ladicí protokol se nepodařilo vymazat",
+  "processManager": {
+    "ondemand": "ondemand (doporučeno, nulové procesy při nečinnosti)",
+    "dynamic": "dynamic (škáluje se se zátěží)",
+    "static": "static (pevný pool)"
+  },
+  "version": {
+    "title": "Verze PHP",
+    "active": "Aktivní",
+    "saveToApply": "Uložit pro použití"
+  },
+  "cards": {
+    "performance": "Výkon a zabezpečení",
+    "general": "Obecné",
+    "debugMode": "Ladicí režim PHP",
+    "lastErrors": "Poslední chyby (ladicí protokol)",
+    "fpmPool": "Pool PHP-FPM",
+    "installedModules": "Nainstalované moduly PHP",
+    "disableDangerous": "Zakázat nebezpečné funkce",
+    "additionalDirectives": "Další konfigurační direktivy"
+  },
+  "help": {
+    "memoryLimit": "Maximální paměť, kterou skript může alokovat, v bajtech. Příklad: 256M.",
+    "maxExecutionTime": "Maximální doba běhu v sekundách",
+    "maxInputTime": "Doba na zpracování dat POST/GET v sekundách",
+    "postMaxSize": "Maximální velikost dat POST. Musí být větší než upload_max_filesize.",
+    "uploadMaxFilesize": "Limit nahrání jednoho souboru",
+    "opcacheEnable": "Cache opkódů OPcache (doporučeno: ZAP)",
+    "disableFunctions": "Funkce PHP k zakázání (oddělené čárkou)",
+    "displayErrors": "Zobrazovat chyby ve výstupu (v produkci ponechte vypnuté)",
+    "logErrors": "Povolit protokolování chyb",
+    "allowUrlFopen": "Otevírat soubory přes HTTP/FTP",
+    "fileUploads": "Nahrávání souborů přes HTTP",
+    "shortOpenTag": "Podpora krátkých značek <? ?>",
+    "errorReporting": "Úroveň hlášení chyb (například E_ALL & ~E_DEPRECATED)",
+    "includePath": "Adresáře include skriptů (na Linuxu oddělte znakem :)",
+    "openBasedir": "Adresáře, ke kterým má PHP přístup (prázdné znamená neomezené). Oddělte znakem :",
+    "sessionSavePath": "Adresář souborů relace (prázdné znamená /home/{system_user}/tmp)",
+    "mailForceExtraParameters": "Další parametry pro funkci mail()",
+    "pm": "Strategie správce procesů",
+    "pmMaxChildren": "Maximální počet souběžných workerů PHP",
+    "pmMaxRequests": "Počet požadavků před restartem workeru (zabraňuje úniku paměti)",
+    "pmStartServers": "Workery spuštěné na začátku (pouze dynamic)",
+    "pmMinSpareServers": "Minimální počet nečinných workerů",
+    "pmMaxSpareServers": "Maximální počet nečinných workerů"
+  },
+  "openBasedirPlaceholder": "například: /home/user/:/tmp/",
+  "debug": {
+    "disableTitle": "Zakázat ladicí režim",
+    "enableTitle": "Povolit ladicí režim",
+    "label": "Ladicí režim",
+    "on": "Zapnuto",
+    "off": "Vypnuto",
+    "descPre": "Po povolení se chyby PHP zobrazují na obrazovce a fatální chyby (E_ERROR, E_PARSE, ...) jsou spolehlivě zachyceny přes ",
+    "descMid": " a zaznamenány do ",
+    "descPost": ". Fatální chyby jsou zachyceny i tehdy, když aplikace volá ",
+    "descEnd": ".",
+    "warningLabel": "Varování:",
+    "warningPre": " Při zapnutém ladicím režimu jsou vynuceny ",
+    "warningBold1": "display_errors = on",
+    "warningMid": " a ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " ; podrobnosti o chybách mohou být viditelné návštěvníkům webu. Povolte pouze během odstraňování problémů, ",
+    "warningBold3": "v produkci zakažte",
+    "warningEnd": ". Změny se projeví po kliknutí na ",
+    "warningSave": "Uložit",
+    "warningDot": "."
+  },
+  "debugLog": {
+    "sourcePre": "Nejnovější fatální chyby nahoře. Zdroj: ",
+    "sourcePost": " (posledních 200 řádků).",
+    "loading": "Načítání...",
+    "refresh": "Obnovit",
+    "clear": "Vymazat",
+    "emptyOff": "Ladicí režim je vypnutý. Povolte ho výše a uložte pro zahájení protokolování fatálních chyb.",
+    "emptyOn": "Nebyly zaznamenány žádné chyby. Ladicí protokol je prázdný."
+  },
+  "modules": {
+    "countPre": "",
+    "countBold": "{{count}}",
+    "countPost": " modulů je nainstalováno pro PHP {{version}}. Moduly se spravují pro celý server a nelze je povolit nebo zakázat pro jednotlivou doménu.",
+    "manageServer": "↗ Spravovat moduly serveru"
+  },
+  "dangerous": {
+    "descPre": "Tyto funkce představují rizika injektáže shellu, RCE a malwaru. Přepínače kategorií aktualizují ",
+    "descMid": ". ",
+    "descBoldOn": "Zapnuto znamená povoleno",
+    "descAnd": " a ",
+    "descBoldOff": "vypnuto znamená blokováno",
+    "descPost": ".",
+    "enableAll": "Povolit vše",
+    "blockAll": "Blokovat vše",
+    "blocked": "Blokováno",
+    "mixed": "Smíšené",
+    "active": "Aktivní",
+    "editManually": "Upravit ručně (nezpracované disable_functions)",
+    "commaSeparated": "Názvy funkcí oddělené čárkou.",
+    "groups": {
+      "shellExecution": "Spuštění shellu",
+      "fileExecution": "Spuštění souborů",
+      "networkAccess": "Přístup k síti (rizikové)",
+      "systemDiscovery": "Zjišťování systému",
+      "moduleLoading": "Načítání modulů"
+    }
+  },
+  "additional": {
+    "descPre": "Definujte další parametry pomocí syntaxe php.ini. Příklad: "
+  },
+  "save": {
+    "saving": "Ukládání…",
+    "saveAndApply": "Uložit a použít",
+    "cancelReload": "Zrušit / znovu načíst"
+  },
+  "select": {
+    "custom": "Vlastní…"
+  },
+  "flag": {
+    "on": "✓ Zapnuto",
+    "off": "○ Vypnuto"
+  }
+}

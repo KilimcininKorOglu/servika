@@ -1,0 +1,15 @@
+{
+  "heading": "Zákaznický portál",
+  "subtitle": "Přihlaste se pomocí přihlašovacích údajů svého účtu",
+  "field": {
+    "username": "Uživatelské jméno",
+    "password": "Heslo"
+  },
+  "button": {
+    "signingIn": "Přihlašování…",
+    "signIn": "Přihlásit se"
+  },
+  "error": {
+    "loginFailed": "Přihlášení se nezdařilo"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "title": "Využití paměti",
+  "subtitle": "Procento využité RAM · 0–100 %",
+  "series": "Paměť",
+  "criticalReference": "85 % kritické",
+  "noData": "Zatím nebyla shromážděna žádná data",
+  "noDataHint": "Vzorky se zaznamenávají každou minutu; graf se naplní během několika minut."
+}

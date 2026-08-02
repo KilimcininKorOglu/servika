@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "Nástroje a nastavení",
+  "breadcrumbServices": "Služby",
+  "title": "Správa služeb",
+  "subtitle": "Restartujte nebo znovu načtěte spravované webové, databázové, DNS, PHP a podpůrné služby.",
+  "loading": "Načítání…",
+  "reload": "Znovu načíst",
+  "restart": "Restartovat",
+  "working": "…",
+  "statuses": {
+    "active": "● Aktivní",
+    "inactive": "○ Neaktivní",
+    "failed": "✕ Selhalo",
+    "absent": "Nenainstalováno"
+  },
+  "errors": {
+    "loadFailed": "Služby nelze načíst",
+    "actionFailed": "Akce {{label}} se nezdařila"
+  },
+  "success": {
+    "reloaded": "{{label}} znovu načteno.",
+    "restarted": "{{label}} restartováno."
+  }
+}

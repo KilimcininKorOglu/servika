@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Hostingový ovládací panel"
+  },
+  "heading": "Vítejte",
+  "subtitle": "Přihlaste se pro pokračování.",
+  "field": {
+    "username": "Uživatelské jméno",
+    "password": "Heslo",
+    "twoFactorCode": "Kód dvoufaktorového ověření"
+  },
+  "twoFactorHint": "Zadejte šestimístný kód z vaší aplikace autentizátoru.",
+  "button": {
+    "signingIn": "Přihlašování…",
+    "verify": "Ověřit a přihlásit se",
+    "signIn": "Přihlásit se"
+  },
+  "footer": "Servika · verze 0.2.0-f1",
+  "error": {
+    "loginFailed": "Přihlášení se nezdařilo"
+  }
+}

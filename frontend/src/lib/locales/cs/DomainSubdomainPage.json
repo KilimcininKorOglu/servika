@@ -1,0 +1,67 @@
+{
+  "loading": "Načítání…",
+  "notFound": "Subdoména nenalezena.",
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "domain": "Doména",
+    "subdomains": "Subdomény",
+    "subdomain": "Subdoména"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "Nainstalujte a spravujte WordPress v tomto kořeni dokumentů"
+    },
+    "logs": {
+      "label": "Protokoly",
+      "description": "Přístupové a chybové protokoly této subdomény"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "Stav závislostí tohoto kořene dokumentů"
+    },
+    "protection": {
+      "label": "Ochrana heslem",
+      "description": "Omezte adresáře pomocí ověřování HTTP"
+    },
+    "statistics": {
+      "label": "Statistiky",
+      "description": "Analýza provozu pouze pro tuto subdoménu"
+    }
+  },
+  "toast": {
+    "phpSaved": "Tato subdoména nyní běží na PHP {{version}}.",
+    "phpChangeFailed": "Verzi PHP nelze změnit"
+  },
+  "ssl": {
+    "active": "🔒 SSL aktivní",
+    "none": "Bez SSL"
+  },
+  "intro": {
+    "pre": "Subdoména domény",
+    "post": ", obsluhovaná z vlastního kořene dokumentů s vlastním poolem PHP."
+  },
+  "details": {
+    "title": "Podrobnosti",
+    "address": "Adresa",
+    "documentRoot": "Kořen dokumentů",
+    "diskUsage": "Využití disku",
+    "phpVersion": "Verze PHP",
+    "created": "Vytvořeno",
+    "serverIp": "IP serveru"
+  },
+  "php": {
+    "title": "Verze PHP",
+    "note": "Tato subdoména běží na vlastním poolu FPM, takže její změna neovlivní nadřazenou doménu.",
+    "versionLabel": "Verze",
+    "applying": "Použití…",
+    "apply": "Použít",
+    "validationNote": "Vhost se před uložením změny ověří, takže odmítnutá konfigurace ponechá web nedotčený."
+  },
+  "toolsSection": {
+    "title": "Nástroje",
+    "note": "Každý nástroj pracuje s kořenem dokumentů této subdomény, nikoli nadřazené domény."
+  },
+  "backToSubdomains": "← Zpět na subdomény"
+}

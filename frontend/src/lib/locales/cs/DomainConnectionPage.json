@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "Automatické kopírování selhalo. Stiskněte Ctrl+C a poté Enter:",
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "connectionDetails": "Údaje o připojení"
+  },
+  "title": "Údaje o připojení",
+  "subtitle": "Vyberte hodnotu pro její automatické zkopírování",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Host",
+    "port": "Port",
+    "username": "Uživatelské jméno",
+    "password": "Heslo",
+    "homeDirectory": "Domovský adresář",
+    "database": "Databáze",
+    "webRoot": "Kořen webu",
+    "ipv4": "IPv4",
+    "systemUser": "Systémový uživatel",
+    "httpUrl": "URL HTTP",
+    "httpsUrl": "URL HTTPS"
+  },
+  "links": {
+    "ftp": "Přejít na správu FTP →",
+    "database": "Přejít na správu databází →"
+  },
+  "row": {
+    "selectToCopy": "Vyberte pro kopírování",
+    "copied": "✓ Zkopírováno"
+  },
+  "password": {
+    "button": "🔑 Zobrazit / obnovit heslo"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Databáze"
+  },
+  "modal": {
+    "titleSuffix": "Heslo",
+    "userLabel": "Uživatel:",
+    "notStored": "(neuloženo)",
+    "notAuthorized": "(bez oprávnění)",
+    "showCurrent": "👁 Zobrazit aktuální heslo",
+    "currentPasswordLabel": "Aktuální heslo",
+    "newPasswordGenerated": "✓ Nové heslo vygenerováno",
+    "copyWarning": "⚠ Heslo si nyní zkopírujte. Po zavření tohoto okna ho možná nebudete moci znovu zobrazit.",
+    "close": "Zavřít",
+    "generating": "Generování…",
+    "generateAgain": "↻ Generovat znovu",
+    "generateNew": "⚡ Vygenerovat nové heslo",
+    "errorGenerate": "Heslo nelze vygenerovat"
+  },
+  "copyButton": {
+    "copy": "Kopírovat",
+    "copied": "✓ Zkopírováno"
+  }
+}

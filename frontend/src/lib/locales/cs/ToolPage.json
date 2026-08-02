@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény"
+  },
+  "fallback": {
+    "label": "Nástroj",
+    "description": "Zatím není implementováno."
+  },
+  "notReady": "Není připraveno",
+  "domainLabel": "Doména: ",
+  "construction": {
+    "heading": "Ve výstavbě",
+    "availablePrefix": "Tento modul bude k dispozici ve fázi ",
+    "availableSuffix": ".",
+    "availableLater": "Tento modul bude k dispozici v pozdější fázi.",
+    "returnToDashboard": "← Zpět na nástěnku domény"
+  },
+  "tool": {
+    "connection": {
+      "label": "Údaje o připojení",
+      "description": "Server FTP, uživatelské jméno, připojovací řetězec databáze a akce rychlého kopírování."
+    },
+    "files": {
+      "label": "Správce souborů",
+      "description": "Vypisujte, nahrávejte, stahujte a měňte oprávnění souborů pod public_html."
+    },
+    "databases": {
+      "label": "Databáze",
+      "description": "Databáze MySQL, uživatelé a integrace phpMyAdmin."
+    },
+    "ftp": {
+      "label": "Účty FTP",
+      "description": "Virtuální účty FTP, hesla a domovské adresáře přes Pure-FTPd."
+    },
+    "backups": {
+      "label": "Zálohování a obnovení",
+      "description": "Zálohujte archivy tar a výpisy databází na SFTP, S3 nebo místní úložiště."
+    },
+    "copy": {
+      "label": "Kopírovat web",
+      "description": "Naklonujte existující web na jinou doménu."
+    },
+    "php": {
+      "label": "Nastavení PHP",
+      "description": "Výběr poolu PHP-FPM, změny verzí a parametry php.ini."
+    },
+    "logs": {
+      "label": "Protokoly",
+      "description": "Živé monitorování access.log a error.log se sledováním přes WebSocket."
+    },
+    "cron": {
+      "label": "Naplánované úlohy",
+      "description": "Editor crontabu pro každého uživatele."
+    },
+    "git": {
+      "label": "Git",
+      "description": "Připojte repozitáře, nastavte nasazovací klíče a stahujte automaticky pomocí webhooků."
+    },
+    "composer": {
+      "label": "PHP Composer",
+      "description": "Webové rozhraní pro composer install a update."
+    },
+    "performance": {
+      "label": "Výkon",
+      "description": "Akcelerátory jako OPcache, gzip a lazy loading."
+    },
+    "ssl": {
+      "label": "Certifikát SSL/TLS",
+      "description": "Automatická instalace a obnovení Let's Encrypt."
+    },
+    "password-protection": {
+      "label": "Heslem chráněné adresáře",
+      "description": "Chraňte adresáře pomocí .htpasswd."
+    },
+    "stats": {
+      "label": "Statistiky",
+      "description": "Reporty disku, provozu a návštěvníků."
+    },
+    "imunify": {
+      "label": "Imunify",
+      "description": "Integrace antiviru a WAF."
+    }
+  }
+}

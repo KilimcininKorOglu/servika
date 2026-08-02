@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "databases": "Databáze"
+  },
+  "title": "Databáze",
+  "actions": {
+    "new": "+ Nová databáze",
+    "refresh": "↻ Obnovit"
+  },
+  "count": "{{count}} databází",
+  "loading": "Načítání...",
+  "empty": "Zatím žádné databáze",
+  "columns": {
+    "database": "Databáze",
+    "username": "Uživatelské jméno",
+    "host": "Host",
+    "password": "Heslo",
+    "created": "Vytvořeno",
+    "actions": "Akce"
+  },
+  "password": {
+    "show": "Zobrazit",
+    "hide": "Skrýt",
+    "copy": "Kopírovat"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Otevřít phpMyAdmin v nové kartě",
+    "resetPassword": "🔑 Obnovit heslo",
+    "delete": "Smazat"
+  },
+  "errors": {
+    "pmaToken": "Token phpMyAdmin nelze získat",
+    "deleteFailed": "Smazání se nezdařilo"
+  },
+  "delete": {
+    "title": "Smazat databázi",
+    "message": "Databáze „{{name}}“ a její uživatel budou trvale smazáni. Tuto akci nelze vrátit zpět.",
+    "confirm": "Ano, smazat"
+  },
+  "newModal": {
+    "title": "Nová databáze",
+    "created": "✓ Databáze vytvořena",
+    "saveHint": "Uložte je na bezpečné místo. Heslo možná později nebudete moci zobrazit v čitelné podobě:",
+    "labelDatabase": "Databáze",
+    "labelUser": "Uživatel",
+    "labelPassword": "Heslo",
+    "done": "Hotovo",
+    "autoPre": "Automaticky",
+    "autoPost": ", nechte panel vygenerovat název databáze, uživatele a heslo",
+    "dbNameLabel": "Název databáze",
+    "dbSuffixPlaceholder": "blog",
+    "dbUserLabel": "Uživatel databáze",
+    "newUser": "Nový uživatel",
+    "selectExistingUser": "Vyberte existujícího uživatele",
+    "userSuffixPlaceholder": "bloguser",
+    "passwordLabel": "Heslo",
+    "passwordOptional": "(nechte prázdné pro vygenerování)",
+    "passwordPlaceholder": "Alespoň 12 znaků, písmena a číslice",
+    "generate": "Generovat",
+    "passwordStrength": "Heslo musí mít alespoň 12 znaků s písmeny a číslicemi.",
+    "cancel": "Zrušit",
+    "creating": "Vytváření...",
+    "create": "Vytvořit",
+    "errors": {
+      "dbSuffix": "Přípona databáze: pouze malá písmena, číslice a podtržítko; 1-32 znaků",
+      "dbNameTooLong": "Název databáze je příliš dlouhý (prefix + přípona smí mít nejvýše 64 znaků)",
+      "userSuffix": "Přípona uživatele: pouze malá písmena, číslice a podtržítko; 1-32 znaků",
+      "userNameTooLong": "Uživatelské jméno je příliš dlouhé (prefix + přípona smí mít nejvýše 64 znaků)",
+      "passwordStrength": "Heslo musí mít alespoň 12 znaků s písmeny a číslicemi",
+      "selectExisting": "Vyberte existujícího uživatele",
+      "createFailed": "Vytvoření se nezdařilo"
+    }
+  },
+  "resultRow": {
+    "copied": "✓",
+    "copy": "Kopírovat"
+  },
+  "pwReset": {
+    "title": "Obnovit heslo: {{name}}",
+    "introPre": " heslo uživatele se současně aktualizuje v MariaDB i v panelu.",
+    "customLabel": "Vlastní heslo (nechte prázdné pro vygenerování)",
+    "customPlaceholder": "Alespoň 6 znaků",
+    "cancel": "Zrušit",
+    "useThis": "Použít toto heslo",
+    "resetting": "Obnovování...",
+    "generateRandom": "Vygenerovat náhodné heslo",
+    "updated": "✓ Heslo aktualizováno",
+    "saveHint": "Uložte to na bezpečné místo. Později to již nebude možné zobrazit.",
+    "copy": "Kopírovat",
+    "done": "Hotovo",
+    "errors": {
+      "tooShort": "Heslo musí mít alespoň 6 znaků",
+      "resetFailed": "Obnovení hesla se nezdařilo"
+    }
+  }
+}

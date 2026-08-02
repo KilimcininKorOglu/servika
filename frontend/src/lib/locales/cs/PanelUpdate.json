@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "Zatím nezkontrolováno",
+  "title": "Aktualizace panelu",
+  "badges": {
+    "server": "Server",
+    "critical": "Kritická",
+    "updateAvailable": "Aktualizace k dispozici"
+  },
+  "description": "Aktualizuje panel na nejnovější verzi z GitHub. Nastavení prostředí, databáze a weby zůstanou zachovány a nefunkční vydání se automaticky vrátí zpět.",
+  "toolMissing": " Nástroj aktualizace chybí a bude automaticky stažen při prvním použití.",
+  "labels": {
+    "current": "Aktuální",
+    "latest": "Nejnovější",
+    "buildDate": "Datum sestavení",
+    "lastCheck": "Poslední kontrola"
+  },
+  "unknown": "Neznámé",
+  "lastCheckFailed": "Poslední kontrola verze selhala: {{error}}",
+  "checksDisabled": "Kontroly verzí jsou zakázány.",
+  "running": "Aktualizace probíhá. Panel se může krátce restartovat; ponechte tuto stránku otevřenou.",
+  "logStarted": "Aktualizace zahájena...\n",
+  "checkAndInstall": "Zkontrolovat aktualizace a nainstalovat",
+  "checking": "Kontrola...",
+  "refreshStatus": "Obnovit stav verze",
+  "confirmPrompt": "Panel bude aktualizován a jeho služba restartována. Potvrdit?",
+  "starting": "Spouštění...",
+  "confirmYes": "Ano, aktualizovat",
+  "cancel": "Zrušit",
+  "errors": {
+    "refresh": "Stav verze nelze obnovit",
+    "start": "Aktualizaci nelze spustit"
+  }
+}

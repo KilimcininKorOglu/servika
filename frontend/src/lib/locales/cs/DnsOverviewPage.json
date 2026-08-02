@@ -1,0 +1,21 @@
+{
+  "title": "Správa DNS",
+  "description": "Počty záznamů a stav DNSSEC napříč všemi doménami.",
+  "emptyMessage": "Nebyly nalezeny žádné domény.",
+  "column": {
+    "domain": "Doména",
+    "records": "Záznamy",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "Zapnuto",
+    "off": "Vypnuto"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC zapnuto",
+    "noMx": "Bez MX"
+  }
+}

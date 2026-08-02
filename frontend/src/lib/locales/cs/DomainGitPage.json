@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "git": "Git"
+  },
+  "title": "Nasazení Git",
+  "loading": "Načítání…",
+  "intro": {
+    "pre": " · ",
+    "text": "Připojte repozitář, přidejte nasazovací klíč do GitHub a použijte URL webhooku pro automatické stahování."
+  },
+  "errors": {
+    "patRequired": "Je vyžadován GitHub PAT",
+    "connectFailed": "Nelze se připojit ke GitHub",
+    "loadReposFailed": "Repozitáře nelze načíst",
+    "selectRepoBranch": "Vyberte repozitář a větev",
+    "connectionFailed": "Připojení se nezdařilo"
+  },
+  "messages": {
+    "connected": "Připojeno ke GitHub: @{{login}}",
+    "repoConnected": "Repozitář připojen: {{repo}}@{{branch}}",
+    "webhookEnabled": " · Automatické nasazení povoleno (webhook vytvořen)",
+    "webhookError": " · Chyba webhooku: {{error}}",
+    "ghDisconnected": "Připojení ke GitHub odebráno",
+    "connectHint": "Repozitář připojen. Zkopírujte nasazovací klíč, přidejte ho do svého repozitáře GitHub a poté klikněte na „Klonovat“.",
+    "cloned": "Naklonováno. Commit: {{commit}}",
+    "cloneFailed": "Klonování se nezdařilo",
+    "pullDone": "Stažení dokončeno. Commit: {{commit}}",
+    "pullFailed": "Stažení se nezdařilo",
+    "repoRemoved": "Připojení repozitáře odebráno"
+  },
+  "confirm": {
+    "ghDisconnect": "Připojení ke GitHub bude odebráno. Případný webhook bude smazán, ale stávající soubory repozitáře zůstanou nedotčeny."
+  },
+  "github": {
+    "title": "Připojení ke GitHub",
+    "subtitle": "Připojte se pomocí PAT, vyberte repozitář a povolte nasazení jedním kliknutím s automatickým webhookem.",
+    "removeConnection": "Odebrat připojení",
+    "patLabel": "Personal Access Token (classic)",
+    "connecting": "Připojování…",
+    "connect": "Připojit",
+    "patHintLink": "github.com/settings/tokens",
+    "patHintPre": " →\n                  Fine-grained PAT → rozsah: ",
+    "patHintScope1": "repo",
+    "patHintMid": " +",
+    "patHintScope2": "admin:repo_hook",
+    "patHintPost": " (pro automatické nasazení).",
+    "autoDeployBadge": "● Automatické nasazení",
+    "repo": "Repozitář",
+    "selectPlaceholder": "— vyberte —",
+    "reposFound": "Nalezeno repozitářů: {{count}}",
+    "branch": "Větev",
+    "autoDeployLabel": "Automaticky nasadit při push (vytvoří webhook)",
+    "useRepo": "Použít tento repozitář",
+    "webhookLabel": "Webhook: {{url}}"
+  },
+  "repoCard": {
+    "settingsTitle": "Nastavení repozitáře",
+    "connectTitle": "Připojit repozitář",
+    "gitUrl": "URL Git (SSH)",
+    "gitUrlPlaceholder": "git@github.com:username/repo.git",
+    "gitUrlHint": "Pro soukromé repozitáře použijte SSH URL. Ověřování přes HTTPS není podporováno.",
+    "branch": "Větev",
+    "targetDir": "Cílový adresář",
+    "update": "Aktualizovat",
+    "connect": "Připojit",
+    "clone": "⬇ Klonovat (vymaže cíl)",
+    "pull": "↻ Stáhnout",
+    "removeConnection": "Odebrat připojení"
+  },
+  "deployKey": {
+    "title": "Nasazovací klíč (veřejný)",
+    "copy": "Kopírovat",
+    "hint": "GitHub → Repozitář → Settings → Deploy keys → Add deploy key, poté vložte tento klíč (přístup pro zápis není vyžadován)."
+  },
+  "webhook": {
+    "title": "Webhook (automatické stažení)",
+    "hintPre": "GitHub → Repozitář → Settings → Webhooks → Add webhook. Typ obsahu: ",
+    "hintPost": ". Událost push je dostačující.",
+    "payloadUrl": "URL payload",
+    "secret": "Tajemství",
+    "contentType": "Typ obsahu",
+    "contentTypeValue": "application/json",
+    "events": "Události",
+    "eventsValue": "Jen událost push"
+  },
+  "status": {
+    "title": "Stav synchronizace",
+    "latestSync": "Poslední synchronizace",
+    "noneYet": "— (zatím žádná)",
+    "latestCommit": "Poslední commit",
+    "statusLabel": "Stav",
+    "successful": "✓ úspěšné",
+    "error": "⚠ chyba",
+    "latestLog": "Poslední protokol"
+  },
+  "cloneDialog": {
+    "title": "Prvotní klonování",
+    "message": "Cílový adresář ({{dir}}) bude zcela vymazán a poté se naklonuje větev {{branch}} repozitáře. Pokračovat?",
+    "confirm": "Ano, klonovat"
+  },
+  "deleteDialog": {
+    "title": "Odebrat připojení repozitáře",
+    "message": "Záznam panelu bude smazán. Naklonované soubory zůstanou na disku.",
+    "confirm": "Ano, smazat"
+  }
+}

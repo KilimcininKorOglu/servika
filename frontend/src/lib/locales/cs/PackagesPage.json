@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Domů",
+  "breadcrumbTools": "Nástroje a nastavení",
+  "title": "Správce balíčků",
+  "subtitle": "Serverové balíčky a kompilační prostředí přes DNF.",
+  "installedCount": "Nainstalováno balíčků: {{count}}",
+  "quickInstallGroups": "Skupiny rychlé instalace",
+  "groups": {
+    "devtools": { "name": "Vývojové nástroje", "description": "gcc, make, autoconf, automake, libtool, kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + vývojové hlavičky" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Kompilátor Go" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "Kontejner / VM", "description": "Kompatibilní s Docker: podman + buildah + skopeo" },
+    "systools": { "name": "Systémové nástroje", "description": "Produktivní nástroje CLI" },
+    "imaging": { "name": "Zpracování obrázků", "description": "ImageMagick + WebP + optimalizace" },
+    "dbclients": { "name": "Klienti databází", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "Zabezpečení", "description": "GnuPG, OpenSSL, fail2ban" }
+  },
+  "badges": {
+    "installed": "NAINSTALOVÁNO",
+    "protected": "CHRÁNĚNO"
+  },
+  "tabs": {
+    "search": "Prohledat repozitáře",
+    "installed": "Nainstalované balíčky"
+  },
+  "searchPlaceholder": "např. mongodb, redis, nodejs, gcc, htop",
+  "installedPlaceholder": "název nebo popis nainstalovaného balíčku",
+  "noResults": "Žádné výsledky.",
+  "resultsCount": "{{count}} výsledků",
+  "actions": {
+    "processing": "Zpracování...",
+    "remove": "Odebrat",
+    "install": "Nainstalovat",
+    "removing": "Odebírání...",
+    "installing": "Instalace...",
+    "search": "Hledat",
+    "searching": "Hledání...",
+    "close": "Zavřít"
+  },
+  "confirm": {
+    "install": "„{{pkg}}“ bude nainstalován pro celý systém. Pokračovat?",
+    "remove": "„{{pkg}}“ bude ODEBRÁN. Pokračovat?"
+  },
+  "toast": {
+    "installed": "{{pkg}} nainstalován",
+    "removed": "{{pkg}} odebrán"
+  },
+  "output": {
+    "installTitle": "Výstup instalace: {{pkg}}",
+    "removeTitle": "Výstup odebrání: {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "Instalace se nezdařila",
+    "removeFailed": "Odebrání se nezdařilo",
+    "toggleInstallFailed": "Balíček nelze nainstalovat",
+    "toggleRemoveFailed": "Balíček nelze odebrat",
+    "searchFailed": "Hledání se nezdařilo"
+  }
+}

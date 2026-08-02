@@ -1,0 +1,153 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "files": "Soubory"
+  },
+  "title": "Správce souborů",
+  "loading": "Načítání...",
+  "dropZone": {
+    "title": "Přetáhněte soubory sem",
+    "targetDir": "Cílový adresář: "
+  },
+  "selection": {
+    "count": "Vybráno položek: {{count}}",
+    "rightClick": "Klikněte pravým tlačítkem pro akce",
+    "delete": "Smazat ({{count}})",
+    "clear": "Zrušit výběr"
+  },
+  "upload": {
+    "uploading": "Nahrávání...",
+    "remaining": "Zbývá: {{eta}}"
+  },
+  "menu": {
+    "uploadFiles": "📤 Nahrát soubory",
+    "newFolder": "📁 Nová složka",
+    "newFile": "📄 Nový soubor"
+  },
+  "toolbar": {
+    "refresh": "↻ Obnovit",
+    "delete": "Smazat ({{count}})",
+    "searchPlaceholder": "🔍 Hledat soubory...",
+    "itemCount": "{{count}} položek"
+  },
+  "columns": {
+    "select": "Vybrat",
+    "name": "Název",
+    "size": "Velikost",
+    "permissions": "Oprávnění",
+    "modified": "Změněno",
+    "actions": "Akce"
+  },
+  "parentFolder": "↑ nadřazená složka",
+  "empty": "Tato složka je prázdná",
+  "actionsTitle": "Akce",
+  "context": {
+    "open": "Otevřít",
+    "browse": "Otevřít v prohlížeči",
+    "edit": "Upravit",
+    "download": "Stáhnout",
+    "rename": "Přejmenovat",
+    "permissions": "Oprávnění",
+    "calculateSize": "Vypočítat velikost",
+    "extract": "Rozbalit archiv",
+    "copy": "Kopírovat",
+    "move": "Přesunout",
+    "delete": "Smazat"
+  },
+  "prompt": {
+    "deleteConfirm": "Smazat „{{name}}“? Tuto akci nelze vrátit zpět.",
+    "newFolderName": "Název nové složky:"
+  },
+  "sizeModal": {
+    "title": "📏 Informace o velikosti",
+    "bytes": "{{bytes}} bajtů",
+    "done": "Hotovo"
+  },
+  "bulkDelete": {
+    "title": "⚠ Hromadné smazání",
+    "messageBold": "{{count}}",
+    "messagePost": " položek bude trvale smazáno. Složky a veškerý jejich obsah budou odstraněny.",
+    "moreItems": "+ {{count}} dalších...",
+    "cancel": "Zrušit",
+    "confirm": "Ano, smazat"
+  },
+  "renameModal": {
+    "title": "Přejmenovat",
+    "cancel": "Zrušit",
+    "rename": "Přejmenovat"
+  },
+  "chmodModal": {
+    "title": "Oprávnění",
+    "owner": "Vlastník",
+    "group": "Skupina",
+    "other": "Ostatní",
+    "read": "Čtení",
+    "write": "Zápis",
+    "execute": "Spuštění",
+    "octal": "Osmičkově: ",
+    "cancel": "Zrušit",
+    "apply": "Použít"
+  },
+  "copyMoveModal": {
+    "titleCopy": "Kopírovat",
+    "titleMove": "Přesunout",
+    "heading": "{{title}} ({{count}} položek)",
+    "moreItems": "+ {{count}} dalších...",
+    "targetLabel": "Cílový adresář (pod home)",
+    "targetPlaceholder": "/public_html/backups",
+    "hintPre": "Cíl musí již existovat. ",
+    "hintCopy": "Složky se kopírují s jejich obsahem.",
+    "hintMove": "Přesuny na stejném disku jsou okamžité.",
+    "cancel": "Zrušit"
+  },
+  "archiveModal": {
+    "title": "📦 Přidat do archivu ({{count}} položek)",
+    "fileName": "Název souboru",
+    "format": "Formát",
+    "output": "Výstup: ",
+    "cancel": "Zrušit",
+    "archive": "Archivovat"
+  },
+  "newFileModal": {
+    "title": "📄 Nový soubor",
+    "fileNameLabel": "Název souboru (včetně přípony)",
+    "hint": "Vytvoří se prázdný soubor, který se poté otevře v editoru kódu.",
+    "cancel": "Zrušit",
+    "createAndEdit": "Vytvořit a upravit"
+  },
+  "eta": {
+    "lessThanSec": "<1 s",
+    "sec": "{{count}} s",
+    "minSec": "{{min}} min {{sec}} s",
+    "hrMin": "{{hr}} h {{min}} min"
+  },
+  "toast": {
+    "uploadPartial": "Nahráno {{success}}/{{total}} souborů, některé selhaly.",
+    "deletePartial": "Smazáno {{success}}/{{total}} položek.",
+    "someErrors": "Některé chyby: {{errors}}",
+    "downloadFailed": "Stažení se nezdařilo: {{message}}"
+  },
+  "errors": {
+    "deleteFailed": "Smazání se nezdařilo",
+    "createFolderFailed": "Složku nelze vytvořit",
+    "openFailed": "Nelze otevřít",
+    "saveFailed": "Nelze uložit",
+    "renameFailed": "Nelze přejmenovat",
+    "chmodFailed": "Oprávnění nelze změnit",
+    "extractFailed": "Archiv nelze otevřít. Podporovány jsou archivy ZIP, RAR a TAR.",
+    "searchFailed": "Hledání se nezdařilo",
+    "copyFailed": "Kopírování se nezdařilo",
+    "moveFailed": "Přesun se nezdařil",
+    "archiveFailed": "Archivace se nezdařila",
+    "createFailed": "Vytvoření se nezdařilo",
+    "sizeFailed": "Výpočet velikosti se nezdařil"
+  },
+  "newFile": {
+    "title": "📄 Nový soubor",
+    "label": "Název souboru (včetně přípony)",
+    "hint": "Vytvoří se prázdný soubor, který se poté otevře v editoru kódu.",
+    "cancel": "Zrušit",
+    "create": "Vytvořit a upravit"
+  }
+}

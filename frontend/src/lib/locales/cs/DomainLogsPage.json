@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "logs": "Protokoly"
+  },
+  "title": "Protokoly",
+  "streamFailed": "Přenos se nepodařilo spustit (HTTP {{status}})",
+  "view": {
+    "table": "Tabulka",
+    "raw": "Nezpracované"
+  },
+  "autoScroll": "Automatické posouvání",
+  "stop": "■ Zastavit",
+  "liveTail": "▶ Živé sledování",
+  "last200": "↻ Posledních 200",
+  "clear": "Vymazat",
+  "searchPlaceholder": "Hledat podle IP, cesty, stavového kódu, prohlížeče...",
+  "clearSearch": "Vymazat hledání",
+  "matches": "{{visible}} / {{total}} shod",
+  "waiting": "Čekání... Nové řádky se zobrazí, jakmile dorazí.",
+  "emptyFile": "(soubor protokolu je prázdný nebo ještě nebyl vytvořen)",
+  "noMatch": "„{{search}}“ Tomuto hledání neodpovídají žádné řádky.",
+  "linesFiltered": "{{visible}} / {{total}} řádků (filtrováno)",
+  "lines": "{{count}} řádků",
+  "windowSuffix": ", okno {{max}}",
+  "liveStream": "živý přenos",
+  "access": {
+    "time": "Čas",
+    "ip": "IP",
+    "method": "Metoda",
+    "path": "Cesta",
+    "status": "Stav",
+    "size": "Velikost",
+    "browser": "Prohlížeč"
+  },
+  "error": {
+    "time": "Čas",
+    "level": "Úroveň",
+    "client": "Klient",
+    "message": "Zpráva"
+  }
+}

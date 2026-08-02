@@ -1,0 +1,21 @@
+{
+  "resourceUsage": "Využití zdrojů",
+  "live": "živě",
+  "loading": "Načítání…",
+  "cpu": "CPU",
+  "cpuAlt": "{{cores}} jader · zatížení {{load1}} / {{load5}} / {{load15}}",
+  "memory": "Paměť",
+  "disk": "Disk",
+  "uptime": "Doba běhu",
+  "systemStatus": "Stav systému",
+  "waiting": "Čekání…",
+  "backend": "Backend",
+  "running": "Běží",
+  "version": "Verze",
+  "time": "Čas",
+  "uptimeFmt": {
+    "daysHours": "{{days}} d {{hours}} h",
+    "hoursMinutes": "{{hours}} h {{minutes}} min",
+    "minutes": "{{minutes}} min"
+  }
+}

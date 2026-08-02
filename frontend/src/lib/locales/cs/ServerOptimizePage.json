@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "toolsAndSettings": "Nástroje a nastavení",
+    "serverOptimize": "Optimalizace serveru"
+  },
+  "title": "Optimalizace serveru",
+  "description": "Aktualizuje systémové balíčky a znovu doladí nastavení MariaDB / nginx / PHP podle zdrojů serveru. Operace běží na pozadí — tuto stránku můžete zavřít; může chvíli trvat a krátce ovlivnit služby."
+}

@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "Domů",
+  "breadcrumbServices": "Hostingové služby",
+  "breadcrumbTitle": "Přenos účtu",
+  "title": "Import účtu",
+  "subtitle": "Bezpečně analyzujte úplnou zálohu účtu cPanel. Archiv se v této fázi na serveru nerozbaluje ani neukládá.",
+  "fileLabel": "Úplná záloha cPanel (.tar.gz / .tgz)",
+  "uploading": "Nahrávání {{progress}} %",
+  "analyzeButton": "Analyzovat archiv",
+  "kpi": {
+    "primaryDomain": "Primární doména",
+    "undetermined": "Neurčeno",
+    "webFiles": "Webové soubory",
+    "databases": "Databáze",
+    "emailData": "E-mailová data",
+    "emailFiles": "{{count}} souborů",
+    "none": "Žádná"
+  },
+  "detail": {
+    "title": "Informace o účtu",
+    "sourcePanel": "Zdrojový panel",
+    "user": "Uživatel",
+    "archiveRoot": "Kořen archivu",
+    "totalMembers": "Počet položek",
+    "expandedSize": "Rozbalená velikost",
+    "cron": "Cron",
+    "cronPresent": "Přítomen",
+    "cronNone": "Žádný",
+    "sslFiles": "Soubory SSL",
+    "mailboxes": "Poštovní schránky",
+    "forwarders": "Přesměrování",
+    "cronJobs": "Úlohy cron"
+  },
+  "lists": {
+    "databases": "Databáze",
+    "dnsZones": "Zóny DNS",
+    "cronJobs": "Úlohy cron",
+    "noneFound": "Nic nenalezeno"
+  },
+  "analysisComplete": "Analýza dokončena. Import vytvoří novou doménu; při selhání se vytvořený účet automaticky vrátí zpět.",
+  "targetAndPlan": "Cíl a tarif",
+  "fields": {
+    "targetCustomer": "Cílový zákazník",
+    "selectCustomer": "Vyberte zákazníka",
+    "servicePlan": "Tarif služby",
+    "defaultPlan": "Výchozí tarif",
+    "primaryDomain": "Primární doména",
+    "phpVersion": "Verze PHP"
+  },
+  "importing": "Import… {{progress}} %",
+  "importButton": "Importovat účet",
+  "importResult": {
+    "title": "Import dokončen",
+    "summary": "{{domain}} · {{webFiles}} webových souborů · {{count}} databází",
+    "newPasswords": "Nová hesla poštovních schránek — uložte je nyní",
+    "forwardersTransferred": "Přeneseno přesměrování: {{count}}.",
+    "cronTransferred": "Přeneseno úloh cron: {{count}}.",
+    "sslTransferred": "Certifikát SSL přenesen · platný do {{expires}}",
+    "manageDomain": "Spravovat doménu →"
+  },
+  "errors": {
+    "analyzeFailed": "Archiv nelze analyzovat",
+    "importFailed": "Účet nelze importovat"
+  }
+}

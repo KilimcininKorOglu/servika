@@ -1,0 +1,52 @@
+{
+  "loading": "Načítání…",
+  "notFound": "Nenalezeno",
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "sshAccess": "Přístup SSH"
+  },
+  "title": "Přístup SSH",
+  "subtitle": "přístup k shellu účtu.",
+  "badge": {
+    "on": "SSH ZAP",
+    "off": "SSH VYP"
+  },
+  "toast": {
+    "accessActive": "Přístup SSH aktivní.",
+    "accessDisabled": "Přístup SSH zakázán.",
+    "operationFailed": "Operace se nezdařila",
+    "keySaved": "Klíč SSH uložen.",
+    "keysCleared": "Klíče SSH vymazány.",
+    "keySaveFailed": "Klíč nelze uložit"
+  },
+  "shell": {
+    "title": "Přístup k shellu",
+    "enabledPrefix": "Povoleno:",
+    "disabledPrefix": "Zakázáno:",
+    "currentPrefix": "Aktuální:",
+    "disable": "Zakázat SSH",
+    "enable": "Povolit SSH",
+    "demoNotice": "Přístup SSH nelze pro demo doménu změnit."
+  },
+  "connection": {
+    "title": "Údaje o připojení",
+    "user": "Uživatel",
+    "host": "Host",
+    "port": "Port",
+    "commandLabel": "Příkaz pro připojení",
+    "copy": "Kopírovat",
+    "passwordPrefix": "Heslo:",
+    "passwordBold": "stejné jako u vašeho účtu FTP",
+    "passwordSuffix": ". Synchronizuje se automaticky, dokud je SSH aktivní. Případně níže přidejte veřejný klíč SSH."
+  },
+  "key": {
+    "title": "Veřejný klíč SSH (authorized_keys)",
+    "descPrefix": "Přidejte svůj veřejný klíč pro přihlášení bez hesla.",
+    "configured": "Aktuálně je nastaven klíč.",
+    "notConfigured": "Zatím není nastaven žádný klíč.",
+    "removeHint": "Pro odebrání všech klíčů uložte prázdnou hodnotu.",
+    "save": "Uložit klíč"
+  },
+  "backToSubscription": "← Zpět na předplatné"
+}

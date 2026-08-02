@@ -1,0 +1,68 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "current": "Nástroje a nastavení"
+  },
+  "title": "Nástroje a nastavení",
+  "subtitle": "Správa pro celý server — PHP, systémové balíčky, síť, zabezpečení a údržba.",
+  "searchPlaceholder": "Hledat nástroje…",
+  "searchAria": "Hledat nástroje",
+  "maintenance": "Údržba serveru",
+  "noResults": "Pro „{{q}}“ nebyly nalezeny žádné nástroje",
+  "noResultsHint": "Změňte nebo vymažte hledaný výraz.",
+  "footer_one": "{{count}} nástroj · pro celý server",
+  "footer_few": "{{count}} nástroje · pro celý server",
+  "footer_other": "{{count}} nástrojů · pro celý server",
+  "badges": {
+    "dynamic": "Dynamické",
+    "serverWide": "Pro celý server"
+  },
+  "groups": {
+    "php": "PHP",
+    "system": "Systém a služby",
+    "network": "Síť a DNS",
+    "security": "Zabezpečení a zálohy"
+  },
+  "tools": {
+    "phpVersions": {
+      "title": "Verze PHP",
+      "description": "Přidejte nebo odeberte verze 7.4 až 8.6. Každá doména si svou verzi vybírá nezávisle."
+    },
+    "phpExtensions": {
+      "title": "Rozšíření PHP",
+      "description": "Přepínejte rozšíření pro celý server, vyhledávejte balíčky PECL a kompilujte je."
+    },
+    "packages": {
+      "title": "Správce balíčků",
+      "description": "Balíčky DNF — kompilátory a běhová prostředí. Připravené instalační skupiny."
+    },
+    "services": {
+      "title": "Služby",
+      "description": "Stav a restart nginx / Apache / MariaDB / DNS / PHP-FPM."
+    },
+    "servicePlans": {
+      "title": "Tarify služeb",
+      "description": "Hostingové balíčky s kvótami disku, databáze a FTP."
+    },
+    "dnsTemplate": {
+      "title": "Šablona DNS",
+      "description": "Centrální záznamy DNS použité na nové domény (A/MX/SPF/DMARC/DKIM) se SOA."
+    },
+    "domains": {
+      "title": "Domény",
+      "description": "Procházejte, vyhledávejte a rychle přistupujte ke všem doménám."
+    },
+    "firewall": {
+      "title": "Firewall",
+      "description": "Blokování IP/portů, seznam povolených, zavření portů. Kritické porty jsou chráněny."
+    },
+    "backupManager": {
+      "title": "Správce záloh",
+      "description": "Zobrazte velikosti záloh všech domén, záloha jedním kliknutím, cíle S3/SFTP."
+    },
+    "monitoring": {
+      "title": "Monitorování a protokoly",
+      "description": "Grafy CPU/RAM/disku a protokoly serveru z journald (panel/nginx/SSH…)."
+    }
+  }
+}

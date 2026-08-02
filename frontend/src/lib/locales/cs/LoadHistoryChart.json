@@ -1,0 +1,9 @@
+{
+  "title": "Historie zatížení systému",
+  "subtitle": "Průměrné zatížení (1 / 5 / 15 min)",
+  "cores": "{{count}} jader",
+  "scale": "√ škála",
+  "coresCapacity": "{{count}} jader · 100 %",
+  "noData": "Zatím nebyla shromážděna žádná data",
+  "noDataHint": "Vzorky se zaznamenávají každou minutu; graf se naplní během několika minut."
+}

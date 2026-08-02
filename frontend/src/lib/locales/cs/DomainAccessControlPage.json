@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "accessControl": "Řízení přístupu"
+  },
+  "title": "Řízení přístupu",
+  "subtitle": "Nastavte ochranu proti hotlinkingu a pravidla povolení nebo blokování IP na úrovni domény. Uložení znovu vykreslí nginx vhost.",
+  "loading": "Načítání…",
+  "modes": {
+    "off": {
+      "label": "Vypnuto",
+      "description": "Do nginx vhost se nevykreslují žádná pravidla povolení nebo blokování IP."
+    },
+    "block": {
+      "label": "Blokovat uvedené IP",
+      "description": "Návštěvníci z uvedených IP adres nebo rozsahů CIDR obdrží odpověď 403."
+    },
+    "allow": {
+      "label": "Povolit jen uvedené IP",
+      "description": "Pokud existuje alespoň jedno pravidlo, jsou povoleny pouze uvedené IP adresy nebo rozsahy CIDR."
+    }
+  },
+  "hotlink": {
+    "title": "Ochrana proti hotlinkingu",
+    "description": "Blokuje vkládání obrázků z této domény externími weby.",
+    "enabled": "Povoleno",
+    "allowedLabel": "Další povolené odkazující domény",
+    "hint": "Aktuální doména a její www host jsou vždy povoleny. Přidejte jednu doménu na řádek nebo oddělené čárkou.",
+    "save": "Uložit nastavení hotlinkingu",
+    "saving": "Ukládání…"
+  },
+  "ipMode": {
+    "title": "Režim přístupu IP",
+    "selected": "● Vybráno"
+  },
+  "newRule": {
+    "title": "Nové pravidlo IP",
+    "label": "IP adresa nebo CIDR",
+    "placeholder": "203.0.113.10 nebo 203.0.113.0/24",
+    "add": "Přidat pravidlo",
+    "adding": "Přidávání…"
+  },
+  "rules": {
+    "title": "Nastavená pravidla IP",
+    "empty": "Zatím žádná pravidla IP.",
+    "created": "Vytvořeno {{date}}",
+    "delete": "Smazat"
+  },
+  "back": "← Zpět na předplatné",
+  "messages": {
+    "hotlinkSaved": "Nastavení ochrany proti hotlinkingu bylo uloženo.",
+    "modeSaved": "Režim přístupu IP byl uložen.",
+    "ruleAdded": "Pravidlo IP bylo přidáno.",
+    "ruleDeleted": "Pravidlo IP bylo smazáno."
+  },
+  "confirmDelete": "Smazat pravidlo IP {{ip}}?",
+  "errors": {
+    "hotlinkFailed": "Nastavení hotlinkingu nelze uložit",
+    "modeFailed": "Režim přístupu IP nelze uložit",
+    "addFailed": "Pravidlo IP nelze přidat",
+    "deleteFailed": "Pravidlo IP nelze smazat"
+  }
+}

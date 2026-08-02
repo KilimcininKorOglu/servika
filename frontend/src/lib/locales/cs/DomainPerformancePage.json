@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "performance": "Výkon"
+  },
+  "loading": "Načítání…",
+  "notFound": "Nenalezeno",
+  "title": "Výkon a akcelerátory",
+  "subtitle": {
+    "post": ", aktuální stav akcelerátorů a návrhy."
+  },
+  "scoreLabel": "Skóre výkonu",
+  "acceleratorsTitle": "Akcelerátory",
+  "cacheStat": "{{rate}} % zásah · {{total}} pož.",
+  "configure": "Nastavit →",
+  "suggestionsTitle": "Návrhy",
+  "open": "Otevřít →",
+  "back": "← Zpět na předplatné"
+}

@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "backups": "Zálohy"
+  },
+  "title": "Zálohy",
+  "subtitle": {
+    "prefix": "home + výpis MySQL = tar.gz, ",
+    "disabled": "Automatické zálohy zakázány",
+    "enabled": "{{freq}} {{hour}}:00, uchováno posledních {{retention}} automatických záloh"
+  },
+  "freq": {
+    "daily": "Denně",
+    "weekly": "Týdně"
+  },
+  "toast": {
+    "destinationSaved": "Vzdálený cíl uložen",
+    "destinationSaveFailed": "Cíl nelze uložit",
+    "destinationDeleted": "Vzdálený cíl smazán",
+    "confirmDeleteDest": "Smazat vzdálený cíl záloh? Stávající zálohy zůstanou nedotčeny, ale budoucí automatická nahrávání se zastaví.",
+    "autoDisabled": "Automatické zálohy zakázány",
+    "autoEnabled": "Automatické zálohy povoleny: {{freq}}, {{hour}}:00; uchová se posledních {{retention}} záloh",
+    "scheduleSaveFailed": "Plán nelze uložit",
+    "backupCreated": "Záloha vytvořena",
+    "createFailed": "Zálohu nelze vytvořit",
+    "restored": "Obnoveno: {{domain}}, databáze: {{database}}",
+    "restoreDbUnknown": "neznámá",
+    "restoreFailed": "Obnovení se nezdařilo"
+  },
+  "schedule": {
+    "heading": "Plán automatických záloh",
+    "description": "Po povolení panel kontroluje každou hodinu. Ve vybranou hodinu se vytvoří záloha a zálohy nad rámec uchovávání se smažou.",
+    "lastBackup": "Poslední automatická záloha:",
+    "options": {
+      "none": {
+        "name": "Zakázáno",
+        "description": "Žádné automatické zálohy. Běží pouze ruční „Zálohovat nyní“."
+      },
+      "daily": {
+        "name": "Denně",
+        "description": "Vytváří zálohu denně ve vybranou hodinu a uchovává posledních N záloh."
+      },
+      "weekly": {
+        "name": "Týdně",
+        "description": "Vytváří zálohu každých sedm dní pro snížení využití disku."
+      }
+    },
+    "active": "● Aktivní",
+    "runTime": "Čas spuštění (místní)",
+    "retentionLabel": "Počet uchovávaných záloh",
+    "retentionHint": "Starší automatické zálohy nad tento počet se smažou. Ruční zálohy zůstanou zachovány."
+  },
+  "destination": {
+    "heading": "Vzdálený cíl záloh (FTP / SFTP / S3 / B2)",
+    "description": "Po vytvoření se zálohy na pozadí nahrají do vzdáleného cíle pro ochranu mimo server proti selhání disku.",
+    "statusSuccessful": "● Poslední: úspěšná",
+    "statusError": "✗ Poslední: chyba",
+    "lastUpload": "Poslední nahrání:",
+    "typeLabel": "Typ cíle",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "Bucket",
+    "region": "Region",
+    "regionHint": "(výchozí us-east-1)",
+    "endpoint": "Endpoint",
+    "endpointHint": "(pro AWS S3 nechte prázdné)",
+    "accessKeyId": "Access key ID",
+    "secretAccessKey": "Secret access key",
+    "secretKeepHint": "(nechte prázdné pro zachování aktuálního)",
+    "keyPrefix": "Prefix klíče",
+    "pathStyle": "URL ve stylu cesty",
+    "host": "Host",
+    "port": "Port",
+    "username": "Uživatelské jméno",
+    "password": "Heslo",
+    "passwordKeepHint": "(nechte prázdné pro zachování aktuálního hesla)",
+    "remoteDir": "Vzdálený adresář",
+    "activeLabel": "Aktivní (odesílat každou zálohu do tohoto cíle)",
+    "testSuccess": "✓ Připojení úspěšné",
+    "testError": "✗ ",
+    "testErrorFallback": "Chyba",
+    "testing": "Testování...",
+    "testConnection": "Otestovat připojení",
+    "save": "Uložit",
+    "deleteDestination": "Smazat cíl"
+  },
+  "backingUp": "Zálohování...",
+  "backupNow": "+ Zálohovat nyní",
+  "refresh": "↻ Obnovit",
+  "backupCount": "{{count}} záloh",
+  "loading": "Načítání...",
+  "empty": "Zatím žádné zálohy",
+  "columns": {
+    "file": "Soubor",
+    "type": "Typ",
+    "size": "Velikost",
+    "created": "Vytvořeno",
+    "actions": "Akce"
+  },
+  "typeScheduled": "Naplánovaná",
+  "row": {
+    "download": "Stáhnout",
+    "restore": "↺ Obnovit",
+    "delete": "Smazat"
+  },
+  "confirmDelete": {
+    "title": "Smazat soubor zálohy",
+    "message": "Smazat soubor zálohy „{{file}}“?",
+    "confirm": "Ano, smazat"
+  },
+  "confirmRestore": {
+    "title": "Obnovit ze zálohy",
+    "message": "Obnovit „{{file}}“?\n\nVAROVÁNÍ: Stávající soubory public_html budou přepsány a tabulky MySQL budou znovu vytvořeny. Tuto akci nelze vrátit zpět.",
+    "confirm": "Ano, obnovit"
+  }
+}

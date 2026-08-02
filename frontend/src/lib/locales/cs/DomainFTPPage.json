@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "ftpAccount": "Účet FTP"
+  },
+  "title": "Účet FTP",
+  "errors": {
+    "resetFailed": "Obnovení hesla se nezdařilo"
+  },
+  "info": {
+    "host": "Host",
+    "port": "Port",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Uživatelské jméno",
+    "homeDir": "Domovský adresář"
+  },
+  "reset": {
+    "title": "Obnovit heslo",
+    "placeholder": "Zadejte vlastní heslo nebo nechte prázdné",
+    "setThis": "Nastavit toto heslo",
+    "generateRandom": "Vygenerovat náhodné heslo",
+    "success": "✓ Nové heslo nastaveno",
+    "saveHint": "Uložte to na bezpečné místo. Později to již nebude možné zobrazit.",
+    "copy": "Kopírovat"
+  },
+  "note": {
+    "label": "Poznámka:",
+    "pre": " FTP nyní používá ",
+    "code": "nešifrované",
+    "post": " ověřování vůči místní databázi. Pro šifrovaný přenos použijte SFTP na portu 22."
+  }
+}

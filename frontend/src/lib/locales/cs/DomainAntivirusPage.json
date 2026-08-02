@@ -1,0 +1,43 @@
+{
+  "loading": "Načítání...",
+  "notFound": "Nenalezeno",
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "antivirus": "Antivirus"
+  },
+  "title": "Antivirová kontrola malwaru",
+  "subtitlePrefix": "je kontrolována pomocí signatur ClamAV a vestavěné heuristiky webshellů.",
+  "toast": {
+    "startScanFailed": "Kontrolu nelze spustit",
+    "quarantineFailed": "Soubor nelze umístit do karantény",
+    "updateSignatureFailed": "Signatury nelze aktualizovat"
+  },
+  "confirmQuarantine": "Umístit tento soubor do karantény?\n{{file}}\n\n(Soubor bude přesunut do ~/.quarantined a stane se nedostupným.)",
+  "status": {
+    "enginePrefix": "Jádro:",
+    "engineFull": "ClamAV + heuristika",
+    "engineHeuristics": "Pouze heuristika",
+    "signatureDatabase": "Databáze signatur: {{date}}",
+    "latestScan": "Poslední kontrola: {{date}}. {{scanned}} souborů. {{infected}} nálezů",
+    "updating": "Aktualizace...",
+    "updateSignatures": "Aktualizovat signatury",
+    "scanning": "Kontrola...",
+    "scanNow": "Zkontrolovat nyní",
+    "inProgress": "Kontrola probíhá. U velkých webů to může trvat několik minut."
+  },
+  "findings": {
+    "title": "Nálezy",
+    "fromLatest": "z poslední kontroly",
+    "noScans": "Zatím žádné kontroly. Zvolte „Zkontrolovat nyní“ pro zahájení.",
+    "clean": "Čisté. Nebyl nalezen žádný malware.",
+    "colFile": "Soubor",
+    "colSignature": "Signatura",
+    "colEngine": "Jádro",
+    "colStatus": "Stav",
+    "quarantined": "🔒 V karanténě",
+    "active": "⚠ Aktivní",
+    "quarantine": "Karanténa"
+  },
+  "backToSubscription": "← Zpět na předplatné"
+}

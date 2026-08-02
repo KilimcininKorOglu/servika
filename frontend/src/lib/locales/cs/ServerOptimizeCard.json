@@ -1,0 +1,12 @@
+{
+  "title": "Optimalizace serveru",
+  "description": "Aktualizuje systémové balíčky (dnf/yum) a použije výkonové ladění MariaDB, nginx a PHP. Proces běží na pozadí a může trvat dlouho. Stránku můžete zavřít, zatímco pokračuje.",
+  "running": "Optimalizace probíhá. Aktualizace balíčků mohou chvíli trvat; stránku můžete zavřít, zatímco pokračuje na pozadí.",
+  "logStarted": "Optimalizace zahájena...\n",
+  "startButton": "Aktualizovat balíčky a optimalizovat",
+  "confirmPrompt": "Toto může krátce ovlivnit služby. Pokračovat?",
+  "starting": "Spouštění...",
+  "confirmYes": "Ano, spustit",
+  "cancel": "Zrušit",
+  "errorStart": "Optimalizaci nelze spustit"
+}

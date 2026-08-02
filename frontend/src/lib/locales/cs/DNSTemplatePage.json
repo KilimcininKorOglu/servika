@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "tools": "Nástroje a nastavení",
+    "current": "Šablona DNS"
+  },
+  "title": "Šablona DNS pro celý server",
+  "subtitle": "Tyto záznamy se použijí při vytvoření domény nebo při obnovení její výchozí šablony DNS.",
+  "placeholders": {
+    "label": "Zástupné symboly:",
+    "domain": " název domény, ",
+    "ip": " IP serveru, ",
+    "selector": " selektor DKIM, ",
+    "dkim": " vygenerovaný veřejný záznam DKIM"
+  },
+  "loading": "Načítání...",
+  "table": {
+    "name": "Název",
+    "type": "Typ",
+    "value": "Hodnota",
+    "ttl": "TTL",
+    "priority": "Priorita",
+    "order": "Pořadí",
+    "enabled": "Povoleno",
+    "priorityNone": "Žádná",
+    "deleteTitle": "Smazat záznam"
+  },
+  "addRecord": "Přidat záznam",
+  "soa": {
+    "title": "Nastavení SOA",
+    "fieldSeconds": "{{field}} (sekundy)"
+  },
+  "dkim": {
+    "title": "Nastavení DKIM",
+    "selector": "Selektor",
+    "generate": "Generovat klíče DKIM pro nové domény"
+  },
+  "discard": "Zahodit změny",
+  "save": "Uložit šablonu",
+  "saving": "Ukládání...",
+  "success": "Šablona DNS uložena. Nové domény použijí aktualizované záznamy a nastavení.",
+  "errors": {
+    "loadFailed": "Šablonu DNS nelze načíst",
+    "saveFailed": "Šablonu DNS nelze uložit"
+  }
+}

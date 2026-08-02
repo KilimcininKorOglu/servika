@@ -1,0 +1,14 @@
+{
+  "title": "Restart serveru",
+  "description": "Restartujte celý server až poté, co je bezpečné přerušit aktivní úlohy a operace zákazníků.",
+  "confirmLabel": "Pro potvrzení napište REBOOT",
+  "placeholder": "REBOOT",
+  "reboot": "Restartovat server",
+  "requesting": "Požadování...",
+  "messages": {
+    "requested": "Restart vyžádán. Panel bude po dobu restartu serveru nedostupný."
+  },
+  "errors": {
+    "reboot": "Restart serveru nelze vyžádat"
+  }
+}

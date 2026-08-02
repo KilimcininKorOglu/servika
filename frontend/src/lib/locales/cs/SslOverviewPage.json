@@ -1,0 +1,28 @@
+{
+  "title": "Certifikáty SSL",
+  "description": "Stav certifikátů pro celý server, seřazeno podle nejbližšího vypršení.",
+  "emptyMessage": "Nebyly nalezeny žádné domény.",
+  "column": {
+    "domain": "Doména",
+    "ssl": "SSL",
+    "expiry": "Vypršení",
+    "remaining": "Zbývá",
+    "status": "Stav"
+  },
+  "ssl": {
+    "enabled": "Povoleno",
+    "none": "Žádné"
+  },
+  "status": {
+    "active": "Aktivní",
+    "passive": "Pasivní"
+  },
+  "remaining": {
+    "expiredAgo": "vypršel před {{days}} dny",
+    "days": "{{days}} dní"
+  },
+  "summary": {
+    "withSsl": "Se SSL",
+    "expiring": "Vyprší ≤14 d"
+  }
+}

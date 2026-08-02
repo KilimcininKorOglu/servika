@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "addonDomains": "Doplňkové domény"
+  },
+  "title": "Doplňkové domény",
+  "subtitle": "Vytvořte doplňkové nebo parkované domény a nastavte přesměrování celé domény.",
+  "toast": {
+    "created": "{{domain}} byla vytvořena.",
+    "createFailed": "Doplňkovou doménu nelze vytvořit",
+    "deleted": "{{domain}} byla smazána.",
+    "deleteFailed": "Doplňkovou doménu nelze smazat",
+    "redirectSaved": "Nastavení přesměrování bylo uloženo.",
+    "redirectSaveFailed": "Nastavení přesměrování nelze uložit",
+    "redirectRemoved": "Nastavení přesměrování bylo odebráno.",
+    "redirectRemoveFailed": "Nastavení přesměrování nelze odebrat"
+  },
+  "mode": {
+    "parked": "parkovaná doména",
+    "addon": "doplňková doména"
+  },
+  "confirmDelete": "Smazat {{domain}}?\nBudou odebrány {{mode}}, vhost, zóna DNS a záznamy panelu. Toto nelze vrátit zpět.",
+  "confirmRemoveRedirect": "Odebrat přesměrování domény?",
+  "form": {
+    "title": "Nová doplňková doména",
+    "domainLabel": "Doména",
+    "parkedLabel": "Parkovaná doména",
+    "creating": "Vytváření…",
+    "add": "Přidat doménu",
+    "hint": "Doplňkové domény používají vlastní kořen dokumentů. Parkované domény sdílejí kořen dokumentů nadřazené domény."
+  },
+  "redirect": {
+    "title": "Přesměrování celé domény",
+    "active": "Aktivní",
+    "targetLabel": "Cílová URL",
+    "statusLabel": "Stav",
+    "status301": "301 Trvalé",
+    "status302": "302 Dočasné",
+    "saving": "Ukládání…",
+    "save": "Uložit přesměrování",
+    "remove": "Odebrat"
+  },
+  "list": {
+    "title": "Existující domény",
+    "loading": "Načítání…",
+    "empty": "Zatím žádné doplňkové domény.",
+    "parked": "Parkovaná",
+    "phpPrefix": "PHP",
+    "delete": "Smazat"
+  },
+  "backToSubscription": "← Zpět na předplatné"
+}

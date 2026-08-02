@@ -1,0 +1,52 @@
+{
+  "title": "Bezpečnostní upozornění",
+  "subtitleAudit": "Audit CVE (AlmaLinux)",
+  "advisories": "{{count}} bezpečnostních upozornění",
+  "rescan": "Znovu prohledat",
+  "scanning": "Prohledávání…",
+  "scanningServer": "Prohledávání serveru…",
+  "updating": "Instalace bezpečnostních aktualizací… (běží na pozadí)",
+  "kcApplying": "Aplikace živé opravy jádra… (KernelCare — restart není nutný)",
+  "severity": {
+    "critical": "Kritická",
+    "important": "Důležitá",
+    "moderate": "Střední",
+    "low": "Nízká"
+  },
+  "kcActive": {
+    "bold": "Jádro je opraveno za běhu (KernelCare).",
+    "text": " Zranitelnosti jádra jsou odstraněny bez restartu.",
+    "effectivePre": " Efektivní jádro: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVE opraveno za běhu."
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare je nainstalován, ale licence není registrována.",
+    "text": " Zaregistrujte se pomocí licenčního klíče TuxCare pro opravy jádra bez restartu."
+  },
+  "rebootRequired": {
+    "bold1": "Vyžadován restart.",
+    "text1": " Je nainstalováno nové bezpečnostně opravené jádro, ale systém stále běží na starém jádru — většina níže uvedených CVE souvisí s jádrem a bude zobrazena jako ",
+    "bold2": "otevřená, dokud se server nerestartuje",
+    "text2": ". Naplánujte restart během servisního okna."
+  },
+  "clean": {
+    "title": "Systém je aktuální",
+    "subtitle": "Žádné známé zranitelnosti"
+  },
+  "totalPre": "Celkem ",
+  "totalPost": " jedinečných CVE",
+  "lastScan": " · poslední kontrola {{scan}}",
+  "installUpdates": "Instalovat bezpečnostní aktualizace",
+  "updateLiveKernel": "Aktualizovat živé opravy jádra (bez restartu)",
+  "confirmUpdate": "Budou nainstalovány bezpečnostní aktualizace (dnf --security). Pro projevení aktualizací jádra může být nutný restart. Pokračovat?",
+  "messages": {
+    "updatesComplete": "Bezpečnostní aktualizace dokončeny.",
+    "livePatchApplied": "Živá oprava jádra aplikována."
+  },
+  "errors": {
+    "fetch": "Stav CVE nelze načíst",
+    "startUpdate": "Aktualizaci nelze spustit",
+    "startLivePatch": "Živou opravu nelze spustit"
+  }
+}

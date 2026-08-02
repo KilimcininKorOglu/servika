@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "copyWebsite": "Kopírovat web"
+  },
+  "title": "Kopírovat web",
+  "subtitle": {
+    "pre": "Vytvoří snímek souborů vašeho webu s časovým razítkem v ",
+    "post": " a poskytne tak bezpečný bod obnovy před provedením změn."
+  },
+  "note": {
+    "pre": "ℹ️ Tento nástroj kopíruje pouze ",
+    "bold1": "soubory",
+    "mid": " a nezahrnuje databázi. Pro úplnou zálohu použijte ",
+    "bold2": "Zálohování a obnovení",
+    "post": "."
+  },
+  "createDescription": "Vytvořte novou kopii obsahu public_html.",
+  "actions": {
+    "create": "Vytvořit kopii",
+    "creating": "Kopírování…",
+    "delete": "Smazat"
+  },
+  "existingTitle": "Existující kopie",
+  "loading": "Načítání…",
+  "empty": "Zatím žádné kopie.",
+  "back": "← Zpět na předplatné",
+  "createdCopy": "Kopie vytvořena: {{name}} ({{size}} MB)",
+  "confirmDelete": "Smazat tuto kopii?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "Kopii nelze vytvořit",
+    "deleteFailed": "Kopii nelze smazat"
+  }
+}

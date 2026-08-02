@@ -1,0 +1,64 @@
+{
+  "breadcrumbHome": "Domů",
+  "breadcrumbTitle": "WordPress",
+  "title": "WordPress",
+  "subtitle": "Zobrazte a aktualizujte všechny instalace WordPress na serveru nebo vytvořte novou instalaci.",
+  "outdated": {
+    "banner_one": "Pro {{count}} instalaci je k dispozici aktualizace.",
+    "banner_few": "Pro {{count}} instalace je k dispozici aktualizace.",
+    "banner_other": "Pro {{count}} instalací je k dispozici aktualizace.",
+    "warning": "Zastaralé verze WordPress obsahují známé bezpečnostní zranitelnosti. Aktualizujte je co nejdříve."
+  },
+  "result": {
+    "installed": "WordPress {{version}} nainstalován",
+    "site": "Web",
+    "admin": "Administrace",
+    "user": "Uživatel",
+    "password": "Heslo",
+    "savePassword": "⚠ Heslo si nyní uložte. Znovu se nezobrazí."
+  },
+  "installedSites": "Nainstalované weby WordPress",
+  "refresh": "↻ Obnovit",
+  "table": {
+    "domain": "Doména",
+    "directory": "Adresář",
+    "version": "Verze",
+    "status": "Stav",
+    "installed": "Nainstalováno",
+    "actions": "Akce"
+  },
+  "scanning": "Prohledávání instalací... (kontrola verzí a aktualizací)",
+  "emptyTitle": "Na serveru nebyly nalezeny žádné instalace WordPress.",
+  "emptyHint": "Použijte formulář níže pro vytvoření nové instalace.",
+  "adminButton": "Administrace",
+  "updateToVersion": "Aktualizovat na v{{version}}",
+  "update": "Aktualizovat",
+  "delete": "Smazat",
+  "status": {
+    "updateAvailable": "Aktualizace k dispozici",
+    "updateAvailableTo": "Aktualizace k dispozici na v{{version}}",
+    "upToDate": "Aktuální",
+    "unknown": "Neznámé"
+  },
+  "form": {
+    "heading": "Nová instalace",
+    "domain": "Doména",
+    "siteTitle": "Název webu",
+    "siteTitlePlaceholder": "Můj blog",
+    "subdirectory": "Podadresář (volitelné)",
+    "subdirectoryPlaceholder": "prázdné = kořen, např. blog",
+    "adminUser": "Uživatel administrátora",
+    "adminEmail": "E-mail administrátora",
+    "adminEmailPlaceholder": "admin@site.com"
+  },
+  "installing": "Instalace... (~30 s)",
+  "installButton": "Nainstalovat WordPress",
+  "installButtonDomain": "Nainstalovat WordPress, {{domain}}",
+  "confirmDelete": "Smazat WordPress v {{domain}}{{dir}}?\nVšechny soubory a databáze v tomto adresáři budou odebrány. Tuto akci nelze vrátit zpět.",
+  "errors": {
+    "rootDelete": "WordPress v kořenovém adresáři nelze z panelu smazat.",
+    "installFailed": "Instalace se nezdařila",
+    "updateFailed": "Nelze aktualizovat",
+    "deleteFailed": "Nelze smazat"
+  }
+}

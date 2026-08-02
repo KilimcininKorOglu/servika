@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "toolsAndSettings": "Nástroje a nastavení",
+    "panelUpdate": "Aktualizace panelu"
+  },
+  "title": "Aktualizace panelu",
+  "description": "Aktualizujte panel na nejnovější vydání z GitHub. Proměnné prostředí, databáze a weby zůstanou zachovány; neúspěšná kontrola zdraví automaticky vrátí předchozí verzi. Operace běží na pozadí, takže tuto stránku můžete zavřít a aktualizace pokračuje bez přerušení."
+}

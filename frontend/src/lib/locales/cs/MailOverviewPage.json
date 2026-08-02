@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Doména",
+    "mail": "Pošta",
+    "mailboxes": "Schránky",
+    "aliases": "Aliasy",
+    "suspended": "Pozastaveno"
+  },
+  "mailNone": "Žádná",
+  "overview": {
+    "title": "E-mailové účty",
+    "description": "Počty schránek a aliasů napříč všemi doménami.",
+    "empty": "Nebyly nalezeny žádné domény."
+  },
+  "summary": {
+    "mailDomains": "Poštovní domény",
+    "totalMailboxes": "Celkem schránek"
+  },
+  "queue": {
+    "title": "Poštovní fronta Postfix",
+    "subtitle": "Zprávy čekající na doručení, odložené nebo pozastavené administrátorem.",
+    "refresh": "↻ Obnovit",
+    "retry": "Zkusit frontu znovu",
+    "loading": "Čtení fronty…",
+    "empty": "✓ Poštovní fronta je prázdná",
+    "colId": "ID fronty",
+    "colRoute": "Odesílatel → příjemce",
+    "colSizeTime": "Velikost / čas",
+    "colActions": "Akce",
+    "release": "Uvolnit",
+    "hold": "Pozastavit",
+    "requeue": "Znovu zařadit",
+    "delete": "Smazat"
+  },
+  "confirmDelete": "Trvale smazat zařazenou zprávu {{queueID}}?",
+  "errors": {
+    "readFailed": "Frontu Postfix nelze načíst",
+    "actionFailed": "Operace fronty se nezdařila"
+  }
+}

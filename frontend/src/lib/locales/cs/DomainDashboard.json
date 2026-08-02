@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "Aplikace",
+    "domainAndDns": "Doména a DNS",
+    "email": "E-mail",
+    "filesAndDatabases": "Soubory a databáze",
+    "developmentTools": "Vývojové nástroje",
+    "security": "Zabezpečení"
+  },
+  "wordpress": { "label": "WordPress", "desc": "Instalace jedním kliknutím · správa" },
+  "laravel": { "label": "Sada nástrojů Laravel", "desc": "Instalace · nasazení · fronta" },
+  "dns": { "label": "Správa DNS", "desc": "Záznamy A, MX, TXT, CNAME" },
+  "subdomains": { "label": "Subdomény", "desc": "Subdomény" },
+  "addonDomains": { "label": "Doplňkové domény", "desc": "Doplňkové a parkované domény · přesměrování" },
+  "mail": { "label": "E-mailové účty", "desc": "Schránky Postfix a Dovecot · SMTP" },
+  "connection": { "label": "Informace o připojení", "desc": "FTP, databáze" },
+  "files": { "label": "Soubory", "desc": "Správce souborů" },
+  "databases": { "label": "Databáze" },
+  "ftp": { "label": "FTP", "desc": "Účty FTP" },
+  "backups": { "label": "Zálohování a obnovení", "desc": "Správa záloh" },
+  "copy": { "label": "Kopírovat web", "desc": "Klonování" },
+  "php": { "label": "PHP", "desc": "Verze {{version}}" },
+  "logs": { "label": "Protokoly", "desc": "access, error" },
+  "cron": { "label": "Naplánované úlohy", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "Integrace repozitáře" },
+  "composer": { "label": "PHP Composer", "desc": "Správce balíčků" },
+  "performance": { "label": "Výkon", "desc": "Akcelerátory" },
+  "redis": { "label": "Cache Redis", "desc": "Izolovaná objektová cache · akcelerátor" },
+  "ssl": {
+    "label": "Certifikáty SSL/TLS",
+    "expires": "Vyprší: {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "Doména není chráněna"
+  },
+  "passwordProtection": { "label": "Heslem chráněné adresáře", "desc": ".htpasswd" },
+  "stats": { "label": "Statistiky", "desc": "Analýza provozu" },
+  "accessControl": { "label": "Řízení přístupu", "desc": "Ochrana proti hotlinkingu · povolení/blokování IP" },
+  "imunify": { "label": "Imunify", "desc": "Antivirus" },
+  "ssh": {
+    "label": "Přístup SSH",
+    "enabled": "Povoleno",
+    "disabled": "Zakázáno"
+  }
+}

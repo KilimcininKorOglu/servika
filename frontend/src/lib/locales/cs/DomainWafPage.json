@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "waf": "Firewall webových aplikací (WAF)"
+  },
+  "title": "Firewall webových aplikací",
+  "subtitle": " · ModSecurity v3 + OWASP Core Rule Set. Uložení znovu vykreslí nginx vhost (bez výpadku).",
+  "loading": "Načítání…",
+  "moduleWarning": {
+    "bold": "Modul ModSecurity není na tomto serveru nainstalován.",
+    "pre": " Nastavení se uloží, ale WAF se nepoužije. Pro jeho povolení spusťte na serveru ",
+    "post": " (stávající weby nebudou ovlivněny)."
+  },
+  "modes": {
+    "inherit": {
+      "name": "Zdědit z tarifu",
+      "description": "Tato doména používá výchozí WAF z přiřazeného tarifu služby."
+    },
+    "block": {
+      "name": "Blokovat",
+      "description": "Škodlivé požadavky (SQLi, XSS, RCE…) jsou blokovány s 403. SecRuleEngine On."
+    },
+    "detect": {
+      "name": "Detekovat",
+      "description": "Požadavky nejsou blokovány; shodná pravidla se zapisují pouze do auditního protokolu. DetectionOnly — ideální pro ladění pravidel."
+    },
+    "off": {
+      "name": "Vypnuto",
+      "description": "WAF je pro tuto doménu zcela zakázán (i když ho tarif má povolen)."
+    }
+  },
+  "paranoiaDescription": {
+    "0": "Použije se výchozí hodnota tarifu.",
+    "1": "Nízká — základní signatury útoků. Téměř žádné falešné poplachy. (doporučeno)",
+    "2": "Střední — více pravidel. Některé legitimní požadavky mohou být blokovány.",
+    "3": "Vysoká — agresivní. Mohou být nutné výjimky pro jednotlivé aplikace.",
+    "4": "Přísná — nejagresivnější. Pouze pro pečlivě auditované scénáře."
+  },
+  "effective": {
+    "label": "Efektivní stav:",
+    "blocking": "Aktivní · blokování",
+    "detection": "Aktivní · detekce",
+    "paranoia": "Paranoia {{level}}",
+    "passive": "Pasivní",
+    "planDefault": "Výchozí tarif ({{name}}): ",
+    "planBlock": "Blokovat · PL{{paranoia}}",
+    "planDetect": "Detekovat · PL{{paranoia}}",
+    "planOff": "Vypnuto"
+  },
+  "modeCard": {
+    "title": "Režim WAF",
+    "selected": "Vybráno"
+  },
+  "paranoiaCard": {
+    "title": "Úroveň paranoia (CRS)",
+    "hint": {
+      "pre": "Vyšší úroveň = více pravidel + silnější ochrana, ale také vyšší šance na falešné poplachy. Účinné pouze tehdy, když je WAF v režimu ",
+      "block": "Blokovat",
+      "mid": " nebo ",
+      "detect": "Detekovat",
+      "post": "."
+    },
+    "options": {
+      "inherit": "Zdědit z tarifu",
+      "level1": "Úroveň 1 (nízká)",
+      "level2": "Úroveň 2 (střední)",
+      "level3": "Úroveň 3 (vysoká)",
+      "level4": "Úroveň 4 (přísná)"
+    }
+  },
+  "actions": {
+    "save": "Uložit a použít",
+    "saving": "Použití…",
+    "reload": "Znovu načíst"
+  },
+  "messages": {
+    "appliedBlocking": "WAF použit — režim blokování, paranoia {{paranoia}}",
+    "appliedDetection": "WAF použit — režim detekce, paranoia {{paranoia}}",
+    "savedPassive": "Nastavení uloženo — WAF je pro tuto doménu pasivní"
+  },
+  "errors": {
+    "saveFailed": "Uložení se nezdařilo"
+  }
+}
