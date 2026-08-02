@@ -34,6 +34,27 @@ function formatCheckTime(value: string | undefined, notCheckedLabel: string) {
   return date.toLocaleString()
 }
 
+/**
+ * Derives the final outcome from the update log, or null while it is still
+ * undecided.
+ *
+ * The `running` flag alone is not enough: the update restarts the panel, so the
+ * poll that would have reported the transition can be lost, leaving the spinner
+ * up forever. Both markers below come from assets/ops/servika-update and are
+ * mutually exclusive branches of its health check. The script disables colour
+ * when stdout is not a terminal, and the log is a redirected file, so it is
+ * plain text.
+ *
+ * A killed update (machine reboot, OOM) leaves neither marker and stays null on
+ * purpose: reporting success for a process that never finished would be worse
+ * than showing nothing.
+ */
+function finishedOutcome(log: string): 'done' | 'failed' | null {
+  if (log.includes('Update complete')) return 'done'
+  if (log.includes('✗')) return 'failed' // the script's die() prefix
+  return null
+}
+
 /** Displays update status, starts an update, and follows its persistent log. */
 export default function PanelUpdate() {
   const { t } = useTranslation('PanelUpdate')
@@ -41,6 +62,7 @@ export default function PanelUpdate() {
   const [version, setVersion] = useState<VersionStatus | null>(null)
   const [log, setLog] = useState('')
   const [running, setRunning] = useState(false)
+  const [outcome, setOutcome] = useState<'done' | 'failed' | null>(null)
   const [starting, setStarting] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -66,24 +88,41 @@ export default function PanelUpdate() {
     }
   }, [])
 
+  // Reads the log, and stops the spinner as soon as EITHER the server reports
+  // the update as finished OR the log itself says so. The second condition is
+  // what survives a lost transition across the panel restart.
+  //
+  // announce is set only by the poll, so the banner reports an update that just
+  // concluded in this session. At mount the log is displayed but not announced;
+  // otherwise the result of an update run days ago would greet the user forever.
+  const loadLog = useCallback(async (announce: boolean) => {
+    const response = await api.get<UpdateLog>('/system/update/log')
+    setLog(response.data.log)
+    const settled = finishedOutcome(response.data.log)
+    if (!response.data.running || settled) {
+      setRunning(false)
+      if (announce && settled) {
+        setOutcome(settled)
+        loadVersion()
+      }
+    }
+  }, [loadVersion])
+
   useEffect(() => {
     loadStatus()
+    loadLog(false).catch(() => {
+      // No update has ever run, or the panel is restarting.
+    })
     loadVersion()
-  }, [loadStatus, loadVersion])
+  }, [loadStatus, loadLog, loadVersion])
 
   useEffect(() => {
     if (!running) return
     let stopped = false
     const poll = async () => {
       try {
-        const response = await api.get<UpdateLog>('/system/update/log')
         if (stopped) return
-        setLog(response.data.log)
-        if (!response.data.running) {
-          setRunning(false)
-          loadStatus()
-          loadVersion()
-        }
+        await loadLog(true)
       } catch {
         // Polling continues across the expected panel restart.
       }
@@ -94,7 +133,7 @@ export default function PanelUpdate() {
       stopped = true
       window.clearInterval(interval)
     }
-  }, [running, loadStatus, loadVersion])
+  }, [running, loadLog])
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
@@ -117,6 +156,7 @@ export default function PanelUpdate() {
     setError(null)
     setStarting(true)
     setConfirmation(false)
+    setOutcome(null)
     try {
       await api.post('/system/update/start')
       setLog(t('logStarted'))
@@ -173,6 +213,22 @@ export default function PanelUpdate() {
             <div className="mt-2 inline-flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
               <span className="w-3 h-3 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
               {t('running')}
+            </div>
+          )}
+
+          {!running && outcome === 'done' && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 px-3 py-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 text-xs">
+              <span className="font-semibold">{t('outcome.successTitle')}</span>
+              <span className="opacity-80">{t('outcome.successHint')}</span>
+              <button onClick={() => window.location.reload()}
+                className="ml-auto text-xs px-2.5 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition font-medium">
+                {t('outcome.reload')}
+              </button>
+            </div>
+          )}
+          {!running && outcome === 'failed' && (
+            <div className="mt-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
+              <span className="font-semibold">{t('outcome.failedTitle')}</span> {t('outcome.failedHint')}
             </div>
           )}
 

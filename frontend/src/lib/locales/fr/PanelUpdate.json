@@ -26,6 +26,13 @@
   "starting": "Démarrage…",
   "confirmYes": "Oui, mettre à jour",
   "cancel": "Annuler",
+  "outcome": {
+    "successTitle": "✓ Mise à jour terminée",
+    "successHint": "Le panneau est à jour. Rechargez la page pour appliquer la nouvelle version.",
+    "reload": "↻ Recharger la page",
+    "failedTitle": "✗ Échec de la mise à jour",
+    "failedHint": "Consultez le journal ci-dessous ; une version défectueuse est annulée automatiquement."
+  },
   "errors": {
     "refresh": "Impossible d'actualiser le statut de version",
     "start": "Impossible de démarrer la mise à jour"

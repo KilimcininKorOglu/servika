@@ -26,6 +26,13 @@
   "starting": "正在启动...",
   "confirmYes": "是，更新",
   "cancel": "取消",
+  "outcome": {
+    "successTitle": "✓ 更新已完成",
+    "successHint": "面板已是最新。请重新加载页面以应用新版本。",
+    "reload": "↻ 重新加载页面",
+    "failedTitle": "✗ 更新失败",
+    "failedHint": "请查看下方日志；不健康的版本会自动回滚。"
+  },
   "errors": {
     "refresh": "无法刷新版本状态",
     "start": "无法启动更新"

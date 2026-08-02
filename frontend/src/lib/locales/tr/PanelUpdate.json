@@ -26,6 +26,13 @@
   "starting": "Başlatılıyor...",
   "confirmYes": "Evet, güncelle",
   "cancel": "İptal",
+  "outcome": {
+    "successTitle": "✓ Güncelleme tamamlandı",
+    "successHint": "Panel güncel. Yeni sürümü görmek için sayfayı yenileyin.",
+    "reload": "↻ Sayfayı yenile",
+    "failedTitle": "✗ Güncelleme başarısız",
+    "failedHint": "Aşağıdaki günlüğü inceleyin; sağlıksız sürüm otomatik geri alınır."
+  },
   "errors": {
     "refresh": "Sürüm durumu yenilenemedi",
     "start": "Güncelleme başlatılamadı"

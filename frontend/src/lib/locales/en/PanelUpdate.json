@@ -26,6 +26,13 @@
   "starting": "Starting...",
   "confirmYes": "Yes, update",
   "cancel": "Cancel",
+  "outcome": {
+    "successTitle": "✓ Update completed",
+    "successHint": "The panel is up to date. Reload the page to pick up the new version.",
+    "reload": "↻ Reload the page",
+    "failedTitle": "✗ Update failed",
+    "failedHint": "Inspect the log below; an unhealthy release is rolled back automatically."
+  },
   "errors": {
     "refresh": "Could not refresh version status",
     "start": "Could not start the update"

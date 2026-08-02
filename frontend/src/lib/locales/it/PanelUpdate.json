@@ -26,6 +26,13 @@
   "starting": "Avvio in corso...",
   "confirmYes": "Sì, aggiorna",
   "cancel": "Annulla",
+  "outcome": {
+    "successTitle": "✓ Aggiornamento completato",
+    "successHint": "Il pannello è aggiornato. Ricarica la pagina per applicare la nuova versione.",
+    "reload": "↻ Ricarica la pagina",
+    "failedTitle": "✗ Aggiornamento non riuscito",
+    "failedHint": "Consulta il registro qui sotto; una versione non integra viene annullata automaticamente."
+  },
   "errors": {
     "refresh": "Impossibile aggiornare lo stato della versione",
     "start": "Impossibile avviare l'aggiornamento"

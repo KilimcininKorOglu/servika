@@ -26,6 +26,13 @@
   "starting": "Iniciando...",
   "confirmYes": "Sim, atualizar",
   "cancel": "Cancelar",
+  "outcome": {
+    "successTitle": "✓ Atualização concluída",
+    "successHint": "O painel está atualizado. Recarregue a página para aplicar a nova versão.",
+    "reload": "↻ Recarregar a página",
+    "failedTitle": "✗ A atualização falhou",
+    "failedHint": "Consulte o log abaixo; uma versão sem integridade é revertida automaticamente."
+  },
   "errors": {
     "refresh": "Não foi possível atualizar o status da versão",
     "start": "Não foi possível iniciar a atualização"

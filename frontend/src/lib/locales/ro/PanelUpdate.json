@@ -26,6 +26,13 @@
   "starting": "Se pornește...",
   "confirmYes": "Da, actualizați",
   "cancel": "Anulare",
+  "outcome": {
+    "successTitle": "✓ Actualizare finalizată",
+    "successHint": "Panoul este actualizat. Reîncărcați pagina pentru a aplica versiunea nouă.",
+    "reload": "↻ Reîncarcă pagina",
+    "failedTitle": "✗ Actualizarea a eșuat",
+    "failedHint": "Consultați jurnalul de mai jos; o versiune nefuncțională este anulată automat."
+  },
   "errors": {
     "refresh": "Nu s-a putut reîmprospăta starea versiunii",
     "start": "Nu s-a putut porni actualizarea"

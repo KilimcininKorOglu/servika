@@ -26,6 +26,13 @@
   "starting": "Wird gestartet...",
   "confirmYes": "Ja, aktualisieren",
   "cancel": "Abbrechen",
+  "outcome": {
+    "successTitle": "✓ Aktualisierung abgeschlossen",
+    "successHint": "Das Panel ist aktuell. Laden Sie die Seite neu, um die neue Version zu übernehmen.",
+    "reload": "↻ Seite neu laden",
+    "failedTitle": "✗ Aktualisierung fehlgeschlagen",
+    "failedHint": "Prüfen Sie das Protokoll unten; eine fehlerhafte Version wird automatisch zurückgenommen."
+  },
   "errors": {
     "refresh": "Versionsstatus konnte nicht aktualisiert werden",
     "start": "Aktualisierung konnte nicht gestartet werden"

@@ -26,6 +26,13 @@
   "starting": "Spouštění...",
   "confirmYes": "Ano, aktualizovat",
   "cancel": "Zrušit",
+  "outcome": {
+    "successTitle": "✓ Aktualizace dokončena",
+    "successHint": "Panel je aktuální. Znovu načtěte stránku, aby se projevila nová verze.",
+    "reload": "↻ Znovu načíst stránku",
+    "failedTitle": "✗ Aktualizace selhala",
+    "failedHint": "Prohlédněte si protokol níže; nefunkční verze se automaticky vrátí zpět."
+  },
   "errors": {
     "refresh": "Stav verze nelze obnovit",
     "start": "Aktualizaci nelze spustit"
