@@ -4,6 +4,30 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2026-08-02
+
+### Added
+- Live site migration from cPanel, Plesk, and DirectAdmin over SSH: discovers every account and domain on the source server, then transfers files, databases, DNS records, and SSL in one job with a three-step wizard, live progress, and a cancellable background run.
+- Granular backup restore with five modes (full, files only, databases only, a single file, a single database); a restore never deletes files missing from the backup by default, and selected files land in a separate folder instead of overwriting the live site.
+- Every domain-owned database is now packaged in each backup together with a manifest, replacing the previous main-database-only archive.
+- Bulk backup and restore now run as tracked jobs with live progress, per-domain results, and a job detail page.
+- Ten further interface languages (German, French, Italian, Spanish, Portuguese, Brazilian Portuguese, Romanian, Japanese, Czech, and Simplified Chinese), bringing the panel to twelve.
+- The update panel now shows the running build date.
+
+### Changed
+- Tenant nginx access and error logs are no longer readable by other tenants; the log directory and its files are closed on every startup.
+- Tenant Redis accounts can no longer enumerate key names: scan and randomkey are denied for new accounts and withdrawn from existing ones at startup.
+- The repair tool no longer loosens tenant home isolation to 0711/0755; it now enforces the same 0710/0750 model as the provisioner, with an nginx-group fallback for filesystems that ignore ACLs.
+- Archive extraction rejects a crafted uncompressed-size header that could overflow the size limit.
+- Operations scripts and long-running maintenance job logs are English only again, and the repository slug now points at ServikaPanel/servika.
+
+### Fixed
+- A domain served nothing (HTTP 403) on filesystems that silently ignore ACLs; nginx read access is now verified before the ACL model is trusted, and the group fallback carries the whole document root.
+- The panel update card could spin forever when the service restart interrupted its status stream; the result is now also read from the update log, and a finished update reports whether it succeeded.
+- Audit entries created by the panel itself were recorded as 127.0.0.1 and were indistinguishable from real visitors; they are now labelled as system.
+- A missing SSH jail asset was ignored silently, leaving tenants with an unconfined shell and no record of it.
+- Restored the literal update-count keys on the Chinese WordPress page.
+
 ## [1.1.2] - 2026-08-01
 
 ### Added

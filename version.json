@@ -1,6 +1,6 @@
 {
-  "latest": "1.1.2",
-  "announcement": "This release hardens security: the cPanel import now validates archive members before extraction, and it ships alongside encrypted-at-rest database passwords, hashed FTP/SSH credentials, proxy-secret IP trust, and login timing and webhook-replay defenses. It adds full Turkish/English localization across the panel with a per-user and server-default language, reseller multi-user accounts with disk and traffic quotas, cPanel full-account import, S3/B2 remote backups, and spam filtering. Many fixes are also included; updating is recommended.",
+  "latest": "1.1.3",
+  "announcement": "This release closes three tenant isolation gaps: nginx logs were readable across tenants, Redis accounts could enumerate neighbour key names, and the repair tool loosened home directory permissions instead of restoring them. It adds live site migration from cPanel, Plesk, and DirectAdmin over SSH, granular backup restore with tracked bulk jobs, and ten further interface languages. It also fixes a domain serving 403 on filesystems that ignore ACLs and a panel update card that could spin forever after the service restart.",
   "critical": true,
-  "release_date": "2026-08-01"
+  "release_date": "2026-08-02"
 }
