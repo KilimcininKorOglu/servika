@@ -1,1 +1,124 @@
-{"breadcrumb":{"home":"主页","subscription":"订阅","wordpress":"WordPress"},"title":"WordPress 工具包","subtitle":"在一处管理版本、插件、主题和用户。","loading":"加载中…","actions":{"new":"新建 WordPress"},"empty":{"title":"此域名尚无 WordPress 安装","subtitle":"使用下方表单一键安装。"},"tabs":{"overview":"概览","extensions":"插件","themes":"主题","users":"用户"},"toolkit":{"adminPanel":"管理面板","remove":"移除"},"metrics":{"version":"版本","php":"PHP","database":"数据库","maintenance":"维护模式","upToDate":"最新","active":"已启用","on":"开","off":"关"},"overview":{"updateVersion":"更新版本 · v{{version}}","updateAll":"全部更新","disableMaintenance":"禁用维护模式","enableMaintenance":"启用维护模式","clearCache":"清除缓存","repairCore":"修复核心","hint":"快速维护操作。可用的版本更新显示在上方指标中。"},"messages":{"coreUpdated":"WordPress 核心已更新。","allUpdated":"核心、插件和主题已更新。","maintenanceEnabled":"维护模式已启用。","maintenanceDisabled":"维护模式已禁用。","cacheCleared":"缓存已清除。","repairDone":"核心修复已完成。","packageUpdated":"{{name}} 已更新。","allUpdatesDone":"所有更新已完成。","activated":"{{name}} 已启用。","deactivated":"{{name}} 已停用。"},"errors":{"installFailed":"安装失败","operationFailed":"操作失败","resetFailed":"无法重置密码","removeFailed":"无法移除安装"},"output":{"title":"操作输出"},"btn":{"processing":"处理中…"},"packages":{"loading":"加载中…","noPlugins":"未找到插件。","noThemes":"未找到主题。","update_other":"有 {{count}} 个可用更新","updateAll":"全部更新","active":"已启用","inactive":"未启用","version":"版本 {{version}}","updateAvailable":" → 可更新至 {{version}}","update":"更新","activate":"启用","deactivate":"停用","activeTheme":"当前主题"},"usersTab":{"loading":"加载中…","empty":"未找到用户。","resetPassword":"重置密码"},"confirm":{"resetPassword":"为“{{user}}”生成新密码？\n当前密码将失效。","rootRemove":"无法从面板中删除根目录中的 WordPress 安装。","remove":"删除 {{dir}} 下的 WordPress 安装？\n此目录中的所有文件及其数据库将被移除。此操作无法撤销。"},"installForm":{"title":"新建 WordPress 安装","close":"✕ 关闭","siteTitle":"站点标题","siteTitlePlaceholder":"我的博客","subdirectory":"子目录（可选）","subdirectoryPlaceholder":"留空 = 根目录 · 示例：blog","adminUser":"管理员用户名","adminEmail":"管理员电子邮件","adminEmailPlaceholder":"admin@site.com","installing":"安装中…（约 30 秒）","install":"安装 WordPress"},"result":{"installed":"WordPress {{version}} 已安装","site":"站点","admin":"管理员","username":"用户名","password":"密码","savePassword":"请立即保存密码。它不会再次显示。"},"passwordModal":{"title":"已创建新密码","user":"用户：","copy":"复制","notice":"此密码不会再次显示。请立即保存。","ok":"确定"}}
+{
+  "breadcrumb": {
+    "home": "主页",
+    "subscription": "订阅",
+    "wordpress": "WordPress"
+  },
+  "title": "WordPress 工具包",
+  "subtitle": "在一处管理版本、插件、主题和用户。",
+  "loading": "加载中…",
+  "actions": {
+    "new": "新建 WordPress"
+  },
+  "empty": {
+    "title": "此域名尚无 WordPress 安装",
+    "subtitle": "使用下方表单一键安装。"
+  },
+  "tabs": {
+    "overview": "概览",
+    "extensions": "插件",
+    "themes": "主题",
+    "users": "用户"
+  },
+  "toolkit": {
+    "adminPanel": "管理面板",
+    "remove": "移除"
+  },
+  "metrics": {
+    "version": "版本",
+    "php": "PHP",
+    "database": "数据库",
+    "maintenance": "维护模式",
+    "upToDate": "最新",
+    "active": "已启用",
+    "on": "开",
+    "off": "关"
+  },
+  "overview": {
+    "updateVersion": "更新版本 · v{{version}}",
+    "updateAll": "全部更新",
+    "disableMaintenance": "禁用维护模式",
+    "enableMaintenance": "启用维护模式",
+    "clearCache": "清除缓存",
+    "repairCore": "修复核心",
+    "hint": "快速维护操作。可用的版本更新显示在上方指标中。"
+  },
+  "messages": {
+    "coreUpdated": "WordPress 核心已更新。",
+    "allUpdated": "核心、插件和主题已更新。",
+    "maintenanceEnabled": "维护模式已启用。",
+    "maintenanceDisabled": "维护模式已禁用。",
+    "cacheCleared": "缓存已清除。",
+    "repairDone": "核心修复已完成。",
+    "packageUpdated": "{{name}} 已更新。",
+    "allUpdatesDone": "所有更新已完成。",
+    "activated": "{{name}} 已启用。",
+    "deactivated": "{{name}} 已停用。"
+  },
+  "errors": {
+    "installFailed": "安装失败",
+    "operationFailed": "操作失败",
+    "resetFailed": "无法重置密码",
+    "removeFailed": "无法移除安装"
+  },
+  "output": {
+    "title": "操作输出"
+  },
+  "btn": {
+    "processing": "处理中…"
+  },
+  "packages": {
+    "loading": "加载中…",
+    "noPlugins": "未找到插件。",
+    "noThemes": "未找到主题。",
+    "updateSingular": "有 {{count}} 个可用更新",
+    "updatePlural": "有 {{count}} 个可用更新",
+    "updateAll": "全部更新",
+    "active": "已启用",
+    "inactive": "未启用",
+    "version": "版本 {{version}}",
+    "updateAvailable": " → 可更新至 {{version}}",
+    "update": "更新",
+    "activate": "启用",
+    "deactivate": "停用",
+    "activeTheme": "当前主题"
+  },
+  "usersTab": {
+    "loading": "加载中…",
+    "empty": "未找到用户。",
+    "resetPassword": "重置密码"
+  },
+  "confirm": {
+    "resetPassword": "为“{{user}}”生成新密码？\n当前密码将失效。",
+    "rootRemove": "无法从面板中删除根目录中的 WordPress 安装。",
+    "remove": "删除 {{dir}} 下的 WordPress 安装？\n此目录中的所有文件及其数据库将被移除。此操作无法撤销。"
+  },
+  "installForm": {
+    "title": "新建 WordPress 安装",
+    "close": "✕ 关闭",
+    "siteTitle": "站点标题",
+    "siteTitlePlaceholder": "我的博客",
+    "subdirectory": "子目录（可选）",
+    "subdirectoryPlaceholder": "留空 = 根目录 · 示例：blog",
+    "adminUser": "管理员用户名",
+    "adminEmail": "管理员电子邮件",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "安装中…（约 30 秒）",
+    "install": "安装 WordPress"
+  },
+  "result": {
+    "installed": "WordPress {{version}} 已安装",
+    "site": "站点",
+    "admin": "管理员",
+    "username": "用户名",
+    "password": "密码",
+    "savePassword": "请立即保存密码。它不会再次显示。"
+  },
+  "passwordModal": {
+    "title": "已创建新密码",
+    "user": "用户：",
+    "copy": "复制",
+    "notice": "此密码不会再次显示。请立即保存。",
+    "ok": "确定"
+  }
+}
