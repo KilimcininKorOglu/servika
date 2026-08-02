@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "自動コピーに失敗しました。Ctrl+C を押してから Enter を押してください:",
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "connectionDetails": "接続情報"
+  },
+  "title": "接続情報",
+  "subtitle": "値を選択すると自動的にコピーされます",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "ホスト",
+    "port": "ポート",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "homeDirectory": "ホームディレクトリ",
+    "database": "データベース",
+    "webRoot": "Web ルート",
+    "ipv4": "IPv4",
+    "systemUser": "システムユーザー",
+    "httpUrl": "HTTP URL",
+    "httpsUrl": "HTTPS URL"
+  },
+  "links": {
+    "ftp": "FTP 管理へ移動 →",
+    "database": "データベース管理へ移動 →"
+  },
+  "row": {
+    "selectToCopy": "選択してコピー",
+    "copied": "✓ コピーしました"
+  },
+  "password": {
+    "button": "🔑 パスワードを表示 / リセット"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "データベース"
+  },
+  "modal": {
+    "titleSuffix": "パスワード",
+    "userLabel": "ユーザー:",
+    "notStored": "(保存されていません)",
+    "notAuthorized": "(権限がありません)",
+    "showCurrent": "👁 現在のパスワードを表示",
+    "currentPasswordLabel": "現在のパスワード",
+    "newPasswordGenerated": "✓ 新しいパスワードを生成しました",
+    "copyWarning": "⚠ 今すぐパスワードをコピーしてください。このウィンドウを閉じた後は再表示できない場合があります。",
+    "close": "閉じる",
+    "generating": "生成中…",
+    "generateAgain": "↻ 再生成",
+    "generateNew": "⚡ 新しいパスワードを生成",
+    "errorGenerate": "パスワードを生成できませんでした"
+  },
+  "copyButton": {
+    "copy": "コピー",
+    "copied": "✓ コピーしました"
+  }
+}

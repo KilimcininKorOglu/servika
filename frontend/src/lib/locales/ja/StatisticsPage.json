@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "statistics": "統計"
+  },
+  "title": "統計",
+  "live": "● ライブ (10 秒)",
+  "subtitle": "サーバーのリソース使用量、ドメイン数、システム概要。",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "メモリ",
+    "disk": "ディスク",
+    "load": "負荷 (1 分)"
+  },
+  "coresValue": "{{cores}} コア",
+  "loadSub": "5 分: {{five}} · 15 分: {{fifteen}}",
+  "system": {
+    "title": "システム",
+    "hostname": "ホスト名",
+    "os": "オペレーティングシステム",
+    "kernel": "カーネル",
+    "processor": "プロセッサ",
+    "swap": "スワップ",
+    "panelVersion": "パネルバージョン"
+  },
+  "processorValue": "{{model}} · {{cores}} コア",
+  "swapValue": "{{percent}}% · {{used}} / {{total}}",
+  "domains": {
+    "title": "ドメイン",
+    "total": "総ドメイン数",
+    "active": "有効なドメイン",
+    "inactive": "無効なドメイン"
+  },
+  "footer": {
+    "pre": "より詳細なモニタリングには ",
+    "link": "モニタリング",
+    "post": " ページをご覧ください。"
+  }
+}

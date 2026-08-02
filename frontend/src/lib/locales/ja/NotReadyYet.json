@@ -1,0 +1,8 @@
+{
+  "notReady": "準備中",
+  "construction": {
+    "heading": "作成中",
+    "availablePre": "このモジュールは ",
+    "availablePost": " フェーズで利用可能になります。現在はインターフェースの外枠のみが利用可能です。"
+  }
+}

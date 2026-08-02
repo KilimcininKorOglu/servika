@@ -1,0 +1,159 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "dnsSettings": "DNS 設定"
+  },
+  "title": "DNS 設定",
+  "ipLabel": "IP:",
+  "authoritative": {
+    "label": "権威 DNS:",
+    "pre": " BIND がこれらのレコードを公開します。ドメインを ",
+    "mid": " と ",
+    "post": " に向けてください。"
+  },
+  "loading": "読み込み中...",
+  "recordCount": "{{count}} 件のレコード",
+  "valueHint": {
+    "A": "IPv4 アドレス。例: 203.0.113.10",
+    "AAAA": "IPv6 アドレス。例: 2a01:4f8:1c1c::1",
+    "CNAME": "対象ドメイン名。例: target.example.com",
+    "MX": "メールサーバー。例: mail.example.com (優先度は別途設定)",
+    "TXT": "自由形式のテキスト。例: v=spf1 mx ~all",
+    "NS": "ネームサーバー。例: ns1.example.com",
+    "SRV": "weight port target。例: 5 5060 sip.example.com (優先度は別途設定)",
+    "CAA": "flags tag \"value\"。例: 0 issue \"letsencrypt.org\"",
+    "PTR": "対象ドメイン名。例: host.example.com",
+    "DS": "keytag algorithm digest-type digest。例: 12345 13 2 49FD46E6C4B45C55D4AC...",
+    "TLSA": "usage selector matching-type data。例: 3 1 1 0B9FA5A59EED715C26C1020C...",
+    "SSHFP": "algorithm type fingerprint。例: 4 2 123456789ABCDEF...",
+    "NAPTR": "order preference \"flags\" \"service\" \"regexp\" replacement"
+  },
+  "soa": {
+    "title": "SOA 設定",
+    "titleHint": "(authority、refresh、retry、expire、TTL)",
+    "hide": "▲ 非表示",
+    "edit": "▼ 編集",
+    "primaryNs": "プライマリ NS",
+    "hostmasterEmail": "Hostmaster メール",
+    "fields": {
+      "refresh": "refresh",
+      "retry": "retry",
+      "expire": "expire",
+      "minimum": "minimum",
+      "ttl": "ttl"
+    },
+    "save": "SOA を保存",
+    "saved": "SOA 設定を保存しました",
+    "saveFailed": "SOA 設定を保存できませんでした"
+  },
+  "dnssec": {
+    "title": "DNSSEC",
+    "signed": "署名済み",
+    "signing": "署名中...",
+    "disabled": "無効",
+    "description": "BIND のインライン署名でこのゾーンに署名します。生成された DS レコードをドメインレジストラに追加してください。",
+    "refreshStatus": "ステータスを更新",
+    "disable": "無効化",
+    "enabling": "有効化中...",
+    "enable": "有効化",
+    "dsForRegistrar": "レジストラ用の DS レコード",
+    "copied": "コピーしました",
+    "copy": "コピー",
+    "dsHint": "この DS レコードをレジストラの DNSSEC 設定に追加してください。反映にはレコードの TTL までかかる場合があります。",
+    "signingInProgress": "署名を実行中です。数秒後にステータスを更新してください。",
+    "enabledMsg": "DNSSEC を有効にしました。以下の DS レコードをドメインレジストラに追加してください。",
+    "disabledMsg": "DNSSEC を無効にしました。",
+    "updateFailed": "DNSSEC を更新できませんでした",
+    "refreshFailed": "DNSSEC のステータスを更新できませんでした"
+  },
+  "actions": {
+    "newRecord": "新規レコード",
+    "applyTemplate": "📋 デフォルトテンプレートを適用",
+    "applyTemplateTitle": "デフォルトの A/MX/TXT/NS レコードを追加します (冪等)",
+    "refresh": "↻ 更新",
+    "export": "⬇ エクスポート",
+    "exportTitle": "DNS レコードを BIND ゾーンファイルとしてダウンロード",
+    "import": "⬆ インポート",
+    "importTitle": "BIND ゾーンファイルをアップロード"
+  },
+  "import": {
+    "title": "ゾーンファイルをインポート",
+    "description": "標準的な BIND ゾーンファイル (.zone / .txt) をアップロードします。レコードはこのドメインにインポートされ、その後ゾーンが検証および再生成されます。",
+    "overwriteLabel": "既存のレコードを上書き — オフの場合、レコードはマージされます (新規レコードが追加)",
+    "replaceWarning": "⚠️ このドメインの現在の DNS レコードはすべて削除され、ファイルの内容に置き換えられます。先にバックアップをエクスポートすることを推奨します。",
+    "cancel": "キャンセル",
+    "importing": "インポート中…",
+    "import": "インポート",
+    "complete": "インポート完了 — {{added}} 件追加、{{skipped}} 件スキップ ({{mode}})",
+    "completeWarning": "インポート完了 — {{added}} 件追加、{{skipped}} 件スキップ ({{mode}}) · {{warning}}",
+    "failed": "インポートに失敗しました"
+  },
+  "exportFailed": "エクスポートに失敗しました",
+  "bulk": {
+    "selected": "{{count}} 件のレコードを選択中",
+    "enable": "有効化",
+    "disable": "無効化",
+    "deleteSelected": "選択項目を削除 ({{count}})",
+    "clearSelection": "選択を解除",
+    "deleted": "{{count}} 件のレコードを削除しました",
+    "updated": "{{count}} 件のレコードを更新しました",
+    "deleteFailed": "一括削除に失敗しました",
+    "updateFailed": "一括更新に失敗しました"
+  },
+  "table": {
+    "selectAll": "すべて選択",
+    "select": "{{name}} {{type}} を選択",
+    "name": "名前",
+    "type": "タイプ",
+    "value": "値",
+    "ttl": "TTL",
+    "priority": "優先度",
+    "status": "ステータス",
+    "actions": "操作",
+    "selectLabel": "選択",
+    "noPriority": "なし",
+    "active": "有効",
+    "disabled": "無効",
+    "edit": "編集",
+    "delete": "削除"
+  },
+  "empty": {
+    "text": "まだ DNS レコードがありません。",
+    "applyTemplate": "デフォルトテンプレートを適用"
+  },
+  "templateAdded": "{{count}} 件のデフォルトレコードを追加しました",
+  "templateFailed": "テンプレートを適用できませんでした",
+  "delete": {
+    "title": "DNS レコードを削除",
+    "message": "「{{name}} {{type}} {{value}}」を削除しますか?",
+    "confirm": "はい、削除します",
+    "failed": "削除に失敗しました"
+  },
+  "bulkDelete": {
+    "title": "選択した DNS レコードを削除",
+    "message": "{{count}} 件の DNS レコードが完全に削除されます。この操作は取り消せません。続行しますか?",
+    "confirm": "はい、{{count}} 件のレコードを削除します"
+  },
+  "dnssecDisable": {
+    "title": "DNSSEC を無効化",
+    "message": "DNSSEC を無効化する前に、ドメインレジストラで DS レコードを削除し、その TTL を待ってください。そうしないと、ドメインが SERVFAIL で名前解決できなくなる場合があります。DS レコードを削除した後にのみ続行してください。",
+    "confirm": "DS を削除済み、DNSSEC を無効化"
+  },
+  "modal": {
+    "newTitle": "新規 DNS レコード",
+    "editTitle": "DNS レコードを編集",
+    "nameLabel": "名前 (サブドメイン)",
+    "nameHint": "「@」はルートドメインです。他の例としては「www」や「mail」があります。",
+    "typeLabel": "タイプ",
+    "valueLabel": "値",
+    "ttlLabel": "TTL (秒)",
+    "priorityLabel": "優先度",
+    "active": "有効",
+    "cancel": "キャンセル",
+    "saving": "保存中...",
+    "create": "作成",
+    "update": "更新",
+    "saveFailed": "レコードを保存できませんでした"
+  }
+}

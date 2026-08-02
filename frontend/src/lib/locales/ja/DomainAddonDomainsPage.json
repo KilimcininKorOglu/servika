@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "addonDomains": "アドオンドメイン"
+  },
+  "title": "アドオンドメイン",
+  "subtitle": "アドオンドメインまたはパークドメインを作成し、ドメイン全体のリダイレクトを設定します。",
+  "toast": {
+    "created": "{{domain}} を作成しました。",
+    "createFailed": "アドオンドメインを作成できませんでした",
+    "deleted": "{{domain}} を削除しました。",
+    "deleteFailed": "アドオンドメインを削除できませんでした",
+    "redirectSaved": "リダイレクト設定を保存しました。",
+    "redirectSaveFailed": "リダイレクト設定を保存できませんでした",
+    "redirectRemoved": "リダイレクト設定を削除しました。",
+    "redirectRemoveFailed": "リダイレクト設定を削除できませんでした"
+  },
+  "mode": {
+    "parked": "パークドメイン",
+    "addon": "アドオンドメイン"
+  },
+  "confirmDelete": "{{domain}} を削除しますか?\n{{mode}}、vhost、DNS ゾーン、およびパネルの記録が削除されます。この操作は取り消せません。",
+  "confirmRemoveRedirect": "ドメインのリダイレクトを削除しますか?",
+  "form": {
+    "title": "新規アドオンドメイン",
+    "domainLabel": "ドメイン",
+    "parkedLabel": "パークドメイン",
+    "creating": "作成中…",
+    "add": "ドメインを追加",
+    "hint": "アドオンドメインは独自のドキュメントルートを使用します。パークドメインは親ドメインのドキュメントルートを共有します。"
+  },
+  "redirect": {
+    "title": "ドメイン全体のリダイレクト",
+    "active": "有効",
+    "targetLabel": "リダイレクト先 URL",
+    "statusLabel": "ステータス",
+    "status301": "301 恒久的",
+    "status302": "302 一時的",
+    "saving": "保存中…",
+    "save": "リダイレクトを保存",
+    "remove": "削除"
+  },
+  "list": {
+    "title": "既存のドメイン",
+    "loading": "読み込み中…",
+    "empty": "まだアドオンドメインがありません。",
+    "parked": "パーク",
+    "phpPrefix": "PHP",
+    "delete": "削除"
+  },
+  "backToSubscription": "← サブスクリプションに戻る"
+}

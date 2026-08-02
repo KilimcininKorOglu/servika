@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "toolsSettings": "ツールと設定",
+    "backupManager": "バックアップマネージャー"
+  },
+  "title": "バックアップマネージャー",
+  "subtitle": "すべてのドメインのバックアップを一か所で確認できます。毎日の自動バックアップが実行され、S3/SFTP の保存先はドメインごとに設定されます。",
+  "toast": {
+    "triggered": "スケジュールされたバックアップを開始しました。数秒後に更新すると結果を確認できます。",
+    "triggerFailed": "バックアップを開始できませんでした"
+  },
+  "kpi": {
+    "totalSize": "バックアップ合計サイズ",
+    "totalBackups": "バックアップ総数",
+    "domainCount": "ドメイン数",
+    "remoteDestinations": "有効なリモート保存先",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 自動バックアップ:",
+    "default": "毎日 03:00",
+    "suffix": ". 保持期間 7 日",
+    "triggering": "開始中...",
+    "backupNow": "⏱ すべてのドメインを今すぐバックアップ",
+    "refresh": "↻ 更新"
+  },
+  "table": {
+    "title": "ドメインバックアップ",
+    "colDomain": "ドメイン",
+    "colCount": "バックアップ数",
+    "colSize": "合計サイズ",
+    "colLatest": "最新のバックアップ",
+    "colAction": "操作",
+    "loading": "読み込み中...",
+    "noDomains": "ドメインがありません。",
+    "never": "なし",
+    "manage": "管理"
+  },
+  "footnote": {
+    "pre": "ℹ️ バックアップは",
+    "post": "そこに保存されます。ドメインが削除されてもバックアップは引き続き利用でき、誤削除からの復元が可能です。管理を開くと、個々のバックアップのダウンロードや復元、保存先の設定ができます。"
+  }
+}

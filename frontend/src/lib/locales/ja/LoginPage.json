@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "ホスティングコントロールパネル"
+  },
+  "heading": "ようこそ",
+  "subtitle": "続行するにはサインインしてください。",
+  "field": {
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "twoFactorCode": "二要素認証コード"
+  },
+  "twoFactorHint": "認証アプリの 6 桁のコードを入力してください。",
+  "button": {
+    "signingIn": "サインイン中…",
+    "verify": "確認してサインイン",
+    "signIn": "サインイン"
+  },
+  "footer": "Servika · バージョン 0.2.0-f1",
+  "error": {
+    "loginFailed": "ログインに失敗しました"
+  }
+}

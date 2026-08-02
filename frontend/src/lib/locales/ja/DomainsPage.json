@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン"
+  },
+  "title": "ドメイン",
+  "subtitle": "登録済みのすべてのドメインを表示し、ステータスを一括変更したり削除したりします。",
+  "loading": "読み込み中...",
+  "searchPlaceholder": "🔍 ドメインを検索...",
+  "newDomain": "新規ドメイン",
+  "empty": {
+    "title": "まだドメインがありません",
+    "description": "最初のドメインを追加して始めましょう。Linux ユーザー、nginx vhost、PHP-FPM プール、FTP アカウント、MySQL データベース、DNS ゾーンが自動的に作成されます。",
+    "button": "ドメインを作成"
+  },
+  "columns": {
+    "domainName": "ドメイン名",
+    "systemUser": "システムユーザー",
+    "plan": "プラン",
+    "php": "PHP",
+    "disk": "ディスク",
+    "status": "ステータス",
+    "created": "作成日",
+    "actions": "操作"
+  },
+  "openInNewTab": "新しいタブで開く",
+  "sslExpires": "有効期限: {{date}}",
+  "sslActive": "SSL 有効",
+  "demoBadge": "デモ",
+  "reseller": "リセラー: {{name}}",
+  "noPlan": "なし",
+  "subdomain": "サブ",
+  "subdomainStatus": "サブドメイン",
+  "subdomainParentPlan": "親",
+  "manage": "管理",
+  "addSubdomain": "+ サブドメイン",
+  "bulk": {
+    "selected": "{{count}} 件選択中",
+    "activate": "▶ 有効化",
+    "deactivate": "⏸ 無効化",
+    "delete": "🗑 削除 ({{count}})",
+    "clear": "選択を解除"
+  },
+  "deleteConfirm": {
+    "title": "⚠ ドメインの一括削除",
+    "messageMid": " 個のドメインとすべての依存リソース (Linux ユーザー、ホームディレクトリ、データベース、FTP アカウント、vhost、DNS ゾーン) が ",
+    "messageBold": "完全に",
+    "messagePost": " 削除されます。",
+    "moreItems": "他 {{count}} 件...",
+    "typeLabel": "確認のため ",
+    "typeSuffix": " と入力してください:",
+    "cancel": "キャンセル",
+    "confirm": "はい、削除します"
+  },
+  "createModal": {
+    "title": "新しいドメインを作成",
+    "subtitle": "Linux ユーザー、nginx vhost、PHP-FPM プール、FTP アカウント、MySQL データベース、DNS ゾーンが自動的に設定されます。",
+    "domainName": "ドメイン名",
+    "domainNamePlaceholder": "example.com",
+    "loading": "読み込み中...",
+    "domainNameHintPre": "小文字、数字、ハイフン、ピリオド。例: ",
+    "domainNameHintMid": " または ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "panel.site.com",
+    "phpVersion": "PHP バージョン",
+    "phpDefault": "PHP 8.3 (デフォルト)",
+    "servicePlan": "サービスプラン",
+    "planNone": "(なし)",
+    "issueSsl": "作成後に Let's Encrypt SSL 証明書をインストール",
+    "sslWarning": "⚠️ ドメインの DNS A レコードが既にこのサーバーを指している必要があります。そうでない場合、発行は失敗し、後で SSL ページから再試行できます。",
+    "cancel": "キャンセル",
+    "creating": "作成中...",
+    "create": "作成"
+  },
+  "resultModal": {
+    "title": "✓ ドメインを作成しました",
+    "readyPre": " の準備が整いました。以下のパスワードは ",
+    "readyBold": "一度だけ",
+    "readyPost": " 表示されます。安全に保管してください。",
+    "ftp": "FTP",
+    "mysql": "MySQL データベース",
+    "host": "ホスト",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "database": "データベース",
+    "systemUser": "システムユーザー: ",
+    "ok": "OK"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "クリックしてコピー",
+    "hide": "非表示",
+    "show": "表示",
+    "copied": "コピーしました"
+  },
+  "toast": {
+    "created": "✓ 「{{name}}」を作成しました。Linux ユーザー、nginx vhost、PHP-FPM プール、FTP アカウント、MySQL データベース、DNS ゾーンの準備が整いました。",
+    "sslInstalled": " Let's Encrypt SSL をインストールしました。",
+    "sslFailed": " (Let's Encrypt SSL を発行できませんでした — DNS A レコードがここを指していることを確認してから、SSL ページでインストールしてください。)",
+    "deleted": "✓ {{success}}/{{total}} 個のドメインを削除しました",
+    "statusChanged": "✓ {{count}} 個のドメインを「{{status}}」に変更しました"
+  },
+  "errors": {
+    "invalidDomain": "無効なドメイン名です。例: example.com または panel.example.com",
+    "createFailed": "ドメインを作成できませんでした",
+    "statusFailed": "ステータスを変更できませんでした"
+  }
+}

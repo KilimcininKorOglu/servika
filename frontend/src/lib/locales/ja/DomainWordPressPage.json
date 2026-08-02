@@ -1,0 +1,124 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "subscription": "サブスクリプション",
+    "wordpress": "WordPress"
+  },
+  "title": "WordPress ツールキット",
+  "subtitle": "バージョン、プラグイン、テーマ、ユーザーを一か所で管理します。",
+  "loading": "読み込み中…",
+  "actions": {
+    "new": "新規 WordPress"
+  },
+  "empty": {
+    "title": "このドメインにはまだ WordPress のインストールがありません",
+    "subtitle": "以下のフォームからワンクリックでインストールできます。"
+  },
+  "tabs": {
+    "overview": "概要",
+    "extensions": "プラグイン",
+    "themes": "テーマ",
+    "users": "ユーザー"
+  },
+  "toolkit": {
+    "adminPanel": "管理パネル",
+    "remove": "削除"
+  },
+  "metrics": {
+    "version": "バージョン",
+    "php": "PHP",
+    "database": "データベース",
+    "maintenance": "メンテナンスモード",
+    "upToDate": "最新",
+    "active": "有効",
+    "on": "オン",
+    "off": "オフ"
+  },
+  "overview": {
+    "updateVersion": "バージョンを更新 · v{{version}}",
+    "updateAll": "すべて更新",
+    "disableMaintenance": "メンテナンスモードを無効化",
+    "enableMaintenance": "メンテナンスモードを有効化",
+    "clearCache": "キャッシュをクリア",
+    "repairCore": "コアを修復",
+    "hint": "クイックメンテナンス操作。利用可能なバージョン更新は上記のメトリックに表示されます。"
+  },
+  "messages": {
+    "coreUpdated": "WordPress コアを更新しました。",
+    "allUpdated": "コア、プラグイン、テーマを更新しました。",
+    "maintenanceEnabled": "メンテナンスモードを有効にしました。",
+    "maintenanceDisabled": "メンテナンスモードを無効にしました。",
+    "cacheCleared": "キャッシュをクリアしました。",
+    "repairDone": "コアの修復が完了しました。",
+    "packageUpdated": "{{name}} を更新しました。",
+    "allUpdatesDone": "すべての更新が完了しました。",
+    "activated": "{{name}} を有効化しました。",
+    "deactivated": "{{name}} を無効化しました。"
+  },
+  "errors": {
+    "installFailed": "インストールに失敗しました",
+    "operationFailed": "操作に失敗しました",
+    "resetFailed": "パスワードをリセットできませんでした",
+    "removeFailed": "インストールを削除できませんでした"
+  },
+  "output": {
+    "title": "操作の出力"
+  },
+  "btn": {
+    "processing": "処理中…"
+  },
+  "packages": {
+    "loading": "読み込み中…",
+    "noPlugins": "プラグインが見つかりませんでした。",
+    "noThemes": "テーマが見つかりませんでした。",
+    "updateSingular": "{{count}} 件の更新が利用可能",
+    "updatePlural": "{{count}} 件の更新が利用可能",
+    "updateAll": "すべて更新",
+    "active": "有効",
+    "inactive": "無効",
+    "version": "バージョン {{version}}",
+    "updateAvailable": " → {{version}} が利用可能",
+    "update": "更新",
+    "activate": "有効化",
+    "deactivate": "無効化",
+    "activeTheme": "有効なテーマ"
+  },
+  "usersTab": {
+    "loading": "読み込み中…",
+    "empty": "ユーザーが見つかりませんでした。",
+    "resetPassword": "パスワードをリセット"
+  },
+  "confirm": {
+    "resetPassword": "「{{user}}」の新しいパスワードを生成しますか?\n現在のパスワードは無効になります。",
+    "rootRemove": "ルートディレクトリの WordPress インストールはパネルから削除できません。",
+    "remove": "{{dir}} 配下の WordPress インストールを削除しますか?\nこのディレクトリ内のすべてのファイルとそのデータベースが削除されます。この操作は取り消せません。"
+  },
+  "installForm": {
+    "title": "新規 WordPress インストール",
+    "close": "✕ 閉じる",
+    "siteTitle": "サイトタイトル",
+    "siteTitlePlaceholder": "マイブログ",
+    "subdirectory": "サブディレクトリ (任意)",
+    "subdirectoryPlaceholder": "空欄 = ルート · 例: blog",
+    "adminUser": "管理者ユーザー名",
+    "adminEmail": "管理者メール",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "インストール中… (約 30 秒)",
+    "install": "WordPress をインストール"
+  },
+  "result": {
+    "installed": "WordPress {{version}} をインストールしました",
+    "site": "サイト",
+    "admin": "管理者",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "savePassword": "今すぐパスワードを保存してください。再度表示されません。"
+  },
+  "passwordModal": {
+    "title": "新しいパスワードを作成しました",
+    "user": "ユーザー:",
+    "copy": "コピー",
+    "notice": "このパスワードは再度表示されません。今すぐ保存してください。",
+    "ok": "OK"
+  }
+}

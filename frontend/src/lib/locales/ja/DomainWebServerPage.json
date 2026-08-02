@@ -1,0 +1,132 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "settings": "Apache と nginx の設定"
+  },
+  "title": "Apache と nginx の設定",
+  "subtitle": "セキュリティヘッダーとカスタムディレクティブ。保存すると nginx vhost が再生成されます。",
+  "loading": "読み込み中…",
+  "applying": "適用中…",
+  "reload": "再読み込み",
+  "saveApply": "💾 保存して適用",
+  "backend": {
+    "php-fpm": {
+      "name": "nginx + PHP-FPM",
+      "description": "デフォルト。nginx が FastCGI を通じて PHP-FPM を直接呼び出します。WordPress、Laravel、動的な PHP サイトに最適で、最も低いレイテンシーを実現します。"
+    },
+    "apache": {
+      "name": "nginx + Apache",
+      "description": "nginx がエッジで TLS を終端し、その背後で Apache (10080) が vhost を配信します。Joomla、古い WordPress サイト、レガシー CMS 向けに完全な .htaccess をサポートします。"
+    },
+    "static": {
+      "name": "静的 (PHP なし)",
+      "description": "ファイルのみを配信します。React、Vue、Angular の SPA、Hugo や Jekyll などの静的サイトジェネレーター、CDN コンテンツを対象としています。PHP リクエストは 404 を返します。"
+    }
+  },
+  "headers": {
+    "hdr_x_content_type": "XSS 対策として MIME スニッフィングを防止",
+    "hdr_x_xss": "レガシーブラウザの XSS 保護",
+    "hdr_referrer": "クロスサイトの Referer 情報を制限",
+    "hdr_permissions": "カメラ、マイク、位置情報 API をデフォルトで無効化",
+    "hdr_csp_upgrade": "HTTP リンクを自動的に HTTPS にアップグレード"
+  },
+  "stack": {
+    "title": "Web サーバースタック",
+    "description": "nginx はエッジの TLS 終端として維持されます。以下の選択により、ドメインが指定したバックエンドエンジンにルーティングされます。",
+    "active": "● 有効"
+  },
+  "docRoot": {
+    "title": "ドキュメントルート",
+    "description": "nginx が配信する public_html のサブディレクトリを選択します。Laravel アプリケーションは通常 public ディレクトリを使用します。",
+    "subdirLabel": "public_html 配下のサブディレクトリ",
+    "placeholder": "public",
+    "save": "ドキュメントルートを保存",
+    "currentLabel": "現在のドキュメントルート:"
+  },
+  "hstsNote": {
+    "pre": " は HTTPS が有効なサイトにのみ関係します。サイトが HTTP のみを使用する場合、ブラウザには送信されません。変更は自動的に ",
+    "mid": " と ",
+    "post": " をダウンタイムなしでトリガーします。"
+  },
+  "customVhostActive": {
+    "boldPre": "カスタム vhost が有効です",
+    "post": " — 以下のセキュリティヘッダー、キャッシュ、追加ディレクティブの設定は現在 ",
+    "boldNot": "適用されていません",
+    "tail": "。ここでの変更は保存されますが vhost ファイルには反映されません。これらの設定を再び有効にするには、以下の vhost ファイルカードで「パネル管理に戻す」を押してください。"
+  },
+  "cards": {
+    "securityHeaders": "セキュリティヘッダー (HTTP + HTTPS)",
+    "hsts": "HTTP Strict Transport Security (HTTPS のみ)",
+    "performanceCache": "パフォーマンスキャッシュ",
+    "vhostFile": "nginx Vhost ファイル",
+    "additionalDirectives": "追加の nginx ディレクティブ"
+  },
+  "hsts": {
+    "description": "ブラウザは HTTPS 経由でのみサイトに接続します。設定を誤ると元に戻すのが難しいため、適切な場合にのみ有効にしてください。",
+    "maxAgeLabel": "max-age (秒)",
+    "maxAge300": "5 分 (テスト用)",
+    "maxAge86400": "1 日",
+    "maxAge604800": "1 週間",
+    "maxAge2592000": "30 日",
+    "maxAge15768000": "6 か月",
+    "maxAge31536000": "1 年 (推奨)",
+    "maxAge63072000": "2 年 (プリロード用)",
+    "includeSubDomainsDesc": "各サブドメインが HTTPS に対応していることを確認した上で、すべてのサブドメインに適用します",
+    "preloadDesc": "サイトをブラウザにデフォルトで含めます (hstspreload.org での登録が必要です)"
+  },
+  "cache": {
+    "fastcgiLabel": "nginx FastCGI キャッシュ",
+    "fastcgiValue": "x-cache-status ヘッダー · {{minutes}} 分のキャッシュ期間",
+    "fastcgiDesc": "WordPress と PHP のページをディスクにキャッシュします。POST リクエスト、Cookie、ログインページ、プレビューは自動的にスキップされます。WP Site Health のページキャッシュ警告を解消します。",
+    "durationMinutes": "キャッシュ期間 (分)",
+    "min5": "5 分",
+    "min15": "15 分",
+    "min60": "1 時間 (推奨)",
+    "min360": "6 時間",
+    "min1440": "1 日",
+    "browserLabel": "ブラウザキャッシュ (静的ファイル)",
+    "browserValue": "Cache-Control: public, immutable · 有効期限 {{days}} 日",
+    "browserDesc": "CSS、JS、PNG、JPG、WOFF などの静的ファイルがブラウザにキャッシュされ、再訪問時の読み込みが大幅に速くなります。",
+    "durationDays": "キャッシュ期間 (日)",
+    "day1": "1 日",
+    "day7": "1 週間",
+    "day30": "30 日 (推奨)",
+    "day90": "3 か月",
+    "day365": "1 年"
+  },
+  "vhost": {
+    "warningPre": "これは nginx がこのドメインに対して ",
+    "warningBoldActually": "実際に配信する",
+    "warningMid": " ファイルです。直接編集して保存できます。保存した瞬間から、",
+    "warningBoldEntire": "vhost ファイル全体",
+    "warningPost": " (HTTP→HTTPS リダイレクトと Let's Encrypt 検証ロケーションを含む) の管理はあなたの責任となります。上記のヘッダー/キャッシュ/追加ディレクティブの設定とパネルはこのファイルに触れなくなります。",
+    "warningTail": " — このブロックを削除すると、証明書は 90 日後に自動更新できなくなります。",
+    "activeState": "🟢 カスタム vhost が有効 — パネルはこのファイルに触れません",
+    "managedState": "⚪ パネル管理 — 現在有効なファイルを以下に表示しています",
+    "unsaved": "未保存の変更",
+    "working": "処理中…",
+    "returnToPanel": "パネル管理に戻す",
+    "saving": "保存中…",
+    "confirmReturn": "このファイルをパネルの標準管理に戻しますか?\n\n編集内容は削除されません — カスタムモードに戻すと、中断したところから再開できます。"
+  },
+  "directives": {
+    "pre": "このテキストは ",
+    "mid": " ブロックの末尾に追加されます。例: ",
+    "placeholder": "# 例:\nclient_max_body_size 200m;\nrewrite ^/old/(.*)$ /new/$1 permanent;"
+  },
+  "success": {
+    "backendChanged": "✓ Web サーバーを「{{name}}」に変更しました",
+    "docRootUpdated": "✓ ドキュメントルートを更新し、nginx を再読み込みしました",
+    "settingsApplied": "✓ 設定を適用し、nginx を再読み込みしました",
+    "customVhostSaved": "✓ カスタム vhost を保存し、nginx を再読み込みしました",
+    "returnedToPanel": "✓ パネル管理に戻し、vhost を再生成しました"
+  },
+  "errors": {
+    "changeBackendFailed": "バックエンドを変更できませんでした",
+    "updateDocRootFailed": "ドキュメントルートを更新できませんでした",
+    "saveSettingsFailed": "設定を保存できませんでした",
+    "saveCustomVhostFailed": "カスタム vhost を保存できませんでした",
+    "returnManagedFailed": "管理された vhost に戻せませんでした"
+  }
+}

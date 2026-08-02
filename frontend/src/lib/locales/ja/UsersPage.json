@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "users": "ユーザー"
+  },
+  "title": "ユーザー",
+  "subtitleAdmin": "パネルアカウント: 管理者、リセラー、顧客。",
+  "subtitleReseller": "作成した顧客アカウント。",
+  "newAccount": "新規アカウント",
+  "newCustomer": "新規顧客",
+  "loading": "読み込み中…",
+  "empty": {
+    "titleAdmin": "まだ他のアカウントがありません",
+    "titleReseller": "まだ顧客アカウントがありません",
+    "description": "新しいアカウントを作成して始めましょう。"
+  },
+  "noMatch": "検索に一致するアカウントはありません。",
+  "roles": {
+    "admin": "管理者",
+    "reseller": "リセラー",
+    "user": "顧客"
+  },
+  "columns": {
+    "user": "ユーザー",
+    "fullName": "氏名",
+    "role": "役割",
+    "status": "ステータス",
+    "twoFa": "2FA",
+    "lastLogin": "最終ログイン"
+  },
+  "system": "(システム)",
+  "systemAccount": "システムアカウント",
+  "status": {
+    "active": "有効",
+    "suspended": "停止中"
+  },
+  "noPassword": "パスワードなし",
+  "noPasswordTitle": "パスワードが設定されていません — 割り当てるまでこのアカウントはログインできません。",
+  "twoFaOn": "オン",
+  "twoFaOff": "オフ",
+  "actions": {
+    "password": "パスワード",
+    "limits": "制限",
+    "suspend": "停止",
+    "enable": "有効化",
+    "delete": "削除"
+  },
+  "createModal": {
+    "titleAdmin": "新規アカウント",
+    "titleReseller": "新規顧客アカウント",
+    "username": "ユーザー名",
+    "usernamePlaceholder": "example_reseller",
+    "usernameHint": "3〜32 文字、小文字で始まり、英字、数字、_、- を含めることができます。",
+    "password": "パスワード",
+    "passwordHint": "8 文字以上。パスワードは今回のみ表示されます — ユーザーに渡してください。",
+    "role": "役割",
+    "resellerOnlyCustomers": "リセラーは顧客アカウントのみを作成できます。",
+    "email": "メール",
+    "fullName": "氏名",
+    "cancel": "キャンセル",
+    "creating": "作成中…",
+    "create": "作成"
+  },
+  "passwordModal": {
+    "title": "パスワードを設定",
+    "newFor": "次のアカウントの新しいパスワード: ",
+    "customerNote": "これは顧客のパネルアカウントのパスワードです。顧客はこのユーザー名とパスワードで顧客ポータルにサインインします。パスワードがないとアカウントはログインできません。",
+    "placeholder": "8 文字以上",
+    "cancel": "キャンセル",
+    "saving": "保存中…",
+    "setPassword": "パスワードを設定"
+  },
+  "limitsModal": {
+    "title": "リセラー制限",
+    "loading": "読み込み中…",
+    "upperBounds": "次の上限: ",
+    "unlimitedNote": "0 = 無制限。すべてが 0 の場合、制限レコードは完全に削除されます。",
+    "maxCustomers": "最大顧客数",
+    "maxDomains": "最大ドメイン数",
+    "diskQuota": "ディスククォータ (MB)",
+    "trafficQuota": "トラフィッククォータ (MB)",
+    "inUseNow": "現在 {{count}} 件使用中",
+    "mbInUseNow": "現在 {{count}} MB 使用中",
+    "mbUsedNow": "現在 {{count}} MB 使用済み",
+    "limitBelowUsage": " — 制限が現在の使用量を下回っています",
+    "quotaBelowUsage": " — クォータが現在の使用量を下回っています",
+    "noLimit": "このリセラーには制限が定義されていません — 現在は無制限です。",
+    "loweringNote": "制限を現在の使用量より下げても既存のアカウントは削除されません。新規追加がブロックされるだけです。",
+    "cancel": "キャンセル",
+    "saving": "保存中…",
+    "save": "保存"
+  },
+  "delete": {
+    "title": "アカウントを削除",
+    "message": "アカウント {{username}} が削除されます。",
+    "resellerNote": " このリセラー配下のアカウントは削除されず、管理者に移管されます。",
+    "confirm": "削除"
+  },
+  "toast": {
+    "created": "アカウント {{username}} を作成しました。",
+    "passwordUpdated": "{{username}} のパスワードを更新しました。",
+    "limitsUpdated": "{{username}} の制限を更新しました。",
+    "enabled": "{{username}} を有効化しました。",
+    "suspended": "{{username}} を停止しました。",
+    "deleted": "{{username}} を削除しました。"
+  },
+  "errors": {
+    "loadFailed": "アカウントを読み込めませんでした",
+    "createFailed": "アカウントを作成できませんでした",
+    "resetFailed": "パスワードをリセットできませんでした",
+    "loadLimitsFailed": "制限を読み込めませんでした",
+    "saveLimitsFailed": "制限を保存できませんでした",
+    "statusFailed": "ステータスを変更できませんでした",
+    "deleteFailed": "削除できませんでした"
+  }
+}

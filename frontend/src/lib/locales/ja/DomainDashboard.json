@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "アプリケーション",
+    "domainAndDns": "ドメインと DNS",
+    "email": "メール",
+    "filesAndDatabases": "ファイルとデータベース",
+    "developmentTools": "開発ツール",
+    "security": "セキュリティ"
+  },
+  "wordpress": { "label": "WordPress", "desc": "ワンクリックインストール · 管理" },
+  "laravel": { "label": "Laravel ツールキット", "desc": "インストール · デプロイ · キュー" },
+  "dns": { "label": "DNS 管理", "desc": "A、MX、TXT、CNAME レコード" },
+  "subdomains": { "label": "サブドメイン", "desc": "サブドメイン" },
+  "addonDomains": { "label": "アドオンドメイン", "desc": "アドオンドメインとパークドメイン · リダイレクト" },
+  "mail": { "label": "メールアカウント", "desc": "Postfix と Dovecot のメールボックス · SMTP" },
+  "connection": { "label": "接続情報", "desc": "FTP、データベース" },
+  "files": { "label": "ファイル", "desc": "ファイルマネージャー" },
+  "databases": { "label": "データベース" },
+  "ftp": { "label": "FTP", "desc": "FTP アカウント" },
+  "backups": { "label": "バックアップと復元", "desc": "バックアップ管理" },
+  "copy": { "label": "ウェブサイトをコピー", "desc": "複製" },
+  "php": { "label": "PHP", "desc": "バージョン {{version}}" },
+  "logs": { "label": "ログ", "desc": "access、error" },
+  "cron": { "label": "スケジュールされたタスク", "desc": "cron" },
+  "git": { "label": "Git", "desc": "リポジトリ連携" },
+  "composer": { "label": "PHP Composer", "desc": "パッケージマネージャー" },
+  "performance": { "label": "パフォーマンス", "desc": "アクセラレーター" },
+  "redis": { "label": "Redis キャッシュ", "desc": "分離されたオブジェクトキャッシュ · アクセラレーター" },
+  "ssl": {
+    "label": "SSL/TLS 証明書",
+    "expires": "有効期限: {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "ドメインは保護されていません"
+  },
+  "passwordProtection": { "label": "パスワード保護ディレクトリ", "desc": ".htpasswd" },
+  "stats": { "label": "統計", "desc": "トラフィック分析" },
+  "accessControl": { "label": "アクセス制御", "desc": "ホットリンク保護 · IP 許可/ブロック" },
+  "imunify": { "label": "Imunify", "desc": "アンチウイルス" },
+  "ssh": {
+    "label": "SSH アクセス",
+    "enabled": "有効",
+    "disabled": "無効"
+  }
+}

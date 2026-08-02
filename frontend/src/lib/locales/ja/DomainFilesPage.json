@@ -1,0 +1,153 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "files": "ファイル"
+  },
+  "title": "ファイルマネージャー",
+  "loading": "読み込み中...",
+  "dropZone": {
+    "title": "ここにファイルをドロップ",
+    "targetDir": "対象ディレクトリ: "
+  },
+  "selection": {
+    "count": "{{count}} 個の項目を選択中",
+    "rightClick": "右クリックで操作を表示",
+    "delete": "削除 ({{count}})",
+    "clear": "選択を解除"
+  },
+  "upload": {
+    "uploading": "アップロード中...",
+    "remaining": "残り: {{eta}}"
+  },
+  "menu": {
+    "uploadFiles": "📤 ファイルをアップロード",
+    "newFolder": "📁 新規フォルダ",
+    "newFile": "📄 新規ファイル"
+  },
+  "toolbar": {
+    "refresh": "↻ 更新",
+    "delete": "削除 ({{count}})",
+    "searchPlaceholder": "🔍 ファイルを検索...",
+    "itemCount": "{{count}} 個の項目"
+  },
+  "columns": {
+    "select": "選択",
+    "name": "名前",
+    "size": "サイズ",
+    "permissions": "パーミッション",
+    "modified": "更新日時",
+    "actions": "操作"
+  },
+  "parentFolder": "↑ 親フォルダ",
+  "empty": "このフォルダは空です",
+  "actionsTitle": "操作",
+  "context": {
+    "open": "開く",
+    "browse": "ブラウザで開く",
+    "edit": "編集",
+    "download": "ダウンロード",
+    "rename": "名前を変更",
+    "permissions": "パーミッション",
+    "calculateSize": "サイズを計算",
+    "extract": "アーカイブを展開",
+    "copy": "コピー",
+    "move": "移動",
+    "delete": "削除"
+  },
+  "prompt": {
+    "deleteConfirm": "「{{name}}」を削除しますか? この操作は取り消せません。",
+    "newFolderName": "新規フォルダ名:"
+  },
+  "sizeModal": {
+    "title": "📏 サイズ情報",
+    "bytes": "{{bytes}} バイト",
+    "done": "完了"
+  },
+  "bulkDelete": {
+    "title": "⚠ 一括削除",
+    "messageBold": "{{count}}",
+    "messagePost": " 個の項目が完全に削除されます。フォルダとそのすべての内容が削除されます。",
+    "moreItems": "他 {{count}} 件...",
+    "cancel": "キャンセル",
+    "confirm": "はい、削除します"
+  },
+  "renameModal": {
+    "title": "名前を変更",
+    "cancel": "キャンセル",
+    "rename": "名前を変更"
+  },
+  "chmodModal": {
+    "title": "パーミッション",
+    "owner": "所有者",
+    "group": "グループ",
+    "other": "その他",
+    "read": "読み取り",
+    "write": "書き込み",
+    "execute": "実行",
+    "octal": "8 進数: ",
+    "cancel": "キャンセル",
+    "apply": "適用"
+  },
+  "copyMoveModal": {
+    "titleCopy": "コピー",
+    "titleMove": "移動",
+    "heading": "{{title}} ({{count}} 個の項目)",
+    "moreItems": "他 {{count}} 件...",
+    "targetLabel": "対象ディレクトリ (home 配下)",
+    "targetPlaceholder": "/public_html/backups",
+    "hintPre": "対象は既に存在している必要があります。",
+    "hintCopy": "フォルダは内容とともにコピーされます。",
+    "hintMove": "同じディスク上での移動は即座に完了します。",
+    "cancel": "キャンセル"
+  },
+  "archiveModal": {
+    "title": "📦 アーカイブに追加 ({{count}} 個の項目)",
+    "fileName": "ファイル名",
+    "format": "形式",
+    "output": "出力: ",
+    "cancel": "キャンセル",
+    "archive": "アーカイブ"
+  },
+  "newFileModal": {
+    "title": "📄 新規ファイル",
+    "fileNameLabel": "ファイル名 (拡張子を含む)",
+    "hint": "空のファイルが作成され、コードエディターで開かれます。",
+    "cancel": "キャンセル",
+    "createAndEdit": "作成して編集"
+  },
+  "eta": {
+    "lessThanSec": "1 秒未満",
+    "sec": "{{count}} 秒",
+    "minSec": "{{min}} 分 {{sec}} 秒",
+    "hrMin": "{{hr}} 時間 {{min}} 分"
+  },
+  "toast": {
+    "uploadPartial": "{{success}}/{{total}} 個のファイルをアップロードしました。一部失敗しました。",
+    "deletePartial": "{{success}}/{{total}} 個の項目を削除しました。",
+    "someErrors": "一部エラー: {{errors}}",
+    "downloadFailed": "ダウンロードに失敗しました: {{message}}"
+  },
+  "errors": {
+    "deleteFailed": "削除に失敗しました",
+    "createFolderFailed": "フォルダを作成できませんでした",
+    "openFailed": "開けませんでした",
+    "saveFailed": "保存できませんでした",
+    "renameFailed": "名前を変更できませんでした",
+    "chmodFailed": "パーミッションを変更できませんでした",
+    "extractFailed": "アーカイブを開けませんでした。ZIP、RAR、TAR アーカイブに対応しています。",
+    "searchFailed": "検索に失敗しました",
+    "copyFailed": "コピーに失敗しました",
+    "moveFailed": "移動に失敗しました",
+    "archiveFailed": "アーカイブに失敗しました",
+    "createFailed": "作成に失敗しました",
+    "sizeFailed": "サイズの計算に失敗しました"
+  },
+  "newFile": {
+    "title": "📄 新規ファイル",
+    "label": "ファイル名 (拡張子を含む)",
+    "hint": "空のファイルが作成され、コードエディターで開かれます。",
+    "cancel": "キャンセル",
+    "create": "作成して編集"
+  }
+}

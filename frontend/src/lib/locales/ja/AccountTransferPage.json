@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "ホーム",
+  "breadcrumbServices": "ホスティングサービス",
+  "breadcrumbTitle": "アカウント移行",
+  "title": "アカウントのインポート",
+  "subtitle": "cPanel の完全アカウントバックアップを安全に解析します。この段階ではアーカイブの展開やサーバーへの保存は行われません。",
+  "fileLabel": "cPanel 完全バックアップ (.tar.gz / .tgz)",
+  "uploading": "アップロード中 {{progress}}%",
+  "analyzeButton": "アーカイブを解析",
+  "kpi": {
+    "primaryDomain": "プライマリドメイン",
+    "undetermined": "未確定",
+    "webFiles": "ウェブファイル",
+    "databases": "データベース",
+    "emailData": "メールデータ",
+    "emailFiles": "{{count}} ファイル",
+    "none": "なし"
+  },
+  "detail": {
+    "title": "アカウント情報",
+    "sourcePanel": "移行元パネル",
+    "user": "ユーザー",
+    "archiveRoot": "アーカイブルート",
+    "totalMembers": "メンバー総数",
+    "expandedSize": "展開後サイズ",
+    "cron": "cron",
+    "cronPresent": "あり",
+    "cronNone": "なし",
+    "sslFiles": "SSL ファイル",
+    "mailboxes": "メールボックス",
+    "forwarders": "転送設定",
+    "cronJobs": "cron ジョブ"
+  },
+  "lists": {
+    "databases": "データベース",
+    "dnsZones": "DNS ゾーン",
+    "cronJobs": "cron ジョブ",
+    "noneFound": "見つかりませんでした"
+  },
+  "analysisComplete": "解析が完了しました。インポートは新しいドメインを作成します。失敗した場合、作成されたアカウントは自動的にロールバックされます。",
+  "targetAndPlan": "移行先とプラン",
+  "fields": {
+    "targetCustomer": "移行先の顧客",
+    "selectCustomer": "顧客を選択",
+    "servicePlan": "サービスプラン",
+    "defaultPlan": "デフォルトプラン",
+    "primaryDomain": "プライマリドメイン",
+    "phpVersion": "PHP バージョン"
+  },
+  "importing": "インポート中… {{progress}}%",
+  "importButton": "アカウントをインポート",
+  "importResult": {
+    "title": "インポート完了",
+    "summary": "{{domain}} · {{webFiles}} 個のウェブファイル · {{count}} 個のデータベース",
+    "newPasswords": "新しいメールボックスのパスワード — 今すぐ保存してください",
+    "forwardersTransferred": "{{count}} 件の転送設定を移行しました。",
+    "cronTransferred": "{{count}} 件の cron ジョブを移行しました。",
+    "sslTransferred": "SSL 証明書を移行しました · 有効期限 {{expires}}",
+    "manageDomain": "ドメインを管理 →"
+  },
+  "errors": {
+    "analyzeFailed": "アーカイブを解析できませんでした",
+    "importFailed": "アカウントをインポートできませんでした"
+  }
+}

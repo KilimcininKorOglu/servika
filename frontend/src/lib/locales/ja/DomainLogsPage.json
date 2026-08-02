@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "logs": "ログ"
+  },
+  "title": "ログ",
+  "streamFailed": "ストリームを開始できませんでした (HTTP {{status}})",
+  "view": {
+    "table": "テーブル",
+    "raw": "生データ"
+  },
+  "autoScroll": "自動スクロール",
+  "stop": "■ 停止",
+  "liveTail": "▶ ライブ追跡",
+  "last200": "↻ 直近 200 件",
+  "clear": "クリア",
+  "searchPlaceholder": "IP、パス、ステータスコード、ブラウザで検索...",
+  "clearSearch": "検索をクリア",
+  "matches": "{{visible}} / {{total}} 件一致",
+  "waiting": "待機中... 新しい行は届き次第表示されます。",
+  "emptyFile": "(ログファイルは空か、まだ作成されていません)",
+  "noMatch": "「{{search}}」この検索に一致する行はありません。",
+  "linesFiltered": "{{visible}} / {{total}} 行 (フィルター済み)",
+  "lines": "{{count}} 行",
+  "windowSuffix": "、ウィンドウ {{max}}",
+  "liveStream": "ライブストリーム",
+  "access": {
+    "time": "時刻",
+    "ip": "IP",
+    "method": "メソッド",
+    "path": "パス",
+    "status": "ステータス",
+    "size": "サイズ",
+    "browser": "ブラウザ"
+  },
+  "error": {
+    "time": "時刻",
+    "level": "レベル",
+    "client": "クライアント",
+    "message": "メッセージ"
+  }
+}

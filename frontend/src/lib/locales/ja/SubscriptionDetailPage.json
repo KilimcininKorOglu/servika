@@ -1,0 +1,100 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "error": "エラー"
+  },
+  "errors": {
+    "loadFailed": "サブスクリプションを読み込めませんでした",
+    "suspendFailed": "ドメインの停止状態を更新できませんでした"
+  },
+  "loading": "読み込み中…",
+  "confirmSuspend": "「{{domain}}」を停止しますか? 再開するまで、ウェブサイトは HTTP 503 を返します。",
+  "notice": {
+    "suspended": "ドメインを停止しました。",
+    "resumed": "ドメインを再開しました。"
+  },
+  "header": {
+    "switchSubscription": "サブスクリプションを切り替え",
+    "suspended": "停止中",
+    "moreActions": "その他の操作",
+    "resumeDomain": "ドメインを再開",
+    "suspendDomain": "ドメインを停止"
+  },
+  "tabs": {
+    "dashboard": "ダッシュボード",
+    "hosting": "ホスティングと DNS"
+  },
+  "stats": {
+    "title": "統計",
+    "refresh": "更新",
+    "disk": "ディスク容量",
+    "traffic": "月間トラフィック",
+    "created": "作成日",
+    "phpVersion": "PHP バージョン"
+  },
+  "footer": {
+    "website": "ウェブサイト:",
+    "ip": "IP:",
+    "systemUser": "システムユーザー:",
+    "addDescription": "説明を追加"
+  },
+  "preview": {
+    "httpsOnly": "プレビューは HTTPS サイトでのみ利用可能です",
+    "autoAppear": "SSL が有効になると自動的に表示されます",
+    "website": "ウェブサイト",
+    "refresh": "更新",
+    "refreshTitle": "プレビューを更新",
+    "sslRequired": "プレビューには SSL が必要です",
+    "open": "開く",
+    "previewAlt": "{{domain}} のプレビュー"
+  },
+  "groups": {
+    "filesAndDatabases": "ファイルとデータベース",
+    "developmentTools": "開発ツール",
+    "security": "セキュリティ",
+    "hostingServices": "ホスティングサービス"
+  },
+  "tools": {
+    "connection": "接続情報",
+    "connectionDesc": "FTP とデータベース",
+    "files": "ファイル",
+    "filesDesc": "ファイルマネージャー",
+    "databases": "データベース",
+    "ftp": "FTP",
+    "ftpDesc": "FTP アカウント",
+    "backup": "バックアップと復元",
+    "backupDesc": "バックアップ管理",
+    "copy": "ウェブサイトをコピー",
+    "copyDesc": "複製",
+    "php": "PHP",
+    "phpDesc": "バージョン {{version}}",
+    "logs": "ログ",
+    "logsDesc": "アクセスログとエラーログ",
+    "cron": "スケジュールされたタスク",
+    "cronDesc": "cron",
+    "git": "Git",
+    "gitDesc": "リポジトリ連携",
+    "composer": "PHP Composer",
+    "composerDesc": "パッケージマネージャー",
+    "performance": "パフォーマンス",
+    "performanceDesc": "アクセラレーター",
+    "ssl": "SSL/TLS 証明書",
+    "sslExpires": "有効期限: {{expiry}}",
+    "sslLetsEncrypt": "Let's Encrypt",
+    "sslNotProtected": "ドメインは保護されていません",
+    "passwordProtect": "パスワード保護ディレクトリ",
+    "statistics": "統計",
+    "statisticsDesc": "トラフィック分析",
+    "imunify": "Imunify",
+    "imunifyDesc": "アンチウイルス",
+    "waf": "WAF (Web アプリケーションファイアウォール)",
+    "wafDesc": "ModSecurity + OWASP CRS",
+    "hostingSettings": "ホスティング設定",
+    "hostingSettingsDesc": "ドキュメントルートとオプション",
+    "apacheNginx": "Apache と nginx",
+    "apacheNginxDesc": "セキュリティヘッダーと追加ディレクティブ",
+    "dns": "DNS 設定",
+    "dnsDesc": "A、CNAME、MX"
+  }
+}

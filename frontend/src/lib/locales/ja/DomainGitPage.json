@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "git": "Git"
+  },
+  "title": "Git デプロイ",
+  "loading": "読み込み中…",
+  "intro": {
+    "pre": " · ",
+    "text": "リポジトリを接続し、デプロイキーを GitHub に追加して、webhook URL で自動プルを利用します。"
+  },
+  "errors": {
+    "patRequired": "GitHub の PAT が必要です",
+    "connectFailed": "GitHub に接続できませんでした",
+    "loadReposFailed": "リポジトリを読み込めませんでした",
+    "selectRepoBranch": "リポジトリとブランチを選択してください",
+    "connectionFailed": "接続に失敗しました"
+  },
+  "messages": {
+    "connected": "GitHub に接続しました: @{{login}}",
+    "repoConnected": "リポジトリを接続しました: {{repo}}@{{branch}}",
+    "webhookEnabled": " · 自動デプロイを有効にしました (webhook を作成)",
+    "webhookError": " · Webhook エラー: {{error}}",
+    "ghDisconnected": "GitHub の接続を解除しました",
+    "connectHint": "リポジトリを接続しました。デプロイキーをコピーして GitHub リポジトリに追加し、「クローン」をクリックしてください。",
+    "cloned": "クローンしました。コミット: {{commit}}",
+    "cloneFailed": "クローンに失敗しました",
+    "pullDone": "プルが完了しました。コミット: {{commit}}",
+    "pullFailed": "プルに失敗しました",
+    "repoRemoved": "リポジトリの接続を解除しました"
+  },
+  "confirm": {
+    "ghDisconnect": "GitHub の接続を解除します。webhook がある場合は削除されますが、既存のリポジトリファイルには影響しません。"
+  },
+  "github": {
+    "title": "GitHub 接続",
+    "subtitle": "PAT で接続し、リポジトリを選択して、自動 webhook でワンクリックデプロイを有効にします。",
+    "removeConnection": "接続を解除",
+    "patLabel": "Personal Access Token (classic)",
+    "connecting": "接続中…",
+    "connect": "接続",
+    "patHintLink": "github.com/settings/tokens",
+    "patHintPre": " →\n                  Fine-grained PAT → スコープ: ",
+    "patHintScope1": "repo",
+    "patHintMid": " +",
+    "patHintScope2": "admin:repo_hook",
+    "patHintPost": " (自動デプロイ用)。",
+    "autoDeployBadge": "● 自動デプロイ",
+    "repo": "リポジトリ",
+    "selectPlaceholder": "— 選択 —",
+    "reposFound": "{{count}} 個のリポジトリが見つかりました",
+    "branch": "ブランチ",
+    "autoDeployLabel": "プッシュ時に自動デプロイ (webhook を作成)",
+    "useRepo": "このリポジトリを使用",
+    "webhookLabel": "Webhook: {{url}}"
+  },
+  "repoCard": {
+    "settingsTitle": "リポジトリ設定",
+    "connectTitle": "リポジトリを接続",
+    "gitUrl": "Git URL (SSH)",
+    "gitUrlPlaceholder": "git@github.com:username/repo.git",
+    "gitUrlHint": "プライベートリポジトリには SSH URL を使用してください。HTTPS 認証には対応していません。",
+    "branch": "ブランチ",
+    "targetDir": "対象ディレクトリ",
+    "update": "更新",
+    "connect": "接続",
+    "clone": "⬇ クローン (対象をクリア)",
+    "pull": "↻ プル",
+    "removeConnection": "接続を解除"
+  },
+  "deployKey": {
+    "title": "デプロイキー (公開)",
+    "copy": "コピー",
+    "hint": "GitHub → リポジトリ → Settings → Deploy keys → Add deploy key で、このキーを貼り付けてください (書き込み許可は不要)。"
+  },
+  "webhook": {
+    "title": "Webhook (自動プル)",
+    "hintPre": "GitHub → リポジトリ → Settings → Webhooks → Add webhook。Content type: ",
+    "hintPost": "。push イベントで十分です。",
+    "payloadUrl": "Payload URL",
+    "secret": "シークレット",
+    "contentType": "Content type",
+    "contentTypeValue": "application/json",
+    "events": "イベント",
+    "eventsValue": "push イベントのみ"
+  },
+  "status": {
+    "title": "同期ステータス",
+    "latestSync": "最新の同期",
+    "noneYet": "— (まだありません)",
+    "latestCommit": "最新のコミット",
+    "statusLabel": "ステータス",
+    "successful": "✓ 成功",
+    "error": "⚠ エラー",
+    "latestLog": "最新のログ"
+  },
+  "cloneDialog": {
+    "title": "初回クローン",
+    "message": "対象ディレクトリ ({{dir}}) が完全にクリアされた後、リポジトリの {{branch}} ブランチがクローンされます。続行しますか?",
+    "confirm": "はい、クローンします"
+  },
+  "deleteDialog": {
+    "title": "リポジトリの接続を解除",
+    "message": "パネルの記録が削除されます。クローンされたファイルはディスク上に残ります。",
+    "confirm": "はい、削除します"
+  }
+}

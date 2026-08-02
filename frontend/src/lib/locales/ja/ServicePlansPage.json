@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "ホーム",
+  "breadcrumbTitle": "サービスプラン",
+  "title": "サービスプラン",
+  "subtitle": "ドメイン向けのサービスプランを定義します。各ドメインはプランに関連付けられ、ディスク、トラフィック、PHP バージョン、データベース数、サブドメイン制限などのリソースがプランごとに設定されます。",
+  "addPlan": "プランを追加",
+  "loading": "読み込み中…",
+  "empty": {
+    "title": "まだサービスプランがありません",
+    "descriptionAdmin": "最初のプランを定義して始めましょう。",
+    "descriptionUser": "管理者はまだプランを定義していません。"
+  },
+  "badge": {
+    "default": "デフォルト"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "ディスク",
+    "traffic": "トラフィック",
+    "domains": "ドメイン",
+    "databases": "データベース",
+    "ftp": "FTP"
+  },
+  "detailsButton": "詳細とリソース制限",
+  "delete": "削除",
+  "confirmDelete": {
+    "title": "プランを削除",
+    "message": "プラン「{{name}}」を削除しますか?",
+    "confirmText": "はい、削除します"
+  },
+  "errors": {
+    "deleteFailed": "削除に失敗しました",
+    "saveFailed": "保存に失敗しました"
+  },
+  "limit": {
+    "unlimited": "無制限"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/月",
+    "domains": "ドメイン",
+    "databases": "データベース",
+    "accounts": "アカウント"
+  },
+  "modal": {
+    "newTitle": "新規プラン",
+    "editTitle": "プランを編集",
+    "planName": "プラン名",
+    "description": "説明",
+    "diskMb": "ディスク (MB)",
+    "trafficMb": "トラフィック (MB)",
+    "phpVersionLabel": "PHP バージョン",
+    "maxDomains": "最大ドメイン数",
+    "maxDatabases": "最大データベース数",
+    "maxFtp": "最大 FTP アカウント数",
+    "isDefault": "新しいドメインのデフォルトプラン",
+    "wafHeading": "WAF デフォルト (ModSecurity + OWASP CRS)",
+    "wafEnabled": "このプランで有効",
+    "wafMode": {
+      "block": "ブロック (オン)",
+      "detect": "検出 (ログのみ)"
+    },
+    "wafParanoia": {
+      "level1": "レベル 1 (低)",
+      "level2": "レベル 2 (中)",
+      "level3": "レベル 3 (高)",
+      "level4": "レベル 4 (厳格)"
+    },
+    "hint": "0 = 無制限。ディスクとトラフィックの値は MB 単位です。このプランの新しいドメインは、選択した PHP バージョンでプロビジョニングされます。",
+    "cancel": "キャンセル",
+    "saving": "保存中…",
+    "add": "追加",
+    "update": "更新"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "ホーム",
+  "title": "顧客",
+  "subtitle": "請求と連絡先の記録です。ドメインはこれらに紐づけられます。これはパネルのログインアカウントではありません。",
+  "newCustomer": "新規顧客",
+  "loading": "読み込み中…",
+  "empty": {
+    "title": "まだ顧客の記録がありません",
+    "description": "ドメインを顧客に紐づけるには、まず顧客の記録を作成してください。"
+  },
+  "noMatch": "検索に一致する顧客はいません。",
+  "columns": {
+    "name": "名前",
+    "email": "メール",
+    "plan": "プラン",
+    "status": "ステータス",
+    "created": "作成日"
+  },
+  "status": {
+    "active": "有効",
+    "passive": "無効"
+  },
+  "actions": {
+    "edit": "編集",
+    "delete": "削除"
+  },
+  "modal": {
+    "editTitle": "顧客を編集",
+    "newTitle": "新規顧客",
+    "name": "名前",
+    "email": "メール",
+    "plan": "プラン",
+    "noPlan": "プランなし",
+    "status": "ステータス",
+    "notes": "メモ",
+    "cancel": "キャンセル",
+    "saving": "保存中…",
+    "save": "保存"
+  },
+  "delete": {
+    "title": "顧客を削除",
+    "message": "{{name}} を削除します。この顧客に紐づくドメインは削除されず、紐づけのみが解除されます。",
+    "confirm": "削除"
+  },
+  "toast": {
+    "added": "{{name}} を追加しました。",
+    "updated": "{{name}} を更新しました。",
+    "deleted": "{{name}} を削除しました。"
+  },
+  "errors": {
+    "loadFailed": "顧客を読み込めませんでした",
+    "nameEmailRequired": "名前とメールは必須です",
+    "saveFailed": "保存できませんでした",
+    "deleteFailed": "削除できませんでした"
+  }
+}

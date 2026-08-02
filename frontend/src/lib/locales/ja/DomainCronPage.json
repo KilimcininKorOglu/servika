@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "scheduledTasks": "スケジュールされたタスク"
+  },
+  "title": "スケジュールされたタスク",
+  "presets": {
+    "everyMinute": "毎分",
+    "everyHour": "毎時",
+    "dailyAt3": "毎日 03:00",
+    "mondayAt9": "月曜 09:00",
+    "every5Minutes": "5 分ごと",
+    "every15Minutes": "15 分ごと",
+    "firstOfMonth": "毎月 1 日 00:00"
+  },
+  "actions": {
+    "add": "タスクを追加",
+    "refresh": "↻ 更新"
+  },
+  "count": "{{count}} 件のタスク",
+  "loading": "読み込み中...",
+  "empty": "まだタスクがありません。上から追加してください。",
+  "columns": {
+    "min": "分",
+    "hour": "時",
+    "day": "日",
+    "month": "月",
+    "weekday": "曜日",
+    "command": "コマンド / 説明",
+    "action": "操作"
+  },
+  "row": {
+    "delete": "削除"
+  },
+  "confirmDelete": "タスク「{{command}}...」を削除しますか?",
+  "errors": {
+    "deleteFailed": "削除に失敗しました",
+    "addFailed": "項目を追加できませんでした"
+  },
+  "modal": {
+    "title": "新規スケジュールタスク",
+    "presetsLabel": "プリセット",
+    "fields": {
+      "minute": "分",
+      "hour": "時",
+      "day": "日",
+      "month": "月",
+      "weekday": "曜日"
+    },
+    "cronHint": "cron 形式:",
+    "cronHintPost": " 任意の値、",
+    "cronEvery": " 5 ごと、",
+    "cronList": " リスト、",
+    "cronRange": " 範囲。",
+    "commandLabel": "コマンド",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "説明 (任意)",
+    "descriptionPlaceholder": "例: 夜間バックアップスクリプト",
+    "cancel": "キャンセル",
+    "adding": "追加中...",
+    "addTask": "タスクを追加"
+  }
+}

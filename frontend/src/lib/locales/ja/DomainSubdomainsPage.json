@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "subdomains": "サブドメイン"
+  },
+  "title": "サブドメイン",
+  "subtitlePre": "このドメインの下にサブドメイン (例:",
+  "subtitlePost": ") を作成します。それぞれ独立した Web ディレクトリを持ちます。",
+  "toast": {
+    "created": "{{fqdn}} を作成しました。DNS A レコードが追加されました。",
+    "createFailed": "サブドメインを作成できませんでした",
+    "deleteFailed": "サブドメインを削除できませんでした",
+    "sslInstalled": "{{method}} を使用して {{fqdn}} の SSL をインストールしました。",
+    "sslInstallFailed": "SSL をインストールできませんでした"
+  },
+  "sslMethod": {
+    "letsencrypt": "Let's Encrypt",
+    "selfSigned": "自己署名証明書"
+  },
+  "confirmDelete": "{{fqdn}} を削除しますか?\nvhost、ファイル (ドキュメントルート)、DNS レコードが削除されます。この操作は取り消せません。",
+  "form": {
+    "title": "新規サブドメイン",
+    "label": "サブドメイン",
+    "creating": "作成中…",
+    "add": "サブドメインを追加",
+    "hintPre": "小文字、数字、ハイフン。例:"
+  },
+  "list": {
+    "title": "既存のサブドメイン",
+    "loading": "読み込み中…",
+    "empty": "まだサブドメインがありません。",
+    "phpPrefix": "PHP",
+    "manage": "管理",
+    "manageTitle": "このサブドメインを管理",
+    "letsencryptTitle": "Let's Encrypt SSL をインストール",
+    "letsencrypt": "🔒 Let's Encrypt",
+    "selfSignedTitle": "自己署名 SSL をインストール",
+    "selfSigned": "自己署名",
+    "delete": "削除",
+    "dnsNote": "ℹ️ サブドメインは Web サーバー上に即座に設定されます。アクセスするには、ドメインの DNS A レコードがこのサーバーを指している必要があります。"
+  },
+  "backToSubscription": "← サブスクリプションに戻る"
+}

@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "phpSettings": "PHP 設定"
+  },
+  "title": "PHP 設定",
+  "systemUser": "システムユーザー: ",
+  "poolNotice": {
+    "pre": "ここで設定した内容は PHP-FPM プール (",
+    "mid1": ") に書き込まれます。ウェブサイトの ",
+    "mid2": " と ",
+    "post": " ファイルでこれらを上書きできます。保存すると、サイトをオフラインにせずに PHP-FPM が自動的に再起動されます。"
+  },
+  "loading": "読み込み中…",
+  "saved": "保存しました。PHP {{version}}、ソケット: {{socket}}",
+  "saveFailed": "設定の保存に失敗しました",
+  "clearLogFailed": "デバッグログのクリアに失敗しました",
+  "processManager": {
+    "ondemand": "ondemand (推奨、アイドル時はプロセスなし)",
+    "dynamic": "dynamic (負荷に応じてスケール)",
+    "static": "static (固定プール)"
+  },
+  "version": {
+    "title": "PHP バージョン",
+    "active": "有効",
+    "saveToApply": "保存して適用"
+  },
+  "cards": {
+    "performance": "パフォーマンスとセキュリティ",
+    "general": "全般",
+    "debugMode": "PHP デバッグモード",
+    "lastErrors": "直近のエラー (デバッグログ)",
+    "fpmPool": "PHP-FPM プール",
+    "installedModules": "インストール済み PHP モジュール",
+    "disableDangerous": "危険な関数を無効化",
+    "additionalDirectives": "追加の設定ディレクティブ"
+  },
+  "help": {
+    "memoryLimit": "スクリプトが確保できる最大メモリ (バイト単位)。例: 256M。",
+    "maxExecutionTime": "最大実行時間 (秒)",
+    "maxInputTime": "POST/GET データを解析する時間 (秒)",
+    "postMaxSize": "POST データの最大サイズ。upload_max_filesize より大きくする必要があります。",
+    "uploadMaxFilesize": "1 ファイルあたりのアップロード上限",
+    "opcacheEnable": "OPcache オペコードキャッシュ (推奨: オン)",
+    "disableFunctions": "無効化する PHP 関数 (カンマ区切り)",
+    "displayErrors": "エラーを出力に表示 (本番環境ではオフのままに)",
+    "logErrors": "エラーログを有効化",
+    "allowUrlFopen": "HTTP/FTP 経由でファイルを開く",
+    "fileUploads": "HTTP ファイルアップロード",
+    "shortOpenTag": "<? ?> 短縮タグのサポート",
+    "errorReporting": "エラー報告レベル (例: E_ALL & ~E_DEPRECATED)",
+    "includePath": "スクリプトの include ディレクトリ (Linux では : で区切る)",
+    "openBasedir": "PHP がアクセスできるディレクトリ (空欄は無制限)。: で区切る",
+    "sessionSavePath": "セッションファイルのディレクトリ (空欄は /home/{system_user}/tmp)",
+    "mailForceExtraParameters": "mail() 関数の追加パラメーター",
+    "pm": "プロセスマネージャー戦略",
+    "pmMaxChildren": "同時 PHP ワーカーの最大数",
+    "pmMaxRequests": "ワーカーを再起動するまでのリクエスト数 (メモリリークを防止)",
+    "pmStartServers": "初期起動するワーカー数 (dynamic のみ)",
+    "pmMinSpareServers": "最小アイドルワーカー数",
+    "pmMaxSpareServers": "最大アイドルワーカー数"
+  },
+  "openBasedirPlaceholder": "例: /home/user/:/tmp/",
+  "debug": {
+    "disableTitle": "デバッグモードを無効化",
+    "enableTitle": "デバッグモードを有効化",
+    "label": "デバッグモード",
+    "on": "オン",
+    "off": "オフ",
+    "descPre": "有効にすると、PHP エラーが画面に表示され、致命的エラー (E_ERROR、E_PARSE、...) が ",
+    "descMid": " を介して確実に捕捉され、",
+    "descPost": " に記録されます。アプリケーションが ",
+    "descEnd": " を呼び出した場合でも致命的エラーは捕捉されます。",
+    "warningLabel": "警告:",
+    "warningPre": " デバッグモードがオンの場合、",
+    "warningBold1": "display_errors = on",
+    "warningMid": " と ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " が強制されます。エラーの詳細がサイト訪問者に表示される場合があります。トラブルシューティング中のみ有効にし、",
+    "warningBold3": "本番環境では無効化",
+    "warningEnd": " してください。変更は次のクリック後に反映されます: ",
+    "warningSave": "保存",
+    "warningDot": "。"
+  },
+  "debugLog": {
+    "sourcePre": "最新の致命的エラーが一番上に表示されます。ソース: ",
+    "sourcePost": " (直近 200 行)。",
+    "loading": "読み込み中...",
+    "refresh": "更新",
+    "clear": "クリア",
+    "emptyOff": "デバッグモードはオフです。上で有効にして保存すると、致命的エラーの記録が開始されます。",
+    "emptyOn": "記録されたエラーはありません。デバッグログは空です。"
+  },
+  "modules": {
+    "countPre": "",
+    "countBold": "{{count}}",
+    "countPost": " 個のモジュールが PHP {{version}} 用にインストールされています。モジュールはサーバー全体で管理され、個々のドメインで有効化または無効化することはできません。",
+    "manageServer": "↗ サーバーモジュールを管理"
+  },
+  "dangerous": {
+    "descPre": "これらの関数はシェルインジェクション、RCE、マルウェアのリスクをもたらします。カテゴリの切り替えは ",
+    "descMid": " を更新します。",
+    "descBoldOn": "オンは有効",
+    "descAnd": "、",
+    "descBoldOff": "オフはブロック",
+    "descPost": " を意味します。",
+    "enableAll": "すべて有効化",
+    "blockAll": "すべてブロック",
+    "blocked": "ブロック済み",
+    "mixed": "混在",
+    "active": "有効",
+    "editManually": "手動で編集 (生の disable_functions)",
+    "commaSeparated": "カンマ区切りの関数名。",
+    "groups": {
+      "shellExecution": "シェル実行",
+      "fileExecution": "ファイル実行",
+      "networkAccess": "ネットワークアクセス (リスクあり)",
+      "systemDiscovery": "システム検出",
+      "moduleLoading": "モジュール読み込み"
+    }
+  },
+  "additional": {
+    "descPre": "php.ini 構文を使用して追加パラメーターを定義します。例: "
+  },
+  "save": {
+    "saving": "保存中…",
+    "saveAndApply": "保存して適用",
+    "cancelReload": "キャンセル / 再読み込み"
+  },
+  "select": {
+    "custom": "カスタム…"
+  },
+  "flag": {
+    "on": "✓ オン",
+    "off": "○ オフ"
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "shared": {
+    "more": "もっと見る →",
+    "manage": "管理 →",
+    "loading": "読み込み中…"
+  },
+  "widgets": {
+    "load-chart": "負荷チャート",
+    "memory-chart": "メモリチャート",
+    "wordpress": "WordPress サイト",
+    "panel-update": "パネル更新",
+    "last-backup": "最新のサーバーバックアップ",
+    "performance": "パフォーマンス / 最適化",
+    "cve-security": "セキュリティアドバイザリ (CVE)",
+    "services": "サービス",
+    "domains": "ドメイン",
+    "server-info": "サーバー情報",
+    "health": "システムヘルス",
+    "live-resources": "リアルタイムリソース",
+    "subscriptions": "マイサブスクリプション",
+    "network": "ネットワークトラフィック"
+  },
+  "header": {
+    "welcome": "おかえりなさい、{{name}} さん",
+    "dashboard": "ダッシュボード",
+    "subtitle": "サーバー概要とクイックアクション",
+    "saving": "保存中…",
+    "saved": "レイアウトを保存しました",
+    "saveFailed": "保存に失敗しました",
+    "resetLayout": "レイアウトをリセット"
+  },
+  "quota": {
+    "unsupportedTitle": "このファイルシステムではディスククォータを利用できません",
+    "unsupportedBody": "Servika がテナントごとのディスククォータを使用するには、XFS ルートファイルシステムが必要です。再起動しても現在のファイルシステムではクォータは有効になりません。",
+    "rebootTitle": "再起動後にディスククォータが有効になります",
+    "rebootBody": "XFS ユーザークォータは設定されていますが、適用は非アクティブです。テナントごとのディスククォータを有効にするには、サーバーを一度再起動してください。",
+    "dismiss": "閉じる"
+  },
+  "widgetNotFound": "ウィジェットが見つかりません",
+  "dragToReorder": "ドラッグして並べ替え",
+  "wp": {
+    "subtitle": "すべてのアカウントのインストール",
+    "installs": "インストール数",
+    "updates": "更新",
+    "current": "最新",
+    "pendingUpdatesText_other": " 件のインストールに保留中の更新があります — 古いバージョンはセキュリティリスクをもたらします。",
+    "empty": "WordPress のインストールが見つかりませんでした",
+    "rootDir": "ルートディレクトリ",
+    "badgeUpdate": "更新",
+    "badgeCurrent": "最新",
+    "badgeUnknown": "不明",
+    "more_other": "他 {{count}} 件のインストール →",
+    "unknownNote_other": "{{count}} 件のインストールを判定できませんでした (wp-cli タイムアウト)。"
+  },
+  "update": {
+    "subtitle": "バージョンとシステムパッケージ",
+    "running": "更新を実行中",
+    "toolMissing": "更新ツールがありません",
+    "upToDate": "パネルは最新です",
+    "noStatus": "ステータス情報がありません",
+    "badgeRunning": "実行中",
+    "badgeMissing": "なし",
+    "badgeCurrent": "最新",
+    "systemPackages": "システムパッケージ"
+  },
+  "backup": {
+    "subtitle": "毎日の自動バックアップ",
+    "unavailable": "バックアップの概要を利用できません",
+    "count_other": "件のバックアップ · {{size}}",
+    "lastBackup": "最新のバックアップ",
+    "sitesBackedUp": "バックアップ済みのサイト",
+    "remoteTarget": "リモートターゲット",
+    "remoteActive": "{{count}} 件有効",
+    "remoteNone": "なし",
+    "schedule": "スケジュール"
+  },
+  "performance": {
+    "subtitle": "サーバー設定を改善",
+    "running": "最適化を実行中",
+    "ready": "最適化の準備完了",
+    "defaultStatus": "MariaDB · nginx · PHP 設定",
+    "badgeRunning": "実行中",
+    "badgeIdle": "アイドル"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} サービスが稼働中",
+    "subtitleStatus": "サービスステータス",
+    "allActive": "すべて稼働中",
+    "down": "{{count}} 件停止中",
+    "active": "稼働中",
+    "statusDown": "停止中"
+  },
+  "domains": {
+    "subtitle": "ホスティング中のサイトと SSL ステータス",
+    "total": "合計",
+    "active": "有効",
+    "ssl": "SSL",
+    "empty": "まだドメインがありません",
+    "noSsl": "SSL なし",
+    "badgeActive": "有効",
+    "more_other": "他 {{count}} 件のドメイン →"
+  },
+  "serverInfo": {
+    "subtitle": "ハードウェアとシステム",
+    "hostname": "ホスト名",
+    "ip": "IP アドレス",
+    "os": "OS",
+    "kernel": "カーネル",
+    "cpu": "CPU",
+    "cores": "コア",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "全体的なステータス評価",
+    "servicesDown_other": "{{count}} 件のサービスが停止中",
+    "isolationLoss_other": "{{count}} 件の分離喪失を検出",
+    "memoryAt": "メモリ {{percent}}%",
+    "diskAt": "ディスク {{percent}}%",
+    "healthy": "正常",
+    "fair": "良好",
+    "degraded": "低下",
+    "critical": "危機的"
+  },
+  "live": {
+    "subtitle": "リアルタイムの CPU とメモリ",
+    "cpu": "CPU",
+    "memory": "メモリ",
+    "disk": "ディスク ({{mount}})",
+    "freeGb": "{{value}} GB 空き"
+  },
+  "subscriptions": {
+    "subtitle": "有効なサービス",
+    "body": "顧客パネルの概要"
+  },
+  "network": {
+    "subtitle": "受信および送信データ",
+    "body": "トラフィック統計は統計ページで確認できます"
+  }
+}

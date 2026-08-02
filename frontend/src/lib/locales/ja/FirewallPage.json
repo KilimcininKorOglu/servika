@@ -1,0 +1,132 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "firewall": "ファイアウォール"
+  },
+  "title": "ファイアウォール",
+  "subtitle": {
+    "pre": "",
+    "bold": "インターネットから誰がサーバーにアクセスできるか",
+    "post": " を制御します。プリセットを適用するか、カスタムルールを追加します。"
+  },
+  "info": {
+    "pre": "ルールは ",
+    "bold": "新しい接続",
+    "mid": " にのみ影響します。有効な SSH またはパネルのセッションは接続を維持します。保護されたポート ",
+    "post": " は閉じることができません。"
+  },
+  "templates": {
+    "sectionTitle": "プリセット",
+    "sectionHint": "ワンクリックで適用",
+    "portLabel": "ポート: {{ports}}",
+    "apply": "適用",
+    "applying": "...",
+    "close_mysql": {
+      "name": "外部 MySQL アクセスを閉じる",
+      "description": "データベースポート 3306 をインターネットに対して閉じます。MySQL はサーバーからアクセス可能なままです。"
+    },
+    "close_ftp": {
+      "name": "FTP を閉じる",
+      "description": "FTP ポート 21 を閉じます。SFTP を使用している場合は、FTP を安全に閉じることができます。"
+    },
+    "close_mail": {
+      "name": "メールポートを閉じる",
+      "description": "SMTP、POP3、IMAP ポートを閉じます。メールサーバーがない場合、スパムリレーのリスクを軽減します。"
+    },
+    "close_rpc": {
+      "name": "RPC / NFS を閉じる",
+      "description": "ファイル共有を使用していない場合、rpcbind ポート 111 と NFS ポート 2049 を閉じます。"
+    }
+  },
+  "modes": {
+    "ban": {
+      "name": "IP をブロック",
+      "description": "特定の IP アドレスをブロックします。ポートを入力するとそのポートへのアクセスのみをブロックし、空欄にするとすべてのポートへのアクセスをブロックします。",
+      "example": "例: SSH の繰り返し試行後に 45.9.1.2 を完全にブロックします。"
+    },
+    "whitelist": {
+      "name": "IP を許可",
+      "description": "ポートを入力すると、これらの IP アドレスからのアクセスのみを許可し、他のすべてをブロックします。ポートを空欄にすると、この IP にすべてのポートへの優先アクセスを付与します。",
+      "example": "例: ポート 8443 とオフィスの IP を入力して、あなただけがパネルにアクセスできるようにします。"
+    },
+    "close": {
+      "name": "ポートを閉じる",
+      "description": "許可リストのアドレスを除くすべてに対してポートを閉じます。SSH、Web、パネル、DNS の重要なポートは保護されており、閉じることはできません。",
+      "example": "例: データベースポート 3306 を外部アクセスに対して閉じます。"
+    }
+  },
+  "form": {
+    "sectionTitle": "カスタムルール",
+    "step1": "1. 何をしますか?",
+    "step2": "2. 詳細",
+    "ipLabel": "IP アドレスまたは範囲",
+    "ipPlaceholder": "1.2.3.4 または 1.2.3.0/24",
+    "portLabel": "ポート",
+    "portBlankHint": "(空欄 = すべて)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "例: 22",
+    "protocolLabel": "プロトコル",
+    "noteLabel": "メモ (任意)",
+    "notePlaceholder": "例: SSH ブルートフォースを試みる IP",
+    "previewLabel": "プレビュー:",
+    "submit": "ルールを追加して適用",
+    "submitting": "適用中..."
+  },
+  "warning": {
+    "pre": "",
+    "bold": "警告:",
+    "mid": " このポートは上記の IP アドレスに対してのみ開かれます。あなたの IP が ",
+    "boldDynamic": "動的",
+    "post": " の場合、変更時にアクセスを失います。SSH ポート 22 は開いたままなので、締め出された場合は SSH 経由で接続してこのルールを削除できます。または、静的 IP アドレスを使用してください。"
+  },
+  "preview": {
+    "closeReady": "ポート {{port}} は許可リストのアドレスを除くすべてに対して閉じられます。",
+    "closeEmpty": "閉じるポートを入力してください。",
+    "banPort": "{{address}} はポート {{port}} へのアクセスがブロックされます。",
+    "banAll": "{{address}} はすべてのポートへのアクセスがブロックされます。",
+    "whitelistPort": "ポート {{port}} は {{address}} に対してのみ開かれます。他のすべてはブロックされます。",
+    "whitelistAll": "{{address}} はすべてのポートへの優先アクセスを持ちます。",
+    "enterIp": "(IP アドレスを入力してください)"
+  },
+  "rules": {
+    "title": "有効なルール",
+    "count": "({{count}})",
+    "refresh": "↻ 更新",
+    "colType": "タイプ",
+    "colIp": "IP / CIDR",
+    "colPort": "ポート",
+    "colProto": "プロトコル",
+    "colNote": "メモ",
+    "colAction": "操作",
+    "loading": "読み込み中...",
+    "emptyTitle": "まだルールがありません。サーバーはすべての接続に開かれています。",
+    "emptyHint": "上のプリセットを適用して始めましょう。",
+    "everyone": "全員",
+    "allPorts": "すべて",
+    "delete": "削除",
+    "deleting": "..."
+  },
+  "badge": {
+    "ban": "🚫 ブロック済み",
+    "whitelist": "✅ 許可済み",
+    "close": "🔒 閉鎖済み"
+  },
+  "confirm": {
+    "applyTemplate": "「{{name}}」テンプレートを適用しますか?\n閉じるポート: {{ports}}\nこれらのポートはインターネットからアクセスできなくなります。",
+    "removeClose": "ポート {{port}} を閉じる",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "「{{summary}}」ルールを削除しますか?"
+  },
+  "success": {
+    "templateApplied_other": "「{{name}}」を適用しました。{{count}} 件のルールを追加しました。",
+    "templateAlreadyApplied": "「{{name}}」は既に適用されています。新しいルールは追加されませんでした。",
+    "ruleAdded": "ルールが追加され、ファイアウォールに適用されました。"
+  },
+  "error": {
+    "applyTemplate": "テンプレートを適用できませんでした",
+    "addRule": "ルールを追加できませんでした",
+    "deleteRule": "ルールを削除できませんでした"
+  },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

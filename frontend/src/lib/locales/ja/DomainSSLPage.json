@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "sslCertificates": "SSL/TLS 証明書"
+  },
+  "title": "SSL/TLS 証明書",
+  "ipLabel": "IP:",
+  "confirm": {
+    "letsencrypt": "Let's Encrypt 証明書を発行する前に、ドメインが DNS A レコードでこのサーバーを指している必要があります。続行しますか?",
+    "disable": "SSL を削除しますか? サイトは HTTP に戻ります。"
+  },
+  "success": {
+    "installed": "証明書をインストールしました ({{type}})。有効期限: {{expires}}。サイトは HTTPS を使用するようになりました。",
+    "removed": "SSL を削除しました。サイトは HTTP を使用するようになりました。"
+  },
+  "errors": {
+    "installFailed": "SSL のインストールに失敗しました",
+    "removeFailed": "SSL の削除に失敗しました"
+  },
+  "status": {
+    "title": "現在の状態",
+    "protected": "保護済み",
+    "unprotected": "未保護",
+    "loading": "読み込み中…",
+    "sourceLabel": "ソース",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "自己署名",
+    "expiryLabel": "有効期限",
+    "certPathLabel": "証明書パス",
+    "keyPathLabel": "キーパス",
+    "empty": "—",
+    "remove": "SSL を削除 (HTTP に切り替え)",
+    "noCert": "このドメインには有効な SSL 証明書がありません。以下からインストールしてください。"
+  },
+  "selfSigned": {
+    "title": "自己署名証明書",
+    "description": "サーバー上に自己署名証明書を作成します。ブラウザは警告を表示しますが、接続は暗号化されます。テストおよび開発環境に適しています。",
+    "bullet1": "✓ DNS 依存なし",
+    "bullet2": "✓ 即座にインストール",
+    "bullet3": "✗ ブラウザがセキュリティ警告を表示",
+    "installing": "インストール中…",
+    "install": "自己署名証明書をインストール"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (無料)",
+    "description": "すべてのブラウザに信頼される公式の Let's Encrypt 証明書です。90 日ごとに自動更新されます。",
+    "bullet1": "✓ ブラウザに信頼される",
+    "bullet2": "✓ 自動更新 (cron)",
+    "bullet3": "⚠ ドメインは DNS 経由でこのサーバーを指している必要があります",
+    "installing": "インストール中…",
+    "install": "Let's Encrypt 証明書を取得"
+  }
+}

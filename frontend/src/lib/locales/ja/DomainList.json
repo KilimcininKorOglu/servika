@@ -1,0 +1,9 @@
+{
+  "domains": "ドメイン",
+  "addDomain": "+ ドメインを追加",
+  "addDomainHint": "F2 で利用可能になります",
+  "loading": "読み込み中…",
+  "noDomains": "まだドメインがありません",
+  "ssl": "SSL",
+  "noSsl": "SSL なし"
+}

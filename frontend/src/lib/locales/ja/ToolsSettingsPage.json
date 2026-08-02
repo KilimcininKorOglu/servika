@@ -1,0 +1,66 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "current": "ツールと設定"
+  },
+  "title": "ツールと設定",
+  "subtitle": "サーバー全体の管理 — PHP、システムパッケージ、ネットワーク、セキュリティ、メンテナンス。",
+  "searchPlaceholder": "ツールを検索…",
+  "searchAria": "ツールを検索",
+  "maintenance": "サーバーメンテナンス",
+  "noResults": "「{{q}}」に一致するツールが見つかりませんでした",
+  "noResultsHint": "検索語を変更するかクリアしてください。",
+  "footer_other": "{{count}} 個のツール · サーバー全体",
+  "badges": {
+    "dynamic": "動的",
+    "serverWide": "サーバー全体"
+  },
+  "groups": {
+    "php": "PHP",
+    "system": "システムとサービス",
+    "network": "ネットワークと DNS",
+    "security": "セキュリティとバックアップ"
+  },
+  "tools": {
+    "phpVersions": {
+      "title": "PHP バージョン",
+      "description": "7.4 から 8.6 までのバージョンを追加または削除します。各ドメインが独立してバージョンを選択します。"
+    },
+    "phpExtensions": {
+      "title": "PHP 拡張機能",
+      "description": "サーバー全体の拡張機能を切り替え、PECL パッケージを検索してコンパイルします。"
+    },
+    "packages": {
+      "title": "パッケージマネージャー",
+      "description": "DNF パッケージ — コンパイラとランタイム。既製のインストールグループ。"
+    },
+    "services": {
+      "title": "サービス",
+      "description": "Nginx / Apache / MariaDB / DNS / PHP-FPM のステータスと再起動。"
+    },
+    "servicePlans": {
+      "title": "サービスプラン",
+      "description": "ディスク、データベース、FTP のクォータを持つホスティングパッケージ。"
+    },
+    "dnsTemplate": {
+      "title": "DNS テンプレート",
+      "description": "新しいドメインに適用される中央 DNS レコード (A/MX/SPF/DMARC/DKIM) と SOA。"
+    },
+    "domains": {
+      "title": "ドメイン",
+      "description": "すべてのドメインを閲覧、検索し、すばやくアクセスします。"
+    },
+    "firewall": {
+      "title": "ファイアウォール",
+      "description": "IP/ポートのブロック、許可リスト、ポートの閉鎖。重要なポートは保護されています。"
+    },
+    "backupManager": {
+      "title": "バックアップマネージャー",
+      "description": "すべてのドメインのバックアップサイズを確認、ワンクリックバックアップ、S3/SFTP 保存先。"
+    },
+    "monitoring": {
+      "title": "モニタリングとログ",
+      "description": "CPU/RAM/ディスクのチャートと、journald からのサーバーログ (パネル/nginx/SSH…)。"
+    }
+  }
+}

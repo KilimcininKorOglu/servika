@@ -1,0 +1,25 @@
+{
+  "title": "パネルドメイン",
+  "description": "Let's Encrypt 証明書をリクエストする前に、A レコードをこのサーバーに向けてください。発行後、ドメインはポート 8443 なしでパネルを開きます。",
+  "customDomainLabel": "カスタムパネルドメイン",
+  "customDomainPlaceholder": "panel.example.com",
+  "serverIpv4": "サーバー IPv4:",
+  "sslStatus": "SSL ステータス:",
+  "portlessUrl": "ポートなし URL:",
+  "expires": "有効期限:",
+  "unknown": "不明",
+  "sslNone": "なし",
+  "save": "パネルドメインを保存",
+  "saving": "保存中...",
+  "reset": "リセット",
+  "resetting": "リセット中...",
+  "messages": {
+    "saved": "パネルドメインを保存しました。ポート 8443 なしで https://{{domain}} を開けます。",
+    "reset": "パネルドメインをデフォルトの証明書にリセットしました。"
+  },
+  "errors": {
+    "load": "パネルドメイン設定を読み込めませんでした",
+    "save": "パネルドメインを保存できませんでした",
+    "reset": "パネルドメインをリセットできませんでした"
+  }
+}

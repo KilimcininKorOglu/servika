@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "performance": "パフォーマンス"
+  },
+  "loading": "読み込み中…",
+  "notFound": "見つかりません",
+  "title": "パフォーマンスとアクセラレーター",
+  "subtitle": {
+    "post": "、現在のアクセラレーターの状態と提案。"
+  },
+  "scoreLabel": "パフォーマンススコア",
+  "acceleratorsTitle": "アクセラレーター",
+  "cacheStat": "{{rate}}% ヒット · {{total}} リクエスト",
+  "configure": "設定 →",
+  "suggestionsTitle": "提案",
+  "open": "開く →",
+  "back": "← サブスクリプションに戻る"
+}

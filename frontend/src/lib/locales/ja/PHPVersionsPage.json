@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "tools": "ツールと設定",
+    "current": "PHP バージョン"
+  },
+  "title": "PHP バージョン",
+  "subtitle": "PHP バージョンを追加または削除します。それぞれが独立した PHP-FPM プールで動作し、ドメインごとに選択できます。インストールには 14 個のパッケージ (fpm、cli、mysqlnd、11 個の拡張機能) が含まれます。",
+  "alerts": {
+    "opInProgress": "PHP の操作が既に実行中です。完了するまでお待ちください。",
+    "appstreamCannotRemove": "AppStream PHP はシステムのデフォルトであり、削除できません。"
+  },
+  "confirm": {
+    "install": "PHP {{version}} ({{resource}}) 用に 14 個のパッケージがインストールされます。続行しますか?",
+    "remove": "PHP {{version}} (Remi) とそのすべての拡張機能が削除されます。\nドメインがこのバージョンを使用している場合、操作は拒否されます。続行しますか?"
+  },
+  "success": {
+    "installed": "PHP {{version}} をインストールしました",
+    "removed": "PHP {{version}} を削除しました"
+  },
+  "errors": {
+    "startInstallFailed": "インストールを開始できませんでした",
+    "startRemoveFailed": "削除を開始できませんでした"
+  },
+  "log": {
+    "installStarted": "PHP {{version}} のインストールを開始しました...\n",
+    "removeStarted": "PHP {{version}} の削除を開始しました...\n",
+    "installInProgress": "PHP {{version}} のインストールを実行中...",
+    "removeInProgress": "PHP {{version}} の削除を実行中...",
+    "waiting": "出力を待機中..."
+  },
+  "filters": {
+    "all": "すべて ({{count}})",
+    "installed": "インストール済み ({{count}})",
+    "available": "利用可能 ({{count}})"
+  },
+  "loading": "読み込み中...",
+  "badges": {
+    "installed": "インストール済み",
+    "eol": "EOL"
+  },
+  "card": {
+    "version": "バージョン:",
+    "extensions": "拡張機能:",
+    "service": "サービス:"
+  },
+  "actions": {
+    "fixed": "固定 (システムデフォルト)",
+    "inProgress": "処理中...",
+    "remove": "削除",
+    "install": "インストール"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "ホーム",
+  "breadcrumbTools": "ツールと設定",
+  "title": "パッケージマネージャー",
+  "subtitle": "DNF によるサーバーパッケージとコンパイラ環境。",
+  "installedCount": "{{count}} 個のパッケージがインストール済み",
+  "quickInstallGroups": "クイックインストールグループ",
+  "groups": {
+    "devtools": { "name": "開発ツール", "description": "gcc、make、autoconf、automake、libtool、kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + 開発ヘッダー" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Go コンパイラ" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "コンテナ / VM", "description": "Docker 互換: podman + buildah + skopeo" },
+    "systools": { "name": "システムツール", "description": "CLI 生産性ツール" },
+    "imaging": { "name": "画像処理", "description": "ImageMagick + WebP + 最適化" },
+    "dbclients": { "name": "データベースクライアント", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "セキュリティ", "description": "GnuPG、OpenSSL、fail2ban" }
+  },
+  "badges": {
+    "installed": "インストール済み",
+    "protected": "保護済み"
+  },
+  "tabs": {
+    "search": "リポジトリを検索",
+    "installed": "インストール済みパッケージ"
+  },
+  "searchPlaceholder": "例: mongodb、redis、nodejs、gcc、htop",
+  "installedPlaceholder": "インストール済みパッケージ名または説明",
+  "noResults": "結果がありません。",
+  "resultsCount": "{{count}} 件の結果",
+  "actions": {
+    "processing": "処理中...",
+    "remove": "削除",
+    "install": "インストール",
+    "removing": "削除中...",
+    "installing": "インストール中...",
+    "search": "検索",
+    "searching": "検索中...",
+    "close": "閉じる"
+  },
+  "confirm": {
+    "install": "「{{pkg}}」がシステム全体にインストールされます。続行しますか?",
+    "remove": "「{{pkg}}」が削除されます。続行しますか?"
+  },
+  "toast": {
+    "installed": "{{pkg}} をインストールしました",
+    "removed": "{{pkg}} を削除しました"
+  },
+  "output": {
+    "installTitle": "インストール出力: {{pkg}}",
+    "removeTitle": "削除出力: {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "インストールに失敗しました",
+    "removeFailed": "削除に失敗しました",
+    "toggleInstallFailed": "パッケージのインストールに失敗しました",
+    "toggleRemoveFailed": "パッケージの削除に失敗しました",
+    "searchFailed": "検索に失敗しました"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "statistics": "統計"
+  },
+  "loading": "読み込み中…",
+  "notFound": "見つかりません",
+  "title": "トラフィック統計",
+  "subtitle": {
+    "pre": "、nginx アクセスログ分析。",
+    "subdomainNote": " サブドメインのトラフィックはこれらの合計に含まれます。"
+  },
+  "refresh": "↻ 更新",
+  "emptyLog": "まだアクセスログのデータがありません。サイトがトラフィックを受け始めると、ここに表示されます。",
+  "kpi": {
+    "totalRequests": "総リクエスト数",
+    "bandwidth": "帯域幅使用量",
+    "uniqueIps": "ユニーク IP",
+    "botRatio": "ボット比率"
+  },
+  "statusTitle": "HTTP ステータス分布",
+  "dailyTitle": "日次リクエスト (直近 7 日間)",
+  "dailyRequests": "{{count}} リクエスト",
+  "topPathsTitle": "最もリクエストされたパス",
+  "topIpsTitle": "最もアクティブな IP",
+  "latestTitle": "最新のリクエスト",
+  "unit": {
+    "requests": "リクエスト"
+  },
+  "noData": "データがありません。"
+}

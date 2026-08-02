@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "tools": "ツールと設定",
+    "current": "DNS テンプレート"
+  },
+  "title": "サーバー全体の DNS テンプレート",
+  "subtitle": "これらのレコードは、ドメインの作成時、またはデフォルトの DNS テンプレートを復元したときに適用されます。",
+  "placeholders": {
+    "label": "プレースホルダー:",
+    "domain": " ドメイン名、",
+    "ip": " サーバー IP、",
+    "selector": " DKIM セレクター、",
+    "dkim": " 生成された DKIM 公開レコード"
+  },
+  "loading": "読み込み中...",
+  "table": {
+    "name": "名前",
+    "type": "タイプ",
+    "value": "値",
+    "ttl": "TTL",
+    "priority": "優先度",
+    "order": "順序",
+    "enabled": "有効",
+    "priorityNone": "なし",
+    "deleteTitle": "レコードを削除"
+  },
+  "addRecord": "レコードを追加",
+  "soa": {
+    "title": "SOA 設定",
+    "fieldSeconds": "{{field}} (秒)"
+  },
+  "dkim": {
+    "title": "DKIM 設定",
+    "selector": "セレクター",
+    "generate": "新しいドメイン用に DKIM キーを生成する"
+  },
+  "discard": "変更を破棄",
+  "save": "テンプレートを保存",
+  "saving": "保存中...",
+  "success": "DNS テンプレートを保存しました。新しいドメインでは更新されたレコードと設定が使用されます。",
+  "errors": {
+    "loadFailed": "DNS テンプレートを読み込めませんでした",
+    "saveFailed": "DNS テンプレートを保存できませんでした"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "redisCache": "Redis キャッシュ"
+  },
+  "title": "Redis キャッシュ",
+  "status": {
+    "active": "● 有効",
+    "disabled": "無効"
+  },
+  "subtitle": {
+    "pre": "このドメインに ",
+    "bold": "分離された専用の Redis オブジェクトキャッシュ",
+    "post": " を割り当てます。WordPress や動的アプリケーションはデータベース負荷を軽減し、より速く応答できます。他のサイトはこのキャッシュにアクセスできません。"
+  },
+  "loading": "読み込み中…",
+  "empty": {
+    "message": "このドメインでは Redis キャッシュが無効です。",
+    "hint": "有効にすると、分離された ACL ユーザーと接続情報が作成されます。",
+    "enable": "Redis キャッシュを有効化",
+    "enabling": "有効化中…"
+  },
+  "connection": {
+    "title": "接続情報",
+    "disable": "無効化",
+    "host": "ホスト",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "keyPrefix": "キープレフィックス"
+  },
+  "wp": {
+    "title": "WordPress セットアップ",
+    "copy": "コピー",
+    "copied": "コピーしました ✓",
+    "instructionsPre": "1) 次の行を ",
+    "instructionsFile": "wp-config.php",
+    "instructionsMid": " ファイルに追加します。2) WordPress ダッシュボードから ",
+    "instructionsBold": "Redis Object Cache",
+    "instructionsPost": " プラグインをインストールし、「オブジェクトキャッシュを有効化」を選択します。"
+  },
+  "row": {
+    "show": "表示",
+    "hide": "非表示",
+    "copy": "コピー",
+    "copied": "✓"
+  },
+  "success": {
+    "enabledWithWp_other": "Redis キャッシュを有効にし、{{count}} 件の WordPress インストールが自動的に接続されました。追加のセットアップは不要です。",
+    "enabled": "Redis キャッシュを有効にしました。WordPress 以外のアプリケーションは、以下の接続情報で設定してください。",
+    "disabled": "Redis キャッシュを無効にしました。"
+  },
+  "confirm": {
+    "disable": "Redis キャッシュを無効にしますか? このドメインの ACL ユーザーが削除されます。"
+  },
+  "error": {
+    "enable": "Redis キャッシュを有効にできませんでした",
+    "disable": "Redis キャッシュを無効にできませんでした"
+  }
+}

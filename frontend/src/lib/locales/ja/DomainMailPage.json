@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "email": "メール"
+  },
+  "title": "メールアカウント",
+  "subtitle": "ネイティブの Postfix と Dovecot のメールボックスを管理します。認証付き送信には STARTTLS を使用する SMTP ポート 587 を使用してください。",
+  "loading": "読み込み中…",
+  "back": "← サブスクリプションに戻る",
+  "generatedPassword": {
+    "title": "{{email}} のパスワード",
+    "saveNote": "今すぐ保存してください。再度表示されません。",
+    "copy": "コピー"
+  },
+  "enable": {
+    "notEnabled": "このドメインではメールホスティングがまだ有効になっていません。",
+    "info": "有効にすると、可能な場合 MX、SPF、DKIM、DMARC の DNS レコードが追加されます。",
+    "enabling": "有効化中…",
+    "button": "メールを有効化"
+  },
+  "mailboxAdd": {
+    "title": "メールボックスを追加",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "パスワード、空欄の場合は生成されます",
+    "adding": "追加中…",
+    "add": "追加"
+  },
+  "mailboxes": {
+    "title": "メールボックス",
+    "empty": "まだメールボックスがありません。",
+    "suspended": "停止中",
+    "suspend": "停止",
+    "activate": "有効化",
+    "resetPassword": "パスワードをリセット",
+    "delete": "削除"
+  },
+  "forwarders": {
+    "title": "転送とキャッチオール",
+    "description": "メールボックスを作成せずに、受信メールを 1 つ以上の宛先アドレスへ転送します。キャッチオールは、このドメインで未定義のアドレス宛のメールを転送します。",
+    "sourcePlaceholder": "support",
+    "catchAll": "このドメインの未定義アドレスをすべて転送",
+    "destinationPlaceholder": "target1@example.com, target2@example.com",
+    "adding": "追加中…",
+    "add": "追加",
+    "empty": "まだ転送設定がありません。",
+    "suspended": "停止中",
+    "suspend": "停止",
+    "activate": "有効化",
+    "delete": "削除"
+  },
+  "spam": {
+    "title": "スパムフィルタリング",
+    "description": "Rspamd はすべての受信メッセージにスコアを付けます。グレイリスティングは一時的に配信を保留し、ヘッダーしきい値はメールをスパムとしてフラグ付けし、拒否しきい値は配信を拒否します。",
+    "notInstalled": " このサーバーには Rspamd がインストールされていません。設定は保存されますが適用されません。",
+    "enable": "このドメインでスパムフィルタリングを有効化",
+    "greylist": "グレイリスト",
+    "addHeader": "ヘッダーを追加",
+    "reject": "拒否",
+    "applying": "適用中…",
+    "apply": "スパムポリシーを適用"
+  },
+  "autoresponder": {
+    "title": "自動返信",
+    "description": "メールボックスから不在返信を送信します。同じ送信者へは各間隔につき最大 1 回までです。",
+    "mailbox": "メールボックス",
+    "interval": "返信間隔 (日)",
+    "subjectPlaceholder": "件名",
+    "bodyPlaceholder": "メッセージ本文",
+    "enable": "自動返信を有効化",
+    "saving": "保存中…",
+    "save": "自動返信を保存",
+    "remove": "削除"
+  },
+  "filters": {
+    "title": "メッセージフィルター",
+    "description": "メールボックスごとにコンパイルされる Sieve ルールで、受信メールをフォルダに振り分け、リダイレクト、または破棄します。",
+    "namePlaceholder": "フィルター名",
+    "subjectContains": "件名に含まれる",
+    "fromContains": "From に含まれる",
+    "toContains": "To に含まれる",
+    "matchedTextPlaceholder": "一致するテキスト",
+    "moveToFolder": "フォルダに移動",
+    "redirectTo": "リダイレクト先",
+    "discard": "破棄",
+    "folderPlaceholder": "フォルダ (例: Invoices)",
+    "targetPlaceholder": "target@example.com",
+    "adding": "追加中…",
+    "add": "フィルターを追加",
+    "empty": "まだフィルターがありません。",
+    "delete": "削除"
+  },
+  "sendLimits": {
+    "title": "送信制限",
+    "description": "メールボックスごとに送信先受信者数を制限します。制限を超えると、乗っ取られたログインを封じ込めるためアカウントは自動的に停止されます。無制限には 0 を使用します。",
+    "mailbox": "メールボックス",
+    "hourly": "1 時間あたり ({{count}} 使用済み)",
+    "daily": "1 日あたり ({{count}} 使用済み)",
+    "suspendedNote": "{{time}} に自動停止されました。上記のメールボックスを再有効化して解除してください。",
+    "saving": "保存中…",
+    "save": "送信制限を保存"
+  },
+  "messages": {
+    "enabled": "このドメインでメールホスティングを有効にしました。可能な場合、MX、SPF、DKIM、DMARC レコードが DNS に追加されました。",
+    "forwarderAdded": "メール転送を追加しました。",
+    "spamApplied": "Rspamd のスパムポリシーを検証して適用しました。",
+    "autoresponderSaved": "自動返信とその Sieve スクリプトを適用しました。",
+    "autoresponderRemoved": "自動返信を削除しました。",
+    "filterAdded": "メールフィルターをコンパイルして有効にしました。",
+    "sendLimitsSaved": "送信制限を保存しました。"
+  },
+  "confirm": {
+    "deleteMailbox": "メールボックス「{{email}}」を削除しますか? Maildir はディスク上に残り、アカウントの行のみが削除されます。",
+    "deleteForwarder": "転送設定「{{source}}」を削除しますか?",
+    "deleteFilter": "フィルター「{{name}}」を削除しますか?"
+  },
+  "errors": {
+    "loadDomainFailed": "ドメインを読み込めませんでした",
+    "enableFailed": "メールホスティングを有効にできませんでした",
+    "createMailboxFailed": "メールボックスを作成できませんでした",
+    "addForwarderFailed": "メール転送を追加できませんでした",
+    "deleteMailboxFailed": "メールボックスを削除できませんでした",
+    "deleteForwarderFailed": "メール転送を削除できませんでした",
+    "resetPasswordFailed": "パスワードをリセットできませんでした",
+    "updateForwarderFailed": "メール転送を更新できませんでした",
+    "updateMailboxFailed": "メールボックスを更新できませんでした",
+    "applySpamFailed": "スパム設定を適用できませんでした",
+    "readAutoresponderFailed": "自動返信を読み込めませんでした",
+    "saveAutoresponderFailed": "自動返信を保存できませんでした",
+    "addFilterFailed": "メールフィルターを追加できませんでした",
+    "readSendLimitsFailed": "送信制限を読み込めませんでした",
+    "saveSendLimitsFailed": "送信制限を保存できませんでした"
+  }
+}

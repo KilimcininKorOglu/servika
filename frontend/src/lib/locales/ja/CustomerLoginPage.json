@@ -1,0 +1,15 @@
+{
+  "heading": "顧客ポータル",
+  "subtitle": "アカウントの認証情報でサインインしてください",
+  "field": {
+    "username": "ユーザー名",
+    "password": "パスワード"
+  },
+  "button": {
+    "signingIn": "サインイン中…",
+    "signIn": "サインイン"
+  },
+  "error": {
+    "loginFailed": "ログインに失敗しました"
+  }
+}

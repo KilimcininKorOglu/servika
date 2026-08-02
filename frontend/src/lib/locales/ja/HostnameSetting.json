@@ -1,0 +1,16 @@
+{
+  "title": "サーバーのホスト名",
+  "protected": "プロバイダーに対して保護済み",
+  "awaitingProtection": "保護待ち",
+  "descriptionPre": "システムのホスト名を恒久的に変更します。cloud-init と DHCP/NetworkManager がプロバイダー提供の名前を書き換えないようにします。完全修飾名を推奨します: ",
+  "placeholder": "server1.example.com",
+  "apply": "ホスト名を変更",
+  "applying": "適用中…",
+  "messages": {
+    "changed": "ホスト名を「{{hostname}}」に変更し、恒久化しました。"
+  },
+  "errors": {
+    "load": "ホスト名を読み込めませんでした",
+    "change": "ホスト名を変更できませんでした"
+  }
+}

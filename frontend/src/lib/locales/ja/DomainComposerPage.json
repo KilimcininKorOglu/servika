@@ -1,0 +1,29 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "composer": "Composer"
+  },
+  "title": "PHP Composer",
+  "subtitle": {
+    "pre": "",
+    "mid": " (場所: ",
+    "post": ") をシステムユーザーとして実行します。"
+  },
+  "loading": "読み込み中…",
+  "notFound": "見つかりません",
+  "notInstalled": "サーバーに Composer がインストールされていません。管理者がインストールする必要があります。",
+  "composerJsonFound": "✓ composer.json が見つかりました",
+  "composerJsonNotFound": "composer.json が見つかりません",
+  "packagePlaceholder": "vendor/package または vendor/package:^1.2",
+  "run": {
+    "header": "$ composer {{cmd}}",
+    "running": "実行中…",
+    "noOutput": "(出力なし)",
+    "completed": "✓ 完了",
+    "failed": "✗ 失敗"
+  },
+  "errors": {
+    "runFailed": "コマンドを実行できませんでした"
+  }
+}

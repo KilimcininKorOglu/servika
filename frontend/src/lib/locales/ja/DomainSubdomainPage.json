@@ -1,0 +1,67 @@
+{
+  "loading": "読み込み中…",
+  "notFound": "サブドメインが見つかりません。",
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "domain": "ドメイン",
+    "subdomains": "サブドメイン",
+    "subdomain": "サブドメイン"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "このドキュメントルートで WordPress をインストールおよび管理"
+    },
+    "logs": {
+      "label": "ログ",
+      "description": "このサブドメインのアクセスログとエラーログ"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "このドキュメントルートの依存関係の状態"
+    },
+    "protection": {
+      "label": "パスワード保護",
+      "description": "HTTP 認証でディレクトリを制限"
+    },
+    "statistics": {
+      "label": "統計",
+      "description": "このサブドメインのみのトラフィック分析"
+    }
+  },
+  "toast": {
+    "phpSaved": "このサブドメインは PHP {{version}} で動作するようになりました。",
+    "phpChangeFailed": "PHP バージョンを変更できませんでした"
+  },
+  "ssl": {
+    "active": "🔒 SSL 有効",
+    "none": "SSL なし"
+  },
+  "intro": {
+    "pre": "次のサブドメイン:",
+    "post": "。独自のドキュメントルートから、独自の PHP プールで配信されます。"
+  },
+  "details": {
+    "title": "詳細",
+    "address": "アドレス",
+    "documentRoot": "ドキュメントルート",
+    "diskUsage": "ディスク使用量",
+    "phpVersion": "PHP バージョン",
+    "created": "作成日",
+    "serverIp": "サーバー IP"
+  },
+  "php": {
+    "title": "PHP バージョン",
+    "note": "このサブドメインは独自の FPM プールで動作するため、変更しても親ドメインには影響しません。",
+    "versionLabel": "バージョン",
+    "applying": "適用中…",
+    "apply": "適用",
+    "validationNote": "変更を保存する前に vhost が検証されるため、設定が拒否された場合でもサイトはそのまま維持されます。"
+  },
+  "toolsSection": {
+    "title": "ツール",
+    "note": "各ツールは、親ドメインではなくこのサブドメインのドキュメントルートに対して動作します。"
+  },
+  "backToSubdomains": "← サブドメインに戻る"
+}

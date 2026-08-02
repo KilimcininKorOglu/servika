@@ -1,0 +1,25 @@
+{
+  "breadcrumbHome": "ホーム",
+  "breadcrumbServerStatus": "サーバーステータス",
+  "title": "サーバーステータス",
+  "subtitle": "サーバーのリアルタイムスナップショットです。この画面は読み取り専用です — サービス管理は管理者が行います。",
+  "loading": "読み込み中…",
+  "errorLoad": "サーバーステータスを読み込めませんでした",
+  "cards": {
+    "cpu": "CPU",
+    "memory": "メモリ",
+    "disk": "ディスク",
+    "panelVersion": "パネルバージョン"
+  },
+  "loadText": "負荷 {{values}}",
+  "updateAvailable": "更新が利用可能: v{{version}}",
+  "upToDate": "最新",
+  "servicesHeading": "サービス",
+  "noServices": "サービス情報がありません。",
+  "statuses": {
+    "active": "稼働中",
+    "inactive": "停止中",
+    "failed": "失敗",
+    "absent": "未インストール"
+  }
+}

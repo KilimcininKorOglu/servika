@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "waf": "Web アプリケーションファイアウォール (WAF)"
+  },
+  "title": "Web アプリケーションファイアウォール",
+  "subtitle": " · ModSecurity v3 + OWASP Core Rule Set。保存すると nginx vhost が再生成されます (ダウンタイムなし)。",
+  "loading": "読み込み中…",
+  "moduleWarning": {
+    "bold": "このサーバーには ModSecurity モジュールがインストールされていません。",
+    "pre": " 設定は保存されますが WAF は適用されません。有効にするにはサーバー上で ",
+    "post": " を実行してください (既存のサイトには影響しません)。"
+  },
+  "modes": {
+    "inherit": {
+      "name": "プランから継承",
+      "description": "このドメインは、割り当てられたサービスプランの WAF デフォルトを使用します。"
+    },
+    "block": {
+      "name": "ブロック",
+      "description": "悪意のあるリクエスト (SQLi、XSS、RCE…) は 403 でブロックされます。SecRuleEngine On。"
+    },
+    "detect": {
+      "name": "検出",
+      "description": "リクエストはブロックされず、一致したルールは監査ログにのみ記録されます。DetectionOnly — ルール調整に最適です。"
+    },
+    "off": {
+      "name": "無効",
+      "description": "このドメインでは WAF が完全に無効化されます (プランで有効になっていても)。"
+    }
+  },
+  "paranoiaDescription": {
+    "0": "プランのデフォルトが使用されます。",
+    "1": "低 — 基本的な攻撃シグネチャ。誤検出はほとんどありません。(推奨)",
+    "2": "中 — より多くのルール。一部の正当なリクエストがブロックされる場合があります。",
+    "3": "高 — 積極的。アプリケーションごとの除外設定が必要な場合があります。",
+    "4": "厳格 — 最も積極的。厳密に監査されたシナリオでのみ使用してください。"
+  },
+  "effective": {
+    "label": "実際の状態:",
+    "blocking": "有効 · ブロック中",
+    "detection": "有効 · 検出中",
+    "paranoia": "Paranoia {{level}}",
+    "passive": "パッシブ",
+    "planDefault": "プランのデフォルト ({{name}}): ",
+    "planBlock": "ブロック · PL{{paranoia}}",
+    "planDetect": "検出 · PL{{paranoia}}",
+    "planOff": "無効"
+  },
+  "modeCard": {
+    "title": "WAF モード",
+    "selected": "選択中"
+  },
+  "paranoiaCard": {
+    "title": "Paranoia レベル (CRS)",
+    "hint": {
+      "pre": "レベルが高いほど、ルールが増え保護が強化されますが、誤検出の可能性も高くなります。WAF が ",
+      "block": "ブロック",
+      "mid": " または ",
+      "detect": "検出",
+      "post": " モードの場合にのみ有効です。"
+    },
+    "options": {
+      "inherit": "プランから継承",
+      "level1": "レベル 1 (低)",
+      "level2": "レベル 2 (中)",
+      "level3": "レベル 3 (高)",
+      "level4": "レベル 4 (厳格)"
+    }
+  },
+  "actions": {
+    "save": "保存して適用",
+    "saving": "適用中…",
+    "reload": "再読み込み"
+  },
+  "messages": {
+    "appliedBlocking": "WAF を適用しました — ブロックモード、paranoia {{paranoia}}",
+    "appliedDetection": "WAF を適用しました — 検出モード、paranoia {{paranoia}}",
+    "savedPassive": "設定を保存しました — このドメインでは WAF はパッシブです"
+  },
+  "errors": {
+    "saveFailed": "保存に失敗しました"
+  }
+}

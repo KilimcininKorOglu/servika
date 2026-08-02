@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "copyWebsite": "ウェブサイトをコピー"
+  },
+  "title": "ウェブサイトをコピー",
+  "subtitle": {
+    "pre": "サイトファイルのタイムスタンプ付きスナップショットを ",
+    "post": " 配下に作成し、変更前の安全な復元ポイントを提供します。"
+  },
+  "note": {
+    "pre": "ℹ️ このツールは ",
+    "bold1": "ファイル",
+    "mid": " のみをコピーし、データベースは含まれません。完全なバックアップには ",
+    "bold2": "バックアップと復元",
+    "post": " を使用してください。"
+  },
+  "createDescription": "public_html の内容の新しいコピーを作成します。",
+  "actions": {
+    "create": "コピーを作成",
+    "creating": "コピー中…",
+    "delete": "削除"
+  },
+  "existingTitle": "既存のコピー",
+  "loading": "読み込み中…",
+  "empty": "まだコピーがありません。",
+  "back": "← サブスクリプションに戻る",
+  "createdCopy": "コピーを作成しました: {{name}} ({{size}} MB)",
+  "confirmDelete": "このコピーを削除しますか?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "コピーを作成できませんでした",
+    "deleteFailed": "コピーを削除できませんでした"
+  }
+}

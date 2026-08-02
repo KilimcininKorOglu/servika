@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "monitoring": "モニタリング"
+  },
+  "title": "エンドツーエンドモニタリング",
+  "liveRefresh": "ライブ、{{seconds}} 秒ごとに更新",
+  "tabs": {
+    "server": "サーバー",
+    "domain": "ドメイン別",
+    "logs": "サーバーログ"
+  },
+  "snap": {
+    "cpu": "CPU",
+    "cpuCores": "{{count}} コア",
+    "memory": "メモリ",
+    "load1m": "負荷 (1 分)",
+    "loadAlt": "5 分 {{load5m}}、15 分 {{load15m}}",
+    "diskRoot": "ディスク (/)"
+  },
+  "chart": {
+    "systemResources": "システムリソース",
+    "samples": "{{count}}/{{max}} サンプル、{{minutes}} 分",
+    "legendCpu": "CPU",
+    "legendMemory": "メモリ",
+    "legendSwap": "スワップ",
+    "legendLoad": "負荷 (正規化)",
+    "networkTraffic": "ネットワークトラフィック",
+    "interface": "インターフェース: {{name}}",
+    "legendRx": "↓ RX (KB/s)",
+    "legendTx": "↑ TX (KB/s)",
+    "collecting": "データを収集中..."
+  },
+  "services": {
+    "title": "サービス",
+    "enabledCount": "{{enabled}}/{{total}} 有効",
+    "active": "稼働中",
+    "stopped": "停止中"
+  },
+  "processes": {
+    "title": "トッププロセス",
+    "sortCpu": "CPU",
+    "sortMem": "メモリ",
+    "colPid": "PID",
+    "colUser": "ユーザー",
+    "colCpu": "CPU%",
+    "colMem": "MEM%",
+    "colCommand": "コマンド",
+    "loading": "読み込み中..."
+  },
+  "domain": {
+    "selectionTitle": "ドメインの選択",
+    "noActiveDomains": "有効なドメインがありません",
+    "probing": "プローブ中...",
+    "healthProbe": "↻ ヘルスプローブ",
+    "openSite": "サイトを開く ↗",
+    "accessLog": "アクセスログ",
+    "errorLog": "エラーログ",
+    "lastLines": "直近 {{count}} 行",
+    "noAccessEntries": "まだログエントリーがありません...",
+    "noErrorEntries": "まだエラーエントリーがありません"
+  },
+  "health": {
+    "reachable": "到達可能",
+    "unreachable": "到達不可",
+    "server": "サーバー: ",
+    "noSslTitle": "⚠ SSL なし",
+    "noSslBody": "このドメインは HTTPS で到達できません。",
+    "sslValid": "🔒 SSL 有効",
+    "sslInvalid": "✗ SSL 無効",
+    "days": "日",
+    "expires": "有効期限: ",
+    "issuer": "発行者: ",
+    "responseTime": "応答時間",
+    "ms": "ミリ秒",
+    "fast": "速い",
+    "acceptable": "許容範囲",
+    "slow": "遅い"
+  },
+  "logs": {
+    "searchPlaceholder": "検索...",
+    "lastLineCount": "直近 {{count}}",
+    "refresh": "↻ 更新",
+    "loading": "読み込み中...",
+    "notFound": "「{{query}}」が見つかりません。",
+    "noEntries": "(エントリーなし)",
+    "footerFiltered": "{{filtered}} / {{total}} 行、journald、{{source}}",
+    "footer": "{{total}} 行、journald、{{source}}"
+  },
+  "logSources": {
+    "panel": "パネル",
+    "nginx": "nginx",
+    "mariadb": "MariaDB",
+    "named": "DNS (named)",
+    "sshd": "SSH",
+    "cron": "cron",
+    "system": "システム全体"
+  }
+}

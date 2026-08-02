@@ -1,0 +1,21 @@
+{
+  "title": "DNS 管理",
+  "description": "すべてのドメインのレコード数と DNSSEC ステータスを表示します。",
+  "emptyMessage": "ドメインが見つかりませんでした。",
+  "column": {
+    "domain": "ドメイン",
+    "records": "レコード",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "有効",
+    "off": "無効"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC 有効",
+    "noMx": "MX なし"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "backups": "バックアップ"
+  },
+  "title": "バックアップ",
+  "subtitle": {
+    "prefix": "home + MySQL ダンプ = tar.gz、",
+    "disabled": "自動バックアップは無効です",
+    "enabled": "{{freq}} {{hour}}:00、最新 {{retention}} 件の自動バックアップを保持"
+  },
+  "freq": {
+    "daily": "毎日",
+    "weekly": "毎週"
+  },
+  "toast": {
+    "destinationSaved": "リモート保存先を保存しました",
+    "destinationSaveFailed": "保存先を保存できませんでした",
+    "destinationDeleted": "リモート保存先を削除しました",
+    "confirmDeleteDest": "リモートバックアップ保存先を削除しますか? 既存のバックアップには影響しませんが、今後の自動アップロードは停止します。",
+    "autoDisabled": "自動バックアップを無効にしました",
+    "autoEnabled": "自動バックアップを有効にしました: {{freq}}、{{hour}}:00。最新 {{retention}} 件のバックアップを保持します",
+    "scheduleSaveFailed": "スケジュールを保存できませんでした",
+    "backupCreated": "バックアップを作成しました",
+    "createFailed": "バックアップを作成できませんでした",
+    "restored": "復元しました: {{domain}}、データベース: {{database}}",
+    "restoreDbUnknown": "不明",
+    "restoreFailed": "復元に失敗しました"
+  },
+  "schedule": {
+    "heading": "自動バックアップスケジュール",
+    "description": "有効にすると、パネルは 1 時間ごとに確認します。選択した時刻にバックアップが作成され、保持数を超えたバックアップは削除されます。",
+    "lastBackup": "最新の自動バックアップ:",
+    "options": {
+      "none": {
+        "name": "無効",
+        "description": "自動バックアップは行われません。手動の「今すぐバックアップ」のみが実行されます。"
+      },
+      "daily": {
+        "name": "毎日",
+        "description": "選択した時刻に毎日バックアップを作成し、最新 N 件のバックアップを保持します。"
+      },
+      "weekly": {
+        "name": "毎週",
+        "description": "ディスク使用量を抑えるため、7 日ごとにバックアップを作成します。"
+      }
+    },
+    "active": "● 有効",
+    "runTime": "実行時刻 (ローカル)",
+    "retentionLabel": "保持するバックアップ数",
+    "retentionHint": "この数を超えた古い自動バックアップは削除されます。手動バックアップは保持されます。"
+  },
+  "destination": {
+    "heading": "リモートバックアップ保存先 (FTP / SFTP / S3 / B2)",
+    "description": "作成後、バックアップはバックグラウンドでリモート保存先へアップロードされ、ディスク障害に備えてオフサイトで保護されます。",
+    "statusSuccessful": "● 最新: 成功",
+    "statusError": "✗ 最新: エラー",
+    "lastUpload": "最新のアップロード:",
+    "typeLabel": "保存先タイプ",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "バケット",
+    "region": "リージョン",
+    "regionHint": "(デフォルトは us-east-1)",
+    "endpoint": "エンドポイント",
+    "endpointHint": "(AWS S3 の場合は空欄)",
+    "accessKeyId": "アクセスキー ID",
+    "secretAccessKey": "シークレットアクセスキー",
+    "secretKeepHint": "(現在の値を維持する場合は空欄)",
+    "keyPrefix": "キープレフィックス",
+    "pathStyle": "パススタイル URL",
+    "host": "ホスト",
+    "port": "ポート",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "passwordKeepHint": "(現在のパスワードを維持する場合は空欄)",
+    "remoteDir": "リモートディレクトリ",
+    "activeLabel": "有効 (すべてのバックアップをこの保存先に送信)",
+    "testSuccess": "✓ 接続に成功しました",
+    "testError": "✗ ",
+    "testErrorFallback": "エラー",
+    "testing": "テスト中...",
+    "testConnection": "接続をテスト",
+    "save": "保存",
+    "deleteDestination": "保存先を削除"
+  },
+  "backingUp": "バックアップ中...",
+  "backupNow": "+ 今すぐバックアップ",
+  "refresh": "↻ 更新",
+  "backupCount": "{{count}} 件のバックアップ",
+  "loading": "読み込み中...",
+  "empty": "まだバックアップがありません",
+  "columns": {
+    "file": "ファイル",
+    "type": "タイプ",
+    "size": "サイズ",
+    "created": "作成日",
+    "actions": "操作"
+  },
+  "typeScheduled": "スケジュール済み",
+  "row": {
+    "download": "ダウンロード",
+    "restore": "↺ 復元",
+    "delete": "削除"
+  },
+  "confirmDelete": {
+    "title": "バックアップファイルを削除",
+    "message": "バックアップファイル「{{file}}」を削除しますか?",
+    "confirm": "はい、削除します"
+  },
+  "confirmRestore": {
+    "title": "バックアップから復元",
+    "message": "「{{file}}」を復元しますか?\n\n警告: 既存の public_html ファイルは上書きされ、MySQL テーブルは再作成されます。この操作は取り消せません。",
+    "confirm": "はい、復元します"
+  }
+}

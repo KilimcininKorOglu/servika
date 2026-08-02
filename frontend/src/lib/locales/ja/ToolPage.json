@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン"
+  },
+  "fallback": {
+    "label": "ツール",
+    "description": "まだ実装されていません。"
+  },
+  "notReady": "準備中",
+  "domainLabel": "ドメイン: ",
+  "construction": {
+    "heading": "作成中",
+    "availablePrefix": "このモジュールは ",
+    "availableSuffix": " で利用可能になります。",
+    "availableLater": "このモジュールは今後のフェーズで利用可能になります。",
+    "returnToDashboard": "← ドメインダッシュボードに戻る"
+  },
+  "tool": {
+    "connection": {
+      "label": "接続情報",
+      "description": "FTP サーバー、ユーザー名、データベース接続文字列、クイックコピー操作。"
+    },
+    "files": {
+      "label": "ファイルマネージャー",
+      "description": "public_html 配下のファイルの一覧表示、アップロード、ダウンロード、パーミッション変更。"
+    },
+    "databases": {
+      "label": "データベース",
+      "description": "MySQL データベース、ユーザー、phpMyAdmin 連携。"
+    },
+    "ftp": {
+      "label": "FTP アカウント",
+      "description": "Pure-FTPd による仮想 FTP アカウント、パスワード、ホームディレクトリ。"
+    },
+    "backups": {
+      "label": "バックアップと復元",
+      "description": "tar アーカイブとデータベースダンプを SFTP、S3、ローカルストレージにバックアップします。"
+    },
+    "copy": {
+      "label": "ウェブサイトをコピー",
+      "description": "既存のウェブサイトを別のドメインに複製します。"
+    },
+    "php": {
+      "label": "PHP 設定",
+      "description": "PHP-FPM プールの選択、バージョン変更、php.ini パラメーター。"
+    },
+    "logs": {
+      "label": "ログ",
+      "description": "WebSocket 追跡による access.log と error.log のリアルタイムモニタリング。"
+    },
+    "cron": {
+      "label": "スケジュールされたタスク",
+      "description": "ユーザーごとの crontab エディター。"
+    },
+    "git": {
+      "label": "Git",
+      "description": "リポジトリを接続し、デプロイキーを設定し、webhook で自動プルします。"
+    },
+    "composer": {
+      "label": "PHP Composer",
+      "description": "composer install と update の Web インターフェース。"
+    },
+    "performance": {
+      "label": "パフォーマンス",
+      "description": "OPcache、gzip、遅延読み込みなどのアクセラレーター。"
+    },
+    "ssl": {
+      "label": "SSL/TLS 証明書",
+      "description": "Let's Encrypt の自動インストールと更新。"
+    },
+    "password-protection": {
+      "label": "パスワード保護ディレクトリ",
+      "description": ".htpasswd でディレクトリを保護します。"
+    },
+    "stats": {
+      "label": "統計",
+      "description": "ディスク、トラフィック、訪問者のレポート。"
+    },
+    "imunify": {
+      "label": "Imunify",
+      "description": "アンチウイルスと WAF の連携。"
+    }
+  }
+}

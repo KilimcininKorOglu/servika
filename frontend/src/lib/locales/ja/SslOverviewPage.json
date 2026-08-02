@@ -1,0 +1,28 @@
+{
+  "title": "SSL 証明書",
+  "description": "サーバー全体の証明書ステータスを、有効期限が近い順に並べて表示します。",
+  "emptyMessage": "ドメインが見つかりませんでした。",
+  "column": {
+    "domain": "ドメイン",
+    "ssl": "SSL",
+    "expiry": "有効期限",
+    "remaining": "残り",
+    "status": "ステータス"
+  },
+  "ssl": {
+    "enabled": "有効",
+    "none": "なし"
+  },
+  "status": {
+    "active": "有効",
+    "passive": "無効"
+  },
+  "remaining": {
+    "expiredAgo": "{{days}} 日前に期限切れ",
+    "days": "{{days}} 日"
+  },
+  "summary": {
+    "withSsl": "SSL あり",
+    "expiring": "有効期限 ≤14 日"
+  }
+}

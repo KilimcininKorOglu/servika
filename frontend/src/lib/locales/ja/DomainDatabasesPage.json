@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "databases": "データベース"
+  },
+  "title": "データベース",
+  "actions": {
+    "new": "+ 新規データベース",
+    "refresh": "↻ 更新"
+  },
+  "count": "{{count}} 個のデータベース",
+  "loading": "読み込み中...",
+  "empty": "まだデータベースがありません",
+  "columns": {
+    "database": "データベース",
+    "username": "ユーザー名",
+    "host": "ホスト",
+    "password": "パスワード",
+    "created": "作成日",
+    "actions": "操作"
+  },
+  "password": {
+    "show": "表示",
+    "hide": "非表示",
+    "copy": "コピー"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "新しいタブで phpMyAdmin を開く",
+    "resetPassword": "🔑 パスワードをリセット",
+    "delete": "削除"
+  },
+  "errors": {
+    "pmaToken": "phpMyAdmin のトークンを取得できませんでした",
+    "deleteFailed": "削除に失敗しました"
+  },
+  "delete": {
+    "title": "データベースを削除",
+    "message": "「{{name}}」データベースとそのユーザーが完全に削除されます。この操作は取り消せません。",
+    "confirm": "はい、削除します"
+  },
+  "newModal": {
+    "title": "新規データベース",
+    "created": "✓ データベースを作成しました",
+    "saveHint": "これらを安全な場所に保存してください。後でパスワードを平文で表示できない場合があります:",
+    "labelDatabase": "データベース",
+    "labelUser": "ユーザー",
+    "labelPassword": "パスワード",
+    "done": "完了",
+    "autoPre": "自動",
+    "autoPost": "、データベース名、ユーザー、パスワードをパネルに生成させます",
+    "dbNameLabel": "データベース名",
+    "dbSuffixPlaceholder": "blog",
+    "dbUserLabel": "データベースユーザー",
+    "newUser": "新規ユーザー",
+    "selectExistingUser": "既存のユーザーを選択",
+    "userSuffixPlaceholder": "bloguser",
+    "passwordLabel": "パスワード",
+    "passwordOptional": "(空欄にすると生成されます)",
+    "passwordPlaceholder": "12 文字以上、英字と数字",
+    "generate": "生成",
+    "passwordStrength": "パスワードは英字と数字を含む 12 文字以上である必要があります。",
+    "cancel": "キャンセル",
+    "creating": "作成中...",
+    "create": "作成",
+    "errors": {
+      "dbSuffix": "データベースのサフィックス: 小文字、数字、アンダースコアのみ。1〜32 文字",
+      "dbNameTooLong": "データベース名が長すぎます (プレフィックス + サフィックスは最大 64 文字)",
+      "userSuffix": "ユーザーのサフィックス: 小文字、数字、アンダースコアのみ。1〜32 文字",
+      "userNameTooLong": "ユーザー名が長すぎます (プレフィックス + サフィックスは最大 64 文字)",
+      "passwordStrength": "パスワードは英字と数字を含む 12 文字以上である必要があります",
+      "selectExisting": "既存のユーザーを選択してください",
+      "createFailed": "作成に失敗しました"
+    }
+  },
+  "resultRow": {
+    "copied": "✓",
+    "copy": "コピー"
+  },
+  "pwReset": {
+    "title": "パスワードをリセット: {{name}}",
+    "introPre": " ユーザーのパスワードが MariaDB とパネルで同時に更新されます。",
+    "customLabel": "カスタムパスワード (空欄にすると生成されます)",
+    "customPlaceholder": "6 文字以上",
+    "cancel": "キャンセル",
+    "useThis": "このパスワードを使用",
+    "resetting": "リセット中...",
+    "generateRandom": "ランダムパスワードを生成",
+    "updated": "✓ パスワードを更新しました",
+    "saveHint": "これを安全な場所に保存してください。後で再表示することはできません。",
+    "copy": "コピー",
+    "done": "完了",
+    "errors": {
+      "tooShort": "パスワードは 6 文字以上である必要があります",
+      "resetFailed": "パスワードのリセットに失敗しました"
+    }
+  }
+}

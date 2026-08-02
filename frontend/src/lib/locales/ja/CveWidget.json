@@ -1,0 +1,52 @@
+{
+  "title": "セキュリティアドバイザリ",
+  "subtitleAudit": "CVE 監査 (AlmaLinux)",
+  "advisories": "{{count}} 件のセキュリティアドバイザリ",
+  "rescan": "再スキャン",
+  "scanning": "スキャン中…",
+  "scanningServer": "サーバーをスキャン中…",
+  "updating": "セキュリティ更新をインストール中… (バックグラウンドで実行)",
+  "kcApplying": "ライブカーネルパッチを適用中… (KernelCare — 再起動不要)",
+  "severity": {
+    "critical": "緊急",
+    "important": "重要",
+    "moderate": "中",
+    "low": "低"
+  },
+  "kcActive": {
+    "bold": "カーネルはライブパッチ適用済みです (KernelCare)。",
+    "text": " カーネルの脆弱性は再起動なしで解消されます。",
+    "effectivePre": " 有効なカーネル: ",
+    "effectivePost": "。",
+    "patched": " {{count}} 件の CVE をライブパッチで対応しました。"
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare はインストールされていますが、ライセンスが登録されていません。",
+    "text": " 再起動不要のカーネルパッチには、TuxCare ライセンスキーで登録してください。"
+  },
+  "rebootRequired": {
+    "bold1": "再起動が必要です。",
+    "text1": " セキュリティパッチ適用済みの新しいカーネルがインストールされましたが、システムは依然として古いカーネルで動作しています。以下の CVE の多くはカーネル関連であり、",
+    "bold2": "サーバーを再起動するまで未解決として表示されます",
+    "text2": "。メンテナンスウィンドウ中に再起動をスケジュールしてください。"
+  },
+  "clean": {
+    "title": "システムは最新です",
+    "subtitle": "既知の脆弱性はありません"
+  },
+  "totalPre": "合計 ",
+  "totalPost": " 件の一意な CVE",
+  "lastScan": " · 前回のスキャン {{scan}}",
+  "installUpdates": "セキュリティ更新をインストール",
+  "updateLiveKernel": "ライブカーネルパッチを更新 (再起動不要)",
+  "confirmUpdate": "セキュリティ更新 (dnf --security) をインストールします。カーネル更新を反映するには再起動が必要な場合があります。続行しますか?",
+  "messages": {
+    "updatesComplete": "セキュリティ更新が完了しました。",
+    "livePatchApplied": "ライブカーネルパッチを適用しました。"
+  },
+  "errors": {
+    "fetch": "CVE のステータスを取得できませんでした",
+    "startUpdate": "更新を開始できませんでした",
+    "startLivePatch": "ライブパッチを開始できませんでした"
+  }
+}

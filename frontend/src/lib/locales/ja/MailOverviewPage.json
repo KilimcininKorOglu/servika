@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "ドメイン",
+    "mail": "メール",
+    "mailboxes": "メールボックス",
+    "aliases": "エイリアス",
+    "suspended": "停止中"
+  },
+  "mailNone": "なし",
+  "overview": {
+    "title": "メールアカウント",
+    "description": "すべてのドメインのメールボックスとエイリアスの数を表示します。",
+    "empty": "ドメインが見つかりませんでした。"
+  },
+  "summary": {
+    "mailDomains": "メールドメイン",
+    "totalMailboxes": "メールボックス総数"
+  },
+  "queue": {
+    "title": "Postfix メールキュー",
+    "subtitle": "配信待ち、遅延中、または管理者により保留されたメッセージ。",
+    "refresh": "↻ 更新",
+    "retry": "キューを再試行",
+    "loading": "キューを読み込み中…",
+    "empty": "✓ メールキューは空です",
+    "colId": "キュー ID",
+    "colRoute": "送信者 → 受信者",
+    "colSizeTime": "サイズ / 時刻",
+    "colActions": "操作",
+    "release": "解放",
+    "hold": "保留",
+    "requeue": "再キュー",
+    "delete": "削除"
+  },
+  "confirmDelete": "キュー内のメッセージ {{queueID}} を完全に削除しますか?",
+  "errors": {
+    "readFailed": "Postfix キューを読み込めませんでした",
+    "actionFailed": "キュー操作に失敗しました"
+  }
+}

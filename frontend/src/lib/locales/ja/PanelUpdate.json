@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "まだ確認されていません",
+  "title": "パネル更新",
+  "badges": {
+    "server": "サーバー",
+    "critical": "緊急",
+    "updateAvailable": "更新が利用可能"
+  },
+  "description": "パネルを GitHub から最新バージョンに更新します。環境設定、データベース、サイトは保持され、正常でないリリースは自動的にロールバックされます。",
+  "toolMissing": " 更新ツールがありません。初回使用時に自動的にダウンロードされます。",
+  "labels": {
+    "current": "現在",
+    "latest": "最新",
+    "buildDate": "ビルド日",
+    "lastCheck": "前回の確認"
+  },
+  "unknown": "不明",
+  "lastCheckFailed": "前回のバージョン確認に失敗しました: {{error}}",
+  "checksDisabled": "バージョン確認は無効です。",
+  "running": "更新を実行中です。パネルが一時的に再起動する場合があります。このページを開いたままにしてください。",
+  "logStarted": "更新を開始しました...\n",
+  "checkAndInstall": "更新を確認してインストール",
+  "checking": "確認中...",
+  "refreshStatus": "バージョンステータスを更新",
+  "confirmPrompt": "パネルが更新され、サービスが再起動されます。確認しますか?",
+  "starting": "開始中...",
+  "confirmYes": "はい、更新します",
+  "cancel": "キャンセル",
+  "errors": {
+    "refresh": "バージョンステータスを更新できませんでした",
+    "start": "更新を開始できませんでした"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "accessControl": "アクセス制御"
+  },
+  "title": "アクセス制御",
+  "subtitle": "ホットリンク保護とドメインレベルの IP 許可またはブロックルールを設定します。保存すると nginx vhost が再生成されます。",
+  "loading": "読み込み中…",
+  "modes": {
+    "off": {
+      "label": "無効",
+      "description": "IP の許可またはブロックルールは nginx vhost に反映されません。"
+    },
+    "block": {
+      "label": "リストの IP をブロック",
+      "description": "リストに記載された IP アドレスまたは CIDR 範囲からの訪問者は 403 応答を受け取ります。"
+    },
+    "allow": {
+      "label": "リストの IP のみ許可",
+      "description": "ルールが 1 つ以上ある場合、リストに記載された IP アドレスまたは CIDR 範囲のみが許可されます。"
+    }
+  },
+  "hotlink": {
+    "title": "ホットリンク保護",
+    "description": "外部サイトがこのドメインで配信される画像ファイルを埋め込むのをブロックします。",
+    "enabled": "有効",
+    "allowedLabel": "追加で許可するリファラードメイン",
+    "hint": "現在のドメインとその www ホストは常に許可されます。1 行に 1 ドメイン、またはカンマ区切りで追加してください。",
+    "save": "ホットリンク設定を保存",
+    "saving": "保存中…"
+  },
+  "ipMode": {
+    "title": "IP アクセスモード",
+    "selected": "● 選択中"
+  },
+  "newRule": {
+    "title": "新規 IP ルール",
+    "label": "IP アドレスまたは CIDR",
+    "placeholder": "203.0.113.10 または 203.0.113.0/24",
+    "add": "ルールを追加",
+    "adding": "追加中…"
+  },
+  "rules": {
+    "title": "設定済みの IP ルール",
+    "empty": "まだ IP ルールがありません。",
+    "created": "作成日 {{date}}",
+    "delete": "削除"
+  },
+  "back": "← サブスクリプションに戻る",
+  "messages": {
+    "hotlinkSaved": "ホットリンク保護の設定を保存しました。",
+    "modeSaved": "IP アクセスモードを保存しました。",
+    "ruleAdded": "IP ルールを追加しました。",
+    "ruleDeleted": "IP ルールを削除しました。"
+  },
+  "confirmDelete": "IP ルール {{ip}} を削除しますか?",
+  "errors": {
+    "hotlinkFailed": "ホットリンク設定を保存できませんでした",
+    "modeFailed": "IP アクセスモードを保存できませんでした",
+    "addFailed": "IP ルールを追加できませんでした",
+    "deleteFailed": "IP ルールを削除できませんでした"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "ftpAccount": "FTP アカウント"
+  },
+  "title": "FTP アカウント",
+  "errors": {
+    "resetFailed": "パスワードのリセットに失敗しました"
+  },
+  "info": {
+    "host": "ホスト",
+    "port": "ポート",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "ユーザー名",
+    "homeDir": "ホームディレクトリ"
+  },
+  "reset": {
+    "title": "パスワードをリセット",
+    "placeholder": "カスタムパスワードを入力するか空欄のままにします",
+    "setThis": "このパスワードを設定",
+    "generateRandom": "ランダムパスワードを生成",
+    "success": "✓ 新しいパスワードを設定しました",
+    "saveHint": "これを安全な場所に保存してください。後で再表示することはできません。",
+    "copy": "コピー"
+  },
+  "note": {
+    "label": "注意:",
+    "pre": " FTP は現在、ローカルデータベースに対して ",
+    "code": "平文",
+    "post": " 認証を使用しています。暗号化された転送にはポート 22 の SFTP を使用してください。"
+  }
+}

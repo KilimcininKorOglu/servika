@@ -1,0 +1,31 @@
+{
+  "planAndResources": "プランとリソース",
+  "refresh": "更新",
+  "servicePlan": "サービスプラン",
+  "bars": {
+    "disk": "ディスク",
+    "trafficMonthly": "トラフィック (月間)",
+    "database": "データベース",
+    "ftpAccount": "FTP アカウント",
+    "emailMailbox": "メールボックス",
+    "subdomain": "サブドメイン"
+  },
+  "units": {
+    "db": "DB",
+    "account": "アカウント",
+    "mailbox": "メールボックス",
+    "domain": "ドメイン"
+  },
+  "configuration": "設定",
+  "ipAddress": "IP アドレス",
+  "systemUser": "システムユーザー",
+  "phpVersion": "PHP バージョン",
+  "sslTls": "SSL/TLS",
+  "active": "有効",
+  "none": "なし",
+  "counters": "カウンター",
+  "dnsRecord": "DNS レコード",
+  "cronJob": "cron ジョブ",
+  "backup": "バックアップ",
+  "backupSize": "バックアップサイズ"
+}

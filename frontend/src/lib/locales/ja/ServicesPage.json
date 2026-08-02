@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "ツールと設定",
+  "breadcrumbServices": "サービス",
+  "title": "サービス管理",
+  "subtitle": "管理対象の Web、データベース、DNS、PHP、および補助サービスを再起動または再読み込みします。",
+  "loading": "読み込み中…",
+  "reload": "再読み込み",
+  "restart": "再起動",
+  "working": "…",
+  "statuses": {
+    "active": "● 稼働中",
+    "inactive": "○ 停止中",
+    "failed": "✕ 失敗",
+    "absent": "未インストール"
+  },
+  "errors": {
+    "loadFailed": "サービスを読み込めませんでした",
+    "actionFailed": "{{label}} の操作に失敗しました"
+  },
+  "success": {
+    "reloaded": "{{label}} を再読み込みしました。",
+    "restarted": "{{label}} を再起動しました。"
+  }
+}

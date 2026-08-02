@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "laravel": "Laravel ツールキット"
+  },
+  "loading": "読み込み中…",
+  "title": "Laravel ツールキット",
+  "subtitle": "このサブスクリプション用の Laravel アプリケーションをインストール、デプロイ、運用します。",
+  "backToSubscription": "サブスクリプションに戻る",
+  "tabs": {
+    "overview": "概要",
+    "install": "インストール",
+    "commands": "コマンド",
+    "env": ".env",
+    "deploy": "デプロイ",
+    "workers": "ワーカー"
+  },
+  "messages": {
+    "actionCompleted": "操作が完了しました",
+    "actionFailed": "操作に失敗しました"
+  },
+  "overview": {
+    "title": "アプリケーションステータス",
+    "installed": "インストール済み",
+    "yes": "はい",
+    "no": "いいえ",
+    "appRoot": "アプリケーションルート",
+    "documentPath": "ドキュメントパス",
+    "php": "PHP",
+    "composerManifest": "Composer マニフェスト",
+    "found": "見つかりました",
+    "missing": "見つかりません",
+    "git": "Git",
+    "repositoryFound": "リポジトリが見つかりました",
+    "notConnected": "未接続",
+    "maintenance": "メンテナンス",
+    "enabled": "有効",
+    "disabled": "無効",
+    "schedule": "スケジュール",
+    "queue": "キュー"
+  },
+  "install": {
+    "title": "Laravel をインストール",
+    "mode": "モード",
+    "modeRemote": "リモートリポジトリをクローン",
+    "modeScaffold": "新しい Laravel プロジェクトを作成",
+    "modeLocal": "空の Git リポジトリを初期化",
+    "appRoot": "アプリケーションルート",
+    "repositoryUrl": "リポジトリ URL",
+    "repositoryUrlPlaceholder": "https://github.com/example/app.git",
+    "branch": "ブランチ",
+    "branchPlaceholder": "main",
+    "startInstall": "インストールを開始",
+    "checkInstallStatus": "インストール状況を確認"
+  },
+  "commands": {
+    "title": "Laravel コマンド",
+    "packagePlaceholder": "vendor/package",
+    "scriptPlaceholder": "スクリプト名",
+    "run": "実行"
+  },
+  "env": {
+    "title": "環境ファイル",
+    "load": ".env を読み込む",
+    "save": ".env を保存"
+  },
+  "deploy": {
+    "title": "デプロイ",
+    "deployWithMigrate": "migrate とビルドを伴うデプロイ",
+    "checkDeployStatus": "デプロイ状況を確認",
+    "disableMaintenance": "メンテナンスを無効化",
+    "enableMaintenance": "メンテナンスを有効化"
+  },
+  "workers": {
+    "title": "スケジュールとキューワーカー",
+    "queueTimeout": "キューのタイムアウト",
+    "maxJobs": "最大ジョブ数",
+    "connection": "接続",
+    "disableSchedule": "スケジュールを無効化",
+    "enableSchedule": "スケジュールを有効化",
+    "disableQueue": "キューを無効化",
+    "enableQueue": "キューを有効化"
+  },
+  "common": {
+    "save": "保存"
+  }
+}

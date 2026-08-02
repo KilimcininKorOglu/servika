@@ -1,0 +1,52 @@
+{
+  "loading": "読み込み中…",
+  "notFound": "見つかりません",
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "sshAccess": "SSH アクセス"
+  },
+  "title": "SSH アクセス",
+  "subtitle": "アカウントのシェルアクセス。",
+  "badge": {
+    "on": "SSH オン",
+    "off": "SSH オフ"
+  },
+  "toast": {
+    "accessActive": "SSH アクセスが有効です。",
+    "accessDisabled": "SSH アクセスを無効にしました。",
+    "operationFailed": "操作に失敗しました",
+    "keySaved": "SSH キーを保存しました。",
+    "keysCleared": "SSH キーをクリアしました。",
+    "keySaveFailed": "キーを保存できませんでした"
+  },
+  "shell": {
+    "title": "シェルアクセス",
+    "enabledPrefix": "有効:",
+    "disabledPrefix": "無効:",
+    "currentPrefix": "現在:",
+    "disable": "SSH を無効化",
+    "enable": "SSH を有効化",
+    "demoNotice": "デモドメインでは SSH アクセスを変更できません。"
+  },
+  "connection": {
+    "title": "接続情報",
+    "user": "ユーザー",
+    "host": "ホスト",
+    "port": "ポート",
+    "commandLabel": "接続コマンド",
+    "copy": "コピー",
+    "passwordPrefix": "パスワード:",
+    "passwordBold": "FTP アカウントと同じ",
+    "passwordSuffix": "。SSH が有効な間、自動的に同期されます。または、以下に SSH 公開鍵を追加してください。"
+  },
+  "key": {
+    "title": "SSH 公開鍵 (authorized_keys)",
+    "descPrefix": "パスワードなしでサインインするには、公開鍵を追加してください。",
+    "configured": "現在、キーが設定されています。",
+    "notConfigured": "まだキーが設定されていません。",
+    "removeHint": "空の値を保存すると、すべてのキーが削除されます。",
+    "save": "キーを保存"
+  },
+  "backToSubscription": "← サブスクリプションに戻る"
+}

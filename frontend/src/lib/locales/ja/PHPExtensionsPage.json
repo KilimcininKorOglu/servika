@@ -1,0 +1,62 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "system": "システム管理",
+    "current": "PHP 拡張機能"
+  },
+  "title": "PHP 拡張機能",
+  "subtitle": {
+    "pre": "サーバー全体の PHP 拡張機能を管理します。トグルで拡張機能を有効または無効にすると、PHP-FPM が自動的に再起動します。",
+    "bold": "サーバー全体",
+    "post": " に適用され、すべてのドメインに影響します。"
+  },
+  "removeIonCube": "⊗ IonCube を削除",
+  "installIonCube": "🔐 IonCube をインストール",
+  "installFromPecl": "📦 PECL からインストール",
+  "versionTab": "PHP {{version}}",
+  "counters": {
+    "enabled": "{{count}} 有効",
+    "inactive": "{{count}} 無効",
+    "total": "合計 {{count}}"
+  },
+  "searchPlaceholder": "🔍 拡張機能を検索...",
+  "loading": "読み込み中…",
+  "coreExtension": "コア拡張機能",
+  "toggleTitle": {
+    "core": "コア拡張機能のため、無効にできません",
+    "disable": "無効化",
+    "enable": "有効化"
+  },
+  "alerts": {
+    "coreCannotDisable": "この拡張機能は PHP のコア部分であり、無効にできません。",
+    "invalidPackage": "無効なパッケージ名です"
+  },
+  "confirm": {
+    "ionCubeInstall": "IonCube Loader が PHP {{version}} 用にインストールされます。\n\nioncube.com から tar.gz アーカイブがダウンロードされ、.so ファイルがコピーされ、zend_extension として読み込まれます。\n続行しますか?",
+    "ionCubeRemove": "IonCube Loader が PHP {{version}} から削除されます。続行しますか?",
+    "peclInstall": "PECL パッケージ「{{package}}」が PHP {{version}} 用にコンパイルおよびインストールされます。続行しますか?"
+  },
+  "success": {
+    "toggleEnabled": "✓ {{name}} を有効化 · PHP-FPM を再起動しました",
+    "toggleDisabled": "✓ {{name}} を無効化 · PHP-FPM を再起動しました",
+    "ionCubeLoaded": "✓ IonCube をインストール · 読み込み済み",
+    "ionCubeNotLoaded": "✓ IonCube をインストール · INI ファイルは書き込まれましたが、実行時に拡張機能が検出されませんでした",
+    "ionCubeRemoved": "✓ IonCube を削除しました",
+    "peclInstalled": "✓ {{package}} をインストールしました"
+  },
+  "errors": {
+    "toggleFailed": "切り替えに失敗しました",
+    "ionCubeInstallFailed": "IonCube のインストールに失敗しました",
+    "ionCubeRemoveFailed": "IonCube の削除に失敗しました",
+    "peclInstallFailed": "PECL のインストールに失敗しました"
+  },
+  "peclModal": {
+    "title": "PECL から拡張機能をインストール",
+    "descPre": "PECL リポジトリから拡張機能をダウンロードしてコンパイルします。例: ",
+    "warnPre": "⚠ 拡張機能は PHP {{version}} 用にコンパイルされます。対象: ",
+    "warnMid": " または Remi ディレクトリ",
+    "inputPlaceholder": "例: mongodb",
+    "cancel": "キャンセル",
+    "install": "インストール"
+  }
+}
