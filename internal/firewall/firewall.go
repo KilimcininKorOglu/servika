@@ -343,6 +343,7 @@ func (h *Handlers) rebuild() error {
 		return fmt.Errorf("nft apply failed: %s", strings.TrimSpace(out))
 	}
 	// 3. Persist the ruleset so panel startup can reload it after reboot.
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	_ = os.MkdirAll("/etc/nftables", 0o755)
 	_ = os.WriteFile(rulesFile, ruleset, 0o600)
 	return nil

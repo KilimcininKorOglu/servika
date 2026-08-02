@@ -387,6 +387,7 @@ func compileSieve(ctx context.Context, home string, script []byte, uid, gid int)
 		return err
 	}
 	_ = os.Chown(tmp, uid, gid)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.CommandContext(ctx, "sievec", tmp)
 	cmd.Env = subprocessEnv
 	if output, err := cmd.CombinedOutput(); err != nil {

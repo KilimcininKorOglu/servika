@@ -85,6 +85,7 @@ func (h *Handlers) Enable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := EnableDomain(r.Context(), h.DB, id); err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("enable mail domain=%d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not enable mail")
 		return
@@ -105,6 +106,7 @@ func (h *Handlers) Disable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := DisableDomain(r.Context(), h.DB, id); err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("disable mail domain=%d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not disable mail")
 		return
@@ -184,6 +186,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("read mail domain=%d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not read mail domain")
 		return
@@ -194,6 +197,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, http.StatusForbidden, le.Message)
 			return
 		}
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("mailbox quota check for domain %d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not verify plan limit")
 		return
@@ -202,6 +206,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	email := localPart + "@" + domainName
 	hash, err := HashPassword(req.Password)
 	if err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("hash mailbox password domain=%d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare mailbox password")
 		return
@@ -213,6 +218,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_ = os.Chown(maildir, uidN, gidN)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("/sbin/restorecon", "-R", maildir)
 	cmd.Env = subprocessEnv
 	_ = cmd.Run()
@@ -285,6 +291,7 @@ func (h *Handlers) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	hash, err := HashPassword(req.Password)
 	if err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("hash mailbox password domain=%d mailbox=%d: %v", id, mailboxID, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare mailbox password")
 		return

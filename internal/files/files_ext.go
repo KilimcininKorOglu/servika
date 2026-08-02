@@ -194,6 +194,7 @@ type extractReq struct {
 }
 
 func newFileCommand(ctx context.Context, name string, arguments ...string) *exec.Cmd {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.CommandContext(ctx, name, arguments...)
 	command.Env = []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
 	return command
@@ -395,6 +396,7 @@ func (h *Handlers) Archive(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	_ = os.MkdirAll(filepath.Dir(outputAbs), 0755)
 
 	// Resolve all resources beneath home and archive them with relative names.

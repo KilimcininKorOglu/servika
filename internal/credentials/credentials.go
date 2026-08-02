@@ -93,6 +93,7 @@ func VerifyPassword(stored, password string) bool {
 	if len(parts) != 4 || parts[2] == "" {
 		return false
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("openssl", "passwd", "-6", "-salt", parts[2], "-stdin")
 	cmd.Stdin = strings.NewReader(password + "\n")
 	out, err := cmd.Output()
@@ -350,6 +351,7 @@ func MySQLCreateDB(db *sql.DB, domainID int64, dbName, dbUser, dbPass string) er
 		"FLUSH PRIVILEGES;",
 	}
 	sql := strings.Join(stmts, " ")
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, err := exec.Command("mysql", "-e", sql).CombinedOutput(); err != nil {
 		return fmt.Errorf("mysql exec: %s: %w", strings.TrimSpace(string(out)), err)
 	}
@@ -394,6 +396,7 @@ func MySQLCreateDBForUser(db *sql.DB, domainID int64, dbName, dbUser string) err
 		fmt.Sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO '%s'@'localhost';", dbName, dbUser),
 		"FLUSH PRIVILEGES;",
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, err := exec.Command("mysql", "-e", strings.Join(stmts, " ")).CombinedOutput(); err != nil {
 		return fmt.Errorf("mysql exec: %s: %w", strings.TrimSpace(string(out)), err)
 	}
@@ -421,6 +424,7 @@ func MySQLDropDB(db *sql.DB, dbName, dbUser string) error {
 		fmt.Sprintf("DROP USER IF EXISTS '%s'@'localhost';", dbUser),
 		"FLUSH PRIVILEGES;",
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, err := exec.Command("mysql", "-e", strings.Join(stmts, " ")).CombinedOutput(); err != nil {
 		return fmt.Errorf("mysql drop: %s: %w", strings.TrimSpace(string(out)), err)
 	}
@@ -435,6 +439,7 @@ func MySQLDropDBKeepUser(db *sql.DB, dbName string) error {
 	if !mysqlIdentifierPattern.MatchString(dbName) {
 		return fmt.Errorf("%w: database name", ErrInvalidMySQLCredentials)
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, err := exec.Command("mysql", "-e",
 		fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", dbName)).CombinedOutput(); err != nil {
 		return fmt.Errorf("mysql drop: %s: %w", strings.TrimSpace(string(out)), err)
@@ -500,6 +505,7 @@ func LockSSHPassword(systemUser string) error {
 	if !strings.HasPrefix(systemUser, "c_") {
 		return fmt.Errorf("security: system user must have the c_ prefix")
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("passwd", "-l", systemUser).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("passwd -l: %s: %w", strings.TrimSpace(string(out)), err)

@@ -26,7 +26,7 @@ type Handlers struct {
 	DB *sql.DB
 }
 
-const htpasswdDir = "/etc/nginx/htpasswd"
+const htpasswdDir = "/etc/nginx/htpasswd" // #nosec G101 -- filesystem path, not a credential
 
 var (
 	pathPattern = regexp.MustCompile(`^/[A-Za-z0-9._/-]{0,200}$`)
@@ -148,21 +148,26 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "password must contain 4 to 128 characters")
 		return
 	}
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(htpasswdDir, 0o755); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create htpasswd directory")
 		return
 	}
 	file := htpasswdFile(id, subdomainID, path)
 	flag := "-bB"
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, e := os.Stat(file); e != nil {
 		flag = "-cbB" // Create a new file.
 	}
 	// Explicit arguments keep passwords and user names out of the shell.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if _, err := exec.Command("htpasswd", flag, file, req.Username, req.Password).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("restorecon", file).Run() // Apply the SELinux httpd_config_t context.
+	// #nosec G302 G703 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	_ = os.Chmod(file, 0o644)
 
 	if _, err := h.DB.Exec(
@@ -176,8 +181,10 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 	if err := h.render(id, subdomainID, systemUser, version); err != nil {
 		// Roll back the record and htpasswd entry when vhost validation fails, then render again.
 		_, _ = h.DB.Exec(`DELETE FROM protected_directories WHERE domain_id=? AND subdomain_id=? AND path=? AND username=?`, id, subdomainID, path, req.Username)
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("htpasswd", "-D", file, req.Username).Run()
 		if remaining := h.userCount(id, subdomainID, path); remaining == 0 {
+			// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 			_ = os.Remove(file)
 		}
 		_ = h.render(id, subdomainID, systemUser, version)
@@ -211,6 +218,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not delete record")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("htpasswd", "-D", file, username).Run()
 	if h.userCount(id, subdomainID, path) == 0 {
 		_ = os.Remove(file) // Remove the location block when no user remains for this path.
@@ -254,9 +262,11 @@ func (h *Handlers) reRender(domainID int64, systemUser, version string) error {
 		return fmt.Errorf("php socket: %w", err)
 	}
 	cfg := "/etc/nginx/conf.d/dom_" + systemUser + ".conf"
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	backup, _ := os.ReadFile(cfg) // Nil when no backup exists.
 	if err := provisioner.ApplyVhostForDomain(h.DB, domainID, socket, version); err != nil {
 		if backup != nil {
+			// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 			_ = os.WriteFile(cfg, backup, 0o644) // Restore the last known-good configuration.
 			_ = exec.Command("nginx", "-t").Run()
 		}

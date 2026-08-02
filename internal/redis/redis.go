@@ -39,6 +39,7 @@ func adminPass() string { return os.Getenv("SERVIKA_REDIS_ADMIN_PASS") }
 
 // cli runs valkey-cli with the admin password in REDISCLI_AUTH rather than argv.
 func cli(args ...string) (string, error) {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("valkey-cli", args...)
 	cmd.Env = []string{
 		"REDISCLI_AUTH=" + adminPass(),
@@ -88,6 +89,7 @@ func wpBin() string { return config.WPCLIBin() }
 func runWPCommand(systemUser string, args ...string) ([]byte, error) {
 	full := append([]string{"-u", systemUser, "--", "env", "HOME=/home/" + systemUser,
 		"/usr/bin/php", "-d", "memory_limit=512M", wpBin()}, args...)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	return exec.Command("runuser", full...).CombinedOutput()
 }
 
@@ -104,6 +106,7 @@ func wpDirectories(systemUser string) []string {
 	}
 	var out []string
 	for _, d := range candidates {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		if _, err := os.Stat(filepath.Join(d, "wp-config.php")); err == nil {
 			out = append(out, d)
 		}
@@ -143,6 +146,7 @@ func connectWordPress(systemUser, password string) int {
 		// Install the drop-in directly to avoid the FLUSHDB performed by wp redis enable.
 		src := filepath.Join(dir, "wp-content/plugins/redis-cache/includes/object-cache.php")
 		dst := filepath.Join(dir, "wp-content/object-cache.php")
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		if _, err := exec.Command("runuser", "-u", systemUser, "--", "cp", "-f", src, dst).CombinedOutput(); err != nil {
 			continue
 		}
@@ -158,6 +162,7 @@ func connectWordPress(systemUser, password string) int {
 // It does not use `wp redis disable`, which may attempt FLUSHDB, so the drop-in is removed directly.
 func disconnectWordPress(systemUser string) {
 	for _, dir := range wpDirectories(systemUser) {
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_, _ = exec.Command("runuser", "-u", systemUser, "--", "rm", "-f",
 			filepath.Join(dir, "wp-content/object-cache.php")).CombinedOutput()
 		for _, key := range []string{"WP_REDIS_HOST", "WP_REDIS_PORT", "WP_REDIS_USERNAME",
@@ -240,6 +245,7 @@ func (h *Handlers) Open(w http.ResponseWriter, r *http.Request) {
 		 ON DUPLICATE KEY UPDATE system_user=VALUES(system_user), redis_pass=VALUES(redis_pass), enabled=1`,
 		id, systemUser, password); err != nil {
 		if err := disableUser(systemUser); err != nil { // Roll back the ACL if the database write fails.
+			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("redis enable rollback ACL user %s: %v", systemUser, err)
 		}
 		httpx.WriteError(w, http.StatusInternalServerError, "redis settings could not be saved")
@@ -262,11 +268,13 @@ func (h *Handlers) Close(w http.ResponseWriter, r *http.Request) {
 	}
 	disconnectWordPress(systemUser) // Remove the WordPress drop-in while the credentials are still valid.
 	if err := disableUser(systemUser); err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("redis disable ACL user %s: %v", systemUser, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not revoke Redis credentials")
 		return
 	}
 	if _, err := h.DB.ExecContext(r.Context(), `DELETE FROM domain_redis WHERE domain_id=?`, id); err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("redis delete domain_redis row %d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not update Redis state")
 		return

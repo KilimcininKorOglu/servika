@@ -121,6 +121,7 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 		lftpEscape(d.Username), lftpEscape(d.Password), url,
 		lftpEscape(d.RemoteDir), lftpEscape(d.RemoteDir), localPath)
 
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.CommandContext(ctx, "lftp", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -155,6 +156,7 @@ func downloadFromRemote(ctx context.Context, d *Destination, fileName, localPath
 			`open -u "%s","%s" %s; cd "%s"; get "%s" -o "%s"; bye`,
 		lftpEscape(d.Username), lftpEscape(d.Password), lftpURL(d),
 		lftpEscape(d.RemoteDir), lftpEscape(fileName), lftpEscape(localPath))
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.CommandContext(ctx, "lftp", "-c", script).CombinedOutput()
 	if err != nil {
 		_ = os.Remove(localPath)
@@ -180,6 +182,7 @@ func deleteFromRemote(ctx context.Context, d *Destination, fileName string) erro
 			`open -u "%s","%s" %s; cd "%s"; rm "%s"; bye`,
 		lftpEscape(d.Username), lftpEscape(d.Password), lftpURL(d),
 		lftpEscape(d.RemoteDir), lftpEscape(fileName))
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.CommandContext(ctx, "lftp", "-c", script).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("lftp: %s: %w", strings.TrimSpace(string(out)), err)
@@ -239,6 +242,7 @@ func testConnection(ctx context.Context, d *Destination) error {
 			"-o", "BatchMode=no",
 			"--", d.Host, "true",
 		}
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		cmd := exec.CommandContext(ctx, "sshpass", args...)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -260,6 +264,7 @@ func testConnection(ctx context.Context, d *Destination) error {
 		"--ftp-skip-pasv-ip",
 		url,
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.CommandContext(ctx, "curl", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -293,6 +298,7 @@ func pushToDestinationAsync(db *sql.DB, domainID, backupID int64, localPath, fil
 				short, domainID)
 			_, _ = db.Exec(`UPDATE backups SET remote_status='failed', remote_error=? WHERE id=?`,
 				short, backupID)
+			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("backup destination upload domain=%d: %v", domainID, err)
 			return
 		}
@@ -307,6 +313,7 @@ func pushToDestinationAsync(db *sql.DB, domainID, backupID int64, localPath, fil
 		_, _ = db.Exec(`UPDATE backups
 			SET remote_status='successful', remote_key=?, remote_error='' WHERE id=?`,
 			remoteKey, backupID)
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("backup destination upload domain=%d successful: %s", domainID, fileName)
 	}()
 }

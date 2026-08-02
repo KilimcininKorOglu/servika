@@ -217,6 +217,7 @@ func generateSelfSigned(domain string) (certPath, keyPath string, err error) {
 		"-subj", subj,
 		"-addext", "subjectAltName=" + strings.Join(sanNames, ","),
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, e := exec.Command("openssl", args...).CombinedOutput(); e != nil {
 		return "", "", fmt.Errorf("openssl: %s: %w", strings.TrimSpace(string(out)), e)
 	}
@@ -325,6 +326,7 @@ func HealSSLVhost443OnStartup() {
 		if _, isAddon := addonDomainInfo(x.domainName); isAddon {
 			vpath = addonVhostConfigPath(x.systemUser, x.domainName)
 		}
+		// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 		data, rerr := os.ReadFile(vpath)
 		has443 := rerr == nil && strings.Contains(string(data), "listen 443")
 		certPresent := certFileExists(x.cert) && certFileExists(x.key)

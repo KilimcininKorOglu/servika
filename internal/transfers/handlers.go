@@ -40,6 +40,7 @@ const MaxUploadBytes = int64(20 << 30)
 const commandPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 func newTransferCommand(ctx context.Context, name string, arguments ...string) *exec.Cmd {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.CommandContext(ctx, name, arguments...)
 	command.Env = []string{"PATH=" + commandPath, "HOME=/root"}
 	return command
@@ -140,6 +141,7 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, MaxUploadBytes)
+	// #nosec G120 -- body is bounded by MaxBytesReader above, so parsing cannot exhaust memory.
 	if err := r.ParseMultipartForm(8 << 20); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "could not read the upload or the size limit was exceeded")
 		return
@@ -167,6 +169,7 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "could not save the archive")
 		return
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	src, err := os.Open(tmpPath)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not open the archive")
@@ -554,6 +557,7 @@ func (h *Handlers) restoreWeb(ctx context.Context, archivePath, root, sk string)
 	if out, err := newTransferCommand(ctx, "find", target, "-mindepth", "1", "-delete").CombinedOutput(); err != nil {
 		return fmt.Errorf("clearing target: %s", strings.TrimSpace(string(out)))
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.Open(archivePath)
 	if err != nil {
 		return err
@@ -586,6 +590,7 @@ func (h *Handlers) restoreDatabases(ctx context.Context, archivePath, root strin
 	if len(targets) == 0 {
 		return nil
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.Open(archivePath)
 	if err != nil {
 		return err
@@ -746,6 +751,7 @@ func (h *Handlers) restoreMailboxes(ctx context.Context, archivePath, root, sour
 		return errors.New("unsafe target")
 	}
 	target := "/home/" + sk + "/mail"
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.Open(archivePath)
 	if err != nil {
 		return err
@@ -849,6 +855,7 @@ func readSmallTarMembers(archivePath string, wants []string) (map[string][]byte,
 	if len(wanted) == 0 {
 		return found, nil
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.Open(archivePath)
 	if err != nil {
 		return nil, err

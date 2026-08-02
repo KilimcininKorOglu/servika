@@ -47,6 +47,7 @@ func InstallImportedSSL(domainName string, certPEM, keyPEM []byte) (string, stri
 	}
 
 	sslDir := certSystemDir(domainName)
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(sslDir, 0o755); err != nil {
 		return "", "", time.Time{}, err
 	}

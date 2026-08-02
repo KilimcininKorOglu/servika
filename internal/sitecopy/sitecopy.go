@@ -88,6 +88,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	home := "/home/" + systemUser
 	source := home + "/public_html"
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(source); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "public_html not found")
 		return
@@ -97,27 +98,34 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	copyDir := home + "/copies"
+	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(copyDir, 0o711); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create copies directory")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("chown", systemUser+":"+systemUser, copyDir).Run() // Assign the copies directory to the customer.
 	name := "copy_" + time.Now().Format("20060102_150405")
 	target := copyDir + "/" + name + "/public_html"
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer cancel()
+	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(target, 0o755); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create target")
 		return
 	}
 	// The trailing slash makes rsync copy directory contents. Omit --delete to keep the operation non-destructive.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if _, err := exec.CommandContext(ctx, "rsync", "-a", "--no-owner", "--no-group", source+"/", target+"/").CombinedOutput(); err != nil {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		_ = os.RemoveAll(copyDir + "/" + name)
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
 	// Assign ownership to the domain user.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, copyDir+"/"+name).Run()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("restorecon", "-R", copyDir+"/"+name).Run()
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "name": name, "size_mb": dirSizeMB(copyDir + "/" + name)})
 }
@@ -159,6 +167,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func dirSizeBytes(p string) int64 {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("du", "-sb", p).Output()
 	if err != nil {
 		return 0

@@ -21,6 +21,7 @@ import (
 const restoreCommandPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 func newRestoreCommand(ctx context.Context, name string, arguments ...string) *exec.Cmd {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.CommandContext(ctx, name, arguments...)
 	command.Env = []string{"PATH=" + restoreCommandPath, "HOME=/root"}
 	return command
@@ -129,6 +130,7 @@ func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if dumpPath != "" {
+		// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 		dump, err := os.Open(dumpPath)
 		if err != nil {
 			databaseImport = "failed"

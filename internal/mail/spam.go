@@ -42,6 +42,7 @@ func (h *Handlers) SpamGet(w http.ResponseWriter, r *http.Request) {
 	}
 	s, found, err := readSpamSettings(r.Context(), h.DB, id)
 	if err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("read spam settings domain=%d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not read spam settings")
 		return
@@ -79,6 +80,7 @@ func (h *Handlers) SpamPut(w http.ResponseWriter, r *http.Request) {
 
 	old, oldFound, err := readSpamSettings(r.Context(), h.DB, id)
 	if err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("read spam settings domain=%d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not read spam settings")
 		return
@@ -183,10 +185,12 @@ domain_%d {
 // writeRspamdSettings atomically installs the candidate config, validates it with
 // rspamadm, reloads the service, and rolls back to the previous file on any failure.
 func writeRspamdSettings(content []byte) error {
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll("/etc/rspamd/local.d", 0o755); err != nil {
 		return err
 	}
 	tmp := rspamdSettingsPath + ".new"
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(tmp, content, 0o640); err != nil {
 		return err
 	}
@@ -196,13 +200,16 @@ func writeRspamdSettings(content []byte) error {
 		return err
 	}
 	rollback := func() {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		if previousErr == nil {
+			// #nosec G306 G703 -- root-owned rspamd config file its daemon must read; fixed system path, no tenant input, no secret.
 			_ = os.WriteFile(rspamdSettingsPath, previous, 0o644)
 		} else {
 			_ = os.Remove(rspamdSettingsPath)
 		}
 	}
 	// The Rspamd systemd unit reads the configuration as an unprivileged user.
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	if err := os.Chmod(rspamdSettingsPath, 0o644); err != nil {
 		rollback()
 		return err

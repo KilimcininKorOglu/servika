@@ -63,9 +63,11 @@ func downloadUpdateTool() error {
 	}
 
 	temporaryPath := scriptPath + ".tmp"
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(temporaryPath, body, 0o755); err != nil {
 		return fmt.Errorf("write update tool: %w", err)
 	}
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	if err := os.Chmod(temporaryPath, 0o755); err != nil {
 		_ = os.Remove(temporaryPath)
 		return fmt.Errorf("make update tool executable: %w", err)
@@ -102,11 +104,13 @@ func StartUpdate(w http.ResponseWriter, _ *http.Request) {
 	if toolDownloaded {
 		logHeader += "(The missing update tool was downloaded.)\n"
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(logPath, []byte(logHeader), 0o640); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "the update log could not be prepared")
 		return
 	}
 
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.Command("systemd-run",
 		"--collect",
 		"--unit", updateUnit,

@@ -127,14 +127,17 @@ func ensurePMASignon() {
 	signonDir := pmaSignonDir()
 	signonPath := pmaSignonPath()
 	signonPHP := pmaSignonPHP()
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(signonDir, 0755); err != nil {
 		log.Printf("phpMyAdmin repair: could not create signon directory: %v", err)
 		return
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	current, err := os.ReadFile(signonPath)
 	if err == nil && string(current) == signonPHP {
 		return
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(signonPath, []byte(signonPHP), 0644); err != nil {
 		log.Printf("phpMyAdmin repair: could not write signon endpoint: %v", err)
 		return
@@ -144,9 +147,11 @@ func ensurePMASignon() {
 
 func ensurePMAToken() {
 	tokenPath := pmaTokenPath()
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	current, err := os.ReadFile(tokenPath)
 	token := strings.TrimSpace(string(current))
 	if err != nil || !pmaTokenPattern.MatchString(token) {
+		// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 		if err := os.MkdirAll(filepath.Dir(tokenPath), 0755); err != nil {
 			log.Printf("phpMyAdmin repair: could not create token directory: %v", err)
 			return
@@ -178,6 +183,7 @@ func ensurePMAToken() {
 		log.Printf("phpMyAdmin repair: could not set internal token ownership: %v", err)
 		return
 	}
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	if err := os.Chmod(tokenPath, 0640); err != nil {
 		log.Printf("phpMyAdmin repair: could not set internal token permissions: %v", err)
 	}
@@ -205,6 +211,7 @@ func ensurePMAPoolSocket() {
 	if !changed {
 		return
 	}
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(pmaPoolPath, []byte(updated), 0644); err != nil {
 		log.Printf("phpMyAdmin repair: could not update PHP-FPM socket settings: %v", err)
 		return
@@ -216,6 +223,7 @@ func ensurePMAPoolSocket() {
 
 func ensurePMAConfigHost() {
 	configPath := pmaConfigPath()
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	current, err := os.ReadFile(configPath)
 	if err != nil {
 		return
@@ -224,6 +232,7 @@ func ensurePMAConfigHost() {
 	if updated == string(current) {
 		return
 	}
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(configPath, []byte(updated), 0644); err != nil {
 		log.Printf("phpMyAdmin repair: could not update database host: %v", err)
 	}

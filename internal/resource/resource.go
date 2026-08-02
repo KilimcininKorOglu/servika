@@ -54,6 +54,7 @@ type Handlers struct {
 
 // duMB returns the home directory's disk usage in megabytes.
 func duMB(home string) int64 {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("du", "-sm", home).CombinedOutput()
 	if err != nil {
 		return 0
@@ -181,6 +182,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 	_ = h.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM dns_records WHERE domain_id=?`, id).Scan(&o.DNSRecordCount)
 
 	// Count jobs in the user's host crontab.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, err := exec.Command("crontab", "-u", o.SystemUser, "-l").CombinedOutput(); err == nil {
 		for ln := range strings.SplitSeq(string(out), "\n") {
 			s := strings.TrimSpace(ln)

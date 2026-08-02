@@ -35,6 +35,7 @@ var serviceAllowlist = []serviceDefinition{
 }
 
 var runSystemctl = func(args ...string) string {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	output, _ := exec.Command("systemctl", args...).CombinedOutput()
 	return string(output)
 }

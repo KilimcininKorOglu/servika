@@ -356,20 +356,25 @@ func ApplyToFilesystem(systemUser, version string, s Settings) (socket string, e
 		old := filepath.Join(other.PoolDir, systemUser+".conf")
 		if _, err := os.Stat(old); err == nil {
 			_ = os.Remove(old)
+			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 			_, _ = exec.Command("systemctl", "reload-or-restart", other.Service).CombinedOutput()
 		}
 	}
 
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	_ = os.MkdirAll(sb.PoolDir, 0755)
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	_ = os.MkdirAll(sb.SockDir, 0755)
 	body, err := RenderPool(systemUser, sb.SockDir, s)
 	if err != nil {
 		return "", err
 	}
 	poolPath := filepath.Join(sb.PoolDir, systemUser+".conf")
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(poolPath, []byte(body), 0644); err != nil {
 		return "", err
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, err := exec.Command("systemctl", "reload-or-restart", sb.Service).CombinedOutput(); err != nil {
 		return "", fmt.Errorf("php-fpm reload (%s): %s: %w", sb.Service, strings.TrimSpace(string(out)), err)
 	}
@@ -544,6 +549,7 @@ func (h *Handlers) GetDebugLog(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, openErr := os.Open(p)
 	if openErr != nil {
 		// File missing or unreadable -- debug may never have been triggered.

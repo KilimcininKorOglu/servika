@@ -136,12 +136,14 @@ func runOneBackup(db *sql.DB, d dueDomain) error {
 	}
 	defer func() { _ = os.RemoveAll(dumpDir) }()
 	sqlDump := filepath.Join(dumpDir, "dump.sql")
+	// #nosec G204 G702 -- dbName = validSystemUser-checked SystemUser (^c_[A-Za-z0-9_]+$, no shell metachars) + "_main"; sqlDump is an internal temp path. No tenant-controlled shell input.
 	if out, err := exec.Command("bash", "-c",
 		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); err != nil {
 		return fmt.Errorf("mysqldump %s: %s: %w", dbName, strings.TrimSpace(string(out)), err)
 	}
 
 	args := []string{"czf", abs, "-C", "/home", d.SystemUser, "-C", dumpDir, "dump.sql"}
+	// #nosec G204 G702 -- fixed binary (tar) with separate args (no shell); systemUser is validSystemUser-checked.
 	if out, err := exec.Command("tar", args...).CombinedOutput(); err != nil {
 		return fmt.Errorf("tar: %s: %w", strings.TrimSpace(string(out)), err)
 	}

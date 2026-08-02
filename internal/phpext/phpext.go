@@ -204,6 +204,7 @@ func (h *Handlers) Toggle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// FPM reload
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if _, err := exec.Command("systemctl", "reload-or-restart", s.Service).CombinedOutput(); err != nil {
 		// Restore the original name when reload fails.
 		_ = os.Rename(newPath, currentPath)
@@ -267,6 +268,7 @@ func (h *Handlers) PECLInstall(w http.ResponseWriter, r *http.Request) {
 
 	dnfPkg := ""
 	for _, name := range candidates {
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		if exec.Command("dnf", "info", "--quiet", name).Run() == nil {
 			dnfPkg = name
 			break
@@ -283,6 +285,7 @@ func (h *Handlers) PECLInstall(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// FPM reload
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_, _ = exec.Command("systemctl", "reload-or-restart", s.Service).CombinedOutput()
 		httpx.WriteJSON(w, http.StatusCreated, map[string]any{
 			"ok":      true,
@@ -299,6 +302,7 @@ func (h *Handlers) PECLInstall(w http.ResponseWriter, r *http.Request) {
 			"no prebuilt DNF package is available and PECL is not installed")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command(s.PECLBin, "install", "-f", req.Package)
 	cmd.Env = peclEnvironment(s.PHPBin)
 	_, err := cmd.CombinedOutput()
@@ -312,12 +316,14 @@ func (h *Handlers) PECLInstall(w http.ResponseWriter, r *http.Request) {
 	// install while the extension never loads, so surface it.
 	iniPath := filepath.Join(s.IniDir, "50-"+req.Package+".ini")
 	if _, err := os.Stat(iniPath); err != nil {
+		// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		if werr := os.WriteFile(iniPath, []byte("extension="+req.Package+".so\n"), 0644); werr != nil {
 			httpx.WriteError(w, http.StatusInternalServerError,
 				"extension built but its configuration could not be written")
 			return
 		}
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, err := exec.Command("systemctl", "reload-or-restart", s.Service).CombinedOutput(); err != nil {
 		log.Printf("php-fpm reload after PECL install %s: %v: %s", req.Package, err, strings.TrimSpace(string(out)))
 		httpx.WriteError(w, http.StatusInternalServerError,
@@ -348,6 +354,7 @@ func (h *Handlers) PECLRemove(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "unsupported version")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command(s.PECLBin, "uninstall", req.Package)
 	cmd.Env = peclEnvironment(s.PHPBin)
 	_, _ = cmd.CombinedOutput()
@@ -360,6 +367,7 @@ func (h *Handlers) PECLRemove(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("systemctl", "reload-or-restart", s.Service).CombinedOutput()
 
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{

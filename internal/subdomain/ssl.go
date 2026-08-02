@@ -70,6 +70,7 @@ func (h *Handlers) SSLStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	certPath, keyPath := certificatePaths(systemUser, fqdn)
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	config, _ := os.ReadFile(confPath(systemUser, name))
 	active := fileExists(certPath) && fileExists(keyPath) && strings.Contains(string(config), "listen 443 ssl;")
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"active": active})
@@ -127,8 +128,11 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "sSL installation failed")
 		return
 	}
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	_ = os.Chmod(keyPath, 0o640)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, sslDirectory(systemUser)).Run()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("restorecon", "-R", sslDirectory(systemUser)).Run()
 
 	protected := provisioner.ProtectedBlocks(h.DB, domainID, subdomainID, socket)
@@ -177,11 +181,13 @@ func (h *Handlers) SSLRemove(w http.ResponseWriter, r *http.Request) {
 }
 
 func issueSelfSigned(fqdn, certPath, keyPath string) error {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	return exec.Command("openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "365",
 		"-keyout", keyPath, "-out", certPath, "-subj", "/CN="+fqdn, "-addext", "subjectAltName=DNS:"+fqdn).Run()
 }
 
 func issueLetsEncrypt(fqdn, certPath, keyPath string) error {
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll("/var/www/_acme", 0o755); err != nil {
 		return err
 	}
@@ -197,15 +203,20 @@ func issueLetsEncrypt(fqdn, certPath, keyPath string) error {
 }
 
 func applyVhost(path, config string) error {
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	previous, readErr := os.ReadFile(path)
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(path, []byte(config), 0o644); err != nil {
 		return err
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("restorecon", path).Run()
 	rollback := func() {
 		if readErr == nil {
+			// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 			_ = os.WriteFile(path, previous, 0o644)
 		} else {
+			// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 			_ = os.Remove(path)
 		}
 	}

@@ -99,6 +99,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	// ownership check does not work here — an unfiltered list would already leak
 	// every tenant name.
 	cond, arg := middleware.ScopeSQL(r, "d")
+	// #nosec G701 G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via arg placeholders.
 	rows, err := h.DB.QueryContext(r.Context(), selectAll+cond+" ORDER BY d.id DESC", arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "database operation failed")
@@ -296,6 +297,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		log.Printf("DNS WriteZone %q error: %v", req.DomainName, err)
 	}
 
+	// #nosec G118 -- intentional detached context: the request ends before this background cgroup write finishes; the request context would cancel it mid-write.
 	go func(domainID int64) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
@@ -395,6 +397,7 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	// These domain-owned tables have a domain_id index but no ON DELETE CASCADE, so
 	// their rows would be orphaned after the domain is deleted. Remove them explicitly.
 	for _, table := range []string{"protected_directories", "av_findings", "av_scans", "subdomains"} {
+		// #nosec G202 -- table names come from this fixed literal whitelist, never user input; domain_id is bound.
 		if _, err := h.DB.ExecContext(r.Context(),
 			"DELETE FROM "+table+" WHERE domain_id=?", id); err != nil {
 			log.Printf("%s cleanup warn (%d): %v", table, id, err)
@@ -923,6 +926,7 @@ func (h *Handlers) CreateDatabase(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Governor/limits: apply plan limits to the new database user in the background, best-effort.
+	// #nosec G118 -- intentional detached context: the request ends before this background cgroup write finishes; the request context would cancel it mid-write.
 	go func(domainID int64) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
@@ -1007,6 +1011,7 @@ func (h *Handlers) BulkOwner(w http.ResponseWriter, r *http.Request) {
 		placeholders[i] = "?"
 		args = append(args, id)
 	}
+	// #nosec G202 -- only literal "?" placeholders are joined into the IN clause; all IDs are bound via args.
 	sql := `UPDATE domains SET customer_id=? WHERE id IN (` + strings.Join(placeholders, ",") + `)`
 	res, err := h.DB.ExecContext(r.Context(), sql, args...)
 	if err != nil {
@@ -1043,6 +1048,7 @@ func (h *Handlers) BulkStatus(w http.ResponseWriter, r *http.Request) {
 		placeholders[i] = "?"
 		args = append(args, id)
 	}
+	// #nosec G202 -- only literal "?" placeholders are joined into the IN clause; all IDs are bound via args.
 	sql := `UPDATE domains SET status=? WHERE id IN (` + strings.Join(placeholders, ",") + `)`
 	res, err := h.DB.ExecContext(r.Context(), sql, args...)
 	if err != nil {

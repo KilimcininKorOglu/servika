@@ -15,6 +15,7 @@ import (
 
 func queueProps(unit string) map[string]string {
 	props := map[string]string{}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("systemctl", "show", "-p", "ActiveState", "-p", "SubState", "-p", "NRestarts", unit).Output()
 	if err != nil {
 		return props
@@ -38,8 +39,11 @@ func monitorQueue(unit string) (string, bool) {
 
 func ensureLogDir(systemUser string) {
 	dir := "/home/" + systemUser + "/" + logSubdir
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(dir); err != nil {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		_ = os.MkdirAll(dir, 0750)
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("chown", systemUser+":"+systemUser, dir).Run()
 	}
 }
@@ -74,6 +78,7 @@ func (h *Handlers) Schedule(w http.ResponseWriter, r *http.Request) {
 		logFile := "/home/" + systemUser + "/" + logSubdir + "/laravel-schedule.log"
 		line := fmt.Sprintf("* * * * * %s %s %s/artisan schedule:run >> %s 2>&1\n", systemUser, phpBin(phpVersion), appDir, logFile)
 		body := "# Servika Laravel Toolkit schedule for domain " + fmt.Sprint(id) + "\nPATH=" + systemPath + "\n" + line
+		// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		if err := os.WriteFile(path, []byte(body), 0644); err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "cron write failed")
 			return
@@ -137,9 +142,12 @@ func (h *Handlers) Queue(w http.ResponseWriter, r *http.Request) {
 	defer lockDomain(id)()
 	unit := queueUnitName(id) + ".service"
 	if !req.Enabled {
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("systemctl", "disable", "--now", unit).Run()
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		_ = os.Remove(queueUnitPath(id))
 		_ = exec.Command("systemctl", "daemon-reload").Run()
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("systemctl", "reset-failed", unit).Run()
 		_, _ = h.DB.ExecContext(r.Context(), `UPDATE cp_laravel_apps SET queue_enabled=0 WHERE domain_id=?`, id)
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "queue_enabled": false})
@@ -164,11 +172,13 @@ func (h *Handlers) Queue(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid connection name")
 		return
 	}
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(queueUnitPath(id), []byte(queueUnit(id, systemUser, appDir, phpBin(phpVersion), conn, req.Timeout, req.MaxJobs)), 0644); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "unit write failed")
 		return
 	}
 	_ = exec.Command("systemctl", "daemon-reload").Run()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if err := exec.Command("systemctl", "enable", "--now", unit).Run(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "worker start failed")
 		return

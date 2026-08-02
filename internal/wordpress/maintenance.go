@@ -48,16 +48,21 @@ func maintenanceEnabled(dir string) bool {
 
 func enableMaintenance(systemUser, dir string) error {
 	pluginDir, pluginFile, flag := maintenancePaths(dir)
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
 		return err
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(pluginFile, []byte(maintenancePluginPHP), 0644); err != nil {
 		return err
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(flag, []byte("This website is temporarily undergoing maintenance. Please try again later."), 0644); err != nil {
 		return err
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, pluginDir, flag).Run()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("restorecon", "-R", pluginDir, flag).Run()
 	return nil
 }

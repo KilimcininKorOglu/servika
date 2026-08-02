@@ -38,14 +38,17 @@ func brandAssets() map[string][]byte {
 // EnsureBrandAssets writes the animation assets into the shared directory
 // (idempotent — untouched when the content is unchanged). Called from Init.
 func EnsureBrandAssets() {
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(errorPageDir, 0o755); err != nil {
 		return
 	}
 	for name, content := range brandAssets() {
 		path := filepath.Join(errorPageDir, name)
+		// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 		if existing, err := os.ReadFile(path); err == nil && string(existing) == string(content) {
 			continue
 		}
+		// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(path, content, 0o644)
 	}
 }

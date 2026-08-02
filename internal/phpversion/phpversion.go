@@ -188,6 +188,7 @@ func dnfProbeCore(pkg string, timeout time.Duration) (available bool, checked bo
 
 // systemCommandContext creates a privileged command without inheriting panel secrets.
 func systemCommandContext(ctx context.Context, name string, arguments ...string) *exec.Cmd {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.CommandContext(ctx, name, arguments...)
 	command.Env = []string{
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
@@ -415,6 +416,7 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 
 	// Create the pool directory and default www.conf when absent.
 	pd, _, svc, _ := paths(m)
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	_ = os.MkdirAll(pd, 0755)
 	// Enable www.conf.disabled for Remi when present.
 	if m.Resource == "remi" {
@@ -432,7 +434,9 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	if m.Resource == "remi" {
 		phpdDir = "/etc/opt/remi/php" + m.Code + "/php.d"
 	}
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(phpdDir, 0755); err == nil {
+		// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(filepath.Join(phpdDir, "99-servika-input.ini"),
 			[]byte("; Servika: supports large forms and imports (phpMyAdmin, WordPress)\nmax_input_vars = 10000\n"), 0644)
 	}

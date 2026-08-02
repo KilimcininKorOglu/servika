@@ -25,6 +25,7 @@ type DNSSECStatus struct {
 }
 
 func dnsCommand(ctx context.Context, name string, args ...string) *exec.Cmd {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.CommandContext(ctx, name, args...)
 	command.Env = []string{
 		"PATH=/usr/sbin:/usr/bin:/sbin:/bin",

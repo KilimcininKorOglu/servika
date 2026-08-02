@@ -82,6 +82,7 @@ func resourceCommand(name string, args ...string) *exec.Cmd {
 }
 
 func resourceCommandContext(ctx context.Context, name string, args ...string) *exec.Cmd {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.CommandContext(ctx, name, args...)
 	command.Env = []string{
 		"PATH=/usr/sbin:/usr/bin:/sbin:/bin",
@@ -127,6 +128,7 @@ IOWeight=%d
 		nonzero(l.IOWeight, 100),
 		ioSliceLines(l))
 
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(slicePath(systemUser), []byte(content), 0644); err != nil {
 		return fmt.Errorf("write slice: %w", err)
 	}
@@ -213,6 +215,7 @@ func clearKernelIOLimits(systemUser string, l Limits) {
 		return
 	}
 	ioMaxPath := filepath.Join("/sys/fs/cgroup", controlGroup, "io.max")
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	data, err := os.ReadFile(ioMaxPath)
 	if err != nil {
 		return
@@ -223,6 +226,7 @@ func clearKernelIOLimits(systemUser string, l Limits) {
 		if len(fields) == 0 {
 			continue
 		}
+		// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(ioMaxPath, []byte(fields[0]+suffix), 0644)
 	}
 }
@@ -330,12 +334,14 @@ const quotaRebootSentinel = quotaSentinelDir + "/reboot-required-quota"
 // os.WriteFile = O_WRONLY|O_CREATE|O_TRUNC, 0644, root. Content = description +
 // RFC3339 timestamp.
 func quotaSentinelWrite() {
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(quotaSentinelDir, 0755); err != nil {
 		log.Printf("quota sentinel: could not create directory (%s): %v", quotaSentinelDir, err)
 		return
 	}
 	body := "disk quota inactive — rootflags=uquota + reboot required\n" +
 		time.Now().Format(time.RFC3339) + "\n"
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(quotaRebootSentinel, []byte(body), 0644); err != nil {
 		log.Printf("quota sentinel write failed (%s): %v", quotaRebootSentinel, err)
 	}

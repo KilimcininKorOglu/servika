@@ -40,6 +40,7 @@ func (h *Handlers) IonCubeInstall(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// 1. Read PHP extension_dir.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	extOut, err := exec.CommandContext(ctx, s.PHPBin, "-r", "echo ini_get('extension_dir');").Output()
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to read PHP extension directory")
@@ -65,6 +66,7 @@ func (h *Handlers) IonCubeInstall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3. Extract the archive.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if _, err := exec.CommandContext(ctx, "tar", "xzf", tarPath, "-C", tmpDir).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to extract IonCube Loader archive")
 		return
@@ -85,17 +87,20 @@ func (h *Handlers) IonCubeInstall(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to copy IonCube Loader")
 		return
 	}
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	_ = os.Chmod(soDst, 0644)
 
 	// 6. Write an .ini file that loads the extension before OPcache through the 00 prefix.
 	iniPath := filepath.Join(s.IniDir, "00-ioncube.ini")
 	iniContent := "; IonCube Loader must load before OPcache\nzend_extension = " + soDst + "\n"
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(iniPath, []byte(iniContent), 0644); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to write IonCube Loader configuration")
 		return
 	}
 
 	// 7. Reload PHP-FPM.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if _, err := exec.CommandContext(ctx, "systemctl", "reload-or-restart", s.Service).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError,
 			"failed to reload PHP-FPM")
@@ -105,6 +110,7 @@ func (h *Handlers) IonCubeInstall(w http.ResponseWriter, r *http.Request) {
 	// 8. Verify that php -m reports IonCube.
 	verifyCtx, vc := context.WithTimeout(r.Context(), 5*time.Second)
 	defer vc()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	mOut, _ := exec.CommandContext(verifyCtx, s.PHPBin, "-m").Output()
 	loaded := strings.Contains(strings.ToLower(string(mOut)), "ioncube")
 
@@ -131,11 +137,13 @@ func (h *Handlers) IonCubeRemove(w http.ResponseWriter, r *http.Request) {
 	}
 	iniPath := filepath.Join(s.IniDir, "00-ioncube.ini")
 	_ = os.Remove(iniPath)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	extOut, _ := exec.Command(s.PHPBin, "-r", "echo ini_get('extension_dir');").Output()
 	extDir := strings.TrimSpace(string(extOut))
 	if extDir != "" {
 		_ = os.Remove(filepath.Join(extDir, "ioncube_loader_lin_"+req.Version+".so"))
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("systemctl", "reload-or-restart", s.Service).CombinedOutput()
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "version": req.Version})
 }
@@ -150,6 +158,7 @@ func download(ctx context.Context, url, destination string) error {
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.Create(destination)
 	if err != nil {
 		return err
@@ -160,11 +169,13 @@ func download(ctx context.Context, url, destination string) error {
 }
 
 func copyFile(src, dst string) error {
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	in, err := os.Open(src)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = in.Close() }()
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	out, err := os.Create(dst)
 	if err != nil {
 		return err

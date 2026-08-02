@@ -69,6 +69,7 @@ func (h *Handlers) SetRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.applyRedirectVhost(id, systemUser, phpVersion); err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("redirect vhost render warn (domain_id=%d): %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "virtual host update failed")
 		return
@@ -90,6 +91,7 @@ func (h *Handlers) DeleteRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.applyRedirectVhost(id, systemUser, phpVersion); err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("redirect vhost render warn (domain_id=%d): %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "virtual host update failed")
 		return

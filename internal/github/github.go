@@ -102,6 +102,7 @@ func ghCall(ctx context.Context, method, path, token string, body any) ([]byte, 
 		b, _ := json.Marshal(body)
 		rdr = bytes.NewReader(b)
 	}
+	// #nosec G704 -- host is the fixed SERVIKA_GITHUB_API operator config (default api.github.com); path is internal, not tenant input.
 	req, err := http.NewRequestWithContext(ctx, method, apiBase()+path, rdr)
 	if err != nil {
 		return nil, 0, err
@@ -114,6 +115,7 @@ func ghCall(ctx context.Context, method, path, token string, body any) ([]byte, 
 		req.Header.Set("Content-Type", "application/json")
 	}
 	cli := &http.Client{Timeout: 15 * time.Second}
+	// #nosec G704 -- request target is the fixed operator GitHub API base, not tenant input.
 	resp, err := cli.Do(req)
 	if err != nil {
 		return nil, 0, err

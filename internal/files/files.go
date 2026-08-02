@@ -332,6 +332,7 @@ func (h *Handlers) Upload(w http.ResponseWriter, r *http.Request) {
 
 func parseMultipartUpload(w http.ResponseWriter, r *http.Request, maxBytes int64, maxMemory int64) error {
 	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+	// #nosec G120 -- body is bounded by MaxBytesReader above, so parsing cannot exhaust memory.
 	if err := r.ParseMultipartForm(maxMemory); err != nil {
 		var maxBytesError *http.MaxBytesError
 		if errors.As(err, &maxBytesError) {
@@ -388,6 +389,7 @@ func reserveUploadSpace() bool {
 	if err := syscall.Statfs(os.TempDir(), &st); err != nil {
 		return true // statfs failed: do not block (keep prior behaviour)
 	}
+	// #nosec G115 -- Bavail/Bsize come from the OS statfs of a local temp dir, not attacker input; free space fits int64.
 	free := int64(st.Bavail) * int64(st.Bsize)
 	if free-uploadReserved < needed {
 		return false
@@ -415,6 +417,7 @@ func uploadQuotaAvailable(systemUser string, extraBytes int64) bool {
 		return true
 	}
 	// The XFS quota lives on the mount: /home when it is a separate mount,
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	// otherwise the rootfs / (rootflags=uquota). Try both; use the first valid row.
 	for _, mount := range []string{"/home", "/"} {
 		out, err := exec.Command("xfs_quota", "-x", "-c", "quota -u -b -N "+systemUser, mount).CombinedOutput()

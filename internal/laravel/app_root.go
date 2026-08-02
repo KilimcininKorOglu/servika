@@ -13,6 +13,7 @@ import (
 func laravelRootCandidates(systemUser string) []string {
 	base := "/home/" + systemUser + "/public_html"
 	out := []string{}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(filepath.Join(base, "artisan")); err == nil {
 		out = append(out, "public_html")
 	}
@@ -21,6 +22,7 @@ func laravelRootCandidates(systemUser string) []string {
 			if !entry.IsDir() {
 				continue
 			}
+			// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 			if _, err := os.Stat(filepath.Join(base, entry.Name(), "artisan")); err == nil {
 				out = append(out, "public_html/"+entry.Name())
 			}
@@ -69,6 +71,7 @@ func (h *Handlers) SetAppRoot(w http.ResponseWriter, r *http.Request) {
 	if appRoot == "" {
 		appRoot = "public_html"
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(appDir); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "application directory was not found")
 		return
@@ -79,6 +82,7 @@ func (h *Handlers) SetAppRoot(w http.ResponseWriter, r *http.Request) {
 	}
 	artisan, _ := laravelInstalled(appDir)
 	if artisan {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		if _, err := os.Stat(filepath.Join(appDir, "public")); err == nil {
 			_ = h.setDocroot(r.Context(), id, systemUser, publicSubdirectory(appRoot))
 		}

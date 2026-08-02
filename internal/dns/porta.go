@@ -108,6 +108,7 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 	var content []byte
 	r.Body = http.MaxBytesReader(w, r.Body, 2<<20) // a zone file is small
 	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/") {
+		// #nosec G120 -- body is bounded by MaxBytesReader above, so parsing cannot exhaust memory.
 		if e := r.ParseMultipartForm(2 << 20); e != nil {
 			httpx.WriteError(w, http.StatusBadRequest, "could not read the upload")
 			return

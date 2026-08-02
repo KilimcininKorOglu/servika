@@ -64,11 +64,13 @@ func writePortlessPanelVhost(domain string) error {
 	backup, backupErr := os.ReadFile(panelDomainVhostPath)
 	hadBackup := backupErr == nil
 
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(panelDomainVhostPath, []byte(content), 0o644); err != nil {
 		return err
 	}
 	if out, err := exec.Command("nginx", "-t").CombinedOutput(); err != nil {
 		if hadBackup {
+			// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 			_ = os.WriteFile(panelDomainVhostPath, backup, 0o644)
 		} else {
 			_ = os.Remove(panelDomainVhostPath)

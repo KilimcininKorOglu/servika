@@ -254,15 +254,19 @@ func error404HTML() string {
 // Ensure404Page writes the server-wide 404 page into the root-owned directory
 // (idempotent). Called from Init. A tenant CANNOT modify it (outside its home).
 func Ensure404Page() {
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(errorPageDir, 0o755); err != nil {
 		return
 	}
 	path := filepath.Join(errorPageDir, errorPageFile)
 	next := []byte(error404HTML())
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	if existing, err := os.ReadFile(path); err == nil && string(existing) == string(next) {
 		return // unchanged
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	_ = os.WriteFile(path, next, 0o644)
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	_ = os.Chmod(errorPageDir, 0o755)
 }
 

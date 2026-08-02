@@ -59,11 +59,13 @@ func healPanelLoginRateLimitOnStartup() {
 		return
 	}
 	updated := panelLoginRateLimitHTTPBlock + "\n" + content[:apiIndex] + panelLoginRateLimitLocations + "\n" + content[apiIndex:]
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(panelVhostPath, []byte(updated), 0644); err != nil {
 		log.Printf("panel login rate limit repair: could not write vhost: %v", err)
 		return
 	}
 	if output, err := tenantCommand("nginx", "-t").CombinedOutput(); err != nil {
+		// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(panelVhostPath, original, 0644)
 		log.Printf("panel login rate limit repair: nginx configuration failed, vhost restored: %s", strings.TrimSpace(string(output)))
 		return
@@ -102,11 +104,13 @@ func healPanelIndexNoCacheOnStartup() {
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     }`
 	updated := panelIndexLocationPattern.ReplaceAllStringFunc(content, func(string) string { return replacement })
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(panelVhostPath, []byte(updated), 0644); err != nil {
 		log.Printf("panel cache repair: could not write vhost: %v", err)
 		return
 	}
 	if output, err := tenantCommand("nginx", "-t").CombinedOutput(); err != nil {
+		// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(panelVhostPath, original, 0644)
 		log.Printf("panel cache repair: nginx configuration failed, vhost restored: %s", strings.TrimSpace(string(output)))
 		return

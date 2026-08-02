@@ -29,6 +29,7 @@ func isHTTPS(r *http.Request) bool {
 // HttpOnly (JS-unreadable), Secure on HTTPS, and SameSite=Strict so the browser
 // never attaches it to cross-site requests — this is the CSRF defense.
 func SetSessionCookie(w http.ResponseWriter, r *http.Request, token string, maxAgeSec int) {
+	// #nosec G124 -- HttpOnly + SameSite=Strict are set; Secure is intentionally conditional on isHTTPS so the cookie still works on localhost dev over HTTP.
 	http.SetCookie(w, &http.Cookie{
 		Name:     SessionCookie,
 		Value:    token,
@@ -43,6 +44,7 @@ func SetSessionCookie(w http.ResponseWriter, r *http.Request, token string, maxA
 // ClearSessionCookie expires the session cookie on logout. Attributes mirror
 // SetSessionCookie so the browser reliably matches and removes it.
 func ClearSessionCookie(w http.ResponseWriter, r *http.Request) {
+	// #nosec G124 -- HttpOnly + SameSite=Strict are set; Secure is intentionally conditional on isHTTPS to mirror SetSessionCookie so the browser reliably removes it.
 	http.SetCookie(w, &http.Cookie{
 		Name:     SessionCookie,
 		Value:    "",

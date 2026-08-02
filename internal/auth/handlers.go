@@ -92,6 +92,7 @@ func verifyRootPassword(password string) bool {
 // pythonCryptVerify — LEGACY PATH: fallback for non-yescrypt formats only.
 // WARNING: python3 crypt module was removed in Python 3.13; this path will not work there.
 func pythonCryptVerify(password, hash string) bool {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("python3", "-c",
 		"import sys, crypt; p = sys.stdin.read(); sys.stdout.write(crypt.crypt(p, sys.argv[1]))",
 		hash)

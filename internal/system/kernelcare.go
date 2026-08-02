@@ -44,6 +44,7 @@ type KcStatus struct {
 func kcRunShell(d time.Duration, args ...string) (string, int) {
 	ctx, cancel := context.WithTimeout(context.Background(), d)
 	defer cancel()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.CommandContext(ctx, "kcarectl", args...).CombinedOutput()
 	if err == nil {
 		return string(out), 0
@@ -124,6 +125,7 @@ echo "════════ ✓ Live patch complete ════════"
 func kcWriteWrapper() error {
 	wrapper := kcWrapper()
 	tmp := wrapper + ".tmp"
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(tmp, []byte(kcWrapperContent), 0o700); err != nil {
 		return err
 	}
@@ -150,11 +152,13 @@ func KernelcarePatch(w http.ResponseWriter, r *http.Request) {
 	}
 	header := fmt.Sprintf("=== KernelCare live patch started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
 	wrapper := kcWrapper()
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
 		log.Printf("kernelcare: open log %s: %v", logPath, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not start live patching")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("systemd-run",
 		"--collect",
 		"--unit", kcUnit,

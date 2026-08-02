@@ -76,6 +76,7 @@ func versionRequestURLFor(rawEndpoint, installationID, current string) string {
 // InstallationID returns a persistent anonymous installation identifier.
 func InstallationID() string {
 	path := config.InstallationIDPath()
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	if content, err := os.ReadFile(path); err == nil {
 		if value := strings.TrimSpace(string(content)); len(value) >= 16 {
 			return value
@@ -87,6 +88,7 @@ func InstallationID() string {
 		return ""
 	}
 	id := hex.EncodeToString(raw)
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	_ = os.MkdirAll(filepath.Dir(path), 0o755)
 	_ = os.WriteFile(path, []byte(id+"\n"), 0o600)
 	return id
@@ -191,7 +193,9 @@ func saveVersionCache() {
 		return
 	}
 	path := config.VersionCachePath()
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	_ = os.MkdirAll(filepath.Dir(path), 0o755)
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	_ = os.WriteFile(path, content, 0o644)
 }
 

@@ -22,6 +22,7 @@ var (
 	cloudInitFile   = "/etc/cloud/cloud.cfg.d/99-servika-hostname.cfg"
 	networkMgrFile  = "/etc/NetworkManager/conf.d/99-servika-hostname.conf"
 	hostnameApplier = func(ctx context.Context, name string) error {
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		return exec.CommandContext(ctx, "hostnamectl", "set-hostname", name).Run()
 	}
 )
@@ -63,6 +64,7 @@ func validateHostname(raw string) (string, error) {
 // atomicWrite writes content to a temp file in the destination directory and
 // renames it into place so a partial write never leaves a truncated file.
 func atomicWrite(path, content string, mode os.FileMode) error {
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}

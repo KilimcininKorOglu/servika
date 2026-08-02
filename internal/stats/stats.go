@@ -141,6 +141,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 
 	accumulated := newAccumulator()
 	for _, logPath := range logPaths {
+		// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		file, err := os.Open(logPath)
 		if err != nil {
 			continue // A missing log is normal for a site that has served no traffic.

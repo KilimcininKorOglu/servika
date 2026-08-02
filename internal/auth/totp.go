@@ -3,7 +3,7 @@ package auth
 import (
 	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha1"
+	"crypto/sha1" // #nosec G505 -- TOTP/HOTP (RFC 6238/4226) mandates HMAC-SHA1
 	"crypto/subtle"
 	"encoding/base32"
 	"encoding/binary"
@@ -62,6 +62,7 @@ func validStep(secret, code string, minStep int64) (int64, bool) {
 		if c <= minStep {
 			continue
 		}
+		// #nosec G115 -- c is a Unix-time/30 counter, always positive and far below int64 max; no overflow.
 		if v, ok := hotp(secret, uint64(c)); ok && subtle.ConstantTimeCompare([]byte(v), []byte(code)) == 1 {
 			return c, true
 		}

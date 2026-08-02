@@ -55,10 +55,12 @@ FROM domains d
 LEFT JOIN dns_records r ON r.domain_id = d.id`
 
 	cond, arg := middleware.ScopeSQL(r, "d")
+	// #nosec G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; user values are bound via arg placeholders.
 	q += cond + `
 GROUP BY d.id, d.domain_name, d.status, d.dnssec_active
 ORDER BY d.domain_name`
 
+	// #nosec G701 G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via arg placeholders.
 	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "dns overview failed")
@@ -101,9 +103,11 @@ SELECT d.id, d.domain_name, d.status, d.ssl_enabled,
 FROM domains d`
 
 	cond, arg := middleware.ScopeSQL(r, "d")
+	// #nosec G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; user values are bound via arg placeholders.
 	q += cond + `
 ORDER BY (d.ssl_expiry IS NULL), d.ssl_expiry ASC, d.domain_name`
 
+	// #nosec G701 G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via arg placeholders.
 	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "ssl overview failed")
@@ -154,9 +158,11 @@ FROM domains d
 LEFT JOIN mail_domains md ON md.domain_id = d.id`
 
 	cond, arg := middleware.ScopeSQL(r, "d")
+	// #nosec G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; user values are bound via arg placeholders.
 	q += cond + `
 ORDER BY d.domain_name`
 
+	// #nosec G701 -- cond is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via arg placeholders.
 	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "mail overview failed")
@@ -240,9 +246,11 @@ FROM db_accounts a
 JOIN domains d ON d.id = a.domain_id`
 
 	cond, arg := middleware.ScopeSQL(r, "d")
+	// #nosec G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; user values are bound via arg placeholders.
 	q += cond + `
 ORDER BY d.domain_name, a.db_name`
 
+	// #nosec G701 G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via arg placeholders.
 	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "databases overview failed")

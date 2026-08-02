@@ -66,6 +66,7 @@ func writeApacheVhost(opts VhostOpts, systemUser string) error {
 	if err := apacheVhostTmpl.Execute(&buf, opts); err != nil {
 		return fmt.Errorf("apache template: %w", err)
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(apacheVhostPath(systemUser), buf.Bytes(), 0644); err != nil {
 		return fmt.Errorf("write Apache vhost: %w", err)
 	}

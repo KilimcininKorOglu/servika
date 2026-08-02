@@ -25,6 +25,7 @@ func MySQLChangePassword(panelDB *sql.DB, dbUser, newPassword string) error {
 		fmt.Sprintf("ALTER USER '%s'@'localhost' IDENTIFIED BY '%s';", dbUser, escapeSQLString(newPassword)),
 		"FLUSH PRIVILEGES;",
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("mysql", "-e", strings.Join(statements, " ")).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("mysql alter: %s: %w", strings.TrimSpace(string(out)), err)

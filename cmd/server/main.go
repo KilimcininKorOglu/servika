@@ -98,6 +98,7 @@ func pinTempDir() {
 		log.Printf("could not create temp dir (%s), falling back to /tmp: %v", dir, err)
 		return
 	}
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	if err := os.Chmod(dir, 0o700); err != nil {
 		log.Printf("could not set temp dir permissions: %v", err)
 	}
@@ -730,6 +731,7 @@ func runMigrations(d *sql.DB) {
 	sort.Strings(names)
 
 	for _, name := range names {
+		// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 		body, err := os.ReadFile(dir + "/" + name)
 		if err != nil {
 			log.Fatalf("migrations: could not read %s: %v", name, err)

@@ -38,6 +38,7 @@ func (h *Handlers) CalculateDisk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	path := "/home/" + systemUser
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("du", "-sb", path).CombinedOutput()
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "disk usage calculation failed")

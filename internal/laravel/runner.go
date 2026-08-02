@@ -31,6 +31,7 @@ func logRootDir() string  { return config.LaravelLogDir() }
 
 const badURLChars = "\"'`$();|&<>\\"
 
+// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 func ensureLogRoot() { _ = os.MkdirAll(logRootDir(), 0755) }
 
 var execSem sync.Map
@@ -68,6 +69,7 @@ func phpBin(version string) string {
 	code := strings.ReplaceAll(strings.TrimSpace(version), ".", "")
 	if code != "" {
 		candidate := "/usr/bin/php" + code
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		if _, err := os.Stat(candidate); err == nil {
 			return candidate
 		}
@@ -140,6 +142,7 @@ func tenantExecEnv(ctx context.Context, systemUser, cwd string, env []string, bi
 	ctx, cancel := context.WithTimeout(ctx, shortTimeout)
 	defer cancel()
 	argv := append([]string{"-u", systemUser, "--", bin}, args...)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.CommandContext(ctx, "runuser", argv...)
 	cmd.Dir = real
 	cmd.Env = env
@@ -184,6 +187,7 @@ func systemdRunDetached(systemUser, cwd, unit, logPath string, argv ...string) e
 		"--",
 	}
 	args = append(args, argv...)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if err := exec.Command("systemd-run", args...).Run(); err != nil {
 		return fmt.Errorf("detached command start failed")
 	}
@@ -191,6 +195,7 @@ func systemdRunDetached(systemUser, cwd, unit, logPath string, argv ...string) e
 }
 
 func unitStatus(unit string) string {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, _ := exec.Command("systemctl", "show", "-p", "ActiveState", "--value", unit).Output()
 	return strings.TrimSpace(string(out))
 }
@@ -200,6 +205,7 @@ func fileTail(path string, max int64) string {
 	if err != nil || !fi.Mode().IsRegular() {
 		return ""
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NOFOLLOW, 0)
 	if err != nil {
 		return ""
@@ -227,6 +233,7 @@ func validRepoURL(u string) bool {
 
 func readEnvFile(appDir string) (string, error) {
 	path := filepath.Join(appDir, ".env")
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	fi, err := os.Lstat(path)
 	if err != nil {
 		return "", err
@@ -234,6 +241,7 @@ func readEnvFile(appDir string) (string, error) {
 	if !fi.Mode().IsRegular() {
 		return "", fmt.Errorf(".env is not a regular file")
 	}
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NOFOLLOW, 0)
 	if err != nil {
 		return "", err
@@ -251,6 +259,7 @@ func writeEnvFile(systemUser, appDir, content string) error {
 		return fmt.Errorf(".env is too large")
 	}
 	dst := filepath.Join(appDir, ".env")
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("runuser", "-u", systemUser, "--", "/usr/bin/tee", dst)
 	cmd.Env = tenantEnv(systemUser)
 	cmd.Stdin = strings.NewReader(content)

@@ -59,12 +59,14 @@ func HealPanelProxyTrustOnStartup() {
 
 	nginxChanged := content != string(original)
 	if nginxChanged {
+		// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		if e := os.WriteFile(panelVhostPath, []byte(content), 0o640); e != nil {
 			log.Printf("panel proxy-trust heal: could not write vhost: %v", e)
 			return
 		}
 		hardenSecretVhostPerms()
 		if output, e := tenantCommand("nginx", "-t").CombinedOutput(); e != nil {
+			// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 			_ = os.WriteFile(panelVhostPath, original, 0o640) // ROLL BACK
 			log.Printf("panel proxy-trust heal: nginx -t failed, vhost restored: %s", strings.TrimSpace(string(output)))
 			return
@@ -81,6 +83,7 @@ func HealPanelProxyTrustOnStartup() {
 	if e := os.WriteFile(httpx.ProxySecretPath, []byte(secret+"\n"), 0o600); e != nil {
 		log.Printf("panel proxy-trust heal: could not write secret: %v", e)
 		if nginxChanged {
+			// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 			_ = os.WriteFile(panelVhostPath, original, 0o640)
 			_, _ = tenantCommand("systemctl", "reload", "nginx").CombinedOutput()
 		}
@@ -145,6 +148,7 @@ func injectProxyTrust(content, wanted, secret string) string {
 // unconditionally on every startup (idempotent).
 func hardenSecretVhostPerms() {
 	_, _ = tenantCommand("chgrp", "nginx", panelVhostPath).CombinedOutput()
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	_ = os.Chmod(panelVhostPath, 0o640)
 }
 
@@ -156,5 +160,6 @@ func ensureLimitZone() {
 	if b, err := os.ReadFile(panelSecLimitsPath); err == nil && strings.Contains(string(b), "zone=servika_panel") {
 		return
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	_ = os.WriteFile(panelSecLimitsPath, []byte("# Servika security limits (managed)\n"+wanted), 0o644)
 }

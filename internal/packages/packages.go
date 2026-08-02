@@ -70,6 +70,7 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
 	// Parse the Name and Summary Matched sections from dnf search.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, _ := exec.CommandContext(ctx, "dnf", "search", "--quiet", q).CombinedOutput()
 	lines := strings.Split(string(out), "\n")
 	packageList := []Package{}
@@ -172,6 +173,7 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Minute)
 	defer cancel()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.CommandContext(ctx, "dnf", "install", "-y", req.Package)
 	if _, err := cmd.CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "package installation failed")
@@ -201,6 +203,7 @@ func (h *Handlers) Remove(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer cancel()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.CommandContext(ctx, "dnf", "remove", "-y", req.Package)
 	if _, err := cmd.CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "package removal failed")
@@ -249,6 +252,7 @@ func (h *Handlers) Info(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if _, err := exec.CommandContext(ctx, "dnf", "info", name).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "package information lookup failed")
 		return

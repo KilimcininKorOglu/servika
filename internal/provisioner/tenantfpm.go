@@ -378,31 +378,38 @@ func EnableTenantFPM(db *sql.DB, domainID int64, systemUser, phpVersion string) 
 
 	firstInstall := !TenantFPMActive(systemUser)
 	configDir := tenantCfgDir(systemUser)
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return "", fmt.Errorf("create tenant configuration directory: %w", err)
 	}
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(tenantLogDir, 0755); err != nil {
 		return "", fmt.Errorf("create PHP-FPM log directory: %w", err)
 	}
 
 	poolPath := filepath.Join(configDir, "pool.conf")
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	previousPool, readErr := os.ReadFile(poolPath)
 	WriteDebugShim(db, systemUser, domainID)
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(poolPath, []byte(renderTenantPool(db, systemUser, domainID)), 0644); err != nil {
 		return "", fmt.Errorf("write tenant pool: %w", err)
 	}
 	globalPath := filepath.Join(configDir, "php-fpm.conf")
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(globalPath, []byte(renderTenantGlobalConfig(systemUser)), 0644); err != nil {
 		return "", fmt.Errorf("write tenant global configuration: %w", err)
 	}
 	if output, err := tenantCommand(config.FPMBin, "-t", "-y", globalPath).CombinedOutput(); err != nil {
 		if readErr == nil {
+			// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 			_ = os.WriteFile(poolPath, previousPool, 0644)
 		} else {
 			_ = os.Remove(poolPath)
 		}
 		return "", fmt.Errorf("validate tenant PHP-FPM configuration: %s: %w", strings.TrimSpace(string(output)), err)
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(tenantUnitPath(systemUser), []byte(renderTenantUnit(systemUser, config.FPMBin)), 0644); err != nil {
 		return "", fmt.Errorf("write tenant service: %w", err)
 	}
@@ -558,6 +565,7 @@ func repairTenantPoolDrift(domainID int64, systemUser, phpVersion string) {
 	}
 	configDir := tenantCfgDir(systemUser)
 	poolPath := filepath.Join(configDir, "pool.conf")
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	current, err := os.ReadFile(poolPath)
 	if err != nil {
 		return // pool.conf missing -- EnableTenantFPM handles creation
@@ -572,11 +580,13 @@ func repairTenantPoolDrift(domainID int64, systemUser, phpVersion string) {
 		return
 	}
 	// Write the new pool config, validate, and rollback on failure.
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(poolPath, []byte(expected), 0644); err != nil {
 		return
 	}
 	globalPath := filepath.Join(configDir, "php-fpm.conf")
 	if output, err := tenantCommand(config.FPMBin, "-t", "-y", globalPath).CombinedOutput(); err != nil {
+		// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(poolPath, current, 0644) // rollback
 		log.Printf("repairTenantPoolDrift: %s php-fpm -t failed, rolled back: %s", systemUser, strings.TrimSpace(string(output)))
 		return
@@ -637,6 +647,7 @@ func tenantDocRoot(db *sql.DB, systemUser string, domainID int64) string {
 // .user.ini prepend; this value is chained back inside the shim so the app's own
 // prepend is preserved.
 func readUserIniAutoPrepend(docRoot string) string {
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	data, err := os.ReadFile(filepath.Join(docRoot, ".user.ini"))
 	if err != nil {
 		return ""
@@ -831,5 +842,6 @@ func restoreconFdPath(fd int) {
 	if err != nil {
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("restorecon", real).CombinedOutput()
 }

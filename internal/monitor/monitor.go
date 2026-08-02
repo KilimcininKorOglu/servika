@@ -139,6 +139,7 @@ func probe(targetURL string) DomainHealth {
 		host = u.Hostname()
 	}
 
+	// #nosec G402 -- operator-initiated health probe reports cert state; it must reach hosts with invalid/expired certs. SSRF and DNS rebinding are blocked by netguard.DialControl below.
 	tlsCfg := &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS12}
 	// DialControl rejects connections to internal addresses at dial time, so the
 	// initial request and every followed redirect are checked (and DNS rebinding

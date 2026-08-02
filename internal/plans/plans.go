@@ -381,18 +381,18 @@ type planText struct{ starterName, starterDesc, standardName, standardDesc, proN
 // planTexts maps a supported language code to its tier display strings. English is
 // the fallback for any code missing here.
 var planTexts = map[string]planText{
-	"en": {"Starter", "One site for a small project", "Standard", "Multiple projects and email", "Professional", "High traffic and large sites"},
-	"tr": {"Başlangıç", "Küçük bir proje için tek site", "Standart", "Birden çok proje ve e-posta", "Profesyonel", "Yüksek trafik ve büyük siteler"},
-	"de": {"Einsteiger", "Eine Website für ein kleines Projekt", "Standard", "Mehrere Projekte und E-Mail", "Professionell", "Hoher Traffic und große Websites"},
-	"fr": {"Débutant", "Un site pour un petit projet", "Standard", "Plusieurs projets et e-mail", "Professionnel", "Trafic élevé et grands sites"},
-	"it": {"Base", "Un sito per un piccolo progetto", "Standard", "Più progetti ed e-mail", "Professionale", "Traffico elevato e siti grandi"},
-	"pt": {"Inicial", "Um site para um pequeno projeto", "Padrão", "Vários projetos e e-mail", "Profissional", "Tráfego elevado e sites grandes"},
+	"en":    {"Starter", "One site for a small project", "Standard", "Multiple projects and email", "Professional", "High traffic and large sites"},
+	"tr":    {"Başlangıç", "Küçük bir proje için tek site", "Standart", "Birden çok proje ve e-posta", "Profesyonel", "Yüksek trafik ve büyük siteler"},
+	"de":    {"Einsteiger", "Eine Website für ein kleines Projekt", "Standard", "Mehrere Projekte und E-Mail", "Professionell", "Hoher Traffic und große Websites"},
+	"fr":    {"Débutant", "Un site pour un petit projet", "Standard", "Plusieurs projets et e-mail", "Professionnel", "Trafic élevé et grands sites"},
+	"it":    {"Base", "Un sito per un piccolo progetto", "Standard", "Più progetti ed e-mail", "Professionale", "Traffico elevato e siti grandi"},
+	"pt":    {"Inicial", "Um site para um pequeno projeto", "Padrão", "Vários projetos e e-mail", "Profissional", "Tráfego elevado e sites grandes"},
 	"pt-BR": {"Inicial", "Um site para um projeto pequeno", "Padrão", "Vários projetos e e-mail", "Profissional", "Tráfego alto e sites grandes"},
-	"es": {"Inicial", "Un sitio para un proyecto pequeño", "Estándar", "Varios proyectos y correo", "Profesional", "Alto tráfico y sitios grandes"},
-	"cs": {"Začátečník", "Jeden web pro malý projekt", "Standard", "Více projektů a e-mail", "Profesionální", "Vysoký provoz a velké weby"},
-	"ro": {"Start", "Un site pentru un proiect mic", "Standard", "Mai multe proiecte și e-mail", "Profesional", "Trafic ridicat și site-uri mari"},
-	"ja": {"スターター", "小規模プロジェクト向けの1サイト", "スタンダード", "複数のプロジェクトとメール", "プロフェッショナル", "高トラフィックと大規模サイト"},
-	"zh": {"入门版", "适合小型项目的单个站点", "标准版", "多个项目和电子邮件", "专业版", "高流量和大型站点"},
+	"es":    {"Inicial", "Un sitio para un proyecto pequeño", "Estándar", "Varios proyectos y correo", "Profesional", "Alto tráfico y sitios grandes"},
+	"cs":    {"Začátečník", "Jeden web pro malý projekt", "Standard", "Více projektů a e-mail", "Profesionální", "Vysoký provoz a velké weby"},
+	"ro":    {"Start", "Un site pentru un proiect mic", "Standard", "Mai multe proiecte și e-mail", "Profesional", "Trafic ridicat și site-uri mari"},
+	"ja":    {"スターター", "小規模プロジェクト向けの1サイト", "スタンダード", "複数のプロジェクトとメール", "プロフェッショナル", "高トラフィックと大規模サイト"},
+	"zh":    {"入门版", "适合小型项目的单个站点", "标准版", "多个项目和电子邮件", "专业版", "高流量和大型站点"},
 }
 
 // seedPlans returns the three default tiers with localized name/description.

@@ -90,10 +90,12 @@ func (h *Handlers) Deploy(w http.ResponseWriter, r *http.Request) {
 	nodeDir := nodeBinDir(req.NodeVersion)
 	script := deployScript(appDir, phpBin(phpVersion), nodeDir, req.Migrate, req.NpmBuild)
 	path := deployScriptPath(id)
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(path, []byte(script), 0755); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "deploy script write failed")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("systemctl", "reset-failed", deployUnit(id)+".service").Run()
 	if err := systemdRunDetached(systemUser, appDir, deployUnit(id), deployLog(id), "/bin/bash", path); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "deploy start failed")
@@ -137,6 +139,7 @@ func (h *Handlers) finalizeDeploy(ctx context.Context, id int64, systemUser stri
 		return rec
 	}
 	if affected, _ := result.RowsAffected(); affected == 1 {
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("systemctl", "reset-failed", unit).Run()
 		_ = os.Remove(deployScriptPath(id))
 	}

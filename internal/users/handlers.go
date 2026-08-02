@@ -263,6 +263,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 			`INSERT INTO customers(name, email, status, notes, user_id, owner_user_id)
 			 VALUES(?,?, 'active', '', ?, ?)`,
 			displayName, strings.TrimSpace(b.Email), id, c.UserID); e != nil {
+			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("auto customer record for user %d failed: %v", id, e)
 		}
 	}

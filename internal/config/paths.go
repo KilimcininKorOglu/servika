@@ -27,7 +27,7 @@ const (
 	DefaultCVELog             = "/opt/servika/logs/cve-update.log"
 	DefaultInstallationID     = "/etc/servika/installation-id"
 	DefaultVersionCache       = "/opt/servika/version-cache.json"
-	DefaultPMAToken           = "/etc/servika/pma-internal.token"
+	DefaultPMAToken           = "/etc/servika/pma-internal.token" // #nosec G101 -- filesystem path, not a credential
 	DefaultPMASignonDir       = "/opt/servika/pma-signon"
 	DefaultPHPMyAdminRoot     = "/opt/phpmyadmin"
 	DefaultPHPMyAdminConfig   = "/opt/phpmyadmin/config.inc.php"

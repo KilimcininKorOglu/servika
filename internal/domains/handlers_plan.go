@@ -62,6 +62,7 @@ func (h *Handlers) SetPlan(w http.ResponseWriter, r *http.Request) {
 	}
 	// Reapply resource limits in the background with an independent context.
 	// The request context is cancelled when the HTTP request ends and would interrupt the cgroup write.
+	// #nosec G118 -- intentional detached context, see comment above.
 	go func(did int64) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()

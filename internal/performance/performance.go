@@ -154,6 +154,7 @@ func (h *Handlers) redisEnabled(r *http.Request, domainID int64) bool {
 // The log file is written by nginx using the servika_cache_status log_format,
 // which records only the $upstream_cache_status variable per request.
 func computeFastCGICacheStats(domainName string) *CacheStats {
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.Open("/var/log/nginx/" + domainName + ".cache.log")
 	if err != nil {
 		return nil

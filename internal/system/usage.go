@@ -541,6 +541,7 @@ func ReadServices() []ServiceStat {
 	ch := make(chan res, len(serviceList))
 	for i, s := range serviceList {
 		go func(i int, name string) {
+			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 			cmd := exec.Command("systemctl", "is-active", name)
 			b, _ := cmd.Output()
 			ch <- res{i: i, enabled: strings.TrimSpace(string(b)) == "active"}
@@ -554,6 +555,7 @@ func ReadServices() []ServiceStat {
 	for i, s := range serviceList {
 		enabled := mat[i]
 		if !enabled && (s.name == "pure-ftpd" || strings.HasPrefix(s.name, "php")) {
+			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 			cmd := exec.Command("systemctl", "list-unit-files", s.name+".service", "--no-legend")
 			b, _ := cmd.Output()
 			if len(strings.TrimSpace(string(b))) == 0 {

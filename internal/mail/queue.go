@@ -98,6 +98,7 @@ func (h *Handlers) QueueAction(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Env = subprocessEnv
 	out, err := cmd.CombinedOutput()

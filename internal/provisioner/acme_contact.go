@@ -50,6 +50,7 @@ func clearACMEContact() {
 }
 
 func emptyACMEKey(path, key string) {
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	body, err := os.ReadFile(path)
 	if err != nil {
 		return
@@ -65,6 +66,7 @@ func emptyACMEKey(path, key string) {
 	if !changed {
 		return
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o600); err != nil {
 		log.Printf("acme: clear %s in %s: %v", key, path, err)
 	}

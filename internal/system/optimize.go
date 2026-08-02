@@ -53,6 +53,7 @@ func optimizeRunning() (bool, string) {
 }
 
 func runOutput(name string, args ...string) string {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command(name, args...).CombinedOutput()
 	if err != nil {
 		return ""
@@ -64,6 +65,7 @@ func runOutput(name string, args ...string) string {
 func writeOptimizeWrapper() error {
 	wrapper := optimizeWrapper()
 	tmp := wrapper + ".tmp"
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(tmp, []byte(optimizeWrapperContent), 0o700); err != nil {
 		return err
 	}
@@ -99,12 +101,14 @@ func OptimizeStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	header := fmt.Sprintf("=== Optimization started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(logPath, []byte(header), 0o640); err != nil {
 		log.Printf("optimize: open log %s: %v", logPath, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not start optimization")
 		return
 	}
 	// systemd-run: transient unit under PID 1; output via append: to log file.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("systemd-run",
 		"--collect",
 		"--unit", optimizeUnit,

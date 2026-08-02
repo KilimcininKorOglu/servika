@@ -79,6 +79,7 @@ func aggregateDomain(db *sql.DB, domainID int64, domainName string) bool {
 		return true
 	}
 
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	file, err := os.Open(logPath)
 	if err != nil {
 		return false

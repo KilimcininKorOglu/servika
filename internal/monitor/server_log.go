@@ -42,6 +42,7 @@ func (h *Handlers) ServerLog(w http.ResponseWriter, r *http.Request) {
 	var output []byte
 	if file, ok := fileSources[source]; ok {
 		// Tail a file-based source such as nginx error.log.
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		output, _ = exec.Command("tail", "-n", strconv.Itoa(last), file).CombinedOutput()
 	} else {
 		args := []string{"--no-pager", "-o", "short-iso", "-n", strconv.Itoa(last)}
@@ -53,6 +54,7 @@ func (h *Handlers) ServerLog(w http.ResponseWriter, r *http.Request) {
 			}
 			args = append(args, "-u", unit)
 		}
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		output, _ = exec.Command("journalctl", args...).CombinedOutput()
 	}
 	text := strings.TrimRight(string(output), "\n")

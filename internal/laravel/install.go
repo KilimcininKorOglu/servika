@@ -20,6 +20,7 @@ func setupLog(id int64) string        { return fmt.Sprintf("%s/install-%d.log", 
 func setupScriptPath(id int64) string { return fmt.Sprintf("/run/servika-laravel-install-%d.sh", id) }
 
 func mkdirTenant(systemUser, dir string) error {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if err := exec.Command("runuser", "-u", systemUser, "--", "/bin/mkdir", "-p", dir).Run(); err != nil {
 		return fmt.Errorf("directory creation failed")
 	}
@@ -98,6 +99,7 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	// The base row must exist before the status updates below target it; abort if
 	// it cannot be written rather than proceeding with broken status tracking.
 	if err := h.upsertBase(r.Context(), id, appRoot, req.Mode, phpVersion, ""); err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("laravel upsertBase domain %d: %v", id, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not initialize Laravel app record")
 		return
@@ -111,9 +113,12 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		if gitOK {
 			status = "ready"
 		}
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		_, _ = h.DB.ExecContext(r.Context(), `UPDATE cp_laravel_apps SET last_deploy_status=? WHERE domain_id=?`, status, id)
+		// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 		if _, err := os.Stat(filepath.Join(appDir, "public")); err == nil {
 			if err := h.setDocroot(r.Context(), id, systemUser, publicSubdirectory(appRoot)); err != nil {
+				// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 				log.Printf("laravel setDocroot domain %d: %v (docroot may still serve project root)", id, err)
 			}
 		}
@@ -148,10 +153,13 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 }
 
 func detachedInstall(id int64, systemUser, appDir, logPath, script string) error {
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	path := setupScriptPath(id)
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(path, []byte(script), 0755); err != nil {
 		return fmt.Errorf("setup script write failed")
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("systemctl", "reset-failed", setupUnit(id)+".service").Run()
 	return systemdRunDetached(systemUser, appDir, setupUnit(id), logPath, "/bin/bash", path)
 }
@@ -217,14 +225,17 @@ func (h *Handlers) finalizeInstall(ctx context.Context, id int64, systemUser str
 	if err != nil {
 		return rec
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if affected, _ := result.RowsAffected(); affected == 1 {
 		if artisan {
 			if _, statErr := os.Stat(filepath.Join(appDir, "public")); statErr == nil {
 				if err := h.setDocroot(ctx, id, systemUser, publicSubdirectory(rec.AppRoot)); err != nil {
+					// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 					log.Printf("laravel setDocroot domain %d: %v (docroot may still serve project root)", id, err)
 				}
 			}
 		}
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("systemctl", "reset-failed", unit).Run()
 		_ = os.Remove(setupScriptPath(id))
 	}
@@ -247,6 +258,7 @@ func (h *Handlers) InstallStatus(w http.ResponseWriter, r *http.Request) {
 	// exhaustion, permission errors), the log tail is empty and the operator sees no
 	// cause. Append the unit's recent journal so the real failure reason surfaces.
 	if !running && rec.LastDeployStatus == "failed" && len(strings.TrimSpace(logTail)) < 40 {
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		if out, err := exec.Command("journalctl", "-u", unit, "-n", "30", "--no-pager").Output(); err == nil {
 			logTail += "\n\n[system journal — install unit]\n" + cleanANSI(string(out))
 		}

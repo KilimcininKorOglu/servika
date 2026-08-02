@@ -75,9 +75,11 @@ func (h *Handlers) upsertBase(ctx context.Context, id int64, appRoot, deployMode
 }
 
 func laravelInstalled(appDir string) (artisan, composerJSON bool) {
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(filepath.Join(appDir, "artisan")); err == nil {
 		artisan = true
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(filepath.Join(appDir, "composer.json")); err == nil {
 		composerJSON = true
 	}
@@ -86,6 +88,7 @@ func laravelInstalled(appDir string) (artisan, composerJSON bool) {
 
 func maintenanceActive(appDir string) bool {
 	for _, path := range []string{"storage/framework/maintenance.php", "storage/framework/down"} {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		if _, err := os.Stat(filepath.Join(appDir, path)); err == nil {
 			return true
 		}
@@ -116,6 +119,7 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 	}
 	gitPresent := false
 	lastCommit := ""
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(filepath.Join(appDir, ".git")); err == nil {
 		gitPresent = true
 		if out, ok := TenantExec(r.Context(), systemUser, appDir, "/usr/bin/git", "-C", appDir, "rev-parse", "--short", "HEAD"); ok {

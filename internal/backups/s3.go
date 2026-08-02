@@ -78,6 +78,7 @@ func s3RequestURL(d *Destination, objectName string) (*url.URL, error) {
 }
 
 func uploadS3Object(ctx context.Context, d *Destination, localPath, objectName string) error {
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	f, err := os.Open(localPath)
 	if err != nil {
 		return err
@@ -97,11 +98,13 @@ func uploadS3Object(ctx context.Context, d *Destination, localPath, objectName s
 	if err != nil {
 		return err
 	}
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	body, err := os.Open(localPath)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = body.Close() }()
+	// #nosec G704 -- URL derives from the admin-configured S3 backup destination (HTTPS-validated in s3Endpoint), not tenant input.
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u.String(), body)
 	if err != nil {
 		return err
@@ -117,6 +120,7 @@ func testS3Connection(ctx context.Context, d *Destination) error {
 	if err != nil {
 		return err
 	}
+	// #nosec G704 -- URL derives from the admin-configured S3 backup destination (HTTPS-validated in s3Endpoint), not tenant input.
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, u.String(), nil)
 	if err != nil {
 		return err
@@ -145,6 +149,7 @@ func downloadS3Object(ctx context.Context, d *Destination, objectName, localPath
 		return fmt.Errorf("S3 %s: %s", resp.Status, strings.TrimSpace(string(msg)))
 	}
 	tmp := localPath + ".part"
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	out, err := os.OpenFile(tmp, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 	if err != nil {
 		return err
@@ -176,6 +181,7 @@ func deleteS3Object(ctx context.Context, d *Destination, objectName string) erro
 }
 
 func doS3Request(req *http.Request) error {
+	// #nosec G704 -- request target derives from the admin-configured S3 backup destination (HTTPS-validated in s3Endpoint), not tenant input.
 	resp, err := s3HTTPClient.Do(req)
 	if err != nil {
 		return err

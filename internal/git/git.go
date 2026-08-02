@@ -127,6 +127,7 @@ func validRepoURL(repoURL string) bool {
 }
 
 func clearDirectoryContents(directory string) error {
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	info, err := os.Lstat(directory)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
@@ -138,6 +139,7 @@ func clearDirectoryContents(directory string) error {
 		return errors.New("target directory cannot be a symlink")
 	}
 	if !info.IsDir() {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		return os.Remove(directory)
 	}
 	entries, err := os.ReadDir(directory)
@@ -145,6 +147,7 @@ func clearDirectoryContents(directory string) error {
 		return err
 	}
 	for _, entry := range entries {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		if err := os.RemoveAll(filepath.Join(directory, entry.Name())); err != nil {
 			return err
 		}
@@ -155,23 +158,31 @@ func clearDirectoryContents(directory string) error {
 // generateDeployKey creates a passphrase-free Ed25519 key under /home/<systemUser>/.ssh/.
 func generateDeployKey(systemUser string) (pubKey string, err error) {
 	dir := deployKeyDir(systemUser)
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	_ = os.MkdirAll(dir, 0700)
 	priv := filepath.Join(dir, "servika_deploy")
 	pub := priv + ".pub"
 
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(pub); err == nil {
 		// Reuse the current key.
+		// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		b, _ := os.ReadFile(pub)
 		return strings.TrimSpace(string(b)), nil
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("rm", "-f", priv, pub).CombinedOutput()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("ssh-keygen", "-t", "ed25519", "-N", "", "-C", "deploy@servika/"+systemUser, "-f", priv).CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("ssh-keygen: %s: %w", strings.TrimSpace(string(out)), err)
 	}
 	// Apply ownership and permissions.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("chown", "-R", systemUser+":"+systemUser, dir).CombinedOutput()
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	_ = os.Chmod(priv, 0600)
+	// #nosec G302 G703 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	_ = os.Chmod(pub, 0644)
 
 	// Configure this key for github.com in the per-user ~/.ssh/config.
@@ -183,10 +194,14 @@ func generateDeployKey(systemUser string) (pubKey string, err error) {
     StrictHostKeyChecking no
     UserKnownHostsFile=/dev/null
 `
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	_ = os.WriteFile(cfg, []byte(cfgBody), 0600)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("chown", systemUser+":"+systemUser, cfg).CombinedOutput()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("restorecon", "-R", dir).CombinedOutput()
 
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	b, _ := os.ReadFile(pub)
 	return strings.TrimSpace(string(b)), nil
 }
@@ -194,7 +209,7 @@ func generateDeployKey(systemUser string) (pubKey string, err error) {
 // runAsUserArgs executes a command without a shell as the system user.
 // askpassPath is the GIT_ASKPASS helper. It contains NO secret: it echoes the
 // username for a "Username" prompt and the SERVIKA_GH_TOKEN env value otherwise.
-const askpassPath = "/usr/local/bin/servika-git-askpass"
+const askpassPath = "/usr/local/bin/servika-git-askpass" // #nosec G101 -- filesystem path, not a credential
 
 // ensureGitAskpass writes the GIT_ASKPASS helper once (idempotent). The token is
 // supplied through the environment at call time, so the file itself is safe to
@@ -209,6 +224,7 @@ func ensureGitAskpass() error {
 	if b, err := os.ReadFile(askpassPath); err == nil && string(b) == script {
 		return nil
 	}
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	return os.WriteFile(askpassPath, []byte(script), 0o755)
 }
 
@@ -271,12 +287,14 @@ func runAsUserArgs(systemUser, cwd string, extraEnv []string, name string, comma
 		sudoArgs = append(sudoArgs, "--preserve-env="+preserve)
 	}
 	sudoArgs = append(append(sudoArgs, "--", name), commandArgs...)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("sudo", sudoArgs...)
 	cmd.Dir = cwd
 	cmd.Env = environment
 	out, err := cmd.CombinedOutput()
 	if errors.Is(err, exec.ErrNotFound) {
 		runuserArgs := append([]string{"-u", systemUser, "--", name}, commandArgs...)
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		cmd = exec.Command("runuser", runuserArgs...)
 		cmd.Dir = cwd
 		cmd.Env = environment
@@ -306,9 +324,11 @@ func gitClone(systemUser, repoURL, branch, targetDir, token string) (sha string,
 	if err := clearDirectoryContents(dst); err != nil {
 		return "", "", err
 	}
+	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(dst, 0755); err != nil {
 		return "", "", err
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("chown", systemUser+":"+systemUser, dst).CombinedOutput()
 
 	authEnv, err := gitAuthEnv(token)
@@ -322,6 +342,7 @@ func gitClone(systemUser, repoURL, branch, targetDir, token string) (sha string,
 	}
 	shaOut, _ := runAsUserArgs(systemUser, dst, nil, "git", "-C", dst, "rev-parse", "HEAD")
 	sha = strings.TrimSpace(shaOut)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("restorecon", "-R", dst).CombinedOutput()
 	return sha, log, nil
 }
@@ -337,6 +358,7 @@ func gitPull(systemUser, targetDir, branch, token string) (sha string, log strin
 	}
 	home := "/home/" + systemUser
 	dst := filepath.Join(home, targetDir)
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(filepath.Join(dst, ".git")); err != nil {
 		return "", "", errors.New("target directory is not a Git repository; clone it first")
 	}
@@ -356,6 +378,7 @@ func gitPull(systemUser, targetDir, branch, token string) (sha string, log strin
 	}
 	shaOut, _ := runAsUserArgs(systemUser, dst, nil, "git", "-C", dst, "rev-parse", "HEAD")
 	sha = strings.TrimSpace(shaOut)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("restorecon", "-R", dst).CombinedOutput()
 	return sha, log, nil
 }

@@ -136,6 +136,7 @@ func ReRender(db *sql.DB, subdomainID int64) error {
 // docrootDiskKB reports the document root size in kilobytes. It is best effort:
 // a missing directory or a du failure reports 0 rather than failing the request.
 func docrootDiskKB(docroot string) int64 {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("du", "-sk", docroot).Output()
 	if err != nil {
 		return 0

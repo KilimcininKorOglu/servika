@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"os/exec"
 	"slices"
@@ -131,6 +132,7 @@ type lsarListing struct {
 	} `json:"lsarContents"`
 }
 
+// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 func safeCommand(ctx context.Context, name string, arguments ...string) *exec.Cmd {
 	command := exec.CommandContext(ctx, name, arguments...)
 	command.Env = []string{"PATH=" + safePath, "LANG=C", "LC_ALL=C"}
@@ -253,6 +255,12 @@ func scanZIP(ctx context.Context, archivePath string, limits Limits) error {
 		if unsafeMemberName(member.Name) {
 			return ErrUnsafePath
 		}
+		// The declared uncompressed size is attacker-controlled. Reject values that
+		// would overflow int64 (individually or when summed) so a crafted header
+		// cannot wrap total negative and bypass the size limit.
+		if member.UncompressedSize64 > math.MaxInt64 || total > math.MaxInt64-int64(member.UncompressedSize64) {
+			return ErrArchiveTooLarge
+		}
 		total += int64(member.UncompressedSize64)
 		if limits.exceedsBytes(total) {
 			return ErrArchiveTooLarge
@@ -262,6 +270,7 @@ func scanZIP(ctx context.Context, archivePath string, limits Limits) error {
 }
 
 func scanTAR(ctx context.Context, archivePath string, archiveType Type, limits Limits) error {
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	file, err := os.Open(archivePath)
 	if err != nil {
 		return fmt.Errorf("open archive: %w", err)
@@ -347,6 +356,7 @@ func scanTAR(ctx context.Context, archivePath string, archiveType Type, limits L
 
 func tenantCommand(ctx context.Context, systemUser string, arguments ...string) *exec.Cmd {
 	fullArguments := append([]string{"-u", systemUser, "--"}, arguments...)
+	// #nosec G204 G702 -- fixed binary (runuser) with separate args (no shell); systemUser is validated by the caller.
 	command := exec.CommandContext(ctx, "runuser", fullArguments...)
 	command.Env = []string{
 		"PATH=" + safePath,
@@ -391,6 +401,7 @@ func Extract(ctx context.Context, archivePath, destination, systemUser string, l
 			command = tenantCommand(ctx, systemUser, "unar", "-f", "-D", "-o", destination, archivePath)
 		}
 	default:
+		// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 		file, err := os.Open(archivePath)
 		if err != nil {
 			return "", fmt.Errorf("open archive: %w", err)

@@ -61,6 +61,7 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 	}
 	var version string
 	installed := false
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	vc := exec.Command(composerBin(), "--version", "--no-ansi")
 	vc.Env = []string{
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
@@ -71,6 +72,7 @@ func (h *Handlers) Status(w http.ResponseWriter, r *http.Request) {
 		installed = true
 		version = strings.TrimSpace(string(out))
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	_, jErr := os.Stat(filepath.Join(directory, "composer.json"))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"installed":     installed,
@@ -126,6 +128,7 @@ func (h *Handlers) Run(w http.ResponseWriter, r *http.Request) {
 		}
 		args = append(args, pkg)
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("runuser", args...)
 	cmd.Env = []string{
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",

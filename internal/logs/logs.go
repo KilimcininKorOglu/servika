@@ -102,6 +102,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	} {
 		path := filePath(domainName, logType.Key)
 		entry := LogFile{Key: logType.Key, Label: logType.Label, Path: path}
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		if info, err := os.Stat(path); err == nil {
 			entry.Current = true
 			entry.SizeB = info.Size()
@@ -179,9 +180,11 @@ func (h *Handlers) Tail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("X-Accel-Buffering", "no")
 	w.WriteHeader(http.StatusOK)
+	// #nosec G705 -- response is text/event-stream (not HTML); the browser EventSource treats payloads as opaque data, and key is validated above.
 	_, _ = fmt.Fprintf(w, ": tail %s started\n\n", key)
 	flusher.Flush()
 
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	f, err := os.Open(path)
 	if err != nil {
 		_, _ = fmt.Fprint(w, "event: error\ndata: log file could not be opened\n\n")
@@ -192,6 +195,7 @@ func (h *Handlers) Tail(w http.ResponseWriter, r *http.Request) {
 	// Send approximately the last 200 lines first.
 	if existing, err := lastNLines(path, 200); err == nil {
 		for _, ln := range existing {
+			// #nosec G705 -- response is text/event-stream (not HTML); newlines are stripped so SSE framing stays intact.
 			_, _ = fmt.Fprintf(w, "data: %s\n\n", strings.ReplaceAll(ln, "\n", " "))
 		}
 		flusher.Flush()
@@ -211,6 +215,7 @@ func (h *Handlers) Tail(w http.ResponseWriter, r *http.Request) {
 		}
 		if line != "" {
 			ln := strings.TrimRight(line, "\n\r")
+			// #nosec G705 -- response is text/event-stream (not HTML); newlines are stripped so SSE framing stays intact.
 			_, _ = fmt.Fprintf(w, "data: %s\n\n", strings.ReplaceAll(ln, "\n", " "))
 			flusher.Flush()
 		}
@@ -223,9 +228,11 @@ func (h *Handlers) Tail(w http.ResponseWriter, r *http.Request) {
 				flusher.Flush()
 			case <-time.After(500 * time.Millisecond):
 				// Reopen the file when rotation truncates its size.
+				// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 				if st, err := os.Stat(path); err == nil {
 					if cur, _ := f.Seek(0, io.SeekCurrent); cur > st.Size() {
 						_ = f.Close()
+						// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 						f, err = os.Open(path)
 						if err != nil {
 							return
@@ -240,6 +247,7 @@ func (h *Handlers) Tail(w http.ResponseWriter, r *http.Request) {
 
 // lastNLines reads N lines from the end of a file.
 func lastNLines(path string, n int) ([]string, error) {
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err

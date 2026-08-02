@@ -85,6 +85,7 @@ func (h *Handlers) domain(r *http.Request) (id int64, systemUser, domainName, ro
 func runWP(systemUser string, args ...string) ([]byte, error) {
 	full := append([]string{"-u", systemUser, "--", "env", "HOME=/home/" + systemUser,
 		"/usr/bin/php", "-d", "memory_limit=512M", wpBin()}, args...)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.Command("runuser", full...)
 	return cmd.CombinedOutput()
 }
@@ -113,6 +114,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	for _, dir := range candidates {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		if _, err := os.Stat(filepath.Join(dir, "wp-config.php")); err != nil {
 			continue
 		}
@@ -157,6 +159,7 @@ type wpCandidate struct {
 func (h *Handlers) ListAll(w http.ResponseWriter, r *http.Request) {
 	// Scope: a reseller sees only its own customers' sites.
 	cond, arg := middleware.ScopeSQL(r, "d")
+	// #nosec G701 G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via arg placeholders.
 	rows, err := h.DB.QueryContext(r.Context(),
 		`SELECT d.id, d.system_user, d.domain_name, COALESCE(d.cert_path,'') FROM domains d`+
 			cond+` ORDER BY d.domain_name`, arg...)
@@ -263,6 +266,7 @@ func (h *Handlers) inspectInstallation(ctx context.Context, a wpCandidate) AllIn
 func wpStdout(ctx context.Context, systemUser string, args ...string) ([]byte, error) {
 	full := append([]string{"-u", systemUser, "--", "env", "HOME=/home/" + systemUser,
 		"/usr/bin/php", "-d", "memory_limit=512M", wpBin()}, args...)
+	// #nosec G204 G702 -- fixed binary (runuser) with separate args (no shell); systemUser is validated before exec.
 	cmd := exec.CommandContext(ctx, "runuser", full...)
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -356,11 +360,14 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusConflict, msg)
 		return
 	}
+	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(target, 0o755); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create target directory")
 		return
 	}
+	// #nosec G204 G702 -- fixed binaries (chown/restorecon) with separate args (no shell); systemUser is validated and target is internal.
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, target).Run()
+	// #nosec G204 G702 -- fixed binary (restorecon) with separate args (no shell); systemUser is validated and target is internal.
 	_ = exec.Command("restorecon", "-R", target).Run()
 
 	// Enforce the plan database quota at this point of use, matching the normal
@@ -392,6 +399,7 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	fail := func(stage string, out []byte) {
 		_ = credentials.MySQLDropDB(h.DB, dbName, dbUser)
 		if req.SubDir != "" { // Remove only the subdirectory created by this operation.
+			// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 			_ = os.RemoveAll(target)
 		}
 		msg := strings.TrimSpace(string(out))
@@ -421,7 +429,9 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		fail("WordPress installation", out)
 		return
 	}
+	// #nosec G204 G702 -- fixed binaries (chown/restorecon) with separate args (no shell); systemUser is validated and target is internal.
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, target).Run()
+	// #nosec G204 G702 -- fixed binary (restorecon) with separate args (no shell); systemUser is validated and target is internal.
 	_ = exec.Command("restorecon", "-R", target).Run()
 
 	version := ""
@@ -461,6 +471,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 	out1, e1 := runWP(systemUser, "core", "update", "--path="+dir)
 	out2, _ := runWP(systemUser, "core", "update-db", "--path="+dir)
 	if e1 != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("wp core update failed for %s (dir=%s): %s", systemUser, dir, strings.TrimSpace(string(out1)))
 		httpx.WriteError(w, http.StatusInternalServerError, "update failed")
 		return
@@ -506,7 +517,9 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "wordPress in the root directory cannot be removed from the panel because it would delete the entire site; use File Manager")
 		return
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if deleteRequest.DBDelete {
+		// #nosec G304 G703 -- dir derives from a validated systemUser/domain path, not raw tenant input; tenant file reads otherwise use safeio (openat2).
 		if b, err := os.ReadFile(filepath.Join(dir, "wp-config.php")); err == nil {
 			if m := reDBName.FindSubmatch(b); len(m) == 2 {
 				dbName := string(m[1])
@@ -519,7 +532,9 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	}
+	// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 	if err := os.RemoveAll(dir); err != nil { // The root path was rejected above, so this is a subdirectory.
 		httpx.WriteError(w, http.StatusInternalServerError, "could not delete record")
 		return

@@ -106,11 +106,13 @@ func wafDomainConfWrite(sk, engine string, paranoia int) error {
 	if !reWafSK.MatchString(sk) {
 		return fmt.Errorf("invalid system user: %q", sk)
 	}
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(wafDomainsDir, 0755); err != nil {
 		return err
 	}
 	custom := filepath.Join(wafDomainsDir, sk+".custom.conf")
 	if _, err := os.Stat(custom); err != nil {
+		// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(custom,
 			[]byte("# Servika WAF — "+sk+" custom rules / exclusions (optional, MVP: empty).\n"+
 				"# Example CRS exclusion: SecRuleRemoveById 942100\n"), 0644)
@@ -131,6 +133,7 @@ func wafDomainConfWrite(sk, engine string, paranoia int) error {
 	fmt.Fprintf(&b, "Include %s/crs/rules/*.conf\n", wafModsecDir)
 	fmt.Fprintf(&b, "Include %s\n", custom)
 	confPath := filepath.Join(wafDomainsDir, sk+".conf")
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	return os.WriteFile(confPath, []byte(b.String()), 0644)
 }
 
@@ -177,6 +180,7 @@ func HealWAFOnStartup() {
 	if packageDB == nil {
 		return
 	}
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	_ = os.MkdirAll(wafDomainsDir, 0755)
 	module := WAFModuleLoaded()
 	rows, err := packageDB.Query(`SELECT DISTINCT system_user FROM domains WHERE COALESCE(suspended,0)=0 AND parent_domain_id IS NULL`)

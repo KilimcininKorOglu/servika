@@ -287,12 +287,14 @@ func prepareDocRoot(docroot, systemUser, domainName string) error {
 		return err
 	}
 	index := filepath.Join(docroot, "index.html")
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(index, []byte(addonWelcomeHTML(domainName)), 0644); err != nil {
 		return err
 	}
 	uid, gid := uidGidOf(systemUser)
 	if uid > 0 && gid > 0 {
 		_ = filepath.Walk(docroot, func(path string, _ os.FileInfo, _ error) error {
+			// #nosec G122 -- operator provisioning of a freshly created docroot, not tenant input; best-effort ownership fix.
 			_ = os.Chown(path, uid, gid)
 			return nil
 		})

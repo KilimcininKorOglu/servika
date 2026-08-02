@@ -15,7 +15,7 @@ import (
 // the panel vhost and `nginx -t` has passed. So if the file exists, nginx is
 // guaranteed to send the header too (otherwise ClientIP falls back to the old
 // loopback-trust behaviour and nobody is locked out).
-const ProxySecretPath = "/etc/servika/proxy.secret"
+const ProxySecretPath = "/etc/servika/proxy.secret" // #nosec G101 -- filesystem path, not a credential
 
 var (
 	proxyOnce sync.Once

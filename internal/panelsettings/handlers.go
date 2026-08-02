@@ -151,6 +151,7 @@ func issuePanelCertificate(domain string) error {
 	if err := backupPanelSelfSigned(); err != nil {
 		return err
 	}
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(acmeWebroot, 0o755); err != nil {
 		return fmt.Errorf("prepare ACME webroot: %w", err)
 	}
@@ -162,6 +163,7 @@ func issuePanelCertificate(domain string) error {
 			return fmt.Errorf("acme issue failed: %s", strings.TrimSpace(string(out)))
 		}
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	install := exec.Command(config.ACMEBin(), "--install-cert", "-d", domain, "--cert-file", panelCertPath, "--key-file", panelKeyPath, "--fullchain-file", panelCertPath, "--reloadcmd", "systemctl reload nginx")
 	install.Env = acmeEnv()
 	if out, err := install.CombinedOutput(); err != nil {
@@ -170,6 +172,7 @@ func issuePanelCertificate(domain string) error {
 	if err := os.Chmod(panelKeyPath, 0o600); err != nil {
 		return fmt.Errorf("set panel private key permissions: %w", err)
 	}
+	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	if err := os.Chmod(panelCertPath, 0o644); err != nil {
 		return fmt.Errorf("set panel certificate permissions: %w", err)
 	}
@@ -213,13 +216,16 @@ func restorePanelSelfSigned() {
 }
 
 func copyFile(src, dst string, mode os.FileMode) error {
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	data, err := os.ReadFile(src)
 	if err != nil {
 		return fmt.Errorf("read certificate file: %w", err)
 	}
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 		return fmt.Errorf("prepare certificate directory: %w", err)
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if err := os.WriteFile(dst, data, mode); err != nil {
 		return fmt.Errorf("write certificate file: %w", err)
 	}

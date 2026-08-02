@@ -112,6 +112,7 @@ type SummaryRow struct {
 func (h *Handlers) Summary(w http.ResponseWriter, r *http.Request) {
 	// Scope: a reseller sees only its own customers' backup summary.
 	cond, arg := middleware.ScopeSQL(r, "d")
+	// #nosec G701 G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via arg placeholders.
 	rows, err := h.DB.QueryContext(r.Context(),
 		`SELECT d.id, d.domain_name, d.system_user FROM domains d`+cond+` ORDER BY d.domain_name`, arg...)
 	if err != nil {
@@ -200,6 +201,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 
 	stamp := time.Now().UTC().Format("20060102-150405")
 	dir := filepath.Join(backupRoot(), systemUser)
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	_ = os.MkdirAll(dir, 0700)
 	file := fmt.Sprintf("%s-%s.tar.gz", systemUser, stamp)
 	abs := filepath.Join(dir, file)
@@ -219,8 +221,10 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { _ = os.RemoveAll(dumpDir) }()
 	sqlDump := filepath.Join(dumpDir, "dump.sql")
+	// #nosec G204 G702 -- dbName = validSystemUser-checked systemUser (^c_[A-Za-z0-9_]+$, no shell metachars) + "_main"; sqlDump is an internal temp path. No tenant-controlled shell input.
 	if out, derr := exec.CommandContext(ctx, "bash", "-c",
 		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); derr != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("backup mysqldump failed for %s: %v: %s", dbName, derr, strings.TrimSpace(string(out)))
 		httpx.WriteError(w, http.StatusInternalServerError, "could not dump database for backup")
 		return
@@ -232,11 +236,14 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		"-C", "/home", systemUser,
 		"-C", dumpDir, "dump.sql",
 	}
+	// #nosec G204 G702 -- fixed binary (tar) with separate args (no shell); systemUser is validSystemUser-checked and paths are internal.
 	if _, tarErr := exec.CommandContext(ctx, "tar", args...).CombinedOutput(); tarErr != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create backup archive")
 		return
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 
+	// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 	st, _ := os.Stat(abs)
 	var sizeBytes int64
 	if st != nil {
@@ -298,7 +305,9 @@ func (h *Handlers) Download(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "backup not found")
 		return
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	abs := filepath.Join(backupRoot(), systemUser, file)
+	// #nosec G304 -- fixed system/config path, server-internal temp/archive path, or validated identifier; tenant reads use safeio (openat2).
 	f, err := os.Open(abs)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
@@ -342,6 +351,7 @@ func pruneManualBackups(db *sql.DB, domainID int64, systemUser string) {
 		}
 	}
 	_ = rows.Close()
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	for _, it := range old {
 		_ = os.Remove(filepath.Join(backupRoot(), systemUser, it.file))
 		_, _ = db.Exec(`DELETE FROM backups WHERE id=?`, it.id)

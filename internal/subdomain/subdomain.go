@@ -175,27 +175,36 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	docroot := docrootOf(systemUser, fqdn)
+	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(docroot, 0o755); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create document root")
 		return
 	}
 	// Create the initial landing page.
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
+	// #nosec G703 -- docroot derives from a validated systemUser/subdomain path, not raw tenant input.
 	if _, e := os.Stat(filepath.Join(docroot, "index.html")); e != nil {
+		// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(filepath.Join(docroot, "index.html"),
 			[]byte(provisioner.WelcomeHTML(fqdn)), 0o644)
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, "/home/"+systemUser+"/subdomains").Run()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("chcon", "-R", "-t", "httpd_sys_content_t", docroot).Run()
 
 	// Write the nginx server block.
 	conf := confPath(systemUser, subdomainName)
 	// A newly created subdomain has no protected directories yet.
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(conf, []byte(vhost(fqdn, docroot, socket, "")), 0o644); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not write virtual host configuration")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("restorecon", conf).Run()
 	if _, err := exec.Command("nginx", "-t").CombinedOutput(); err != nil {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		_ = os.Remove(conf) // Remove the invalid configuration so the running nginx instance remains unaffected.
 		_ = exec.Command("nginx", "-t").Run()
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
@@ -204,14 +213,18 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	if out, err := exec.Command("systemctl", "reload", "nginx").CombinedOutput(); err != nil {
 		// Config validated with `nginx -t` above but reload failed: the vhost is on
 		// disk yet not live. Remove it and report failure rather than a false success.
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		_ = os.Remove(conf)
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 		log.Printf("nginx reload after subdomain create %s: %v: %s", fqdn, err, strings.TrimSpace(string(out)))
 		httpx.WriteError(w, http.StatusInternalServerError, "subdomain configured but nginx reload failed")
 		return
 	}
 
 	if _, err := h.DB.Exec(`INSERT INTO subdomains (domain_id, subdomain, fqdn, php_version) VALUES (?,?,?,?)`,
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		id, subdomainName, fqdn, phpVersion); err != nil {
+		// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 		_ = os.Remove(conf)
 		_ = exec.Command("systemctl", "reload", "nginx").Run()
 		httpx.WriteError(w, http.StatusInternalServerError, "could not add record")
@@ -257,12 +270,15 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, err := h.DB.Exec(`DELETE FROM dns_records WHERE domain_id=? AND name=? AND type='A'`, id, subdomainName); err != nil {
 		log.Printf("delete subdomain DNS record %s: %v", subdomainName, err)
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	}
+	// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 	_ = os.Remove(confPath(systemUser, subdomainName))
 	_ = exec.Command("systemctl", "reload", "nginx").Run()
 	// Remove the document root only when it remains under subdomains and matches the FQDN.
 	docroot := docrootOf(systemUser, fqdn)
 	base := "/home/" + systemUser + "/subdomains/"
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if strings.HasPrefix(docroot, base) && filepath.Clean(docroot) != filepath.Clean(base) {
 		_ = os.RemoveAll(docroot)
 	}

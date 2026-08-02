@@ -248,6 +248,7 @@ func (h *Handlers) BulkDelete(w http.ResponseWriter, r *http.Request) {
 		args = append(args, rid)
 	}
 	args = append(args, id)
+	// #nosec G202 -- only literal "?" placeholders are joined into the IN clause; all IDs and domain_id are bound via args.
 	res, err := h.DB.ExecContext(r.Context(),
 		"DELETE FROM dns_records WHERE id IN ("+strings.Join(ph, ",")+") AND domain_id=?", args...)
 	if err != nil {
@@ -299,6 +300,7 @@ func (h *Handlers) BulkStatus(w http.ResponseWriter, r *http.Request) {
 		args = append(args, rid)
 	}
 	args = append(args, id)
+	// #nosec G202 -- only literal "?" placeholders are joined into the IN clause; all IDs and domain_id are bound via args.
 	res, err := h.DB.ExecContext(r.Context(),
 		"UPDATE dns_records SET enabled=? WHERE id IN ("+strings.Join(ph, ",")+") AND domain_id=?", args...)
 	if err != nil {
@@ -388,6 +390,7 @@ func SeedDefaults(ctx context.Context, db *sql.DB, domainID int64, domainName, i
 			`INSERT INTO dns_records(domain_id, name, type, value, ttl, priority, enabled)
 			 VALUES(?,?,?,?,?,?,1)`,
 			domainID, name, recordType, value, row.TTL, normalizePriority(recordType, row.Priority)); err != nil {
+			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("dns seed %s/%s: %v", name, recordType, err)
 			continue
 		}

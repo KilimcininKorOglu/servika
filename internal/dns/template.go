@@ -202,18 +202,23 @@ func syncOpenDKIM(domainName, selector, privatePEM, publicKey string) {
 		return
 	}
 	keyDir := filepath.Join(base, "keys", domainName)
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if err := os.MkdirAll(keyDir, 0750); err != nil {
 		return
 	}
 	privatePath := filepath.Join(keyDir, selector+".private")
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if err := os.WriteFile(privatePath, []byte(privatePEM), 0600); err != nil {
 		return
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if err := os.Chmod(privatePath, 0600); err != nil {
 		return
 	}
 	txtPath := filepath.Join(keyDir, selector+".txt")
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	_ = os.WriteFile(txtPath, []byte(selector+"._domainkey."+domainName+" IN TXT ( "+txtQuote(dkimTXT(publicKey))+" )\n"), 0644)
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("chown", "-R", "opendkim:opendkim", keyDir).CombinedOutput()
 	appendUnique(filepath.Join(base, "KeyTable"), selector+"._domainkey."+domainName+" "+domainName+":"+selector+":"+privatePath)
 	appendUnique(filepath.Join(base, "SigningTable"), "*@"+domainName+" "+selector+"._domainkey."+domainName)
@@ -222,12 +227,14 @@ func syncOpenDKIM(domainName, selector, privatePEM, publicKey string) {
 
 func appendUnique(path, line string) {
 	key, _, _ := strings.Cut(line, " ")
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	body, _ := os.ReadFile(path)
 	for existing := range strings.SplitSeq(string(body), "\n") {
 		if eKey, _, _ := strings.Cut(existing, " "); eKey == key {
 			return
 		}
 	}
+	// #nosec G302 G304 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return

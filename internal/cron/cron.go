@@ -74,6 +74,7 @@ func cronPath(systemUser string) string {
 
 func read(systemUser string) ([]Task, error) {
 	p := cronPath(systemUser)
+	// #nosec G703 G304 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	f, err := os.Open(p)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -131,18 +132,23 @@ func write(systemUser string, list []Task) error {
 	}
 	p := cronPath(systemUser)
 	tmp := p + ".tmp"
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if err := os.WriteFile(tmp, buf.Bytes(), 0600); err != nil {
 		return err
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if err := os.Rename(tmp, p); err != nil {
 		return err
 	}
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	_ = os.Chmod(p, 0600)
 	// Set ownership to the domain user.
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if out, err := exec.Command("chown", systemUser+":"+systemUser, p).CombinedOutput(); err != nil {
 		return fmt.Errorf("chown: %s: %w", strings.TrimSpace(string(out)), err)
 	}
 	// SELinux context — system_cron_spool_t
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_, _ = exec.Command("restorecon", p).CombinedOutput()
 	return nil
 }

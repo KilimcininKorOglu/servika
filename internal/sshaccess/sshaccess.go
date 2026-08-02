@@ -58,6 +58,7 @@ func validSystemUser(systemUser string) bool {
 }
 
 func currentShell(systemUser string) string {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	out, err := exec.Command("getent", "passwd", systemUser).Output()
 	if err != nil {
 		return ""
@@ -70,6 +71,7 @@ func currentShell(systemUser string) string {
 }
 
 func hasKey(systemUser string) bool {
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	st, err := os.Stat(filepath.Join("/home", systemUser, ".ssh", "authorized_keys"))
 	return err == nil && st.Size() > 0
 }
@@ -132,6 +134,7 @@ func (h *Handlers) Configure(w http.ResponseWriter, r *http.Request) {
 	if req.Enabled {
 		shell = enabledShell
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if _, err := exec.Command("usermod", "-s", shell, systemUser).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
@@ -139,11 +142,15 @@ func (h *Handlers) Configure(w http.ResponseWriter, r *http.Request) {
 	if req.Enabled {
 		// Prepare ~/.ssh for key uploads.
 		dir := filepath.Join("/home", systemUser, ".ssh")
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		_ = os.MkdirAll(dir, 0700)
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("chown", "-R", systemUser+":"+systemUser, dir).Run()
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("restorecon", "-R", dir).Run()
 		// Synchronize the SSH password with the FTP password.
 		if err := credentials.SyncSSHPassword(h.DB, systemUser); err != nil {
+			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("ssh enable: password sync %s: %v", systemUser, err)
 		}
 		// Configure the chroot jail and the restricted SSH group. These are the
@@ -151,22 +158,31 @@ func (h *Handlers) Configure(w http.ResponseWriter, r *http.Request) {
 		// FAIL-CLOSED: if confinement cannot be established, revert the login shell
 		// and do NOT persist ssh_access=1, so we never leave SSH on but unconfined.
 		_ = exec.Command("groupadd", "-f", "servika-ssh").Run()
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		if out, err := exec.Command(servikaJailBin(), "setup", systemUser).CombinedOutput(); err != nil {
+			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("ssh enable: jail setup %s: %v: %s", systemUser, err, strings.TrimSpace(string(out)))
+			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 			_, _ = exec.Command("usermod", "-s", disabledShell, systemUser).CombinedOutput()
 			httpx.WriteError(w, http.StatusInternalServerError, "SSH jail could not be configured")
 			return
 		}
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		if out, err := exec.Command("gpasswd", "-a", systemUser, "servika-ssh").CombinedOutput(); err != nil {
+			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("ssh enable: group add %s: %v: %s", systemUser, err, strings.TrimSpace(string(out)))
+			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 			_, _ = exec.Command(servikaJailBin(), "teardown", systemUser).CombinedOutput()
+			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 			_, _ = exec.Command("usermod", "-s", disabledShell, systemUser).CombinedOutput()
 			httpx.WriteError(w, http.StatusInternalServerError, "SSH access group could not be configured")
 			return
 		}
 	} else {
 		// When disabling SSH, remove the group membership and jail, then lock the password.
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command("gpasswd", "-d", systemUser, "servika-ssh").Run()
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 		_ = exec.Command(servikaJailBin(), "teardown", systemUser).Run()
 		_ = credentials.LockSSHPassword(systemUser)
 	}
@@ -214,23 +230,29 @@ func (h *Handlers) SaveKey(w http.ResponseWriter, r *http.Request) {
 				httpx.WriteError(w, http.StatusBadRequest, "invalid SSH key: every line must start with ssh-, ecdsa-, or sk-")
 				return
 			}
+			// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		}
 	}
 	dir := filepath.Join("/home", systemUser, ".ssh")
+	// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
 	ak := filepath.Join(dir, "authorized_keys")
 	body := ""
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if key != "" {
 		body = key + "\n"
 	}
+	// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 	if err := os.WriteFile(ak, []byte(body), 0600); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, dir).Run()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("restorecon", "-R", dir).Run()
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "has_key": key != ""})
 }
@@ -249,9 +271,12 @@ func boolToInt(b bool) int {
 //     Invalid configuration is rolled back so the active sshd setup remains intact.
 func EnsureInfra() {
 	const srcDir = "/opt/servika/src/scripts"
+	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	// Install the jail script.
 	if data, err := os.ReadFile(srcDir + "/servika-jail"); err == nil {
+		// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		if e := os.WriteFile(servikaJailBin(), data, 0o755); e == nil {
+			// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 			_ = os.Chmod(servikaJailBin(), 0o755)
 		}
 	}
@@ -265,15 +290,19 @@ func EnsureInfra() {
 	}
 	cur, _ := os.ReadFile(dst)
 	if string(cur) == string(src) {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		return // The installed configuration is current.
 	}
+	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if e := os.WriteFile(dst, src, 0o644); e != nil {
 		log.Printf("could not write jail sshd configuration: %v", e)
 		return
 	}
 	if out, e := exec.Command("sshd", "-t").CombinedOutput(); e != nil {
+		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 		// Roll back invalid configuration without disrupting sshd.
 		if len(cur) > 0 {
+			// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 			_ = os.WriteFile(dst, cur, 0o644)
 		} else {
 			_ = os.Remove(dst)

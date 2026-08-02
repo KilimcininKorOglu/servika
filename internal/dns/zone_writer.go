@@ -118,6 +118,7 @@ type zoneCtx struct {
 }
 
 func readZoneSerial(path string) uint32 {
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	body, err := os.ReadFile(path)
 	if err != nil {
 		return 0
@@ -137,6 +138,7 @@ func readZoneSerial(path string) uint32 {
 }
 
 func nextSerialAt(old uint32, now time.Time) uint32 {
+	// #nosec G115 -- YYYYMMDD00 serial (~2.03e9) always fits in uint32 (max 4.29e9); no overflow.
 	base := uint32(now.UTC().Year()*1000000 + int(now.UTC().Month())*10000 + now.UTC().Day()*100)
 	if old >= base && old < ^uint32(0) {
 		return old + 1
@@ -185,21 +187,27 @@ func WriteZone(ctx context.Context, db *sql.DB, domainID int64) error {
 		return err
 	}
 	tmpPath := zonePath + ".tmp"
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(tmpPath, buf.Bytes(), 0640); err != nil {
 		return err
 	}
+	// #nosec G204 G702 -- fixed binary (named-checkzone) with separate args (no shell); domainName is validated before this point.
 	if out, err := exec.Command("named-checkzone", domainName, tmpPath).CombinedOutput(); err != nil {
 		_ = os.Remove(tmpPath)
 		return fmt.Errorf("named-checkzone: %s: %w", strings.TrimSpace(string(out)), err)
 	}
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	if previous, readErr := os.ReadFile(zonePath); readErr == nil {
+		// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(zonePath+".bak", previous, 0640)
 	}
 	if err := os.Rename(tmpPath, zonePath); err != nil {
 		_ = os.Remove(tmpPath)
 		return err
 	}
+	// #nosec G204 G702 -- fixed binaries (chown/restorecon) with constant/internal args (no shell); no tenant input.
 	_, _ = exec.Command("chown", "named:named", zonePath).CombinedOutput()
+	// #nosec G204 G702 -- fixed binary (restorecon) with internal zone path (no shell); no tenant input.
 	_, _ = exec.Command("restorecon", zonePath).CombinedOutput()
 
 	if err := updateZoneIncludes(ctx, db); err != nil {
@@ -262,6 +270,7 @@ func updateZoneIncludes(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 	tmpPath := NamedConfInclude + ".tmp"
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 	if err := os.WriteFile(tmpPath, []byte(content), 0644); err != nil {
 		return err
 	}
