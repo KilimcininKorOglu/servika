@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Could not save schedule",
     "backupCreated": "Backup created",
     "createFailed": "Could not create backup",
-    "restored": "Restored: {{domain}}, database: {{database}}",
-    "restoreDbUnknown": "unknown",
+    "restored": "Restored: {{domain}}. {{detail}}",
     "restoreFailed": "Restore failed"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "Delete backup file \"{{file}}\"?",
     "confirm": "Yes, delete"
   },
-  "confirmRestore": {
+  "restore": {
     "title": "Restore from backup",
-    "message": "Restore \"{{file}}\"?\n\nWARNING: Existing public_html files will be overwritten and MySQL tables will be recreated. This action cannot be undone.",
-    "confirm": "Yes, restore"
+    "file": "Backup: {{file}}",
+    "modeLabel": "What do you want to restore?",
+    "mode": {
+      "full": "Everything (files and databases)",
+      "files": "Files only",
+      "database": "Databases only",
+      "file": "Selected files",
+      "db": "A single database"
+    },
+    "cleanLabel": "Delete files that are not in the backup",
+    "cleanHint": "Off by default: live files are kept and only files from the backup are written over them.",
+    "targetLabel": "Where should the selected files go?",
+    "target": {
+      "folder": "Into a new folder (nothing is overwritten)",
+      "inPlace": "Back to their original location"
+    },
+    "sourceDbLabel": "Database in the backup",
+    "targetDbLabel": "Restore into (optional)",
+    "targetDbHint": "Leave empty to overwrite the original. Enter a new name starting with {{prefix}} to restore it alongside.",
+    "loadingContents": "Reading the backup...",
+    "contentsFailed": "The backup contents could not be read.",
+    "noFiles": "This backup contains no files.",
+    "noDatabases": "This backup contains no databases.",
+    "selectedCount": "{{n}} selected",
+    "truncated": "Only the first entries are listed.",
+    "searchPlaceholder": "Filter files",
+    "submit": "Restore",
+    "cancel": "Cancel",
+    "processing": "Restoring..."
   }
 }

@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -206,48 +205,15 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	file := fmt.Sprintf("%s-%s.tar.gz", systemUser, stamp)
 	abs := filepath.Join(dir, file)
 
-	// DB dump. Redirect ONLY stdout to the dump file so stderr is not written into
-	// the .sql, and drop "|| true" so a failed dump surfaces its real exit status.
-	// A swallowed failure here would archive a truncated/empty dump and report a
-	// successful backup that cannot be restored (silent data loss).
-	// The dump is written to a unique temp directory and archived as the canonical
-	// name "dump.sql" so the restore path (which looks for dump.sql) can import it.
-	// A per-backup temp dir avoids a fixed-name collision between concurrent backups.
-	dbName := systemUser + "_main"
-	dumpDir, derr := os.MkdirTemp("", "servika-dump-*")
-	if derr != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare database dump")
-		return
-	}
-	defer func() { _ = os.RemoveAll(dumpDir) }()
-	sqlDump := filepath.Join(dumpDir, "dump.sql")
-	// #nosec G204 G702 -- dbName = validSystemUser-checked systemUser (^c_[A-Za-z0-9_]+$, no shell metachars) + "_main"; sqlDump is an internal temp path. No tenant-controlled shell input.
-	if out, derr := exec.CommandContext(ctx, "bash", "-c",
-		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); derr != nil {
-		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
-		log.Printf("backup mysqldump failed for %s: %v: %s", dbName, derr, strings.TrimSpace(string(out)))
-		httpx.WriteError(w, http.StatusInternalServerError, "could not dump database for backup")
-		return
-	}
-
-	// Archive the home directory and database dump together.
-	args := []string{
-		"czf", abs,
-		"-C", "/home", systemUser,
-		"-C", dumpDir, "dump.sql",
-	}
-	// #nosec G204 G702 -- fixed binary (tar) with separate args (no shell); systemUser is validSystemUser-checked and paths are internal.
-	if _, tarErr := exec.CommandContext(ctx, "tar", args...).CombinedOutput(); tarErr != nil {
+	// Package the home directory plus EVERY domain-owned database (main + wp_* etc.)
+	// under __db__/ with a manifest, into one archive. buildArchive fails closed, so
+	// a failed dump/tar aborts the backup instead of storing an unrestorable archive.
+	sizeBytes, aerr := buildArchive(ctx, h.DB, id, systemUser, dir, file, time.Now().UTC().Format("2006-01-02 15:04:05"))
+	if aerr != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers, or error output; no raw tenant string with CR/LF reaches the log.
+		log.Printf("backup build failed for %s: %v", systemUser, aerr)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create backup archive")
 		return
-	}
-	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-
-	// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
-	st, _ := os.Stat(abs)
-	var sizeBytes int64
-	if st != nil {
-		sizeBytes = st.Size()
 	}
 
 	res, err := h.DB.ExecContext(r.Context(),

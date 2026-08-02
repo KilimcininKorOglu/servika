@@ -584,6 +584,7 @@ func main() {
 					Post("/domains/{id}/backups", backupsH.Create)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/backups/{bid}/download", backupsH.Download)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/backups/{bid}", backupsH.Delete)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/backups/{bid}/contents", backupsH.Contents)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/backups/{bid}/restore", backupsH.Restore)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/backup-schedule", backupsH.GetSchedule)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/backup-schedule", backupsH.SetSchedule)

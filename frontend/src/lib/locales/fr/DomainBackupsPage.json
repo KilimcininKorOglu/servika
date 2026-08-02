@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Impossible d'enregistrer la planification",
     "backupCreated": "Sauvegarde créée",
     "createFailed": "Impossible de créer la sauvegarde",
-    "restored": "Restauré : {{domain}}, base de données : {{database}}",
-    "restoreDbUnknown": "inconnue",
+    "restored": "Restauré : {{domain}}. {{detail}}",
     "restoreFailed": "Échec de la restauration"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "Supprimer le fichier de sauvegarde « {{file}} » ?",
     "confirm": "Oui, supprimer"
   },
-  "confirmRestore": {
-    "title": "Restaurer depuis une sauvegarde",
-    "message": "Restaurer « {{file}} » ?\n\nAVERTISSEMENT : les fichiers public_html existants seront écrasés et les tables MySQL seront recréées. Cette action est irréversible.",
-    "confirm": "Oui, restaurer"
+  "restore": {
+    "title": "Restaurer depuis la sauvegarde",
+    "file": "Sauvegarde : {{file}}",
+    "modeLabel": "Que souhaitez-vous restaurer ?",
+    "mode": {
+      "full": "Tout (fichiers et bases de données)",
+      "files": "Fichiers uniquement",
+      "database": "Bases de données uniquement",
+      "file": "Fichiers sélectionnés",
+      "db": "Une seule base de données"
+    },
+    "cleanLabel": "Supprimer les fichiers absents de la sauvegarde",
+    "cleanHint": "Désactivé par défaut : les fichiers actuels sont conservés et seuls ceux de la sauvegarde sont écrasés.",
+    "targetLabel": "Où placer les fichiers sélectionnés ?",
+    "target": {
+      "folder": "Dans un nouveau dossier (rien n'est écrasé)",
+      "inPlace": "À leur emplacement d'origine"
+    },
+    "sourceDbLabel": "Base de données dans la sauvegarde",
+    "targetDbLabel": "Restaurer vers (facultatif)",
+    "targetDbHint": "Laissez vide pour écraser l'original. Saisissez un nouveau nom commençant par {{prefix}} pour restaurer à côté.",
+    "loadingContents": "Lecture de la sauvegarde...",
+    "contentsFailed": "Le contenu de la sauvegarde n'a pas pu être lu.",
+    "noFiles": "Cette sauvegarde ne contient aucun fichier.",
+    "noDatabases": "Cette sauvegarde ne contient aucune base de données.",
+    "selectedCount": "{{n}} sélectionné(s)",
+    "truncated": "Seules les premières entrées sont listées.",
+    "searchPlaceholder": "Filtrer les fichiers",
+    "submit": "Restaurer",
+    "cancel": "Annuler",
+    "processing": "Restauration..."
   }
 }

@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Não foi possível guardar o agendamento",
     "backupCreated": "Cópia de segurança criada",
     "createFailed": "Não foi possível criar a cópia de segurança",
-    "restored": "Restaurado: {{domain}}, base de dados: {{database}}",
-    "restoreDbUnknown": "desconhecido",
+    "restored": "Restaurado: {{domain}}. {{detail}}",
     "restoreFailed": "Falha no restauro"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "Eliminar o ficheiro de cópia \"{{file}}\"?",
     "confirm": "Sim, eliminar"
   },
-  "confirmRestore": {
-    "title": "Restaurar a partir de cópia",
-    "message": "Restaurar \"{{file}}\"?\n\nAVISO: Os ficheiros public_html existentes serão substituídos e as tabelas MySQL serão recriadas. Esta ação não pode ser desfeita.",
-    "confirm": "Sim, restaurar"
+  "restore": {
+    "title": "Restaurar a partir da cópia de segurança",
+    "file": "Cópia de segurança: {{file}}",
+    "modeLabel": "O que pretende restaurar?",
+    "mode": {
+      "full": "Tudo (ficheiros e bases de dados)",
+      "files": "Apenas ficheiros",
+      "database": "Apenas bases de dados",
+      "file": "Ficheiros selecionados",
+      "db": "Uma única base de dados"
+    },
+    "cleanLabel": "Eliminar os ficheiros que não estão na cópia de segurança",
+    "cleanHint": "Desativado por predefinição: os ficheiros atuais são mantidos e apenas os da cópia são sobrescritos.",
+    "targetLabel": "Para onde devem ir os ficheiros selecionados?",
+    "target": {
+      "folder": "Para uma nova pasta (nada é sobrescrito)",
+      "inPlace": "Para a localização original"
+    },
+    "sourceDbLabel": "Base de dados na cópia de segurança",
+    "targetDbLabel": "Restaurar para (opcional)",
+    "targetDbHint": "Deixe vazio para sobrescrever a original. Introduza um nome novo começado por {{prefix}} para restaurar ao lado.",
+    "loadingContents": "A ler a cópia de segurança...",
+    "contentsFailed": "Não foi possível ler o conteúdo da cópia de segurança.",
+    "noFiles": "Esta cópia de segurança não contém ficheiros.",
+    "noDatabases": "Esta cópia de segurança não contém bases de dados.",
+    "selectedCount": "{{n}} selecionados",
+    "truncated": "Apenas as primeiras entradas são listadas.",
+    "searchPlaceholder": "Filtrar ficheiros",
+    "submit": "Restaurar",
+    "cancel": "Cancelar",
+    "processing": "A restaurar..."
   }
 }

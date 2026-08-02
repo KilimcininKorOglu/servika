@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import RestoreDialog, { type RestorePayload } from '@/components/RestoreDialog'
 import {
   responsiveTableActionCellClass,
   responsiveTableBodyClass,
@@ -171,12 +172,12 @@ export default function DomainBackupsPage() {
     }
   }
 
-  async function restore() {
+  async function restore(payload: RestorePayload) {
     if (!restoreBackup) return
     setProcessing(true); setError(null); setSuccess(null)
     try {
-      const { data } = await api.post(`/domains/${id}/backups/${restoreBackup.id}/restore`)
-      setSuccess(t('toast.restored', { domain: data.domain_name, database: data.database_import || t('toast.restoreDbUnknown') }))
+      const { data } = await api.post(`/domains/${id}/backups/${restoreBackup.id}/restore`, payload)
+      setSuccess(t('toast.restored', { domain: data.domain_name, detail: data.warning ?? '' }))
       setRestoreBackup(null)
     } catch (e) {
       setError(apiError(e, t('toast.restoreFailed')))
@@ -507,14 +508,18 @@ export default function DomainBackupsPage() {
         onCancel={() => setBackupToDelete(null)}
       />
 
-      <ConfirmDialog
-        open={!!restoreBackup}
-        title={t('confirmRestore.title')}
-        message={t('confirmRestore.message', { file: restoreBackup?.file })}
-        dangerous confirmText={t('confirmRestore.confirm')}
-        onConfirm={restore}
-        onCancel={() => setRestoreBackup(null)}
-      />
+      {restoreBackup && (
+        <RestoreDialog
+          open={!!restoreBackup}
+          domainId={id!}
+          backupId={restoreBackup.id}
+          file={restoreBackup.file}
+          systemUser={domain?.system_user ?? ''}
+          busy={processing}
+          onCancel={() => setRestoreBackup(null)}
+          onSubmit={restore}
+        />
+      )}
     </div>
   )
 }

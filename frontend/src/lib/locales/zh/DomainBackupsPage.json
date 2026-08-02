@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "无法保存计划",
     "backupCreated": "备份已创建",
     "createFailed": "无法创建备份",
-    "restored": "已还原：{{domain}}，数据库：{{database}}",
-    "restoreDbUnknown": "未知",
+    "restored": "已恢复：{{domain}}。{{detail}}",
     "restoreFailed": "还原失败"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "删除备份文件“{{file}}”？",
     "confirm": "是，删除"
   },
-  "confirmRestore": {
-    "title": "从备份还原",
-    "message": "还原“{{file}}”？\n\n警告：现有的 public_html 文件将被覆盖，MySQL 表将被重新创建。此操作无法撤销。",
-    "confirm": "是，还原"
+  "restore": {
+    "title": "从备份恢复",
+    "file": "备份：{{file}}",
+    "modeLabel": "您要恢复什么？",
+    "mode": {
+      "full": "全部（文件和数据库）",
+      "files": "仅文件",
+      "database": "仅数据库",
+      "file": "选定的文件",
+      "db": "单个数据库"
+    },
+    "cleanLabel": "删除备份中不存在的文件",
+    "cleanHint": "默认关闭：保留现有文件，仅覆盖备份中的文件。",
+    "targetLabel": "选定的文件恢复到哪里？",
+    "target": {
+      "folder": "恢复到新文件夹（不覆盖任何内容）",
+      "inPlace": "恢复到原始位置"
+    },
+    "sourceDbLabel": "备份中的数据库",
+    "targetDbLabel": "恢复到（可选）",
+    "targetDbHint": "留空以覆盖原数据库。输入以 {{prefix}} 开头的新名称可并列恢复。",
+    "loadingContents": "正在读取备份……",
+    "contentsFailed": "无法读取备份内容。",
+    "noFiles": "此备份不包含文件。",
+    "noDatabases": "此备份不包含数据库。",
+    "selectedCount": "已选择 {{n}} 项",
+    "truncated": "仅列出前面的条目。",
+    "searchPlaceholder": "筛选文件",
+    "submit": "恢复",
+    "cancel": "取消",
+    "processing": "正在恢复……"
   }
 }

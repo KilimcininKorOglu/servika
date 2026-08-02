@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Não foi possível salvar o agendamento",
     "backupCreated": "Backup criado",
     "createFailed": "Não foi possível criar o backup",
-    "restored": "Restaurado: {{domain}}, banco de dados: {{database}}",
-    "restoreDbUnknown": "desconhecido",
+    "restored": "Restaurado: {{domain}}. {{detail}}",
     "restoreFailed": "Falha na restauração"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "Excluir o arquivo de backup \"{{file}}\"?",
     "confirm": "Sim, excluir"
   },
-  "confirmRestore": {
-    "title": "Restaurar a partir do backup",
-    "message": "Restaurar \"{{file}}\"?\n\nAVISO: Os arquivos existentes em public_html serão sobrescritos e as tabelas MySQL serão recriadas. Esta ação não pode ser desfeita.",
-    "confirm": "Sim, restaurar"
+  "restore": {
+    "title": "Restaurar do backup",
+    "file": "Backup: {{file}}",
+    "modeLabel": "O que você quer restaurar?",
+    "mode": {
+      "full": "Tudo (arquivos e bancos de dados)",
+      "files": "Somente arquivos",
+      "database": "Somente bancos de dados",
+      "file": "Arquivos selecionados",
+      "db": "Um único banco de dados"
+    },
+    "cleanLabel": "Excluir os arquivos que não estão no backup",
+    "cleanHint": "Desativado por padrão: os arquivos atuais são mantidos e apenas os do backup são sobrescritos.",
+    "targetLabel": "Para onde devem ir os arquivos selecionados?",
+    "target": {
+      "folder": "Para uma nova pasta (nada é sobrescrito)",
+      "inPlace": "Para o local original"
+    },
+    "sourceDbLabel": "Banco de dados no backup",
+    "targetDbLabel": "Restaurar em (opcional)",
+    "targetDbHint": "Deixe vazio para sobrescrever o original. Digite um nome novo começando com {{prefix}} para restaurar ao lado.",
+    "loadingContents": "Lendo o backup...",
+    "contentsFailed": "Não foi possível ler o conteúdo do backup.",
+    "noFiles": "Este backup não contém arquivos.",
+    "noDatabases": "Este backup não contém bancos de dados.",
+    "selectedCount": "{{n}} selecionados",
+    "truncated": "Apenas as primeiras entradas são listadas.",
+    "searchPlaceholder": "Filtrar arquivos",
+    "submit": "Restaurar",
+    "cancel": "Cancelar",
+    "processing": "Restaurando..."
   }
 }

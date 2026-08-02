@@ -8,10 +8,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 )
 
@@ -125,33 +123,14 @@ func runOneBackup(db *sql.DB, d dueDomain) error {
 	file := fmt.Sprintf("%s-auto-%s.tar.gz", d.SystemUser, stamp)
 	abs := filepath.Join(dir, file)
 
-	// Dump stdout only (no stderr into the .sql) and drop "|| true" so a failed dump
-	// aborts the scheduled backup instead of archiving a corrupt/empty dump as success.
-	// Archive the dump under the canonical name "dump.sql" (in a unique temp dir to
-	// avoid concurrent-backup collisions) so the restore path can find and import it.
-	dbName := d.SystemUser + "_main"
-	dumpDir, err := os.MkdirTemp("", "servika-dump-*")
+	// Package the home directory plus EVERY domain-owned database (main + wp_* etc.)
+	// under __db__/ with a manifest, exactly like a manual backup, so a scheduled
+	// archive restores to the same state. buildArchive fails closed.
+	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
+	defer cancel()
+	sizeBytes, err := buildArchive(ctx, db, d.ID, d.SystemUser, dir, file, time.Now().UTC().Format("2006-01-02 15:04:05"))
 	if err != nil {
-		return fmt.Errorf("prepare dump dir: %w", err)
-	}
-	defer func() { _ = os.RemoveAll(dumpDir) }()
-	sqlDump := filepath.Join(dumpDir, "dump.sql")
-	// #nosec G204 G702 -- dbName = validSystemUser-checked SystemUser (^c_[A-Za-z0-9_]+$, no shell metachars) + "_main"; sqlDump is an internal temp path. No tenant-controlled shell input.
-	if out, err := exec.Command("bash", "-c",
-		fmt.Sprintf("mysqldump --single-transaction %s > %s", dbName, sqlDump)).CombinedOutput(); err != nil {
-		return fmt.Errorf("mysqldump %s: %s: %w", dbName, strings.TrimSpace(string(out)), err)
-	}
-
-	args := []string{"czf", abs, "-C", "/home", d.SystemUser, "-C", dumpDir, "dump.sql"}
-	// #nosec G204 G702 -- fixed binary (tar) with separate args (no shell); systemUser is validSystemUser-checked.
-	if out, err := exec.Command("tar", args...).CombinedOutput(); err != nil {
-		return fmt.Errorf("tar: %s: %w", strings.TrimSpace(string(out)), err)
-	}
-
-	st, _ := os.Stat(abs)
-	var sizeBytes int64
-	if st != nil {
-		sizeBytes = st.Size()
+		return err
 	}
 
 	res, err := db.Exec(

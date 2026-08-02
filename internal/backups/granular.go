@@ -1,0 +1,588 @@
+package backups
+
+import (
+	"archive/tar"
+	"compress/gzip"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
+	"servika/internal/archivex"
+	"servika/internal/credentials"
+	"servika/internal/httpx"
+
+	"github.com/go-chi/chi/v5"
+)
+
+// shellQuote single-quotes a value for a bash -c command line (mysql/mysqldump
+// file paths and DB names). All embedded single quotes are escaped.
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
+// isSystemDB reports databases that must never be dumped or overwritten.
+func isSystemDB(n string) bool {
+	switch strings.ToLower(strings.TrimSpace(n)) {
+	case "mysql", "information_schema", "performance_schema", "sys", "panel":
+		return true
+	}
+	return false
+}
+
+// domainDatabases returns every database name owned by a domain (the primary
+// <system_user>_main plus db_accounts rows). Only valid, non-system identifiers
+// pass, so this doubles as the restore whitelist.
+func domainDatabases(db *sql.DB, domainID int64, systemUser string) []string {
+	set := map[string]bool{}
+	out := []string{}
+	add := func(n string) {
+		n = strings.TrimSpace(n)
+		if n != "" && credentials.ValidDBIdentifier(n) && !isSystemDB(n) && !set[n] {
+			set[n] = true
+			out = append(out, n)
+		}
+	}
+	add(systemUser + "_main")
+	if rows, err := db.Query(`SELECT db_name FROM db_accounts WHERE domain_id=?`, domainID); err == nil {
+		defer func() { _ = rows.Close() }()
+		for rows.Next() {
+			var n string
+			if rows.Scan(&n) == nil {
+				add(n)
+			}
+		}
+	}
+	return out
+}
+
+// tenantPrimaryDBUser returns the domain's main DB user, for granting a
+// newly-created restore-target database.
+func tenantPrimaryDBUser(db *sql.DB, domainID int64, systemUser string) string {
+	var u string
+	_ = db.QueryRow(`SELECT db_user FROM db_accounts WHERE domain_id=? AND db_name=? LIMIT 1`,
+		domainID, systemUser+"_main").Scan(&u)
+	if u == "" {
+		_ = db.QueryRow(`SELECT db_user FROM db_accounts WHERE domain_id=? LIMIT 1`, domainID).Scan(&u)
+	}
+	if u == "" {
+		u = systemUser + "_db"
+	}
+	return u
+}
+
+// archiveManifest is the __db__/manifest.json payload (informational + DB list).
+type archiveManifest struct {
+	CreatedAt string   `json:"created_at"`
+	Home      string   `json:"home"`
+	MainDB    string   `json:"main_db"`
+	Databases []string `json:"databases"`
+}
+
+// buildArchive packages /home/<systemUser> plus every domain DB (__db__/<name>.sql)
+// plus a manifest into a single .tar.gz. Used by both the manual Create handler
+// and the scheduler. Older backups dumped only <systemUser>_main; extra DBs such
+// as wp_* are now included. Returns the archive size in bytes.
+func buildArchive(ctx context.Context, db *sql.DB, domainID int64, systemUser, dir, file, createdTS string) (int64, error) {
+	abs := filepath.Join(dir, file)
+	dbDir := filepath.Join(dir, "__db__")
+	// #nosec G703 -- staging paths derive from backupRoot()/<validSystemUser-checked systemUser> and ValidDBIdentifier-checked DB names; no raw tenant path input.
+	_ = os.RemoveAll(dbDir)
+	// #nosec G703 -- staging paths derive from backupRoot()/<validSystemUser-checked systemUser> and ValidDBIdentifier-checked DB names; no raw tenant path input.
+	if err := os.MkdirAll(dbDir, 0700); err != nil {
+		return 0, fmt.Errorf("db staging: %w", err)
+	}
+	// #nosec G703 -- staging paths derive from backupRoot()/<validSystemUser-checked systemUser> and ValidDBIdentifier-checked DB names; no raw tenant path input.
+	defer func() { _ = os.RemoveAll(dbDir) }()
+
+	written := []string{}
+	for _, dbName := range domainDatabases(db, domainID, systemUser) {
+		target := filepath.Join(dbDir, dbName+".sql")
+		// #nosec G204 G702 -- dbName is a credentials.ValidDBIdentifier-checked, non-system name and target is an internal staging path, both shell-quoted; no tenant shell input.
+		cmd := newRestoreCommand(ctx, "bash", "-c",
+			fmt.Sprintf("mysqldump --single-transaction --skip-lock-tables %s > %s 2>/dev/null",
+				shellQuote(dbName), shellQuote(target)))
+		if err := cmd.Run(); err != nil {
+			// #nosec G703 -- staging paths derive from backupRoot()/<validSystemUser-checked systemUser> and ValidDBIdentifier-checked DB names; no raw tenant path input.
+			_ = os.Remove(target)
+			continue
+		}
+		// #nosec G703 -- staging paths derive from backupRoot()/<validSystemUser-checked systemUser> and ValidDBIdentifier-checked DB names; no raw tenant path input.
+		if fi, e := os.Stat(target); e != nil || fi.Size() == 0 {
+			// #nosec G703 -- staging paths derive from backupRoot()/<validSystemUser-checked systemUser> and ValidDBIdentifier-checked DB names; no raw tenant path input.
+			_ = os.Remove(target)
+			continue
+		}
+		written = append(written, dbName)
+	}
+
+	man := archiveManifest{CreatedAt: createdTS, Home: systemUser, MainDB: systemUser + "_main", Databases: written}
+	if b, err := json.MarshalIndent(man, "", "  "); err == nil {
+		// #nosec G306 G703 -- root-owned backup staging file under BackupRoot (0700), path derived from a validated systemUser; carries no secret.
+		_ = os.WriteFile(filepath.Join(dbDir, "manifest.json"), b, 0600)
+	}
+
+	args := []string{"czf", abs, "-C", "/home", systemUser, "-C", dir, "__db__"}
+	// #nosec G204 G702 -- fixed binary (tar) with separate args (no shell); systemUser is validSystemUser-checked and paths are internal.
+	if out, err := newRestoreCommand(ctx, "tar", args...).CombinedOutput(); err != nil {
+		// #nosec G703 -- staging paths derive from backupRoot()/<validSystemUser-checked systemUser> and ValidDBIdentifier-checked DB names; no raw tenant path input.
+		_ = os.Remove(abs)
+		return 0, fmt.Errorf("tar: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+	var size int64
+	// #nosec G703 -- staging paths derive from backupRoot()/<validSystemUser-checked systemUser> and ValidDBIdentifier-checked DB names; no raw tenant path input.
+	if st, _ := os.Stat(abs); st != nil {
+		size = st.Size()
+	}
+	return size, nil
+}
+
+// safeMemberPath validates an archive-relative path (rejects absolute / jail escape).
+func safeMemberPath(p string) (string, bool) {
+	p = strings.TrimPrefix(strings.TrimSpace(p), "./")
+	if p == "" || strings.HasPrefix(p, "/") {
+		return "", false
+	}
+	c := filepath.Clean(p)
+	if c == ".." || strings.HasPrefix(c, "../") || strings.Contains(c, "/../") || strings.HasPrefix(c, "/") {
+		return "", false
+	}
+	return c, true
+}
+
+// archiveDBFiles maps DB name -> extracted .sql path inside tmp.
+// New format: tmp/__db__/<name>.sql. Legacy: tmp/<any>.sql -> <systemUser>_main.
+func archiveDBFiles(tmp, systemUser string) map[string]string {
+	out := map[string]string{}
+	dbDir := filepath.Join(tmp, "__db__")
+	if fi, err := os.Stat(dbDir); err == nil && fi.IsDir() {
+		ents, _ := os.ReadDir(dbDir)
+		for _, e := range ents {
+			if e.IsDir() || !strings.HasSuffix(e.Name(), ".sql") {
+				continue
+			}
+			out[strings.TrimSuffix(e.Name(), ".sql")] = filepath.Join(dbDir, e.Name())
+		}
+		if len(out) > 0 {
+			return out
+		}
+	}
+	ents, _ := os.ReadDir(tmp)
+	for _, e := range ents {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".sql") {
+			continue
+		}
+		out[systemUser+"_main"] = filepath.Join(tmp, e.Name())
+		break
+	}
+	return out
+}
+
+// importDB imports a .sql file into a (whitelisted) database.
+func importDB(ctx context.Context, dbName, sqlPath string) error {
+	// #nosec G204 G702 -- dbName is a credentials.ValidDBIdentifier-checked, non-system, domain-owned name and sqlPath is an internal staging path, both shell-quoted; no tenant shell input.
+	cmd := newRestoreCommand(ctx, "bash", "-c", fmt.Sprintf("mysql %s < %s 2>&1", shellQuote(dbName), shellQuote(sqlPath)))
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s", strings.TrimSpace(string(out)))
+	}
+	return nil
+}
+
+// restoreAllDBs imports every domain-owned DB present in the archive (mode full/database).
+// When filter != "", only that DB. Non-owned / system DBs are skipped.
+func restoreAllDBs(ctx context.Context, db *sql.DB, domainID int64, tmp, systemUser, filter string) []map[string]string {
+	files := archiveDBFiles(tmp, systemUser)
+	owned := map[string]bool{}
+	for _, n := range domainDatabases(db, domainID, systemUser) {
+		owned[n] = true
+	}
+	res := []map[string]string{}
+	for name, p := range files {
+		if filter != "" && name != filter {
+			continue
+		}
+		if isSystemDB(name) || !owned[name] {
+			res = append(res, map[string]string{"db": name, "status": "skipped (not owned by domain)"})
+			continue
+		}
+		if err := importDB(ctx, name, p); err != nil {
+			res = append(res, map[string]string{"db": name, "status": "error: " + err.Error()})
+		} else {
+			res = append(res, map[string]string{"db": name, "status": "restored"})
+		}
+	}
+	return res
+}
+
+// restoreOneDB restores a single DB either over the original (targetDB empty) or
+// into a NEW name (mode db). A new target must be tenant-prefixed and non-system.
+func restoreOneDB(ctx context.Context, db *sql.DB, domainID int64, tmp, systemUser, srcDB, targetDB string) (string, error) {
+	files := archiveDBFiles(tmp, systemUser)
+	sqlPath, ok := files[srcDB]
+	if !ok {
+		return "", fmt.Errorf("database %q is not in the backup", srcDB)
+	}
+	owned := map[string]bool{}
+	for _, n := range domainDatabases(db, domainID, systemUser) {
+		owned[n] = true
+	}
+	if targetDB == "" || targetDB == srcDB {
+		if isSystemDB(srcDB) || !owned[srcDB] {
+			return "", fmt.Errorf("%q is not owned by this domain", srcDB)
+		}
+		if err := importDB(ctx, srcDB, sqlPath); err != nil {
+			return "", err
+		}
+		return "restored over " + srcDB, nil
+	}
+	if !credentials.ValidDBIdentifier(targetDB) || isSystemDB(targetDB) || !strings.HasPrefix(targetDB, systemUser+"_") {
+		return "", fmt.Errorf("invalid target name — must start with %q", systemUser+"_")
+	}
+	if owned[targetDB] {
+		return "", fmt.Errorf("%q already exists; leave the target empty to overwrite it", targetDB)
+	}
+	dbUser := tenantPrimaryDBUser(db, domainID, systemUser)
+	if err := credentials.MySQLCreateDBForUser(db, domainID, targetDB, dbUser); err != nil {
+		return "", fmt.Errorf("could not create target database: %w", err)
+	}
+	if err := importDB(ctx, targetDB, sqlPath); err != nil {
+		return "", err
+	}
+	return "restored into new database " + targetDB, nil
+}
+
+// pathEscapes reports whether a relative path leaves the archive root after Clean.
+func pathEscapes(p string) bool {
+	c := filepath.Clean(p)
+	return c == ".." || strings.HasPrefix(c, "../")
+}
+
+// restoreSelectedFiles copies only the chosen paths out of the archive.
+// target != "in_place" -> /home/<systemUser>/restore-<stamp>/ (nothing overwritten).
+// target == "in_place" -> original location (only the selected paths; home not wiped).
+func restoreSelectedFiles(ctx context.Context, tmp, systemUser string, paths []string, target string) (int, string, error) {
+	src := filepath.Join(tmp, systemUser)
+	rootTarget := "/home/" + systemUser
+	subDir := ""
+	if target != "in_place" {
+		subDir = "restore-" + time.Now().Format("20060102-150405")
+		rootTarget = filepath.Join("/home/"+systemUser, subDir)
+		// 0750 matches the tenant home convention (owner + group, nginx reads via ACL).
+		if err := os.MkdirAll(rootTarget, 0750); err != nil {
+			return 0, "", fmt.Errorf("target directory: %w", err)
+		}
+	}
+	n := 0
+	for _, y := range paths {
+		rel, ok := safeMemberPath(y)
+		if !ok {
+			continue
+		}
+		s := filepath.Join(src, rel)
+		if s != src && !strings.HasPrefix(s, src+string(os.PathSeparator)) {
+			continue
+		}
+		if _, err := os.Lstat(s); err != nil {
+			continue
+		}
+		d := filepath.Join(rootTarget, rel)
+		if err := os.MkdirAll(filepath.Dir(d), 0750); err != nil {
+			continue
+		}
+		// #nosec G204 G702 -- fixed binary (cp) with separate args (no shell); s/d are under the validated tenant staging/home tree.
+		if _, err := newRestoreCommand(ctx, "cp", "-a", s, d).CombinedOutput(); err != nil {
+			continue
+		}
+		n++
+	}
+	// #nosec G204 G702 -- fixed binaries (chown/restorecon) with separate args (no shell); systemUser is validated and rootTarget is internal.
+	_, _ = newRestoreCommand(ctx, "chown", "-R", systemUser+":"+systemUser, rootTarget).CombinedOutput()
+	_, _ = newRestoreCommand(ctx, "restorecon", "-R", rootTarget).CombinedOutput()
+	return n, subDir, nil
+}
+
+// restoreHome restores the whole home. clean=false -> no --delete (active files
+// absent from the backup are kept; only backed-up files are overwritten).
+// clean=true -> rsync --delete (exact backup state; the old, dangerous behavior).
+func restoreHome(ctx context.Context, tmp, systemUser string, clean bool) {
+	extractedHome := filepath.Join(tmp, systemUser)
+	if _, err := os.Stat(extractedHome); err != nil {
+		return
+	}
+	args := []string{"-a"}
+	if clean {
+		args = append(args, "--delete")
+	}
+	args = append(args, extractedHome+"/", "/home/"+systemUser+"/")
+	// #nosec G204 G702 -- fixed binary (rsync) with separate args (no shell); systemUser is validated and paths are internal.
+	if _, err := newRestoreCommand(ctx, "rsync", args...).CombinedOutput(); err != nil {
+		// #nosec G204 G702 -- rsync unavailable fallback: fixed binary (cp), separate args, validated paths.
+		_, _ = newRestoreCommand(ctx, "cp", "-af", extractedHome+"/.", "/home/"+systemUser+"/").CombinedOutput()
+	}
+	// #nosec G204 G702 -- fixed binaries (chown/restorecon) with separate args (no shell); systemUser is validated.
+	_, _ = newRestoreCommand(ctx, "chown", "-R", systemUser+":"+systemUser, "/home/"+systemUser).CombinedOutput()
+	_, _ = newRestoreCommand(ctx, "restorecon", "-R", "/home/"+systemUser).CombinedOutput()
+}
+
+// ContentFile / ContentDB are the archive-listing output types.
+type ContentFile struct {
+	Path  string `json:"path"`
+	Size  int64  `json:"size"`
+	IsDir bool   `json:"is_dir"`
+}
+type ContentDB struct {
+	Name string `json:"name"`
+	Size int64  `json:"size"`
+}
+
+// Contents handles GET /domains/{id}/backups/{bid}/contents.
+// It read-only scans a domain's own archive and returns the file tree + DB list
+// for the file-level and SQL-level granular restore UI.
+func (h *Handlers) Contents(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	bid, _ := strconv.ParseInt(chi.URLParam(r, "bid"), 10, 64)
+
+	var systemUser, file string
+	err := h.DB.QueryRowContext(r.Context(),
+		`SELECT d.system_user, b.file FROM backups b
+		 JOIN domains d ON d.id=b.domain_id
+		 WHERE b.id=? AND b.domain_id=?`, bid, id).Scan(&systemUser, &file)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpx.WriteError(w, http.StatusNotFound, "backup not found")
+		return
+	}
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+	if !validSystemUser(systemUser) || file == "" || filepath.Base(file) != file {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid backup file")
+		return
+	}
+	abs := filepath.Join(backupRoot(), systemUser, file)
+
+	files, dbs, truncated, err := scanArchiveContents(abs, systemUser)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "backup archive could not be read")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"files":     files,
+		"databases": dbs,
+		"truncated": truncated,
+	})
+}
+
+// scanArchiveContents read-only walks the .tar.gz and splits members into home
+// files and DB dumps (capped at 6000 file entries).
+func scanArchiveContents(abs, systemUser string) ([]ContentFile, []ContentDB, bool, error) {
+	// #nosec G304 -- abs is BackupRoot/<validated systemUser>/<validated base file>, a root-owned server path, not tenant input.
+	f, err := os.Open(abs)
+	if err != nil {
+		return nil, nil, false, err
+	}
+	defer func() { _ = f.Close() }()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, nil, false, err
+	}
+	defer func() { _ = gz.Close() }()
+
+	tr := tar.NewReader(gz)
+	const limit = 6000
+	files := []ContentFile{}
+	dbs := []ContentDB{}
+	truncated := false
+	for {
+		hd, e := tr.Next()
+		if e == io.EOF {
+			break
+		}
+		if e != nil {
+			break
+		}
+		name := strings.TrimPrefix(hd.Name, "./")
+		if name == "" {
+			continue
+		}
+		if base, ok := strings.CutPrefix(name, "__db__/"); ok {
+			if dbName, isSQL := strings.CutSuffix(base, ".sql"); isSQL {
+				dbs = append(dbs, ContentDB{Name: dbName, Size: hd.Size})
+			}
+			continue
+		}
+		if hd.Typeflag == tar.TypeReg && strings.HasSuffix(name, ".sql") && !strings.Contains(strings.TrimSuffix(name, "/"), "/") {
+			dbs = append(dbs, ContentDB{Name: systemUser + "_main", Size: hd.Size})
+			continue
+		}
+		if name == systemUser || name == systemUser+"/" {
+			continue
+		}
+		disp := strings.TrimSuffix(strings.TrimPrefix(name, systemUser+"/"), "/")
+		if disp == "" {
+			continue
+		}
+		if len(files) >= limit {
+			truncated = true
+			continue
+		}
+		files = append(files, ContentFile{Path: disp, Size: hd.Size, IsDir: hd.Typeflag == tar.TypeDir})
+	}
+	return files, dbs, truncated, nil
+}
+
+// restoreArchiveScan is a restore-specific safety pre-scan. Unlike archivex.Scan
+// it ALLOWS internal relative symlinks/hardlinks (npm/composer projects) and only
+// rejects jail escapes (absolute or ..-escaping symlink/hardlink targets, absolute
+// or ..-escaping member paths) and device/fifo members. Archives are root-produced
+// trusted backups; this is defense in depth.
+func restoreArchiveScan(abs string) error {
+	// #nosec G304 -- abs is BackupRoot/<validated systemUser>/<validated base file>, a root-owned server path, not tenant input.
+	f, err := os.Open(abs)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = f.Close() }()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = gz.Close() }()
+	tr := tar.NewReader(gz)
+	for {
+		hd, e := tr.Next()
+		if e == io.EOF {
+			break
+		}
+		if e != nil {
+			return fmt.Errorf("archive could not be read: %w", e)
+		}
+		name := strings.TrimPrefix(hd.Name, "./")
+		if filepath.IsAbs(hd.Name) || pathEscapes(name) {
+			return fmt.Errorf("security: invalid member path: %s", hd.Name)
+		}
+		switch hd.Typeflag {
+		case tar.TypeSymlink:
+			if filepath.IsAbs(hd.Linkname) {
+				return fmt.Errorf("security: absolute symlink target rejected: %s -> %s", hd.Name, hd.Linkname)
+			}
+			// #nosec G305 -- this IS the traversal check: the join resolves the symlink target so pathEscapes can reject it; nothing is extracted here.
+			if pathEscapes(filepath.Join(filepath.Dir(name), hd.Linkname)) {
+				return fmt.Errorf("security: out-of-archive symlink rejected: %s -> %s", hd.Name, hd.Linkname)
+			}
+		case tar.TypeLink:
+			if filepath.IsAbs(hd.Linkname) || pathEscapes(strings.TrimPrefix(hd.Linkname, "./")) {
+				return fmt.Errorf("security: invalid hardlink rejected: %s -> %s", hd.Name, hd.Linkname)
+			}
+		case tar.TypeChar, tar.TypeBlock, tar.TypeFifo:
+			return fmt.Errorf("security: device/fifo member rejected: %s", hd.Name)
+		}
+	}
+	return nil
+}
+
+// listArchiveMembers returns all member names (read-only).
+func listArchiveMembers(abs string) ([]string, error) {
+	// #nosec G304 -- abs is BackupRoot/<validated systemUser>/<validated base file>, a root-owned server path, not tenant input.
+	f, err := os.Open(abs)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = gz.Close() }()
+	tr := tar.NewReader(gz)
+	var members []string
+	for {
+		hd, e := tr.Next()
+		if e == io.EOF {
+			break
+		}
+		if e != nil {
+			return members, nil
+		}
+		members = append(members, strings.TrimPrefix(hd.Name, "./"))
+	}
+	return members, nil
+}
+
+// membersForMode computes the top-level members to extract for a mode.
+func membersForMode(mode, systemUser string, allMembers, paths []string) []string {
+	hasHome, hasDBDir := false, false
+	legacySQL := []string{}
+	for _, m := range allMembers {
+		if m == systemUser || strings.HasPrefix(m, systemUser+"/") {
+			hasHome = true
+		}
+		if strings.HasPrefix(m, "__db__/") {
+			hasDBDir = true
+		}
+		if strings.HasSuffix(m, ".sql") && !strings.Contains(strings.TrimSuffix(m, "/"), "/") {
+			legacySQL = append(legacySQL, m)
+		}
+	}
+	dbMembers := legacySQL
+	if hasDBDir {
+		dbMembers = []string{"__db__"}
+	}
+	switch mode {
+	case "files":
+		if hasHome {
+			return []string{systemUser}
+		}
+		return nil
+	case "database", "db":
+		return dbMembers
+	case "full":
+		r := []string{}
+		if hasHome {
+			r = append(r, systemUser)
+		}
+		return append(r, dbMembers...)
+	case "file":
+		r := []string{}
+		for _, y := range paths {
+			if rel, ok := safeMemberPath(y); ok {
+				r = append(r, systemUser+"/"+rel)
+			}
+		}
+		return r
+	}
+	return nil
+}
+
+// extractMembersRoot extracts ONLY the given members as root into destDir. Quota
+// friendly (root uid is unquotaed) so a second copy of the tenant home can be
+// staged without hitting the tenant quota. Security: restoreArchiveScan pre-scan
+// (jail-escape member rejection) runs first; archives are root-produced trusted
+// backups (BackupRoot 0700).
+func extractMembersRoot(ctx context.Context, abs, destDir string, members []string) (string, error) {
+	if len(members) == 0 {
+		return "", fmt.Errorf("no members to extract")
+	}
+	if archivex.DetectType(abs) == archivex.TypeUnknown {
+		return "", fmt.Errorf("unsupported archive")
+	}
+	if err := restoreArchiveScan(abs); err != nil {
+		return "", err
+	}
+	args := append([]string{"-xz", "-f", abs, "-C", destDir}, members...)
+	// #nosec G204 G702 -- fixed binary (tar) with separate args (no shell); abs/destDir are root-owned server paths, members are pre-scanned by restoreArchiveScan.
+	out, err := newRestoreCommand(ctx, "tar", args...).CombinedOutput()
+	if err != nil {
+		return string(out), fmt.Errorf("member extraction: %w", err)
+	}
+	return string(out), nil
+}

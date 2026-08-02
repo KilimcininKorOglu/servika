@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Zeitplan konnte nicht gespeichert werden",
     "backupCreated": "Backup erstellt",
     "createFailed": "Backup konnte nicht erstellt werden",
-    "restored": "Wiederhergestellt: {{domain}}, Datenbank: {{database}}",
-    "restoreDbUnknown": "unbekannt",
+    "restored": "Wiederhergestellt: {{domain}}. {{detail}}",
     "restoreFailed": "Wiederherstellung fehlgeschlagen"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "Backup-Datei \"{{file}}\" löschen?",
     "confirm": "Ja, löschen"
   },
-  "confirmRestore": {
+  "restore": {
     "title": "Aus Backup wiederherstellen",
-    "message": "\"{{file}}\" wiederherstellen?\n\nWARNUNG: Vorhandene public_html-Dateien werden überschrieben und MySQL-Tabellen neu erstellt. Diese Aktion kann nicht rückgängig gemacht werden.",
-    "confirm": "Ja, wiederherstellen"
+    "file": "Backup: {{file}}",
+    "modeLabel": "Was möchten Sie wiederherstellen?",
+    "mode": {
+      "full": "Alles (Dateien und Datenbanken)",
+      "files": "Nur Dateien",
+      "database": "Nur Datenbanken",
+      "file": "Ausgewählte Dateien",
+      "db": "Eine einzelne Datenbank"
+    },
+    "cleanLabel": "Dateien löschen, die nicht im Backup sind",
+    "cleanHint": "Standardmäßig aus: Vorhandene Dateien bleiben erhalten, nur Dateien aus dem Backup werden darüber geschrieben.",
+    "targetLabel": "Wohin sollen die ausgewählten Dateien?",
+    "target": {
+      "folder": "In einen neuen Ordner (nichts wird überschrieben)",
+      "inPlace": "Zurück an den ursprünglichen Ort"
+    },
+    "sourceDbLabel": "Datenbank im Backup",
+    "targetDbLabel": "Wiederherstellen nach (optional)",
+    "targetDbHint": "Leer lassen, um das Original zu überschreiben. Für eine parallele Wiederherstellung einen neuen Namen mit dem Präfix {{prefix}} eingeben.",
+    "loadingContents": "Backup wird gelesen...",
+    "contentsFailed": "Der Backup-Inhalt konnte nicht gelesen werden.",
+    "noFiles": "Dieses Backup enthält keine Dateien.",
+    "noDatabases": "Dieses Backup enthält keine Datenbanken.",
+    "selectedCount": "{{n}} ausgewählt",
+    "truncated": "Es werden nur die ersten Einträge aufgelistet.",
+    "searchPlaceholder": "Dateien filtern",
+    "submit": "Wiederherstellen",
+    "cancel": "Abbrechen",
+    "processing": "Wird wiederhergestellt..."
   }
 }

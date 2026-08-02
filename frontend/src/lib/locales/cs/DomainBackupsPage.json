@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Plán nelze uložit",
     "backupCreated": "Záloha vytvořena",
     "createFailed": "Zálohu nelze vytvořit",
-    "restored": "Obnoveno: {{domain}}, databáze: {{database}}",
-    "restoreDbUnknown": "neznámá",
+    "restored": "Obnoveno: {{domain}}. {{detail}}",
     "restoreFailed": "Obnovení se nezdařilo"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "Smazat soubor zálohy „{{file}}“?",
     "confirm": "Ano, smazat"
   },
-  "confirmRestore": {
+  "restore": {
     "title": "Obnovit ze zálohy",
-    "message": "Obnovit „{{file}}“?\n\nVAROVÁNÍ: Stávající soubory public_html budou přepsány a tabulky MySQL budou znovu vytvořeny. Tuto akci nelze vrátit zpět.",
-    "confirm": "Ano, obnovit"
+    "file": "Záloha: {{file}}",
+    "modeLabel": "Co chcete obnovit?",
+    "mode": {
+      "full": "Vše (soubory a databáze)",
+      "files": "Pouze soubory",
+      "database": "Pouze databáze",
+      "file": "Vybrané soubory",
+      "db": "Jednu databázi"
+    },
+    "cleanLabel": "Odstranit soubory, které nejsou v záloze",
+    "cleanHint": "Ve výchozím stavu vypnuto: stávající soubory zůstanou zachovány a přepíší se pouze soubory ze zálohy.",
+    "targetLabel": "Kam mají vybrané soubory jít?",
+    "target": {
+      "folder": "Do nové složky (nic se nepřepíše)",
+      "inPlace": "Zpět na původní místo"
+    },
+    "sourceDbLabel": "Databáze v záloze",
+    "targetDbLabel": "Obnovit do (volitelné)",
+    "targetDbHint": "Ponechte prázdné pro přepsání originálu. Zadejte nový název začínající na {{prefix}} pro obnovení vedle něj.",
+    "loadingContents": "Načítání zálohy...",
+    "contentsFailed": "Obsah zálohy se nepodařilo načíst.",
+    "noFiles": "Tato záloha neobsahuje žádné soubory.",
+    "noDatabases": "Tato záloha neobsahuje žádné databáze.",
+    "selectedCount": "Vybráno: {{n}}",
+    "truncated": "Zobrazují se pouze první položky.",
+    "searchPlaceholder": "Filtrovat soubory",
+    "submit": "Obnovit",
+    "cancel": "Zrušit",
+    "processing": "Obnovování..."
   }
 }

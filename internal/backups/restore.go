@@ -3,8 +3,8 @@ package backups
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -20,6 +20,8 @@ import (
 
 const restoreCommandPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+// newRestoreCommand runs a restore subprocess with an explicit environment
+// allowlist, so panel secrets in the server environment are never inherited.
 func newRestoreCommand(ctx context.Context, name string, arguments ...string) *exec.Cmd {
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.CommandContext(ctx, name, arguments...)
@@ -27,12 +29,32 @@ func newRestoreCommand(ctx context.Context, name string, arguments ...string) *e
 	return command
 }
 
-// Restore handles POST /api/v1/domains/:id/backups/:backupID/restore.
-// It extracts the archive and imports the database when dump.sql exists.
-// This destructive operation overwrites public_html and recreates database tables.
+// restoreRequest is the granular restore body. Every field is optional; an empty
+// body means mode "full".
+type restoreRequest struct {
+	Mode     string   `json:"mode"`      // full | files | database | file | db
+	Clean    bool     `json:"clean"`     // mode full/files: rsync --delete (destructive)
+	Paths    []string `json:"paths"`     // mode file: archive-relative paths
+	Target   string   `json:"target"`    // mode file: "folder" (default) | "in_place"
+	DB       string   `json:"db"`        // mode db (required) / database (optional filter)
+	TargetDB string   `json:"target_db"` // mode db: "" overwrites, set restores into a new name
+}
+
+// Restore handles POST /api/v1/domains/:id/backups/:bid/restore.
+// Granular restore: full / files only / databases only / selected files / one database.
+// The defaults are NON-DESTRUCTIVE: full and files do not delete files missing from
+// the backup (clean=false), selected files land in a separate folder, and a single
+// database can be restored into a new name.
 func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	backupID, _ := strconv.ParseInt(chi.URLParam(r, "bid"), 10, 64)
+
+	var req restoreRequest
+	_ = json.NewDecoder(r.Body).Decode(&req) // an empty body is tolerated
+	req.Mode = strings.TrimSpace(req.Mode)
+	if req.Mode == "" {
+		req.Mode = "full"
+	}
 
 	var systemUser, file, domainName string
 	var isDemo int
@@ -73,95 +95,112 @@ func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract into an isolated staging directory owned by the tenant.
+	// Quota-friendly staging: extract ONLY the members the mode needs, as root, into
+	// the panel temp dir (TMPDIR, persistent disk) so a second copy of the tenant home
+	// never counts against the tenant quota. extractMembersRoot pre-scans members and
+	// rejects jail escapes before any extraction.
+	allMembers, _ := listArchiveMembers(abs)
+	members := membersForMode(req.Mode, systemUser, allMembers, req.Paths)
+	if len(members) == 0 {
+		httpx.WriteError(w, http.StatusBadRequest, "the backup has no content for this restore mode")
+		return
+	}
 	tmpDir, err := os.MkdirTemp("", "servika-restore-*")
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare backup restore")
 		return
 	}
 	defer func() { _ = os.RemoveAll(tmpDir) }()
-	if _, err := newRestoreCommand(r.Context(), "chown", systemUser+":"+systemUser, tmpDir).CombinedOutput(); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not prepare backup restore")
-		return
-	}
-	// Panel-created backups are trusted and bounded by the tenant's own quota, so
-	// no decompression-bomb limits are imposed (zero-value Limits = unbounded).
-	if _, err := archivex.Extract(r.Context(), abs, tmpDir, systemUser, archivex.Limits{}); err != nil {
+	if _, err := extractMembersRoot(r.Context(), abs, tmpDir, members); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid backup archive")
 		return
 	}
 
-	// Replace the existing home only when the staged entry is a real directory.
-	extractedHome := filepath.Join(tmpDir, systemUser)
-	if extractedInfo, err := os.Lstat(extractedHome); err == nil && extractedInfo.IsDir() {
-		homeTarget := "/home/" + systemUser + "/"
-		if _, err := newRestoreCommand(r.Context(), "rsync", "-a", "--delete", extractedHome+"/", homeTarget).CombinedOutput(); err != nil {
-			if !errors.Is(err, exec.ErrNotFound) {
-				httpx.WriteError(w, http.StatusInternalServerError, "could not restore backup files")
-				return
-			}
-			if _, err := newRestoreCommand(r.Context(), "cp", "-af", extractedHome+"/.", homeTarget).CombinedOutput(); err != nil {
-				httpx.WriteError(w, http.StatusInternalServerError, "could not restore backup files")
-				return
-			}
-		}
-		if _, err := newRestoreCommand(r.Context(), "chown", "-R", systemUser+":"+systemUser, "/home/"+systemUser).CombinedOutput(); err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "could not restore backup ownership")
-			return
-		}
-		if _, err := newRestoreCommand(r.Context(), "restorecon", "-R", "/home/"+systemUser).CombinedOutput(); err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "could not restore backup security context")
-			return
-		}
+	result := map[string]any{
+		"ok":          true,
+		"mode":        req.Mode,
+		"domain_name": domainName,
+		"file":        file,
 	}
 
-	// Import the database dump without a shell or inherited panel secrets.
-	// Canonical name is dump.sql. Fall back to the legacy "<file>.sql" name used by
-	// older backups so existing archives remain restorable.
-	dbName := systemUser + "_main"
-	databaseImport := "not_present"
-	dumpPath := filepath.Join(tmpDir, "dump.sql")
-	if info, statErr := os.Lstat(dumpPath); statErr != nil || !info.Mode().IsRegular() {
-		legacy := filepath.Join(tmpDir, file+".sql")
-		if info, statErr := os.Lstat(legacy); statErr == nil && info.Mode().IsRegular() {
-			dumpPath = legacy
-		} else {
-			dumpPath = ""
+	switch req.Mode {
+	case "full":
+		restoreHome(r.Context(), tmpDir, systemUser, req.Clean)
+		dbResults := restoreAllDBs(r.Context(), h.DB, id, tmpDir, systemUser, "")
+		result["databases"] = dbResults
+		result["warning"] = overwriteWarning(req.Clean)
+		if failedDBRestore(dbResults) {
+			httpx.WriteError(w, http.StatusInternalServerError,
+				"files were restored but a database import failed; the restore is incomplete")
+			return
 		}
-	}
-	if dumpPath != "" {
-		// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
-		dump, err := os.Open(dumpPath)
+
+	case "files":
+		restoreHome(r.Context(), tmpDir, systemUser, req.Clean)
+		result["warning"] = overwriteWarning(req.Clean)
+
+	case "database":
+		dbResults := restoreAllDBs(r.Context(), h.DB, id, tmpDir, systemUser, strings.TrimSpace(req.DB))
+		result["databases"] = dbResults
+		if failedDBRestore(dbResults) {
+			httpx.WriteError(w, http.StatusInternalServerError, "a database import failed; the restore is incomplete")
+			return
+		}
+
+	case "file":
+		if len(req.Paths) == 0 {
+			httpx.WriteError(w, http.StatusBadRequest, "no file was selected for restore")
+			return
+		}
+		count, folder, err := restoreSelectedFiles(r.Context(), tmpDir, systemUser, req.Paths, req.Target)
 		if err != nil {
-			databaseImport = "failed"
-		} else {
-			command := newRestoreCommand(r.Context(), "mysql", dbName)
-			command.Stdin = dump
-			out, commandErr := command.CombinedOutput()
-			_ = dump.Close()
-			if commandErr != nil {
-				log.Printf("restore db import failed for %s: %v: %s", dbName, commandErr, strings.TrimSpace(string(out)))
-				databaseImport = "failed"
-			} else {
-				databaseImport = "successful"
-			}
+			httpx.WriteError(w, http.StatusInternalServerError, "could not restore the selected files")
+			return
 		}
-	}
+		result["file_count"] = count
+		if folder != "" {
+			result["target_folder"] = folder
+			result["warning"] = "The selected files were extracted into " + folder + "/; existing files were kept."
+		} else {
+			result["warning"] = "The selected files were written back to their original locations."
+		}
 
-	// Fail closed: a present-but-failed database import must not report success,
-	// otherwise an operator believes recovery succeeded while the database was not
-	// restored. Files are already restored at this point, so report a partial state.
-	if databaseImport == "failed" {
-		httpx.WriteError(w, http.StatusInternalServerError,
-			"files were restored but the database import failed; the restore is incomplete")
+	case "db":
+		if strings.TrimSpace(req.DB) == "" {
+			httpx.WriteError(w, http.StatusBadRequest, "no database was selected")
+			return
+		}
+		message, err := restoreOneDB(r.Context(), h.DB, id, tmpDir, systemUser,
+			strings.TrimSpace(req.DB), strings.TrimSpace(req.TargetDB))
+		if err != nil {
+			httpx.WriteError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		result["databases"] = message
+
+	default:
+		httpx.WriteError(w, http.StatusBadRequest, "invalid restore mode")
 		return
 	}
 
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{
-		"ok":              true,
-		"domain_name":     domainName,
-		"file":            file,
-		"database_import": databaseImport,
-		"warning":         "Existing files were overwritten and database tables were recreated.",
-	})
+	httpx.WriteJSON(w, http.StatusOK, result)
+}
+
+// failedDBRestore reports whether any database entry failed to import, so the
+// handler can fail closed instead of reporting a successful but partial restore.
+func failedDBRestore(results []map[string]string) bool {
+	for _, e := range results {
+		if strings.HasPrefix(e["status"], "error:") {
+			return true
+		}
+	}
+	return false
+}
+
+// overwriteWarning describes what the chosen file-restore strategy did.
+func overwriteWarning(clean bool) string {
+	if clean {
+		return "Clean restore: files missing from the backup were DELETED and database tables were recreated."
+	}
+	return "Files from the backup were written over the live ones; active files missing from the backup were kept."
 }

@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Nu s-a putut salva programarea",
     "backupCreated": "Backup creat",
     "createFailed": "Nu s-a putut crea backup-ul",
-    "restored": "Restaurat: {{domain}}, baza de date: {{database}}",
-    "restoreDbUnknown": "necunoscut",
+    "restored": "Restaurat: {{domain}}. {{detail}}",
     "restoreFailed": "Restaurarea a eșuat"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "Ștergeți fișierul de backup „{{file}}”?",
     "confirm": "Da, ștergeți"
   },
-  "confirmRestore": {
-    "title": "Restaurați din backup",
-    "message": "Restaurați „{{file}}”?\n\nATENȚIE: Fișierele existente din public_html vor fi suprascrise, iar tabelele MySQL vor fi recreate. Această acțiune nu poate fi anulată.",
-    "confirm": "Da, restaurați"
+  "restore": {
+    "title": "Restaurează din copia de rezervă",
+    "file": "Copie de rezervă: {{file}}",
+    "modeLabel": "Ce doriți să restaurați?",
+    "mode": {
+      "full": "Tot (fișiere și baze de date)",
+      "files": "Doar fișiere",
+      "database": "Doar baze de date",
+      "file": "Fișiere selectate",
+      "db": "O singură bază de date"
+    },
+    "cleanLabel": "Șterge fișierele care nu se află în copia de rezervă",
+    "cleanHint": "Dezactivat implicit: fișierele actuale sunt păstrate și doar cele din copia de rezervă sunt suprascrise.",
+    "targetLabel": "Unde trebuie să ajungă fișierele selectate?",
+    "target": {
+      "folder": "Într-un folder nou (nu se suprascrie nimic)",
+      "inPlace": "În locația originală"
+    },
+    "sourceDbLabel": "Baza de date din copia de rezervă",
+    "targetDbLabel": "Restaurează în (opțional)",
+    "targetDbHint": "Lăsați gol pentru a suprascrie originalul. Introduceți un nume nou care începe cu {{prefix}} pentru a restaura alături.",
+    "loadingContents": "Se citește copia de rezervă...",
+    "contentsFailed": "Conținutul copiei de rezervă nu a putut fi citit.",
+    "noFiles": "Această copie de rezervă nu conține fișiere.",
+    "noDatabases": "Această copie de rezervă nu conține baze de date.",
+    "selectedCount": "{{n}} selectate",
+    "truncated": "Sunt afișate doar primele intrări.",
+    "searchPlaceholder": "Filtrează fișierele",
+    "submit": "Restaurează",
+    "cancel": "Anulează",
+    "processing": "Se restaurează..."
   }
 }

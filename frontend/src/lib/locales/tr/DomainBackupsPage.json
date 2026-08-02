@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Zamanlama kaydedilemedi",
     "backupCreated": "Yedek oluşturuldu",
     "createFailed": "Yedek oluşturulamadı",
-    "restored": "Geri yüklendi: {{domain}}, veritabanı: {{database}}",
-    "restoreDbUnknown": "bilinmiyor",
+    "restored": "Geri yüklendi: {{domain}}. {{detail}}",
     "restoreFailed": "Geri yükleme başarısız oldu"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "\"{{file}}\" yedek dosyası silinsin mi?",
     "confirm": "Evet, sil"
   },
-  "confirmRestore": {
+  "restore": {
     "title": "Yedekten geri yükle",
-    "message": "\"{{file}}\" geri yüklensin mi?\n\nUYARI: Mevcut public_html dosyalarının üzerine yazılacak ve MySQL tabloları yeniden oluşturulacak. Bu işlem geri alınamaz.",
-    "confirm": "Evet, geri yükle"
+    "file": "Yedek: {{file}}",
+    "modeLabel": "Neyi geri yüklemek istiyorsunuz?",
+    "mode": {
+      "full": "Her şey (dosyalar ve veritabanları)",
+      "files": "Yalnızca dosyalar",
+      "database": "Yalnızca veritabanları",
+      "file": "Seçili dosyalar",
+      "db": "Tek bir veritabanı"
+    },
+    "cleanLabel": "Yedekte olmayan dosyaları sil",
+    "cleanHint": "Varsayılan olarak kapalı: mevcut dosyalar korunur, yalnızca yedekteki dosyalar üzerine yazılır.",
+    "targetLabel": "Seçili dosyalar nereye gitsin?",
+    "target": {
+      "folder": "Yeni bir klasöre (hiçbir şey üzerine yazılmaz)",
+      "inPlace": "Özgün konumlarına"
+    },
+    "sourceDbLabel": "Yedekteki veritabanı",
+    "targetDbLabel": "Şuraya geri yükle (isteğe bağlı)",
+    "targetDbHint": "Özgün veritabanının üzerine yazmak için boş bırakın. Yanına geri yüklemek için {{prefix}} ile başlayan yeni bir ad girin.",
+    "loadingContents": "Yedek okunuyor...",
+    "contentsFailed": "Yedek içeriği okunamadı.",
+    "noFiles": "Bu yedekte dosya yok.",
+    "noDatabases": "Bu yedekte veritabanı yok.",
+    "selectedCount": "{{n}} seçili",
+    "truncated": "Yalnızca ilk kayıtlar listelendi.",
+    "searchPlaceholder": "Dosyaları filtrele",
+    "submit": "Geri yükle",
+    "cancel": "İptal",
+    "processing": "Geri yükleniyor..."
   }
 }

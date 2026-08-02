@@ -181,10 +181,9 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Create the initial landing page.
-	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	// #nosec G703 -- docroot derives from a validated systemUser/subdomain path, not raw tenant input.
 	if _, e := os.Stat(filepath.Join(docroot, "index.html")); e != nil {
-		// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
+		// #nosec G306 G703 -- root-owned welcome page under a validated tenant docroot that nginx must read; no secret and no raw tenant path input.
 		_ = os.WriteFile(filepath.Join(docroot, "index.html"),
 			[]byte(provisioner.WelcomeHTML(fqdn)), 0o644)
 	}

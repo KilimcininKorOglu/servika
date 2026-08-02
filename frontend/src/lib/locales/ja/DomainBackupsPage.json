@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "スケジュールを保存できませんでした",
     "backupCreated": "バックアップを作成しました",
     "createFailed": "バックアップを作成できませんでした",
-    "restored": "復元しました: {{domain}}、データベース: {{database}}",
-    "restoreDbUnknown": "不明",
+    "restored": "復元しました: {{domain}}。{{detail}}",
     "restoreFailed": "復元に失敗しました"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "バックアップファイル「{{file}}」を削除しますか?",
     "confirm": "はい、削除します"
   },
-  "confirmRestore": {
+  "restore": {
     "title": "バックアップから復元",
-    "message": "「{{file}}」を復元しますか?\n\n警告: 既存の public_html ファイルは上書きされ、MySQL テーブルは再作成されます。この操作は取り消せません。",
-    "confirm": "はい、復元します"
+    "file": "バックアップ: {{file}}",
+    "modeLabel": "何を復元しますか?",
+    "mode": {
+      "full": "すべて (ファイルとデータベース)",
+      "files": "ファイルのみ",
+      "database": "データベースのみ",
+      "file": "選択したファイル",
+      "db": "単一のデータベース"
+    },
+    "cleanLabel": "バックアップに存在しないファイルを削除する",
+    "cleanHint": "既定では無効です。現在のファイルは保持され、バックアップ内のファイルのみが上書きされます。",
+    "targetLabel": "選択したファイルの復元先",
+    "target": {
+      "folder": "新しいフォルダーに復元 (何も上書きしません)",
+      "inPlace": "元の場所に復元"
+    },
+    "sourceDbLabel": "バックアップ内のデータベース",
+    "targetDbLabel": "復元先 (任意)",
+    "targetDbHint": "元のデータベースを上書きするには空のままにします。並べて復元するには {{prefix}} で始まる新しい名前を入力します。",
+    "loadingContents": "バックアップを読み込んでいます...",
+    "contentsFailed": "バックアップの内容を読み取れませんでした。",
+    "noFiles": "このバックアップにファイルはありません。",
+    "noDatabases": "このバックアップにデータベースはありません。",
+    "selectedCount": "{{n}} 件選択中",
+    "truncated": "先頭の項目のみ表示しています。",
+    "searchPlaceholder": "ファイルを絞り込む",
+    "submit": "復元",
+    "cancel": "キャンセル",
+    "processing": "復元しています..."
   }
 }

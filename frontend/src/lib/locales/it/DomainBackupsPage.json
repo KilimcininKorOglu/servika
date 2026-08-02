@@ -24,8 +24,7 @@
     "scheduleSaveFailed": "Impossibile salvare la pianificazione",
     "backupCreated": "Backup creato",
     "createFailed": "Impossibile creare il backup",
-    "restored": "Ripristinato: {{domain}}, database: {{database}}",
-    "restoreDbUnknown": "sconosciuto",
+    "restored": "Ripristinato: {{domain}}. {{detail}}",
     "restoreFailed": "Ripristino non riuscito"
   },
   "schedule": {
@@ -113,9 +112,36 @@
     "message": "Eliminare il file di backup \"{{file}}\"?",
     "confirm": "Sì, elimina"
   },
-  "confirmRestore": {
-    "title": "Ripristina da backup",
-    "message": "Ripristinare \"{{file}}\"?\n\nATTENZIONE: I file esistenti in public_html verranno sovrascritti e le tabelle MySQL verranno ricreate. Questa azione non può essere annullata.",
-    "confirm": "Sì, ripristina"
+  "restore": {
+    "title": "Ripristina dal backup",
+    "file": "Backup: {{file}}",
+    "modeLabel": "Che cosa vuoi ripristinare?",
+    "mode": {
+      "full": "Tutto (file e database)",
+      "files": "Solo file",
+      "database": "Solo database",
+      "file": "File selezionati",
+      "db": "Un singolo database"
+    },
+    "cleanLabel": "Elimina i file non presenti nel backup",
+    "cleanHint": "Disattivato per impostazione predefinita: i file attuali vengono mantenuti e solo quelli del backup li sovrascrivono.",
+    "targetLabel": "Dove devono andare i file selezionati?",
+    "target": {
+      "folder": "In una nuova cartella (non viene sovrascritto nulla)",
+      "inPlace": "Nella posizione originale"
+    },
+    "sourceDbLabel": "Database nel backup",
+    "targetDbLabel": "Ripristina in (facoltativo)",
+    "targetDbHint": "Lascia vuoto per sovrascrivere l'originale. Inserisci un nuovo nome che inizi con {{prefix}} per ripristinarlo accanto.",
+    "loadingContents": "Lettura del backup...",
+    "contentsFailed": "Impossibile leggere il contenuto del backup.",
+    "noFiles": "Questo backup non contiene file.",
+    "noDatabases": "Questo backup non contiene database.",
+    "selectedCount": "{{n}} selezionati",
+    "truncated": "Sono elencate solo le prime voci.",
+    "searchPlaceholder": "Filtra i file",
+    "submit": "Ripristina",
+    "cancel": "Annulla",
+    "processing": "Ripristino in corso..."
   }
 }

@@ -1,12 +1,19 @@
 {
-  "breadcrumb": { "home": "Inicio", "domains": "Dominios", "backups": "Copias de seguridad" },
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "backups": "Copias de seguridad"
+  },
   "title": "Copias de seguridad",
   "subtitle": {
     "prefix": "home + volcado MySQL = tar.gz, ",
     "disabled": "Copias automáticas desactivadas",
     "enabled": "{{freq}} {{hour}}:00, últimas {{retention}} copias automáticas retenidas"
   },
-  "freq": { "daily": "Diario", "weekly": "Semanal" },
+  "freq": {
+    "daily": "Diario",
+    "weekly": "Semanal"
+  },
   "toast": {
     "destinationSaved": "Destino remoto guardado",
     "destinationSaveFailed": "No se pudo guardar el destino",
@@ -17,8 +24,7 @@
     "scheduleSaveFailed": "No se pudo guardar la programación",
     "backupCreated": "Copia de seguridad creada",
     "createFailed": "No se pudo crear la copia",
-    "restored": "Restaurado: {{domain}}, base de datos: {{database}}",
-    "restoreDbUnknown": "desconocido",
+    "restored": "Restaurado: {{domain}}. {{detail}}",
     "restoreFailed": "La restauración falló"
   },
   "schedule": {
@@ -26,9 +32,18 @@
     "description": "Cuando está activada, el panel verifica cada hora. Se crea una copia a la hora seleccionada y las copias que superan la retención se eliminan.",
     "lastBackup": "Última copia automática:",
     "options": {
-      "none": { "name": "Desactivado", "description": "Sin copias automáticas. Solo se ejecutan las copias manuales." },
-      "daily": { "name": "Diario", "description": "Crea una copia diariamente a la hora seleccionada y retiene las últimas N copias." },
-      "weekly": { "name": "Semanal", "description": "Crea una copia cada siete días para reducir el uso de disco." }
+      "none": {
+        "name": "Desactivado",
+        "description": "Sin copias automáticas. Solo se ejecutan las copias manuales."
+      },
+      "daily": {
+        "name": "Diario",
+        "description": "Crea una copia diariamente a la hora seleccionada y retiene las últimas N copias."
+      },
+      "weekly": {
+        "name": "Semanal",
+        "description": "Crea una copia cada siete días para reducir el uso de disco."
+      }
     },
     "active": "● Activo",
     "runTime": "Hora de ejecución (local)",
@@ -42,7 +57,12 @@
     "statusError": "✗ Último: error",
     "lastUpload": "Última subida:",
     "typeLabel": "Tipo de destino",
-    "type": { "sftp": "🔒 SFTP", "ftp": "📡 FTP", "s3": "☁️ S3", "b2": "🅱️ Backblaze B2" },
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
     "bucket": "Bucket",
     "region": "Región",
     "regionHint": "(predeterminado: us-east-1)",
@@ -74,9 +94,54 @@
   "backupCount": "{{count}} copias",
   "loading": "Cargando...",
   "empty": "Aún no hay copias",
-  "columns": { "file": "Archivo", "type": "Tipo", "size": "Tamaño", "created": "Creado", "actions": "Acciones" },
+  "columns": {
+    "file": "Archivo",
+    "type": "Tipo",
+    "size": "Tamaño",
+    "created": "Creado",
+    "actions": "Acciones"
+  },
   "typeScheduled": "Programada",
-  "row": { "download": "Descargar", "restore": "↺ Restaurar", "delete": "Eliminar" },
-  "confirmDelete": { "title": "Eliminar copia de seguridad", "message": "¿Eliminar el archivo de copia «{{file}}»?", "confirm": "Sí, eliminar" },
-  "confirmRestore": { "title": "Restaurar desde copia", "message": "¿Restaurar «{{file}}»?\n\nADVERTENCIA: Los archivos existentes en public_html serán sobreescritos y las tablas MySQL se recrearán. Esta acción no puede deshacerse.", "confirm": "Sí, restaurar" }
+  "row": {
+    "download": "Descargar",
+    "restore": "↺ Restaurar",
+    "delete": "Eliminar"
+  },
+  "confirmDelete": {
+    "title": "Eliminar copia de seguridad",
+    "message": "¿Eliminar el archivo de copia «{{file}}»?",
+    "confirm": "Sí, eliminar"
+  },
+  "restore": {
+    "title": "Restaurar desde la copia de seguridad",
+    "file": "Copia de seguridad: {{file}}",
+    "modeLabel": "¿Qué quieres restaurar?",
+    "mode": {
+      "full": "Todo (archivos y bases de datos)",
+      "files": "Solo archivos",
+      "database": "Solo bases de datos",
+      "file": "Archivos seleccionados",
+      "db": "Una sola base de datos"
+    },
+    "cleanLabel": "Eliminar los archivos que no están en la copia de seguridad",
+    "cleanHint": "Desactivado de forma predeterminada: los archivos actuales se conservan y solo se sobrescriben los de la copia.",
+    "targetLabel": "¿Dónde deben ir los archivos seleccionados?",
+    "target": {
+      "folder": "En una carpeta nueva (no se sobrescribe nada)",
+      "inPlace": "En su ubicación original"
+    },
+    "sourceDbLabel": "Base de datos en la copia de seguridad",
+    "targetDbLabel": "Restaurar en (opcional)",
+    "targetDbHint": "Déjalo vacío para sobrescribir la original. Escribe un nombre nuevo que empiece por {{prefix}} para restaurarla junto a ella.",
+    "loadingContents": "Leyendo la copia de seguridad...",
+    "contentsFailed": "No se pudo leer el contenido de la copia de seguridad.",
+    "noFiles": "Esta copia de seguridad no contiene archivos.",
+    "noDatabases": "Esta copia de seguridad no contiene bases de datos.",
+    "selectedCount": "{{n}} seleccionados",
+    "truncated": "Solo se muestran las primeras entradas.",
+    "searchPlaceholder": "Filtrar archivos",
+    "submit": "Restaurar",
+    "cancel": "Cancelar",
+    "processing": "Restaurando..."
+  }
 }
