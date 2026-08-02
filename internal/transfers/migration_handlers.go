@@ -244,7 +244,7 @@ func (h *Handlers) MigrationStart(w http.ResponseWriter, r *http.Request) {
 			 VALUES(?,?,?, 'pending')`, jobID, account.SourceAccount, account.DomainName)
 	}
 
-	auth.WriteAudit(h.DB, actorID, actor, httpx.ClientIP(r), "migration.start",
+	auth.WriteAudit(h.DB, actorID, actor, httpx.AuditIP(r), "migration.start",
 		fmt.Sprintf("%s@%s (%d sites)", source.Type, source.Host, len(valid)), true)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -503,7 +503,7 @@ func (h *Handlers) MigrationCancel(w http.ResponseWriter, r *http.Request) {
 	if claims != nil {
 		actorID, actor = claims.UserID, claims.Username
 	}
-	auth.WriteAudit(h.DB, actorID, actor, httpx.ClientIP(r), "migration.cancel",
+	auth.WriteAudit(h.DB, actorID, actor, httpx.AuditIP(r), "migration.cancel",
 		strconv.FormatInt(jobID, 10), true)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }

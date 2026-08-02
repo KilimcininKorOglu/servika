@@ -57,7 +57,7 @@ func (h *Handlers) audit(r *http.Request, action, target string, ok bool) {
 	if claims == nil {
 		return
 	}
-	auth.WriteAudit(h.DB, claims.UserID, claims.Username, httpx.ClientIP(r), action, target, ok)
+	auth.WriteAudit(h.DB, claims.UserID, claims.Username, httpx.AuditIP(r), action, target, ok)
 }
 
 // MailStatus reports whether native mail hosting is enabled for a domain.

@@ -117,6 +117,9 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ip := httpx.ClientIP(r)
+	// last_login_ip keeps the real address; the audit log labels a genuinely
+	// local (internal/automated) origin as "system" instead of 127.0.0.1.
+	auditIP := httpx.AuditIP(r)
 
 	// Identity resolution: two separate password worlds (see password.go).
 	//
@@ -136,7 +139,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 
 	if IsRootUser(req.Username) {
 		if !verifyRootPassword(req.Password) {
-			WriteAudit(h.DB, 0, req.Username, ip, "auth.login", req.Username, false)
+			WriteAudit(h.DB, 0, req.Username, auditIP, "auth.login", req.Username, false)
 			httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 			return
 		}
@@ -152,19 +155,19 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		// the err check short-circuit it away.
 		matches := PasswordMatches(hash, req.Password)
 		if err != nil || !matches {
-			WriteAudit(h.DB, 0, req.Username, ip, "auth.login", req.Username, false)
+			WriteAudit(h.DB, 0, req.Username, auditIP, "auth.login", req.Username, false)
 			httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 			return
 		}
 		if status != "active" {
-			WriteAudit(h.DB, uid, username, ip, "auth.login", username, false)
+			WriteAudit(h.DB, uid, username, auditIP, "auth.login", username, false)
 			httpx.WriteError(w, http.StatusForbidden, "account is suspended")
 			return
 		}
 		// The customer role cannot open a management-panel session; customers
 		// sign in at /customer/login to their own domain panels instead.
 		if role != "admin" && role != "reseller" {
-			WriteAudit(h.DB, uid, username, ip, "auth.login", username, false)
+			WriteAudit(h.DB, uid, username, auditIP, "auth.login", username, false)
 			httpx.WriteError(w, http.StatusForbidden, "this account cannot sign in to the management panel")
 			return
 		}
@@ -194,7 +197,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 			}
 			step, ok := TOTPVerifyStep(sec, req.Code, lastStep)
 			if !ok {
-				WriteAudit(h.DB, uid, username, ip, "auth.2fa", username, false)
+				WriteAudit(h.DB, uid, username, auditIP, "auth.2fa", username, false)
 				httpx.WriteError(w, http.StatusUnauthorized, "invalid or reused 2FA code")
 				return
 			}
@@ -218,7 +221,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
 		return
 	}
-	WriteAudit(h.DB, uid, username, ip, "auth.login", username, true)
+	WriteAudit(h.DB, uid, username, auditIP, "auth.login", username, true)
 	// last_login_at uses the MySQL clock and is display-only (never compared to
 	// a Go time value), so NOW() is safe here.
 	if _, err := h.DB.Exec(`UPDATE users SET last_login_at=NOW(), last_login_ip=? WHERE id=?`, ip, uid); err != nil {

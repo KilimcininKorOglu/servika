@@ -53,6 +53,9 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ip := httpx.ClientIP(r)
+	// last_login_ip keeps the real address; the audit log labels a genuinely
+	// local (internal/automated) origin as "system" instead of 127.0.0.1.
+	auditIP := httpx.AuditIP(r)
 
 	var (
 		uid          int64
@@ -75,12 +78,12 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	// password has not been assigned yet cannot pass here.
 	matches := auth.PasswordMatches(hash, req.Password)
 	if err != nil || role != mw.RoleUser || !matches {
-		auth.WriteAudit(h.DB, 0, req.Username, ip, "customer.login", req.Username, false)
+		auth.WriteAudit(h.DB, 0, req.Username, auditIP, "customer.login", req.Username, false)
 		httpx.WriteError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
 	if status != "active" {
-		auth.WriteAudit(h.DB, uid, req.Username, ip, "customer.login", req.Username, false)
+		auth.WriteAudit(h.DB, uid, req.Username, auditIP, "customer.login", req.Username, false)
 		httpx.WriteError(w, http.StatusForbidden, "account is suspended")
 		return
 	}
@@ -103,7 +106,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	// /subscriptions/0 and end in a "domain not found" error; stating the reason
 	// plainly is better.
 	if firstDomainID == 0 {
-		auth.WriteAudit(h.DB, uid, req.Username, ip, "customer.login", req.Username, false)
+		auth.WriteAudit(h.DB, uid, req.Username, auditIP, "customer.login", req.Username, false)
 		httpx.WriteError(w, http.StatusForbidden,
 			"no service is linked to your account — contact your provider")
 		return
@@ -114,7 +117,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "token generation failed")
 		return
 	}
-	auth.WriteAudit(h.DB, uid, req.Username, ip, "customer.login", req.Username, true)
+	auth.WriteAudit(h.DB, uid, req.Username, auditIP, "customer.login", req.Username, true)
 	if _, err := h.DB.Exec(`UPDATE users SET last_login_at=NOW(), last_login_ip=? WHERE id=?`, ip, uid); err != nil {
 		log.Printf("customer login: last_login update failed for uid=%d: %v", uid, err)
 	}

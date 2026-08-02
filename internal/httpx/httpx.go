@@ -121,6 +121,24 @@ func ClientIP(r *http.Request) string {
 	return remote
 }
 
+// AuditIP returns the client address to record in the audit log.
+//
+// A real operator always arrives through nginx and keeps their real address. An
+// internal or automated action originates on the box itself, and recording
+// 127.0.0.1 for it is misleading: the reader cannot tell it apart from a genuine
+// visitor that happens to sit behind the loopback interface. Such rows are
+// labelled "system" instead.
+//
+// The check requires BOTH a loopback resolved address and a loopback peer, so a
+// forged X-Real-IP of 127.0.0.1 from a remote client cannot claim the label.
+func AuditIP(r *http.Request) string {
+	ip := ClientIP(r)
+	if (ip == "127.0.0.1" || ip == "::1") && isLocalProxy(hostOnly(r.RemoteAddr)) {
+		return "system"
+	}
+	return ip
+}
+
 // isLocalProxy reports whether ip is a loopback address (our nginx).
 func isLocalProxy(ip string) bool {
 	p := net.ParseIP(ip)

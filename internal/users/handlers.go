@@ -271,7 +271,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	// Scope the entry to the affected account's owner, not the actor: a reseller
 	// (or admin) creating an account is recorded in that account's own scope so
 	// its managing reseller sees it.
-	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.create", b.Username, true, auth.ScopeOf(h.DB, id))
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.AuditIP(r), "user.create", b.Username, true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{"id": id})
 }
 
@@ -337,7 +337,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.update", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.AuditIP(r), "user.update", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -383,7 +383,7 @@ func (h *Handlers) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not reset password")
 		return
 	}
-	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.password", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.AuditIP(r), "user.password", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -445,7 +445,7 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 		log.Printf("hosting suspend cascade for reseller %d: %d applied, %d failed", id, affected, failed)
 	}
 
-	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.status", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.AuditIP(r), "user.status", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -557,7 +557,7 @@ func (h *Handlers) SaveLimits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.limits", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.AuditIP(r), "user.limits", strconv.FormatInt(id, 10), true, auth.ScopeOf(h.DB, id))
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
@@ -610,6 +610,6 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	if _, err := h.DB.ExecContext(r.Context(), `UPDATE audit_log SET reseller_id=0 WHERE reseller_id=?`, id); err != nil {
 		log.Printf("audit scope cleanup after deleting user %d failed: %v", id, err)
 	}
-	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.ClientIP(r), "user.delete", strconv.FormatInt(id, 10), true, deletedScope)
+	auth.WriteAuditScoped(h.DB, c.UserID, c.Username, httpx.AuditIP(r), "user.delete", strconv.FormatInt(id, 10), true, deletedScope)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
