@@ -1,0 +1,43 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "logs": "Jurnale"
+  },
+  "title": "Jurnale",
+  "streamFailed": "Fluxul nu a putut porni (HTTP {{status}})",
+  "view": {
+    "table": "Tabel",
+    "raw": "Brut"
+  },
+  "autoScroll": "Derulare automată",
+  "stop": "■ Oprire",
+  "liveTail": "▶ Urmărire live",
+  "last200": "↻ Ultimele 200",
+  "clear": "Golire",
+  "searchPlaceholder": "Căutare după IP, cale, cod de stare, browser...",
+  "clearSearch": "Golire căutare",
+  "matches": "{{visible}} / {{total}} potriviri",
+  "waiting": "Se așteaptă... Liniile noi vor apărea pe măsură ce sosesc.",
+  "emptyFile": "(fișierul de jurnal este gol sau nu a fost creat încă)",
+  "noMatch": "„{{search}}” Nicio linie nu corespunde acestei căutări.",
+  "linesFiltered": "{{visible}} / {{total}} linii (filtrate)",
+  "lines": "{{count}} linii",
+  "windowSuffix": ", fereastră {{max}}",
+  "liveStream": "flux live",
+  "access": {
+    "time": "Timp",
+    "ip": "IP",
+    "method": "Metodă",
+    "path": "Cale",
+    "status": "Stare",
+    "size": "Dimensiune",
+    "browser": "Browser"
+  },
+  "error": {
+    "time": "Timp",
+    "level": "Nivel",
+    "client": "Client",
+    "message": "Mesaj"
+  }
+}

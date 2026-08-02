@@ -1,0 +1,62 @@
+{
+  "clipboardPrompt": "Copierea automată a eșuat. Apăsați Ctrl+C, apoi Enter:",
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "connectionDetails": "Detalii de conexiune"
+  },
+  "title": "Detalii de conexiune",
+  "subtitle": "Selectați o valoare pentru a o copia automat",
+  "cards": {
+    "ftp": "FTP / SFTP",
+    "mysql": "MySQL / MariaDB",
+    "web": "Web"
+  },
+  "rows": {
+    "host": "Gazdă",
+    "port": "Port",
+    "username": "Nume de utilizator",
+    "password": "Parolă",
+    "homeDirectory": "Director principal",
+    "database": "Bază de date",
+    "webRoot": "Rădăcină web",
+    "ipv4": "IPv4",
+    "systemUser": "Utilizator de sistem",
+    "httpUrl": "URL HTTP",
+    "httpsUrl": "URL HTTPS"
+  },
+  "links": {
+    "ftp": "Mergeți la gestionarea FTP →",
+    "database": "Mergeți la gestionarea bazei de date →"
+  },
+  "row": {
+    "selectToCopy": "Selectați pentru a copia",
+    "copied": "✓ Copiat"
+  },
+  "password": {
+    "button": "🔑 Afișare / Resetare parolă"
+  },
+  "typeName": {
+    "ftp": "FTP",
+    "db": "Bază de date"
+  },
+  "modal": {
+    "titleSuffix": "Parolă",
+    "userLabel": "Utilizator:",
+    "notStored": "(nestocată)",
+    "notAuthorized": "(neautorizat)",
+    "showCurrent": "👁 Afișare parolă curentă",
+    "currentPasswordLabel": "Parola curentă",
+    "newPasswordGenerated": "✓ Parolă nouă generată",
+    "copyWarning": "⚠ Copiați parola acum. Este posibil să nu o mai puteți vedea după închiderea acestei ferestre.",
+    "close": "Închidere",
+    "generating": "Se generează…",
+    "generateAgain": "↻ Generați din nou",
+    "generateNew": "⚡ Generați parolă nouă",
+    "errorGenerate": "Nu s-a putut genera parola"
+  },
+  "copyButton": {
+    "copy": "Copiere",
+    "copied": "✓ Copiat"
+  }
+}

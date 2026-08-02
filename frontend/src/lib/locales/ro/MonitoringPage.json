@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "monitoring": "Monitorizare"
+  },
+  "title": "Monitorizare cap la cap",
+  "liveRefresh": "Live, reîmprospătare la {{seconds}} sec",
+  "tabs": {
+    "server": "Server",
+    "domain": "După domeniu",
+    "logs": "Jurnale server"
+  },
+  "snap": {
+    "cpu": "CPU",
+    "cpuCores": "{{count}} nuclee",
+    "memory": "Memorie",
+    "load1m": "Încărcare (1 min)",
+    "loadAlt": "5 min {{load5m}}, 15 min {{load15m}}",
+    "diskRoot": "Disc (/)"
+  },
+  "chart": {
+    "systemResources": "Resurse sistem",
+    "samples": "{{count}}/{{max}} eșantioane, {{minutes}} min",
+    "legendCpu": "CPU",
+    "legendMemory": "Memorie",
+    "legendSwap": "Swap",
+    "legendLoad": "Încărcare (normalizată)",
+    "networkTraffic": "Trafic de rețea",
+    "interface": "Interfață: {{name}}",
+    "legendRx": "↓ RX (KB/s)",
+    "legendTx": "↑ TX (KB/s)",
+    "collecting": "Se colectează date..."
+  },
+  "services": {
+    "title": "Servicii",
+    "enabledCount": "{{enabled}}/{{total}} activate",
+    "active": "Active",
+    "stopped": "Oprite"
+  },
+  "processes": {
+    "title": "Procese principale",
+    "sortCpu": "CPU",
+    "sortMem": "Memorie",
+    "colPid": "PID",
+    "colUser": "Utilizator",
+    "colCpu": "CPU%",
+    "colMem": "MEM%",
+    "colCommand": "Comandă",
+    "loading": "Se încarcă..."
+  },
+  "domain": {
+    "selectionTitle": "Selecție domeniu",
+    "noActiveDomains": "Niciun domeniu activ",
+    "probing": "Se sondează...",
+    "healthProbe": "↻ Sondă de sănătate",
+    "openSite": "Deschidere site ↗",
+    "accessLog": "Jurnal de acces",
+    "errorLog": "Jurnal de erori",
+    "lastLines": "ultimele {{count}} linii",
+    "noAccessEntries": "Încă nu există intrări în jurnal...",
+    "noErrorEntries": "Încă nu există intrări de eroare"
+  },
+  "health": {
+    "reachable": "Accesibil",
+    "unreachable": "Inaccesibil",
+    "server": "Server: ",
+    "noSslTitle": "⚠ Fără SSL",
+    "noSslBody": "Acest domeniu nu este accesibil prin HTTPS.",
+    "sslValid": "🔒 SSL valid",
+    "sslInvalid": "✗ SSL invalid",
+    "days": "zile",
+    "expires": "Expiră: ",
+    "issuer": "Emitent: ",
+    "responseTime": "Timp de răspuns",
+    "ms": "ms",
+    "fast": "Rapid",
+    "acceptable": "Acceptabil",
+    "slow": "Lent"
+  },
+  "logs": {
+    "searchPlaceholder": "Căutare...",
+    "lastLineCount": "ultimele {{count}}",
+    "refresh": "↻ Reîmprospătare",
+    "loading": "Se încarcă...",
+    "notFound": "„{{query}}” nu a fost găsit.",
+    "noEntries": "(nicio intrare)",
+    "footerFiltered": "{{filtered}} / {{total}} linii, journald, {{source}}",
+    "footer": "{{total}} linii, journald, {{source}}"
+  },
+  "logSources": {
+    "panel": "Panou",
+    "nginx": "nginx",
+    "mariadb": "MariaDB",
+    "named": "DNS (named)",
+    "sshd": "SSH",
+    "cron": "Cron",
+    "system": "Întregul sistem"
+  }
+}

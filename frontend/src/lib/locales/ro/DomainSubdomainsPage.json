@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "subdomains": "Subdomenii"
+  },
+  "title": "Subdomenii",
+  "subtitlePre": "Creați subdomenii (cum ar fi",
+  "subtitlePost": ") sub acest domeniu. Fiecare are un director web separat.",
+  "toast": {
+    "created": "{{fqdn}} a fost creat. A fost adăugată o înregistrare DNS A.",
+    "createFailed": "Nu s-a putut crea subdomeniul",
+    "deleteFailed": "Nu s-a putut șterge subdomeniul",
+    "sslInstalled": "SSL pentru {{fqdn}} a fost instalat folosind {{method}}.",
+    "sslInstallFailed": "Nu s-a putut instala SSL"
+  },
+  "sslMethod": {
+    "letsencrypt": "Let's Encrypt",
+    "selfSigned": "un certificat autosemnat"
+  },
+  "confirmDelete": "Ștergeți {{fqdn}}?\nVhost-ul, fișierele (rădăcina de documente) și înregistrarea DNS vor fi eliminate. Acest lucru nu poate fi anulat.",
+  "form": {
+    "title": "Subdomeniu nou",
+    "label": "Subdomeniu",
+    "creating": "Se creează…",
+    "add": "Adăugare subdomeniu",
+    "hintPre": "Litere mici, cifre și cratime. Exemple:"
+  },
+  "list": {
+    "title": "Subdomenii existente",
+    "loading": "Se încarcă…",
+    "empty": "Încă nu există subdomenii.",
+    "phpPrefix": "PHP",
+    "manage": "Gestionare",
+    "manageTitle": "Gestionați acest subdomeniu",
+    "letsencryptTitle": "Instalare SSL Let's Encrypt",
+    "letsencrypt": "🔒 Let's Encrypt",
+    "selfSignedTitle": "Instalare SSL autosemnat",
+    "selfSigned": "Autosemnat",
+    "delete": "Ștergere",
+    "dnsNote": "ℹ️ Subdomeniul este configurat imediat pe serverul web. Înregistrarea DNS A a domeniului dvs. trebuie să indice către acest server înainte de a putea fi accesat."
+  },
+  "backToSubscription": "← Înapoi la abonament"
+}

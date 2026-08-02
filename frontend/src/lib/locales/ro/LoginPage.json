@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "subtitle": "Panou de control găzduire"
+  },
+  "heading": "Bine ați venit",
+  "subtitle": "Conectați-vă pentru a continua.",
+  "field": {
+    "username": "Nume de utilizator",
+    "password": "Parolă",
+    "twoFactorCode": "Cod de autentificare cu doi factori"
+  },
+  "twoFactorHint": "Introduceți codul din șase cifre din aplicația dvs. de autentificare.",
+  "button": {
+    "signingIn": "Se conectează…",
+    "verify": "Verificare și conectare",
+    "signIn": "Conectare"
+  },
+  "footer": "Servika · versiunea 0.2.0-f1",
+  "error": {
+    "loginFailed": "Conectarea a eșuat"
+  }
+}

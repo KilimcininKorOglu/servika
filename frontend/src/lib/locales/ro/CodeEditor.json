@@ -1,0 +1,15 @@
+{
+  "langPlainText": "Text simplu",
+  "unsaved": "Modificări nesalvate",
+  "saving": "Se salvează…",
+  "saved": "✓ Salvat",
+  "syntax": "Sintaxă",
+  "exitFullscreen": "Ieșiți din ecran complet",
+  "fullscreen": "Ecran complet",
+  "save": "💾 Salvați",
+  "close": "Închideți",
+  "cursor": "Linia {{line}}, Coloana {{column}}",
+  "lines": "{{count}} linii",
+  "bytes": "{{count}} octeți",
+  "shortcuts": "Ctrl+S: salvați · Esc: închideți"
+}

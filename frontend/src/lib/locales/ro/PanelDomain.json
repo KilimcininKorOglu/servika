@@ -1,0 +1,25 @@
+{
+  "title": "Domeniu panou",
+  "description": "Direcționați o înregistrare A către acest server înainte de a solicita un certificat Let's Encrypt. După emitere, domeniul deschide panoul fără portul 8443.",
+  "customDomainLabel": "Domeniu panou personalizat",
+  "customDomainPlaceholder": "panel.example.com",
+  "serverIpv4": "IPv4 server:",
+  "sslStatus": "Stare SSL:",
+  "portlessUrl": "URL fără port:",
+  "expires": "Expiră:",
+  "unknown": "Necunoscut",
+  "sslNone": "niciunul",
+  "save": "Salvare domeniu panou",
+  "saving": "Se salvează...",
+  "reset": "Resetare",
+  "resetting": "Se resetează...",
+  "messages": {
+    "saved": "Domeniul panoului a fost salvat. Puteți deschide https://{{domain}} fără portul 8443.",
+    "reset": "Domeniul panoului a fost resetat la certificatul implicit."
+  },
+  "errors": {
+    "load": "Nu s-au putut încărca setările domeniului panoului",
+    "save": "Nu s-a putut salva domeniul panoului",
+    "reset": "Nu s-a putut reseta domeniul panoului"
+  }
+}

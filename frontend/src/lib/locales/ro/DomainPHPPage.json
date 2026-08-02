@@ -1,0 +1,138 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "phpSettings": "Setări PHP"
+  },
+  "title": "Setări PHP",
+  "systemUser": "Utilizator de sistem: ",
+  "poolNotice": {
+    "pre": "Setările configurate aici sunt scrise în pool-ul PHP-FPM (",
+    "mid1": "). Fișierele ",
+    "mid2": " și ",
+    "post": " ale site-ului le pot suprascrie. Salvarea repornește automat PHP-FPM fără a scoate site-ul offline."
+  },
+  "loading": "Se încarcă…",
+  "saved": "Salvat. PHP {{version}}, socket: {{socket}}",
+  "saveFailed": "Salvarea setărilor a eșuat",
+  "clearLogFailed": "Golirea jurnalului de depanare a eșuat",
+  "processManager": {
+    "ondemand": "ondemand (recomandat, zero procese în repaus)",
+    "dynamic": "dynamic (se ajustează cu încărcarea)",
+    "static": "static (pool fix)"
+  },
+  "version": {
+    "title": "Versiune PHP",
+    "active": "Activă",
+    "saveToApply": "Salvați pentru a aplica"
+  },
+  "cards": {
+    "performance": "Performanță și securitate",
+    "general": "General",
+    "debugMode": "Mod de depanare PHP",
+    "lastErrors": "Ultimele erori (jurnal de depanare)",
+    "fpmPool": "Pool PHP-FPM",
+    "installedModules": "Module PHP instalate",
+    "disableDangerous": "Dezactivare funcții periculoase",
+    "additionalDirectives": "Directive de configurare suplimentare"
+  },
+  "help": {
+    "memoryLimit": "Memoria maximă pe care o poate aloca un script, în octeți. Exemplu: 256M.",
+    "maxExecutionTime": "Timpul maxim de execuție în secunde",
+    "maxInputTime": "Timpul de analiză a datelor POST/GET în secunde",
+    "postMaxSize": "Dimensiunea maximă a datelor POST. Trebuie să fie mai mare decât upload_max_filesize.",
+    "uploadMaxFilesize": "Limita de încărcare pentru un singur fișier",
+    "opcacheEnable": "Cache de opcode OPcache (recomandat: ON)",
+    "disableFunctions": "Funcții PHP de dezactivat (separate prin virgulă)",
+    "displayErrors": "Afișare erori în rezultat (păstrați dezactivat în producție)",
+    "logErrors": "Activare jurnalizare erori",
+    "allowUrlFopen": "Deschidere fișiere prin HTTP/FTP",
+    "fileUploads": "Încărcări de fișiere HTTP",
+    "shortOpenTag": "Suport pentru etichetele scurte <? ?>",
+    "errorReporting": "Nivel de raportare a erorilor (de exemplu, E_ALL & ~E_DEPRECATED)",
+    "includePath": "Directoare de includere a scripturilor (separați cu : pe Linux)",
+    "openBasedir": "Directoare la care PHP poate accesa (gol înseamnă nerestricționat). Separați cu :",
+    "sessionSavePath": "Director de fișiere sesiune (gol înseamnă /home/{system_user}/tmp)",
+    "mailForceExtraParameters": "Parametri suplimentari pentru funcția mail()",
+    "pm": "Strategia managerului de procese",
+    "pmMaxChildren": "Numărul maxim de workeri PHP concurenți",
+    "pmMaxRequests": "Cereri înainte de repornirea unui worker (previne scurgerile de memorie)",
+    "pmStartServers": "Workeri porniți inițial (doar dynamic)",
+    "pmMinSpareServers": "Numărul minim de workeri inactivi",
+    "pmMaxSpareServers": "Numărul maxim de workeri inactivi"
+  },
+  "openBasedirPlaceholder": "de exemplu: /home/user/:/tmp/",
+  "debug": {
+    "disableTitle": "Dezactivare mod de depanare",
+    "enableTitle": "Activare mod de depanare",
+    "label": "Mod de depanare",
+    "on": "Activat",
+    "off": "Dezactivat",
+    "descPre": "Când este activat, erorile PHP sunt afișate pe ecran, iar erorile fatale (E_ERROR, E_PARSE, ...) sunt prinse fiabil prin ",
+    "descMid": " și jurnalizate în ",
+    "descPost": ". Erorile fatale sunt capturate chiar și când aplicația apelează ",
+    "descEnd": ".",
+    "warningLabel": "Avertisment:",
+    "warningPre": " Cu modul de depanare activat, ",
+    "warningBold1": "display_errors = on",
+    "warningMid": " și ",
+    "warningBold2": "error_reporting = E_ALL",
+    "warningPost": " sunt forțate; detaliile erorilor pot fi vizibile pentru vizitatorii site-ului. Activați doar în timpul depanării, ",
+    "warningBold3": "dezactivați în producție",
+    "warningEnd": ". Modificările intră în vigoare după ce faceți clic pe ",
+    "warningSave": "Salvare",
+    "warningDot": "."
+  },
+  "debugLog": {
+    "sourcePre": "Cele mai noi erori fatale sus. Sursă: ",
+    "sourcePost": " (ultimele 200 de linii).",
+    "loading": "Se încarcă...",
+    "refresh": "Reîmprospătare",
+    "clear": "Golire",
+    "emptyOff": "Modul de depanare este dezactivat. Activați-l mai sus și salvați pentru a începe jurnalizarea erorilor fatale.",
+    "emptyOn": "Nicio eroare înregistrată. Jurnalul de depanare este gol."
+  },
+  "modules": {
+    "countPre": "",
+    "countBold": "{{count}}",
+    "countPost": " module sunt instalate pentru PHP {{version}}. Modulele sunt gestionate la nivelul întregului server și nu pot fi activate sau dezactivate pentru un domeniu individual.",
+    "manageServer": "↗ Gestionare module server"
+  },
+  "dangerous": {
+    "descPre": "Aceste funcții prezintă riscuri de injecție shell, RCE și malware. Comutatoarele de categorie actualizează ",
+    "descMid": ". ",
+    "descBoldOn": "Activat înseamnă permis",
+    "descAnd": ", iar ",
+    "descBoldOff": "dezactivat înseamnă blocat",
+    "descPost": ".",
+    "enableAll": "Activare toate",
+    "blockAll": "Blocare toate",
+    "blocked": "Blocat",
+    "mixed": "Mixt",
+    "active": "Activ",
+    "editManually": "Editare manuală (disable_functions brut)",
+    "commaSeparated": "Nume de funcții separate prin virgulă.",
+    "groups": {
+      "shellExecution": "Execuție shell",
+      "fileExecution": "Execuție fișiere",
+      "networkAccess": "Acces rețea (riscant)",
+      "systemDiscovery": "Descoperire sistem",
+      "moduleLoading": "Încărcare module"
+    }
+  },
+  "additional": {
+    "descPre": "Definiți parametri suplimentari folosind sintaxa php.ini. Exemplu: "
+  },
+  "save": {
+    "saving": "Se salvează…",
+    "saveAndApply": "Salvare și aplicare",
+    "cancelReload": "Anulare / Reîncărcare"
+  },
+  "select": {
+    "custom": "Personalizat…"
+  },
+  "flag": {
+    "on": "✓ Activat",
+    "off": "○ Dezactivat"
+  }
+}

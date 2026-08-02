@@ -1,0 +1,159 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "dnsSettings": "Setări DNS"
+  },
+  "title": "Setări DNS",
+  "ipLabel": "IP:",
+  "authoritative": {
+    "label": "DNS autoritar:",
+    "pre": " BIND publică aceste înregistrări. Direcționați domeniul către ",
+    "mid": " și ",
+    "post": "."
+  },
+  "loading": "Se încarcă...",
+  "recordCount": "{{count}} înregistrări",
+  "valueHint": {
+    "A": "Adresă IPv4, de exemplu 203.0.113.10",
+    "AAAA": "Adresă IPv6, de exemplu 2a01:4f8:1c1c::1",
+    "CNAME": "Nume de domeniu țintă, de exemplu target.example.com",
+    "MX": "Server de mail, de exemplu mail.example.com (prioritatea se setează separat)",
+    "TXT": "Text liber, de exemplu v=spf1 mx ~all",
+    "NS": "Server de nume, de exemplu ns1.example.com",
+    "SRV": "greutate port țintă, de exemplu 5 5060 sip.example.com (prioritatea se setează separat)",
+    "CAA": "flags tag \"value\", de exemplu 0 issue \"letsencrypt.org\"",
+    "PTR": "Nume de domeniu țintă, de exemplu host.example.com",
+    "DS": "keytag algorithm digest-type digest, de exemplu 12345 13 2 49FD46E6C4B45C55D4AC...",
+    "TLSA": "usage selector matching-type data, de exemplu 3 1 1 0B9FA5A59EED715C26C1020C...",
+    "SSHFP": "algorithm type fingerprint, de exemplu 4 2 123456789ABCDEF...",
+    "NAPTR": "order preference \"flags\" \"service\" \"regexp\" replacement"
+  },
+  "soa": {
+    "title": "Setări SOA",
+    "titleHint": "(autoritate, refresh, retry, expire și TTL)",
+    "hide": "▲ Ascundere",
+    "edit": "▼ Editare",
+    "primaryNs": "NS principal",
+    "hostmasterEmail": "Email hostmaster",
+    "fields": {
+      "refresh": "refresh",
+      "retry": "retry",
+      "expire": "expire",
+      "minimum": "minimum",
+      "ttl": "ttl"
+    },
+    "save": "Salvare SOA",
+    "saved": "Setările SOA au fost salvate",
+    "saveFailed": "Nu s-au putut salva setările SOA"
+  },
+  "dnssec": {
+    "title": "DNSSEC",
+    "signed": "Semnat",
+    "signing": "Se semnează...",
+    "disabled": "Dezactivat",
+    "description": "Semnează această zonă cu semnare inline BIND. Adăugați înregistrarea DS generată la registrarul domeniului dvs.",
+    "refreshStatus": "Reîmprospătare stare",
+    "disable": "Dezactivare",
+    "enabling": "Se activează...",
+    "enable": "Activare",
+    "dsForRegistrar": "Înregistrare DS pentru registrarul dvs.",
+    "copied": "Copiat",
+    "copy": "Copiere",
+    "dsHint": "Adăugați această înregistrare DS în setările DNSSEC ale registrarului dvs. Propagarea poate dura până la TTL-ul înregistrării.",
+    "signingInProgress": "Semnarea este încă în curs. Reîmprospătați starea după câteva secunde.",
+    "enabledMsg": "DNSSEC activat. Adăugați înregistrarea DS de mai jos la registrarul domeniului dvs.",
+    "disabledMsg": "DNSSEC dezactivat.",
+    "updateFailed": "Nu s-a putut actualiza DNSSEC",
+    "refreshFailed": "Nu s-a putut reîmprospăta starea DNSSEC"
+  },
+  "actions": {
+    "newRecord": "Înregistrare nouă",
+    "applyTemplate": "📋 Aplicare șablon implicit",
+    "applyTemplateTitle": "Adaugă înregistrările implicite A/MX/TXT/NS (idempotent)",
+    "refresh": "↻ Reîmprospătare",
+    "export": "⬇ Export",
+    "exportTitle": "Descărcați înregistrările DNS ca fișier de zonă BIND",
+    "import": "⬆ Import",
+    "importTitle": "Încărcați un fișier de zonă BIND"
+  },
+  "import": {
+    "title": "Import fișier de zonă",
+    "description": "Încărcați un fișier de zonă BIND standard (.zone / .txt). Înregistrările sunt importate în acest domeniu, apoi zona este validată și rescrisă.",
+    "overwriteLabel": "Suprascrieți înregistrările existente — când este debifat, înregistrările sunt îmbinate (cele noi se adaugă)",
+    "replaceWarning": "⚠️ TOATE înregistrările DNS curente pentru acest domeniu vor fi șterse și înlocuite cu cele din fișier. Se recomandă exportarea unei copii de rezervă mai întâi.",
+    "cancel": "Anulare",
+    "importing": "Se importă…",
+    "import": "Import",
+    "complete": "Import finalizat — {{added}} adăugate, {{skipped}} omise ({{mode}})",
+    "completeWarning": "Import finalizat — {{added}} adăugate, {{skipped}} omise ({{mode}}) · {{warning}}",
+    "failed": "Importul a eșuat"
+  },
+  "exportFailed": "Exportul a eșuat",
+  "bulk": {
+    "selected": "{{count}} înregistrări selectate",
+    "enable": "Activare",
+    "disable": "Dezactivare",
+    "deleteSelected": "Ștergere selectate ({{count}})",
+    "clearSelection": "Golire selecție",
+    "deleted": "{{count}} înregistrări șterse",
+    "updated": "{{count}} înregistrări actualizate",
+    "deleteFailed": "Ștergerea în masă a eșuat",
+    "updateFailed": "Actualizarea în masă a eșuat"
+  },
+  "table": {
+    "selectAll": "Selectare toate",
+    "select": "Selectare {{name}} {{type}}",
+    "name": "Nume",
+    "type": "Tip",
+    "value": "Valoare",
+    "ttl": "TTL",
+    "priority": "Prioritate",
+    "status": "Stare",
+    "actions": "Acțiuni",
+    "selectLabel": "Selectare",
+    "noPriority": "Niciuna",
+    "active": "Activă",
+    "disabled": "Dezactivată",
+    "edit": "Editare",
+    "delete": "Ștergere"
+  },
+  "empty": {
+    "text": "Încă nu există înregistrări DNS.",
+    "applyTemplate": "Aplicare șablon implicit"
+  },
+  "templateAdded": "{{count}} înregistrări implicite adăugate",
+  "templateFailed": "Nu s-a putut aplica șablonul",
+  "delete": {
+    "title": "Ștergere înregistrare DNS",
+    "message": "Ștergeți „{{name}} {{type}} {{value}}”?",
+    "confirm": "Da, ștergeți",
+    "failed": "Ștergerea a eșuat"
+  },
+  "bulkDelete": {
+    "title": "Ștergere înregistrări DNS selectate",
+    "message": "{{count}} înregistrări DNS vor fi șterse permanent. Această acțiune nu poate fi anulată. Continuați?",
+    "confirm": "Da, ștergeți {{count}} înregistrări"
+  },
+  "dnssecDisable": {
+    "title": "Dezactivare DNSSEC",
+    "message": "Eliminați înregistrarea DS de la registrarul domeniului dvs. și așteptați TTL-ul acesteia înainte de a dezactiva DNSSEC. În caz contrar, domeniul poate înceta să se rezolve cu SERVFAIL. Continuați doar după ce înregistrarea DS a fost eliminată.",
+    "confirm": "DS eliminat, dezactivați DNSSEC"
+  },
+  "modal": {
+    "newTitle": "Înregistrare DNS nouă",
+    "editTitle": "Editare înregistrare DNS",
+    "nameLabel": "Nume (subdomeniu)",
+    "nameHint": "„@” este domeniul rădăcină. Alte exemple includ „www” și „mail”.",
+    "typeLabel": "Tip",
+    "valueLabel": "Valoare",
+    "ttlLabel": "TTL (sec)",
+    "priorityLabel": "Prioritate",
+    "active": "Activă",
+    "cancel": "Anulare",
+    "saving": "Se salvează...",
+    "create": "Creare",
+    "update": "Actualizare",
+    "saveFailed": "Nu s-a putut salva înregistrarea"
+  }
+}

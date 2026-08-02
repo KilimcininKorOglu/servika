@@ -1,0 +1,153 @@
+{
+  "shared": {
+    "more": "Mai multe →",
+    "manage": "Gestionare →",
+    "loading": "Se încarcă…"
+  },
+  "widgets": {
+    "load-chart": "Grafic încărcare",
+    "memory-chart": "Grafic memorie",
+    "wordpress": "Site-uri WordPress",
+    "panel-update": "Actualizare panou",
+    "last-backup": "Ultima copie de rezervă a serverului",
+    "performance": "Performanță / Optimizare",
+    "cve-security": "Alerte de securitate (CVE)",
+    "services": "Servicii",
+    "domains": "Domenii",
+    "server-info": "Informații server",
+    "health": "Sănătate sistem",
+    "live-resources": "Resurse live",
+    "subscriptions": "Abonamentele mele",
+    "network": "Trafic de rețea"
+  },
+  "header": {
+    "welcome": "Bine ați revenit, {{name}}",
+    "dashboard": "Tablou de bord",
+    "subtitle": "Prezentare generală a serverului și acțiuni rapide",
+    "saving": "Se salvează…",
+    "saved": "Aspect salvat",
+    "saveFailed": "Salvarea a eșuat",
+    "resetLayout": "Resetare aspect"
+  },
+  "quota": {
+    "unsupportedTitle": "Cota de disc nu este disponibilă pe acest sistem de fișiere",
+    "unsupportedBody": "Servika are nevoie de un sistem de fișiere rădăcină XFS pentru cota de disc per chiriaș. O repornire nu va activa cota pe sistemul de fișiere curent.",
+    "rebootTitle": "Cota de disc va fi activată după repornire",
+    "rebootBody": "Cota de utilizator XFS este configurată, dar aplicarea este inactivă. Reporniți serverul o dată pentru a activa cota de disc per chiriaș.",
+    "dismiss": "Închidere"
+  },
+  "widgetNotFound": "Widget negăsit",
+  "dragToReorder": "Trageți pentru a reordona",
+  "wp": {
+    "subtitle": "Instalări pe toate conturile",
+    "installs": "Instalări",
+    "updates": "Actualizări",
+    "current": "Curent",
+    "pendingUpdatesText_one": " instalare cu actualizări în așteptare — versiunile depășite prezintă riscuri de securitate.",
+    "pendingUpdatesText_few": " instalări cu actualizări în așteptare — versiunile depășite prezintă riscuri de securitate.",
+    "pendingUpdatesText_other": " de instalări cu actualizări în așteptare — versiunile depășite prezintă riscuri de securitate.",
+    "empty": "Nicio instalare WordPress găsită",
+    "rootDir": "director rădăcină",
+    "badgeUpdate": "Actualizare",
+    "badgeCurrent": "Curent",
+    "badgeUnknown": "Necunoscut",
+    "more_one": "+{{count}} instalare în plus →",
+    "more_few": "+{{count}} instalări în plus →",
+    "more_other": "+{{count}} de instalări în plus →",
+    "unknownNote_one": "{{count}} instalare nu a putut fi determinată (expirare wp-cli).",
+    "unknownNote_few": "{{count}} instalări nu au putut fi determinate (expirare wp-cli).",
+    "unknownNote_other": "{{count}} de instalări nu au putut fi determinate (expirare wp-cli)."
+  },
+  "update": {
+    "subtitle": "Versiune și pachete de sistem",
+    "running": "Actualizare în curs",
+    "toolMissing": "Instrument de actualizare lipsă",
+    "upToDate": "Panou actualizat",
+    "noStatus": "Nicio informație de stare",
+    "badgeRunning": "În curs",
+    "badgeMissing": "Lipsă",
+    "badgeCurrent": "Curent",
+    "systemPackages": "Pachete de sistem"
+  },
+  "backup": {
+    "subtitle": "Copie de rezervă zilnică automată",
+    "unavailable": "Rezumatul copiei de rezervă indisponibil",
+    "count_one": "copie de rezervă · {{size}}",
+    "count_few": "copii de rezervă · {{size}}",
+    "count_other": "de copii de rezervă · {{size}}",
+    "lastBackup": "Ultima copie de rezervă",
+    "sitesBackedUp": "Site-uri salvate",
+    "remoteTarget": "Țintă la distanță",
+    "remoteActive": "{{count}} active",
+    "remoteNone": "Niciuna",
+    "schedule": "Programare"
+  },
+  "performance": {
+    "subtitle": "Îmbunătățire setări server",
+    "running": "Optimizare în curs",
+    "ready": "Optimizare gata",
+    "defaultStatus": "Setări MariaDB · nginx · PHP",
+    "badgeRunning": "În curs",
+    "badgeIdle": "Inactiv"
+  },
+  "services": {
+    "subtitleCount": "{{active}}/{{total}} servicii în funcțiune",
+    "subtitleStatus": "stare servicii",
+    "allActive": "Toate active",
+    "down": "{{count}} nefuncționale",
+    "active": "Activ",
+    "statusDown": "Nefuncțional"
+  },
+  "domains": {
+    "subtitle": "Site-uri găzduite și stare SSL",
+    "total": "Total",
+    "active": "Active",
+    "ssl": "SSL",
+    "empty": "Încă nu există domenii",
+    "noSsl": "Fără SSL",
+    "badgeActive": "Activ",
+    "more_one": "+{{count}} domeniu în plus →",
+    "more_few": "+{{count}} domenii în plus →",
+    "more_other": "+{{count}} de domenii în plus →"
+  },
+  "serverInfo": {
+    "subtitle": "Hardware și sistem",
+    "hostname": "Nume gazdă",
+    "ip": "Adresă IP",
+    "os": "SO",
+    "kernel": "Kernel",
+    "cpu": "CPU",
+    "cores": "Nuclee",
+    "coresValue": "{{count}} vCPU"
+  },
+  "health": {
+    "subtitle": "Evaluare stare generală",
+    "servicesDown_one": "{{count}} serviciu nefuncțional",
+    "servicesDown_few": "{{count}} servicii nefuncționale",
+    "servicesDown_other": "{{count}} de servicii nefuncționale",
+    "isolationLoss_one": "{{count}} pierdere de izolare detectată",
+    "isolationLoss_few": "{{count}} pierderi de izolare detectate",
+    "isolationLoss_other": "{{count}} de pierderi de izolare detectate",
+    "memoryAt": "Memorie la {{percent}}%",
+    "diskAt": "Disc la {{percent}}%",
+    "healthy": "Sănătos",
+    "fair": "Acceptabil",
+    "degraded": "Degradat",
+    "critical": "Critic"
+  },
+  "live": {
+    "subtitle": "CPU și memorie în timp real",
+    "cpu": "CPU",
+    "memory": "Memorie",
+    "disk": "Disc ({{mount}})",
+    "freeGb": "{{value}} GB liberi"
+  },
+  "subscriptions": {
+    "subtitle": "Serviciile dvs. active",
+    "body": "Prezentare generală panou client"
+  },
+  "network": {
+    "subtitle": "Date de intrare și de ieșire",
+    "body": "Statistici de trafic disponibile în pagina Statistici"
+  }
+}

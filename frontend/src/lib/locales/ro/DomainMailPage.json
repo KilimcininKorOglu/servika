@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "email": "Email"
+  },
+  "title": "Conturi de email",
+  "subtitle": "Gestionați cutii poștale native Postfix și Dovecot. Folosiți portul SMTP 587 cu STARTTLS pentru trimitere autentificată.",
+  "loading": "Se încarcă…",
+  "back": "← Înapoi la abonament",
+  "generatedPassword": {
+    "title": "Parolă pentru {{email}}",
+    "saveNote": "Salvați-o acum. Nu va mai fi afișată din nou.",
+    "copy": "Copiere"
+  },
+  "enable": {
+    "notEnabled": "Găzduirea email nu este încă activată pentru acest domeniu.",
+    "info": "Activarea adaugă înregistrări DNS MX, SPF, DKIM și DMARC atunci când este posibil.",
+    "enabling": "Se activează…",
+    "button": "Activare email"
+  },
+  "mailboxAdd": {
+    "title": "Adăugare cutie poștală",
+    "localPlaceholder": "info",
+    "passwordPlaceholder": "parolă, generată dacă este goală",
+    "adding": "Se adaugă…",
+    "add": "Adăugare"
+  },
+  "mailboxes": {
+    "title": "Cutii poștale",
+    "empty": "Încă nu există cutii poștale.",
+    "suspended": "suspendată",
+    "suspend": "Suspendare",
+    "activate": "Activare",
+    "resetPassword": "Resetare parolă",
+    "delete": "Ștergere"
+  },
+  "forwarders": {
+    "title": "Redirecționări și catch-all",
+    "description": "Redirecționați mailul primit către una sau mai multe adrese de destinație fără a crea o cutie poștală. Catch-all redirecționează mailul pentru adresele nedefinite de pe acest domeniu.",
+    "sourcePlaceholder": "support",
+    "catchAll": "Redirecționare a tuturor adreselor nedefinite de pe acest domeniu",
+    "destinationPlaceholder": "target1@example.com, target2@example.com",
+    "adding": "Se adaugă…",
+    "add": "Adăugare",
+    "empty": "Încă nu există redirecționări.",
+    "suspended": "suspendată",
+    "suspend": "Suspendare",
+    "activate": "Activare",
+    "delete": "Ștergere"
+  },
+  "spam": {
+    "title": "Filtrare spam",
+    "description": "Rspamd punctează fiecare mesaj primit. Greylistingul amână temporar, pragul de antet marchează mailul ca spam, iar pragul de respingere refuză livrarea.",
+    "notInstalled": " Rspamd nu este instalat pe acest server; setările sunt stocate, dar nu sunt aplicate.",
+    "enable": "Activare filtrare spam pentru acest domeniu",
+    "greylist": "Greylist",
+    "addHeader": "Adăugare antet",
+    "reject": "Respingere",
+    "applying": "Se aplică…",
+    "apply": "Aplicare politică spam"
+  },
+  "autoresponder": {
+    "title": "Răspuns automat",
+    "description": "Trimiteți un răspuns de vacanță dintr-o cutie poștală, cel mult o dată per interval către același expeditor.",
+    "mailbox": "Cutie poștală",
+    "interval": "Interval de răspuns (zile)",
+    "subjectPlaceholder": "Subiect",
+    "bodyPlaceholder": "Corpul mesajului",
+    "enable": "Activare răspuns automat",
+    "saving": "Se salvează…",
+    "save": "Salvare răspuns automat",
+    "remove": "Eliminare"
+  },
+  "filters": {
+    "title": "Filtre de mesaje",
+    "description": "Sortați mailul primit în dosare, redirecționați-l sau eliminați-l cu reguli Sieve compilate per cutie poștală.",
+    "namePlaceholder": "Nume filtru",
+    "subjectContains": "Subiectul conține",
+    "fromContains": "De la conține",
+    "toContains": "Către conține",
+    "matchedTextPlaceholder": "Text potrivit",
+    "moveToFolder": "Mutare în dosar",
+    "redirectTo": "Redirecționare către",
+    "discard": "Eliminare",
+    "folderPlaceholder": "Dosar (de ex. Facturi)",
+    "targetPlaceholder": "target@example.com",
+    "adding": "Se adaugă…",
+    "add": "Adăugare filtru",
+    "empty": "Încă nu există filtre.",
+    "delete": "Ștergere"
+  },
+  "sendLimits": {
+    "title": "Limite de trimitere",
+    "description": "Limitați destinatarii de ieșire per cutie poștală. Depășirea unei limite suspendă contul automat pentru a limita o autentificare compromisă. Folosiți 0 pentru nelimitat.",
+    "mailbox": "Cutie poștală",
+    "hourly": "Pe oră ({{count}} utilizate)",
+    "daily": "Pe zi ({{count}} utilizate)",
+    "suspendedNote": "Suspendată automat la {{time}}. Reactivați cutia poștală de mai sus pentru a o goli.",
+    "saving": "Se salvează…",
+    "save": "Salvare limite de trimitere"
+  },
+  "messages": {
+    "enabled": "Găzduirea email a fost activată pentru acest domeniu. Înregistrările MX, SPF, DKIM și DMARC au fost adăugate în DNS atunci când a fost posibil.",
+    "forwarderAdded": "Redirecționarea de mail a fost adăugată.",
+    "spamApplied": "Politica de spam Rspamd a fost validată și aplicată.",
+    "autoresponderSaved": "Răspunsul automat și scriptul său Sieve au fost aplicate.",
+    "autoresponderRemoved": "Răspunsul automat a fost eliminat.",
+    "filterAdded": "Filtrul de mail a fost compilat și activat.",
+    "sendLimitsSaved": "Limitele de trimitere au fost salvate."
+  },
+  "confirm": {
+    "deleteMailbox": "Ștergeți cutia poștală „{{email}}”? Maildir-ul va rămâne pe disc și doar rândul contului va fi eliminat.",
+    "deleteForwarder": "Ștergeți redirecționarea „{{source}}”?",
+    "deleteFilter": "Ștergeți filtrul „{{name}}”?"
+  },
+  "errors": {
+    "loadDomainFailed": "Nu s-a putut încărca domeniul",
+    "enableFailed": "Nu s-a putut activa găzduirea email",
+    "createMailboxFailed": "Nu s-a putut crea cutia poștală",
+    "addForwarderFailed": "Nu s-a putut adăuga redirecționarea de mail",
+    "deleteMailboxFailed": "Nu s-a putut șterge cutia poștală",
+    "deleteForwarderFailed": "Nu s-a putut șterge redirecționarea de mail",
+    "resetPasswordFailed": "Nu s-a putut reseta parola",
+    "updateForwarderFailed": "Nu s-a putut actualiza redirecționarea de mail",
+    "updateMailboxFailed": "Nu s-a putut actualiza cutia poștală",
+    "applySpamFailed": "Nu s-au putut aplica setările de spam",
+    "readAutoresponderFailed": "Nu s-a putut citi răspunsul automat",
+    "saveAutoresponderFailed": "Nu s-a putut salva răspunsul automat",
+    "addFilterFailed": "Nu s-a putut adăuga filtrul de mail",
+    "readSendLimitsFailed": "Nu s-au putut citi limitele de trimitere",
+    "saveSendLimitsFailed": "Nu s-au putut salva limitele de trimitere"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Optimizare server",
+  "description": "Actualizează pachetele de sistem (dnf/yum) și aplică reglaje de performanță pentru MariaDB, nginx și PHP. Procesul rulează în fundal și poate dura mult timp. Puteți închide pagina cât timp continuă.",
+  "running": "Optimizarea este în curs. Actualizările de pachete pot dura; puteți închide pagina cât timp continuă în fundal.",
+  "logStarted": "Optimizare începută...\n",
+  "startButton": "Actualizare pachete și optimizare",
+  "confirmPrompt": "Aceasta poate afecta pentru scurt timp serviciile. Continuați?",
+  "starting": "Se pornește...",
+  "confirmYes": "Da, porniți",
+  "cancel": "Anulare",
+  "errorStart": "Pornirea optimizării a eșuat"
+}

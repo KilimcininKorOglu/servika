@@ -1,0 +1,56 @@
+{
+  "breadcrumbHome": "Acasă",
+  "title": "Clienți",
+  "subtitle": "Înregistrări de facturare și contact. Domeniile sunt legate de acestea — nu este un cont de autentificare în panou.",
+  "newCustomer": "Client nou",
+  "loading": "Se încarcă…",
+  "empty": {
+    "title": "Nicio înregistrare de client încă",
+    "description": "Creați mai întâi o înregistrare de client pentru a lega domeniile de un client."
+  },
+  "noMatch": "Niciun client nu corespunde căutării.",
+  "columns": {
+    "name": "Nume",
+    "email": "E-mail",
+    "plan": "Plan",
+    "status": "Status",
+    "created": "Creat"
+  },
+  "status": {
+    "active": "Activ",
+    "passive": "Pasiv"
+  },
+  "actions": {
+    "edit": "Editați",
+    "delete": "Ștergeți"
+  },
+  "modal": {
+    "editTitle": "Editați clientul",
+    "newTitle": "Client nou",
+    "name": "Nume",
+    "email": "E-mail",
+    "plan": "Plan",
+    "noPlan": "Fără plan",
+    "status": "Status",
+    "notes": "Note",
+    "cancel": "Anulați",
+    "saving": "Se salvează…",
+    "save": "Salvați"
+  },
+  "delete": {
+    "title": "Ștergeți clientul",
+    "message": "{{name}} va fi șters. Domeniile legate de acest client nu sunt eliminate — doar legătura este eliminată.",
+    "confirm": "Ștergeți"
+  },
+  "toast": {
+    "added": "{{name}} adăugat.",
+    "updated": "{{name}} actualizat.",
+    "deleted": "{{name}} șters."
+  },
+  "errors": {
+    "loadFailed": "Nu s-au putut încărca clienții",
+    "nameEmailRequired": "Numele și e-mailul sunt obligatorii",
+    "saveFailed": "Nu s-a putut salva",
+    "deleteFailed": "Nu s-a putut șterge"
+  }
+}

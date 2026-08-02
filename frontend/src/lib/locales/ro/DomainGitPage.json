@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "git": "Git"
+  },
+  "title": "Git Deploy",
+  "loading": "Se încarcă…",
+  "intro": {
+    "pre": " · ",
+    "text": "Conectați un depozit, adăugați cheia de implementare la GitHub și folosiți URL-ul webhook pentru extrageri automate."
+  },
+  "errors": {
+    "patRequired": "Este necesar un PAT GitHub",
+    "connectFailed": "Nu s-a putut conecta la GitHub",
+    "loadReposFailed": "Nu s-au putut încărca depozitele",
+    "selectRepoBranch": "Selectați un depozit și o ramură",
+    "connectionFailed": "Conectarea a eșuat"
+  },
+  "messages": {
+    "connected": "Conectat la GitHub: @{{login}}",
+    "repoConnected": "Depozit conectat: {{repo}}@{{branch}}",
+    "webhookEnabled": " · Implementare automată activată (webhook creat)",
+    "webhookError": " · Eroare webhook: {{error}}",
+    "ghDisconnected": "Conexiunea GitHub a fost eliminată",
+    "connectHint": "Depozit conectat. Copiați cheia de implementare, adăugați-o la depozitul GitHub, apoi faceți clic pe „Clonare”.",
+    "cloned": "Clonat. Commit: {{commit}}",
+    "cloneFailed": "Clonarea a eșuat",
+    "pullDone": "Pull finalizat. Commit: {{commit}}",
+    "pullFailed": "Pull a eșuat",
+    "repoRemoved": "Conexiunea depozitului a fost eliminată"
+  },
+  "confirm": {
+    "ghDisconnect": "Conexiunea GitHub va fi eliminată. Orice webhook va fi șters, dar fișierele existente ale depozitului nu vor fi afectate."
+  },
+  "github": {
+    "title": "Conexiune GitHub",
+    "subtitle": "Conectați-vă cu un PAT, alegeți un depozit și activați implementarea cu un clic printr-un webhook automat.",
+    "removeConnection": "Eliminare conexiune",
+    "patLabel": "Personal Access Token (classic)",
+    "connecting": "Se conectează…",
+    "connect": "Conectare",
+    "patHintLink": "github.com/settings/tokens",
+    "patHintPre": " →\n                  Fine-grained PAT → scop: ",
+    "patHintScope1": "repo",
+    "patHintMid": " +",
+    "patHintScope2": "admin:repo_hook",
+    "patHintPost": " (pentru implementare automată).",
+    "autoDeployBadge": "● Implementare automată",
+    "repo": "Repo",
+    "selectPlaceholder": "— selectați —",
+    "reposFound": "{{count}} depozite găsite",
+    "branch": "Ramură",
+    "autoDeployLabel": "Implementare automată la push (creează un webhook)",
+    "useRepo": "Folosiți acest depozit",
+    "webhookLabel": "Webhook: {{url}}"
+  },
+  "repoCard": {
+    "settingsTitle": "Setări depozit",
+    "connectTitle": "Conectare depozit",
+    "gitUrl": "URL Git (SSH)",
+    "gitUrlPlaceholder": "git@github.com:username/repo.git",
+    "gitUrlHint": "Folosiți un URL SSH pentru depozitele private. Autentificarea HTTPS nu este acceptată.",
+    "branch": "Ramură",
+    "targetDir": "Director țintă",
+    "update": "Actualizare",
+    "connect": "Conectare",
+    "clone": "⬇ Clonare (golește ținta)",
+    "pull": "↻ Pull",
+    "removeConnection": "Eliminare conexiune"
+  },
+  "deployKey": {
+    "title": "Cheie de implementare (publică)",
+    "copy": "Copiere",
+    "hint": "GitHub → Depozit → Settings → Deploy keys → Add deploy key, apoi lipiți această cheie (accesul de scriere nu este necesar)."
+  },
+  "webhook": {
+    "title": "Webhook (Pull automat)",
+    "hintPre": "GitHub → Depozit → Settings → Webhooks → Add webhook. Content type: ",
+    "hintPost": ". Evenimentul push este suficient.",
+    "payloadUrl": "Payload URL",
+    "secret": "Secret",
+    "contentType": "Content type",
+    "contentTypeValue": "application/json",
+    "events": "Evenimente",
+    "eventsValue": "Doar evenimentul push"
+  },
+  "status": {
+    "title": "Stare sincronizare",
+    "latestSync": "Ultima sincronizare",
+    "noneYet": "— (încă niciuna)",
+    "latestCommit": "Ultimul commit",
+    "statusLabel": "Stare",
+    "successful": "✓ reușit",
+    "error": "⚠ eroare",
+    "latestLog": "Ultimul jurnal"
+  },
+  "cloneDialog": {
+    "title": "Clonare inițială",
+    "message": "Directorul țintă ({{dir}}) va fi golit complet, apoi ramura {{branch}} a depozitului va fi clonată. Continuați?",
+    "confirm": "Da, clonați"
+  },
+  "deleteDialog": {
+    "title": "Eliminare conexiune depozit",
+    "message": "Înregistrarea din panou va fi ștearsă. Fișierele clonate vor rămâne pe disc.",
+    "confirm": "Da, ștergeți"
+  }
+}

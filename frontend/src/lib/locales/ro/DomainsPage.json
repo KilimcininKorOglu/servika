@@ -1,0 +1,108 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii"
+  },
+  "title": "Domenii",
+  "subtitle": "Vizualizați toate domeniile înregistrate, schimbați-le starea în masă sau ștergeți-le.",
+  "loading": "Se încarcă...",
+  "searchPlaceholder": "🔍 Căutare domenii...",
+  "newDomain": "Domeniu nou",
+  "empty": {
+    "title": "Încă nu există domenii",
+    "description": "Începeți prin adăugarea primului dvs. domeniu. Un utilizator Linux, un vhost nginx, un pool PHP-FPM, un cont FTP, o bază de date MySQL și o zonă DNS vor fi create automat.",
+    "button": "Creare domeniu"
+  },
+  "columns": {
+    "domainName": "Nume domeniu",
+    "systemUser": "Utilizator de sistem",
+    "plan": "Plan",
+    "php": "PHP",
+    "disk": "Disc",
+    "status": "Stare",
+    "created": "Creat",
+    "actions": "Acțiuni"
+  },
+  "openInNewTab": "Deschidere în filă nouă",
+  "sslExpires": "Expiră: {{date}}",
+  "sslActive": "SSL activ",
+  "demoBadge": "DEMO",
+  "reseller": "Reseller: {{name}}",
+  "noPlan": "Niciunul",
+  "subdomain": "SUB",
+  "subdomainStatus": "subdomeniu",
+  "subdomainParentPlan": "Părinte",
+  "manage": "Gestionare",
+  "addSubdomain": "+ Subdomeniu",
+  "bulk": {
+    "selected": "{{count}} selectate",
+    "activate": "▶ Activare",
+    "deactivate": "⏸ Dezactivare",
+    "delete": "🗑 Ștergere ({{count}})",
+    "clear": "Golire selecție"
+  },
+  "deleteConfirm": {
+    "title": "⚠ Ștergere domenii în masă",
+    "messageMid": " domenii și toate resursele dependente (utilizatori Linux, directoare principale, baze de date, conturi FTP, vhost-uri și zone DNS) vor fi șterse ",
+    "messageBold": "permanent",
+    "messagePost": ".",
+    "moreItems": "+ încă {{count}}...",
+    "typeLabel": "Tastați ",
+    "typeSuffix": " pentru a confirma:",
+    "cancel": "Anulare",
+    "confirm": "Da, ștergeți"
+  },
+  "createModal": {
+    "title": "Creare domeniu nou",
+    "subtitle": "Utilizatorul Linux, vhost-ul nginx, pool-ul PHP-FPM, contul FTP, baza de date MySQL și zona DNS sunt configurate automat.",
+    "domainName": "Nume domeniu",
+    "domainNamePlaceholder": "example.com",
+    "loading": "Se încarcă...",
+    "domainNameHintPre": "Litere mici, cifre, cratime și puncte. De exemplu: ",
+    "domainNameHintMid": " sau ",
+    "domainNameHintExample1": "site.com",
+    "domainNameHintExample2": "panel.site.com",
+    "phpVersion": "Versiune PHP",
+    "phpDefault": "PHP 8.3 (implicit)",
+    "servicePlan": "Plan de servicii",
+    "planNone": "(niciunul)",
+    "issueSsl": "Instalare certificat SSL Let's Encrypt după creare",
+    "sslWarning": "⚠️ Înregistrarea DNS A a domeniului trebuie să indice deja către acest server, altfel emiterea eșuează și puteți reîncerca ulterior din pagina SSL.",
+    "cancel": "Anulare",
+    "creating": "Se creează...",
+    "create": "Creare"
+  },
+  "resultModal": {
+    "title": "✓ Domeniu creat",
+    "readyPre": " este gata. Parolele de mai jos sunt afișate ",
+    "readyBold": "o singură dată",
+    "readyPost": ". Stocați-le în siguranță.",
+    "ftp": "FTP",
+    "mysql": "Bază de date MySQL",
+    "host": "Gazdă",
+    "username": "Nume de utilizator",
+    "password": "Parolă",
+    "database": "Bază de date",
+    "systemUser": "Utilizator de sistem: ",
+    "ok": "OK"
+  },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "Clic pentru a copia",
+    "hide": "Ascundere",
+    "show": "Afișare",
+    "copied": "Copiat"
+  },
+  "toast": {
+    "created": "✓ „{{name}}” a fost creat. Utilizatorul Linux, vhost-ul nginx, pool-ul PHP-FPM, contul FTP, baza de date MySQL și zona DNS sunt gata.",
+    "sslInstalled": " SSL Let's Encrypt a fost instalat.",
+    "sslFailed": " (SSL Let's Encrypt nu a putut fi emis — asigurați-vă că înregistrarea DNS A indică aici, apoi instalați-l din pagina SSL.)",
+    "deleted": "✓ {{success}}/{{total}} domenii șterse",
+    "statusChanged": "✓ {{count}} domenii schimbate în „{{status}}”"
+  },
+  "errors": {
+    "invalidDomain": "Nume de domeniu invalid. De exemplu: example.com sau panel.example.com",
+    "createFailed": "Nu s-a putut crea domeniul",
+    "statusFailed": "Nu s-a putut schimba starea"
+  }
+}

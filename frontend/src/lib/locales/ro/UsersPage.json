@@ -1,0 +1,116 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "users": "Utilizatori"
+  },
+  "title": "Utilizatori",
+  "subtitleAdmin": "Conturi de panou: administratori, reselleri și clienți.",
+  "subtitleReseller": "Conturile de clienți pe care le-ați creat.",
+  "newAccount": "Cont nou",
+  "newCustomer": "Client nou",
+  "loading": "Se încarcă…",
+  "empty": {
+    "titleAdmin": "Încă nu există alte conturi",
+    "titleReseller": "Încă nu există conturi de clienți",
+    "description": "Începeți prin crearea unui cont nou."
+  },
+  "noMatch": "Niciun cont nu corespunde căutării dvs.",
+  "roles": {
+    "admin": "Administrator",
+    "reseller": "Reseller",
+    "user": "Client"
+  },
+  "columns": {
+    "user": "Utilizator",
+    "fullName": "Nume complet",
+    "role": "Rol",
+    "status": "Stare",
+    "twoFa": "2FA",
+    "lastLogin": "Ultima conectare"
+  },
+  "system": "(sistem)",
+  "systemAccount": "cont de sistem",
+  "status": {
+    "active": "Activ",
+    "suspended": "Suspendat"
+  },
+  "noPassword": "Fără parolă",
+  "noPasswordTitle": "Nicio parolă setată — acest cont nu se poate conecta până când nu îi atribuiți una.",
+  "twoFaOn": "Activat",
+  "twoFaOff": "Dezactivat",
+  "actions": {
+    "password": "Parolă",
+    "limits": "Limite",
+    "suspend": "Suspendare",
+    "enable": "Activare",
+    "delete": "Ștergere"
+  },
+  "createModal": {
+    "titleAdmin": "Cont nou",
+    "titleReseller": "Cont de client nou",
+    "username": "Nume de utilizator",
+    "usernamePlaceholder": "example_reseller",
+    "usernameHint": "3-32 de caractere, începe cu o literă mică; poate conține litere, cifre, _ și -.",
+    "password": "Parolă",
+    "passwordHint": "Cel puțin 8 caractere. Parola este afișată doar acum — predați-o utilizatorului.",
+    "role": "Rol",
+    "resellerOnlyCustomers": "Resellerii pot crea doar conturi de clienți.",
+    "email": "Email",
+    "fullName": "Nume complet",
+    "cancel": "Anulare",
+    "creating": "Se creează…",
+    "create": "Creare"
+  },
+  "passwordModal": {
+    "title": "Setare parolă",
+    "newFor": "Parolă nouă pentru ",
+    "customerNote": "Aceasta este parola contului de panou al clientului. Clientul se conectează la portalul de clienți cu acest nume de utilizator și parolă; fără una, contul nu se poate conecta.",
+    "placeholder": "Cel puțin 8 caractere",
+    "cancel": "Anulare",
+    "saving": "Se salvează…",
+    "setPassword": "Setare parolă"
+  },
+  "limitsModal": {
+    "title": "Limite reseller",
+    "loading": "Se încarcă…",
+    "upperBounds": "Limite superioare pentru ",
+    "unlimitedNote": "0 = nelimitat. Dacă toate sunt 0, înregistrarea de limită este eliminată complet.",
+    "maxCustomers": "Clienți maximi",
+    "maxDomains": "Domenii maxime",
+    "diskQuota": "Cotă disc (MB)",
+    "trafficQuota": "Cotă trafic (MB)",
+    "inUseNow": "{{count}} în uz acum",
+    "mbInUseNow": "{{count}} MB în uz acum",
+    "mbUsedNow": "{{count}} MB utilizați acum",
+    "limitBelowUsage": " — limita este sub utilizarea curentă",
+    "quotaBelowUsage": " — cota este sub utilizarea curentă",
+    "noLimit": "Nu este definită nicio limită pentru acest reseller — momentan nelimitat.",
+    "loweringNote": "Scăderea unei limite sub utilizarea curentă nu șterge conturile existente; blochează doar adăugirile noi.",
+    "cancel": "Anulare",
+    "saving": "Se salvează…",
+    "save": "Salvare"
+  },
+  "delete": {
+    "title": "Ștergere cont",
+    "message": "Contul {{username}} va fi șters.",
+    "resellerNote": " Conturile de sub acest reseller nu sunt șterse; sunt transferate administratorului.",
+    "confirm": "Ștergere"
+  },
+  "toast": {
+    "created": "Contul {{username}} a fost creat.",
+    "passwordUpdated": "Parola pentru {{username}} a fost actualizată.",
+    "limitsUpdated": "Limitele pentru {{username}} au fost actualizate.",
+    "enabled": "{{username}} activat.",
+    "suspended": "{{username}} suspendat.",
+    "deleted": "{{username}} șters."
+  },
+  "errors": {
+    "loadFailed": "Nu s-au putut încărca conturile",
+    "createFailed": "Nu s-a putut crea contul",
+    "resetFailed": "Nu s-a putut reseta parola",
+    "loadLimitsFailed": "Nu s-au putut încărca limitele",
+    "saveLimitsFailed": "Nu s-au putut salva limitele",
+    "statusFailed": "Nu s-a putut schimba starea",
+    "deleteFailed": "Nu s-a putut șterge"
+  }
+}

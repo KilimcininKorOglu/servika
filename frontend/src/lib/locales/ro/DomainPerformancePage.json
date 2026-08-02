@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "performance": "Performanță"
+  },
+  "loading": "Se încarcă…",
+  "notFound": "Nu s-a găsit",
+  "title": "Performanță și acceleratoare",
+  "subtitle": {
+    "post": ", starea curentă a acceleratoarelor și sugestii."
+  },
+  "scoreLabel": "Scor de performanță",
+  "acceleratorsTitle": "Acceleratoare",
+  "cacheStat": "{{rate}}% potriviri · {{total}} cereri",
+  "configure": "Configurare →",
+  "suggestionsTitle": "Sugestii",
+  "open": "Deschidere →",
+  "back": "← Înapoi la abonament"
+}

@@ -1,0 +1,33 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "ftpAccount": "Cont FTP"
+  },
+  "title": "Cont FTP",
+  "errors": {
+    "resetFailed": "Resetarea parolei a eșuat"
+  },
+  "info": {
+    "host": "Gazdă",
+    "port": "Port",
+    "portValue": "21 (FTP) / 22 (SFTP)",
+    "username": "Nume de utilizator",
+    "homeDir": "Director principal"
+  },
+  "reset": {
+    "title": "Resetare parolă",
+    "placeholder": "Introduceți o parolă personalizată sau lăsați gol",
+    "setThis": "Setați această parolă",
+    "generateRandom": "Generare parolă aleatorie",
+    "success": "✓ Parolă nouă setată",
+    "saveHint": "Salvați aceasta într-un loc sigur. Nu o mai puteți vedea ulterior.",
+    "copy": "Copiere"
+  },
+  "note": {
+    "label": "Notă:",
+    "pre": " FTP folosește în prezent autentificarea ",
+    "code": "în text simplu",
+    "post": " față de baza de date locală. Folosiți SFTP pe portul 22 pentru transport criptat."
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "firewall": "Firewall"
+  },
+  "title": "Firewall",
+  "subtitle": {
+    "pre": "Controlați ",
+    "bold": "cine poate accesa serverul dvs. de pe internet",
+    "post": ". Aplicați o presetare sau adăugați o regulă personalizată."
+  },
+  "info": {
+    "pre": "Regulile afectează doar ",
+    "bold": "conexiunile noi",
+    "mid": ". Sesiunea dvs. SSH sau de panou activă va rămâne conectată. Porturile protejate ",
+    "post": " nu pot fi închise."
+  },
+  "templates": {
+    "sectionTitle": "Presetări",
+    "sectionHint": "aplicați cu un clic",
+    "portLabel": "Port: {{ports}}",
+    "apply": "Aplicare",
+    "applying": "...",
+    "close_mysql": {
+      "name": "Închidere acces MySQL extern",
+      "description": "Închide portul 3306 al bazei de date către internet. MySQL rămâne accesibil de pe server."
+    },
+    "close_ftp": {
+      "name": "Închidere FTP",
+      "description": "Închide portul FTP 21. Puteți închide în siguranță FTP dacă folosiți SFTP."
+    },
+    "close_mail": {
+      "name": "Închidere porturi mail",
+      "description": "Închide porturile SMTP, POP3 și IMAP. Aceasta reduce riscul de releu de spam când nu există un server de mail."
+    },
+    "close_rpc": {
+      "name": "Închidere RPC / NFS",
+      "description": "Închide portul rpcbind 111 și portul NFS 2049 când partajarea de fișiere nu este utilizată."
+    }
+  },
+  "modes": {
+    "ban": {
+      "name": "Blocare IP",
+      "description": "Blocați o anumită adresă IP. Introduceți un port pentru a bloca accesul doar la acel port sau lăsați gol pentru a bloca accesul la toate porturile.",
+      "example": "Exemplu: Blocați complet 45.9.1.2 după încercări SSH repetate."
+    },
+    "whitelist": {
+      "name": "Permitere IP",
+      "description": "Introduceți un port pentru a permite accesul doar de la aceste adrese IP și a bloca pe toți ceilalți. Lăsați portul gol pentru a acorda acestui IP acces prioritar la toate porturile.",
+      "example": "Exemplu: Introduceți portul 8443 și IP-ul biroului dvs. pentru ca doar dvs. să puteți accesa panoul."
+    },
+    "close": {
+      "name": "Închidere port",
+      "description": "Închideți un port pentru toată lumea cu excepția adreselor din lista de permitere. Porturile critice pentru SSH, web, panou și DNS sunt protejate și nu pot fi închise.",
+      "example": "Exemplu: Închideți portul 3306 al bazei de date pentru accesul extern."
+    }
+  },
+  "form": {
+    "sectionTitle": "Regulă personalizată",
+    "step1": "1. Ce doriți să faceți?",
+    "step2": "2. Detalii",
+    "ipLabel": "Adresă IP sau interval",
+    "ipPlaceholder": "1.2.3.4 sau 1.2.3.0/24",
+    "portLabel": "Port",
+    "portBlankHint": "(gol = toate)",
+    "portPlaceholderClose": "3306",
+    "portPlaceholderOther": "de ex. 22",
+    "protocolLabel": "Protocol",
+    "noteLabel": "Notă (opțional)",
+    "notePlaceholder": "de ex. IP care încearcă atac de forță brută SSH",
+    "previewLabel": "Previzualizare:",
+    "submit": "Adăugare și aplicare regulă",
+    "submitting": "Se aplică..."
+  },
+  "warning": {
+    "pre": "",
+    "bold": "Avertisment:",
+    "mid": " Acest port va fi deschis doar pentru adresa IP de mai sus. Dacă IP-ul dvs. este ",
+    "boldDynamic": "dinamic",
+    "post": ", veți pierde accesul când se schimbă. Portul SSH 22 rămâne deschis, așa că vă puteți conecta prin SSH și șterge această regulă dacă sunteți blocat. Alternativ, folosiți o adresă IP statică."
+  },
+  "preview": {
+    "closeReady": "Portul {{port}} va fi închis pentru toată lumea cu excepția adreselor din lista de permitere.",
+    "closeEmpty": "Introduceți portul de închis.",
+    "banPort": "{{address}} va fi blocat de la accesarea portului {{port}}.",
+    "banAll": "{{address}} va fi blocat de la accesarea tuturor porturilor.",
+    "whitelistPort": "Portul {{port}} va fi deschis doar pentru {{address}}. Toți ceilalți vor fi blocați.",
+    "whitelistAll": "{{address}} va avea acces prioritar la toate porturile.",
+    "enterIp": "(introduceți o adresă IP)"
+  },
+  "rules": {
+    "title": "Reguli active",
+    "count": "({{count}})",
+    "refresh": "↻ Reîmprospătare",
+    "colType": "Tip",
+    "colIp": "IP / CIDR",
+    "colPort": "Port",
+    "colProto": "Proto",
+    "colNote": "Notă",
+    "colAction": "Acțiune",
+    "loading": "Se încarcă...",
+    "emptyTitle": "Încă nu există reguli. Serverul este deschis pentru toate conexiunile.",
+    "emptyHint": "Aplicați o presetare de mai sus pentru a începe.",
+    "everyone": "toată lumea",
+    "allPorts": "toate",
+    "delete": "Ștergere",
+    "deleting": "..."
+  },
+  "badge": {
+    "ban": "🚫 Blocat",
+    "whitelist": "✅ Permis",
+    "close": "🔒 Închis"
+  },
+  "confirm": {
+    "applyTemplate": "Aplicați șablonul „{{name}}”?\nPorturi de închis: {{ports}}\nAceste porturi nu vor mai fi accesibile de pe internet.",
+    "removeClose": "închidere port {{port}}",
+    "removeOther": "{{ip}} {{type}}",
+    "removeOtherWithPort": "{{ip}}:{{port}} {{type}}",
+    "remove": "Ștergeți regula „{{summary}}”?"
+  },
+  "success": {
+    "templateApplied_one": "„{{name}}” aplicat. {{count}} regulă adăugată.",
+    "templateApplied_few": "„{{name}}” aplicat. {{count}} reguli adăugate.",
+    "templateApplied_other": "„{{name}}” aplicat. {{count}} de reguli adăugate.",
+    "templateAlreadyApplied": "„{{name}}” este deja aplicat. Nu au fost adăugate reguli noi.",
+    "ruleAdded": "Regula a fost adăugată și aplicată la firewall."
+  },
+  "error": {
+    "applyTemplate": "Nu s-a putut aplica șablonul",
+    "addRule": "Nu s-a putut adăuga regula",
+    "deleteRule": "Nu s-a putut șterge regula"
+  },
+  "protectedPortsFallback": "22, 53, 80, 443, 8080, 8443"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Istoric încărcare sistem",
+  "subtitle": "Media de încărcare (1 / 5 / 15min)",
+  "cores": "{{count}} nuclee",
+  "scale": "scală √",
+  "coresCapacity": "{{count}} nuclee · 100%",
+  "noData": "Încă nu s-au colectat date",
+  "noDataHint": "Eșantioanele sunt înregistrate în fiecare minut; graficul se populează în câteva minute."
+}

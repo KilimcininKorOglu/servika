@@ -1,0 +1,14 @@
+{
+  "title": "Repornire server",
+  "description": "Reporniți întregul server doar după ce sarcinile active și operațiunile clienților pot fi întrerupte în siguranță.",
+  "confirmLabel": "Tastați REBOOT pentru a confirma",
+  "placeholder": "REBOOT",
+  "reboot": "Repornire server",
+  "requesting": "Se solicită...",
+  "messages": {
+    "requested": "Repornire solicitată. Panoul va fi indisponibil în timp ce serverul repornește."
+  },
+  "errors": {
+    "reboot": "Nu s-a putut solicita repornirea serverului"
+  }
+}

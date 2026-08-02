@@ -1,0 +1,44 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "toolsSettings": "Instrumente și setări",
+    "backupManager": "Manager backup"
+  },
+  "title": "Manager backup",
+  "subtitle": "Vizualizați copiile de rezervă pentru toate domeniile într-un singur loc. Backup-urile automate zilnice rulează, iar destinațiile S3/SFTP sunt configurate per domeniu.",
+  "toast": {
+    "triggered": "Backup-urile programate au fost declanșate. Reîmprospătați în câteva secunde pentru a vedea rezultatele.",
+    "triggerFailed": "Nu s-au putut declanșa backup-urile"
+  },
+  "kpi": {
+    "totalSize": "Dimensiune totală backup",
+    "totalBackups": "Total backup-uri",
+    "domainCount": "Număr domenii",
+    "remoteDestinations": "Destinații remote active",
+    "remoteSubtitle": "S3 / SFTP"
+  },
+  "schedule": {
+    "prefix": "🕒 Backup-uri automate:",
+    "default": "Zilnic la 03:00",
+    "suffix": ". Retenție 7 zile",
+    "triggering": "Se declanșează...",
+    "backupNow": "⏱ Faceți backup pentru toate domeniile acum",
+    "refresh": "↻ Reîmprospătați"
+  },
+  "table": {
+    "title": "Backup-uri domenii",
+    "colDomain": "Domeniu",
+    "colCount": "Număr backup-uri",
+    "colSize": "Dimensiune totală",
+    "colLatest": "Cel mai recent backup",
+    "colAction": "Acțiune",
+    "loading": "Se încarcă...",
+    "noDomains": "Niciun domeniu.",
+    "never": "niciodată",
+    "manage": "Gestionați"
+  },
+  "footnote": {
+    "pre": "ℹ️ Backup-urile",
+    "post": "sunt stocate acolo. Backup-urile rămân disponibile dacă un domeniu este șters, permițând recuperarea în caz de ștergere accidentală. Deschideți Gestionați pentru a descărca sau restaura backup-uri individuale și pentru a configura destinații."
+  }
+}

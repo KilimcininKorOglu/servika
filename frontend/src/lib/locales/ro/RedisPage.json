@@ -1,0 +1,62 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "redisCache": "Cache Redis"
+  },
+  "title": "Cache Redis",
+  "status": {
+    "active": "● Activ",
+    "disabled": "Dezactivat"
+  },
+  "subtitle": {
+    "pre": "Alocă un ",
+    "bold": "cache de obiecte Redis izolat și dedicat",
+    "post": " acestui domeniu. WordPress și aplicațiile dinamice pot reduce încărcarea bazei de date și pot răspunde mai rapid. Alte site-uri nu pot accesa acest cache."
+  },
+  "loading": "Se încarcă…",
+  "empty": {
+    "message": "Cache-ul Redis este dezactivat pentru acest domeniu.",
+    "hint": "Activarea creează un utilizator ACL izolat și detalii de conexiune.",
+    "enable": "Activare cache Redis",
+    "enabling": "Se activează…"
+  },
+  "connection": {
+    "title": "Detalii de conexiune",
+    "disable": "Dezactivare",
+    "host": "Gazdă",
+    "username": "Nume de utilizator",
+    "password": "Parolă",
+    "keyPrefix": "Prefix cheie"
+  },
+  "wp": {
+    "title": "Configurare WordPress",
+    "copy": "Copiere",
+    "copied": "Copiat ✓",
+    "instructionsPre": "1) Adăugați următoarele linii în fișierul dvs. ",
+    "instructionsFile": "wp-config.php",
+    "instructionsMid": ". 2) Instalați pluginul ",
+    "instructionsBold": "Redis Object Cache",
+    "instructionsPost": " din tabloul de bord WordPress, apoi selectați „Enable Object Cache”."
+  },
+  "row": {
+    "show": "afișare",
+    "hide": "ascundere",
+    "copy": "copiere",
+    "copied": "✓"
+  },
+  "success": {
+    "enabledWithWp_one": "Cache-ul Redis a fost activat și {{count}} instalare WordPress a fost conectată automat. Nu este necesară o configurare suplimentară.",
+    "enabledWithWp_few": "Cache-ul Redis a fost activat și {{count}} instalări WordPress au fost conectate automat. Nu este necesară o configurare suplimentară.",
+    "enabledWithWp_other": "Cache-ul Redis a fost activat și {{count}} de instalări WordPress au fost conectate automat. Nu este necesară o configurare suplimentară.",
+    "enabled": "Cache-ul Redis a fost activat. Configurați aplicațiile non-WordPress cu detaliile de conexiune de mai jos.",
+    "disabled": "Cache-ul Redis a fost dezactivat."
+  },
+  "confirm": {
+    "disable": "Dezactivați cache-ul Redis? Utilizatorul ACL pentru acest domeniu va fi șters."
+  },
+  "error": {
+    "enable": "Nu s-a putut activa cache-ul Redis",
+    "disable": "Nu s-a putut dezactiva cache-ul Redis"
+  }
+}

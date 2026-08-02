@@ -1,0 +1,16 @@
+{
+  "title": "Baze de date",
+  "description": "Fiecare bază de date de pe server, cu domeniul proprietar și dimensiunea sa.",
+  "emptyMessage": "Nu s-au găsit baze de date.",
+  "column": {
+    "domain": "Domeniu",
+    "database": "Bază de date",
+    "user": "Utilizator",
+    "size": "Dimensiune",
+    "created": "Creată"
+  },
+  "summary": {
+    "databases": "Baze de date",
+    "totalSize": "Dimensiune totală"
+  }
+}

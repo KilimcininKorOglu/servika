@@ -1,0 +1,52 @@
+{
+  "title": "Avize de securitate",
+  "subtitleAudit": "Audit CVE (AlmaLinux)",
+  "advisories": "{{count}} avize de securitate",
+  "rescan": "Rescanați",
+  "scanning": "Scanare în curs…",
+  "scanningServer": "Se scanează serverul…",
+  "updating": "Se instalează actualizări de securitate… (rulează în fundal)",
+  "kcApplying": "Se aplică patch kernel live… (KernelCare — fără repornire necesară)",
+  "severity": {
+    "critical": "Critic",
+    "important": "Important",
+    "moderate": "Moderat",
+    "low": "Scăzut"
+  },
+  "kcActive": {
+    "bold": "Kernelul este actualizat live (KernelCare).",
+    "text": " Vulnerabilitățile de kernel sunt închise fără repornire.",
+    "effectivePre": " Kernel efectiv: ",
+    "effectivePost": ".",
+    "patched": " {{count}} CVE-uri corectate live."
+  },
+  "kcUnregistered": {
+    "bold": "KernelCare este instalat, dar licența nu este înregistrată.",
+    "text": " Înregistrați cu o cheie de licență TuxCare pentru corecții de kernel fără repornire."
+  },
+  "rebootRequired": {
+    "bold1": "Repornire necesară.",
+    "text1": " Un kernel cu patch de securitate nou este instalat, dar sistemul rulează încă kernelul vechi — majoritatea CVE-urilor de mai jos sunt legate de kernel și vor apărea ",
+    "bold2": "deschise până la repornirea serverului",
+    "text2": ". Programați o repornire în fereastra de mentenanță."
+  },
+  "clean": {
+    "title": "Sistem actualizat",
+    "subtitle": "Nicio vulnerabilitate cunoscută"
+  },
+  "totalPre": "Total ",
+  "totalPost": " CVE-uri unice",
+  "lastScan": " · ultima scanare {{scan}}",
+  "installUpdates": "Instalați actualizări de securitate",
+  "updateLiveKernel": "Actualizați patch-urile live de kernel (fără repornire)",
+  "confirmUpdate": "Actualizările de securitate (dnf --security) vor fi instalate. Poate fi necesară o repornire pentru ca actualizările de kernel să intre în vigoare. Continuați?",
+  "messages": {
+    "updatesComplete": "Actualizările de securitate sunt complete.",
+    "livePatchApplied": "Patch kernel live aplicat."
+  },
+  "errors": {
+    "fetch": "Nu s-a putut obține statusul CVE",
+    "startUpdate": "Nu s-a putut porni actualizarea",
+    "startLivePatch": "Nu s-a putut porni patch-ul live"
+  }
+}

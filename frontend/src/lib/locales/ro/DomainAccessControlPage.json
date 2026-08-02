@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "accessControl": "Control acces"
+  },
+  "title": "Control acces",
+  "subtitle": "Configurați protecția hotlink și regulile de permitere sau blocare IP la nivel de domeniu. Salvarea re-randează vhost-ul nginx.",
+  "loading": "Se încarcă…",
+  "modes": {
+    "off": {
+      "label": "Dezactivat",
+      "description": "Nicio regulă de permitere sau blocare IP nu este aplicată în vhost-ul nginx."
+    },
+    "block": {
+      "label": "Blocați IP-urile listate",
+      "description": "Vizitatorii de la adresele IP sau intervalele CIDR listate primesc răspunsuri 403."
+    },
+    "allow": {
+      "label": "Permiteți doar IP-urile listate",
+      "description": "Numai adresele IP sau intervalele CIDR listate sunt permise când există cel puțin o regulă."
+    }
+  },
+  "hotlink": {
+    "title": "Protecție hotlink",
+    "description": "Blochează site-urile externe să încorporeze fișierele imagine servite de acest domeniu.",
+    "enabled": "Activat",
+    "allowedLabel": "Domenii referrer suplimentare permise",
+    "hint": "Domeniul curent și gazda www sunt întotdeauna permise. Adăugați câte un domeniu pe linie sau separate prin virgulă.",
+    "save": "Salvați setările hotlink",
+    "saving": "Se salvează…"
+  },
+  "ipMode": {
+    "title": "Mod acces IP",
+    "selected": "● Selectat"
+  },
+  "newRule": {
+    "title": "Regulă IP nouă",
+    "label": "Adresă IP sau CIDR",
+    "placeholder": "203.0.113.10 sau 203.0.113.0/24",
+    "add": "Adăugați regula",
+    "adding": "Se adaugă…"
+  },
+  "rules": {
+    "title": "Reguli IP configurate",
+    "empty": "Nicio regulă IP încă.",
+    "created": "Creată {{date}}",
+    "delete": "Ștergeți"
+  },
+  "back": "← Înapoi la abonament",
+  "messages": {
+    "hotlinkSaved": "Setările de protecție hotlink au fost salvate.",
+    "modeSaved": "Modul de acces IP a fost salvat.",
+    "ruleAdded": "Regula IP a fost adăugată.",
+    "ruleDeleted": "Regula IP a fost ștearsă."
+  },
+  "confirmDelete": "Ștergeți regula IP {{ip}}?",
+  "errors": {
+    "hotlinkFailed": "Nu s-au putut salva setările hotlink",
+    "modeFailed": "Nu s-a putut salva modul de acces IP",
+    "addFailed": "Nu s-a putut adăuga regula IP",
+    "deleteFailed": "Nu s-a putut șterge regula IP"
+  }
+}

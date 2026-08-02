@@ -1,0 +1,29 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "composer": "Composer"
+  },
+  "title": "PHP Composer",
+  "subtitle": {
+    "pre": "",
+    "mid": " în ",
+    "post": " ca utilizator de sistem."
+  },
+  "loading": "Se încarcă…",
+  "notFound": "Nu s-a găsit",
+  "notInstalled": "Composer nu este instalat pe server. Un administrator trebuie să îl instaleze.",
+  "composerJsonFound": "✓ composer.json găsit",
+  "composerJsonNotFound": "composer.json nu a fost găsit",
+  "packagePlaceholder": "vendor/package sau vendor/package:^1.2",
+  "run": {
+    "header": "$ composer {{cmd}}",
+    "running": "Se execută…",
+    "noOutput": "(fără rezultat)",
+    "completed": "✓ Finalizat",
+    "failed": "✗ Eșuat"
+  },
+  "errors": {
+    "runFailed": "Nu s-a putut executa comanda"
+  }
+}

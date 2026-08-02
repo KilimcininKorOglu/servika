@@ -1,0 +1,40 @@
+{
+  "columns": {
+    "domain": "Domeniu",
+    "mail": "Mail",
+    "mailboxes": "Cutii poștale",
+    "aliases": "Aliasuri",
+    "suspended": "Suspendate"
+  },
+  "mailNone": "Niciunul",
+  "overview": {
+    "title": "Conturi de email",
+    "description": "Numărul de cutii poștale și aliasuri pe fiecare domeniu.",
+    "empty": "Niciun domeniu găsit."
+  },
+  "summary": {
+    "mailDomains": "Domenii de mail",
+    "totalMailboxes": "Total cutii poștale"
+  },
+  "queue": {
+    "title": "Coadă de mail Postfix",
+    "subtitle": "Mesaje care așteaptă livrarea, amânate sau puse în așteptare de un administrator.",
+    "refresh": "↻ Reîmprospătare",
+    "retry": "Reîncercare coadă",
+    "loading": "Se citește coada…",
+    "empty": "✓ Coada de mail este goală",
+    "colId": "ID coadă",
+    "colRoute": "Expeditor → Destinatar",
+    "colSizeTime": "Dimensiune / Timp",
+    "colActions": "Acțiuni",
+    "release": "Eliberare",
+    "hold": "Reținere",
+    "requeue": "Reintroducere în coadă",
+    "delete": "Ștergere"
+  },
+  "confirmDelete": "Ștergeți permanent mesajul din coadă {{queueID}}?",
+  "errors": {
+    "readFailed": "Nu s-a putut citi coada Postfix",
+    "actionFailed": "Operațiunea pe coadă a eșuat"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "loading": "Se încarcă…",
+  "notFound": "Subdomeniul nu a fost găsit.",
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "domain": "Domeniu",
+    "subdomains": "Subdomenii",
+    "subdomain": "Subdomeniu"
+  },
+  "tools": {
+    "wordpress": {
+      "label": "WordPress",
+      "description": "Instalați și gestionați WordPress în această rădăcină de documente"
+    },
+    "logs": {
+      "label": "Jurnale",
+      "description": "Jurnale de acces și de erori pentru acest subdomeniu"
+    },
+    "composer": {
+      "label": "Composer",
+      "description": "Stare dependențe pentru această rădăcină de documente"
+    },
+    "protection": {
+      "label": "Protecție cu parolă",
+      "description": "Restricționați directoarele cu autentificare HTTP"
+    },
+    "statistics": {
+      "label": "Statistici",
+      "description": "Analiză de trafic doar pentru acest subdomeniu"
+    }
+  },
+  "toast": {
+    "phpSaved": "Acest subdomeniu rulează acum pe PHP {{version}}.",
+    "phpChangeFailed": "Nu s-a putut schimba versiunea PHP"
+  },
+  "ssl": {
+    "active": "🔒 SSL activ",
+    "none": "Fără SSL"
+  },
+  "intro": {
+    "pre": "Un subdomeniu al",
+    "post": ", servit din propria rădăcină de documente cu propriul pool PHP."
+  },
+  "details": {
+    "title": "Detalii",
+    "address": "Adresă",
+    "documentRoot": "Rădăcină de documente",
+    "diskUsage": "Utilizare disc",
+    "phpVersion": "Versiune PHP",
+    "created": "Creat",
+    "serverIp": "IP server"
+  },
+  "php": {
+    "title": "Versiune PHP",
+    "note": "Acest subdomeniu rulează pe propriul pool FPM, așa că schimbarea lui nu afectează domeniul părinte.",
+    "versionLabel": "Versiune",
+    "applying": "Se aplică…",
+    "apply": "Aplicare",
+    "validationNote": "Vhost-ul este validat înainte ca modificarea să fie salvată, așa că o configurație respinsă lasă site-ul neatins."
+  },
+  "toolsSection": {
+    "title": "Instrumente",
+    "note": "Fiecare instrument operează pe rădăcina de documente a acestui subdomeniu, nu pe cea a domeniului părinte."
+  },
+  "backToSubdomains": "← Înapoi la subdomenii"
+}

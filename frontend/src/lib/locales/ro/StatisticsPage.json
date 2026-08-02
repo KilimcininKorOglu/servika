@@ -1,0 +1,39 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "statistics": "Statistici"
+  },
+  "title": "Statistici",
+  "live": "● Live (10 sec)",
+  "subtitle": "Utilizarea resurselor serverului, numărul de domenii și rezumatul sistemului.",
+  "metric": {
+    "cpu": "CPU",
+    "memory": "Memorie",
+    "disk": "Disc",
+    "load": "Încărcare (1 min)"
+  },
+  "coresValue": "{{cores}} nuclee",
+  "loadSub": "5 min: {{five}} · 15 min: {{fifteen}}",
+  "system": {
+    "title": "Sistem",
+    "hostname": "Nume gazdă",
+    "os": "Sistem de operare",
+    "kernel": "Kernel",
+    "processor": "Procesor",
+    "swap": "Swap",
+    "panelVersion": "Versiune panou"
+  },
+  "processorValue": "{{model}} · {{cores}} nuclee",
+  "swapValue": "{{percent}}% · {{used}} / {{total}}",
+  "domains": {
+    "title": "Domenii",
+    "total": "Total domenii",
+    "active": "Domenii active",
+    "inactive": "Domenii inactive"
+  },
+  "footer": {
+    "pre": "Vizitați pagina ",
+    "link": "Monitorizare",
+    "post": " pentru o monitorizare mai detaliată."
+  }
+}

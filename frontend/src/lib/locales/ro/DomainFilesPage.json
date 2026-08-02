@@ -1,0 +1,153 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "files": "Fișiere"
+  },
+  "title": "Manager de fișiere",
+  "loading": "Se încarcă...",
+  "dropZone": {
+    "title": "Plasați fișierele aici",
+    "targetDir": "Director țintă: "
+  },
+  "selection": {
+    "count": "{{count}} elemente selectate",
+    "rightClick": "Clic dreapta pentru acțiuni",
+    "delete": "Ștergere ({{count}})",
+    "clear": "Golire selecție"
+  },
+  "upload": {
+    "uploading": "Se încarcă...",
+    "remaining": "Rămas: {{eta}}"
+  },
+  "menu": {
+    "uploadFiles": "📤 Încărcare fișiere",
+    "newFolder": "📁 Dosar nou",
+    "newFile": "📄 Fișier nou"
+  },
+  "toolbar": {
+    "refresh": "↻ Reîmprospătare",
+    "delete": "Ștergere ({{count}})",
+    "searchPlaceholder": "🔍 Căutare fișiere...",
+    "itemCount": "{{count}} elemente"
+  },
+  "columns": {
+    "select": "Selectare",
+    "name": "Nume",
+    "size": "Dimensiune",
+    "permissions": "Permisiuni",
+    "modified": "Modificat",
+    "actions": "Acțiuni"
+  },
+  "parentFolder": "↑ dosar părinte",
+  "empty": "Acest dosar este gol",
+  "actionsTitle": "Acțiuni",
+  "context": {
+    "open": "Deschidere",
+    "browse": "Deschidere în browser",
+    "edit": "Editare",
+    "download": "Descărcare",
+    "rename": "Redenumire",
+    "permissions": "Permisiuni",
+    "calculateSize": "Calculare dimensiune",
+    "extract": "Extragere arhivă",
+    "copy": "Copiere",
+    "move": "Mutare",
+    "delete": "Ștergere"
+  },
+  "prompt": {
+    "deleteConfirm": "Ștergeți „{{name}}”? Această acțiune nu poate fi anulată.",
+    "newFolderName": "Nume dosar nou:"
+  },
+  "sizeModal": {
+    "title": "📏 Informații dimensiune",
+    "bytes": "{{bytes}} octeți",
+    "done": "Gata"
+  },
+  "bulkDelete": {
+    "title": "⚠ Ștergere în masă",
+    "messageBold": "{{count}}",
+    "messagePost": " elemente vor fi șterse permanent. Dosarele și tot conținutul lor vor fi eliminate.",
+    "moreItems": "+ încă {{count}}...",
+    "cancel": "Anulare",
+    "confirm": "Da, ștergeți"
+  },
+  "renameModal": {
+    "title": "Redenumire",
+    "cancel": "Anulare",
+    "rename": "Redenumire"
+  },
+  "chmodModal": {
+    "title": "Permisiuni",
+    "owner": "Proprietar",
+    "group": "Grup",
+    "other": "Alții",
+    "read": "Citire",
+    "write": "Scriere",
+    "execute": "Executare",
+    "octal": "Octal: ",
+    "cancel": "Anulare",
+    "apply": "Aplicare"
+  },
+  "copyMoveModal": {
+    "titleCopy": "Copiere",
+    "titleMove": "Mutare",
+    "heading": "{{title}} ({{count}} elemente)",
+    "moreItems": "+ încă {{count}}...",
+    "targetLabel": "Director țintă (sub home)",
+    "targetPlaceholder": "/public_html/backups",
+    "hintPre": "Ținta trebuie să existe deja. ",
+    "hintCopy": "Dosarele sunt copiate împreună cu conținutul lor.",
+    "hintMove": "Mutările pe același disc sunt imediate.",
+    "cancel": "Anulare"
+  },
+  "archiveModal": {
+    "title": "📦 Adăugare în arhivă ({{count}} elemente)",
+    "fileName": "Nume fișier",
+    "format": "Format",
+    "output": "Rezultat: ",
+    "cancel": "Anulare",
+    "archive": "Arhivare"
+  },
+  "newFileModal": {
+    "title": "📄 Fișier nou",
+    "fileNameLabel": "Nume fișier (inclusiv extensia)",
+    "hint": "Se creează un fișier gol, apoi se deschide în editorul de cod.",
+    "cancel": "Anulare",
+    "createAndEdit": "Creare și editare"
+  },
+  "eta": {
+    "lessThanSec": "<1 sec",
+    "sec": "{{count}} sec",
+    "minSec": "{{min}} min {{sec}} sec",
+    "hrMin": "{{hr}} h {{min}} min"
+  },
+  "toast": {
+    "uploadPartial": "{{success}}/{{total}} fișiere încărcate, unele au eșuat.",
+    "deletePartial": "{{success}}/{{total}} elemente șterse.",
+    "someErrors": "Unele erori: {{errors}}",
+    "downloadFailed": "Descărcarea a eșuat: {{message}}"
+  },
+  "errors": {
+    "deleteFailed": "Ștergerea a eșuat",
+    "createFolderFailed": "Nu s-a putut crea dosarul",
+    "openFailed": "Nu s-a putut deschide",
+    "saveFailed": "Nu s-a putut salva",
+    "renameFailed": "Nu s-a putut redenumi",
+    "chmodFailed": "Nu s-au putut modifica permisiunile",
+    "extractFailed": "Nu s-a putut deschide arhiva. Sunt acceptate arhivele ZIP, RAR și TAR.",
+    "searchFailed": "Căutarea a eșuat",
+    "copyFailed": "Copierea a eșuat",
+    "moveFailed": "Mutarea a eșuat",
+    "archiveFailed": "Arhivarea a eșuat",
+    "createFailed": "Crearea a eșuat",
+    "sizeFailed": "Calcularea dimensiunii a eșuat"
+  },
+  "newFile": {
+    "title": "📄 Fișier nou",
+    "label": "Nume fișier (inclusiv extensia)",
+    "hint": "Se creează un fișier gol, apoi se deschide în editorul de cod.",
+    "cancel": "Anulare",
+    "create": "Creare și editare"
+  }
+}

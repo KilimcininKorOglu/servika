@@ -1,0 +1,62 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "system": "Gestionare sistem",
+    "current": "Extensii PHP"
+  },
+  "title": "Extensii PHP",
+  "subtitle": {
+    "pre": "Gestionați extensiile PHP pe întregul server. Folosiți comutatorul pentru a activa sau dezactiva o extensie, iar PHP-FPM repornește automat. ",
+    "bold": "La nivelul întregului server",
+    "post": ", afectează toate domeniile."
+  },
+  "removeIonCube": "⊗ Eliminare IonCube",
+  "installIonCube": "🔐 Instalare IonCube",
+  "installFromPecl": "📦 Instalare din PECL",
+  "versionTab": "PHP {{version}}",
+  "counters": {
+    "enabled": "{{count}} activate",
+    "inactive": "{{count}} inactive",
+    "total": "Total {{count}}"
+  },
+  "searchPlaceholder": "🔍 Căutare extensii...",
+  "loading": "Se încarcă…",
+  "coreExtension": "extensie de bază",
+  "toggleTitle": {
+    "core": "Extensie de bază, nu poate fi dezactivată",
+    "disable": "Dezactivare",
+    "enable": "Activare"
+  },
+  "alerts": {
+    "coreCannotDisable": "Această extensie este o parte de bază a PHP și nu poate fi dezactivată.",
+    "invalidPackage": "Nume de pachet invalid"
+  },
+  "confirm": {
+    "ionCubeInstall": "IonCube Loader va fi instalat pentru PHP {{version}}.\n\nO arhivă tar.gz va fi descărcată de la ioncube.com, fișierul .so va fi copiat și va fi încărcat ca zend_extension.\nContinuați?",
+    "ionCubeRemove": "IonCube Loader va fi eliminat din PHP {{version}}. Continuați?",
+    "peclInstall": "Pachetul PECL „{{package}}” va fi compilat și instalat pentru PHP {{version}}. Continuați?"
+  },
+  "success": {
+    "toggleEnabled": "✓ {{name}} activată · PHP-FPM repornit",
+    "toggleDisabled": "✓ {{name}} dezactivată · PHP-FPM repornit",
+    "ionCubeLoaded": "✓ IonCube instalat · ÎNCĂRCAT",
+    "ionCubeNotLoaded": "✓ IonCube instalat · Fișierul INI a fost scris, dar extensia nu a fost detectată la execuție",
+    "ionCubeRemoved": "✓ IonCube eliminat",
+    "peclInstalled": "✓ {{package}} instalat"
+  },
+  "errors": {
+    "toggleFailed": "Comutarea a eșuat",
+    "ionCubeInstallFailed": "Instalarea IonCube a eșuat",
+    "ionCubeRemoveFailed": "Eliminarea IonCube a eșuat",
+    "peclInstallFailed": "Instalarea PECL a eșuat"
+  },
+  "peclModal": {
+    "title": "Instalare extensie din PECL",
+    "descPre": "Descarcă și compilează o extensie din depozitul PECL. Exemple: ",
+    "warnPre": "⚠ Extensia va fi compilată pentru PHP {{version}}. Țintă: ",
+    "warnMid": " sau directorul Remi",
+    "inputPlaceholder": "de ex. mongodb",
+    "cancel": "Anulare",
+    "install": "Instalare"
+  }
+}

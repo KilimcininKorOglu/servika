@@ -1,0 +1,28 @@
+{
+  "title": "Certificate SSL",
+  "description": "Stare certificat la nivelul întregului server, sortată după cea mai apropiată expirare.",
+  "emptyMessage": "Niciun domeniu găsit.",
+  "column": {
+    "domain": "Domeniu",
+    "ssl": "SSL",
+    "expiry": "Expirare",
+    "remaining": "Rămas",
+    "status": "Stare"
+  },
+  "ssl": {
+    "enabled": "Activat",
+    "none": "Niciunul"
+  },
+  "status": {
+    "active": "Activ",
+    "passive": "Pasiv"
+  },
+  "remaining": {
+    "expiredAgo": "expirat acum {{days}}z",
+    "days": "{{days}} zile"
+  },
+  "summary": {
+    "withSsl": "Cu SSL",
+    "expiring": "Expiră ≤14z"
+  }
+}

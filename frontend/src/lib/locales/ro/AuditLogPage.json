@@ -1,0 +1,36 @@
+{
+  "breadcrumbHome": "Acasă",
+  "title": "Jurnal de securitate",
+  "subtitle": "Tentative de autentificare și acțiuni administrative. Cea mai recentă intrare apare prima.",
+  "stats": {
+    "entries": "înregistrări",
+    "failed": "eșuate"
+  },
+  "searchPlaceholder": "Căutați utilizator, IP, țintă…",
+  "filters": {
+    "allActions": "Toate acțiunile",
+    "last": "Ultimele {{n}}",
+    "failedOnly": "Doar eșuate"
+  },
+  "loading": "Se încarcă…",
+  "empty": {
+    "title": "Nicio înregistrare pentru acest filtru",
+    "description": "Relaxați filtrele și încercați din nou."
+  },
+  "noMatch": "Nicio înregistrare nu corespunde căutării.",
+  "columns": {
+    "time": "Timp",
+    "result": "Rezultat",
+    "action": "Acțiune",
+    "user": "Utilizator",
+    "ip": "IP",
+    "target": "Țintă"
+  },
+  "status": {
+    "success": "Reușit",
+    "failed": "Eșuat"
+  },
+  "errors": {
+    "loadFailed": "Nu s-a putut încărca jurnalul"
+  }
+}

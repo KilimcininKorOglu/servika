@@ -1,0 +1,44 @@
+{
+  "groups": {
+    "applications": "Aplicații",
+    "domainAndDns": "Domeniu și DNS",
+    "email": "Email",
+    "filesAndDatabases": "Fișiere și baze de date",
+    "developmentTools": "Instrumente de dezvoltare",
+    "security": "Securitate"
+  },
+  "wordpress": { "label": "WordPress", "desc": "Instalare cu un clic · gestionare" },
+  "laravel": { "label": "Set de instrumente Laravel", "desc": "Instalare · implementare · coadă" },
+  "dns": { "label": "Gestionare DNS", "desc": "Înregistrări A, MX, TXT, CNAME" },
+  "subdomains": { "label": "Subdomenii", "desc": "Subdomenii" },
+  "addonDomains": { "label": "Domenii suplimentare", "desc": "Domenii suplimentare și parcate · redirecționări" },
+  "mail": { "label": "Conturi de email", "desc": "Cutii poștale Postfix și Dovecot · SMTP" },
+  "connection": { "label": "Informații de conexiune", "desc": "FTP, bază de date" },
+  "files": { "label": "Fișiere", "desc": "Manager de fișiere" },
+  "databases": { "label": "Baze de date" },
+  "ftp": { "label": "FTP", "desc": "Conturi FTP" },
+  "backups": { "label": "Copie de rezervă și restaurare", "desc": "Gestionare copii de rezervă" },
+  "copy": { "label": "Copiere site web", "desc": "Clonare" },
+  "php": { "label": "PHP", "desc": "Versiunea {{version}}" },
+  "logs": { "label": "Jurnale", "desc": "access, error" },
+  "cron": { "label": "Sarcini programate", "desc": "Cron" },
+  "git": { "label": "Git", "desc": "Integrare depozit" },
+  "composer": { "label": "PHP Composer", "desc": "Manager de pachete" },
+  "performance": { "label": "Performanță", "desc": "Acceleratoare" },
+  "redis": { "label": "Cache Redis", "desc": "Cache de obiecte izolat · accelerator" },
+  "ssl": {
+    "label": "Certificate SSL/TLS",
+    "expires": "Expiră: {{expiry}}",
+    "letsEncrypt": "Let's Encrypt",
+    "warning": "Domeniul nu este protejat"
+  },
+  "passwordProtection": { "label": "Directoare protejate cu parolă", "desc": ".htpasswd" },
+  "stats": { "label": "Statistici", "desc": "Analiză trafic" },
+  "accessControl": { "label": "Control acces", "desc": "Protecție hotlink · permitere/blocare IP" },
+  "imunify": { "label": "Imunify", "desc": "Antivirus" },
+  "ssh": {
+    "label": "Acces SSH",
+    "enabled": "Activat",
+    "disabled": "Dezactivat"
+  }
+}

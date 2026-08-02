@@ -1,0 +1,15 @@
+{
+  "heading": "Portal client",
+  "subtitle": "Autentificați-vă cu datele contului",
+  "field": {
+    "username": "Nume utilizator",
+    "password": "Parolă"
+  },
+  "button": {
+    "signingIn": "Autentificare în curs…",
+    "signIn": "Autentificați-vă"
+  },
+  "error": {
+    "loginFailed": "Autentificarea a eșuat"
+  }
+}

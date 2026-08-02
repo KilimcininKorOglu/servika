@@ -1,0 +1,25 @@
+{
+  "breadcrumbHome": "Acasă",
+  "breadcrumbServerStatus": "Stare server",
+  "title": "Stare server",
+  "subtitle": "O captură live a serverului. Acest ecran este doar pentru citire — gestionarea serviciilor aparține administratorului.",
+  "loading": "Se încarcă…",
+  "errorLoad": "Nu s-a putut încărca starea serverului",
+  "cards": {
+    "cpu": "CPU",
+    "memory": "Memorie",
+    "disk": "Disc",
+    "panelVersion": "Versiune panou"
+  },
+  "loadText": "încărcare {{values}}",
+  "updateAvailable": "actualizare disponibilă: v{{version}}",
+  "upToDate": "actualizat",
+  "servicesHeading": "Servicii",
+  "noServices": "Nicio informație despre servicii.",
+  "statuses": {
+    "active": "În funcțiune",
+    "inactive": "Oprit",
+    "failed": "Eșuat",
+    "absent": "Neinstalat"
+  }
+}

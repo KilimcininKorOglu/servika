@@ -1,0 +1,99 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "databases": "Baze de date"
+  },
+  "title": "Baze de date",
+  "actions": {
+    "new": "+ Bază de date nouă",
+    "refresh": "↻ Reîmprospătare"
+  },
+  "count": "{{count}} baze de date",
+  "loading": "Se încarcă...",
+  "empty": "Încă nu există baze de date",
+  "columns": {
+    "database": "Bază de date",
+    "username": "Nume de utilizator",
+    "host": "Gazdă",
+    "password": "Parolă",
+    "created": "Creat",
+    "actions": "Acțiuni"
+  },
+  "password": {
+    "show": "Afișare",
+    "hide": "Ascundere",
+    "copy": "Copiere"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Deschideți phpMyAdmin într-o filă nouă",
+    "resetPassword": "🔑 Resetare parolă",
+    "delete": "Ștergere"
+  },
+  "errors": {
+    "pmaToken": "Nu s-a putut obține tokenul phpMyAdmin",
+    "deleteFailed": "Ștergerea a eșuat"
+  },
+  "delete": {
+    "title": "Ștergere bază de date",
+    "message": "Baza de date „{{name}}” și utilizatorul acesteia vor fi șterse permanent. Această acțiune nu poate fi anulată.",
+    "confirm": "Da, ștergeți"
+  },
+  "newModal": {
+    "title": "Bază de date nouă",
+    "created": "✓ Bază de date creată",
+    "saveHint": "Salvați aceste date într-un loc sigur. Este posibil să nu mai puteți vedea parola în text simplu ulterior:",
+    "labelDatabase": "Bază de date",
+    "labelUser": "Utilizator",
+    "labelPassword": "Parolă",
+    "done": "Gata",
+    "autoPre": "Automat",
+    "autoPost": ", lăsați panoul să genereze numele bazei de date, utilizatorul și parola",
+    "dbNameLabel": "Nume bază de date",
+    "dbSuffixPlaceholder": "blog",
+    "dbUserLabel": "Utilizator bază de date",
+    "newUser": "Utilizator nou",
+    "selectExistingUser": "Selectați utilizator existent",
+    "userSuffixPlaceholder": "bloguser",
+    "passwordLabel": "Parolă",
+    "passwordOptional": "(lăsați gol pentru a genera una)",
+    "passwordPlaceholder": "Cel puțin 12 caractere, litere și cifre",
+    "generate": "Generare",
+    "passwordStrength": "Parola trebuie să aibă cel puțin 12 caractere cu litere și cifre.",
+    "cancel": "Anulare",
+    "creating": "Se creează...",
+    "create": "Creare",
+    "errors": {
+      "dbSuffix": "Sufix bază de date: doar litere mici, cifre și liniuță de subliniere; 1-32 caractere",
+      "dbNameTooLong": "Nume bază de date prea lung (prefix + sufix trebuie să aibă cel mult 64 de caractere)",
+      "userSuffix": "Sufix utilizator: doar litere mici, cifre și liniuță de subliniere; 1-32 caractere",
+      "userNameTooLong": "Nume utilizator prea lung (prefix + sufix trebuie să aibă cel mult 64 de caractere)",
+      "passwordStrength": "Parola trebuie să aibă cel puțin 12 caractere cu litere și cifre",
+      "selectExisting": "Selectați un utilizator existent",
+      "createFailed": "Crearea a eșuat"
+    }
+  },
+  "resultRow": {
+    "copied": "✓",
+    "copy": "Copiere"
+  },
+  "pwReset": {
+    "title": "Resetare parolă: {{name}}",
+    "introPre": " parola utilizatorului este actualizată în MariaDB și în panou în același timp.",
+    "customLabel": "Parolă personalizată (lăsați gol pentru a genera una)",
+    "customPlaceholder": "Cel puțin 6 caractere",
+    "cancel": "Anulare",
+    "useThis": "Folosiți această parolă",
+    "resetting": "Se resetează...",
+    "generateRandom": "Generare parolă aleatorie",
+    "updated": "✓ Parolă actualizată",
+    "saveHint": "Salvați aceasta într-un loc sigur. Nu o mai puteți vedea ulterior.",
+    "copy": "Copiere",
+    "done": "Gata",
+    "errors": {
+      "tooShort": "Parola trebuie să aibă cel puțin 6 caractere",
+      "resetFailed": "Resetarea parolei a eșuat"
+    }
+  }
+}

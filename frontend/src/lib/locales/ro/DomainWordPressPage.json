@@ -1,0 +1,124 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "subscription": "Abonament",
+    "wordpress": "WordPress"
+  },
+  "title": "Set de instrumente WordPress",
+  "subtitle": "Gestionați versiuni, pluginuri, teme și utilizatori într-un singur loc.",
+  "loading": "Se încarcă…",
+  "actions": {
+    "new": "WordPress nou"
+  },
+  "empty": {
+    "title": "Încă nu există nicio instalare WordPress pe acest domeniu",
+    "subtitle": "Instalați-l cu un clic folosind formularul de mai jos."
+  },
+  "tabs": {
+    "overview": "Prezentare generală",
+    "extensions": "Pluginuri",
+    "themes": "Teme",
+    "users": "Utilizatori"
+  },
+  "toolkit": {
+    "adminPanel": "Panou de administrare",
+    "remove": "Eliminare"
+  },
+  "metrics": {
+    "version": "Versiune",
+    "php": "PHP",
+    "database": "Bază de date",
+    "maintenance": "Mod de mentenanță",
+    "upToDate": "actualizat",
+    "active": "activ",
+    "on": "Activat",
+    "off": "Dezactivat"
+  },
+  "overview": {
+    "updateVersion": "Actualizare versiune · v{{version}}",
+    "updateAll": "Actualizare toate",
+    "disableMaintenance": "Dezactivare mod de mentenanță",
+    "enableMaintenance": "Activare mod de mentenanță",
+    "clearCache": "Golire cache",
+    "repairCore": "Reparare nucleu",
+    "hint": "Acțiuni rapide de mentenanță. Actualizările de versiune disponibile apar în metrica de mai sus."
+  },
+  "messages": {
+    "coreUpdated": "Nucleul WordPress a fost actualizat.",
+    "allUpdated": "Nucleul, pluginurile și temele au fost actualizate.",
+    "maintenanceEnabled": "Mod de mentenanță activat.",
+    "maintenanceDisabled": "Mod de mentenanță dezactivat.",
+    "cacheCleared": "Cache golit.",
+    "repairDone": "Repararea nucleului a fost finalizată.",
+    "packageUpdated": "{{name}} a fost actualizat.",
+    "allUpdatesDone": "Toate actualizările au fost finalizate.",
+    "activated": "{{name}} a fost activat.",
+    "deactivated": "{{name}} a fost dezactivat."
+  },
+  "errors": {
+    "installFailed": "Instalarea a eșuat",
+    "operationFailed": "Operațiunea a eșuat",
+    "resetFailed": "Nu s-a putut reseta parola",
+    "removeFailed": "Nu s-a putut elimina instalarea"
+  },
+  "output": {
+    "title": "Rezultat operațiune"
+  },
+  "btn": {
+    "processing": "Se procesează…"
+  },
+  "packages": {
+    "loading": "Se încarcă…",
+    "noPlugins": "Niciun plugin găsit.",
+    "noThemes": "Nicio temă găsită.",
+    "updateSingular": "{{count}} actualizare disponibilă",
+    "updatePlural": "{{count}} actualizări disponibile",
+    "updateAll": "Actualizare toate",
+    "active": "Activ",
+    "inactive": "Inactiv",
+    "version": "Versiunea {{version}}",
+    "updateAvailable": " → {{version}} disponibilă",
+    "update": "Actualizare",
+    "activate": "Activare",
+    "deactivate": "Dezactivare",
+    "activeTheme": "Temă activă"
+  },
+  "usersTab": {
+    "loading": "Se încarcă…",
+    "empty": "Niciun utilizator găsit.",
+    "resetPassword": "Resetare parolă"
+  },
+  "confirm": {
+    "resetPassword": "Generați o parolă nouă pentru „{{user}}”?\nParola curentă va deveni invalidă.",
+    "rootRemove": "Instalările WordPress din directorul rădăcină nu pot fi șterse din panou.",
+    "remove": "Ștergeți instalarea WordPress din {{dir}}?\nToate fișierele din acest director și baza sa de date vor fi eliminate. Acest lucru nu poate fi anulat."
+  },
+  "installForm": {
+    "title": "Instalare WordPress nouă",
+    "close": "✕ Închidere",
+    "siteTitle": "Titlu site",
+    "siteTitlePlaceholder": "Blogul meu",
+    "subdirectory": "Subdirector (opțional)",
+    "subdirectoryPlaceholder": "gol = rădăcină · exemplu: blog",
+    "adminUser": "Nume de utilizator admin",
+    "adminEmail": "Email admin",
+    "adminEmailPlaceholder": "admin@site.com",
+    "installing": "Se instalează… (~30 sec)",
+    "install": "Instalare WordPress"
+  },
+  "result": {
+    "installed": "WordPress {{version}} instalat",
+    "site": "Site",
+    "admin": "Admin",
+    "username": "Nume de utilizator",
+    "password": "Parolă",
+    "savePassword": "Salvați parola acum. Nu va mai fi afișată din nou."
+  },
+  "passwordModal": {
+    "title": "Parolă nouă creată",
+    "user": "Utilizator:",
+    "copy": "Copiere",
+    "notice": "Această parolă nu va mai fi afișată din nou. Salvați-o acum.",
+    "ok": "OK"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "notCheckedYet": "Neverificat încă",
+  "title": "Actualizare panou",
+  "badges": {
+    "server": "Server",
+    "critical": "Critic",
+    "updateAvailable": "Actualizare disponibilă"
+  },
+  "description": "Actualizează panoul la cea mai recentă versiune de pe GitHub. Setările de mediu, bazele de date și site-urile sunt păstrate, iar o versiune nesănătoasă este reversibilă automat.",
+  "toolMissing": " Instrumentul de actualizare lipsește și va fi descărcat automat la prima utilizare.",
+  "labels": {
+    "current": "Curentă",
+    "latest": "Cea mai recentă",
+    "buildDate": "Dată build",
+    "lastCheck": "Ultima verificare"
+  },
+  "unknown": "Necunoscut",
+  "lastCheckFailed": "Ultima verificare de versiune a eșuat: {{error}}",
+  "checksDisabled": "Verificările de versiune sunt dezactivate.",
+  "running": "Actualizarea este în curs. Panoul se poate reporni pentru scurt timp; păstrați această pagină deschisă.",
+  "logStarted": "Actualizare începută...\n",
+  "checkAndInstall": "Verificare actualizări și instalare",
+  "checking": "Se verifică...",
+  "refreshStatus": "Reîmprospătare stare versiune",
+  "confirmPrompt": "Panoul va fi actualizat și serviciul său repornit. Confirmați?",
+  "starting": "Se pornește...",
+  "confirmYes": "Da, actualizați",
+  "cancel": "Anulare",
+  "errors": {
+    "refresh": "Nu s-a putut reîmprospăta starea versiunii",
+    "start": "Nu s-a putut porni actualizarea"
+  }
+}

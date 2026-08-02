@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "toolsAndSettings": "Instrumente și setări",
+    "panelUpdate": "Actualizare panou"
+  },
+  "title": "Actualizare panou",
+  "description": "Actualizați panoul la cea mai recentă versiune de pe GitHub. Variabilele de mediu, baza de date și site-urile sunt păstrate; o verificare de sănătate eșuată revine automat la versiunea anterioară. Operațiunea rulează în fundal, așa că puteți închide această pagină, iar actualizarea continuă neîntrerupt."
+}

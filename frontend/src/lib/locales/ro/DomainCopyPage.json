@@ -1,0 +1,35 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "copyWebsite": "Copiere site web"
+  },
+  "title": "Copiere site web",
+  "subtitle": {
+    "pre": "Creează o captură cu marcaj temporal a fișierelor site-ului sub ",
+    "post": ", oferind un punct de restaurare sigur înainte de a face modificări."
+  },
+  "note": {
+    "pre": "ℹ️ Acest instrument copiază numai ",
+    "bold1": "fișierele",
+    "mid": " și nu include baza de date. Pentru o copie de rezervă completă, folosiți ",
+    "bold2": "Copie de rezervă și restaurare",
+    "post": "."
+  },
+  "createDescription": "Creează o copie nouă a conținutului public_html.",
+  "actions": {
+    "create": "Creare copie",
+    "creating": "Se copiază…",
+    "delete": "Ștergere"
+  },
+  "existingTitle": "Copii existente",
+  "loading": "Se încarcă…",
+  "empty": "Încă nu există copii.",
+  "back": "← Înapoi la abonament",
+  "createdCopy": "Copie creată: {{name}} ({{size}} MB)",
+  "confirmDelete": "Ștergeți această copie?\n{{name}} ({{size}} MB)",
+  "errors": {
+    "createFailed": "Nu s-a putut crea copia",
+    "deleteFailed": "Nu s-a putut șterge copia"
+  }
+}

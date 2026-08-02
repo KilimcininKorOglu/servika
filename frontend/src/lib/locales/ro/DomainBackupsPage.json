@@ -1,0 +1,121 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "backups": "Backup-uri"
+  },
+  "title": "Backup-uri",
+  "subtitle": {
+    "prefix": "home + dump MySQL = tar.gz, ",
+    "disabled": "Backup-uri automate dezactivate",
+    "enabled": "{{freq}} {{hour}}:00, ultimele {{retention}} backup-uri automate reținute"
+  },
+  "freq": {
+    "daily": "Zilnic",
+    "weekly": "Săptămânal"
+  },
+  "toast": {
+    "destinationSaved": "Destinație remote salvată",
+    "destinationSaveFailed": "Nu s-a putut salva destinația",
+    "destinationDeleted": "Destinație remote ștearsă",
+    "confirmDeleteDest": "Ștergeți destinația de backup remote? Backup-urile existente nu sunt afectate, dar încărcările automate viitoare vor opri.",
+    "autoDisabled": "Backup-uri automate dezactivate",
+    "autoEnabled": "Backup-uri automate activate: {{freq}}, {{hour}}:00; ultimele {{retention}} backup-uri vor fi reținute",
+    "scheduleSaveFailed": "Nu s-a putut salva programarea",
+    "backupCreated": "Backup creat",
+    "createFailed": "Nu s-a putut crea backup-ul",
+    "restored": "Restaurat: {{domain}}, baza de date: {{database}}",
+    "restoreDbUnknown": "necunoscut",
+    "restoreFailed": "Restaurarea a eșuat"
+  },
+  "schedule": {
+    "heading": "Program backup automat",
+    "description": "Când este activat, panoul verifică orar. Un backup este creat la ora selectată, iar backup-urile depășite sunt șterse.",
+    "lastBackup": "Ultimul backup automat:",
+    "options": {
+      "none": {
+        "name": "Dezactivat",
+        "description": "Niciun backup automat. Rulează doar „Faceți backup acum” manual."
+      },
+      "daily": {
+        "name": "Zilnic",
+        "description": "Creează un backup zilnic la ora selectată și reține ultimele N backup-uri."
+      },
+      "weekly": {
+        "name": "Săptămânal",
+        "description": "Creează un backup la fiecare șapte zile pentru a reduce utilizarea discului."
+      }
+    },
+    "active": "● Activ",
+    "runTime": "Ora de execuție (locală)",
+    "retentionLabel": "Backup-uri de reținut",
+    "retentionHint": "Backup-urile automate mai vechi care depășesc acest număr sunt șterse. Backup-urile manuale sunt reținute."
+  },
+  "destination": {
+    "heading": "Destinație backup remote (FTP / SFTP / S3 / B2)",
+    "description": "După creare, backup-urile sunt încărcate în destinația remote în fundal pentru protecție off-site împotriva defecțiunilor de disc.",
+    "statusSuccessful": "● Ultimul: reușit",
+    "statusError": "✗ Ultimul: eroare",
+    "lastUpload": "Ultima încărcare:",
+    "typeLabel": "Tip destinație",
+    "type": {
+      "sftp": "🔒 SFTP",
+      "ftp": "📡 FTP",
+      "s3": "☁️ S3",
+      "b2": "🅱️ Backblaze B2"
+    },
+    "bucket": "Bucket",
+    "region": "Regiune",
+    "regionHint": "(implicit us-east-1)",
+    "endpoint": "Endpoint",
+    "endpointHint": "(lăsați gol pentru AWS S3)",
+    "accessKeyId": "ID cheie de acces",
+    "secretAccessKey": "Cheie de acces secretă",
+    "secretKeepHint": "(lăsați gol pentru a păstra valoarea curentă)",
+    "keyPrefix": "Prefix cheie",
+    "pathStyle": "URL-uri cu stil de cale",
+    "host": "Gazdă",
+    "port": "Port",
+    "username": "Nume utilizator",
+    "password": "Parolă",
+    "passwordKeepHint": "(lăsați gol pentru a păstra parola curentă)",
+    "remoteDir": "Director remote",
+    "activeLabel": "Activ (trimiteți fiecare backup la această destinație)",
+    "testSuccess": "✓ Conexiune reușită",
+    "testError": "✗ ",
+    "testErrorFallback": "Eroare",
+    "testing": "Se testează...",
+    "testConnection": "Testați conexiunea",
+    "save": "Salvați",
+    "deleteDestination": "Ștergeți destinația"
+  },
+  "backingUp": "Backup în curs...",
+  "backupNow": "+ Faceți backup acum",
+  "refresh": "↻ Reîmprospătați",
+  "backupCount": "{{count}} backup-uri",
+  "loading": "Se încarcă...",
+  "empty": "Niciun backup încă",
+  "columns": {
+    "file": "Fișier",
+    "type": "Tip",
+    "size": "Dimensiune",
+    "created": "Creat",
+    "actions": "Acțiuni"
+  },
+  "typeScheduled": "Programat",
+  "row": {
+    "download": "Descărcați",
+    "restore": "↺ Restaurați",
+    "delete": "Ștergeți"
+  },
+  "confirmDelete": {
+    "title": "Ștergeți fișierul de backup",
+    "message": "Ștergeți fișierul de backup „{{file}}”?",
+    "confirm": "Da, ștergeți"
+  },
+  "confirmRestore": {
+    "title": "Restaurați din backup",
+    "message": "Restaurați „{{file}}”?\n\nATENȚIE: Fișierele existente din public_html vor fi suprascrise, iar tabelele MySQL vor fi recreate. Această acțiune nu poate fi anulată.",
+    "confirm": "Da, restaurați"
+  }
+}

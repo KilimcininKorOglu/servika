@@ -1,0 +1,31 @@
+{
+  "planAndResources": "Plan și resurse",
+  "refresh": "Reîmprospătare",
+  "servicePlan": "Plan de servicii",
+  "bars": {
+    "disk": "Disc",
+    "trafficMonthly": "Trafic (lunar)",
+    "database": "Bază de date",
+    "ftpAccount": "Cont FTP",
+    "emailMailbox": "Cutie poștală email",
+    "subdomain": "Subdomeniu"
+  },
+  "units": {
+    "db": "BD",
+    "account": "cont",
+    "mailbox": "cutie poștală",
+    "domain": "domeniu"
+  },
+  "configuration": "Configurare",
+  "ipAddress": "Adresă IP",
+  "systemUser": "Utilizator de sistem",
+  "phpVersion": "Versiune PHP",
+  "sslTls": "SSL/TLS",
+  "active": "Activ",
+  "none": "Niciunul",
+  "counters": "Contoare",
+  "dnsRecord": "Înregistrare DNS",
+  "cronJob": "Sarcină cron",
+  "backup": "Copie de rezervă",
+  "backupSize": "Dimensiune copie de rezervă"
+}

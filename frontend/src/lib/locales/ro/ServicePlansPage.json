@@ -1,0 +1,75 @@
+{
+  "breadcrumbHome": "Acasă",
+  "breadcrumbTitle": "Planuri de servicii",
+  "title": "Planuri de servicii",
+  "subtitle": "Definiți planuri de servicii pentru domenii. Fiecare domeniu este asociat cu un plan, iar resurse precum discul, traficul, versiunea PHP, numărul de baze de date și limitele de subdomenii sunt configurate per plan.",
+  "addPlan": "Adăugare plan",
+  "loading": "Se încarcă…",
+  "empty": {
+    "title": "Încă nu există planuri de servicii",
+    "descriptionAdmin": "Începeți prin definirea primului dvs. plan.",
+    "descriptionUser": "Administratorul nu a definit încă un plan."
+  },
+  "badge": {
+    "default": "Implicit"
+  },
+  "phpVersion": "PHP {{version}}",
+  "rows": {
+    "disk": "Disc",
+    "traffic": "Trafic",
+    "domains": "Domenii",
+    "databases": "Baze de date",
+    "ftp": "FTP"
+  },
+  "detailsButton": "Detalii și limite de resurse",
+  "delete": "Ștergere",
+  "confirmDelete": {
+    "title": "Ștergere plan",
+    "message": "Ștergeți planul „{{name}}”?",
+    "confirmText": "Da, ștergeți"
+  },
+  "errors": {
+    "deleteFailed": "Ștergerea a eșuat",
+    "saveFailed": "Salvarea a eșuat"
+  },
+  "limit": {
+    "unlimited": "nelimitat"
+  },
+  "units": {
+    "mb": "MB",
+    "mbPerMonth": "MB/lună",
+    "domains": "domenii",
+    "databases": "baze de date",
+    "accounts": "conturi"
+  },
+  "modal": {
+    "newTitle": "Plan nou",
+    "editTitle": "Editare plan",
+    "planName": "Nume plan",
+    "description": "Descriere",
+    "diskMb": "Disc (MB)",
+    "trafficMb": "Trafic (MB)",
+    "phpVersionLabel": "Versiune PHP",
+    "maxDomains": "Domenii maxime",
+    "maxDatabases": "Baze de date maxime",
+    "maxFtp": "Conturi FTP maxime",
+    "isDefault": "Plan implicit pentru domeniile noi",
+    "wafHeading": "Valoare implicită WAF (ModSecurity + OWASP CRS)",
+    "wafEnabled": "Activat în acest plan",
+    "wafMode": {
+      "block": "Blocare (Activat)",
+      "detect": "Detectare (doar jurnal)"
+    },
+    "wafParanoia": {
+      "level1": "Nivel 1 (scăzut)",
+      "level2": "Nivel 2 (mediu)",
+      "level3": "Nivel 3 (ridicat)",
+      "level4": "Nivel 4 (strict)"
+    },
+    "hint": "0 = nelimitat. Valorile pentru disc și trafic sunt în MB. Domeniile noi de pe acest plan sunt provizionate cu versiunea PHP selectată.",
+    "cancel": "Anulare",
+    "saving": "Se salvează…",
+    "add": "Adăugare",
+    "update": "Actualizare"
+  }
+}

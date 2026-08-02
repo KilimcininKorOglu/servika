@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "addonDomains": "Domenii suplimentare"
+  },
+  "title": "Domenii suplimentare",
+  "subtitle": "Creați domenii suplimentare sau parcate și configurați redirecționări la nivel de domeniu.",
+  "toast": {
+    "created": "{{domain}} a fost creat.",
+    "createFailed": "Nu s-a putut crea domeniul suplimentar",
+    "deleted": "{{domain}} a fost șters.",
+    "deleteFailed": "Nu s-a putut șterge domeniul suplimentar",
+    "redirectSaved": "Setările de redirecționare au fost salvate.",
+    "redirectSaveFailed": "Nu s-au putut salva setările de redirecționare",
+    "redirectRemoved": "Setările de redirecționare au fost eliminate.",
+    "redirectRemoveFailed": "Nu s-au putut elimina setările de redirecționare"
+  },
+  "mode": {
+    "parked": "domeniu parcat",
+    "addon": "domeniu suplimentar"
+  },
+  "confirmDelete": "Ștergeți {{domain}}?\nDomeniul {{mode}}, vhost-ul, zona DNS și înregistrările panoului vor fi eliminate. Aceasta nu poate fi anulată.",
+  "confirmRemoveRedirect": "Eliminați redirecționarea domeniului?",
+  "form": {
+    "title": "Domeniu suplimentar nou",
+    "domainLabel": "Domeniu",
+    "parkedLabel": "Domeniu parcat",
+    "creating": "Se creează…",
+    "add": "Adăugați domeniul",
+    "hint": "Domeniile suplimentare au propriul director rădăcină. Domeniile parcate partajează directorul rădăcină al domeniului părinte."
+  },
+  "redirect": {
+    "title": "Redirecționare la nivel de domeniu",
+    "active": "Activ",
+    "targetLabel": "URL destinație",
+    "statusLabel": "Status",
+    "status301": "301 Permanent",
+    "status302": "302 Temporar",
+    "saving": "Se salvează…",
+    "save": "Salvați redirecționarea",
+    "remove": "Eliminați"
+  },
+  "list": {
+    "title": "Domenii existente",
+    "loading": "Se încarcă…",
+    "empty": "Niciun domeniu suplimentar încă.",
+    "parked": "Parcat",
+    "phpPrefix": "PHP",
+    "delete": "Ștergeți"
+  },
+  "backToSubscription": "← Înapoi la abonament"
+}

@@ -1,0 +1,21 @@
+{
+  "resourceUsage": "Utilizare resurse",
+  "live": "live",
+  "loading": "Se încarcă…",
+  "cpu": "CPU",
+  "cpuAlt": "{{cores}} nucleu(e) · încărcare {{load1}} / {{load5}} / {{load15}}",
+  "memory": "Memorie",
+  "disk": "Disc",
+  "uptime": "Timp de funcționare",
+  "systemStatus": "Stare sistem",
+  "waiting": "Se așteaptă…",
+  "backend": "Backend",
+  "running": "În funcțiune",
+  "version": "Versiune",
+  "time": "Timp",
+  "uptimeFmt": {
+    "daysHours": "{{days}}z {{hours}}h",
+    "hoursMinutes": "{{hours}}h {{minutes}}min",
+    "minutes": "{{minutes}}min"
+  }
+}

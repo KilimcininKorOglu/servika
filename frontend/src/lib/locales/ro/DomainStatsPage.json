@@ -1,0 +1,32 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "statistics": "Statistici"
+  },
+  "loading": "Se încarcă…",
+  "notFound": "Nu s-a găsit",
+  "title": "Statistici de trafic",
+  "subtitle": {
+    "pre": ", analiză a jurnalului de acces nginx.",
+    "subdomainNote": " Traficul subdomeniilor este inclus în aceste totaluri."
+  },
+  "refresh": "↻ Reîmprospătare",
+  "emptyLog": "Încă nu există date în jurnalul de acces. Vor apărea aici odată ce site-ul începe să primească trafic.",
+  "kpi": {
+    "totalRequests": "Total cereri",
+    "bandwidth": "Utilizare lățime de bandă",
+    "uniqueIps": "IP-uri unice",
+    "botRatio": "Raport boți"
+  },
+  "statusTitle": "Distribuția stărilor HTTP",
+  "dailyTitle": "Cereri zilnice (ultimele 7 zile)",
+  "dailyRequests": "{{count}} cereri",
+  "topPathsTitle": "Cele mai solicitate căi",
+  "topIpsTitle": "Cele mai active IP-uri",
+  "latestTitle": "Cele mai recente cereri",
+  "unit": {
+    "requests": "cereri"
+  },
+  "noData": "Nicio dată."
+}

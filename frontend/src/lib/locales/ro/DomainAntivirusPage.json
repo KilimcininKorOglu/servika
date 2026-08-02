@@ -1,0 +1,43 @@
+{
+  "loading": "Se încarcă...",
+  "notFound": "Negăsit",
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "antivirus": "Antivirus"
+  },
+  "title": "Scanare antivirus malware",
+  "subtitlePrefix": "este scanat folosind semnături ClamAV și euristici webshell integrate.",
+  "toast": {
+    "startScanFailed": "Nu s-a putut porni scanarea",
+    "quarantineFailed": "Nu s-a putut pune în carantină fișierul",
+    "updateSignatureFailed": "Nu s-au putut actualiza semnăturile"
+  },
+  "confirmQuarantine": "Puneți acest fișier în carantină?\n{{file}}\n\n(Fișierul va fi mutat în ~/.quarantined și va deveni inaccesibil.)",
+  "status": {
+    "enginePrefix": "Motor:",
+    "engineFull": "ClamAV + Euristici",
+    "engineHeuristics": "Numai euristici",
+    "signatureDatabase": "Baza de date de semnături: {{date}}",
+    "latestScan": "Ultima scanare: {{date}}. {{scanned}} fișiere. {{infected}} rezultate",
+    "updating": "Se actualizează...",
+    "updateSignatures": "Actualizați semnăturile",
+    "scanning": "Scanare în curs...",
+    "scanNow": "Scanați acum",
+    "inProgress": "Scanare în curs. Site-urile mari pot dura câteva minute."
+  },
+  "findings": {
+    "title": "Rezultate",
+    "fromLatest": "din ultima scanare",
+    "noScans": "Nicio scanare încă. Selectați „Scanați acum” pentru a începe.",
+    "clean": "Curat. Nu s-a găsit malware.",
+    "colFile": "Fișier",
+    "colSignature": "Semnătură",
+    "colEngine": "Motor",
+    "colStatus": "Status",
+    "quarantined": "🔒 În carantină",
+    "active": "⚠ Activ",
+    "quarantine": "Carantină"
+  },
+  "backToSubscription": "← Înapoi la abonament"
+}

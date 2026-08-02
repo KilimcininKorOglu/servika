@@ -1,0 +1,62 @@
+{
+  "breadcrumbHome": "Acasă",
+  "breadcrumbTools": "Instrumente și setări",
+  "title": "Manager de pachete",
+  "subtitle": "Pachete de server și medii de compilare prin DNF.",
+  "installedCount": "{{count}} pachete instalate",
+  "quickInstallGroups": "Grupuri de instalare rapidă",
+  "groups": {
+    "devtools": { "name": "Instrumente de dezvoltare", "description": "gcc, make, autoconf, automake, libtool, kernel-devel" },
+    "python": { "name": "Python", "description": "Python 3 + pip + venv + anteturi de dezvoltare" },
+    "nodejs": { "name": "Node.js + npm", "description": "Node.js LTS + npm" },
+    "go": { "name": "Go", "description": "Compilator Go" },
+    "java": { "name": "Java", "description": "OpenJDK 21 LTS + Maven" },
+    "rust": { "name": "Rust", "description": "Rust + cargo" },
+    "container": { "name": "Container / VM", "description": "Compatibil Docker: podman + buildah + skopeo" },
+    "systools": { "name": "Instrumente de sistem", "description": "Instrumente de productivitate CLI" },
+    "imaging": { "name": "Procesare imagini", "description": "ImageMagick + WebP + optimizare" },
+    "dbclients": { "name": "Clienți de bază de date", "description": "PostgreSQL + Redis CLI" },
+    "security": { "name": "Securitate", "description": "GnuPG, OpenSSL, fail2ban" }
+  },
+  "badges": {
+    "installed": "INSTALAT",
+    "protected": "PROTEJAT"
+  },
+  "tabs": {
+    "search": "Căutare depozite",
+    "installed": "Pachete instalate"
+  },
+  "searchPlaceholder": "de ex. mongodb, redis, nodejs, gcc, htop",
+  "installedPlaceholder": "nume sau descriere pachet instalat",
+  "noResults": "Niciun rezultat.",
+  "resultsCount": "{{count}} rezultate",
+  "actions": {
+    "processing": "Se procesează...",
+    "remove": "Eliminare",
+    "install": "Instalare",
+    "removing": "Se elimină...",
+    "installing": "Se instalează...",
+    "search": "Căutare",
+    "searching": "Se caută...",
+    "close": "Închidere"
+  },
+  "confirm": {
+    "install": "„{{pkg}}” va fi instalat la nivelul întregului sistem. Continuați?",
+    "remove": "„{{pkg}}” va fi ELIMINAT. Continuați?"
+  },
+  "toast": {
+    "installed": "{{pkg}} instalat",
+    "removed": "{{pkg}} eliminat"
+  },
+  "output": {
+    "installTitle": "Rezultat instalare: {{pkg}}",
+    "removeTitle": "Rezultat eliminare: {{pkg}}"
+  },
+  "errors": {
+    "installFailed": "Instalarea a eșuat",
+    "removeFailed": "Eliminarea a eșuat",
+    "toggleInstallFailed": "Instalarea pachetului a eșuat",
+    "toggleRemoveFailed": "Eliminarea pachetului a eșuat",
+    "searchFailed": "Căutarea a eșuat"
+  }
+}

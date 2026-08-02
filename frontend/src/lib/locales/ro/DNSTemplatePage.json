@@ -1,0 +1,46 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "tools": "Instrumente și setări",
+    "current": "Șablon DNS"
+  },
+  "title": "Șablon DNS la nivel de server",
+  "subtitle": "Aceste înregistrări sunt aplicate când un domeniu este creat sau când șablonul DNS implicit este restaurat.",
+  "placeholders": {
+    "label": "Substituenți:",
+    "domain": " nume domeniu, ",
+    "ip": " IP server, ",
+    "selector": " selector DKIM, ",
+    "dkim": " înregistrare publică DKIM generată"
+  },
+  "loading": "Se încarcă...",
+  "table": {
+    "name": "Nume",
+    "type": "Tip",
+    "value": "Valoare",
+    "ttl": "TTL",
+    "priority": "Prioritate",
+    "order": "Ordine",
+    "enabled": "Activat",
+    "priorityNone": "Niciuna",
+    "deleteTitle": "Ștergeți înregistrarea"
+  },
+  "addRecord": "Adăugați înregistrare",
+  "soa": {
+    "title": "Setări SOA",
+    "fieldSeconds": "{{field}} (secunde)"
+  },
+  "dkim": {
+    "title": "Setări DKIM",
+    "selector": "Selector",
+    "generate": "Generați chei DKIM pentru domenii noi"
+  },
+  "discard": "Renunțați la modificări",
+  "save": "Salvați șablonul",
+  "saving": "Se salvează...",
+  "success": "Șablon DNS salvat. Domeniile noi vor utiliza înregistrările și setările actualizate.",
+  "errors": {
+    "loadFailed": "Nu s-a putut încărca șablonul DNS",
+    "saveFailed": "Nu s-a putut salva șablonul DNS"
+  }
+}

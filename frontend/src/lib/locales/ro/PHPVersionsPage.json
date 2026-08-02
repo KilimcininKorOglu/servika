@@ -1,0 +1,53 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "tools": "Instrumente și setări",
+    "current": "Versiuni PHP"
+  },
+  "title": "Versiuni PHP",
+  "subtitle": "Adăugați sau eliminați versiuni PHP. Fiecare rulează într-un pool PHP-FPM independent și poate fi selectată per domeniu. Instalarea include 14 pachete (fpm, cli, mysqlnd și 11 extensii).",
+  "alerts": {
+    "opInProgress": "O operațiune PHP este deja în curs. Așteptați să se termine.",
+    "appstreamCannotRemove": "PHP AppStream este valoarea implicită a sistemului și nu poate fi eliminat."
+  },
+  "confirm": {
+    "install": "Paisprezece pachete vor fi instalate pentru PHP {{version}} ({{resource}}). Continuați?",
+    "remove": "PHP {{version}} (Remi) și TOATE extensiile sale vor fi ELIMINATE.\nOperațiunea va fi respinsă dacă un domeniu folosește această versiune. Continuați?"
+  },
+  "success": {
+    "installed": "PHP {{version}} instalat",
+    "removed": "PHP {{version}} eliminat"
+  },
+  "errors": {
+    "startInstallFailed": "Nu s-a putut porni instalarea",
+    "startRemoveFailed": "Nu s-a putut porni eliminarea"
+  },
+  "log": {
+    "installStarted": "Instalarea PHP {{version}} a început...\n",
+    "removeStarted": "Eliminarea PHP {{version}} a început...\n",
+    "installInProgress": "Instalarea PHP {{version}} este în curs...",
+    "removeInProgress": "Eliminarea PHP {{version}} este în curs...",
+    "waiting": "Se așteaptă rezultatul..."
+  },
+  "filters": {
+    "all": "Toate ({{count}})",
+    "installed": "Instalate ({{count}})",
+    "available": "Disponibile ({{count}})"
+  },
+  "loading": "Se încarcă...",
+  "badges": {
+    "installed": "INSTALAT",
+    "eol": "EOL"
+  },
+  "card": {
+    "version": "Versiune:",
+    "extensions": "Extensii:",
+    "service": "Serviciu:"
+  },
+  "actions": {
+    "fixed": "Fix (valoare implicită sistem)",
+    "inProgress": "În curs...",
+    "remove": "Eliminare",
+    "install": "Instalare"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "toolsAndSettings": "Instrumente și setări",
+    "serverOptimize": "Optimizare server"
+  },
+  "title": "Optimizare server",
+  "description": "Actualizează pachetele de sistem și reglează din nou setările MariaDB / Nginx / PHP în funcție de resursele serverului. Operațiunea rulează în fundal — puteți închide această pagină; poate dura ceva timp și poate afecta pentru scurt timp serviciile."
+}

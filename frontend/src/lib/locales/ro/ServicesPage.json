@@ -1,0 +1,24 @@
+{
+  "breadcrumbTools": "Instrumente și setări",
+  "breadcrumbServices": "Servicii",
+  "title": "Gestionare servicii",
+  "subtitle": "Reporniți sau reîncărcați serviciile gestionate web, de bază de date, DNS, PHP și de suport.",
+  "loading": "Se încarcă…",
+  "reload": "Reîncărcare",
+  "restart": "Repornire",
+  "working": "…",
+  "statuses": {
+    "active": "● Activ",
+    "inactive": "○ Inactiv",
+    "failed": "✕ Eșuat",
+    "absent": "Neinstalat"
+  },
+  "errors": {
+    "loadFailed": "Nu s-au putut încărca serviciile",
+    "actionFailed": "Acțiunea {{label}} a eșuat"
+  },
+  "success": {
+    "reloaded": "{{label}} reîncărcat.",
+    "restarted": "{{label}} repornit."
+  }
+}

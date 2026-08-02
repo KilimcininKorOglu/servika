@@ -1,0 +1,16 @@
+{
+  "title": "Nume gazdă server",
+  "protected": "Protejat împotriva furnizorului",
+  "awaitingProtection": "În așteptarea protecției",
+  "descriptionPre": "Schimbă permanent numele gazdă al sistemului. Cloud-init și DHCP/NetworkManager sunt împiedicate să rescrie numele furnizat de furnizor. Se recomandă un nume complet calificat: ",
+  "placeholder": "server1.example.com",
+  "apply": "Schimbare nume gazdă",
+  "applying": "Se aplică…",
+  "messages": {
+    "changed": "Numele gazdă a fost schimbat în „{{hostname}}” și făcut permanent."
+  },
+  "errors": {
+    "load": "Nu s-a putut încărca numele gazdă",
+    "change": "Nu s-a putut schimba numele gazdă"
+  }
+}

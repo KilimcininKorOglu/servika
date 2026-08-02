@@ -1,0 +1,64 @@
+{
+  "breadcrumbHome": "Acasă",
+  "breadcrumbTitle": "WordPress",
+  "title": "WordPress",
+  "subtitle": "Vizualizați și actualizați toate instalările WordPress de pe server sau creați o instalare nouă.",
+  "outdated": {
+    "banner_one": "{{count}} instalare are o actualizare disponibilă.",
+    "banner_few": "{{count}} instalări au o actualizare disponibilă.",
+    "banner_other": "{{count}} de instalări au o actualizare disponibilă.",
+    "warning": "Versiunile WordPress depășite conțin vulnerabilități de securitate cunoscute. Actualizați-le cât mai curând posibil."
+  },
+  "result": {
+    "installed": "WordPress {{version}} instalat",
+    "site": "Site",
+    "admin": "Admin",
+    "user": "Utilizator",
+    "password": "Parolă",
+    "savePassword": "⚠ Salvați parola acum. Nu va mai fi afișată din nou."
+  },
+  "installedSites": "Site-uri WordPress instalate",
+  "refresh": "↻ Reîmprospătare",
+  "table": {
+    "domain": "Domeniu",
+    "directory": "Director",
+    "version": "Versiune",
+    "status": "Stare",
+    "installed": "Instalat",
+    "actions": "Acțiuni"
+  },
+  "scanning": "Se scanează instalările... (se verifică versiuni și actualizări)",
+  "emptyTitle": "Nu au fost găsite instalări WordPress pe server.",
+  "emptyHint": "Folosiți formularul de mai jos pentru a crea o instalare nouă.",
+  "adminButton": "Admin",
+  "updateToVersion": "Actualizare la v{{version}}",
+  "update": "Actualizare",
+  "delete": "Ștergere",
+  "status": {
+    "updateAvailable": "Actualizare disponibilă",
+    "updateAvailableTo": "Actualizare disponibilă la v{{version}}",
+    "upToDate": "Actualizat",
+    "unknown": "Necunoscut"
+  },
+  "form": {
+    "heading": "Instalare nouă",
+    "domain": "Domeniu",
+    "siteTitle": "Titlu site",
+    "siteTitlePlaceholder": "Blogul meu",
+    "subdirectory": "Subdirector (opțional)",
+    "subdirectoryPlaceholder": "gol = rădăcină, de ex. blog",
+    "adminUser": "Utilizator admin",
+    "adminEmail": "Email admin",
+    "adminEmailPlaceholder": "admin@site.com"
+  },
+  "installing": "Se instalează... (~30 sec)",
+  "installButton": "Instalare WordPress",
+  "installButtonDomain": "Instalare WordPress, {{domain}}",
+  "confirmDelete": "Ștergeți WordPress de la {{domain}}{{dir}}?\nToate fișierele și baza de date din acest director vor fi eliminate. Această acțiune nu poate fi anulată.",
+  "errors": {
+    "rootDelete": "WordPress din directorul rădăcină nu poate fi șters din panou.",
+    "installFailed": "Instalarea a eșuat",
+    "updateFailed": "Nu s-a putut actualiza",
+    "deleteFailed": "Nu s-a putut șterge"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "breadcrumbHome": "Acasă",
+  "breadcrumbServices": "Servicii de găzduire",
+  "breadcrumbTitle": "Transfer cont",
+  "title": "Importați cont",
+  "subtitle": "Analizați în siguranță un backup complet cPanel. Arhiva nu este extrasă sau păstrată pe server în această etapă.",
+  "fileLabel": "Backup complet cPanel (.tar.gz / .tgz)",
+  "uploading": "Încărcare {{progress}}%",
+  "analyzeButton": "Analizați arhiva",
+  "kpi": {
+    "primaryDomain": "Domeniu primar",
+    "undetermined": "Nedeterminat",
+    "webFiles": "Fișiere web",
+    "databases": "Baze de date",
+    "emailData": "Date e-mail",
+    "emailFiles": "{{count}} fișiere",
+    "none": "Niciunul"
+  },
+  "detail": {
+    "title": "Informații cont",
+    "sourcePanel": "Panou sursă",
+    "user": "Utilizator",
+    "archiveRoot": "Rădăcina arhivei",
+    "totalMembers": "Total membri",
+    "expandedSize": "Dimensiune expandată",
+    "cron": "Cron",
+    "cronPresent": "Prezent",
+    "cronNone": "Niciunul",
+    "sslFiles": "Fișiere SSL",
+    "mailboxes": "Cutii poștale",
+    "forwarders": "Redirecționări",
+    "cronJobs": "Sarcini cron"
+  },
+  "lists": {
+    "databases": "Baze de date",
+    "dnsZones": "Zone DNS",
+    "cronJobs": "Sarcini cron",
+    "noneFound": "Niciuna găsită"
+  },
+  "analysisComplete": "Analiză completă. Importul creează un domeniu nou; dacă eșuează, contul creat este anulat automat.",
+  "targetAndPlan": "Destinație și plan",
+  "fields": {
+    "targetCustomer": "Client destinație",
+    "selectCustomer": "Selectați un client",
+    "servicePlan": "Plan de servicii",
+    "defaultPlan": "Plan implicit",
+    "primaryDomain": "Domeniu primar",
+    "phpVersion": "Versiune PHP"
+  },
+  "importing": "Import în curs… {{progress}}%",
+  "importButton": "Importați contul",
+  "importResult": {
+    "title": "Import finalizat",
+    "summary": "{{domain}} · {{webFiles}} fișiere web · {{count}} bază(e) de date",
+    "newPasswords": "Parole noi pentru cutiile poștale — salvați-le acum",
+    "forwardersTransferred": "{{count}} redirecționare(ări) transferate.",
+    "cronTransferred": "{{count}} sarcină(i) cron transferată(e).",
+    "sslTransferred": "Certificat SSL transferat · valabil până la {{expires}}",
+    "manageDomain": "Gestionați domeniul →"
+  },
+  "errors": {
+    "analyzeFailed": "Nu s-a putut analiza arhiva",
+    "importFailed": "Nu s-a putut importa contul"
+  }
+}

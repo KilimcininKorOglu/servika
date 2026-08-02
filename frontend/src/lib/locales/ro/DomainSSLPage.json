@@ -1,0 +1,54 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "sslCertificates": "Certificate SSL/TLS"
+  },
+  "title": "Certificate SSL/TLS",
+  "ipLabel": "IP:",
+  "confirm": {
+    "letsencrypt": "Domeniul trebuie să indice către acest server cu o înregistrare DNS A înainte de a putea fi emis un certificat Let's Encrypt. Continuați?",
+    "disable": "Eliminați SSL? Site-ul va reveni la HTTP."
+  },
+  "success": {
+    "installed": "Certificat instalat ({{type}}). Expiră: {{expires}}. Site-ul folosește acum HTTPS.",
+    "removed": "SSL eliminat. Site-ul folosește acum HTTP."
+  },
+  "errors": {
+    "installFailed": "Instalarea SSL a eșuat",
+    "removeFailed": "Eliminarea SSL a eșuat"
+  },
+  "status": {
+    "title": "Stare curentă",
+    "protected": "Protejat",
+    "unprotected": "Neprotejat",
+    "loading": "Se încarcă…",
+    "sourceLabel": "Sursă",
+    "sourceLetsencrypt": "Let's Encrypt",
+    "sourceSelfSigned": "Autosemnat",
+    "expiryLabel": "Expirare",
+    "certPathLabel": "Cale certificat",
+    "keyPathLabel": "Cale cheie",
+    "empty": "—",
+    "remove": "Eliminare SSL (trecere la HTTP)",
+    "noCert": "Nu există un certificat SSL activ pentru acest domeniu. Instalați unul mai jos."
+  },
+  "selfSigned": {
+    "title": "Certificat autosemnat",
+    "description": "Creează un certificat autosemnat pe server. Browserele afișează un avertisment, dar conexiunea este criptată. Potrivit pentru medii de test și dezvoltare.",
+    "bullet1": "✓ Fără dependență DNS",
+    "bullet2": "✓ Se instalează imediat",
+    "bullet3": "✗ Browserul afișează un avertisment de securitate",
+    "installing": "Se instalează…",
+    "install": "Instalare certificat autosemnat"
+  },
+  "letsencrypt": {
+    "title": "Let's Encrypt (gratuit)",
+    "description": "Un certificat oficial Let's Encrypt de încredere pentru toate browserele. Se reînnoiește automat la fiecare 90 de zile.",
+    "bullet1": "✓ De încredere pentru browsere",
+    "bullet2": "✓ Reînnoire automată (cron)",
+    "bullet3": "⚠ Domeniul trebuie să indice către acest server prin DNS",
+    "installing": "Se instalează…",
+    "install": "Obținere certificat Let's Encrypt"
+  }
+}

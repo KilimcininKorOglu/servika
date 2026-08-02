@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii"
+  },
+  "fallback": {
+    "label": "Instrument",
+    "description": "Neimplementat încă."
+  },
+  "notReady": "Nu este gata",
+  "domainLabel": "Domeniu: ",
+  "construction": {
+    "heading": "În construcție",
+    "availablePrefix": "Acest modul va deveni disponibil în faza ",
+    "availableSuffix": ".",
+    "availableLater": "Acest modul va deveni disponibil într-o fază ulterioară.",
+    "returnToDashboard": "← Revenire la tabloul de bord al domeniului"
+  },
+  "tool": {
+    "connection": {
+      "label": "Detalii de conexiune",
+      "description": "Server FTP, nume de utilizator, șir de conexiune la baza de date și acțiuni de copiere rapidă."
+    },
+    "files": {
+      "label": "Manager de fișiere",
+      "description": "Listați, încărcați, descărcați și modificați permisiunile pentru fișierele din public_html."
+    },
+    "databases": {
+      "label": "Baze de date",
+      "description": "Baze de date MySQL, utilizatori și integrare phpMyAdmin."
+    },
+    "ftp": {
+      "label": "Conturi FTP",
+      "description": "Conturi FTP virtuale, parole și directoare principale prin Pure-FTPd."
+    },
+    "backups": {
+      "label": "Copie de rezervă și restaurare",
+      "description": "Faceți copii de rezervă ale arhivelor tarball și ale dumpurilor de bază de date către SFTP, S3 sau stocare locală."
+    },
+    "copy": {
+      "label": "Copiere site web",
+      "description": "Clonați un site web existent către alt domeniu."
+    },
+    "php": {
+      "label": "Setări PHP",
+      "description": "Selecție pool PHP-FPM, modificări de versiune și parametri php.ini."
+    },
+    "logs": {
+      "label": "Jurnale",
+      "description": "Monitorizare live a access.log și error.log cu urmărire WebSocket."
+    },
+    "cron": {
+      "label": "Sarcini programate",
+      "description": "Editor crontab per utilizator."
+    },
+    "git": {
+      "label": "Git",
+      "description": "Conectați depozite, configurați chei de implementare și extrageți automat cu webhook-uri."
+    },
+    "composer": {
+      "label": "PHP Composer",
+      "description": "Interfață web pentru composer install și update."
+    },
+    "performance": {
+      "label": "Performanță",
+      "description": "Acceleratoare precum OPcache, gzip și încărcare leneșă."
+    },
+    "ssl": {
+      "label": "Certificat SSL/TLS",
+      "description": "Instalare și reînnoire automată Let's Encrypt."
+    },
+    "password-protection": {
+      "label": "Directoare protejate cu parolă",
+      "description": "Protejați directoarele cu .htpasswd."
+    },
+    "stats": {
+      "label": "Statistici",
+      "description": "Rapoarte de disc, trafic și vizitatori."
+    },
+    "imunify": {
+      "label": "Imunify",
+      "description": "Integrare antivirus și WAF."
+    }
+  }
+}

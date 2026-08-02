@@ -1,0 +1,68 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "current": "Instrumente și setări"
+  },
+  "title": "Instrumente și setări",
+  "subtitle": "Gestionare la nivelul întregului server — PHP, pachete de sistem, rețea, securitate și mentenanță.",
+  "searchPlaceholder": "Căutare instrumente…",
+  "searchAria": "Căutare instrumente",
+  "maintenance": "Mentenanță server",
+  "noResults": "Niciun instrument găsit pentru „{{q}}”",
+  "noResultsHint": "Schimbați sau ștergeți termenul de căutare.",
+  "footer_one": "{{count}} instrument · la nivelul întregului server",
+  "footer_few": "{{count}} instrumente · la nivelul întregului server",
+  "footer_other": "{{count}} de instrumente · la nivelul întregului server",
+  "badges": {
+    "dynamic": "Dinamic",
+    "serverWide": "La nivelul întregului server"
+  },
+  "groups": {
+    "php": "PHP",
+    "system": "Sistem și servicii",
+    "network": "Rețea și DNS",
+    "security": "Securitate și copii de rezervă"
+  },
+  "tools": {
+    "phpVersions": {
+      "title": "Versiuni PHP",
+      "description": "Adăugați sau eliminați versiunile de la 7.4 până la 8.6. Fiecare domeniu își selectează versiunea independent."
+    },
+    "phpExtensions": {
+      "title": "Extensii PHP",
+      "description": "Comutați extensiile la nivelul întregului server, căutați pachete PECL și compilați-le."
+    },
+    "packages": {
+      "title": "Manager de pachete",
+      "description": "Pachete DNF — compilatoare și runtime-uri. Grupuri de instalare gata făcute."
+    },
+    "services": {
+      "title": "Servicii",
+      "description": "Stare și repornire Nginx / Apache / MariaDB / DNS / PHP-FPM."
+    },
+    "servicePlans": {
+      "title": "Planuri de servicii",
+      "description": "Pachete de găzduire cu cote de disc, bază de date și FTP."
+    },
+    "dnsTemplate": {
+      "title": "Șablon DNS",
+      "description": "Înregistrări DNS centrale aplicate domeniilor noi (A/MX/SPF/DMARC/DKIM) cu SOA."
+    },
+    "domains": {
+      "title": "Domenii",
+      "description": "Răsfoiți, căutați și accesați rapid toate domeniile."
+    },
+    "firewall": {
+      "title": "Firewall",
+      "description": "Blocare IP/port, listă de permitere, închidere port. Porturile critice sunt protejate."
+    },
+    "backupManager": {
+      "title": "Manager copii de rezervă",
+      "description": "Vizualizați dimensiunile copiilor de rezervă pentru toate domeniile, copie de rezervă cu un clic, destinații S3/SFTP."
+    },
+    "monitoring": {
+      "title": "Monitorizare și jurnale",
+      "description": "Grafice CPU/RAM/disc și jurnale de server din journald (panou/nginx/SSH…)."
+    }
+  }
+}

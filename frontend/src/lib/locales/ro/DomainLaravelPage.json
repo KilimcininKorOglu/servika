@@ -1,0 +1,88 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "laravel": "Set de instrumente Laravel"
+  },
+  "loading": "Se încarcă…",
+  "title": "Set de instrumente Laravel",
+  "subtitle": "Instalați, implementați și operați o aplicație Laravel pentru acest abonament.",
+  "backToSubscription": "Înapoi la abonament",
+  "tabs": {
+    "overview": "Prezentare generală",
+    "install": "Instalare",
+    "commands": "Comenzi",
+    "env": ".env",
+    "deploy": "Deploy",
+    "workers": "Workeri"
+  },
+  "messages": {
+    "actionCompleted": "Acțiune finalizată",
+    "actionFailed": "Acțiunea a eșuat"
+  },
+  "overview": {
+    "title": "Stare aplicație",
+    "installed": "Instalat",
+    "yes": "Da",
+    "no": "Nu",
+    "appRoot": "Rădăcină aplicație",
+    "documentPath": "Cale document",
+    "php": "PHP",
+    "composerManifest": "Manifest Composer",
+    "found": "Găsit",
+    "missing": "Lipsă",
+    "git": "Git",
+    "repositoryFound": "Depozit găsit",
+    "notConnected": "Neconectat",
+    "maintenance": "Mentenanță",
+    "enabled": "Activată",
+    "disabled": "Dezactivată",
+    "schedule": "Programare",
+    "queue": "Coadă"
+  },
+  "install": {
+    "title": "Instalare Laravel",
+    "mode": "Mod",
+    "modeRemote": "Clonare depozit la distanță",
+    "modeScaffold": "Creare proiect Laravel nou",
+    "modeLocal": "Inițializare depozit Git gol",
+    "appRoot": "Rădăcină aplicație",
+    "repositoryUrl": "URL depozit",
+    "repositoryUrlPlaceholder": "https://github.com/example/app.git",
+    "branch": "Ramură",
+    "branchPlaceholder": "main",
+    "startInstall": "Pornire instalare",
+    "checkInstallStatus": "Verificare stare instalare"
+  },
+  "commands": {
+    "title": "Comenzi Laravel",
+    "packagePlaceholder": "vendor/package",
+    "scriptPlaceholder": "nume script",
+    "run": "Executare"
+  },
+  "env": {
+    "title": "Fișier de mediu",
+    "load": "Încărcare .env",
+    "save": "Salvare .env"
+  },
+  "deploy": {
+    "title": "Deploy",
+    "deployWithMigrate": "Implementare cu migrare și build",
+    "checkDeployStatus": "Verificare stare implementare",
+    "disableMaintenance": "Dezactivare mentenanță",
+    "enableMaintenance": "Activare mentenanță"
+  },
+  "workers": {
+    "title": "Programare și worker de coadă",
+    "queueTimeout": "Timp expirare coadă",
+    "maxJobs": "Sarcini maxime",
+    "connection": "Conexiune",
+    "disableSchedule": "Dezactivare programare",
+    "enableSchedule": "Activare programare",
+    "disableQueue": "Dezactivare coadă",
+    "enableQueue": "Activare coadă"
+  },
+  "common": {
+    "save": "Salvare"
+  }
+}

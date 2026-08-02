@@ -1,0 +1,52 @@
+{
+  "loading": "Se încarcă…",
+  "notFound": "Nu s-a găsit",
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "sshAccess": "Acces SSH"
+  },
+  "title": "Acces SSH",
+  "subtitle": "acces shell la cont.",
+  "badge": {
+    "on": "SSH ACTIV",
+    "off": "SSH INACTIV"
+  },
+  "toast": {
+    "accessActive": "Acces SSH activ.",
+    "accessDisabled": "Acces SSH dezactivat.",
+    "operationFailed": "Operațiunea a eșuat",
+    "keySaved": "Cheie SSH salvată.",
+    "keysCleared": "Chei SSH golite.",
+    "keySaveFailed": "Nu s-a putut salva cheia"
+  },
+  "shell": {
+    "title": "Acces shell",
+    "enabledPrefix": "Activat:",
+    "disabledPrefix": "Dezactivat:",
+    "currentPrefix": "Curent:",
+    "disable": "Dezactivare SSH",
+    "enable": "Activare SSH",
+    "demoNotice": "Accesul SSH nu poate fi modificat pentru domeniul demo."
+  },
+  "connection": {
+    "title": "Detalii de conexiune",
+    "user": "Utilizator",
+    "host": "Gazdă",
+    "port": "Port",
+    "commandLabel": "Comandă de conectare",
+    "copy": "Copiere",
+    "passwordPrefix": "Parolă:",
+    "passwordBold": "aceeași cu a contului dvs. FTP",
+    "passwordSuffix": ". Este sincronizată automat cât timp SSH este activ. Alternativ, adăugați o cheie publică SSH mai jos."
+  },
+  "key": {
+    "title": "Cheie publică SSH (authorized_keys)",
+    "descPrefix": "Adăugați cheia dvs. publică pentru a vă conecta fără parolă.",
+    "configured": "O cheie este configurată în prezent.",
+    "notConfigured": "Nicio cheie nu este configurată încă.",
+    "removeHint": "Salvați o valoare goală pentru a elimina toate cheile.",
+    "save": "Salvare cheie"
+  },
+  "backToSubscription": "← Înapoi la abonament"
+}

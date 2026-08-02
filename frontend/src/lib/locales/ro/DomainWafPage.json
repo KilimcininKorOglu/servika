@@ -1,0 +1,85 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "waf": "Web Application Firewall (WAF)"
+  },
+  "title": "Web Application Firewall",
+  "subtitle": " · ModSecurity v3 + OWASP Core Rule Set. Salvarea rerandează vhost-ul nginx (fără timp de nefuncționare).",
+  "loading": "Se încarcă…",
+  "moduleWarning": {
+    "bold": "Modulul ModSecurity nu este instalat pe acest server.",
+    "pre": " Setările sunt salvate, dar WAF nu este aplicat. Rulați ",
+    "post": " pe server pentru a-l activa (site-urile existente nu sunt afectate)."
+  },
+  "modes": {
+    "inherit": {
+      "name": "Moștenire din plan",
+      "description": "Acest domeniu folosește valoarea WAF implicită din planul de servicii atribuit."
+    },
+    "block": {
+      "name": "Blocare",
+      "description": "Cererile rău intenționate (SQLi, XSS, RCE…) sunt blocate cu 403. SecRuleEngine On."
+    },
+    "detect": {
+      "name": "Detectare",
+      "description": "Cererile nu sunt blocate; regulile potrivite sunt scrise doar în jurnalul de audit. DetectionOnly — ideal pentru reglarea regulilor."
+    },
+    "off": {
+      "name": "Dezactivat",
+      "description": "WAF este dezactivat complet pentru acest domeniu (chiar dacă planul îl are activat)."
+    }
+  },
+  "paranoiaDescription": {
+    "0": "Se folosește valoarea implicită a planului.",
+    "1": "Scăzut — semnături de atac de bază. Aproape fără fals pozitive. (recomandat)",
+    "2": "Mediu — mai multe reguli. Unele cereri legitime pot fi blocate.",
+    "3": "Ridicat — agresiv. Pot fi necesare excluderi per aplicație.",
+    "4": "Strict — cel mai agresiv. Doar pentru scenarii auditate strict."
+  },
+  "effective": {
+    "label": "Stare efectivă:",
+    "blocking": "Activ · Blocare",
+    "detection": "Activ · Detectare",
+    "paranoia": "Paranoia {{level}}",
+    "passive": "Pasiv",
+    "planDefault": "Valoare implicită plan ({{name}}): ",
+    "planBlock": "Blocare · PL{{paranoia}}",
+    "planDetect": "Detectare · PL{{paranoia}}",
+    "planOff": "Dezactivat"
+  },
+  "modeCard": {
+    "title": "Mod WAF",
+    "selected": "Selectat"
+  },
+  "paranoiaCard": {
+    "title": "Nivel paranoia (CRS)",
+    "hint": {
+      "pre": "Un nivel mai mare = mai multe reguli + protecție mai puternică, dar și o șansă mai mare de fals pozitive. Efectiv doar când WAF este în modul ",
+      "block": "Blocare",
+      "mid": " sau ",
+      "detect": "Detectare",
+      "post": "."
+    },
+    "options": {
+      "inherit": "Moștenire din plan",
+      "level1": "Nivel 1 (scăzut)",
+      "level2": "Nivel 2 (mediu)",
+      "level3": "Nivel 3 (ridicat)",
+      "level4": "Nivel 4 (strict)"
+    }
+  },
+  "actions": {
+    "save": "Salvare și aplicare",
+    "saving": "Se aplică…",
+    "reload": "Reîncărcare"
+  },
+  "messages": {
+    "appliedBlocking": "WAF aplicat — mod Blocare, paranoia {{paranoia}}",
+    "appliedDetection": "WAF aplicat — mod Detectare, paranoia {{paranoia}}",
+    "savedPassive": "Setări salvate — WAF este pasiv pentru acest domeniu"
+  },
+  "errors": {
+    "saveFailed": "Salvarea a eșuat"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "settings": "Setări Apache și nginx"
+  },
+  "title": "Setări Apache și nginx",
+  "subtitle": "Anteturi de securitate și directive personalizate. Salvarea rerandează vhost-ul nginx.",
+  "loading": "Se încarcă…",
+  "applying": "Se aplică…",
+  "reload": "Reîncărcare",
+  "saveApply": "💾 Salvare și aplicare",
+  "backend": {
+    "php-fpm": {
+      "name": "nginx + PHP-FPM",
+      "description": "Implicit. nginx apelează PHP-FPM direct prin FastCGI. Ideal pentru WordPress, Laravel și site-uri PHP dinamice cu cea mai mică latență."
+    },
+    "apache": {
+      "name": "nginx + Apache",
+      "description": "nginx termină TLS la margine, în timp ce Apache (10080) servește vhost-ul în spatele său. Suport complet .htaccess pentru Joomla, site-uri WordPress mai vechi și CMS-uri vechi."
+    },
+    "static": {
+      "name": "Static (fără PHP)",
+      "description": "Servește doar fișiere. Destinat SPA-urilor React, Vue sau Angular, generatoarelor de site-uri statice precum Hugo și Jekyll și conținutului CDN. Cererile PHP returnează 404."
+    }
+  },
+  "headers": {
+    "hdr_x_content_type": "Previne MIME sniffing ca apărare împotriva XSS",
+    "hdr_x_xss": "Protecție XSS pentru browsere vechi",
+    "hdr_referrer": "Restricționează informațiile Referer între site-uri",
+    "hdr_permissions": "Dezactivează implicit API-urile pentru cameră, microfon și locație",
+    "hdr_csp_upgrade": "Actualizează automat linkurile HTTP la HTTPS"
+  },
+  "stack": {
+    "title": "Stivă server web",
+    "description": "nginx rămâne terminatorul TLS la margine. Selecția de mai jos direcționează domeniul către motorul backend ales.",
+    "active": "● Activ"
+  },
+  "docRoot": {
+    "title": "Rădăcină de documente",
+    "description": "Alegeți ce subdirector public_html servește nginx. Aplicațiile Laravel folosesc de obicei directorul public.",
+    "subdirLabel": "Subdirector sub public_html",
+    "placeholder": "public",
+    "save": "Salvare rădăcină de documente",
+    "currentLabel": "Rădăcină de documente curentă:"
+  },
+  "hstsNote": {
+    "pre": " este relevant doar pentru site-urile cu HTTPS activat. Nu este trimis către browser când site-ul folosește doar HTTP. Modificările declanșează automat ",
+    "mid": " și ",
+    "post": " fără timp de nefuncționare."
+  },
+  "customVhostActive": {
+    "boldPre": "Vhost-ul personalizat este activ",
+    "post": " — anteturile de securitate, cache-ul și setările de directive suplimentare de mai jos ",
+    "boldNot": "nu sunt aplicate",
+    "tail": " în acest moment. Modificările de aici sunt salvate, dar nu ajung la fișierul vhost; pentru a face aceste setări efective din nou, apăsați „Revenire la gestionarea din panou” în fișa fișierului vhost de mai jos."
+  },
+  "cards": {
+    "securityHeaders": "Anteturi de securitate (HTTP + HTTPS)",
+    "hsts": "HTTP Strict Transport Security (doar HTTPS)",
+    "performanceCache": "Cache de performanță",
+    "vhostFile": "Fișier vhost nginx",
+    "additionalDirectives": "Directive nginx suplimentare"
+  },
+  "hsts": {
+    "description": "Browserele se conectează la site doar prin HTTPS. Configurarea incorectă este greu de inversat, așa că activați-l doar când este cazul.",
+    "maxAgeLabel": "max-age (secunde)",
+    "maxAge300": "5 minute (pentru testare)",
+    "maxAge86400": "1 zi",
+    "maxAge604800": "1 săptămână",
+    "maxAge2592000": "30 de zile",
+    "maxAge15768000": "6 luni",
+    "maxAge31536000": "1 an (recomandat)",
+    "maxAge63072000": "2 ani (pentru preload)",
+    "includeSubDomainsDesc": "Aplicare la toate subdomeniile după confirmarea că fiecare acceptă HTTPS",
+    "preloadDesc": "Includeți site-ul în browsere în mod implicit (înregistrarea la hstspreload.org este necesară)"
+  },
+  "cache": {
+    "fastcgiLabel": "Cache FastCGI nginx",
+    "fastcgiValue": "antet x-cache-status · durată cache {{minutes}} minute",
+    "fastcgiDesc": "Stochează în cache pe disc paginile WordPress și PHP. Cererile POST, cookie-urile, paginile de autentificare și previzualizările sunt omise automat. Rezolvă avertismentul de cache de pagină din WP Site Health.",
+    "durationMinutes": "Durată cache (minute)",
+    "min5": "5 minute",
+    "min15": "15 minute",
+    "min60": "1 oră (recomandat)",
+    "min360": "6 ore",
+    "min1440": "1 zi",
+    "browserLabel": "Cache browser (fișiere statice)",
+    "browserValue": "Cache-Control: public, immutable · expiră {{days}}z",
+    "browserDesc": "Fișierele statice precum CSS, JS, PNG, JPG și WOFF sunt stocate în cache în browser, făcând vizitele repetate să se încarce mult mai rapid.",
+    "durationDays": "Durată cache (zile)",
+    "day1": "1 zi",
+    "day7": "1 săptămână",
+    "day30": "30 de zile (recomandat)",
+    "day90": "3 luni",
+    "day365": "1 an"
+  },
+  "vhost": {
+    "warningPre": "Acesta este fișierul pe care nginx îl ",
+    "warningBoldActually": "servește efectiv",
+    "warningMid": " pentru acest domeniu. Îl puteți edita direct și salva — în momentul în care salvați, ",
+    "warningBoldEntire": "întregul",
+    "warningPost": " fișier vhost (inclusiv redirecționarea HTTP→HTTPS și locația de validare Let's Encrypt) devine responsabilitatea dvs.; setările de antet/cache/directive suplimentare de mai sus și panoul nu mai ating acest fișier. ",
+    "warningTail": " — dacă eliminați acest bloc, certificatul nu se poate reînnoi automat după 90 de zile.",
+    "activeState": "🟢 Vhost personalizat activ — panoul nu atinge acest fișier",
+    "managedState": "⚪ Gestionat de panou — fișierul activ în prezent este afișat mai jos",
+    "unsaved": "Modificări nesalvate",
+    "working": "Se lucrează…",
+    "returnToPanel": "Revenire la gestionarea din panou",
+    "saving": "Se salvează…",
+    "confirmReturn": "Reveniți acest fișier la gestionarea standard a panoului?\n\nModificările dvs. NU sunt șterse — trecerea înapoi la modul personalizat reia de unde ați rămas."
+  },
+  "directives": {
+    "pre": "Acest text este adăugat la sfârșitul blocului ",
+    "mid": ". Exemplu: ",
+    "placeholder": "# Exemplu:\nclient_max_body_size 200m;\nrewrite ^/old/(.*)$ /new/$1 permanent;"
+  },
+  "success": {
+    "backendChanged": "✓ Serverul web a fost schimbat în „{{name}}”",
+    "docRootUpdated": "✓ Rădăcina de documente a fost actualizată și nginx reîncărcat",
+    "settingsApplied": "✓ Setări aplicate și nginx reîncărcat",
+    "customVhostSaved": "✓ Vhost personalizat salvat și nginx reîncărcat",
+    "returnedToPanel": "✓ Revenire la gestionarea din panou, vhost rerandat"
+  },
+  "errors": {
+    "changeBackendFailed": "Nu s-a putut schimba backendul",
+    "updateDocRootFailed": "Nu s-a putut actualiza rădăcina de documente",
+    "saveSettingsFailed": "Nu s-au putut salva setările",
+    "saveCustomVhostFailed": "Nu s-a putut salva vhost-ul personalizat",
+    "returnManagedFailed": "Nu s-a putut reveni la vhost-ul gestionat"
+  }
+}

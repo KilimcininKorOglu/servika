@@ -1,0 +1,100 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "error": "Eroare"
+  },
+  "errors": {
+    "loadFailed": "Nu s-a putut încărca abonamentul",
+    "suspendFailed": "Nu s-a putut actualiza starea de suspendare a domeniului"
+  },
+  "loading": "Se încarcă…",
+  "confirmSuspend": "Suspendați „{{domain}}”? Site-ul va returna HTTP 503 până când este reluat.",
+  "notice": {
+    "suspended": "Domeniul a fost suspendat.",
+    "resumed": "Domeniul a fost reluat."
+  },
+  "header": {
+    "switchSubscription": "Schimbare abonament",
+    "suspended": "Suspendat",
+    "moreActions": "Mai multe acțiuni",
+    "resumeDomain": "Reluare domeniu",
+    "suspendDomain": "Suspendare domeniu"
+  },
+  "tabs": {
+    "dashboard": "Tablou de bord",
+    "hosting": "Găzduire și DNS"
+  },
+  "stats": {
+    "title": "Statistici",
+    "refresh": "Reîmprospătare",
+    "disk": "Spațiu pe disc",
+    "traffic": "Trafic lunar",
+    "created": "Creat",
+    "phpVersion": "Versiune PHP"
+  },
+  "footer": {
+    "website": "Site web:",
+    "ip": "IP:",
+    "systemUser": "Utilizator de sistem:",
+    "addDescription": "Adăugare descriere"
+  },
+  "preview": {
+    "httpsOnly": "Previzualizarea este disponibilă doar pentru site-urile HTTPS",
+    "autoAppear": "Apare automat când SSL este activat",
+    "website": "Site web",
+    "refresh": "Reîmprospătare",
+    "refreshTitle": "Reîmprospătare previzualizare",
+    "sslRequired": "SSL este necesar pentru previzualizare",
+    "open": "Deschidere",
+    "previewAlt": "Previzualizare {{domain}}"
+  },
+  "groups": {
+    "filesAndDatabases": "Fișiere și baze de date",
+    "developmentTools": "Instrumente de dezvoltare",
+    "security": "Securitate",
+    "hostingServices": "Servicii de găzduire"
+  },
+  "tools": {
+    "connection": "Informații de conexiune",
+    "connectionDesc": "FTP și bază de date",
+    "files": "Fișiere",
+    "filesDesc": "Manager de fișiere",
+    "databases": "Baze de date",
+    "ftp": "FTP",
+    "ftpDesc": "Conturi FTP",
+    "backup": "Copie de rezervă și restaurare",
+    "backupDesc": "Gestionare copii de rezervă",
+    "copy": "Copiere site web",
+    "copyDesc": "Clonare",
+    "php": "PHP",
+    "phpDesc": "Versiunea {{version}}",
+    "logs": "Jurnale",
+    "logsDesc": "Jurnale de acces și de erori",
+    "cron": "Sarcini programate",
+    "cronDesc": "Cron",
+    "git": "Git",
+    "gitDesc": "Integrare depozit",
+    "composer": "PHP Composer",
+    "composerDesc": "Manager de pachete",
+    "performance": "Performanță",
+    "performanceDesc": "Acceleratoare",
+    "ssl": "Certificate SSL/TLS",
+    "sslExpires": "Expiră: {{expiry}}",
+    "sslLetsEncrypt": "Let's Encrypt",
+    "sslNotProtected": "Domeniul nu este protejat",
+    "passwordProtect": "Directoare protejate cu parolă",
+    "statistics": "Statistici",
+    "statisticsDesc": "Analiză trafic",
+    "imunify": "Imunify",
+    "imunifyDesc": "Antivirus",
+    "waf": "WAF (Web Application Firewall)",
+    "wafDesc": "ModSecurity + OWASP CRS",
+    "hostingSettings": "Setări găzduire",
+    "hostingSettingsDesc": "Rădăcină de documente și opțiuni",
+    "apacheNginx": "Apache și nginx",
+    "apacheNginxDesc": "Anteturi de securitate și directive suplimentare",
+    "dns": "Setări DNS",
+    "dnsDesc": "A, CNAME, MX"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Administrare DNS",
+  "description": "Număr de înregistrări și status DNSSEC pentru fiecare domeniu.",
+  "emptyMessage": "Nu s-au găsit domenii.",
+  "column": {
+    "domain": "Domeniu",
+    "records": "Înregistrări",
+    "a": "A",
+    "mx": "MX",
+    "txt": "TXT",
+    "dnssec": "DNSSEC"
+  },
+  "dnssec": {
+    "on": "Activat",
+    "off": "Dezactivat"
+  },
+  "summary": {
+    "dnssecOn": "DNSSEC activat",
+    "noMx": "Fără MX"
+  }
+}

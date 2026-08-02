@@ -1,0 +1,10 @@
+{
+  "breadcrumbHome": "Acasă",
+  "notReady": "Nu este gata",
+  "construction": {
+    "heading": "În construcție",
+    "phasePre": "Acest modul va deveni disponibil în faza ",
+    "phasePost": ".",
+    "laterPhase": "Acest modul va deveni disponibil într-o fază ulterioară."
+  }
+}

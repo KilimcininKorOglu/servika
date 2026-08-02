@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "scheduledTasks": "Sarcini programate"
+  },
+  "title": "Sarcini programate",
+  "presets": {
+    "everyMinute": "În fiecare minut",
+    "everyHour": "În fiecare oră",
+    "dailyAt3": "Zilnic la 03:00",
+    "mondayAt9": "Luni la 09:00",
+    "every5Minutes": "La fiecare 5 minute",
+    "every15Minutes": "La fiecare 15 minute",
+    "firstOfMonth": "În prima zi a lunii la 00:00"
+  },
+  "actions": {
+    "add": "Adăugare sarcină",
+    "refresh": "↻ Reîmprospătare"
+  },
+  "count": "{{count}} sarcini",
+  "loading": "Se încarcă...",
+  "empty": "Încă nu există sarcini. Adăugați una mai sus.",
+  "columns": {
+    "min": "Min",
+    "hour": "Oră",
+    "day": "Zi",
+    "month": "Lună",
+    "weekday": "Zi din săptămână",
+    "command": "Comandă / Descriere",
+    "action": "Acțiune"
+  },
+  "row": {
+    "delete": "Ștergere"
+  },
+  "confirmDelete": "Ștergeți sarcina „{{command}}...”?",
+  "errors": {
+    "deleteFailed": "Ștergerea a eșuat",
+    "addFailed": "Nu s-a putut adăuga elementul"
+  },
+  "modal": {
+    "title": "Sarcină programată nouă",
+    "presetsLabel": "Presetări",
+    "fields": {
+      "minute": "Minut",
+      "hour": "Oră",
+      "day": "Zi",
+      "month": "Lună",
+      "weekday": "Zi din săptămână"
+    },
+    "cronHint": "Format cron:",
+    "cronHintPost": " orice valoare,",
+    "cronEvery": " la fiecare cinci,",
+    "cronList": " listă,",
+    "cronRange": " interval.",
+    "commandLabel": "Comandă",
+    "commandPlaceholder": "/usr/bin/php /home/c_user/public_html/cron.php",
+    "descriptionLabel": "Descriere (opțional)",
+    "descriptionPlaceholder": "de ex. script de copie de rezervă nocturnă",
+    "cancel": "Anulare",
+    "adding": "Se adaugă...",
+    "addTask": "Adăugare sarcină"
+  }
+}
