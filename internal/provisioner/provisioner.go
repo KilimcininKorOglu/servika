@@ -1616,14 +1616,45 @@ func aclAvailable() bool {
 	return err == nil
 }
 
+// nginxCanRead reports whether the nginx account can actually reach the document
+// root.
+//
+// setfacl can exit 0 while the filesystem silently ignores the ACL (mounted
+// without acl support, or a filesystem type that does not honour it). The mode
+// bits then stay 0710/0750 with no access for other, nginx cannot read anything,
+// and the site answers 403 with nothing in any log to explain it. A real read
+// attempt as nginx is the only trustworthy signal.
+func nginxCanRead(publicHTML string) bool {
+	target := filepath.Join(publicHTML, "index.html")
+	if _, err := os.Stat(target); err != nil {
+		target = publicHTML // a freshly provisioned root may still be empty
+	}
+	return tenantCommand("runuser", "-u", "nginx", "--", "test", "-r", target).Run() == nil
+}
+
+// applyLegacyHomePerms serves the document root through group ownership instead
+// of per-user ACLs, for hosts where the ACL model cannot work.
+//
+// The permission bits are IDENTICAL to the ACL model (home 0710, public_html
+// 0750, no access for other) — this fallback must never loosen isolation to
+// 0711/0755, which would expose every tenant's document root to every other
+// tenant. The group is carried recursively so existing sub-directories (created
+// 0750 and owned by the tenant) stay reachable, and setgid makes new content
+// inherit the nginx group, which is what the default ACL does in the other model.
 func applyLegacyHomePerms(home string, uid, nginxGID int) {
 	publicHTML := filepath.Join(home, "public_html")
 	_ = os.Chown(home, uid, nginxGID)
 	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 	_ = os.Chmod(home, 0710)
-	_ = os.Chown(publicHTML, uid, nginxGID)
+	// -h -P: act on a symlink itself and never descend through one, so a planted
+	// symlink cannot redirect the ownership change outside the tenant tree.
+	if output, err := tenantCommand("chown", "-R", "-h", "-P",
+		fmt.Sprintf("%d:%d", uid, nginxGID), publicHTML).CombinedOutput(); err != nil {
+		log.Printf("tenant home permissions: group fallback chown failed for %s: %s",
+			publicHTML, strings.TrimSpace(string(output)))
+	}
 	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
-	_ = os.Chmod(publicHTML, 0750)
+	_ = os.Chmod(publicHTML, 0750|os.ModeSetgid)
 }
 
 func hardenHomePerms(home, systemUser string, uid, gid int) bool {
@@ -1651,7 +1682,12 @@ func hardenHomePerms(home, systemUser string, uid, gid int) bool {
 			log.Printf("tenant home permissions: default ACL failed for %s: %s", systemUser, strings.TrimSpace(string(output)))
 			return false
 		}
-		return true
+		// Every setfacl call reported success, which is not proof the filesystem
+		// honoured them. Verify before trusting the ACL model.
+		if nginxCanRead(publicHTML) {
+			return true
+		}
+		log.Printf("tenant home permissions: ACLs are ineffective on this filesystem for %s, using the nginx group instead (0710/0750 preserved)", systemUser)
 	}
 
 	if _, nginxGID, err := uidGid("nginx"); err == nil {
