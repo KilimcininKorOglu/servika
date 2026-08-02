@@ -61,15 +61,53 @@ func genPass() string {
 // keys, config, and swapdb return NOPERM. Read-only diagnostic commands required by the WordPress
 // Redis Object Cache plugin are re-enabled. info and dbsize expose aggregate statistics but not
 // another tenant's keys, which is acceptable for the shared cache.
+//
+// scan and randomkey must be denied EXPLICITLY: they belong to @read/@keyspace,
+// not @dangerous or @admin, and the ACL key pattern restricts which keys a user
+// may operate on, NOT which key names an iteration returns. Without these two
+// denials a tenant could enumerate every key name in the shared cache, including
+// its neighbours'.
 func enableUser(systemUser, password string) error {
 	if _, err := cli("ACL", "SETUSER", systemUser, "on", ">"+password,
 		"resetkeys", "~"+systemUser+":*", "resetchannels", "&"+systemUser+":*",
-		"+@all", "-@dangerous", "-@admin",
+		"+@all", "-@dangerous", "-@admin", "-scan", "-randomkey",
 		"+info", "+dbsize", "+command", "+ping", "+echo", "+client|no-evict"); err != nil {
 		return err
 	}
 	_, err := cli("ACL", "SAVE")
 	return err
+}
+
+// HealScanACL denies scan and randomkey on every existing tenant ACL user.
+//
+// SETUSER merges into the current rule set, so the stored password and key
+// pattern are preserved and only these two commands are withdrawn. main calls it
+// at startup so tenants created before the denial existed are closed too.
+func HealScanACL() {
+	out, err := cli("ACL", "LIST")
+	if err != nil {
+		return
+	}
+	healed := 0
+	for line := range strings.SplitSeq(out, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) < 2 || fields[0] != "user" {
+			continue
+		}
+		name := fields[1]
+		// Tenant ACL users are named after the system user (c_<slug>); never
+		// touch "default" or any operator-created account.
+		if name == "default" || !strings.HasPrefix(name, "c_") {
+			continue
+		}
+		if _, err := cli("ACL", "SETUSER", name, "-scan", "-randomkey"); err == nil {
+			healed++
+		}
+	}
+	if healed > 0 {
+		_, _ = cli("ACL", "SAVE")
+		log.Printf("redis: denied scan/randomkey on %d tenant ACL user(s)", healed)
+	}
 }
 
 func disableUser(systemUser string) error {

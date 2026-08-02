@@ -215,6 +215,9 @@ func main() {
 	fwH := &firewall.Handlers{DB: d}
 	wafH := &waf.Handlers{DB: d}
 	redisH := &redis.Handlers{DB: d}
+	// Tenants provisioned before scan/randomkey were denied can still enumerate
+	// neighbour key names; withdraw those two commands from every tenant ACL.
+	redis.HealScanACL()
 	subH := &subdomain.Handlers{DB: d, IPv4: ipv4}
 	addonH := &addondomains.Handlers{DB: d, IPv4: ipv4}
 	mailH := &mail.Handlers{DB: d}
