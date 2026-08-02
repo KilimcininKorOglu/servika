@@ -279,6 +279,8 @@ func EnsureInfra() {
 			// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
 			_ = os.Chmod(servikaJailBin(), 0o755)
 		}
+	} else {
+		log.Printf("SSH ISOLATION: the servika-jail script is missing from %s, so the jail shell cannot be installed: %v", srcDir, err)
 	}
 	// Create the restricted SSH access group.
 	_ = exec.Command("groupadd", "-f", "servika-ssh").Run()
@@ -286,6 +288,10 @@ func EnsureInfra() {
 	dst := "/etc/ssh/sshd_config.d/50-servika-jail.conf"
 	src, err := os.ReadFile(srcDir + "/50-servika-jail.conf")
 	if err != nil {
+		// Without this file the sshd Match chroot block is never written, so a
+		// tenant granted SSH gets a FULL shell outside the jail. The previous
+		// bare return made that failure invisible.
+		log.Printf("SSH ISOLATION NOT APPLIED: %s/50-servika-jail.conf is missing, so a tenant granted SSH cannot be confined to its chroot: %v. Add it to the deployed assets/ops payload.", srcDir, err)
 		return
 	}
 	cur, _ := os.ReadFile(dst)
