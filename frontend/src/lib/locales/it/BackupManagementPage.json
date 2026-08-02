@@ -8,7 +8,9 @@
   "subtitle": "Visualizza i backup di tutti i domini in un unico posto. I backup automatici giornalieri vengono eseguiti e le destinazioni S3/SFTP sono configurate per dominio.",
   "toast": {
     "triggered": "I backup pianificati sono stati avviati. Aggiorna tra qualche secondo per vedere i risultati.",
-    "triggerFailed": "Impossibile avviare i backup"
+    "triggerFailed": "Impossibile avviare i backup",
+    "jobStarted": "Processo di backup avviato per {{n}} dominio/i",
+    "jobFailed": "Impossibile avviare il processo di backup"
   },
   "kpi": {
     "totalSize": "Dimensione Totale Backup",
@@ -23,7 +25,9 @@
     "suffix": ". Conservazione 7 giorni",
     "triggering": "Avvio in corso...",
     "backupNow": "⏱ Esegui Backup di Tutti i Domini Ora",
-    "refresh": "↻ Aggiorna"
+    "refresh": "↻ Aggiorna",
+    "backupAll": "Esegui il backup di tutti i domini",
+    "backupSelected": "Esegui il backup di {{n}} selezionati"
   },
   "table": {
     "title": "Backup per Dominio",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ I backup",
     "post": "sono archiviati lì. I backup rimangono disponibili anche se un dominio viene eliminato, consentendo il recupero da eliminazioni accidentali. Apri Gestisci per scaricare o ripristinare i singoli backup e configurare le destinazioni."
+  },
+  "jobs": {
+    "title": "Processi",
+    "empty": "Nessun processo di backup o ripristino è ancora stato eseguito.",
+    "opBackup": "Backup",
+    "opRestore": "Ripristino",
+    "startedBy": "da {{user}}",
+    "failedCount": "{{n}} falliti",
+    "active": "In lavorazione: {{domain}}",
+    "status": {
+      "running": "In corso",
+      "done": "Completato",
+      "partial": "Parzialmente completato",
+      "failed": "Fallito"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "Processo #{{id}}",
+    "itemsTitle": "Domini di questo processo",
+    "empty": "Questo processo non ha ancora record.",
+    "succeeded": "{{n}} riusciti",
+    "failed": "{{n}} falliti"
   }
 }

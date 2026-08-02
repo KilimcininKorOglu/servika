@@ -8,7 +8,9 @@
   "subtitle": "Consultez les sauvegardes de tous les domaines au même endroit. Des sauvegardes automatiques quotidiennes sont effectuées, et les destinations S3/SFTP sont configurées par domaine.",
   "toast": {
     "triggered": "Les sauvegardes planifiées ont été déclenchées. Actualisez dans quelques secondes pour voir les résultats.",
-    "triggerFailed": "Impossible de déclencher les sauvegardes"
+    "triggerFailed": "Impossible de déclencher les sauvegardes",
+    "jobStarted": "Tâche de sauvegarde lancée pour {{n}} domaine(s)",
+    "jobFailed": "Impossible de lancer la tâche de sauvegarde"
   },
   "kpi": {
     "totalSize": "Taille totale des sauvegardes",
@@ -23,7 +25,9 @@
     "suffix": ". Rétention de 7 jours",
     "triggering": "Déclenchement...",
     "backupNow": "⏱ Sauvegarder tous les domaines maintenant",
-    "refresh": "↻ Actualiser"
+    "refresh": "↻ Actualiser",
+    "backupAll": "Sauvegarder tous les domaines",
+    "backupSelected": "Sauvegarder {{n}} sélectionné(s)"
   },
   "table": {
     "title": "Sauvegardes de domaines",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ Les sauvegardes",
     "post": "y sont stockées. Les sauvegardes restent disponibles si un domaine est supprimé, ce qui permet une récupération après une suppression accidentelle. Ouvrez Gérer pour télécharger ou restaurer des sauvegardes individuelles et configurer les destinations."
+  },
+  "jobs": {
+    "title": "Tâches",
+    "empty": "Aucune tâche de sauvegarde ou de restauration n'a encore été exécutée.",
+    "opBackup": "Sauvegarde",
+    "opRestore": "Restauration",
+    "startedBy": "par {{user}}",
+    "failedCount": "{{n}} en échec",
+    "active": "Traitement de {{domain}}",
+    "status": {
+      "running": "En cours",
+      "done": "Terminée",
+      "partial": "Partiellement terminée",
+      "failed": "Échouée"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "Tâche #{{id}}",
+    "itemsTitle": "Domaines de cette tâche",
+    "empty": "Cette tâche n'a pas encore d'enregistrement.",
+    "succeeded": "{{n}} réussi(s)",
+    "failed": "{{n}} en échec"
   }
 }

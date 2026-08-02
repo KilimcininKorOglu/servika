@@ -16,6 +16,12 @@ import {
 
 type SummaryRow = { domain_id: number; domain_name: string; count: number; total_bytes: number; last_backup: string }
 type Summary = { domains: SummaryRow[]; total_size_bytes: number; total_backups: number; destination_count: number; schedule: string }
+type Job = {
+  id: number; type: string; operation: string; status: string
+  total: number; completed: number; succeeded: number; failed: number
+  size_b: number; active_domain: string; restore_mode: string
+  started_by: string; started_at: string; finished_at: string
+}
 
 export default function BackupManagementPage() {
   const { t } = useTranslation('BackupManagementPage')
@@ -24,6 +30,8 @@ export default function BackupManagementPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [backingUp, setBackingUp] = useState(false)
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [selected, setSelected] = useState<number[]>([])
 
   function load() {
     setLoading(true)
@@ -33,6 +41,35 @@ export default function BackupManagementPage() {
       .finally(() => setLoading(false))
   }
   useEffect(load, [])
+
+  function loadJobs() {
+    api.get<Job[]>('/admin/backups/jobs').then(r => setJobs(r.data)).catch(() => {})
+  }
+  useEffect(loadJobs, [])
+
+  // Poll only while a job is running, so an idle page makes no requests.
+  const running = jobs.some(j => j.status === 'running')
+  useEffect(() => {
+    if (!running) return
+    const timer = setInterval(loadJobs, 3000)
+    return () => clearInterval(timer)
+  }, [running])
+
+  function toggle(domainID: number) {
+    setSelected(prev => prev.includes(domainID) ? prev.filter(x => x !== domainID) : [...prev, domainID])
+  }
+
+  async function startBackupJob() {
+    setError(null); setSuccess(null); setBackingUp(true)
+    try {
+      const { data } = await api.post<{ total: number }>('/admin/backups/jobs',
+        selected.length > 0 ? { domain_ids: selected } : {})
+      setSuccess(t('toast.jobStarted', { n: data.total }))
+      setSelected([])
+      loadJobs()
+    } catch (e) { setError(apiError(e, t('toast.jobFailed'))) }
+    finally { setBackingUp(false) }
+  }
 
   async function backupNow() {
     setError(null); setSuccess(null); setBackingUp(true)
@@ -73,6 +110,14 @@ export default function BackupManagementPage() {
           {t('schedule.prefix')} <strong>{o?.schedule || t('schedule.default')}</strong>{t('schedule.suffix')}
         </span>
         <div className="flex flex-col gap-2 sm:ml-auto sm:flex-row sm:items-center">
+          <button onClick={startBackupJob} disabled={backingUp}
+            className="px-3.5 py-2 text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg disabled:opacity-50">
+            {backingUp
+              ? t('schedule.triggering')
+              : selected.length > 0
+                ? t('schedule.backupSelected', { n: selected.length })
+                : t('schedule.backupAll')}
+          </button>
           <button onClick={backupNow} disabled={backingUp}
             className="px-3.5 py-2 text-sm font-medium bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-lg disabled:opacity-50">
             {backingUp ? t('schedule.triggering') : t('schedule.backupNow')}
@@ -90,6 +135,7 @@ export default function BackupManagementPage() {
           <table className={responsiveTableClass}>
             <thead className={responsiveTableHeadClass}>
               <tr>
+                <th className="w-8 px-4 py-2.5"></th>
                 <th className="text-left font-medium px-4 py-2.5">{t('table.colDomain')}</th>
                 <th className="text-right font-medium px-4 py-2.5">{t('table.colCount')}</th>
                 <th className="text-right font-medium px-4 py-2.5">{t('table.colSize')}</th>
@@ -99,12 +145,15 @@ export default function BackupManagementPage() {
             </thead>
             <tbody className={responsiveTableBodyClass}>
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">{t('table.loading')}</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-400">{t('table.loading')}</td></tr>
               ) : !o || o.domains.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">{t('table.noDomains')}</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">{t('table.noDomains')}</td></tr>
               ) : (
                 o.domains.map(d => (
                   <tr key={d.domain_id} className={responsiveTableRowClass}>
+                    <td className="px-4 py-2.5">
+                      <input type="checkbox" checked={selected.includes(d.domain_id)} onChange={() => toggle(d.domain_id)} />
+                    </td>
                     <td data-label={t('table.colDomain')} className={`${responsiveTableCellClass} font-medium text-slate-800 dark:text-slate-100`}>{d.domain_name}</td>
                     <td data-label={t('table.colCount')} className={`${responsiveTableCodeCellClass} lg:text-right`}>{d.count}</td>
                     <td data-label={t('table.colSize')} className={`${responsiveTableCodeCellClass} lg:text-right`}>{d.count ? formatBytes(d.total_bytes) : '-'}</td>
@@ -119,6 +168,45 @@ export default function BackupManagementPage() {
           </table>
         </div>
       </div>
+      {/* Jobs */}
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white dark:border-slate-700/60 dark:bg-slate-800/60">
+        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/60">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t('jobs.title')}</h3>
+        </div>
+        {jobs.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">{t('jobs.empty')}</p>
+        ) : (
+          <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
+            {jobs.map(j => (
+              <li key={j.id} className="px-4 py-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link to={`/backup-management/job/${j.id}`}
+                    className="text-sm font-medium text-brand-600 dark:text-brand-400 hover:underline">
+                    {t(j.operation === 'restore' ? 'jobs.opRestore' : 'jobs.opBackup')} #{j.id}
+                  </Link>
+                  <JobStatusBadge status={j.status} label={t(`jobs.status.${j.status}`)} />
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {t('jobs.startedBy', { user: j.started_by || '-' })} · {j.started_at}
+                  </span>
+                  <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">
+                    {j.completed}/{j.total}
+                    {j.failed > 0 && <span className="text-red-600 dark:text-red-400"> · {t('jobs.failedCount', { n: j.failed })}</span>}
+                    {j.size_b > 0 && <span> · {formatBytes(j.size_b)}</span>}
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-700">
+                  <div className={`h-1.5 rounded-full ${j.failed > 0 ? 'bg-amber-500' : 'bg-brand-600'}`}
+                    style={{ width: `${j.total > 0 ? Math.round((j.completed / j.total) * 100) : 0}%` }} />
+                </div>
+                {j.status === 'running' && j.active_domain && (
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('jobs.active', { domain: j.active_domain })}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">
         {t('footnote.pre')} <span className="font-mono">/var/backups/servika/&lt;domain&gt;/</span> {t('footnote.post')}
       </p>
@@ -145,4 +233,12 @@ function formatBytes(b: number): string {
   if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`
   if (b < 1024 * 1024 * 1024) return `${(b / 1024 / 1024).toFixed(1)} MB`
   return `${(b / 1024 / 1024 / 1024).toFixed(2)} GB`
+}
+
+function JobStatusBadge({ status, label }: { status: string; label: string }) {
+  const tone = status === 'done' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+    : status === 'failed' ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+    : status === 'partial' ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+    : 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
+  return <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${tone}`}>{label}</span>
 }

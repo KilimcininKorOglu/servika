@@ -8,7 +8,9 @@
   "subtitle": "Vizualizați copiile de rezervă pentru toate domeniile într-un singur loc. Backup-urile automate zilnice rulează, iar destinațiile S3/SFTP sunt configurate per domeniu.",
   "toast": {
     "triggered": "Backup-urile programate au fost declanșate. Reîmprospătați în câteva secunde pentru a vedea rezultatele.",
-    "triggerFailed": "Nu s-au putut declanșa backup-urile"
+    "triggerFailed": "Nu s-au putut declanșa backup-urile",
+    "jobStarted": "Sarcină de copiere pornită pentru {{n}} domeniu/domenii",
+    "jobFailed": "Sarcina de copiere nu a putut fi pornită"
   },
   "kpi": {
     "totalSize": "Dimensiune totală backup",
@@ -23,7 +25,9 @@
     "suffix": ". Retenție 7 zile",
     "triggering": "Se declanșează...",
     "backupNow": "⏱ Faceți backup pentru toate domeniile acum",
-    "refresh": "↻ Reîmprospătați"
+    "refresh": "↻ Reîmprospătați",
+    "backupAll": "Creează copii pentru toate domeniile",
+    "backupSelected": "Copiază {{n}} selectate"
   },
   "table": {
     "title": "Backup-uri domenii",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ Backup-urile",
     "post": "sunt stocate acolo. Backup-urile rămân disponibile dacă un domeniu este șters, permițând recuperarea în caz de ștergere accidentală. Deschideți Gestionați pentru a descărca sau restaura backup-uri individuale și pentru a configura destinații."
+  },
+  "jobs": {
+    "title": "Sarcini",
+    "empty": "Nu a rulat încă nicio sarcină de copiere sau restaurare.",
+    "opBackup": "Copie de rezervă",
+    "opRestore": "Restaurare",
+    "startedBy": "de {{user}}",
+    "failedCount": "{{n}} eșuate",
+    "active": "Se procesează {{domain}}",
+    "status": {
+      "running": "În curs",
+      "done": "Finalizată",
+      "partial": "Parțial finalizată",
+      "failed": "Eșuată"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "Sarcina #{{id}}",
+    "itemsTitle": "Domeniile din această sarcină",
+    "empty": "Această sarcină nu are încă înregistrări.",
+    "succeeded": "{{n}} reușite",
+    "failed": "{{n}} eșuate"
   }
 }

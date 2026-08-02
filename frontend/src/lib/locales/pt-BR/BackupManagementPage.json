@@ -8,7 +8,9 @@
   "subtitle": "Visualize backups de todos os domínios em um só lugar. Backups automáticos diários são executados e destinos S3/SFTP são configurados por domínio.",
   "toast": {
     "triggered": "Os backups agendados foram iniciados. Atualize a página em alguns segundos para ver os resultados.",
-    "triggerFailed": "Não foi possível iniciar os backups"
+    "triggerFailed": "Não foi possível iniciar os backups",
+    "jobStarted": "Tarefa de backup iniciada para {{n}} domínio(s)",
+    "jobFailed": "Não foi possível iniciar a tarefa de backup"
   },
   "kpi": {
     "totalSize": "Tamanho total dos backups",
@@ -23,7 +25,9 @@
     "suffix": ". Retenção de 7 dias",
     "triggering": "Iniciando...",
     "backupNow": "⏱ Fazer backup de todos os domínios agora",
-    "refresh": "↻ Atualizar"
+    "refresh": "↻ Atualizar",
+    "backupAll": "Fazer backup de todos os domínios",
+    "backupSelected": "Fazer backup de {{n}} selecionados"
   },
   "table": {
     "title": "Backups de domínios",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ Os backups",
     "post": "são armazenados neste local. Os backups permanecem disponíveis mesmo após a exclusão de um domínio, permitindo a recuperação em caso de exclusão acidental. Clique em Gerenciar para baixar ou restaurar backups individuais e configurar destinos."
+  },
+  "jobs": {
+    "title": "Tarefas",
+    "empty": "Nenhuma tarefa de backup ou restauração foi executada ainda.",
+    "opBackup": "Backup",
+    "opRestore": "Restauração",
+    "startedBy": "por {{user}}",
+    "failedCount": "{{n}} com erro",
+    "active": "Processando {{domain}}",
+    "status": {
+      "running": "Em execução",
+      "done": "Concluída",
+      "partial": "Parcialmente concluída",
+      "failed": "Falhou"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "Tarefa #{{id}}",
+    "itemsTitle": "Domínios desta tarefa",
+    "empty": "Esta tarefa ainda não tem registros.",
+    "succeeded": "{{n}} com sucesso",
+    "failed": "{{n}} com erro"
   }
 }

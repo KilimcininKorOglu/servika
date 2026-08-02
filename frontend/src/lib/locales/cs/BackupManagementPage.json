@@ -8,7 +8,9 @@
   "subtitle": "Prohlížejte zálohy všech domén na jednom místě. Denní automatické zálohy běží a cíle S3/SFTP se nastavují pro každou doménu.",
   "toast": {
     "triggered": "Naplánované zálohy byly spuštěny. Za pár sekund obnovte stránku a zobrazte výsledky.",
-    "triggerFailed": "Zálohy nelze spustit"
+    "triggerFailed": "Zálohy nelze spustit",
+    "jobStarted": "Úloha zálohování spuštěna pro {{n}} domén",
+    "jobFailed": "Úlohu zálohování se nepodařilo spustit"
   },
   "kpi": {
     "totalSize": "Celková velikost záloh",
@@ -23,7 +25,9 @@
     "suffix": ". Uchovávání 7 dní",
     "triggering": "Spouštění...",
     "backupNow": "⏱ Zálohovat všechny domény nyní",
-    "refresh": "↻ Obnovit"
+    "refresh": "↻ Obnovit",
+    "backupAll": "Zálohovat všechny domény",
+    "backupSelected": "Zálohovat {{n}} vybraných"
   },
   "table": {
     "title": "Zálohy domén",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ Zálohy",
     "post": "jsou uloženy tam. Zálohy zůstávají dostupné i po smazání domény, což umožňuje obnovu po nechtěném smazání. Otevřete Spravovat a stáhněte nebo obnovte jednotlivé zálohy a nastavte cíle."
+  },
+  "jobs": {
+    "title": "Úlohy",
+    "empty": "Zatím neproběhla žádná úloha zálohování ani obnovení.",
+    "opBackup": "Záloha",
+    "opRestore": "Obnovení",
+    "startedBy": "uživatel {{user}}",
+    "failedCount": "{{n}} s chybou",
+    "active": "Zpracovává se {{domain}}",
+    "status": {
+      "running": "Probíhá",
+      "done": "Dokončeno",
+      "partial": "Částečně dokončeno",
+      "failed": "Selhalo"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "Úloha #{{id}}",
+    "itemsTitle": "Domény v této úloze",
+    "empty": "Tato úloha zatím nemá žádné záznamy.",
+    "succeeded": "{{n}} úspěšných",
+    "failed": "{{n}} s chybou"
   }
 }

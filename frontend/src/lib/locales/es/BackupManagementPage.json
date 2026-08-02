@@ -8,7 +8,9 @@
   "subtitle": "Vea las copias de seguridad de todos los dominios en un solo lugar. Se ejecutan copias automáticas diarias y los destinos S3/SFTP se configuran por dominio.",
   "toast": {
     "triggered": "Se activaron las copias de seguridad programadas. Actualice en unos segundos para ver los resultados.",
-    "triggerFailed": "No se pudieron activar las copias de seguridad"
+    "triggerFailed": "No se pudieron activar las copias de seguridad",
+    "jobStarted": "Trabajo de copia iniciado para {{n}} dominio(s)",
+    "jobFailed": "No se pudo iniciar el trabajo de copia"
   },
   "kpi": {
     "totalSize": "Tamaño total de copias",
@@ -23,7 +25,9 @@
     "suffix": ". Retención de 7 días",
     "triggering": "Activando...",
     "backupNow": "⏱ Hacer copia de todos los dominios ahora",
-    "refresh": "↻ Actualizar"
+    "refresh": "↻ Actualizar",
+    "backupAll": "Hacer copia de todos los dominios",
+    "backupSelected": "Copiar {{n}} seleccionados"
   },
   "table": {
     "title": "Copias de seguridad por dominio",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ Las copias de seguridad",
     "post": "se almacenan allí. Las copias permanecen disponibles si se elimina un dominio, lo que permite la recuperación ante eliminaciones accidentales. Abra Gestionar para descargar o restaurar copias individuales y configurar destinos."
+  },
+  "jobs": {
+    "title": "Trabajos",
+    "empty": "Todavía no se ha ejecutado ningún trabajo de copia o restauración.",
+    "opBackup": "Copia de seguridad",
+    "opRestore": "Restauración",
+    "startedBy": "por {{user}}",
+    "failedCount": "{{n}} con error",
+    "active": "Procesando {{domain}}",
+    "status": {
+      "running": "En curso",
+      "done": "Completado",
+      "partial": "Completado parcialmente",
+      "failed": "Fallido"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "Trabajo #{{id}}",
+    "itemsTitle": "Dominios de este trabajo",
+    "empty": "Este trabajo aún no tiene registros.",
+    "succeeded": "{{n}} correctos",
+    "failed": "{{n}} con error"
   }
 }

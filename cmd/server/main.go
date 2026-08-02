@@ -594,6 +594,12 @@ func main() {
 					httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "processed_domains": processed})
 				})
 				r.With(middleware.ResellerOrAbove).Get("/admin/backups/summary", backupsH.Summary)
+				// Bulk backup/restore jobs. Scope is enforced inside the handlers, which
+				// resolve the target domains through middleware.ScopeSQL.
+				r.With(middleware.ResellerOrAbove).Post("/admin/backups/jobs", backupsH.StartBackupJob)
+				r.With(middleware.ResellerOrAbove).Get("/admin/backups/jobs", backupsH.ListJobs)
+				r.With(middleware.ResellerOrAbove).Get("/admin/backups/jobs/{jid}", backupsH.JobDetail)
+				r.With(middleware.ResellerOrAbove).Post("/admin/backups/restore", backupsH.StartRestoreJob)
 				r.With(middleware.AdminOnly).Post("/admin/transfers/analyze", transfersH.Analyze)
 				r.With(middleware.AdminOnly).Post("/admin/transfers/import", transfersH.Import)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/backup-destination", backupsH.GetDestination)

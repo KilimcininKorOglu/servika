@@ -8,7 +8,9 @@
   "subtitle": "Veja as cópias de segurança de todos os domínios num único local. As cópias automáticas diárias são executadas e os destinos S3/SFTP são configurados por domínio.",
   "toast": {
     "triggered": "As cópias de segurança agendadas foram iniciadas. Atualize em alguns segundos para ver os resultados.",
-    "triggerFailed": "Não foi possível iniciar as cópias de segurança"
+    "triggerFailed": "Não foi possível iniciar as cópias de segurança",
+    "jobStarted": "Tarefa de cópia iniciada para {{n}} domínio(s)",
+    "jobFailed": "Não foi possível iniciar a tarefa de cópia"
   },
   "kpi": {
     "totalSize": "Tamanho Total das Cópias",
@@ -23,7 +25,9 @@
     "suffix": ". Retenção de 7 dias",
     "triggering": "A iniciar...",
     "backupNow": "⏱ Fazer Cópia de Todos os Domínios Agora",
-    "refresh": "↻ Atualizar"
+    "refresh": "↻ Atualizar",
+    "backupAll": "Criar cópia de todos os domínios",
+    "backupSelected": "Copiar {{n}} selecionados"
   },
   "table": {
     "title": "Cópias de Segurança por Domínio",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ As cópias de segurança",
     "post": "são armazenadas aqui. Ficam disponíveis mesmo após a eliminação de um domínio, permitindo recuperação de eliminações acidentais. Abra Gerir para transferir ou restaurar cópias individuais e configurar destinos."
+  },
+  "jobs": {
+    "title": "Tarefas",
+    "empty": "Ainda não foi executada nenhuma tarefa de cópia ou restauro.",
+    "opBackup": "Cópia de segurança",
+    "opRestore": "Restauro",
+    "startedBy": "por {{user}}",
+    "failedCount": "{{n}} com erro",
+    "active": "A processar {{domain}}",
+    "status": {
+      "running": "Em curso",
+      "done": "Concluída",
+      "partial": "Parcialmente concluída",
+      "failed": "Falhou"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "Tarefa #{{id}}",
+    "itemsTitle": "Domínios desta tarefa",
+    "empty": "Esta tarefa ainda não tem registos.",
+    "succeeded": "{{n}} com sucesso",
+    "failed": "{{n}} com erro"
   }
 }

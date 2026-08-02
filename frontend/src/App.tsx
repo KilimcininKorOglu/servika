@@ -50,6 +50,7 @@ const DNSTemplatePage = lazy(() => import('@/pages/DNSTemplatePage'))
 const WordPressPage = lazy(() => import('@/pages/WordPressPage'))
 const FirewallPage = lazy(() => import('@/pages/FirewallPage'))
 const BackupManagementPage = lazy(() => import('@/pages/BackupManagementPage'))
+const BackupJobDetailPage = lazy(() => import('@/pages/BackupJobDetailPage'))
 const DomainWordPressPage = lazy(() => import('@/pages/DomainWordPressPage'))
 const DomainSubdomainsPage = lazy(() => import('@/pages/DomainSubdomainsPage'))
 const DomainSubdomainPage = lazy(() => import('@/pages/DomainSubdomainPage'))
@@ -149,6 +150,7 @@ export default function App() {
         <Route path="wordpress" element={<WordPressPage />} />
         <Route path="firewall" element={<FirewallPage />} />
         <Route path="backup-management" element={<BackupManagementPage />} />
+        <Route path="backup-management/job/:jid" element={<BackupJobDetailPage />} />
         <Route path="monitoring" element={<MonitoringPage />} />
 
         <Route path="dns"        element={<DnsOverviewPage />} />

@@ -8,7 +8,9 @@
   "subtitle": "在一处查看所有域名的备份。每日自动备份运行，S3/SFTP 目标按域名配置。",
   "toast": {
     "triggered": "已触发计划备份。请在几秒后刷新以查看结果。",
-    "triggerFailed": "无法触发备份"
+    "triggerFailed": "无法触发备份",
+    "jobStarted": "已为 {{n}} 个域名启动备份任务",
+    "jobFailed": "无法启动备份任务"
   },
   "kpi": {
     "totalSize": "备份总大小",
@@ -23,7 +25,9 @@
     "suffix": "。保留 7 天",
     "triggering": "触发中...",
     "backupNow": "⏱ 立即备份所有域名",
-    "refresh": "↻ 刷新"
+    "refresh": "↻ 刷新",
+    "backupAll": "备份所有域名",
+    "backupSelected": "备份选定的 {{n}} 项"
   },
   "table": {
     "title": "域名备份",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ 备份",
     "post": "存储在那里。域名删除后备份仍然可用，可从误删中恢复。打开“管理”以下载或还原单个备份并配置目标。"
+  },
+  "jobs": {
+    "title": "任务",
+    "empty": "尚未运行任何备份或恢复任务。",
+    "opBackup": "备份",
+    "opRestore": "恢复",
+    "startedBy": "由 {{user}}",
+    "failedCount": "{{n}} 个失败",
+    "active": "正在处理 {{domain}}",
+    "status": {
+      "running": "进行中",
+      "done": "已完成",
+      "partial": "部分完成",
+      "failed": "失败"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "任务 #{{id}}",
+    "itemsTitle": "此任务中的域名",
+    "empty": "此任务暂无记录。",
+    "succeeded": "{{n}} 个成功",
+    "failed": "{{n}} 个失败"
   }
 }

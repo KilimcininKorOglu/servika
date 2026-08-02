@@ -5,7 +5,6 @@ package backups
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -101,52 +100,61 @@ func tickOnce(db *sql.DB) {
 	}
 	log.Printf("backup scheduler: %d due domain found", len(due))
 
+	// Group the whole nightly run into one 'scheduled' job so the panel shows a single
+	// row with progress instead of one unrelated record per domain.
+	var jobID int64
+	if res, err := db.Exec(
+		`INSERT INTO backup_jobs(type, operation, status, total, started_by)
+		 VALUES('scheduled','backup','running',?,'system')`, len(due)); err == nil {
+		jobID, _ = res.LastInsertId()
+	} else {
+		log.Printf("backup scheduler: could not open job row: %v", err)
+	}
+
+	var totalBytes int64
+	succeeded, failed := 0, 0
 	for _, d := range due {
-		if err := runOneBackup(db, d); err != nil {
-			log.Printf("backup scheduler %s: %v", d.DomainName, err)
-			continue
+		if _, err := db.Exec(`UPDATE backup_jobs SET active_domain=? WHERE id=?`, d.DomainName, jobID); err != nil {
+			log.Printf("backup scheduler: progress update failed: %v", err)
 		}
-		if err := pruneOld(db, d.ID, d.SystemUser, d.Retention); err != nil {
-			log.Printf("backup retention %s: %v", d.DomainName, err)
+		size, err := runOneBackup(db, d, jobID)
+		if err != nil {
+			failed++
+			log.Printf("backup scheduler %s: %v", d.DomainName, err)
+		} else {
+			succeeded++
+			totalBytes += size
+			if err := pruneOld(db, d.ID, d.SystemUser, d.Retention); err != nil {
+				log.Printf("backup retention %s: %v", d.DomainName, err)
+			}
+		}
+		if _, err := db.Exec(
+			`UPDATE backup_jobs SET completed=?, succeeded=?, failed=?, size_b=? WHERE id=?`,
+			succeeded+failed, succeeded, failed, totalBytes, jobID); err != nil {
+			log.Printf("backup scheduler: progress update failed: %v", err)
 		}
 	}
+	finishJob(db, jobID, succeeded, failed)
 }
 
-// runOneBackup: create a backup for a domain + save to DB + update last_backup_at.
-func runOneBackup(db *sql.DB, d dueDomain) error {
-	if !validSystemUser(d.SystemUser) {
-		return fmt.Errorf("unsafe system user: %s", d.SystemUser)
-	}
-	stamp := time.Now().UTC().Format("20060102-150405")
-	dir := filepath.Join(backupRoot(), d.SystemUser)
-	_ = os.MkdirAll(dir, 0700)
-	file := fmt.Sprintf("%s-auto-%s.tar.gz", d.SystemUser, stamp)
-	abs := filepath.Join(dir, file)
-
+// runOneBackup creates a scheduled backup for one domain, tags it with the nightly
+// job, and updates last_backup_at. It returns the archive size so the job can total it.
+func runOneBackup(db *sql.DB, d dueDomain, jobID int64) (int64, error) {
 	// Package the home directory plus EVERY domain-owned database (main + wp_* etc.)
 	// under __db__/ with a manifest, exactly like a manual backup, so a scheduled
 	// archive restores to the same state. buildArchive fails closed.
 	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
 	defer cancel()
-	sizeBytes, err := buildArchive(ctx, db, d.ID, d.SystemUser, dir, file, time.Now().UTC().Format("2006-01-02 15:04:05"))
+	sizeBytes, file, err := backupOneDomain(ctx, db, d.ID, d.SystemUser, "scheduled",
+		"Scheduled backup ("+d.Frequency+")", jobID)
 	if err != nil {
-		return err
+		return 0, err
 	}
-
-	res, err := db.Exec(
-		`INSERT INTO backups(domain_id, type, file, size_b, notes) VALUES(?,?,?,?,?)`,
-		d.ID, "scheduled", file, sizeBytes, "Scheduled backup ("+d.Frequency+")")
-	if err != nil {
-		return fmt.Errorf("could not save backup record: %w", err)
-	}
-	backupID, _ := res.LastInsertId()
 	if _, err := db.Exec(`UPDATE domains SET last_backup_at=NOW() WHERE id=?`, d.ID); err != nil {
 		log.Printf("last_backup_at could not be updated: %v", err)
 	}
-	// If a remote destination exists, upload in the background
-	pushToDestinationAsync(db, d.ID, backupID, abs, file)
 	log.Printf("scheduled backup %s: file=%s size_bytes=%d", d.DomainName, file, sizeBytes)
-	return nil
+	return sizeBytes, nil
 }
 
 // pruneOld keeps the newest scheduled backups and preserves manual backups.

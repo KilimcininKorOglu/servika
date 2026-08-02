@@ -8,7 +8,9 @@
   "subtitle": "View backups for all domains in one place. Daily automatic backups run, and S3/SFTP destinations are configured per domain.",
   "toast": {
     "triggered": "Scheduled backups were triggered. Refresh in a few seconds to see the results.",
-    "triggerFailed": "Could not trigger backups"
+    "triggerFailed": "Could not trigger backups",
+    "jobStarted": "Backup job started for {{n}} domain(s)",
+    "jobFailed": "Could not start the backup job"
   },
   "kpi": {
     "totalSize": "Total Backup Size",
@@ -23,7 +25,9 @@
     "suffix": ". 7-day retention",
     "triggering": "Triggering...",
     "backupNow": "⏱ Back Up All Domains Now",
-    "refresh": "↻ Refresh"
+    "refresh": "↻ Refresh",
+    "backupAll": "Back up all domains",
+    "backupSelected": "Back up {{n}} selected"
   },
   "table": {
     "title": "Domain Backups",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ Backups",
     "post": "are stored there. Backups remain available if a domain is deleted, allowing recovery from accidental deletion. Open Manage to download or restore individual backups and configure destinations."
+  },
+  "jobs": {
+    "title": "Jobs",
+    "empty": "No backup or restore job has run yet.",
+    "opBackup": "Backup",
+    "opRestore": "Restore",
+    "startedBy": "by {{user}}",
+    "failedCount": "{{n}} failed",
+    "active": "Working on {{domain}}",
+    "status": {
+      "running": "Running",
+      "done": "Completed",
+      "partial": "Partly completed",
+      "failed": "Failed"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "Job #{{id}}",
+    "itemsTitle": "Domains in this job",
+    "empty": "This job has no records yet.",
+    "succeeded": "{{n}} succeeded",
+    "failed": "{{n}} failed"
   }
 }

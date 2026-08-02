@@ -8,7 +8,9 @@
   "subtitle": "Tüm alan adlarının yedeklerini tek bir yerde görün. Günlük otomatik yedekler çalışır ve S3/SFTP hedefleri alan adı başına yapılandırılır.",
   "toast": {
     "triggered": "Zamanlanmış yedekler tetiklendi. Sonuçları görmek için birkaç saniye sonra yenileyin.",
-    "triggerFailed": "Yedekler tetiklenemedi"
+    "triggerFailed": "Yedekler tetiklenemedi",
+    "jobStarted": "{{n}} domain için yedek işi başlatıldı",
+    "jobFailed": "Yedek işi başlatılamadı"
   },
   "kpi": {
     "totalSize": "Toplam Yedek Boyutu",
@@ -23,7 +25,9 @@
     "suffix": ". 7 günlük saklama",
     "triggering": "Tetikleniyor...",
     "backupNow": "⏱ Tüm Alan Adlarını Şimdi Yedekle",
-    "refresh": "↻ Yenile"
+    "refresh": "↻ Yenile",
+    "backupAll": "Tüm domainleri yedekle",
+    "backupSelected": "Seçili {{n}} domaini yedekle"
   },
   "table": {
     "title": "Alan Adı Yedekleri",
@@ -40,5 +44,27 @@
   "footnote": {
     "pre": "ℹ️ Yedekler",
     "post": "konumunda saklanır. Bir alan adı silinse bile yedekler kullanılabilir kalır ve yanlışlıkla silmeden kurtarmaya olanak tanır. Tek tek yedekleri indirmek veya geri yüklemek ve hedefleri yapılandırmak için Yönet'i açın."
+  },
+  "jobs": {
+    "title": "İşler",
+    "empty": "Henüz yedek veya geri yükleme işi çalışmadı.",
+    "opBackup": "Yedek",
+    "opRestore": "Geri yükleme",
+    "startedBy": "{{user}} tarafından",
+    "failedCount": "{{n}} hata",
+    "active": "İşlenen: {{domain}}",
+    "status": {
+      "running": "Çalışıyor",
+      "done": "Tamamlandı",
+      "partial": "Kısmen tamamlandı",
+      "failed": "Başarısız"
+    }
+  },
+  "jobDetail": {
+    "breadcrumb": "İş #{{id}}",
+    "itemsTitle": "Bu işteki domainler",
+    "empty": "Bu işin henüz kaydı yok.",
+    "succeeded": "{{n}} başarılı",
+    "failed": "{{n}} hata"
   }
 }
