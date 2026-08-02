@@ -40,6 +40,7 @@ const PAGES: ReadonlyArray<{ tkey: string; path: string; keywords: string; roles
   { tkey: 'serverStatus', path: '/server-status', keywords: 'cpu ram disk' },
   { tkey: 'profile', path: '/profile', keywords: 'password 2fa theme' },
   { tkey: 'accountTransfer', path: '/account-transfer', keywords: 'migration cpanel', roles: ['admin'] },
+  { tkey: 'siteMigration', path: '/site-migration', keywords: 'migration plesk cpanel directadmin ssh', roles: ['admin'] },
   { tkey: 'toolsSettings', path: '/tools-settings', keywords: 'settings', roles: ['admin'] },
   { tkey: 'optimize', path: '/tools/optimize', keywords: 'performance tune', roles: ['admin'] },
   { tkey: 'statistics', path: '/statistics', keywords: 'graph traffic', roles: ['admin'] },

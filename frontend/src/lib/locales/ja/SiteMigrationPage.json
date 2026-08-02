@@ -1,0 +1,151 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "siteMigration": "サイト移行"
+  },
+  "title": "サイト移行",
+  "subtitle": "cPanel、Plesk、DirectAdmin のサーバーから、ファイル、データベース、DNS、SSL とともにサイトを 3 ステップでこのパネルへ移行します。処理はバックグラウンドで実行されるため、このページは閉じてかまいません。",
+  "common": {
+    "back": "戻る"
+  },
+  "steps": {
+    "source": "サーバー情報",
+    "sitesAndSettings": "サイトと設定",
+    "migration": "移行"
+  },
+  "panels": {
+    "plesk": "Plesk",
+    "cpanel": "cPanel",
+    "directadmin": "DirectAdmin"
+  },
+  "step1": {
+    "title": "移行元サーバーの情報",
+    "description": "サイトが置かれているサーバーの SSH 情報です。認証情報は暗号化して保存され、処理の完了時に削除されます。",
+    "panel": "コントロールパネル",
+    "host": "サーバーアドレス (IP またはホスト名)",
+    "hostPlaceholder": "1.2.3.4 または server.example.com",
+    "port": "SSH ポート",
+    "user": "SSH ユーザー",
+    "auth": "認証方式",
+    "authPassword": "パスワード",
+    "authKey": "SSH 鍵",
+    "password": "パスワード",
+    "privateKey": "SSH 秘密鍵",
+    "show": "表示",
+    "hide": "非表示",
+    "credentialNote": "認証情報は AES で暗号化して保存され、移行の終了時に自動的に削除されます。",
+    "testOk": "接続に成功しました — {{server}} · 検出されたパネル: {{panel}}",
+    "unknownServer": "サーバー",
+    "unknownPanel": "不明",
+    "panelMismatch": "(選択したパネルと一致しません)",
+    "testing": "テスト中...",
+    "testButton": "接続をテスト",
+    "discovering": "サイトを検索中...",
+    "discoverButton": "サイトを検出"
+  },
+  "step2": {
+    "title": "移行するサイト",
+    "foundCount": "{{n}} 件のサイトが見つかりました · {{selected}} 件を選択中",
+    "selectAll": "すべて選択",
+    "clear": "選択を解除",
+    "columns": {
+      "select": "選択",
+      "domain": "ドメイン",
+      "sourceAccount": "移行元アカウント",
+      "php": "PHP",
+      "size": "サイズ",
+      "databases": "データベース",
+      "state": "状態"
+    },
+    "alreadyExists": "パネルに存在",
+    "new": "新規",
+    "settingsTitle": "所有者と移行の設定",
+    "settingsDescription": "移行する対象、適用するプラン、結果の所有者を選択します。",
+    "targetPHP": "移行先の PHP",
+    "sameAsSource": "移行元と同じ",
+    "plan": "ホスティングプラン",
+    "noPlan": "プランなし (制限なし)",
+    "customer": "顧客",
+    "noCustomer": "なし",
+    "overwriteWarning": "注意: 「既存サイトを上書き」が有効です。同じドメインのサイトのファイルとデータベースが上書きされます。先にバックアップを取得してください。",
+    "startButton": "移行を開始 ({{n}} 件)"
+  },
+  "toggles": {
+    "files": {
+      "label": "ファイル",
+      "hint": "ウェブルートを rsync でコピーします"
+    },
+    "databases": {
+      "label": "データベース",
+      "hint": "ダンプを取得して取り込み、サイトの設定を更新します"
+    },
+    "dns": {
+      "label": "DNS レコード",
+      "hint": "移行元のゾーンを読み取り、A レコードをこのサーバーに向けます"
+    },
+    "ssl": {
+      "label": "SSL 証明書",
+      "hint": "Let's Encrypt を試行します"
+    },
+    "overwrite": {
+      "label": "既存サイトを上書き",
+      "hint": "同じドメインを使用しているサイトに上書きします"
+    }
+  },
+  "step3": {
+    "title": "移行 #{{id}}",
+    "cancel": "キャンセル",
+    "newMigration": "+ 新しい移行",
+    "nowMigrating": "移行中",
+    "preparing": "準備中...",
+    "eta": "推定残り時間",
+    "stats": {
+      "total": "合計",
+      "completed": "完了",
+      "failed": "失敗",
+      "elapsed": "経過時間"
+    },
+    "progress": "{{done}} / {{total}} 完了",
+    "columns": {
+      "status": "状態",
+      "files": "ファイル",
+      "db": "DB",
+      "dns": "DNS",
+      "note": "備考"
+    },
+    "waitingForLog": "ログを待機しています..."
+  },
+  "status": {
+    "pending": "待機中",
+    "discovery": "検出中",
+    "running": "移行中",
+    "done": "完了",
+    "failed": "失敗",
+    "skipped": "スキップ",
+    "cancelled": "キャンセル済み",
+    "interrupted": "中断"
+  },
+  "duration": {
+    "minutesSeconds": "{{m}} 分 {{s}} 秒",
+    "seconds": "{{s}} 秒"
+  },
+  "history": {
+    "title": "過去の移行",
+    "columns": {
+      "source": "移行元",
+      "panel": "パネル",
+      "status": "状態",
+      "result": "結果",
+      "startedBy": "実行者"
+    },
+    "failedSuffix": "{{n}} 件失敗"
+  },
+  "errors": {
+    "testFailed": "接続テストに失敗しました",
+    "discoveryFailed": "検出に失敗しました",
+    "noSitesFound": "移行元サーバーに移行できるサイトが見つかりませんでした。",
+    "selectAtLeastOne": "サイトを 1 つ以上選択してください。",
+    "startFailed": "移行を開始できませんでした",
+    "cancelFailed": "処理をキャンセルできませんでした"
+  }
+}

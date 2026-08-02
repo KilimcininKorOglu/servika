@@ -1,0 +1,151 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "siteMigration": "Migração de sites"
+  },
+  "title": "Migração de sites",
+  "subtitle": "Transfira sites de um servidor cPanel, Plesk ou DirectAdmin para este painel em três etapas, junto com arquivos, bancos de dados, DNS e SSL. A tarefa roda em segundo plano, você pode fechar esta página.",
+  "common": {
+    "back": "Voltar"
+  },
+  "steps": {
+    "source": "Dados do servidor",
+    "sitesAndSettings": "Sites e configurações",
+    "migration": "Migração"
+  },
+  "panels": {
+    "plesk": "Plesk",
+    "cpanel": "cPanel",
+    "directadmin": "DirectAdmin"
+  },
+  "step1": {
+    "title": "Dados do servidor de origem",
+    "description": "Dados SSH do servidor que hospeda os sites. As credenciais são armazenadas criptografadas e apagadas quando a tarefa termina.",
+    "panel": "Painel de controle",
+    "host": "Endereço do servidor (IP ou nome de host)",
+    "hostPlaceholder": "1.2.3.4 ou servidor.exemplo.com",
+    "port": "Porta SSH",
+    "user": "Usuário SSH",
+    "auth": "Autenticação",
+    "authPassword": "Senha",
+    "authKey": "Chave SSH",
+    "password": "Senha",
+    "privateKey": "Chave privada SSH",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "credentialNote": "As credenciais são armazenadas com criptografia AES e apagadas automaticamente ao fim da migração.",
+    "testOk": "Conexão bem-sucedida — {{server}} · painel detectado: {{panel}}",
+    "unknownServer": "servidor",
+    "unknownPanel": "desconhecido",
+    "panelMismatch": "(não corresponde ao painel selecionado)",
+    "testing": "Testando...",
+    "testButton": "Testar a conexão",
+    "discovering": "Procurando sites...",
+    "discoverButton": "Detectar sites"
+  },
+  "step2": {
+    "title": "Sites a migrar",
+    "foundCount": "{{n}} site(s) encontrado(s) · {{selected}} selecionado(s)",
+    "selectAll": "Selecionar tudo",
+    "clear": "Limpar",
+    "columns": {
+      "select": "Seleção",
+      "domain": "Domínio",
+      "sourceAccount": "Conta de origem",
+      "php": "PHP",
+      "size": "Tamanho",
+      "databases": "Bancos de dados",
+      "state": "Estado"
+    },
+    "alreadyExists": "Já existe no painel",
+    "new": "Novo",
+    "settingsTitle": "Propriedade e configurações de migração",
+    "settingsDescription": "Escolha o que será migrado, qual plano se aplica e quem é o dono do resultado.",
+    "targetPHP": "PHP de destino",
+    "sameAsSource": "Igual à origem",
+    "plan": "Plano de hospedagem",
+    "noPlan": "Sem plano (sem limites)",
+    "customer": "Cliente",
+    "noCustomer": "Nenhum",
+    "overwriteWarning": "Atenção: \"Sobrescrever o site existente\" está ativo. Os arquivos e bancos de dados de qualquer site com o mesmo domínio serão sobrescritos. Faça um backup antes.",
+    "startButton": "Iniciar a migração ({{n}} site(s))"
+  },
+  "toggles": {
+    "files": {
+      "label": "Arquivos",
+      "hint": "A raiz web é copiada com rsync"
+    },
+    "databases": {
+      "label": "Bancos de dados",
+      "hint": "Um dump é criado, importado, e a configuração do site é atualizada"
+    },
+    "dns": {
+      "label": "Registros DNS",
+      "hint": "A zona de origem é lida e os registros A apontados para cá"
+    },
+    "ssl": {
+      "label": "Certificado SSL",
+      "hint": "O Let's Encrypt é tentado"
+    },
+    "overwrite": {
+      "label": "Sobrescrever o site existente",
+      "hint": "Grava por cima de um site que já usa o mesmo domínio"
+    }
+  },
+  "step3": {
+    "title": "Migração #{{id}}",
+    "cancel": "Cancelar",
+    "newMigration": "+ Nova migração",
+    "nowMigrating": "Migrando agora",
+    "preparing": "preparando...",
+    "eta": "Tempo restante estimado",
+    "stats": {
+      "total": "Total",
+      "completed": "Concluídos",
+      "failed": "Com erro",
+      "elapsed": "Tempo decorrido"
+    },
+    "progress": "{{done}} / {{total}} concluídos",
+    "columns": {
+      "status": "Status",
+      "files": "Arquivos",
+      "db": "BD",
+      "dns": "DNS",
+      "note": "Observação"
+    },
+    "waitingForLog": "Aguardando o log..."
+  },
+  "status": {
+    "pending": "Pendente",
+    "discovery": "Detectando",
+    "running": "Migrando",
+    "done": "Concluído",
+    "failed": "Falhou",
+    "skipped": "Ignorado",
+    "cancelled": "Cancelado",
+    "interrupted": "Interrompido"
+  },
+  "duration": {
+    "minutesSeconds": "{{m}} min {{s}} s",
+    "seconds": "{{s}} s"
+  },
+  "history": {
+    "title": "Migrações anteriores",
+    "columns": {
+      "source": "Origem",
+      "panel": "Painel",
+      "status": "Status",
+      "result": "Resultado",
+      "startedBy": "Iniciada por"
+    },
+    "failedSuffix": "{{n}} com erro"
+  },
+  "errors": {
+    "testFailed": "O teste de conexão falhou",
+    "discoveryFailed": "A detecção falhou",
+    "noSitesFound": "Nenhum site migrável foi encontrado no servidor de origem.",
+    "selectAtLeastOne": "Selecione pelo menos um site.",
+    "startFailed": "Não foi possível iniciar a migração",
+    "cancelFailed": "Não foi possível cancelar a tarefa"
+  }
+}

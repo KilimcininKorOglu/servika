@@ -17,6 +17,7 @@
     "servicePlans": "Piani di servizio",
     "customers": "Clienti",
     "accountTransfer": "Trasferimento account",
+    "siteMigration": "Migrazione siti",
     "dns": "Gestione DNS",
     "ssl": "Certificati SSL",
     "mail": "Account email",

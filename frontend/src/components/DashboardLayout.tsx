@@ -46,6 +46,7 @@ const NAV: NavGroup[] = [
     { to: '/service-plans',     labelKey: 'servicePlans',  icon: ICONS.plan },
     { to: '/customers',         labelKey: 'customers',      icon: ICONS.customer },
     { to: '/account-transfer',  labelKey: 'accountTransfer', icon: ICONS.transfer },
+    { to: '/site-migration',    labelKey: 'siteMigration',   icon: ICONS.transfer },
   ]},
   { titleKey: 'serverOverview', items: [
     { to: '/dns',              labelKey: 'dns',   icon: ICONS.domain },

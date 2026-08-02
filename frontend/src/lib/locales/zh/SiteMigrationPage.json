@@ -1,0 +1,151 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "siteMigration": "站点迁移"
+  },
+  "title": "站点迁移",
+  "subtitle": "通过三个步骤，将 cPanel、Plesk 或 DirectAdmin 服务器上的站点连同文件、数据库、DNS 和 SSL 一起迁移到本面板。任务在后台运行，可以关闭本页面。",
+  "common": {
+    "back": "返回"
+  },
+  "steps": {
+    "source": "服务器信息",
+    "sitesAndSettings": "站点与设置",
+    "migration": "迁移"
+  },
+  "panels": {
+    "plesk": "Plesk",
+    "cpanel": "cPanel",
+    "directadmin": "DirectAdmin"
+  },
+  "step1": {
+    "title": "源服务器信息",
+    "description": "存放站点的服务器的 SSH 信息。凭据以加密方式保存，任务结束后即被删除。",
+    "panel": "控制面板",
+    "host": "服务器地址（IP 或主机名）",
+    "hostPlaceholder": "1.2.3.4 或 server.example.com",
+    "port": "SSH 端口",
+    "user": "SSH 用户",
+    "auth": "身份验证",
+    "authPassword": "密码",
+    "authKey": "SSH 密钥",
+    "password": "密码",
+    "privateKey": "SSH 私钥",
+    "show": "显示",
+    "hide": "隐藏",
+    "credentialNote": "凭据以 AES 加密保存，迁移结束后自动删除。",
+    "testOk": "连接成功 — {{server}} · 检测到的面板：{{panel}}",
+    "unknownServer": "服务器",
+    "unknownPanel": "未知",
+    "panelMismatch": "（与所选面板不一致）",
+    "testing": "正在测试...",
+    "testButton": "测试连接",
+    "discovering": "正在扫描站点...",
+    "discoverButton": "发现站点"
+  },
+  "step2": {
+    "title": "待迁移站点",
+    "foundCount": "找到 {{n}} 个站点 · 已选 {{selected}} 个",
+    "selectAll": "全选",
+    "clear": "清除",
+    "columns": {
+      "select": "选择",
+      "domain": "域名",
+      "sourceAccount": "源账户",
+      "php": "PHP",
+      "size": "大小",
+      "databases": "数据库",
+      "state": "状态"
+    },
+    "alreadyExists": "面板中已存在",
+    "new": "新增",
+    "settingsTitle": "归属与迁移设置",
+    "settingsDescription": "选择迁移的内容、适用的套餐以及结果的归属。",
+    "targetPHP": "目标 PHP",
+    "sameAsSource": "与源一致",
+    "plan": "主机套餐",
+    "noPlan": "无套餐（无限制）",
+    "customer": "客户",
+    "noCustomer": "无",
+    "overwriteWarning": "注意：“覆盖现有站点”已开启。相同域名站点的文件和数据库将被覆盖。请先备份。",
+    "startButton": "开始迁移（{{n}} 个站点）"
+  },
+  "toggles": {
+    "files": {
+      "label": "文件",
+      "hint": "使用 rsync 复制网站根目录"
+    },
+    "databases": {
+      "label": "数据库",
+      "hint": "导出、导入数据，并更新站点配置"
+    },
+    "dns": {
+      "label": "DNS 记录",
+      "hint": "读取源区域文件，并将 A 记录指向本服务器"
+    },
+    "ssl": {
+      "label": "SSL 证书",
+      "hint": "尝试申请 Let's Encrypt"
+    },
+    "overwrite": {
+      "label": "覆盖现有站点",
+      "hint": "覆盖已经使用相同域名的站点"
+    }
+  },
+  "step3": {
+    "title": "迁移 #{{id}}",
+    "cancel": "取消",
+    "newMigration": "+ 新建迁移",
+    "nowMigrating": "正在迁移",
+    "preparing": "正在准备...",
+    "eta": "预计剩余时间",
+    "stats": {
+      "total": "总计",
+      "completed": "已完成",
+      "failed": "失败",
+      "elapsed": "已用时间"
+    },
+    "progress": "已完成 {{done}} / {{total}}",
+    "columns": {
+      "status": "状态",
+      "files": "文件",
+      "db": "数据库",
+      "dns": "DNS",
+      "note": "备注"
+    },
+    "waitingForLog": "正在等待日志..."
+  },
+  "status": {
+    "pending": "等待中",
+    "discovery": "发现中",
+    "running": "迁移中",
+    "done": "已完成",
+    "failed": "失败",
+    "skipped": "已跳过",
+    "cancelled": "已取消",
+    "interrupted": "已中断"
+  },
+  "duration": {
+    "minutesSeconds": "{{m}} 分 {{s}} 秒",
+    "seconds": "{{s}} 秒"
+  },
+  "history": {
+    "title": "历史迁移",
+    "columns": {
+      "source": "源",
+      "panel": "面板",
+      "status": "状态",
+      "result": "结果",
+      "startedBy": "发起人"
+    },
+    "failedSuffix": "{{n}} 个失败"
+  },
+  "errors": {
+    "testFailed": "连接测试失败",
+    "discoveryFailed": "发现失败",
+    "noSitesFound": "在源服务器上没有找到可迁移的站点。",
+    "selectAtLeastOne": "请至少选择一个站点。",
+    "startFailed": "无法开始迁移",
+    "cancelFailed": "无法取消任务"
+  }
+}

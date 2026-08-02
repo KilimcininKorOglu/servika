@@ -17,6 +17,7 @@
     "servicePlans": "サービスプラン",
     "customers": "顧客",
     "accountTransfer": "アカウント移行",
+    "siteMigration": "サイト移行",
     "dns": "DNS 管理",
     "ssl": "SSL 証明書",
     "mail": "メールアカウント",

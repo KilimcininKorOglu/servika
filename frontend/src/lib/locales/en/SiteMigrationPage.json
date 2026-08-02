@@ -1,0 +1,151 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "siteMigration": "Site Migration"
+  },
+  "title": "Site Migration",
+  "subtitle": "Move sites from a cPanel, Plesk or DirectAdmin server to this panel in three steps, together with their files, databases, DNS and SSL. The job runs in the background, so you can close this page.",
+  "common": {
+    "back": "Back"
+  },
+  "steps": {
+    "source": "Server details",
+    "sitesAndSettings": "Sites and settings",
+    "migration": "Migration"
+  },
+  "panels": {
+    "plesk": "Plesk",
+    "cpanel": "cPanel",
+    "directadmin": "DirectAdmin"
+  },
+  "step1": {
+    "title": "Source server details",
+    "description": "SSH details of the server that holds the sites. The credentials are stored encrypted and are deleted once the job finishes.",
+    "panel": "Control panel",
+    "host": "Server address (IP or host name)",
+    "hostPlaceholder": "1.2.3.4 or server.example.com",
+    "port": "SSH port",
+    "user": "SSH user",
+    "auth": "Authentication",
+    "authPassword": "Password",
+    "authKey": "SSH key",
+    "password": "Password",
+    "privateKey": "SSH private key",
+    "show": "Show",
+    "hide": "Hide",
+    "credentialNote": "Credentials are stored with AES encryption and deleted automatically when the migration ends.",
+    "testOk": "Connection successful — {{server}} · detected panel: {{panel}}",
+    "unknownServer": "server",
+    "unknownPanel": "unknown",
+    "panelMismatch": "(this does not match the panel you selected)",
+    "testing": "Testing...",
+    "testButton": "Test the connection",
+    "discovering": "Scanning sites...",
+    "discoverButton": "Discover sites"
+  },
+  "step2": {
+    "title": "Sites to migrate",
+    "foundCount": "{{n}} site(s) found · {{selected}} selected",
+    "selectAll": "Select all",
+    "clear": "Clear",
+    "columns": {
+      "select": "Select",
+      "domain": "Domain",
+      "sourceAccount": "Source account",
+      "php": "PHP",
+      "size": "Size",
+      "databases": "Databases",
+      "state": "State"
+    },
+    "alreadyExists": "Already on the panel",
+    "new": "New",
+    "settingsTitle": "Ownership and migration settings",
+    "settingsDescription": "Choose what is migrated, which plan applies and who owns the result.",
+    "targetPHP": "Target PHP",
+    "sameAsSource": "Same as the source",
+    "plan": "Hosting plan",
+    "noPlan": "No plan (no limits)",
+    "customer": "Customer",
+    "noCustomer": "None",
+    "overwriteWarning": "Caution: \"Overwrite the existing site\" is on. The files and databases of any site with the same domain will be written over. Take a backup first.",
+    "startButton": "Start the migration ({{n}} site(s))"
+  },
+  "toggles": {
+    "files": {
+      "label": "Files",
+      "hint": "The web root is copied with rsync"
+    },
+    "databases": {
+      "label": "Databases",
+      "hint": "A dump is taken, imported, and the site configuration is updated"
+    },
+    "dns": {
+      "label": "DNS records",
+      "hint": "The source zone is read and the A records are pointed here"
+    },
+    "ssl": {
+      "label": "SSL certificate",
+      "hint": "Let's Encrypt is attempted"
+    },
+    "overwrite": {
+      "label": "Overwrite the existing site",
+      "hint": "Writes over a site that already uses the same domain"
+    }
+  },
+  "step3": {
+    "title": "Migration #{{id}}",
+    "cancel": "Cancel",
+    "newMigration": "+ New migration",
+    "nowMigrating": "Migrating now",
+    "preparing": "preparing...",
+    "eta": "Estimated remaining",
+    "stats": {
+      "total": "Total",
+      "completed": "Completed",
+      "failed": "Failed",
+      "elapsed": "Elapsed"
+    },
+    "progress": "{{done}} / {{total}} completed",
+    "columns": {
+      "status": "Status",
+      "files": "Files",
+      "db": "DB",
+      "dns": "DNS",
+      "note": "Note"
+    },
+    "waitingForLog": "Waiting for log output..."
+  },
+  "status": {
+    "pending": "Pending",
+    "discovery": "Discovering",
+    "running": "Migrating",
+    "done": "Completed",
+    "failed": "Failed",
+    "skipped": "Skipped",
+    "cancelled": "Cancelled",
+    "interrupted": "Interrupted"
+  },
+  "duration": {
+    "minutesSeconds": "{{m}} min {{s}} s",
+    "seconds": "{{s}} s"
+  },
+  "history": {
+    "title": "Past migrations",
+    "columns": {
+      "source": "Source",
+      "panel": "Panel",
+      "status": "Status",
+      "result": "Result",
+      "startedBy": "Started by"
+    },
+    "failedSuffix": "{{n}} failed"
+  },
+  "errors": {
+    "testFailed": "The connection test failed",
+    "discoveryFailed": "Discovery failed",
+    "noSitesFound": "No migratable site was found on the source server.",
+    "selectAtLeastOne": "Select at least one site.",
+    "startFailed": "The migration could not be started",
+    "cancelFailed": "The job could not be cancelled"
+  }
+}

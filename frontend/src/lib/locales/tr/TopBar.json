@@ -25,6 +25,7 @@
     "serverStatus": { "title": "Sunucu Durumu", "subtitle": "Kaynak ve servis özeti" },
     "profile": { "title": "Profil ve Tercihler", "subtitle": "Hesap ve güvenlik ayarları" },
     "accountTransfer": { "title": "Hesap Aktarımı", "subtitle": "Hesap ve site göçü" },
+    "siteMigration": { "title": "Site Taşıma", "subtitle": "cPanel, Plesk veya DirectAdmin taşıma" },
     "toolsSettings": { "title": "Araçlar ve Ayarlar", "subtitle": "Panel araçları" },
     "optimize": { "title": "Sunucu Optimize", "subtitle": "Sunucu ayarlama" },
     "statistics": { "title": "İstatistikler", "subtitle": "Kullanım istatistikleri" },

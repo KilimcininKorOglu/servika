@@ -219,6 +219,9 @@ func main() {
 	addonH := &addondomains.Handlers{DB: d, IPv4: ipv4}
 	mailH := &mail.Handlers{DB: d}
 	transfersH := &transfers.Handlers{DB: d, Domains: domainsH, Mail: mailH, Cron: cronH}
+	// A migration job cannot survive a restart, so close the leftovers and wipe
+	// the source credentials they still hold.
+	transfersH.HealMigrationsOnStartup()
 	sshaccess.EnsureInfra()
 	mail.EnsureInfra()
 	phpExtH := &phpext.Handlers{DB: d}
@@ -602,6 +605,15 @@ func main() {
 				r.With(middleware.ResellerOrAbove).Post("/admin/backups/restore", backupsH.StartRestoreJob)
 				r.With(middleware.AdminOnly).Post("/admin/transfers/analyze", transfersH.Analyze)
 				r.With(middleware.AdminOnly).Post("/admin/transfers/import", transfersH.Import)
+				// Live site migration from cPanel / Plesk / DirectAdmin. Admin only:
+				// it provisions system accounts and writes into any tenant tree.
+				r.With(middleware.AdminOnly).Post("/admin/migrations/test", transfersH.MigrationTest)
+				r.With(middleware.AdminOnly).Post("/admin/migrations/discover", transfersH.MigrationDiscover)
+				r.With(middleware.AdminOnly).Post("/admin/migrations", transfersH.MigrationStart)
+				r.With(middleware.AdminOnly).Get("/admin/migrations", transfersH.MigrationList)
+				r.With(middleware.AdminOnly).Get("/admin/migrations/{id}", transfersH.MigrationDetail)
+				r.With(middleware.AdminOnly).Get("/admin/migrations/{id}/log", transfersH.MigrationLog)
+				r.With(middleware.AdminOnly).Post("/admin/migrations/{id}/cancel", transfersH.MigrationCancel)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/backup-destination", backupsH.GetDestination)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/backup-destination", backupsH.PutDestination)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/backup-destination", backupsH.DeleteDestination)

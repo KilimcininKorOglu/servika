@@ -25,6 +25,7 @@
     "serverStatus": { "title": "服务器状态", "subtitle": "资源和服务摘要" },
     "profile": { "title": "资料与偏好", "subtitle": "账户和安全设置" },
     "accountTransfer": { "title": "账户迁移", "subtitle": "账户和站点迁移" },
+    "siteMigration": { "title": "站点迁移", "subtitle": "从 cPanel、Plesk 或 DirectAdmin 迁移" },
     "toolsSettings": { "title": "工具与设置", "subtitle": "面板工具" },
     "optimize": { "title": "服务器优化", "subtitle": "服务器调优" },
     "statistics": { "title": "统计", "subtitle": "使用统计" },

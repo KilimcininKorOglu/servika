@@ -25,6 +25,7 @@
     "serverStatus": { "title": "サーバーステータス", "subtitle": "リソースとサービスの概要" },
     "profile": { "title": "プロフィールと設定", "subtitle": "アカウントとセキュリティの設定" },
     "accountTransfer": { "title": "アカウント移行", "subtitle": "アカウントとサイトの移行" },
+    "siteMigration": { "title": "サイト移行", "subtitle": "cPanel、Plesk、DirectAdmin からの移行" },
     "toolsSettings": { "title": "ツールと設定", "subtitle": "パネルツール" },
     "optimize": { "title": "サーバー最適化", "subtitle": "サーバーチューニング" },
     "statistics": { "title": "統計", "subtitle": "使用統計" },

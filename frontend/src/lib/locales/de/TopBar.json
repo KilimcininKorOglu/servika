@@ -25,6 +25,7 @@
     "serverStatus": { "title": "Serverstatus", "subtitle": "Ressourcen- und Dienstzusammenfassung" },
     "profile": { "title": "Profil und Einstellungen", "subtitle": "Konto- und Sicherheitseinstellungen" },
     "accountTransfer": { "title": "Kontoübertragung", "subtitle": "Konto- und Website-Migration" },
+    "siteMigration": { "title": "Website-Migration", "subtitle": "Migration von cPanel, Plesk oder DirectAdmin" },
     "toolsSettings": { "title": "Tools und Einstellungen", "subtitle": "Panel-Tools" },
     "optimize": { "title": "Server optimieren", "subtitle": "Server-Abstimmung" },
     "statistics": { "title": "Statistiken", "subtitle": "Nutzungsstatistiken" },

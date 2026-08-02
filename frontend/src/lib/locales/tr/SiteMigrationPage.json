@@ -1,0 +1,151 @@
+{
+  "breadcrumb": {
+    "home": "Anasayfa",
+    "siteMigration": "Site Taşıma"
+  },
+  "title": "Site Taşıma",
+  "subtitle": "cPanel, Plesk veya DirectAdmin sunucusundaki siteleri dosyaları, veritabanları, DNS ve SSL ile birlikte üç adımda bu panele taşıyın. İşlem arka planda çalışır, bu sayfayı kapatabilirsiniz.",
+  "common": {
+    "back": "Geri"
+  },
+  "steps": {
+    "source": "Sunucu bilgileri",
+    "sitesAndSettings": "Siteler ve ayarlar",
+    "migration": "Taşıma"
+  },
+  "panels": {
+    "plesk": "Plesk",
+    "cpanel": "cPanel",
+    "directadmin": "DirectAdmin"
+  },
+  "step1": {
+    "title": "Kaynak sunucu bilgileri",
+    "description": "Taşınacak sitelerin bulunduğu sunucunun SSH bilgileri. Kimlik bilgileri şifreli saklanır ve iş bitince silinir.",
+    "panel": "Kontrol paneli",
+    "host": "Sunucu adresi (IP veya host adı)",
+    "hostPlaceholder": "1.2.3.4 veya sunucu.alanadi.com",
+    "port": "SSH portu",
+    "user": "SSH kullanıcısı",
+    "auth": "Kimlik doğrulama",
+    "authPassword": "Parola",
+    "authKey": "SSH anahtarı",
+    "password": "Parola",
+    "privateKey": "SSH özel anahtarı",
+    "show": "Göster",
+    "hide": "Gizle",
+    "credentialNote": "Kimlik bilgileri AES ile şifreli saklanır ve taşıma bitince otomatik silinir.",
+    "testOk": "Bağlantı başarılı — {{server}} · tespit edilen panel: {{panel}}",
+    "unknownServer": "sunucu",
+    "unknownPanel": "bilinmiyor",
+    "panelMismatch": "(seçtiğiniz panel ile uyuşmuyor)",
+    "testing": "Test ediliyor...",
+    "testButton": "Bağlantıyı test et",
+    "discovering": "Siteler taranıyor...",
+    "discoverButton": "Siteleri keşfet"
+  },
+  "step2": {
+    "title": "Taşınacak siteler",
+    "foundCount": "{{n}} site bulundu · {{selected}} seçili",
+    "selectAll": "Tümünü seç",
+    "clear": "Temizle",
+    "columns": {
+      "select": "Seç",
+      "domain": "Alan adı",
+      "sourceAccount": "Kaynak hesap",
+      "php": "PHP",
+      "size": "Boyut",
+      "databases": "Veritabanları",
+      "state": "Durum"
+    },
+    "alreadyExists": "Panelde var",
+    "new": "Yeni",
+    "settingsTitle": "Sahiplik ve taşıma ayarları",
+    "settingsDescription": "Neyin taşınacağını, hangi planın uygulanacağını ve sonucun kime ait olacağını seçin.",
+    "targetPHP": "Hedef PHP",
+    "sameAsSource": "Kaynaktakiyle aynı",
+    "plan": "Hosting planı",
+    "noPlan": "Plansız (limit yok)",
+    "customer": "Müşteri",
+    "noCustomer": "Yok",
+    "overwriteWarning": "Dikkat: \"Mevcut siteyi ez\" açık. Aynı alan adına sahip sitelerin dosya ve veritabanlarının üzerine yazılır. Önce yedek alın.",
+    "startButton": "Taşımayı başlat ({{n}} site)"
+  },
+  "toggles": {
+    "files": {
+      "label": "Dosyalar",
+      "hint": "Web kök dizini rsync ile kopyalanır"
+    },
+    "databases": {
+      "label": "Veritabanları",
+      "hint": "Dump alınır, aktarılır ve site yapılandırması güncellenir"
+    },
+    "dns": {
+      "label": "DNS kayıtları",
+      "hint": "Kaynak zone okunur ve A kayıtları buraya yönlendirilir"
+    },
+    "ssl": {
+      "label": "SSL sertifikası",
+      "hint": "Let's Encrypt denenir"
+    },
+    "overwrite": {
+      "label": "Mevcut siteyi ez",
+      "hint": "Aynı alan adını kullanan bir sitenin üzerine yazar"
+    }
+  },
+  "step3": {
+    "title": "Taşıma #{{id}}",
+    "cancel": "İptal et",
+    "newMigration": "+ Yeni taşıma",
+    "nowMigrating": "Şu an taşınıyor",
+    "preparing": "hazırlanıyor...",
+    "eta": "Tahmini kalan",
+    "stats": {
+      "total": "Toplam",
+      "completed": "Tamamlanan",
+      "failed": "Hatalı",
+      "elapsed": "Geçen süre"
+    },
+    "progress": "{{done}} / {{total}} tamamlandı",
+    "columns": {
+      "status": "Durum",
+      "files": "Dosya",
+      "db": "DB",
+      "dns": "DNS",
+      "note": "Not"
+    },
+    "waitingForLog": "Kayıt bekleniyor..."
+  },
+  "status": {
+    "pending": "Bekliyor",
+    "discovery": "Keşfediliyor",
+    "running": "Taşınıyor",
+    "done": "Tamamlandı",
+    "failed": "Hata",
+    "skipped": "Atlandı",
+    "cancelled": "İptal edildi",
+    "interrupted": "Kesildi"
+  },
+  "duration": {
+    "minutesSeconds": "{{m}} dk {{s}} sn",
+    "seconds": "{{s}} sn"
+  },
+  "history": {
+    "title": "Geçmiş taşımalar",
+    "columns": {
+      "source": "Kaynak",
+      "panel": "Panel",
+      "status": "Durum",
+      "result": "Sonuç",
+      "startedBy": "Başlatan"
+    },
+    "failedSuffix": "{{n}} hata"
+  },
+  "errors": {
+    "testFailed": "Bağlantı testi başarısız",
+    "discoveryFailed": "Keşif başarısız",
+    "noSitesFound": "Kaynak sunucuda taşınabilir site bulunamadı.",
+    "selectAtLeastOne": "En az bir site seçin.",
+    "startFailed": "Taşıma başlatılamadı",
+    "cancelFailed": "İş iptal edilemedi"
+  }
+}

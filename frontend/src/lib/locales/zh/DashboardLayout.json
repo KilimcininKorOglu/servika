@@ -17,6 +17,7 @@
     "servicePlans": "服务套餐",
     "customers": "客户",
     "accountTransfer": "账户迁移",
+    "siteMigration": "站点迁移",
     "dns": "DNS 管理",
     "ssl": "SSL 证书",
     "mail": "电子邮件账户",

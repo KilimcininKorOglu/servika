@@ -25,6 +25,7 @@
     "serverStatus": { "title": "Server Status", "subtitle": "Resource and service summary" },
     "profile": { "title": "Profile and Preferences", "subtitle": "Account and security settings" },
     "accountTransfer": { "title": "Account Transfer", "subtitle": "Account and site migration" },
+    "siteMigration": { "title": "Site Migration", "subtitle": "Migration from cPanel, Plesk or DirectAdmin" },
     "toolsSettings": { "title": "Tools and Settings", "subtitle": "Panel tools" },
     "optimize": { "title": "Server Optimize", "subtitle": "Server tuning" },
     "statistics": { "title": "Statistics", "subtitle": "Usage statistics" },

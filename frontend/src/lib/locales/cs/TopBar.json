@@ -25,6 +25,7 @@
     "serverStatus": { "title": "Stav serveru", "subtitle": "Souhrn zdrojů a služeb" },
     "profile": { "title": "Profil a předvolby", "subtitle": "Nastavení účtu a zabezpečení" },
     "accountTransfer": { "title": "Přenos účtu", "subtitle": "Migrace účtu a webu" },
+    "siteMigration": { "title": "Migrace webů", "subtitle": "Migrace z cPanelu, Plesku nebo DirectAdminu" },
     "toolsSettings": { "title": "Nástroje a nastavení", "subtitle": "Nástroje panelu" },
     "optimize": { "title": "Optimalizace serveru", "subtitle": "Ladění serveru" },
     "statistics": { "title": "Statistiky", "subtitle": "Statistiky využití" },

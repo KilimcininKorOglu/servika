@@ -1,0 +1,151 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "siteMigration": "Migrace webů"
+  },
+  "title": "Migrace webů",
+  "subtitle": "Přeneste weby ze serveru cPanel, Plesk nebo DirectAdmin do tohoto panelu ve třech krocích, včetně souborů, databází, DNS a SSL. Úloha běží na pozadí, tuto stránku můžete zavřít.",
+  "common": {
+    "back": "Zpět"
+  },
+  "steps": {
+    "source": "Údaje o serveru",
+    "sitesAndSettings": "Weby a nastavení",
+    "migration": "Migrace"
+  },
+  "panels": {
+    "plesk": "Plesk",
+    "cpanel": "cPanel",
+    "directadmin": "DirectAdmin"
+  },
+  "step1": {
+    "title": "Údaje zdrojového serveru",
+    "description": "SSH údaje serveru, na kterém weby běží. Přihlašovací údaje se ukládají šifrovaně a po dokončení úlohy se smažou.",
+    "panel": "Ovládací panel",
+    "host": "Adresa serveru (IP nebo název hostitele)",
+    "hostPlaceholder": "1.2.3.4 nebo server.example.com",
+    "port": "Port SSH",
+    "user": "Uživatel SSH",
+    "auth": "Ověření",
+    "authPassword": "Heslo",
+    "authKey": "Klíč SSH",
+    "password": "Heslo",
+    "privateKey": "Soukromý klíč SSH",
+    "show": "Zobrazit",
+    "hide": "Skrýt",
+    "credentialNote": "Přihlašovací údaje se ukládají se šifrováním AES a po skončení migrace se automaticky smažou.",
+    "testOk": "Připojení proběhlo úspěšně — {{server}} · zjištěný panel: {{panel}}",
+    "unknownServer": "server",
+    "unknownPanel": "neznámý",
+    "panelMismatch": "(neodpovídá vybranému panelu)",
+    "testing": "Probíhá test...",
+    "testButton": "Otestovat připojení",
+    "discovering": "Probíhá hledání webů...",
+    "discoverButton": "Najít weby"
+  },
+  "step2": {
+    "title": "Weby k migraci",
+    "foundCount": "Nalezeno webů: {{n}} · vybráno: {{selected}}",
+    "selectAll": "Vybrat vše",
+    "clear": "Zrušit výběr",
+    "columns": {
+      "select": "Výběr",
+      "domain": "Doména",
+      "sourceAccount": "Zdrojový účet",
+      "php": "PHP",
+      "size": "Velikost",
+      "databases": "Databáze",
+      "state": "Stav"
+    },
+    "alreadyExists": "Již v panelu",
+    "new": "Nový",
+    "settingsTitle": "Vlastnictví a nastavení migrace",
+    "settingsDescription": "Vyberte, co se migruje, jaký tarif platí a komu výsledek patří.",
+    "targetPHP": "Cílové PHP",
+    "sameAsSource": "Stejné jako ve zdroji",
+    "plan": "Hostingový tarif",
+    "noPlan": "Bez tarifu (bez limitů)",
+    "customer": "Zákazník",
+    "noCustomer": "Žádný",
+    "overwriteWarning": "Pozor: možnost „Přepsat existující web“ je zapnutá. Soubory a databáze každého webu se stejnou doménou budou přepsány. Nejprve vytvořte zálohu.",
+    "startButton": "Spustit migraci (počet webů: {{n}})"
+  },
+  "toggles": {
+    "files": {
+      "label": "Soubory",
+      "hint": "Kořen webu se kopíruje pomocí rsync"
+    },
+    "databases": {
+      "label": "Databáze",
+      "hint": "Vytvoří se výpis, naimportuje se a aktualizuje se konfigurace webu"
+    },
+    "dns": {
+      "label": "Záznamy DNS",
+      "hint": "Zdrojová zóna se načte a záznamy A se nasměrují sem"
+    },
+    "ssl": {
+      "label": "Certifikát SSL",
+      "hint": "Zkusí se Let's Encrypt"
+    },
+    "overwrite": {
+      "label": "Přepsat existující web",
+      "hint": "Přepíše web, který již používá stejnou doménu"
+    }
+  },
+  "step3": {
+    "title": "Migrace č. {{id}}",
+    "cancel": "Zrušit",
+    "newMigration": "+ Nová migrace",
+    "nowMigrating": "Právě se migruje",
+    "preparing": "probíhá příprava...",
+    "eta": "Odhadovaný zbývající čas",
+    "stats": {
+      "total": "Celkem",
+      "completed": "Dokončeno",
+      "failed": "Chyby",
+      "elapsed": "Uplynulý čas"
+    },
+    "progress": "Dokončeno: {{done}} / {{total}}",
+    "columns": {
+      "status": "Stav",
+      "files": "Soubory",
+      "db": "DB",
+      "dns": "DNS",
+      "note": "Poznámka"
+    },
+    "waitingForLog": "Čeká se na protokol..."
+  },
+  "status": {
+    "pending": "Čeká",
+    "discovery": "Probíhá hledání",
+    "running": "Probíhá migrace",
+    "done": "Dokončeno",
+    "failed": "Selhalo",
+    "skipped": "Přeskočeno",
+    "cancelled": "Zrušeno",
+    "interrupted": "Přerušeno"
+  },
+  "duration": {
+    "minutesSeconds": "{{m}} min {{s}} s",
+    "seconds": "{{s}} s"
+  },
+  "history": {
+    "title": "Předchozí migrace",
+    "columns": {
+      "source": "Zdroj",
+      "panel": "Panel",
+      "status": "Stav",
+      "result": "Výsledek",
+      "startedBy": "Spustil"
+    },
+    "failedSuffix": "chyby: {{n}}"
+  },
+  "errors": {
+    "testFailed": "Test připojení selhal",
+    "discoveryFailed": "Hledání selhalo",
+    "noSitesFound": "Na zdrojovém serveru nebyl nalezen žádný web k migraci.",
+    "selectAtLeastOne": "Vyberte alespoň jeden web.",
+    "startFailed": "Migraci se nepodařilo spustit",
+    "cancelFailed": "Úlohu se nepodařilo zrušit"
+  }
+}

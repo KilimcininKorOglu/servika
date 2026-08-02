@@ -1,0 +1,151 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "siteMigration": "Migrare site-uri"
+  },
+  "title": "Migrare site-uri",
+  "subtitle": "Transferați site-uri de pe un server cPanel, Plesk sau DirectAdmin în acest panou în trei pași, împreună cu fișierele, bazele de date, DNS-ul și SSL-ul. Sarcina rulează în fundal, puteți închide această pagină.",
+  "common": {
+    "back": "Înapoi"
+  },
+  "steps": {
+    "source": "Date server",
+    "sitesAndSettings": "Site-uri și setări",
+    "migration": "Migrare"
+  },
+  "panels": {
+    "plesk": "Plesk",
+    "cpanel": "cPanel",
+    "directadmin": "DirectAdmin"
+  },
+  "step1": {
+    "title": "Datele serverului sursă",
+    "description": "Datele SSH ale serverului care găzduiește site-urile. Datele de acces sunt stocate criptat și se șterg la finalul sarcinii.",
+    "panel": "Panou de control",
+    "host": "Adresa serverului (IP sau nume de gazdă)",
+    "hostPlaceholder": "1.2.3.4 sau server.exemplu.com",
+    "port": "Port SSH",
+    "user": "Utilizator SSH",
+    "auth": "Autentificare",
+    "authPassword": "Parolă",
+    "authKey": "Cheie SSH",
+    "password": "Parolă",
+    "privateKey": "Cheie privată SSH",
+    "show": "Arată",
+    "hide": "Ascunde",
+    "credentialNote": "Datele de acces sunt stocate cu criptare AES și se șterg automat la finalul migrării.",
+    "testOk": "Conexiune reușită — {{server}} · panou detectat: {{panel}}",
+    "unknownServer": "server",
+    "unknownPanel": "necunoscut",
+    "panelMismatch": "(nu corespunde panoului selectat)",
+    "testing": "Se testează...",
+    "testButton": "Testează conexiunea",
+    "discovering": "Se caută site-uri...",
+    "discoverButton": "Descoperă site-uri"
+  },
+  "step2": {
+    "title": "Site-uri de migrat",
+    "foundCount": "{{n}} site-uri găsite · {{selected}} selectate",
+    "selectAll": "Selectează tot",
+    "clear": "Șterge selecția",
+    "columns": {
+      "select": "Selecție",
+      "domain": "Domeniu",
+      "sourceAccount": "Cont sursă",
+      "php": "PHP",
+      "size": "Dimensiune",
+      "databases": "Baze de date",
+      "state": "Stare"
+    },
+    "alreadyExists": "Există deja în panou",
+    "new": "Nou",
+    "settingsTitle": "Proprietate și setări de migrare",
+    "settingsDescription": "Alegeți ce se migrează, ce plan se aplică și cui îi aparține rezultatul.",
+    "targetPHP": "PHP țintă",
+    "sameAsSource": "La fel ca sursa",
+    "plan": "Plan de găzduire",
+    "noPlan": "Fără plan (fără limite)",
+    "customer": "Client",
+    "noCustomer": "Niciunul",
+    "overwriteWarning": "Atenție: opțiunea „Suprascrie site-ul existent” este activă. Fișierele și bazele de date ale oricărui site cu același domeniu vor fi suprascrise. Faceți mai întâi o copie de siguranță.",
+    "startButton": "Pornește migrarea ({{n}} site-uri)"
+  },
+  "toggles": {
+    "files": {
+      "label": "Fișiere",
+      "hint": "Rădăcina web se copiază cu rsync"
+    },
+    "databases": {
+      "label": "Baze de date",
+      "hint": "Se creează o copie, se importă și se actualizează configurația site-ului"
+    },
+    "dns": {
+      "label": "Înregistrări DNS",
+      "hint": "Zona sursă este citită, iar înregistrările A sunt îndreptate aici"
+    },
+    "ssl": {
+      "label": "Certificat SSL",
+      "hint": "Se încearcă Let's Encrypt"
+    },
+    "overwrite": {
+      "label": "Suprascrie site-ul existent",
+      "hint": "Scrie peste un site care folosește deja același domeniu"
+    }
+  },
+  "step3": {
+    "title": "Migrarea #{{id}}",
+    "cancel": "Anulează",
+    "newMigration": "+ Migrare nouă",
+    "nowMigrating": "Se migrează acum",
+    "preparing": "se pregătește...",
+    "eta": "Timp rămas estimat",
+    "stats": {
+      "total": "Total",
+      "completed": "Finalizate",
+      "failed": "Eșuate",
+      "elapsed": "Timp scurs"
+    },
+    "progress": "{{done}} / {{total}} finalizate",
+    "columns": {
+      "status": "Stare",
+      "files": "Fișiere",
+      "db": "BD",
+      "dns": "DNS",
+      "note": "Notă"
+    },
+    "waitingForLog": "Se așteaptă jurnalul..."
+  },
+  "status": {
+    "pending": "În așteptare",
+    "discovery": "Se descoperă",
+    "running": "Se migrează",
+    "done": "Finalizat",
+    "failed": "Eșuat",
+    "skipped": "Omis",
+    "cancelled": "Anulat",
+    "interrupted": "Întrerupt"
+  },
+  "duration": {
+    "minutesSeconds": "{{m}} min {{s}} s",
+    "seconds": "{{s}} s"
+  },
+  "history": {
+    "title": "Migrări anterioare",
+    "columns": {
+      "source": "Sursă",
+      "panel": "Panou",
+      "status": "Stare",
+      "result": "Rezultat",
+      "startedBy": "Pornită de"
+    },
+    "failedSuffix": "{{n}} eșuate"
+  },
+  "errors": {
+    "testFailed": "Testul de conexiune a eșuat",
+    "discoveryFailed": "Descoperirea a eșuat",
+    "noSitesFound": "Nu a fost găsit niciun site care poate fi migrat pe serverul sursă.",
+    "selectAtLeastOne": "Selectați cel puțin un site.",
+    "startFailed": "Migrarea nu a putut fi pornită",
+    "cancelFailed": "Sarcina nu a putut fi anulată"
+  }
+}

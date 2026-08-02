@@ -1,0 +1,151 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "siteMigration": "Website-Migration"
+  },
+  "title": "Website-Migration",
+  "subtitle": "Übertragen Sie Websites von einem cPanel-, Plesk- oder DirectAdmin-Server in drei Schritten in dieses Panel, zusammen mit Dateien, Datenbanken, DNS und SSL. Der Auftrag läuft im Hintergrund, Sie können diese Seite schließen.",
+  "common": {
+    "back": "Zurück"
+  },
+  "steps": {
+    "source": "Serverdaten",
+    "sitesAndSettings": "Websites und Einstellungen",
+    "migration": "Migration"
+  },
+  "panels": {
+    "plesk": "Plesk",
+    "cpanel": "cPanel",
+    "directadmin": "DirectAdmin"
+  },
+  "step1": {
+    "title": "Daten des Quellservers",
+    "description": "SSH-Daten des Servers mit den Websites. Die Zugangsdaten werden verschlüsselt gespeichert und nach Abschluss des Auftrags gelöscht.",
+    "panel": "Control Panel",
+    "host": "Serveradresse (IP oder Hostname)",
+    "hostPlaceholder": "1.2.3.4 oder server.example.com",
+    "port": "SSH-Port",
+    "user": "SSH-Benutzer",
+    "auth": "Authentifizierung",
+    "authPassword": "Passwort",
+    "authKey": "SSH-Schlüssel",
+    "password": "Passwort",
+    "privateKey": "Privater SSH-Schlüssel",
+    "show": "Anzeigen",
+    "hide": "Verbergen",
+    "credentialNote": "Zugangsdaten werden mit AES verschlüsselt gespeichert und nach der Migration automatisch gelöscht.",
+    "testOk": "Verbindung erfolgreich — {{server}} · erkanntes Panel: {{panel}}",
+    "unknownServer": "Server",
+    "unknownPanel": "unbekannt",
+    "panelMismatch": "(stimmt nicht mit dem gewählten Panel überein)",
+    "testing": "Wird getestet...",
+    "testButton": "Verbindung testen",
+    "discovering": "Websites werden gesucht...",
+    "discoverButton": "Websites suchen"
+  },
+  "step2": {
+    "title": "Zu migrierende Websites",
+    "foundCount": "{{n}} Website(s) gefunden · {{selected}} ausgewählt",
+    "selectAll": "Alle auswählen",
+    "clear": "Auswahl aufheben",
+    "columns": {
+      "select": "Auswahl",
+      "domain": "Domain",
+      "sourceAccount": "Quellkonto",
+      "php": "PHP",
+      "size": "Größe",
+      "databases": "Datenbanken",
+      "state": "Zustand"
+    },
+    "alreadyExists": "Bereits im Panel",
+    "new": "Neu",
+    "settingsTitle": "Eigentum und Migrationseinstellungen",
+    "settingsDescription": "Wählen Sie, was migriert wird, welcher Tarif gilt und wem das Ergebnis gehört.",
+    "targetPHP": "Ziel-PHP",
+    "sameAsSource": "Wie in der Quelle",
+    "plan": "Hosting-Tarif",
+    "noPlan": "Ohne Tarif (keine Limits)",
+    "customer": "Kunde",
+    "noCustomer": "Keiner",
+    "overwriteWarning": "Achtung: \"Bestehende Website überschreiben\" ist aktiv. Dateien und Datenbanken jeder Website mit derselben Domain werden überschrieben. Erstellen Sie zuerst eine Sicherung.",
+    "startButton": "Migration starten ({{n}} Website(s))"
+  },
+  "toggles": {
+    "files": {
+      "label": "Dateien",
+      "hint": "Das Web-Stammverzeichnis wird mit rsync kopiert"
+    },
+    "databases": {
+      "label": "Datenbanken",
+      "hint": "Ein Dump wird erstellt, importiert und die Website-Konfiguration aktualisiert"
+    },
+    "dns": {
+      "label": "DNS-Einträge",
+      "hint": "Die Quellzone wird gelesen und die A-Einträge hierher gerichtet"
+    },
+    "ssl": {
+      "label": "SSL-Zertifikat",
+      "hint": "Let's Encrypt wird versucht"
+    },
+    "overwrite": {
+      "label": "Bestehende Website überschreiben",
+      "hint": "Überschreibt eine Website, die dieselbe Domain bereits nutzt"
+    }
+  },
+  "step3": {
+    "title": "Migration #{{id}}",
+    "cancel": "Abbrechen",
+    "newMigration": "+ Neue Migration",
+    "nowMigrating": "Wird gerade migriert",
+    "preparing": "Vorbereitung...",
+    "eta": "Geschätzte Restzeit",
+    "stats": {
+      "total": "Gesamt",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "elapsed": "Verstrichen"
+    },
+    "progress": "{{done}} / {{total}} abgeschlossen",
+    "columns": {
+      "status": "Status",
+      "files": "Dateien",
+      "db": "DB",
+      "dns": "DNS",
+      "note": "Hinweis"
+    },
+    "waitingForLog": "Warten auf Protokollausgabe..."
+  },
+  "status": {
+    "pending": "Ausstehend",
+    "discovery": "Wird gesucht",
+    "running": "Wird migriert",
+    "done": "Abgeschlossen",
+    "failed": "Fehlgeschlagen",
+    "skipped": "Übersprungen",
+    "cancelled": "Abgebrochen",
+    "interrupted": "Unterbrochen"
+  },
+  "duration": {
+    "minutesSeconds": "{{m}} Min {{s}} s",
+    "seconds": "{{s}} s"
+  },
+  "history": {
+    "title": "Frühere Migrationen",
+    "columns": {
+      "source": "Quelle",
+      "panel": "Panel",
+      "status": "Status",
+      "result": "Ergebnis",
+      "startedBy": "Gestartet von"
+    },
+    "failedSuffix": "{{n}} fehlgeschlagen"
+  },
+  "errors": {
+    "testFailed": "Der Verbindungstest ist fehlgeschlagen",
+    "discoveryFailed": "Die Suche ist fehlgeschlagen",
+    "noSitesFound": "Auf dem Quellserver wurde keine migrierbare Website gefunden.",
+    "selectAtLeastOne": "Wählen Sie mindestens eine Website aus.",
+    "startFailed": "Die Migration konnte nicht gestartet werden",
+    "cancelFailed": "Der Auftrag konnte nicht abgebrochen werden"
+  }
+}

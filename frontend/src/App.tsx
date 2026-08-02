@@ -64,6 +64,7 @@ const MailOverviewPage = lazy(() => import('@/pages/MailOverviewPage'))
 const DatabasesOverviewPage = lazy(() => import('@/pages/DatabasesOverviewPage'))
 const CustomersPage = lazy(() => import('@/pages/CustomersPage'))
 const AccountTransferPage = lazy(() => import('@/pages/AccountTransferPage'))
+const SiteMigrationPage = lazy(() => import('@/pages/SiteMigrationPage'))
 const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'))
 const UsersPage = lazy(() => import('@/pages/UsersPage'))
 const ServerStatusPage = lazy(() => import('@/pages/ServerStatusPage'))
@@ -159,6 +160,7 @@ export default function App() {
         <Route path="databases"  element={<DatabasesOverviewPage />} />
         <Route path="customers"  element={<CustomersPage />} />
         <Route path="account-transfer" element={<AccountTransferPage />} />
+        <Route path="site-migration" element={<SiteMigrationPage />} />
         <Route path="audit-log"  element={<AuditLogPage />} />
         <Route path="users"         element={<UsersPage />} />
         <Route path="server-status" element={<ServerStatusPage />} />

@@ -25,6 +25,7 @@
     "serverStatus": { "title": "Stare server", "subtitle": "Rezumat resurse și servicii" },
     "profile": { "title": "Profil și preferințe", "subtitle": "Setări cont și securitate" },
     "accountTransfer": { "title": "Transfer cont", "subtitle": "Migrare cont și site" },
+    "siteMigration": { "title": "Migrare site-uri", "subtitle": "Migrare din cPanel, Plesk sau DirectAdmin" },
     "toolsSettings": { "title": "Instrumente și setări", "subtitle": "Instrumente panou" },
     "optimize": { "title": "Optimizare server", "subtitle": "Reglare server" },
     "statistics": { "title": "Statistici", "subtitle": "Statistici de utilizare" },
