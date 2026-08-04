@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
 import { api, apiError } from '@/lib/api'
@@ -42,30 +42,42 @@ export default function RestoreDialog({
   const [sourceDB, setSourceDB] = useState('')
   const [targetDB, setTargetDB] = useState('')
   const [contents, setContents] = useState<Contents | null>(null)
-  const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  // A ref, not state, so the fetch below can mark itself in flight without a
+  // render and without the guard becoming a dependency of its own effect.
+  const requested = useRef(false)
 
   const needsContents = mode === 'file' || mode === 'db'
 
-  useEffect(() => {
+  // Clearing the form is a reaction to the dialog closing, so it is adjusted
+  // during render; an effect would leave the stale selection on screen for one
+  // frame of the closing animation.
+  const [wasOpen, setWasOpen] = useState(open)
+  if (wasOpen !== open) {
+    setWasOpen(open)
     if (!open) {
       setMode('full'); setClean(false); setTarget('folder')
       setSelected([]); setFilter(''); setSourceDB(''); setTargetDB('')
       setContents(null); setLoadError(null)
     }
-  }, [open])
+  }
+
+  // Derived: the dialog is loading exactly while it needs a listing, has none,
+  // and nothing has failed. Storing that separately meant writing it
+  // synchronously from the effect that started the request.
+  const loading = open && needsContents && !contents && !loadError
 
   useEffect(() => {
-    if (!open || !needsContents || contents || loading) return
-    setLoading(true); setLoadError(null)
+    if (!open) { requested.current = false; return }
+    if (!needsContents || contents || requested.current) return
+    requested.current = true
     api.get<Contents>(`/domains/${domainId}/backups/${backupId}/contents`)
       .then(r => {
         setContents(r.data)
         if (r.data.databases.length > 0) setSourceDB(r.data.databases[0].name)
       })
       .catch(e => setLoadError(apiError(e, t('restore.contentsFailed'))))
-      .finally(() => setLoading(false))
-  }, [open, needsContents, contents, loading, domainId, backupId, t])
+  }, [open, needsContents, contents, domainId, backupId, t])
 
   const visibleFiles = useMemo(() => {
     const all = contents?.files ?? []
