@@ -234,9 +234,14 @@ export default function DashboardLayout() {
     server: true,
   })
 
-  useEffect(() => {
+  // Closing the drawer on navigation is a reaction to a changed value, not a
+  // side effect, so it is adjusted during render: an effect would paint one
+  // frame of the new route with the drawer still covering it.
+  const [drawerPath, setDrawerPath] = useState(location.pathname)
+  if (drawerPath !== location.pathname) {
+    setDrawerPath(location.pathname)
     setMobileOpen(false)
-  }, [location.pathname])
+  }
 
   useEffect(() => {
     if (!mobileOpen) return
