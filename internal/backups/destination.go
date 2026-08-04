@@ -104,6 +104,10 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 		return fmt.Errorf("destination host not permitted: %w", err)
 	}
 	url := lftpURL(d)
+	// The URL is double-quoted in every script below. validHost rejects a host
+	// carrying lftp meta-characters on the way in, but rows saved before that check
+	// existed are still read back from the database, so the quoting stands on its
+	// own rather than depending on the validator.
 	// with cmd:fail-exit, lftp exits non-zero if any command fails
 	script := fmt.Sprintf(
 		`set cmd:fail-exit yes; `+
@@ -113,13 +117,13 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 			`set net:max-retries 1; `+
 			`set net:timeout 15; `+
 			`set net:reconnect-interval-base 2; `+
-			`open -u "%s","%s" %s; `+
+			`open -u "%s","%s" "%s"; `+
 			`mkdir -p -f "%s"; `+
 			`cd "%s"; `+
 			`put -O . "%s"; `+
 			`bye`,
 		lftpEscape(d.Username), lftpEscape(d.Password), url,
-		lftpEscape(d.RemoteDir), lftpEscape(d.RemoteDir), localPath)
+		lftpEscape(d.RemoteDir), lftpEscape(d.RemoteDir), lftpEscape(localPath))
 
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	cmd := exec.CommandContext(ctx, "lftp", "-c", script)
@@ -153,7 +157,7 @@ func downloadFromRemote(ctx context.Context, d *Destination, fileName, localPath
 		`set cmd:fail-exit yes; set sftp:auto-confirm yes; `+
 			`set ssl:verify-certificate no; set ftp:ssl-allow no; `+
 			`set net:max-retries 1; set net:timeout 15; `+
-			`open -u "%s","%s" %s; cd "%s"; get "%s" -o "%s"; bye`,
+			`open -u "%s","%s" "%s"; cd "%s"; get "%s" -o "%s"; bye`,
 		lftpEscape(d.Username), lftpEscape(d.Password), lftpURL(d),
 		lftpEscape(d.RemoteDir), lftpEscape(fileName), lftpEscape(localPath))
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
@@ -179,7 +183,7 @@ func deleteFromRemote(ctx context.Context, d *Destination, fileName string) erro
 		`set cmd:fail-exit yes; set sftp:auto-confirm yes; `+
 			`set ssl:verify-certificate no; set ftp:ssl-allow no; `+
 			`set net:max-retries 1; set net:timeout 15; `+
-			`open -u "%s","%s" %s; cd "%s"; rm "%s"; bye`,
+			`open -u "%s","%s" "%s"; cd "%s"; rm "%s"; bye`,
 		lftpEscape(d.Username), lftpEscape(d.Password), lftpURL(d),
 		lftpEscape(d.RemoteDir), lftpEscape(fileName))
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
