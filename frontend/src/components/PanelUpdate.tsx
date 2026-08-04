@@ -69,14 +69,18 @@ export default function PanelUpdate() {
   const [confirmation, setConfirmation] = useState(false)
   const logRef = useRef<HTMLPreElement>(null)
 
-  const loadStatus = useCallback(async () => {
-    try {
-      const response = await api.get<UpdateStatus>('/system/update')
-      setStatus(response.data)
-      setRunning(response.data.running)
-    } catch {
-      // The API can be temporarily unavailable while the panel restarts.
-    }
+  // These three write only from promise callbacks. The mount effect calls them,
+  // and a write in an awaited body still counts as that effect's own
+  // continuation, which would force an extra render pass on every visit.
+  const loadStatus = useCallback(() => {
+    return api.get<UpdateStatus>('/system/update')
+      .then(response => {
+        setStatus(response.data)
+        setRunning(response.data.running)
+      })
+      .catch(() => {
+        // The API can be temporarily unavailable while the panel restarts.
+      })
   }, [])
 
   // The announcement is published per language in the manifest, so the server needs
@@ -84,13 +88,12 @@ export default function PanelUpdate() {
   // i18n.language is that value; users.pref_lang is only its persisted seed. Keeping
   // it in the dependency array re-fetches the notice when the language switches, so
   // the text follows the switcher without a reload.
-  const loadVersion = useCallback(async () => {
-    try {
-      const response = await api.get<VersionStatus>('/system/version-check', { params: { lang: i18n.language } })
-      setVersion(response.data)
-    } catch {
-      // Version checks are informational and must not block updates.
-    }
+  const loadVersion = useCallback(() => {
+    return api.get<VersionStatus>('/system/version-check', { params: { lang: i18n.language } })
+      .then(response => setVersion(response.data))
+      .catch(() => {
+        // Version checks are informational and must not block updates.
+      })
   }, [i18n.language])
 
   // Reads the log, and stops the spinner as soon as EITHER the server reports
@@ -100,17 +103,18 @@ export default function PanelUpdate() {
   // announce is set only by the poll, so the banner reports an update that just
   // concluded in this session. At mount the log is displayed but not announced;
   // otherwise the result of an update run days ago would greet the user forever.
-  const loadLog = useCallback(async (announce: boolean) => {
-    const response = await api.get<UpdateLog>('/system/update/log')
-    setLog(response.data.log)
-    const settled = finishedOutcome(response.data.log)
-    if (!response.data.running || settled) {
-      setRunning(false)
-      if (announce && settled) {
-        setOutcome(settled)
-        loadVersion()
+  const loadLog = useCallback((announce: boolean) => {
+    return api.get<UpdateLog>('/system/update/log').then(response => {
+      setLog(response.data.log)
+      const settled = finishedOutcome(response.data.log)
+      if (!response.data.running || settled) {
+        setRunning(false)
+        if (announce && settled) {
+          setOutcome(settled)
+          loadVersion()
+        }
       }
-    }
+    })
   }, [loadVersion])
 
   useEffect(() => {
