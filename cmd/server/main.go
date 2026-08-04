@@ -498,6 +498,8 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/redirect", domainsH.RedirectStatus)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/redirect", domainsH.SetRedirect)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/redirect", domainsH.DeleteRedirect)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/www-redirect", domainsH.WWWRedirectStatus)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/www-redirect", domainsH.SetWWWRedirect)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/web-backend", domainsH.GetWebBackend)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/web-backend", domainsH.SetWebBackend)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}/web-backend", subH.GetWebBackend)

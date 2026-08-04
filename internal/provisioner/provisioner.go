@@ -818,6 +818,41 @@ server {
 {{- end -}}
 `))
 
+// wwwRedirectTmpl renders the extra server block that answers the NON-canonical
+// hostname once a canonical redirect is configured; it is appended to the same
+// vhost file as the main template. The main block drops that hostname from its
+// server_name (see ServerNames), so without this block the host would fall through
+// to nginx's default vhost instead of reaching the site at all.
+//
+// The ACME challenge location stays open here: HTTP-01 validation for the
+// redirected host must still be answerable, or the certificate could not be
+// renewed with both hostnames on it.
+var wwwRedirectTmpl = template.Must(template.New("wwwredirect").Parse(`
+# {{.RedirectFromHost}} — redirected to the canonical hostname {{.RedirectToHost}}
+server {
+    listen 80;
+    listen [::]:80;
+{{if .SSL}}    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    ssl_certificate     {{.CertPath}};
+    ssl_certificate_key {{.KeyPath}};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+{{end}}    server_name {{.RedirectFromHost}};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/_acme;
+        auth_basic off;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 301 {{if .SSL}}https{{else}}http{{end}}://{{.RedirectToHost}}$request_uri;
+    }
+}
+`))
+
 const denyBlocksNginx = `    # ---- Deny CGI and interpreter scripts ----
     location ~* \.(cgi|pl|py|sh|rb|lua|fcgi)$ { deny all; }
     # ---- Deny backup, dump, and sensitive files ----
@@ -1004,6 +1039,14 @@ type VhostOpts struct {
 	RedirectTarget string
 	RedirectCode   int
 
+	// WWWRedirect makes one of the two hostnames canonical: "to_www" answers only
+	// www and 301s the apex to it, "to_apex" does the reverse, and "" or "off"
+	// leaves both hostnames serving the site as they do today. It applies ONLY on
+	// the normal render path: a suspended, custom-vhost or whole-domain-redirect
+	// vhost already covers apex and www together, and dropping one of them from
+	// server_name there would send that host to nginx's default vhost.
+	WWWRedirect string
+
 	// Web server backend: "php-fpm" by default, "apache", or "static".
 	Backend string
 
@@ -1019,9 +1062,48 @@ func (o VhostOpts) SSL() bool {
 	return o.CertPath != "" && o.KeyPath != ""
 }
 
-// ServerNames returns the nginx server_name list for the domain.
+// ServerNames returns the nginx server_name list for the domain's main vhost. With
+// a canonical redirect configured it names only the canonical host; the other one is
+// answered by wwwRedirectTmpl in the same file.
 func (o VhostOpts) ServerNames() string {
+	if to := o.RedirectToHost(); to != "" {
+		return to
+	}
 	return strings.Join(wwwHostNames(o.DomainName), " ")
+}
+
+// canonicalRedirect reports whether a canonical hostname redirect applies. It never
+// applies to a domain that is itself a www host, because there is no second name to
+// redirect from.
+func (o VhostOpts) canonicalRedirect() bool {
+	if strings.HasPrefix(strings.ToLower(o.DomainName), "www.") {
+		return false
+	}
+	return o.WWWRedirect == "to_www" || o.WWWRedirect == "to_apex"
+}
+
+// RedirectToHost returns the canonical hostname, or "" when no canonical redirect
+// applies. Exported for the vhost templates.
+func (o VhostOpts) RedirectToHost() string {
+	if !o.canonicalRedirect() {
+		return ""
+	}
+	if o.WWWRedirect == "to_www" {
+		return "www." + o.DomainName
+	}
+	return o.DomainName
+}
+
+// RedirectFromHost returns the hostname that answers with a 301, or "" when no
+// canonical redirect applies. Exported for the vhost templates.
+func (o VhostOpts) RedirectFromHost() string {
+	if !o.canonicalRedirect() {
+		return ""
+	}
+	if o.WWWRedirect == "to_www" {
+		return o.DomainName
+	}
+	return "www." + o.DomainName
 }
 
 // ErrorPageBlock returns the nginx block that wires the brand 404 page and the
@@ -1065,6 +1147,18 @@ func wwwSANEligible(domain string) bool {
 		}
 	}
 	return true
+}
+
+// WWWResolvesToApex reports whether www.<domain> resolves to the same address(es)
+// as the apex. Enabling a redirect TO www without this is a site outage: every
+// visitor is sent to a hostname that does not exist or belongs to another server.
+func WWWResolvesToApex(domain string) bool { return wwwSANEligible(domain) }
+
+// CertificateCoversHost reports whether the installed certificate is currently
+// valid and names host. A redirect to a hostname the certificate omits replaces a
+// working site with a certificate warning, so the caller checks before enabling it.
+func CertificateCoversHost(certPath, keyPath, host string) bool {
+	return certValid(certPath, keyPath, 0, host)
 }
 
 // certSANHosts returns the hostnames a real certificate must cover for a domain:
@@ -1192,11 +1286,31 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 		}
 	}
 
+	// Canonical hostname redirect, read here so every caller keeps it: the setting is
+	// stored once and ~30 call sites (PHP version change, SSL renewal, WAF toggle)
+	// re-render the vhost without knowing about it. It applies only when none of the
+	// other three shapes is in play, because each of those already answers on apex
+	// and www together.
+	if !opts.Suspended && opts.CustomVhostContent == "" && opts.RedirectTarget == "" &&
+		opts.WWWRedirect == "" && packageDB != nil {
+		var mode string
+		if err := packageDB.QueryRow(
+			`SELECT COALESCE(www_redirect,'off') FROM domains WHERE system_user=? AND parent_domain_id IS NULL LIMIT 1`,
+			systemUser).Scan(&mode); err == nil {
+			opts.WWWRedirect = mode
+		}
+	}
+
 	tmpl := vhostTmpl
 	if opts.Suspended {
 		tmpl = suspendedVhostTmpl
 	} else if opts.RedirectTarget != "" {
 		tmpl = redirectVhostTmpl
+	}
+	// The other three shapes keep both hostnames on one server_name, so the canonical
+	// redirect must not remove one of them there.
+	if opts.Suspended || opts.RedirectTarget != "" || opts.CustomVhostContent != "" {
+		opts.WWWRedirect = ""
 	}
 	var buf bytes.Buffer
 	if opts.CustomVhostContent != "" && !opts.Suspended {
@@ -1204,6 +1318,10 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 		buf.WriteByte('\n')
 	} else if err := tmpl.Execute(&buf, opts); err != nil {
 		return fmt.Errorf("template render: %w", err)
+	} else if opts.RedirectFromHost() != "" {
+		if err := wwwRedirectTmpl.Execute(&buf, opts); err != nil {
+			return fmt.Errorf("canonical redirect render: %w", err)
+		}
 	}
 	cfgPath := opts.ConfigPath
 	if cfgPath == "" {
