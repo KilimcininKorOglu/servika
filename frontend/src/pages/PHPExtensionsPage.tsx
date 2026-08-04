@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -22,8 +22,10 @@ export default function PHPExtensionsPage() {
   const [filter, setFilter] = useState('')
   const [peclModalOpen, setPeclModalOpen] = useState(false)
 
-  function load() {
-    setLoading(true); setError(null)
+  // Split so the version effect never writes state synchronously: fetchExtensions
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchExtensions = useCallback(() => {
     api.get(`/php-extensions?version=${activeVersion}`)
       .then(response => {
         setExtensions(response.data.content || [])
@@ -31,8 +33,15 @@ export default function PHPExtensionsPage() {
       })
       .catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [activeVersion])
+  }, [activeVersion])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchExtensions()
+  }, [fetchExtensions])
+
+  useEffect(() => { fetchExtensions() }, [fetchExtensions])
 
   async function toggle(extension: Extension) {
     if (REQUIRED_EXTENSIONS.has(extension.name.toLowerCase())) {
