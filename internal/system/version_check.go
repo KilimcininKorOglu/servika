@@ -21,6 +21,14 @@ import (
 const (
 	versionCheckPeriod = 24 * time.Hour
 	versionBodyLimit   = 64 << 10
+
+	// versionLoginCooldown is the shortest interval between two login-triggered
+	// checks. It is hours rather than minutes on purpose: the manifest request
+	// carries this installation's ID, so one check per login would turn the
+	// endpoint into a record of when each panel's administrators sign in. Six
+	// hours bounds what an admin sees to a fraction of the 24-hour period while
+	// adding at most three requests a day to the one the poller already makes.
+	versionLoginCooldown = 6 * time.Hour
 )
 
 // VersionManifest is the public update and announcement manifest schema.
@@ -133,6 +141,36 @@ func StartVersionCheck(current, buildDate string) {
 			time.Sleep(versionCheckPeriod + versionRandomDuration(-2*time.Hour, 2*time.Hour))
 		}
 	}()
+}
+
+// TriggerVersionCheck refreshes the manifest when a panel administrator signs
+// in, so the update notice does not sit up to a full poll period behind. It is
+// fire-and-forget: the fetch runs in its own goroutine and the login response
+// never waits on it, and fetchVersionManifest records a network failure in the
+// cached state instead of surfacing it.
+//
+// Call it only from a path an administrator reaches. A customer login must not
+// reach the manifest endpoint, because the request identifies the installation.
+func TriggerVersionCheck() {
+	if !versionCheckEnabled() {
+		return
+	}
+	versionMu.RLock()
+	last := versionLast
+	versionMu.RUnlock()
+	if !versionCheckDue(last, time.Now()) {
+		return
+	}
+	go fetchVersionManifest()
+}
+
+// versionCheckDue reports whether a login-triggered check may run. Split out so
+// the cooldown is testable without a clock or a network.
+func versionCheckDue(lastCheck, now time.Time) bool {
+	if lastCheck.IsZero() {
+		return true
+	}
+	return now.Sub(lastCheck) >= versionLoginCooldown
 }
 
 func versionRandomDuration(minimum, maximum time.Duration) time.Duration {

@@ -2,11 +2,14 @@ package system
 
 import (
 	"encoding/json"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"servika/internal/config"
 )
@@ -139,4 +142,96 @@ func TestVersionRequestURLForKeepsInvalidEndpoint(t *testing.T) {
 	if got != want {
 		t.Fatalf("versionRequestURLFor() = %q, want %q", got, want)
 	}
+}
+
+// The manifest request carries this installation's ID, so an uncapped
+// login-triggered check would publish a record of when the panel's
+// administrators sign in.
+func TestVersionCheckDueRespectsTheLoginCooldown(t *testing.T) {
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	tests := []struct {
+		name string
+		last time.Time
+		want bool
+	}{
+		{name: "never checked", last: time.Time{}, want: true},
+		{name: "just checked", last: now.Add(-time.Minute), want: false},
+		{name: "one second inside the cooldown", last: now.Add(-versionLoginCooldown + time.Second), want: false},
+		{name: "exactly at the cooldown", last: now.Add(-versionLoginCooldown), want: true},
+		{name: "a full poll period ago", last: now.Add(-versionCheckPeriod), want: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := versionCheckDue(test.last, now); got != test.want {
+				t.Errorf("versionCheckDue(%v, %v) = %t, want %t", test.last, now, got, test.want)
+			}
+		})
+	}
+}
+
+// A login must never reach the network when the operator turned the check off.
+func TestTriggerVersionCheckHonoursTheDisableSwitch(t *testing.T) {
+	t.Setenv("SERVIKA_VERSION_CHECK", "0")
+	t.Setenv("SERVIKA_VERSION_ENDPOINT", "http://127.0.0.1:1/never-reachable")
+
+	versionMu.Lock()
+	versionLast = time.Time{} // A check has never run, so only the switch can stop it.
+	versionError = ""
+	versionMu.Unlock()
+
+	TriggerVersionCheck()
+	time.Sleep(200 * time.Millisecond)
+
+	versionMu.RLock()
+	defer versionMu.RUnlock()
+	if !versionLast.IsZero() || versionError != "" {
+		t.Errorf("a check ran with SERVIKA_VERSION_CHECK=0 (last=%v, error=%q)", versionLast, versionError)
+	}
+}
+
+// The whole point of the trigger is that a sign-in fetches the manifest, so
+// prove the request actually leaves rather than trusting the call site, and
+// prove the cooldown then suppresses the next one.
+func TestTriggerVersionCheckFetchesOncePerCooldown(t *testing.T) {
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests.Add(1)
+		_, _ = w.Write([]byte(`{"latest":"9.9.9","announcement":{"en":"test"},"critical":false,"release_date":"2026-01-01"}`))
+	}))
+	defer server.Close()
+
+	t.Setenv("SERVIKA_VERSION_CHECK", "1")
+	t.Setenv("SERVIKA_VERSION_ENDPOINT", server.URL)
+	t.Setenv("SERVIKA_VERSION_CACHE", filepath.Join(t.TempDir(), "version.json"))
+
+	versionMu.Lock()
+	versionLast = time.Time{}
+	versionMu.Unlock()
+
+	TriggerVersionCheck()
+	waitForRequests(t, &requests, 1)
+
+	// The second sign-in falls inside the cooldown and must not hit the endpoint.
+	TriggerVersionCheck()
+	time.Sleep(300 * time.Millisecond)
+	if got := requests.Load(); got != 1 {
+		t.Errorf("the endpoint received %d requests, want 1: the cooldown did not suppress the second sign-in", got)
+	}
+
+	versionMu.RLock()
+	defer versionMu.RUnlock()
+	if versionManifest.Latest != "9.9.9" {
+		t.Errorf("versionManifest.Latest = %q, want the manifest the trigger fetched", versionManifest.Latest)
+	}
+}
+
+func waitForRequests(t *testing.T, counter *atomic.Int32, want int32) {
+	t.Helper()
+	for range 50 {
+		if counter.Load() >= want {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	t.Fatalf("the endpoint received %d requests, want %d: the trigger never fetched", counter.Load(), want)
 }

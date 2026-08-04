@@ -16,6 +16,7 @@ import (
 	yescrypt "github.com/openwall/yescrypt-go"
 
 	"servika/internal/httpx"
+	"servika/internal/system"
 )
 
 // Handlers provides HTTP handlers for administrator authentication.
@@ -288,6 +289,11 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	if _, err := h.DB.Exec(`UPDATE users SET last_login_at=NOW(), last_login_ip=? WHERE id=?`, ip, uid); err != nil {
 		log.Printf("last_login update failed for uid=%d: %v", uid, err)
 	}
+
+	// Only an admin or reseller reaches this line; the customer role is refused
+	// above, and /customer/login is a different handler. Refresh the update
+	// manifest now rather than leaving the notice up to a poll period stale.
+	system.TriggerVersionCheck()
 
 	// Deliver the token only in the HttpOnly session cookie, never in the body.
 	httpx.SetSessionCookie(w, r, tok, h.LifetimeSec)
