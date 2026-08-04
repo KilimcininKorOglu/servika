@@ -4,6 +4,7 @@ package backups
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -103,7 +104,9 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 	if err := netguard.CheckHost(d.Host); err != nil {
 		return fmt.Errorf("destination host not permitted: %w", err)
 	}
-	url := lftpURL(d)
+	if err := credentialSafe(d.Password); err != nil {
+		return err
+	}
 	// The URL is double-quoted in every script below. validHost rejects a host
 	// carrying lftp meta-characters on the way in, but rows saved before that check
 	// existed are still read back from the database, so the quoting stands on its
@@ -117,16 +120,15 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 			`set net:max-retries 1; `+
 			`set net:timeout 15; `+
 			`set net:reconnect-interval-base 2; `+
-			`open -u "%s","%s" "%s"; `+
+			`%s; `+
 			`mkdir -p -f "%s"; `+
 			`cd "%s"; `+
 			`put -O . "%s"; `+
 			`bye`,
-		lftpEscape(d.Username), lftpEscape(d.Password), url,
+		lftpOpen(d),
 		lftpEscape(d.RemoteDir), lftpEscape(d.RemoteDir), lftpEscape(localPath))
 
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	cmd := exec.CommandContext(ctx, "lftp", "-c", script)
+	cmd := lftpCommand(ctx, d, script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("lftp: %s: %w", strings.TrimSpace(string(out)), err)
@@ -153,15 +155,17 @@ func downloadFromRemote(ctx context.Context, d *Destination, fileName, localPath
 	if err := netguard.CheckHost(d.Host); err != nil {
 		return fmt.Errorf("destination host not permitted: %w", err)
 	}
+	if err := credentialSafe(d.Password); err != nil {
+		return err
+	}
 	script := fmt.Sprintf(
 		`set cmd:fail-exit yes; set sftp:auto-confirm yes; `+
 			`set ssl:verify-certificate no; set ftp:ssl-allow no; `+
 			`set net:max-retries 1; set net:timeout 15; `+
-			`open -u "%s","%s" "%s"; cd "%s"; get "%s" -o "%s"; bye`,
-		lftpEscape(d.Username), lftpEscape(d.Password), lftpURL(d),
+			`%s; cd "%s"; get "%s" -o "%s"; bye`,
+		lftpOpen(d),
 		lftpEscape(d.RemoteDir), lftpEscape(fileName), lftpEscape(localPath))
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	out, err := exec.CommandContext(ctx, "lftp", "-c", script).CombinedOutput()
+	out, err := lftpCommand(ctx, d, script).CombinedOutput()
 	if err != nil {
 		_ = os.Remove(localPath)
 		return fmt.Errorf("lftp: %s: %w", strings.TrimSpace(string(out)), err)
@@ -179,17 +183,71 @@ func deleteFromRemote(ctx context.Context, d *Destination, fileName string) erro
 	if err := netguard.CheckHost(d.Host); err != nil {
 		return fmt.Errorf("destination host not permitted: %w", err)
 	}
+	if err := credentialSafe(d.Password); err != nil {
+		return err
+	}
 	script := fmt.Sprintf(
 		`set cmd:fail-exit yes; set sftp:auto-confirm yes; `+
 			`set ssl:verify-certificate no; set ftp:ssl-allow no; `+
 			`set net:max-retries 1; set net:timeout 15; `+
-			`open -u "%s","%s" "%s"; cd "%s"; rm "%s"; bye`,
-		lftpEscape(d.Username), lftpEscape(d.Password), lftpURL(d),
+			`%s; cd "%s"; rm "%s"; bye`,
+		lftpOpen(d),
 		lftpEscape(d.RemoteDir), lftpEscape(fileName))
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	out, err := exec.CommandContext(ctx, "lftp", "-c", script).CombinedOutput()
+	out, err := lftpCommand(ctx, d, script).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("lftp: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+	return nil
+}
+
+// lftpOpen renders the lftp connect command. The password is NOT in it: it
+// travels in LFTP_PASSWORD and `--env-password` reads it there. The older
+// `open -u user,password` form put it in the `-c` argument, and therefore in
+// argv, where every local account could read it.
+func lftpOpen(d *Destination) string {
+	return `open -u "` + lftpEscape(d.Username) + `" --env-password "` + lftpURL(d) + `"`
+}
+
+// lftpCommand runs an lftp script with the destination password in
+// LFTP_PASSWORD, which the script's `open --env-password` reads. lftp's own
+// manual gives the reason: "it is not secure to specify the password on command
+// line". The `-c` argument is world-readable through /proc/<pid>/cmdline, and a
+// tenant reaches that window with arbitrary shell from a cron entry, so a
+// password embedded in `open -u user,pass` was readable by every local account.
+// newRestoreCommand supplies the package's environment allowlist, so the panel's
+// own secrets are not inherited alongside it.
+func lftpCommand(ctx context.Context, d *Destination, script string) *exec.Cmd {
+	command := newRestoreCommand(ctx, "lftp", "-c", script)
+	command.Env = append(command.Env, "LFTP_PASSWORD="+d.Password)
+	return command
+}
+
+// sshpassCommand runs sshpass with the destination password in SSHPASS, which
+// its -e flag reads. Same reason as lftpCommand, and the same mechanism
+// internal/transfers already uses: -p would place the password in argv.
+func sshpassCommand(ctx context.Context, d *Destination, arguments ...string) *exec.Cmd {
+	command := newRestoreCommand(ctx, "sshpass", arguments...)
+	command.Env = append(command.Env, "SSHPASS="+d.Password)
+	return command
+}
+
+// curlCredentialConfig renders the one config line curl reads from stdin under
+// `--config -`, replacing `--user <user>:<password>` in argv. curl ends the
+// value at the closing quote, so a double quote or backslash in either half has
+// to be escaped or the credential is silently cut short.
+func curlCredentialConfig(username, password string) string {
+	quoted := strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(username + ":" + password)
+	return "user = \"" + quoted + "\"\n"
+}
+
+// credentialSafe rejects a stored password that cannot be delivered out of band.
+// A line break ends a `curl --config` line and a NUL cannot go into an
+// environment value, so either one would authenticate with a silently truncated
+// secret. validDestinationInput rejects both on the way in, but rows written
+// before that check existed are still read back from the database.
+func credentialSafe(password string) error {
+	if strings.ContainsAny(password, "\r\n\x00") {
+		return errors.New("the stored destination password contains a line break or control character; save the destination again")
 	}
 	return nil
 }
@@ -227,14 +285,19 @@ func testConnection(ctx context.Context, d *Destination) error {
 	if err := netguard.CheckHost(d.Host); err != nil {
 		return fmt.Errorf("destination host not permitted: %w", err)
 	}
+	if err := credentialSafe(d.Password); err != nil {
+		return err
+	}
 	if d.Type == "sftp" {
 		// Force password authentication through sshpass and disable public-key fallback.
 		// This ensures the supplied user password is actually valid.
 		// Pass the user with -l and the host after --, so neither can be
 		// interpreted as an ssh option (closes ProxyCommand-style arg injection
 		// via a username or host beginning with "-").
+		// -e reads the password from SSHPASS instead of argv, matching
+		// internal/transfers; -p published it to every local account.
 		args := []string{
-			"-p", d.Password,
+			"-e",
 			"ssh",
 			"-p", fmt.Sprintf("%d", d.Port),
 			"-l", d.Username,
@@ -246,9 +309,7 @@ func testConnection(ctx context.Context, d *Destination) error {
 			"-o", "BatchMode=no",
 			"--", d.Host, "true",
 		}
-		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-		cmd := exec.CommandContext(ctx, "sshpass", args...)
-		out, err := cmd.CombinedOutput()
+		out, err := sshpassCommand(ctx, d, args...).CombinedOutput()
 		if err != nil {
 			short := strings.TrimSpace(string(out))
 			if short == "" {
@@ -258,18 +319,20 @@ func testConnection(ctx context.Context, d *Destination) error {
 		}
 		return nil
 	}
-	// Use curl to list the FTP root with the supplied credentials.
+	// Use curl to list the FTP root with the supplied credentials. The credentials
+	// arrive through `--config -` on stdin rather than `--user`, which put them in
+	// argv where every local account could read them.
 	url := fmt.Sprintf("ftp://%s:%d/", d.Host, d.Port)
 	args := []string{
 		"-sS",
 		"--connect-timeout", "10",
 		"--max-time", "15",
-		"--user", d.Username + ":" + d.Password,
+		"--config", "-",
 		"--ftp-skip-pasv-ip",
 		url,
 	}
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	cmd := exec.CommandContext(ctx, "curl", args...)
+	cmd := newRestoreCommand(ctx, "curl", args...)
+	cmd.Stdin = strings.NewReader(curlCredentialConfig(d.Username, d.Password))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		short := strings.TrimSpace(string(out))
