@@ -40,19 +40,22 @@ export default function OverviewList<T>({
 }) {
   const { t } = useTranslation('OverviewList')
   const [list, setList] = useState<T[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  // Derived instead of stored: loading means the request for the CURRENT
+  // endpoint has not settled, so switching endpoint shows the spinner on the
+  // same render rather than one frame of the previous list.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null)
+  const loading = loadedFor !== endpoint
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
     api.get<T[]>(endpoint)
       .then((r) => { if (!cancelled) { setList(Array.isArray(r.data) ? r.data : []); setError(null) } })
       .catch((e) => { if (!cancelled) setError(apiError(e, t('errorLoad'))) })
-      .finally(() => { if (!cancelled) setLoading(false) })
+      .finally(() => { if (!cancelled) setLoadedFor(endpoint) })
     return () => { cancelled = true }
-  }, [endpoint])
+  }, [endpoint, t])
 
   const filtered = useMemo(() => {
     const t = query.trim().toLowerCase()
