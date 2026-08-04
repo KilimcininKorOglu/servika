@@ -29,17 +29,24 @@ export default function PHPVersionsPage() {
   const [filter, setFilter] = useState<Filter>('all')
   const logRef = useRef<HTMLPreElement>(null)
 
-  const load = useCallback(() => {
-    setLoading(true)
+  // Split so the mount effect never writes state synchronously: fetchVersions
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refresh that follows a completed install or removal.
+  const fetchVersions = useCallback(() => {
     api.get<{ versions: Version[] }>('/php-versions')
       .then(r => setVersions(r.data.versions || []))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
   }, [])
 
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchVersions()
+  }, [fetchVersions])
+
   // Initial load: version list + catch any running job (resume-on-reopen).
   useEffect(() => {
-    load()
+    fetchVersions()
     api.get<OpStatus>('/php-versions/status')
       .then(r => {
         if (r.data.running && r.data.version) {
@@ -52,7 +59,7 @@ export default function PHPVersionsPage() {
       })
       .catch(() => { // Ignore transient failures while resuming jobs.
       })
-  }, [load])
+  }, [fetchVersions])
 
   // Poll active job every two seconds. Refresh the version list when the job completes.
   useEffect(() => {
