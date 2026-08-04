@@ -30,6 +30,16 @@ esac; shift; done
 # Server-default panel language shown on the login screen. English is the primary
 # language; an unsupported code falls back to it. A signed-in user's own preference
 # always overrides this. Keep this set in sync with internal/config/lang.go.
+#
+# Canonicalize first, exactly as internal/config.canonLang does: trim surrounding
+# whitespace (a trailing CR from a CRLF env file counts), lowercase the base subtag
+# and uppercase the region. Without this the panel accepts "TR" and "pt-br" while
+# the installer silently wrote English into panel_settings.default_lang.
+PANEL_LANG="$(printf '%s' "$PANEL_LANG" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+case "$PANEL_LANG" in
+  *-*) PANEL_LANG="$(printf '%s' "${PANEL_LANG%%-*}" | tr 'A-Z' 'a-z')-$(printf '%s' "${PANEL_LANG#*-}" | tr 'a-z' 'A-Z')" ;;
+  *)   PANEL_LANG="$(printf '%s' "$PANEL_LANG" | tr 'A-Z' 'a-z')" ;;
+esac
 case "$PANEL_LANG" in
   en|tr|de|fr|it|pt|pt-BR|es|cs|ro|ja|zh) ;;
   *) PANEL_LANG="en" ;;
