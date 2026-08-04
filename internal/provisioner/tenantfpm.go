@@ -237,7 +237,7 @@ func tenantReadPoolSettings(db *sql.DB, domainID int64) tenantPoolSettings {
 	var maxExecutionTime, maxInputTime, maxRequests int
 	err := db.QueryRow(`SELECT memory_limit, max_execution_time, max_input_time,
 		post_max_size, upload_max_filesize, disable_functions, pm_strategy, pm_max_requests
-		FROM php_settings WHERE domain_id=?`, domainID).
+		FROM php_settings WHERE domain_id=? AND subdomain_id=0`, domainID).
 		Scan(&memoryLimit, &maxExecutionTime, &maxInputTime, &postMaxSize,
 			&uploadMaxFilesize, &disableFunctions, &strategy, &maxRequests)
 	if err != nil {
@@ -270,7 +270,7 @@ func tenantReadPoolSettings(db *sql.DB, domainID int64) tenantPoolSettings {
 	var er string
 	if derr := db.QueryRow(`SELECT COALESCE(display_errors,0), COALESCE(log_errors,1),
 	        COALESCE(error_reporting,''), COALESCE(debug_mode,0)
-	        FROM php_settings WHERE domain_id=?`, domainID).Scan(&de, &le, &er, &dm); derr == nil {
+	        FROM php_settings WHERE domain_id=? AND subdomain_id=0`, domainID).Scan(&de, &le, &er, &dm); derr == nil {
 		settings.DisplayErrors = de != 0
 		settings.LogErrors = le != 0
 		settings.DebugMode = dm != 0

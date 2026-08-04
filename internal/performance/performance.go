@@ -81,7 +81,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 	opcache, memLimit, pmStrategy, pmMaxChildren, maxExec = 1, "256M", "ondemand", 8, 30
 	_ = h.DB.QueryRowContext(r.Context(),
 		`SELECT opcache_enable, memory_limit, pm_strategy, pm_max_children, max_execution_time
-		   FROM php_settings WHERE domain_id=?`, id).
+		   FROM php_settings WHERE domain_id=? AND subdomain_id=0`, id).
 		Scan(&opcache, &memLimit, &pmStrategy, &pmMaxChildren, &maxExec)
 	_ = fileUploads
 
@@ -89,7 +89,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 	var fastcgi, browserCache, browserCacheDays int
 	browserCache, browserCacheDays = 1, 30
 	_ = h.DB.QueryRowContext(r.Context(),
-		`SELECT fastcgi_cache, browser_cache, browser_cache_days FROM nginx_settings WHERE domain_id=?`, id).
+		`SELECT fastcgi_cache, browser_cache, browser_cache_days FROM nginx_settings WHERE domain_id=? AND subdomain_id=0`, id).
 		Scan(&fastcgi, &browserCache, &browserCacheDays)
 
 	b := func(i int) bool { return i == 1 }

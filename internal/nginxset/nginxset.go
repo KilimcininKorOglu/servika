@@ -57,7 +57,7 @@ func b2i(b bool) int {
 }
 
 // Get returns nginx settings for a domain.
-func Get(ctx context.Context, db *sql.DB, domainID int64) (Settings, error) {
+func Get(ctx context.Context, db *sql.DB, domainID, subdomainID int64) (Settings, error) {
 	s := Defaults()
 	var b1, b2, b3, b4, b5, b6, b7, b8, bFC, bBC int
 	err := db.QueryRowContext(ctx,
@@ -65,7 +65,7 @@ func Get(ctx context.Context, db *sql.DB, domainID int64) (Settings, error) {
 		        hdr_csp_upgrade, hdr_hsts, hsts_max_age, hsts_subdomains, hsts_preload,
 		        extra_directives, fastcgi_cache, fastcgi_cache_minutes,
 		        browser_cache, browser_cache_days
-		 FROM nginx_settings WHERE domain_id=?`, domainID).
+		 FROM nginx_settings WHERE domain_id=? AND subdomain_id=?`, domainID, subdomainID).
 		Scan(&b1, &b2, &b3, &b4, &b5, &b6, &s.HSTSMaxAge, &b7, &b8,
 			&s.ExtraDirectives, &bFC, &s.FastCgiCacheMinutes, &bBC, &s.BrowserCacheDays)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -87,13 +87,13 @@ func Get(ctx context.Context, db *sql.DB, domainID int64) (Settings, error) {
 	return s, nil
 }
 
-// Save persists nginx settings for a domain.
-func Save(ctx context.Context, db *sql.DB, domainID int64, s Settings) error {
+// Save persists nginx settings for a domain (subdomainID 0) or one of its subdomains.
+func Save(ctx context.Context, db *sql.DB, domainID, subdomainID int64, s Settings) error {
 	_, err := db.ExecContext(ctx,
-		`INSERT INTO nginx_settings(domain_id, hdr_x_content_type, hdr_x_xss, hdr_referrer,
+		`INSERT INTO nginx_settings(domain_id, subdomain_id, hdr_x_content_type, hdr_x_xss, hdr_referrer,
 		    hdr_permissions, hdr_csp_upgrade, hdr_hsts, hsts_max_age, hsts_subdomains, hsts_preload,
 		    extra_directives, fastcgi_cache, fastcgi_cache_minutes, browser_cache, browser_cache_days)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 		 ON DUPLICATE KEY UPDATE
 		    hdr_x_content_type=VALUES(hdr_x_content_type),
 		    hdr_x_xss=VALUES(hdr_x_xss),
@@ -109,7 +109,7 @@ func Save(ctx context.Context, db *sql.DB, domainID int64, s Settings) error {
 		    fastcgi_cache_minutes=VALUES(fastcgi_cache_minutes),
 		    browser_cache=VALUES(browser_cache),
 		    browser_cache_days=VALUES(browser_cache_days)`,
-		domainID, b2i(s.HdrXContentType), b2i(s.HdrXXSS), b2i(s.HdrReferrer),
+		domainID, subdomainID, b2i(s.HdrXContentType), b2i(s.HdrXXSS), b2i(s.HdrReferrer),
 		b2i(s.HdrPermissions), b2i(s.HdrCSPUpgrade), b2i(s.HdrHSTS),
 		s.HSTSMaxAge, b2i(s.HSTSSubdomains), b2i(s.HSTSPreload),
 		s.ExtraDirectives, b2i(s.FastCgiCache), s.FastCgiCacheMinutes,
@@ -224,7 +224,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	s, err := Get(r.Context(), h.DB, id)
+	s, err := Get(r.Context(), h.DB, id, 0)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to load nginx settings")
 		return
@@ -260,7 +260,7 @@ func (h *Handlers) Save(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid nginx directives")
 		return
 	}
-	if err := Save(r.Context(), h.DB, id, req.Settings); err != nil {
+	if err := Save(r.Context(), h.DB, id, 0, req.Settings); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to save nginx settings")
 		return
 	}

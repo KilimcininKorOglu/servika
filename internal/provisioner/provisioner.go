@@ -1914,7 +1914,7 @@ func applyVhostForDomain(db *sql.DB, domainID int64, socket, phpVersion string, 
 		`SELECT hdr_x_content_type, hdr_x_xss, hdr_referrer, hdr_permissions,
 		        hdr_csp_upgrade, hdr_hsts, hsts_max_age, hsts_subdomains, hsts_preload, extra_directives,
 		        fastcgi_cache, fastcgi_cache_minutes, browser_cache, browser_cache_days
-		 FROM nginx_settings WHERE domain_id=?`, domainID).
+		 FROM nginx_settings WHERE domain_id=? AND subdomain_id=0`, domainID).
 		Scan(&b1, &b2, &b3, &b4, &b5, &b6, &maxAge, &b7, &b8, &extraDirectives,
 			&bFC, &fastCgiCacheMinutes, &bBC, &browserCacheDays)
 	if err == nil {

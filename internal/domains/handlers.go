@@ -1080,8 +1080,8 @@ func (h *Handlers) applyPlanNginxDefaults(ctx context.Context, domainID, planID 
 		extraDirectives += planDirectives
 	}
 	if _, err := h.DB.ExecContext(ctx,
-		`INSERT INTO nginx_settings(domain_id, fastcgi_cache, extra_directives)
-		 VALUES(?,?,?)
+		`INSERT INTO nginx_settings(domain_id, subdomain_id, fastcgi_cache, extra_directives)
+		 VALUES(?,0,?,?)
 		 ON DUPLICATE KEY UPDATE fastcgi_cache=VALUES(fastcgi_cache), extra_directives=VALUES(extra_directives)`,
 		domainID, fastCGICache, extraDirectives); err != nil {
 		log.Printf("seed nginx_settings (domain=%d): %v", domainID, err)

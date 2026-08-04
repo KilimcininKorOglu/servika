@@ -131,14 +131,14 @@ func Defaults() Settings {
 }
 
 // Get returns saved settings for a domain or defaults when no record exists.
-func Get(ctx context.Context, db *sql.DB, domainID int64) (Settings, error) {
+func Get(ctx context.Context, db *sql.DB, domainID, subdomainID int64) (Settings, error) {
 	s := Defaults()
 	row := db.QueryRowContext(ctx, `SELECT memory_limit, max_execution_time, max_input_time, post_max_size,
 		upload_max_filesize, opcache_enable, disable_functions,
 		display_errors, log_errors, allow_url_fopen, file_uploads, short_open_tag,
 		error_reporting, include_path, open_basedir, session_save_path, mail_force_extra_parameters,
 		pm_strategy, pm_max_children, pm_max_requests, pm_start_servers, pm_min_spare_servers, pm_max_spare_servers,
-		extra_directives, debug_mode FROM php_settings WHERE domain_id=?`, domainID)
+		extra_directives, debug_mode FROM php_settings WHERE domain_id=? AND subdomain_id=?`, domainID, subdomainID)
 	err := row.Scan(&s.MemoryLimit, &s.MaxExecutionTime, &s.MaxInputTime, &s.PostMaxSize,
 		&s.UploadMaxFilesize, &s.OpcacheEnable, &s.DisableFunctions,
 		&s.DisplayErrors, &s.LogErrors, &s.AllowURLFopen, &s.FileUploads, &s.ShortOpenTag,
@@ -152,20 +152,20 @@ func Get(ctx context.Context, db *sql.DB, domainID int64) (Settings, error) {
 }
 
 // Save persists PHP settings for a domain.
-func Save(ctx context.Context, db *sql.DB, domainID int64, s Settings) error {
+func Save(ctx context.Context, db *sql.DB, domainID, subdomainID int64, s Settings) error {
 	sanitized, err := sanitizeSettings(s)
 	if err != nil {
 		return err
 	}
 	s = sanitized
 	_, err = db.ExecContext(ctx,
-		`INSERT INTO php_settings(domain_id, memory_limit, max_execution_time, max_input_time, post_max_size,
+		`INSERT INTO php_settings(domain_id, subdomain_id, memory_limit, max_execution_time, max_input_time, post_max_size,
 			upload_max_filesize, opcache_enable, disable_functions,
 			display_errors, log_errors, allow_url_fopen, file_uploads, short_open_tag,
 			error_reporting, include_path, open_basedir, session_save_path, mail_force_extra_parameters,
 			pm_strategy, pm_max_children, pm_max_requests, pm_start_servers, pm_min_spare_servers, pm_max_spare_servers,
 			extra_directives, debug_mode)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 		 ON DUPLICATE KEY UPDATE
 			memory_limit=VALUES(memory_limit),
 			max_execution_time=VALUES(max_execution_time),
@@ -192,7 +192,7 @@ func Save(ctx context.Context, db *sql.DB, domainID int64, s Settings) error {
 			pm_max_spare_servers=VALUES(pm_max_spare_servers),
 			extra_directives=VALUES(extra_directives),
 			debug_mode=VALUES(debug_mode)`,
-		domainID, s.MemoryLimit, s.MaxExecutionTime, s.MaxInputTime, s.PostMaxSize,
+		domainID, subdomainID, s.MemoryLimit, s.MaxExecutionTime, s.MaxInputTime, s.PostMaxSize,
 		s.UploadMaxFilesize, b2i(s.OpcacheEnable), s.DisableFunctions,
 		b2i(s.DisplayErrors), b2i(s.LogErrors), b2i(s.AllowURLFopen), b2i(s.FileUploads), b2i(s.ShortOpenTag),
 		s.ErrorReporting, s.IncludePath, s.OpenBasedir, s.SessionSavePath, s.MailForceExtraParameters,
@@ -427,7 +427,7 @@ func (h *Handlers) GetSettings(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	s, err := Get(r.Context(), h.DB, id)
+	s, err := Get(r.Context(), h.DB, id, 0)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to load PHP settings")
 		return
@@ -499,7 +499,7 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.Settings = sanitized
-	if err := Save(r.Context(), h.DB, id, req.Settings); err != nil {
+	if err := Save(r.Context(), h.DB, id, 0, req.Settings); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to save PHP settings")
 		return
 	}
