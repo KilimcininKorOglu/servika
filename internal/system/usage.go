@@ -20,8 +20,6 @@ import (
 	"servika/internal/resourcelimit"
 )
 
-const PanelVersion = "Servika 0.2.0"
-
 type CPUUsage struct {
 	Percent float64 `json:"percent"`
 	Cores   int     `json:"cores"`
@@ -478,9 +476,13 @@ func ReadInfo() SystemInfo {
 	if infoCache != nil {
 		c := *infoCache
 		c.IP = primaryIP()
+		// Read outside the cache for the same reason as the IP: the running
+		// version arrives from main after this cache may already be warm, and a
+		// version frozen into it would never correct itself.
+		c.PanelVersion = currentVersion()
 		return c
 	}
-	info := SystemInfo{PanelVersion: PanelVersion, CPUCores: runtime.NumCPU(), Arch: runtime.GOARCH}
+	info := SystemInfo{PanelVersion: currentVersion(), CPUCores: runtime.NumCPU(), Arch: runtime.GOARCH}
 	info.Hostname, _ = os.Hostname()
 	info.IP = primaryIP()
 	if output, err := exec.Command("uname", "-r").Output(); err == nil {

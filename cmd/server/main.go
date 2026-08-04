@@ -175,7 +175,10 @@ func main() {
 	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
 	mail.HealMailOnStartup(context.Background(), d)
 	mail.StartPolicyServer(d, "127.0.0.1:10040")
-	go system.StartVersionCheck(version, buildDate)
+	// Called synchronously: this publishes the running version to internal/system,
+	// which /system/usage reports as panel_version. Only local file work happens
+	// here; the 24-hour manifest poll starts its own goroutine.
+	system.StartVersionCheck(version, buildDate)
 
 	// Backfill customer panel accounts onto the multi-user model.
 	// Idempotent: exits silently when there is no tenant to migrate. The

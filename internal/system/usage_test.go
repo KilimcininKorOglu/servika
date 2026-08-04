@@ -38,6 +38,41 @@ func TestScanLinesReturnsScannerError(t *testing.T) {
 	}
 }
 
+// panel_version must report the version main is actually running, which arrives
+// through StartVersionCheck. ReadInfo caches the whole SystemInfo, so a version
+// copied into that cache would survive every later change; both a cold and a warm
+// read are checked because only the warm one catches that.
+func TestReadInfoReportsTheRunningVersion(t *testing.T) {
+	versionMu.Lock()
+	previousCurrent := versionCurrent
+	versionCurrent = "9.9.9"
+	versionMu.Unlock()
+	infoCacheMu.Lock()
+	previousCache := infoCache
+	infoCache = nil
+	infoCacheMu.Unlock()
+	t.Cleanup(func() {
+		versionMu.Lock()
+		versionCurrent = previousCurrent
+		versionMu.Unlock()
+		infoCacheMu.Lock()
+		infoCache = previousCache
+		infoCacheMu.Unlock()
+	})
+
+	if got := ReadInfo().PanelVersion; got != "9.9.9" {
+		t.Fatalf("cold ReadInfo() panel_version = %q, want %q", got, "9.9.9")
+	}
+
+	versionMu.Lock()
+	versionCurrent = "9.9.10"
+	versionMu.Unlock()
+
+	if got := ReadInfo().PanelVersion; got != "9.9.10" {
+		t.Fatalf("warm ReadInfo() panel_version = %q, want %q", got, "9.9.10")
+	}
+}
+
 func TestScanLinesStopsWhenVisitorRequests(t *testing.T) {
 	var lines []string
 
