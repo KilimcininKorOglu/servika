@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -256,21 +256,34 @@ function DomainMonitoring() {
     api.get<Domain[]>('/domains').then(r => {
       const enabled = r.data.filter(d => d.status === 'active')
       setDomains(enabled)
-      if (enabled.length > 0 && selected === null) setSelected(enabled[0].id)
+      // Functional so the current selection stays out of this closure: the
+      // effect must run once, not on every selection change.
+      setSelected(current => current === null && enabled.length > 0 ? enabled[0].id : current)
     }).catch(() => {})
   }, [])
 
-  function probe(id: number) {
-    setProbingHealth(true); setHealth(null)
-    api.get<Health>(`/domains/${id}/health`).then(r => setHealth(r.data))
+  const probe = useCallback((domainID: number) => {
+    api.get<Health>(`/domains/${domainID}/health`).then(r => setHealth(r.data))
       .catch(e => setHealth({ url: '', status_code: 0, response_time_ms: 0, reachable: false, error: apiError(e), scheme: '', size_byte: 0 }))
       .finally(() => setProbingHealth(false))
+  }, [])
+
+  // Cleared during render rather than in an effect: these panels belong to the
+  // selected domain, so one frame of the previous domain's health and log lines
+  // would show the wrong host's data, not just paint late.
+  const [shownFor, setShownFor] = useState(selected)
+  if (selected !== shownFor) {
+    setShownFor(selected)
+    setHealth(null)
+    setProbingHealth(true)
+    setAccessLog([])
+    setErrorLog([])
+    setLogError(null)
   }
 
   useEffect(() => {
     if (!selected) return
     probe(selected)
-    setAccessLog([]); setErrorLog([]); setLogError(null)
 
     function fetchLogs() {
       api.get<{ lines: string[]; current: boolean }>(`/domains/${selected}/logs/read?file=access&last=80`)
@@ -283,7 +296,7 @@ function DomainMonitoring() {
     fetchLogs()
     const t = setInterval(fetchLogs, POLL_MS)
     return () => clearInterval(t)
-  }, [selected])
+  }, [selected, probe])
 
   // Auto-scroll to bottom on log update
   useEffect(() => { if (accessRef.current) accessRef.current.scrollTop = accessRef.current.scrollHeight }, [accessLog])
@@ -363,19 +376,31 @@ function ServerLogs() {
   const [sources, setSources] = useState<string[]>(['panel', 'nginx', 'mariadb', 'named', 'sshd', 'cron', 'system'])
   const [lines, setLines] = useState<string[]>([])
   const [lastLineCount, setLastLineCount] = useState(200)
-  const [loading, setLoading] = useState(true)
+  const [reloadToken, setReloadToken] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  function load(selectedSource = source, lineCount = lastLineCount) {
-    setLoading(true); setError(null)
-    api.get<{ lines?: string[]; sources?: string[] }>('/admin/system/logs', { params: { source: selectedSource, last: lineCount } })
-      .then(response => { setLines(response.data.lines || []); if (response.data.sources) setSources(response.data.sources) })
-      .catch(caughtError => setError(apiError(caughtError)))
-      .finally(() => setLoading(false))
-  }
-  useEffect(() => { load(source, lastLineCount) }, [source, lastLineCount])
+  // Derived instead of stored: loading means the request for the CURRENT source,
+  // line count and refresh has not settled, so any of the three shows the
+  // spinner on the same render rather than one frame of the previous log.
+  const requestKey = `${source}:${lastLineCount}:${reloadToken}`
+  const [loadedFor, setLoadedFor] = useState<string | null>(null)
+  const loading = loadedFor !== requestKey
+
+  useEffect(() => {
+    let cancelled = false
+    api.get<{ lines?: string[]; sources?: string[] }>('/admin/system/logs', { params: { source, last: lastLineCount } })
+      .then(response => {
+        if (cancelled) return
+        setLines(response.data.lines || [])
+        if (response.data.sources) setSources(response.data.sources)
+        setError(null)
+      })
+      .catch(caughtError => { if (!cancelled) setError(apiError(caughtError)) })
+      .finally(() => { if (!cancelled) setLoadedFor(requestKey) })
+    return () => { cancelled = true }
+  }, [source, lastLineCount, requestKey])
   const visibleLines = useMemo(() => {
     const q = search.trim().toLowerCase()
     return q ? lines.filter(s => s.toLowerCase().includes(q)) : lines
@@ -402,7 +427,7 @@ function ServerLogs() {
             className="px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300">
             {[100, 200, 500, 1000].map(lineCount => <option key={lineCount} value={lineCount}>{t('logs.lastLineCount', { count: lineCount })}</option>)}
           </select>
-          <button onClick={() => load()} disabled={loading} className="px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">{t('logs.refresh')}</button>
+          <button onClick={() => setReloadToken(n => n + 1)} disabled={loading} className="px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">{t('logs.refresh')}</button>
         </div>
       </div>
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
