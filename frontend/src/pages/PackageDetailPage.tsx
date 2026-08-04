@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -45,9 +45,11 @@ export default function PackageDetailPage() {
   const [reapplyingId, setReapplyingId] = useState<number | null>(null)
   const [reapplyResult, setReapplyResult] = useState<{ id: number; ok: boolean } | null>(null)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchPlan
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refresh that follows a write.
+  const fetchPlan = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     Promise.all([
       api.get<GetResponse>(`/plans/${id}`),
       api.get<Domain[]>(`/plans/${id}/domains`),
@@ -57,8 +59,15 @@ export default function PackageDetailPage() {
       setDomains(domainsResponse.data || [])
     }).catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [id])
+  }, [id])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchPlan()
+  }, [fetchPlan])
+
+  useEffect(() => { fetchPlan() }, [fetchPlan])
   useEffect(() => {
     api.get<Version[]>('/php/versions').then(response => setVersions(response.data || [])).catch(() => {})
   }, [])
