@@ -217,7 +217,7 @@ function PasswordResetModal({ type, domainId, ftpUser, dbUser, onClose }:
         })
         .catch(() => setCurrentPassword(t('modal.notAuthorized')))
     }
-  }, [showCurrent, type, domainId])
+  }, [showCurrent, type, domainId, t])
 
   async function create() {
     setProcessing(true); setError(null)
