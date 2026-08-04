@@ -107,7 +107,7 @@ function Card({ children }: { children: ReactNode }) {
 
 export default function SiteMigrationPage() {
   const { t } = useTranslation('SiteMigrationPage')
-  const stored = useMemo(readStoredSource, [])
+  const stored = useMemo(() => readStoredSource(), [])
 
   // --- source server ---
   const [type, setType] = useState(stored.type && PANELS.includes(stored.type) ? stored.type : 'plesk')
@@ -148,7 +148,10 @@ export default function SiteMigrationPage() {
   const [summary, setSummary] = useState({ total: 0, completed: 0, failed: 0, status: '' })
   const [history, setHistory] = useState<MigrationJob[]>([])
   const logRef = useRef<HTMLPreElement>(null)
-  const startedAtRef = useRef<number | null>(null) // start time in ms, used for the ETA
+  // State rather than a ref: the elapsed time and the ETA are rendered, and a
+  // ref read during render would not re-render when the clock moves.
+  const [startedAt, setStartedAt] = useState<number | null>(null) // start time in ms
+  const [nowMS, setNowMS] = useState(() => Date.now())
 
   const sourceBody = useCallback(() => ({
     type, host: host.trim(), port: Number(port) || 22, user: user.trim(),
@@ -156,18 +159,33 @@ export default function SiteMigrationPage() {
     key: authMode === 'key' ? privateKey : '',
   }), [type, host, port, user, authMode, password, privateKey])
 
-  const loadJobs = useCallback(async () => {
-    try {
-      const { data } = await api.get<{ jobs: MigrationJob[]; active_job: number }>('/admin/migrations')
-      setHistory(data.jobs || [])
-      if (data.active_job > 0) {
-        setJobID(data.active_job); setRunning(true); setStep(3)
-        if (startedAtRef.current === null) startedAtRef.current = Date.now()
-      }
-    } catch { /* the panel may be restarting */ }
-  }, [])
+  // Promise callbacks rather than await/try: the mount effect below calls this,
+  // and writes in an awaited body still count as the effect's own continuation.
+  const loadJobs = useCallback(() =>
+    api.get<{ jobs: MigrationJob[]; active_job: number }>('/admin/migrations')
+      .then(({ data }) => {
+        setHistory(data.jobs || [])
+        if (data.active_job > 0) {
+          setJobID(data.active_job); setRunning(true); setStep(3)
+          // Read outside the updater: a state updater must stay pure, and the
+          // resumed job's start time is unknown, so the clock starts now.
+          const resumedAt = Date.now()
+          setStartedAt(current => current ?? resumedAt)
+          setNowMS(resumedAt)
+        }
+      })
+      .catch(() => { /* the panel may be restarting */ }),
+  [])
 
   useEffect(() => { loadJobs() }, [loadJobs])
+
+  // Advance the clock only while a job runs, so a finished job's elapsed time
+  // and ETA stop where they ended instead of creeping up on unrelated renders.
+  useEffect(() => {
+    if (!running) return
+    const timer = window.setInterval(() => setNowMS(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [running])
 
   // Remember the non-secret source fields (never the password or the key).
   useEffect(() => {
@@ -266,7 +284,8 @@ export default function SiteMigrationPage() {
         },
         selected: picked,
       })
-      startedAtRef.current = Date.now()
+      const startNow = Date.now()
+      setStartedAt(startNow); setNowMS(startNow)
       setJobID(data.job_id); setRunning(true); setLogText(''); setItems([]); setStep(3)
     } catch (e) { setError(apiError(e, t('errors.startFailed'))) }
   }
@@ -280,15 +299,15 @@ export default function SiteMigrationPage() {
   function newMigration() {
     setJobID(null); setRunning(false); setItems([]); setLogText('')
     setSummary({ total: 0, completed: 0, failed: 0, status: '' })
-    startedAtRef.current = null
+    setStartedAt(null)
     setStep(accounts && accounts.length > 0 ? 2 : 1)
   }
 
   const selectedCount = (accounts || []).filter(a => selected[a.domain_name]).length
   const finishedCount = summary.completed + summary.failed
   const percent = summary.total > 0 ? Math.round((finishedCount / summary.total) * 100) : 0
-  const elapsed = startedAtRef.current ? (Date.now() - startedAtRef.current) / 1000 : 0
-  const eta = running && finishedCount > 0 && startedAtRef.current
+  const elapsed = startedAt ? Math.max(0, (nowMS - startedAt) / 1000) : 0
+  const eta = running && finishedCount > 0 && startedAt
     ? (elapsed / finishedCount) * (summary.total - finishedCount) : 0
   const activeItem = items.find(i => i.status === 'running')
   const canOpenStep = (n: number) =>
@@ -442,7 +461,9 @@ export default function SiteMigrationPage() {
           {history.length > 0 && (
             <HistoryCard history={history} statusLabel={statusLabel} onSelect={job => {
               setJobID(job.id); setRunning(job.status === 'running')
-              if (startedAtRef.current === null) startedAtRef.current = Date.now()
+              const openedAt = Date.now()
+              setStartedAt(current => current ?? openedAt)
+              setNowMS(openedAt)
               setStep(3)
             }} />
           )}
