@@ -148,20 +148,22 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "password must contain 4 to 128 characters")
 		return
 	}
+	// htpasswd reads one line from stdin, so a line break would silently store a
+	// truncated password and lock the customer out of the directory they just
+	// protected. NUL would truncate it the same way.
+	if strings.ContainsAny(req.Password, "\r\n\x00") {
+		httpx.WriteError(w, http.StatusBadRequest, "password cannot contain line breaks")
+		return
+	}
 	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
 	if err := os.MkdirAll(htpasswdDir, 0o755); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create htpasswd directory")
 		return
 	}
 	file := htpasswdFile(id, subdomainID, path)
-	flag := "-bB"
 	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-	if _, e := os.Stat(file); e != nil {
-		flag = "-cbB" // Create a new file.
-	}
-	// Explicit arguments keep passwords and user names out of the shell.
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	if _, err := exec.Command("htpasswd", flag, file, req.Username, req.Password).CombinedOutput(); err != nil {
+	_, statErr := os.Stat(file)
+	if _, err := htpasswdCommand(file, req.Username, req.Password, statErr != nil).CombinedOutput(); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
@@ -228,6 +230,25 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+// htpasswdCommand builds the .htpasswd write with the password on stdin.
+//
+// -i is what reads it from there. The earlier -b form took the password as an
+// argv element, where /proc/<pid>/cmdline publishes it to every local account
+// for as long as htpasswd runs, and a tenant reaches that window with arbitrary
+// shell from a cron entry. -c is added when the file does not exist yet.
+func htpasswdCommand(file, username, password string, create bool) *exec.Cmd {
+	flag := "-iB"
+	if create {
+		flag = "-ciB"
+	}
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec, and the password travels on stdin.
+	command := exec.Command("htpasswd", flag, file, username)
+	// htpasswd reads one line and strips the terminator; Add rejects a password
+	// containing one, so nothing is lost here.
+	command.Stdin = strings.NewReader(password + "\n")
+	return command
 }
 
 // htpasswdFile names the password file per scope, so the same path protected on a
