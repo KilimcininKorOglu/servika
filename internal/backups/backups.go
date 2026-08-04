@@ -251,10 +251,16 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "backup not found")
 		return
 	}
-	if err == nil {
-		_ = os.Remove(filepath.Join(backupRoot(), systemUser, file))
+	// Fail closed: the lookup above is the ownership check. Continuing after any
+	// other error would delete a row whose domain was never confirmed, so the
+	// request is refused instead.
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
+		return
 	}
-	_, _ = h.DB.ExecContext(r.Context(), `DELETE FROM backups WHERE id=?`, backupID)
+	_ = os.Remove(filepath.Join(backupRoot(), systemUser, file))
+	// domain_id is repeated here so the write is scoped exactly like the lookup.
+	_, _ = h.DB.ExecContext(r.Context(), `DELETE FROM backups WHERE id=? AND domain_id=?`, backupID, id)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
