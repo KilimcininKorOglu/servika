@@ -7,6 +7,8 @@
   "title": "Domini aggiuntivi",
   "subtitle": "Crea domini aggiuntivi o parcheggiati e configura reindirizzamenti dell'intero dominio.",
   "toast": {
+    "wwwSaved": "Il nome host canonico è stato aggiornato.",
+    "wwwSaveFailed": "Impossibile aggiornare il nome host canonico",
     "created": "{{domain}} è stato creato.",
     "createFailed": "Impossibile creare il dominio aggiuntivo",
     "deleted": "{{domain}} è stato eliminato.",
@@ -40,6 +42,17 @@
     "saving": "Salvataggio…",
     "save": "Salva reindirizzamento",
     "remove": "Rimuovi"
+  },
+  "www": {
+    "title": "Nome host canonico",
+    "hint": "Scegli su quale nome host risponde il sito. L’altro restituisce un 301 verso di esso, così motori di ricerca e collegamenti convergono su un unico indirizzo.",
+    "overridden": "Sovrascritto dal reindirizzamento dell’intero dominio",
+    "wwwUnresolved": "www non punta ancora a questo server; reindirizzare lì renderebbe il sito irraggiungibile.",
+    "mode": {
+      "off": "Entrambi (nessun reindirizzamento)",
+      "to_www": "Reindirizza a www",
+      "to_apex": "Reindirizza al dominio senza www"
+    }
   },
   "list": {
     "title": "Domini esistenti",

@@ -7,6 +7,8 @@
   "title": "Domínios Adicionais",
   "subtitle": "Crie domínios adicionais ou estacionados e configure redireccionamentos de domínio completo.",
   "toast": {
+    "wwwSaved": "O nome de anfitrião canónico foi atualizado.",
+    "wwwSaveFailed": "Não foi possível atualizar o nome de anfitrião canónico",
     "created": "{{domain}} foi criado.",
     "createFailed": "Não foi possível criar o domínio adicional",
     "deleted": "{{domain}} foi eliminado.",
@@ -40,6 +42,17 @@
     "saving": "A guardar…",
     "save": "Guardar Redireccionamento",
     "remove": "Remover"
+  },
+  "www": {
+    "title": "Nome de anfitrião canónico",
+    "hint": "Escolha em que nome de anfitrião o site responde. O outro devolve um 301 para ele, para que motores de busca e ligações fiquem num único endereço.",
+    "overridden": "Substituído pelo redirecionamento de todo o domínio",
+    "wwwUnresolved": "www ainda não aponta para este servidor; redirecionar para lá deixaria o site inacessível.",
+    "mode": {
+      "off": "Ambos (sem redirecionamento)",
+      "to_www": "Redirecionar para www",
+      "to_apex": "Redirecionar para o domínio sem www"
+    }
   },
   "list": {
     "title": "Domínios Existentes",

@@ -7,6 +7,8 @@
   "title": "Dominios adicionales",
   "subtitle": "Cree dominios adicionales o aparcados y configure redirecciones de dominio completo.",
   "toast": {
+    "wwwSaved": "El nombre de host canónico se actualizó.",
+    "wwwSaveFailed": "No se pudo actualizar el nombre de host canónico",
     "created": "{{domain}} fue creado.",
     "createFailed": "No se pudo crear el dominio adicional",
     "deleted": "{{domain}} fue eliminado.",
@@ -40,6 +42,17 @@
     "saving": "Guardando…",
     "save": "Guardar redirección",
     "remove": "Eliminar"
+  },
+  "www": {
+    "title": "Nombre de host canónico",
+    "hint": "Elija en qué nombre de host responde el sitio. El otro devuelve un 301 hacia él, de modo que buscadores y enlaces se asienten en una sola dirección.",
+    "overridden": "Anulado por la redirección de todo el dominio",
+    "wwwUnresolved": "www todavía no apunta a este servidor; redirigir allí dejaría el sitio inaccesible.",
+    "mode": {
+      "off": "Ambos (sin redirección)",
+      "to_www": "Redirigir a www",
+      "to_apex": "Redirigir al dominio sin www"
+    }
   },
   "list": {
     "title": "Dominios existentes",

@@ -7,6 +7,8 @@
   "title": "Doplňkové domény",
   "subtitle": "Vytvořte doplňkové nebo parkované domény a nastavte přesměrování celé domény.",
   "toast": {
+    "wwwSaved": "Kanonický název hostitele byl aktualizován.",
+    "wwwSaveFailed": "Kanonický název hostitele se nepodařilo aktualizovat",
     "created": "{{domain}} byla vytvořena.",
     "createFailed": "Doplňkovou doménu nelze vytvořit",
     "deleted": "{{domain}} byla smazána.",
@@ -40,6 +42,17 @@
     "saving": "Ukládání…",
     "save": "Uložit přesměrování",
     "remove": "Odebrat"
+  },
+  "www": {
+    "title": "Kanonický název hostitele",
+    "hint": "Zvolte, na kterém názvu hostitele web odpovídá. Druhý na něj vrací 301, takže vyhledávače i odkazy skončí na jediné adrese.",
+    "overridden": "Přepsáno přesměrováním celé domény",
+    "wwwUnresolved": "www se zatím nepřekládá na tento server; přesměrování tam by web odpojilo.",
+    "mode": {
+      "off": "Obě (bez přesměrování)",
+      "to_www": "Přesměrovat na www",
+      "to_apex": "Přesměrovat na doménu bez www"
+    }
   },
   "list": {
     "title": "Existující domény",

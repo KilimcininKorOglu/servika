@@ -7,6 +7,8 @@
   "title": "Domaines additionnels",
   "subtitle": "Créez des domaines additionnels ou parqués et configurez des redirections de domaine complètes.",
   "toast": {
+    "wwwSaved": "Le nom d’hôte canonique a été mis à jour.",
+    "wwwSaveFailed": "Impossible de mettre à jour le nom d’hôte canonique",
     "created": "{{domain}} a été créé.",
     "createFailed": "Impossible de créer le domaine additionnel",
     "deleted": "{{domain}} a été supprimé.",
@@ -40,6 +42,17 @@
     "saving": "Enregistrement…",
     "save": "Enregistrer la redirection",
     "remove": "Supprimer"
+  },
+  "www": {
+    "title": "Nom d’hôte canonique",
+    "hint": "Choisissez le nom d’hôte sur lequel le site répond. L’autre renvoie une 301 vers celui-ci, afin que les moteurs de recherche et les liens convergent vers une seule adresse.",
+    "overridden": "Remplacé par la redirection de tout le domaine",
+    "wwwUnresolved": "www ne pointe pas encore vers ce serveur ; y rediriger rendrait le site inaccessible.",
+    "mode": {
+      "off": "Les deux (aucune redirection)",
+      "to_www": "Rediriger vers www",
+      "to_apex": "Rediriger vers le domaine nu"
+    }
   },
   "list": {
     "title": "Domaines existants",

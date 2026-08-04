@@ -7,6 +7,8 @@
   "title": "附加域名",
   "subtitle": "创建附加或停放域名，并配置整域重定向。",
   "toast": {
+    "wwwSaved": "规范主机名已更新。",
+    "wwwSaveFailed": "无法更新规范主机名",
     "created": "{{domain}} 已创建。",
     "createFailed": "无法创建附加域名",
     "deleted": "{{domain}} 已删除。",
@@ -40,6 +42,17 @@
     "saving": "保存中…",
     "save": "保存重定向",
     "remove": "移除"
+  },
+  "www": {
+    "title": "规范主机名",
+    "hint": "选择站点在哪个主机名上响应。另一个会返回 301 跳转到它，使搜索引擎和链接集中到单一地址。",
+    "overridden": "被整站重定向覆盖",
+    "wwwUnresolved": "www 尚未解析到本服务器，重定向到它会使站点无法访问。",
+    "mode": {
+      "off": "两者（不重定向）",
+      "to_www": "重定向到 www",
+      "to_apex": "重定向到不带 www 的域名"
+    }
   },
   "list": {
     "title": "现有域名",

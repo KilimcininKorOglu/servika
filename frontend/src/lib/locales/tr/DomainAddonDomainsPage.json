@@ -7,6 +7,8 @@
   "title": "Ek Alan Adları",
   "subtitle": "Ek veya park edilmiş alan adları oluşturun ve tüm alan adı yönlendirmelerini yapılandırın.",
   "toast": {
+    "wwwSaved": "Kanonik alan adı güncellendi.",
+    "wwwSaveFailed": "Kanonik alan adı güncellenemedi",
     "created": "{{domain}} oluşturuldu.",
     "createFailed": "Ek alan adı oluşturulamadı",
     "deleted": "{{domain}} silindi.",
@@ -40,6 +42,17 @@
     "saving": "Kaydediliyor…",
     "save": "Yönlendirmeyi Kaydet",
     "remove": "Kaldır"
+  },
+  "www": {
+    "title": "Kanonik Alan Adı",
+    "hint": "Sitenin hangi alan adında yanıt vereceğini seçin. Diğeri ona 301 döndürür, böylece arama motorları ve bağlantılar tek bir adreste toplanır.",
+    "overridden": "Tüm alan yönlendirmesi tarafından geçersiz kılındı",
+    "wwwUnresolved": "www henüz bu sunucuya çözümlenmiyor, ona yönlendirmek siteyi erişilemez yapar.",
+    "mode": {
+      "off": "İkisi de (yönlendirme yok)",
+      "to_www": "www adresine yönlendir",
+      "to_apex": "Çıplak alan adına yönlendir"
+    }
   },
   "list": {
     "title": "Mevcut Alan Adları",

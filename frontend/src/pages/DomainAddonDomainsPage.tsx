@@ -20,11 +20,21 @@ type RedirectStatus = {
   status_code?: number
 }
 
+type WWWRedirect = {
+  mode: 'off' | 'to_www' | 'to_apex'
+  modes: string[]
+  // The backend refuses to_www when www does not point here, so the reason is
+  // shown before the attempt rather than as a rejection afterwards.
+  www_resolves_to_apex: boolean
+}
+
 export default function DomainAddonDomainsPage() {
   const { t } = useTranslation('DomainAddonDomainsPage')
   const { id } = useParams()
   const [addons, setAddons] = useState<AddonDomain[]>([])
   const [redirect, setRedirect] = useState<RedirectStatus>({ active: false })
+  const [www, setWww] = useState<WWWRedirect | null>(null)
+  const [wwwSaving, setWwwSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [redirectSaving, setRedirectSaving] = useState(false)
@@ -43,11 +53,13 @@ export default function DomainAddonDomainsPage() {
     Promise.all([
       api.get<AddonDomain[]>(`/domains/${id}/addon-domains`),
       api.get<RedirectStatus>(`/domains/${id}/redirect`),
-    ]).then(([addonsResponse, redirectResponse]) => {
+      api.get<WWWRedirect>(`/domains/${id}/www-redirect`),
+    ]).then(([addonsResponse, redirectResponse, wwwResponse]) => {
       setAddons(addonsResponse.data || [])
       setRedirect(redirectResponse.data || { active: false })
       setTargetURL(redirectResponse.data?.target_url || '')
       setStatusCode(redirectResponse.data?.status_code || 301)
+      setWww(wwwResponse.data || null)
     }).catch(error => setError(apiError(error))).finally(() => setLoading(false))
   }, [id])
 
@@ -91,6 +103,16 @@ export default function DomainAddonDomainsPage() {
       load()
     } catch (error) { setError(apiError(error, t('toast.redirectSaveFailed'))) }
     finally { setRedirectSaving(false) }
+  }
+
+  async function saveWWWRedirect(mode: WWWRedirect['mode']) {
+    setError(null); setSuccess(null); setWwwSaving(true)
+    try {
+      await api.put(`/domains/${id}/www-redirect`, { mode })
+      setSuccess(t('toast.wwwSaved'))
+      load()
+    } catch (error) { setError(apiError(error, t('toast.wwwSaveFailed'))) }
+    finally { setWwwSaving(false) }
   }
 
   async function deleteRedirect() {
@@ -166,6 +188,28 @@ export default function DomainAddonDomainsPage() {
           {redirect.active && <button type="button" onClick={deleteRedirect} disabled={redirectSaving} className="px-4 py-2 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50">{t('redirect.remove')}</button>}
         </div>
       </form>
+
+      {www && (
+        <div className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-4 mb-5">
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <h3 className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">{t('www.title')}</h3>
+            {redirect.active && <span className="text-xs px-2 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300">{t('www.overridden')}</span>}
+          </div>
+          <p className="text-[11px] text-slate-400 mb-3">{t('www.hint')}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            {(['off', 'to_www', 'to_apex'] as const).map(mode => (
+              <button key={mode} type="button" disabled={wwwSaving || www.mode === mode || (mode === 'to_www' && !www.www_resolves_to_apex)}
+                onClick={() => saveWWWRedirect(mode)}
+                className={`px-3 py-2 text-sm font-medium rounded-lg border disabled:opacity-50 ${www.mode === mode
+                  ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-300'
+                  : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                {t(`www.mode.${mode}`)}
+              </button>
+            ))}
+          </div>
+          {!www.www_resolves_to_apex && <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-2">{t('www.wwwUnresolved')}</p>}
+        </div>
+      )}
 
       <div className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-4">
         <h3 className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-3">{t('list.title')}</h3>
