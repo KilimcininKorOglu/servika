@@ -29,6 +29,7 @@ type Overview struct {
 // only the subdomains under their own customers.
 func (h *Handlers) ListAll(w http.ResponseWriter, r *http.Request) {
 	condition, args := middleware.ScopeSQL(r, "d")
+	// #nosec G701 G202 -- condition is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via args placeholders.
 	rows, err := h.DB.QueryContext(r.Context(),
 		`SELECT s.id, s.subdomain, s.fqdn, s.domain_id, d.domain_name, d.system_user,
 		        s.php_version, DATE_FORMAT(s.created_at,'%Y-%m-%d %H:%i')
