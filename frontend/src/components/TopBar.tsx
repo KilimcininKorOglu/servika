@@ -210,7 +210,14 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
     return () => window.removeEventListener('servika:theme-change', handler)
   }, [])
 
-  useEffect(() => { setSelected(0) }, [query])
+  // Moving the highlight back to the first hit is a reaction to the query
+  // changing, so it is adjusted during render; an effect would paint one frame
+  // with the highlight still on a row from the previous result set.
+  const [highlightedForQuery, setHighlightedForQuery] = useState(query)
+  if (highlightedForQuery !== query) {
+    setHighlightedForQuery(query)
+    setSelected(0)
+  }
 
   useEffect(() => {
     if (!canSearch) return
