@@ -159,8 +159,14 @@ function Toolkit({ base, installation, onChange }: { base: string; installation:
   const clearCache = () => run('cache', async () => (await api.post(`${base}/wordpress/tool`, { dir, action: 'cache-clear' })).data, t('messages.cacheCleared'))
   const repair = () => run('repair', async () => (await api.post(`${base}/wordpress/repair`, { dir })).data, t('messages.repairDone'), loadStatus)
 
-  const updatePackage = (type: 'plugin' | 'theme', name: string) => run(`${type}:${name}`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update', name })).data, t('messages.packageUpdated', { name }), () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
-  const packageAll = (type: 'plugin' | 'theme') => run(`${type}:all`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update-all' })).data, t('messages.allUpdatesDone'), () => { type === 'plugin' ? setPlugins(null) : setThemes(null) })
+  // Dropping the cached list forces the tab to refetch the packages it shows.
+  const invalidatePackages = (type: 'plugin' | 'theme') => {
+    if (type === 'plugin') setPlugins(null)
+    else setThemes(null)
+  }
+
+  const updatePackage = (type: 'plugin' | 'theme', name: string) => run(`${type}:${name}`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update', name })).data, t('messages.packageUpdated', { name }), () => invalidatePackages(type))
+  const packageAll = (type: 'plugin' | 'theme') => run(`${type}:all`, async () => (await api.post(`${base}/wordpress/${type}`, { dir, action: 'update-all' })).data, t('messages.allUpdatesDone'), () => invalidatePackages(type))
   const pluginToggle = (plugin: Package) => run(`plugin:${plugin.name}`, async () => (await api.post(`${base}/wordpress/plugin`, { dir, action: plugin.status === 'active' ? 'passive' : 'active', name: plugin.name })).data, plugin.status === 'active' ? t('messages.deactivated', { name: plugin.name }) : t('messages.activated', { name: plugin.name }), () => setPlugins(null))
   const activateTheme = (theme: Package) => run(`theme:${theme.name}`, async () => (await api.post(`${base}/wordpress/theme`, { dir, action: 'active', name: theme.name })).data, t('messages.activated', { name: theme.name }), () => setThemes(null))
 

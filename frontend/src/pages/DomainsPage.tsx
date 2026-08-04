@@ -155,14 +155,22 @@ export default function DomainsPage() {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(text); return true
       }
-    } catch {}
+    } catch {
+      // Clipboard API denied or unavailable; fall through to the textarea trick.
+    }
     try {
       const ta = document.createElement('textarea')
       ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'
       document.body.appendChild(ta); ta.select(); document.execCommand('copy')
       document.body.removeChild(ta); return true
-    } catch {}
-    try { window.prompt('Press Ctrl+C to copy, then press Enter:', text); return true } catch {}
+    } catch {
+      // execCommand is unavailable or blocked; fall through to the manual prompt.
+    }
+    try {
+      window.prompt('Press Ctrl+C to copy, then press Enter:', text); return true
+    } catch {
+      // Prompts are blocked too, so there is no way left to hand over the text.
+    }
     return false
   }
 
@@ -207,7 +215,9 @@ export default function DomainsPage() {
     setDeleteConfirmationOpen(false); setDeleteConfirmationText(''); setProcessing(true); setError(null)
     const ids = Array.from(selected); let successCount = 0
     for (const id of ids) {
-      try { await api.delete(`/domains/${id}`); successCount++ } catch {}
+      // One domain failing must not abandon the rest; the toast below reports the
+      // successful count against the total, so failures stay visible.
+      try { await api.delete(`/domains/${id}`); successCount++ } catch { /* counted as a failure */ }
     }
     setSelected(new Set()); setSuccess(t('toast.deleted', { success: successCount, total: ids.length }))
     setTimeout(() => setSuccess(null), 4000)

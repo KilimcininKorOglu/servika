@@ -55,7 +55,6 @@ export default function WordPressPage() {
       if (response.data?.length) setDomainId(response.data[0].id)
     }).catch(cause => setError(apiError(cause)))
     listAll()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function listAll() {

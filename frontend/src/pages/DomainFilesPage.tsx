@@ -37,7 +37,6 @@ type CtxItem =
 
 const ARCHIVE_RX = /\.(zip|rar|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|gz)$/i
 
-const ROOT = '/'
 
 export default function DomainFilesPage() {
   const { t } = useTranslation('DomainFilesPage')
@@ -54,7 +53,6 @@ export default function DomainFilesPage() {
   const [dragCounter, setDragCounter] = useState(0)
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set())
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
-  const [extractActive, setExtractActive] = useState(false)
   const [newMenuOpen, setNewMenuOpen] = useState(false)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; entry: Entry } | null>(null)
   const longPressRef = useRef<number | undefined>(undefined)
@@ -274,15 +272,12 @@ export default function DomainFilesPage() {
   }
 
   async function extract(e: Entry) {
-    setExtractActive(true)
     try {
       await api.post(`/domains/${id}/files/extract`, { path: e.path })
       setTreeRefreshKey(x => x + 1)
       scan()
     } catch (err) {
       alert(apiError(err, t('errors.extractFailed')))
-    } finally {
-      setExtractActive(false)
     }
   }
 
@@ -400,7 +395,7 @@ export default function DomainFilesPage() {
   async function createNewFile(name: string) {
     const target = (path === '/' ? '' : path) + '/' + name
     try {
-      const { data } = await api.post(`/domains/${id}/files/new-file`, { path: target })
+      await api.post(`/domains/${id}/files/new-file`, { path: target })
       setNewFileModal(false); scan()
       // Open the new file directly in the editor.
       const readResponse = await api.get(`/domains/${id}/files/read`, { params: { path: target } })
@@ -734,7 +729,6 @@ export default function DomainFilesPage() {
         <CopyMoveModal
           type={copyMoveModal.type}
           paths={copyMoveModal.paths}
-          domainId={id!}
           onDone={copyOrMove}
           onCancel={() => setCopyModal(null)} />
       )}
@@ -954,8 +948,8 @@ function formatEta(seconds: number, t: (key: string, opts?: Record<string, unkno
   return t('eta.hrMin', { hr: Math.floor(seconds / 3600), min: Math.floor((seconds % 3600) / 60) })
 }
 
-function CopyMoveModal({ type, paths, domainId, onDone, onCancel }:
-  { type: 'copy' | 'move'; paths: string[]; domainId: string | number; onDone: (target: string) => void; onCancel: () => void }) {
+function CopyMoveModal({ type, paths, onDone, onCancel }:
+  { type: 'copy' | 'move'; paths: string[]; onDone: (target: string) => void; onCancel: () => void }) {
   const { t } = useTranslation('DomainFilesPage')
   const [target, setTarget] = useState('/public_html')
   const title = type === 'copy' ? t('copyMoveModal.titleCopy') : t('copyMoveModal.titleMove')

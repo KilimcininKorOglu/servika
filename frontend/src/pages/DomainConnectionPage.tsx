@@ -26,7 +26,9 @@ function writeToClipboard(text: string, promptMsg: string): boolean {
     const ok = document.execCommand('copy')
     document.body.removeChild(ta)
     if (ok) return true
-  } catch {}
+  } catch {
+    // execCommand is unavailable or blocked; fall through to the manual prompt.
+  }
   // 3) Last resort: prompt the user to copy manually with Ctrl+C.
   try {
     window.prompt(promptMsg, text)
@@ -119,7 +121,6 @@ export default function DomainConnectionPage() {
           ftpUser={domain?.ftp_user || ''}
           dbUser={domain?.db_user || ''}
           onClose={() => setPasswordModal(null)}
-          onCopy={copy}
         />
       )}
     </div>
@@ -189,8 +190,8 @@ function Password({ e, onOpen }: { e: string; id: string; type: string; onOpen: 
   )
 }
 
-function PasswordResetModal({ type, domainId, ftpUser, dbUser, onClose, onCopy }:
-  { type: 'ftp' | 'db'; domainId: string; ftpUser: string; dbUser: string; onClose: () => void; onCopy: (s: string) => void }) {
+function PasswordResetModal({ type, domainId, ftpUser, dbUser, onClose }:
+  { type: 'ftp' | 'db'; domainId: string; ftpUser: string; dbUser: string; onClose: () => void }) {
   const [newPassword, setNewPassword] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)

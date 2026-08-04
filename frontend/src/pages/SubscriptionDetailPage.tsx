@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams, useNavigate } from 'react-router'
+import { useParams, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
-import ResourceCard from '@/components/ResourceCard'
 import DomainResourceCard from '@/components/DomainResourceCard'
 import DomainDashboard from "@/components/DomainDashboard"
 import ToolCard from '@/components/ToolCard'
@@ -311,46 +310,6 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
       <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-2">{title}</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">{children}</div>
     </section>
-  )
-}
-
-function DashboardTabContent({ domain }: { domain: Domain }) {
-  const { t } = useTranslation('SubscriptionDetailPage')
-  return (
-    <div>
-      <Group title={t('groups.filesAndDatabases')}>
-        <ToolCard label={t('tools.connection')} description={t('tools.connectionDesc')} icon={ICONS.connection} color="emerald" />
-        <ToolCard label={t('tools.files')} description={t('tools.filesDesc')} icon={ICONS.files} color="amber" phase="F6" />
-        <ToolCard label={t('tools.databases')} description={domain.db_name} icon={ICONS.db} color="violet" phase="F5" />
-        <ToolCard label={t('tools.ftp')} description={t('tools.ftpDesc')} icon={ICONS.ftp} color="sky" phase="F4" />
-        <ToolCard label={t('tools.backup')} description={t('tools.backupDesc')} icon={ICONS.backup} color="rose" phase="F12" />
-        <ToolCard label={t('tools.copy')} description={t('tools.copyDesc')} icon={ICONS.copy} color="sky" />
-      </Group>
-
-      <Group title={t('groups.developmentTools')}>
-        <ToolCard label={t('tools.php')} description={t('tools.phpDesc', { version: domain.php_version })} icon={ICONS.php} color="indigo" phase="F3" />
-        <ToolCard label={t('tools.logs')} description={t('tools.logsDesc')} icon={ICONS.log} color="slate" phase="F10" />
-        <ToolCard label={t('tools.cron')} description={t('tools.cronDesc')} icon={ICONS.cron} color="teal" phase="F8" />
-        <ToolCard label={t('tools.git')} description={t('tools.gitDesc')} icon={ICONS.git} color="orange" phase="F9" />
-        <ToolCard label={t('tools.composer')} description={t('tools.composerDesc')} icon={ICONS.composer} color="amber" />
-        <ToolCard label={t('tools.performance')} description={t('tools.performanceDesc')} icon={ICONS.service} color="emerald" />
-      </Group>
-
-      <Group title={t('groups.security')}>
-        <ToolCard
-          label={t('tools.ssl')}
-          description={domain.ssl ? t('tools.sslExpires', { expiry: domain.ssl_expiry || '—' }) : t('tools.sslLetsEncrypt')}
-          icon={ICONS.ssl}
-          color={domain.ssl ? 'emerald' : 'rose'}
-          phase="F7"
-          warning={!domain.ssl ? t('tools.sslNotProtected') : undefined}
-        />
-        <ToolCard label={t('tools.passwordProtect')} description=".htpasswd" icon={ICONS.lock} color="amber" phase="F7" />
-        <ToolCard label={t('tools.statistics')} description={t('tools.statisticsDesc')} icon={ICONS.stats} color="indigo" phase="F10" />
-        <ToolCard label={t('tools.imunify')} description={t('tools.imunifyDesc')} icon={ICONS.imunify} color="emerald" />
-        <ToolCard label={t('tools.waf')} description={t('tools.wafDesc')} icon={ICONS.waf} color="emerald" to={`/subscriptions/${domain.id}/waf`} />
-      </Group>
-    </div>
   )
 }
 

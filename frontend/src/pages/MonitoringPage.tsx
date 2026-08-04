@@ -375,7 +375,7 @@ function ServerLogs() {
       .catch((caughtError: any) => setError(apiError(caughtError)))
       .finally(() => setLoading(false))
   }
-  useEffect(() => { load(source, lastLineCount) /* eslint-disable-next-line */ }, [source, lastLineCount])
+  useEffect(() => { load(source, lastLineCount) }, [source, lastLineCount])
   const visibleLines = useMemo(() => {
     const q = search.trim().toLowerCase()
     return q ? lines.filter(s => s.toLowerCase().includes(q)) : lines
