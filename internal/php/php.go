@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -22,6 +23,7 @@ import (
 	"servika/internal/httpx"
 	"servika/internal/phpversion"
 	"servika/internal/provisioner"
+	"servika/internal/subdomain"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -353,24 +355,28 @@ func ApplyToFilesystem(systemUser, version string, s Settings) (socket string, e
 		if other.Version == version {
 			continue
 		}
+		// #nosec G703 -- systemUser is the provisioned tenant account read from the domains row (^c_[A-Za-z0-9_]+$), never raw request input; PoolDir is a fixed system path.
 		old := filepath.Join(other.PoolDir, systemUser+".conf")
+		// #nosec G703 -- old is <fixed per-version PoolDir>/<provisioned tenant account>.conf; neither component comes from the request.
 		if _, err := os.Stat(old); err == nil {
+			// #nosec G703 -- same path as the stat above: fixed PoolDir plus the provisioned tenant account.
 			_ = os.Remove(old)
 			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 			_, _ = exec.Command("systemctl", "reload-or-restart", other.Service).CombinedOutput()
 		}
 	}
 
-	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
+	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; the path is a fixed per-version constant, not request input.
 	_ = os.MkdirAll(sb.PoolDir, 0755)
-	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
+	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; the path is a fixed per-version constant, not request input.
 	_ = os.MkdirAll(sb.SockDir, 0755)
 	body, err := RenderPool(systemUser, sb.SockDir, s)
 	if err != nil {
 		return "", err
 	}
+	// #nosec G703 -- systemUser is the provisioned tenant account read from the domains row (^c_[A-Za-z0-9_]+$), never raw request input; PoolDir is a fixed system path.
 	poolPath := filepath.Join(sb.PoolDir, systemUser+".conf")
-	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
+	// #nosec G306 G703 -- root-owned PHP-FPM pool file its daemon must read; the path is a fixed PoolDir plus the provisioned tenant account, and no secret is stored here.
 	if err := os.WriteFile(poolPath, []byte(body), 0644); err != nil {
 		return "", err
 	}
@@ -417,17 +423,37 @@ func (h *Handlers) Versions(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, installed)
 }
 
+// scope resolves the target of a settings request. The route carries an optional
+// {sid}; when present the request targets that subdomain and everything below it
+// (the stored row, the reported version, the display name) follows the subdomain
+// rather than the parent domain. ResolveScope rejects a subdomain that belongs to a
+// different domain, so a tenant cannot reach another domain's settings by id.
+func (h *Handlers) scope(r *http.Request) (domainID, subdomainID int64, displayName, systemUser, version string, ok bool) {
+	domainID, _ = strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err := h.DB.QueryRowContext(r.Context(),
+		`SELECT domain_name, system_user, php_version FROM domains WHERE id=?`, domainID).
+		Scan(&displayName, &systemUser, &version); err != nil {
+		return domainID, 0, "", "", "", false
+	}
+	sid, _ := strconv.ParseInt(chi.URLParam(r, "sid"), 10, 64)
+	if sid <= 0 {
+		return domainID, 0, displayName, systemUser, version, true
+	}
+	sc, found := subdomain.ResolveScope(r.Context(), h.DB, domainID, sid)
+	if !found {
+		return domainID, 0, "", "", "", false
+	}
+	return domainID, sc.SubdomainID, sc.FQDN, systemUser, sc.PHPVersion, true
+}
+
 // GetSettings returns domain PHP settings and the active version.
 func (h *Handlers) GetSettings(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	var domainName, systemUser, version string
-	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT domain_name, system_user, php_version FROM domains WHERE id=?`, id).
-		Scan(&domainName, &systemUser, &version); err != nil {
+	id, sid, domainName, systemUser, version, ok := h.scope(r)
+	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	s, err := Get(r.Context(), h.DB, id, 0)
+	s, err := Get(r.Context(), h.DB, id, sid)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to load PHP settings")
 		return
@@ -436,11 +462,12 @@ func (h *Handlers) GetSettings(w http.ResponseWriter, r *http.Request) {
 	modules := versionModules(version)
 
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
-		"domain_name": domainName,
-		"system_user": systemUser,
-		"php_version": version,
-		"settings":    s,
-		"modules":     modules,
+		"domain_name":  domainName,
+		"system_user":  systemUser,
+		"php_version":  version,
+		"subdomain_id": sid,
+		"settings":     s,
+		"modules":      modules,
 		"versions": func() []Version {
 			all := phpversion.AllVersions()
 			installed := []Version{}
@@ -463,7 +490,6 @@ func (h *Handlers) GetSettings(w http.ResponseWriter, r *http.Request) {
 
 // PutSettings saves settings and an optional version, then rewrites pool configuration.
 func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	var req struct {
 		PHPVersion string   `json:"php_version,omitempty"` // Optional. Changes the version when provided.
 		Settings   Settings `json:"settings"`
@@ -473,16 +499,19 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var systemUser, version string
+	id, sid, _, systemUser, version, ok := h.scope(r)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
 	var demo int
 	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT system_user, php_version, is_demo FROM domains WHERE id=?`, id).
-		Scan(&systemUser, &version, &demo); err != nil {
+		`SELECT is_demo FROM domains WHERE id=?`, id).Scan(&demo); err != nil {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
 	if demo == 1 {
-		httpx.WriteError(w, http.StatusForbidden, "pHP settings are fixed for demo subscriptions")
+		httpx.WriteError(w, http.StatusForbidden, "PHP settings are fixed for demo subscriptions")
 		return
 	}
 	if req.PHPVersion != "" && req.PHPVersion != version {
@@ -499,8 +528,12 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.Settings = sanitized
-	if err := Save(r.Context(), h.DB, id, 0, req.Settings); err != nil {
+	if err := Save(r.Context(), h.DB, id, sid, req.Settings); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to save PHP settings")
+		return
+	}
+	if sid > 0 {
+		h.applySubdomain(w, r, id, sid, systemUser, version, req.PHPVersion != "")
 		return
 	}
 	var socket string
@@ -528,6 +561,52 @@ func (h *Handlers) PutSettings(w http.ResponseWriter, r *http.Request) {
 			`UPDATE domains SET php_version=? WHERE id=?`, version, id)
 	}
 
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"ok":          true,
+		"php_version": version,
+		"socket":      socket,
+	})
+}
+
+// applySubdomain publishes settings that were just saved for a subdomain. The version
+// is written before the pool is rendered because the pool's eligibility check reads it,
+// and it is rolled back when the pool cannot be installed so the record never claims a
+// version nginx is not serving.
+func (h *Handlers) applySubdomain(w http.ResponseWriter, r *http.Request, domainID, subdomainID int64, systemUser, version string, versionChanged bool) {
+	var previousVersion string
+	if versionChanged {
+		if err := h.DB.QueryRowContext(r.Context(),
+			`SELECT COALESCE(php_version,'') FROM subdomains WHERE id=? AND domain_id=?`, subdomainID, domainID).
+			Scan(&previousVersion); err != nil {
+			httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
+			return
+		}
+		if _, err := h.DB.ExecContext(r.Context(),
+			`UPDATE subdomains SET php_version=? WHERE id=? AND domain_id=?`, version, subdomainID, domainID); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to save the PHP version")
+			return
+		}
+	}
+	scope, found := subdomain.ResolveScope(r.Context(), h.DB, domainID, subdomainID)
+	if !found {
+		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
+		return
+	}
+	socket, err := provisioner.ApplySubdomainFPM(h.DB, domainID, subdomainID, systemUser, scope.DocRoot, version)
+	if err == nil {
+		err = subdomain.ReRender(h.DB, subdomainID)
+	}
+	if err != nil {
+		if versionChanged {
+			if _, rollbackErr := h.DB.ExecContext(r.Context(),
+				`UPDATE subdomains SET php_version=? WHERE id=? AND domain_id=?`, previousVersion, subdomainID, domainID); rollbackErr != nil {
+				// #nosec G706 -- the logged values are an integer id and a database error, never raw tenant text.
+				log.Printf("subdomain %d PHP version rollback failed: %v", subdomainID, rollbackErr)
+			}
+		}
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to apply PHP pool configuration")
+		return
+	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"ok":          true,
 		"php_version": version,
