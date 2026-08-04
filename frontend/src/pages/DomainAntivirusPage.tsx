@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
@@ -24,40 +24,48 @@ export default function DomainAntivirusPage() {
   const [d, setD] = useState<Status | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [scanning, setScanning] = useState(false)
+  const [startingScan, setStartingScan] = useState(false)
+  // The scan being followed: set either by a scan the user just started or by a
+  // status load that found one already running. Null means nothing to poll.
+  const [pollScanID, setPollScanID] = useState<number | null>(null)
+  const scanning = startingScan || pollScanID !== null
   const [signatureLoading, setSignatureLoading] = useState(false)
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  function load() {
+  const load = useCallback(() => {
     if (!id) return
     api.get<Status>(`/domains/${id}/antivirus`).then(r => {
       setD(r.data)
-      if (r.data.last_scan?.status === 'running') startPoll(r.data.last_scan.id)
+      setPollScanID(r.data.last_scan?.status === 'running' ? r.data.last_scan.id : null)
     }).catch(e => setError(apiError(e))).finally(() => setLoading(false))
-  }
-  useEffect(() => { load(); return () => { if (pollRef.current) clearInterval(pollRef.current) } }, [id])
+  }, [id])
 
-  function startPoll(sid: number) {
-    setScanning(true)
-    if (pollRef.current) clearInterval(pollRef.current)
-    pollRef.current = setInterval(async () => {
-      try {
-        const { data } = await api.get<Scan & { findings: Finding[] }>(`/domains/${id}/antivirus/scan/${sid}`)
-        if (data.status !== 'running') {
-          if (pollRef.current) clearInterval(pollRef.current)
-          setScanning(false)
+  useEffect(() => { load() }, [load])
+
+  // One effect owns the scan polling, so the loader no longer has to start it
+  // and the two are not mutually recursive. Its cleanup replaces the interval
+  // ref: leaving the page or picking up a different scan clears the old timer.
+  useEffect(() => {
+    if (!id || pollScanID === null) return
+    let stopped = false
+    const timer = setInterval(() => {
+      api.get<Scan & { findings: Finding[] }>(`/domains/${id}/antivirus/scan/${pollScanID}`)
+        .then(({ data }) => {
+          if (stopped || data.status === 'running') return
+          setPollScanID(null)
           load()
-        }
-      } catch { if (pollRef.current) clearInterval(pollRef.current); setScanning(false) }
+        })
+        .catch(() => { if (!stopped) setPollScanID(null) })
     }, 2500)
-  }
+    return () => { stopped = true; clearInterval(timer) }
+  }, [id, pollScanID, load])
 
   async function scan() {
-    setError(null); setScanning(true)
+    setError(null); setStartingScan(true)
     try {
       const { data } = await api.post(`/domains/${id}/antivirus/scan`, {})
-      startPoll(data.scan_id)
-    } catch (e) { setError(apiError(e, t('toast.startScanFailed'))); setScanning(false) }
+      setPollScanID(data.scan_id)
+    } catch (e) { setError(apiError(e, t('toast.startScanFailed'))) }
+    finally { setStartingScan(false) }
   }
 
   async function quarantineFinding(b: Finding) {
