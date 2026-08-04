@@ -43,6 +43,35 @@ func tenantCfgDir(systemUser string) string {
 
 const fpmSocketFcontextSpec = "/run/php-fpm-[^/]+(/.*)?"
 
+// mtaSpoolPaths are the mail spools a sendmail wrapper may need to write into. Only one of
+// them exists on a given host, and on a host with no MTA none of them do.
+var mtaSpoolPaths = []string{"/var/spool/postfix/public", "/var/spool/postfix/maildrop", "/var/spool/exim"}
+
+// mtaBindLines builds the systemd bind directives that let PHP mail() reach the local MTA
+// from inside the tenant's mount namespace. ProtectSystem=strict leaves the whole filesystem
+// read-only apart from ReadWritePaths, so without these binds a queue drop fails.
+//
+// Every path is bound only when it actually exists. Gating on /usr/sbin/sendmail alone is
+// wrong: exim installs that same wrapper through alternatives, so a postfix-shaped bind list
+// would name a spool that is not there, systemd would fail the namespace setup, the unit
+// would never start, and EnableTenantFPM would roll the tenant back onto the shared master,
+// losing the isolation the per-tenant unit exists to provide.
+func mtaBindLines() string {
+	var lines strings.Builder
+	if _, err := os.Stat("/usr/sbin/sendmail"); err == nil {
+		lines.WriteString("BindReadOnlyPaths=/usr/sbin/sendmail\n")
+	}
+	for _, spool := range mtaSpoolPaths {
+		if _, err := os.Stat(spool); err == nil {
+			fmt.Fprintf(&lines, "BindPaths=%s\n", spool)
+		}
+	}
+	if lines.Len() == 0 {
+		return ""
+	}
+	return "\n# Local MTA, bound only where it exists, so mail() works inside the namespace.\n" + lines.String()
+}
+
 var (
 	fcontextMu       sync.Mutex
 	fcontextDone     bool
@@ -342,10 +371,10 @@ ProtectControlGroups=yes
 LimitCORE=0
 Restart=on-failure
 RestartSec=2
-
+%s
 [Install]
 WantedBy=multi-user.target
-`, systemUser, systemUser, fpmBinary, tenantCfgDir(systemUser), systemUser, systemUser, systemUser, tenantLogDir)
+`, systemUser, systemUser, fpmBinary, tenantCfgDir(systemUser), systemUser, systemUser, systemUser, tenantLogDir, mtaBindLines())
 }
 
 func waitForSocket(path string, timeout time.Duration) bool {

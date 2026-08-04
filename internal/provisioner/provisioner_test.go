@@ -477,6 +477,29 @@ func TestTenantFPMUnitUsesServikaSliceAndHomeIsolation(t *testing.T) {
 	}
 }
 
+// A bind naming a path that is not on the host fails the systemd namespace setup, so the
+// unit never starts and EnableTenantFPM rolls the tenant back onto the shared PHP-FPM
+// master, losing its isolation. Every MTA path the unit binds must therefore exist.
+func TestTenantUnitBindsOnlyExistingMTAPaths(t *testing.T) {
+	unit := renderTenantUnit("c_example_com", "/usr/sbin/php-fpm")
+	for line := range strings.SplitSeq(unit, "\n") {
+		var path string
+		switch {
+		case strings.HasPrefix(line, "BindReadOnlyPaths="):
+			path = strings.TrimPrefix(line, "BindReadOnlyPaths=")
+		// The tenant home bind is created by the provisioner itself, so only the MTA
+		// paths are checked here.
+		case strings.HasPrefix(line, "BindPaths=/var/spool/"), strings.HasPrefix(line, "BindPaths=/usr/"):
+			path = strings.TrimPrefix(line, "BindPaths=")
+		default:
+			continue
+		}
+		if _, err := os.Stat(path); err != nil {
+			t.Errorf("tenant unit binds %q, which does not exist on this host", path)
+		}
+	}
+}
+
 func TestResolveTenantPMMaxChildrenUsesPlanOrMemory(t *testing.T) {
 	tests := []struct {
 		name         string
