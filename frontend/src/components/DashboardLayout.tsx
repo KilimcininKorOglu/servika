@@ -214,11 +214,15 @@ export default function DashboardLayout() {
   const [footer, setFooter] = useState<VersionFooter | null>(null)
   const location = useLocation()
 
+  // The endpoint is ResellerOrAbove, so a customer session only ever received a
+  // 403 that the catch discarded, leaving the footer empty either way. Asking the
+  // role first drops a request that could never have succeeded.
   useEffect(() => {
+    if (role !== 'admin' && role !== 'reseller') return
     api.get<VersionFooter>('/system/version-check')
       .then((response) => setFooter(response.data))
       .catch(() => {})
-  }, [])
+  }, [role])
 
   // Keyed by the stable NavGroup.titleKey so collapse state survives a language
   // switch (the visible label changes, the key does not).
