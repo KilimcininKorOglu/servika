@@ -16,25 +16,32 @@ export default function PanelDomain() {
   const [domain, setDomain] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  // Starts true because the mount effect below always fetches; the old code
+  // reached the same state by flipping it on from inside that effect.
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [resetting, setResetting] = useState(false)
 
-  const load = useCallback(async () => {
+  // Writes only from the promise callbacks, so the mount effect can call it
+  // without forcing a second render pass. Raising the spinner belongs to the
+  // event path, which is what reload() adds for the save and reset handlers.
+  const fetchStatus = useCallback(() => {
+    return api.get<PanelDomainStatus>('/system/panel-domain')
+      .then(response => {
+        setStatus(response.data)
+        setDomain(response.data.custom_domain || '')
+      })
+      .catch(caughtError => setError(apiError(caughtError, t('errors.load'))))
+      .finally(() => setLoading(false))
+  }, [t])
+
+  function reload() {
     setLoading(true)
     setError('')
-    try {
-      const response = await api.get<PanelDomainStatus>('/system/panel-domain')
-      setStatus(response.data)
-      setDomain(response.data.custom_domain || '')
-    } catch (caughtError) {
-      setError(apiError(caughtError, t('errors.load')))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    return fetchStatus()
+  }
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { fetchStatus() }, [fetchStatus])
 
   async function save(event: React.FormEvent) {
     event.preventDefault()
@@ -44,7 +51,7 @@ export default function PanelDomain() {
     try {
       const response = await api.post<{ custom_domain: string; ssl_status: string; warning?: string }>('/system/panel-domain', { domain: domain.trim() })
       setMessage(response.data.warning || t('messages.saved', { domain: domain.trim() }))
-      await load()
+      await reload()
     } catch (caughtError) {
       setError(apiError(caughtError, t('errors.save')))
     } finally {
@@ -59,7 +66,7 @@ export default function PanelDomain() {
     try {
       await api.delete('/system/panel-domain')
       setMessage(t('messages.reset'))
-      await load()
+      await reload()
     } catch (caughtError) {
       setError(apiError(caughtError, t('errors.reset')))
     } finally {
