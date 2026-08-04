@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -41,14 +41,23 @@ export default function ServicePlansPage() {
   const [modal, setModal] = useState<Plan | null>(null)
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null)
 
-  function load() {
-    setLoading(true); setError(null)
+  // Split so the mount effect never writes state synchronously: fetchPlans
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchPlans = useCallback(() => {
     api.get<Plan[]>('/plans')
       .then(response => setItems(response.data))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [])
+  }, [])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchPlans()
+  }, [fetchPlans])
+
+  useEffect(() => { fetchPlans() }, [fetchPlans])
   useEffect(() => {
     api.get<Version[]>('/php/versions').then(response => setVersions(response.data || [])).catch(() => {})
   }, [])
