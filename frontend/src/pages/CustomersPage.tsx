@@ -6,7 +6,7 @@
 // NOTE: these are NOT panel login accounts — they are billing/contact records.
 // The only panel login is the single admin (root); customers reach their own
 // domains via FTP identity at /cp.
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -40,33 +40,39 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [query, setQuery] = useState(() => searchParams.get('q') || '')
-
-  useEffect(() => { setQuery(searchParams.get('q') || '') }, [searchParams])
+  const queryParam = searchParams.get('q') || ''
+  const [query, setQuery] = useState(queryParam)
+  // Adjusted during render rather than in an effect: a deep link that only
+  // changes ?q= must filter on the very first painted frame, not one frame
+  // later with the previous query still applied.
+  const [appliedQueryParam, setAppliedQueryParam] = useState(queryParam)
+  if (queryParam !== appliedQueryParam) {
+    setAppliedQueryParam(queryParam)
+    setQuery(queryParam)
+  }
 
   const [editing, setEditing] = useState<Customer | null>(null)
   const [saving, setSaving] = useState(false)
   const [toDelete, setToDelete] = useState<Customer | null>(null)
 
-  async function fetchList() {
-    setLoading(true)
-    try {
-      const r = await api.get<Customer[]>('/customers')
-      setList(Array.isArray(r.data) ? r.data : [])
-      setError(null)
-    } catch (e) {
-      setError(apiError(e, t('errors.loadFailed')))
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Promise callbacks rather than await/try: this is what the mount effect
+  // calls, and writes in an awaited body still count as the effect's own
+  // continuation. The spinner belongs to reload(), used by the write paths.
+  const fetchList = useCallback(() =>
+    api.get<Customer[]>('/customers')
+      .then((r) => { setList(Array.isArray(r.data) ? r.data : []); setError(null) })
+      .catch((e) => setError(apiError(e, t('errors.loadFailed'))))
+      .finally(() => setLoading(false)),
+  [t])
+
+  const reload = useCallback(() => { setLoading(true); return fetchList() }, [fetchList])
 
   useEffect(() => {
     fetchList()
     api.get<Plan[]>('/plans')
       .then((r) => setPlans(Array.isArray(r.data) ? r.data : []))
       .catch(() => {})
-  }, [])
+  }, [fetchList])
 
   const filtered = useMemo(() => {
     const t = query.trim().toLowerCase()
@@ -94,7 +100,7 @@ export default function CustomersPage() {
         setSuccess(t('toast.updated', { name }))
       }
       setEditing(null)
-      await fetchList()
+      await reload()
     } catch (e) {
       setError(apiError(e, t('errors.saveFailed')))
     } finally {
@@ -108,7 +114,7 @@ export default function CustomersPage() {
       await api.delete(`/customers/${toDelete.id}`)
       setSuccess(t('toast.deleted', { name: toDelete.name }))
       setToDelete(null)
-      await fetchList()
+      await reload()
     } catch (e) {
       setError(apiError(e, t('errors.deleteFailed')))
       setToDelete(null)
