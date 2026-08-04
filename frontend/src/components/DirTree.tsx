@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 
 type Entry = { name: string; path: string; type: 'folder' | 'file' | 'symlink' }
@@ -43,25 +43,17 @@ function TreeNode({
   const [open, setOpen] = useState(initiallyOpen)
   const [folders, setFolders] = useState<Entry[]>([])
   const [loaded, setLoaded] = useState(false)
-  const [loading, setLoading] = useState(false)
   const rowRef = useRef<HTMLDivElement>(null)
 
-  function fetchChildren() {
-    setLoading(true)
+  // No synchronous state write here, so the effects below can call it directly.
+  // The former `loading` flag is gone: it was only read to show the placeholder
+  // while the node had nothing yet, which is exactly `!loaded`.
+  const fetchChildren = useCallback(() => {
     api.get<ListResp>(`/domains/${domainId}/files`, { params: { path } })
       .then(r => setFolders(r.data.content.filter(e => e.type === 'folder')))
       .catch(() => setFolders([]))
-      .finally(() => { setLoaded(true); setLoading(false) })
-  }
-
-  useEffect(() => {
-    if (initiallyOpen && !loaded) fetchChildren()
-  }, []) // eslint-disable-line
-
-  // Re-fetch if the refresh counter changes and we already have data
-  useEffect(() => {
-    if (loaded) fetchChildren()
-  }, [refreshKey]) // eslint-disable-line
+      .finally(() => setLoaded(true))
+  }, [domainId, path])
 
   const selectedNorm = selected === '' ? '/' : selected
   const childPrefix = path === '/' ? '/' : path + '/'
@@ -70,23 +62,35 @@ function TreeNode({
   // When a folder is entered from the right-hand panel (selected changes), this
   // node auto-opens if it is on or above that path — otherwise the folder browsed
   // on the right would never appear in the tree (it stayed unfetched/closed).
+  // Opening is a reaction to the new selection, so it is adjusted during render;
+  // the fetch it implies is left to the effect below, since render must stay pure.
+  const [autoOpenedFor, setAutoOpenedFor] = useState(selected)
+  if (autoOpenedFor !== selected) {
+    setAutoOpenedFor(selected)
+    if (onSelectedBranch && !open) setOpen(true)
+  }
+
+  // One place decides that an open node without children needs them, whether it
+  // was opened at mount, by the chevron, or by the selection above.
   useEffect(() => {
-    if (onSelectedBranch && !open) {
-      setOpen(true)
-      if (!loaded) fetchChildren()
-    }
+    if (open && !loaded) fetchChildren()
+  }, [open, loaded, fetchChildren])
+
+  // Re-fetch if the refresh counter changes and we already have data.
+  useEffect(() => {
+    if (loaded) fetchChildren()
+    // Deliberately keyed on refreshKey alone: re-running on `loaded` would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected])
+  }, [refreshKey])
 
   // The target folder's own row scrolls into view so a folder entered from the
   // right does not stay off-screen in a deep tree.
   useEffect(() => {
     if (path === selectedNorm) rowRef.current?.scrollIntoView({ block: 'nearest' })
-  }, [selected]) // eslint-disable-line
+  }, [path, selectedNorm])
 
   function handleChevronClick(e: React.MouseEvent) {
     e.stopPropagation()
-    if (!open && !loaded) fetchChildren()
     setOpen(!open)
   }
 
@@ -127,7 +131,7 @@ function TreeNode({
 
       {open && (
         <div>
-          {loading && folders.length === 0 && (
+          {!loaded && folders.length === 0 && (
             <div className="px-3 py-1 text-xs text-slate-400 dark:text-slate-500" style={{ paddingLeft: 24 + depth * 14 }}>
               loading…
             </div>
