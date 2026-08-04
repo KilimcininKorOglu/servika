@@ -33,14 +33,20 @@ export default function BackupManagementPage() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [selected, setSelected] = useState<number[]>([])
 
-  function load() {
-    setLoading(true)
+  // Split so the mount effect never writes state synchronously: fetchSummary
+  // only settles through promise callbacks, and the spinner is raised by the
+  // refresh button, which is the only caller that needs it.
+  function fetchSummary() {
     api.get<Summary>('/admin/backups/summary')
       .then(r => setSummary(r.data))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
   }
-  useEffect(load, [])
+  function reload() {
+    setLoading(true)
+    fetchSummary()
+  }
+  useEffect(fetchSummary, [])
 
   function loadJobs() {
     api.get<Job[]>('/admin/backups/jobs').then(r => setJobs(r.data)).catch(() => {})
@@ -122,7 +128,7 @@ export default function BackupManagementPage() {
             className="px-3.5 py-2 text-sm font-medium bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-lg disabled:opacity-50">
             {backingUp ? t('schedule.triggering') : t('schedule.backupNow')}
           </button>
-          <button onClick={load} disabled={loading} className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">{t('schedule.refresh')}</button>
+          <button onClick={reload} disabled={loading} className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">{t('schedule.refresh')}</button>
         </div>
       </div>
 
