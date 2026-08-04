@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -194,9 +195,11 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Write the nginx server block.
 	conf := confPath(systemUser, subdomainName)
-	// A newly created subdomain has no protected directories yet.
+	// A newly created subdomain has no protected directories or settings row yet, so
+	// it renders with the domain-level defaults until its own row exists.
+	web := loadWebRender(r.Context(), h.DB, id, 0, fqdn, false)
 	// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
-	if err := os.WriteFile(conf, []byte(vhost(fqdn, docroot, socket, "")), 0o644); err != nil {
+	if err := os.WriteFile(conf, []byte(vhost(fqdn, docroot, socket, "", web)), 0o644); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not write virtual host configuration")
 		return
 	}
@@ -314,22 +317,21 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 
 // vhost renders the plain HTTP server block. protected carries the auth_basic
 // blocks for this subdomain's protected directories and is empty when none exist.
-func vhost(fqdn, docroot, socket, protected string) string {
-	return `server {
+// web carries the rendered nginx_settings fragments for this subdomain.
+func vhost(fqdn, docroot, socket, protected string, web webRender) string {
+	return fmt.Sprintf(`server {
     listen 80;
     listen [::]:80;
-    server_name ` + fqdn + `;
+    server_name %[1]s;
 
-    root ` + docroot + `;
+    root %[2]s;
     index index.php index.html index.htm;
 
-    access_log /var/log/nginx/` + fqdn + `.access.log;
-    error_log  /var/log/nginx/` + fqdn + `.error.log warn;
+    access_log /var/log/nginx/%[1]s.access.log;
+    error_log  /var/log/nginx/%[1]s.error.log warn;
 
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-
-` + protected + `
+%[4]s
+%[3]s
     location /.well-known/acme-challenge/ {
         auth_basic off;
         root /var/www/_acme;
@@ -350,27 +352,38 @@ func vhost(fqdn, docroot, socket, protected string) string {
         gzip_types application/json application/javascript;
     }
 
-    location / { try_files $uri $uri/ /index.php?$query_string; }
+%[5]s
+%[6]s
+    location ~ /\.(?!well-known) { deny all; }
 
-    location ~ \.php$ {
+%[7]s    # Servika subdomain — %[1]s
+}
+`, fqdn, docroot, protected, web.Headers,
+		backendBlock(socket, web, false), web.BrowserCache, web.Extra)
+}
+
+// backendBlock renders the request-serving locations for a scope. A static backend
+// gets no fastcgi_pass at all, so it cannot keep pointing at a pool that may no
+// longer exist; the PHP backend mirrors the domain vhost's own structure.
+func backendBlock(socket string, web webRender, https bool) string {
+	if web.Static {
+		return "    # ---- Backend: static files only ----\n    location / { try_files $uri $uri/ =404; }\n"
+	}
+	httpsParam := ""
+	if https {
+		httpsParam = "        fastcgi_param HTTPS on;\n"
+	}
+	return fmt.Sprintf(`    location / { try_files $uri $uri/ /index.php?$query_string; }
+
+%[2]s    location ~ \.php$ {
         try_files $uri =404;
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass unix:` + socket + `;
+        fastcgi_pass unix:%[1]s;
         fastcgi_index index.php;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_read_timeout 60s;
-    }
-
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|pdf|zip|gz)$ {
-        expires 30d;
-        add_header Cache-Control "public";
-        access_log off;
-    }
-
-    location ~ /\.(?!well-known) { deny all; }
-
-    # Servika subdomain — ` + fqdn + `
-}
-`
+%[5]s        fastcgi_read_timeout 60s;
+        # Repeat headers because this location may define add_header below.
+%[3]s%[4]s    }
+`, socket, web.SkipCacheMap, web.Headers, web.FastCgiCache, httpsParam)
 }

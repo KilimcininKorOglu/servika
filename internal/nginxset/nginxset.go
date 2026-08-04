@@ -120,6 +120,10 @@ func Save(ctx context.Context, db *sql.DB, domainID, subdomainID int64, s Settin
 // Handlers provides HTTP handlers for nginx settings.
 type Handlers struct {
 	DB *sql.DB
+	// RerenderSubdomain publishes a subdomain's vhost after its settings change.
+	// It is injected rather than called directly because internal/subdomain imports
+	// this package for the settings type, so the reverse edge would be a cycle.
+	RerenderSubdomain func(db *sql.DB, subdomainID int64) error
 }
 
 type customVhostResponse struct {
@@ -215,29 +219,54 @@ func (h *Handlers) SaveCustomVhost(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// scope resolves the target of a settings request from the optional {sid} route
+// param, so the same handlers serve a domain and any of its subdomains. The
+// subdomain lookup is bound to the URL domain, so a tenant cannot reach another
+// domain's settings by guessing a subdomain id.
+func (h *Handlers) scope(r *http.Request) (domainID, subdomainID int64, displayName string, ok bool) {
+	domainID, _ = strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err := h.DB.QueryRowContext(r.Context(),
+		`SELECT domain_name FROM domains WHERE id=?`, domainID).Scan(&displayName); err != nil {
+		return domainID, 0, "", false
+	}
+	sid, _ := strconv.ParseInt(chi.URLParam(r, "sid"), 10, 64)
+	if sid <= 0 {
+		return domainID, 0, displayName, true
+	}
+	var fqdn string
+	if err := h.DB.QueryRowContext(r.Context(),
+		`SELECT fqdn FROM subdomains WHERE id=? AND domain_id=?`, sid, domainID).Scan(&fqdn); err != nil {
+		return domainID, 0, "", false
+	}
+	return domainID, sid, fqdn, true
+}
+
 // Show returns nginx settings for a domain.
 func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	var domainName string
-	if err := h.DB.QueryRowContext(r.Context(),
-		`SELECT domain_name FROM domains WHERE id=?`, id).Scan(&domainName); err != nil {
+	id, sid, displayName, ok := h.scope(r)
+	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	s, err := Get(r.Context(), h.DB, id, 0)
+	s, err := Get(r.Context(), h.DB, id, sid)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to load nginx settings")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
-		"domain_name": domainName,
-		"settings":    s,
+		"domain_name":  displayName,
+		"subdomain_id": sid,
+		"settings":     s,
 	})
 }
 
 // Save persists and applies nginx settings for a domain.
 func (h *Handlers) Save(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	id, sid, _, ok := h.scope(r)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
 	var req struct {
 		Settings Settings `json:"settings"`
 	}
@@ -260,8 +289,28 @@ func (h *Handlers) Save(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid nginx directives")
 		return
 	}
-	if err := Save(r.Context(), h.DB, id, 0, req.Settings); err != nil {
+	// nginx refuses to load a config naming an undefined keys_zone, so the shared
+	// zone has to exist before a vhost referencing it is written.
+	if req.Settings.FastCgiCache {
+		if err := provisioner.EnsureCacheZone(); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to prepare the cache zone")
+			return
+		}
+	}
+	if err := Save(r.Context(), h.DB, id, sid, req.Settings); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to save nginx settings")
+		return
+	}
+	if sid > 0 {
+		if h.RerenderSubdomain == nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "subdomain rendering is not wired")
+			return
+		}
+		if err := h.RerenderSubdomain(h.DB, sid); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "failed to apply nginx virtual host")
+			return
+		}
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 		return
 	}
 	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)

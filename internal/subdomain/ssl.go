@@ -136,7 +136,8 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 	_ = exec.Command("restorecon", "-R", sslDirectory(systemUser)).Run()
 
 	protected := provisioner.ProtectedBlocks(h.DB, domainID, subdomainID, socket)
-	config := vhostSSL(fqdn, docrootOf(systemUser, fqdn), socket, certPath, keyPath, protected)
+	web := loadWebRender(r.Context(), h.DB, domainID, subdomainID, fqdn, true)
+	config := vhostSSL(fqdn, docrootOf(systemUser, fqdn), socket, certPath, keyPath, protected, web)
 	if err := applyVhost(confPath(systemUser, name), config); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "SSL installation failed")
 		return
@@ -170,7 +171,8 @@ func (h *Handlers) SSLRemove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	protected := provisioner.ProtectedBlocks(h.DB, domainID, subdomainID, socket)
-	if err := applyVhost(confPath(systemUser, name), vhost(fqdn, docrootOf(systemUser, fqdn), socket, protected)); err != nil {
+	web := loadWebRender(r.Context(), h.DB, domainID, subdomainID, fqdn, false)
+	if err := applyVhost(confPath(systemUser, name), vhost(fqdn, docrootOf(systemUser, fqdn), socket, protected, web)); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not disable SSL")
 		return
 	}
@@ -242,7 +244,7 @@ func fileExists(path string) bool {
 // vhostSSL renders the HTTPS server block. protected carries the auth_basic blocks
 // for this subdomain's protected directories and is empty when none exist. The acme
 // challenge location stays exempt so certificate issuance and renewal keep working.
-func vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected string) string {
+func vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected string, web webRender) string {
 	return fmt.Sprintf(`server {
     listen 80;
     listen [::]:80;
@@ -256,35 +258,23 @@ server {
     http2 on;
     server_name %[1]s;
 
-    ssl_certificate     %[4]s;
-    ssl_certificate_key %[5]s;
+    ssl_certificate     %[3]s;
+    ssl_certificate_key %[4]s;
     ssl_protocols TLSv1.2 TLSv1.3;
 
     root %[2]s;
     index index.php index.html index.htm;
     access_log /var/log/nginx/%[1]s.access.log;
     error_log  /var/log/nginx/%[1]s.error.log warn;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-
 %[6]s
+%[5]s
     location /.well-known/acme-challenge/ { auth_basic off; root /var/www/_acme; try_files $uri =404; }
-    location / { try_files $uri $uri/ /index.php?$query_string; }
-    location ~ \.php$ {
-        try_files $uri =404;
-        fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass unix:%[3]s;
-        fastcgi_index index.php;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param HTTPS on;
-        fastcgi_read_timeout 60s;
-    }
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2?|svg|webp|avif|pdf|zip|gz)$ {
-        expires 30d;
-        access_log off;
-    }
+
+%[7]s
+%[8]s
     location ~ /\.(?!well-known) { deny all; }
-}
-`, fqdn, docroot, socket, certPath, keyPath, protected)
+
+%[9]s}
+`, fqdn, docroot, certPath, keyPath, protected, web.Headers,
+		backendBlock(socket, web, true), web.BrowserCache, web.Extra)
 }

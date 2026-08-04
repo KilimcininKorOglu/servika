@@ -2234,3 +2234,22 @@ func healPanelVhostHeadersOnStartup() {
 		log.Printf("panel security repair: nginx reload failed: %s", strings.TrimSpace(string(output)))
 	}
 }
+
+// SecurityHeaderBlock renders the add_header block a vhost emits for the given
+// settings. It is exported so a subdomain vhost, which is assembled outside this
+// package, gets byte-for-byte the same header set as the domain's own vhost instead
+// of a second hand-maintained copy that would drift.
+func SecurityHeaderBlock(opts VhostOpts) string {
+	return buildSecurityHeaders(opts)
+}
+
+// EnsureCacheZone makes sure the shared FastCGI cache zone exists before a vhost
+// references it. nginx refuses to load a config naming an undefined keys_zone, so a
+// caller enabling the cache must call this first.
+func EnsureCacheZone() error {
+	_, err := ensureCacheZone()
+	return err
+}
+
+// CacheZoneName is the keys_zone every Servika vhost uses for FastCGI caching.
+const CacheZoneName = cacheZoneName

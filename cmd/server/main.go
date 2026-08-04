@@ -202,7 +202,9 @@ func main() {
 	phpH := &php.Handlers{DB: d}
 	resourceH := &resource.Handlers{DB: d}
 	monitorH := &monitor.Handlers{DB: d}
-	nginxsetH := &nginxset.Handlers{DB: d}
+	// RerenderSubdomain is injected because internal/subdomain imports nginxset for
+	// the settings type, so nginxset cannot call back into it directly.
+	nginxsetH := &nginxset.Handlers{DB: d, RerenderSubdomain: subdomain.ReRender}
 	sshH := &sshaccess.Handlers{DB: d, IPv4: ipv4}
 	statH := &stats.Handlers{DB: d}
 	perfH := &performance.Handlers{DB: d}
@@ -495,6 +497,8 @@ func main() {
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/redirect", domainsH.DeleteRedirect)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/web-backend", domainsH.GetWebBackend)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/web-backend", domainsH.SetWebBackend)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}/web-backend", subH.GetWebBackend)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/subdomain/{sid}/web-backend", subH.SetWebBackend)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/web-root", domainsH.GetWebRoot)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/web-root", domainsH.SetWebRoot)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/ftp/password", domainsH.SetFTPPassword)
@@ -651,6 +655,9 @@ func main() {
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/ip-rules/{ruleID}", domainsH.DeleteIPRule)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/nginx-settings", nginxsetH.Show)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/nginx-settings", nginxsetH.Save)
+				// Same handlers, scoped to a subdomain by the optional {sid}.
+				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain/{sid}/nginx-settings", nginxsetH.Show)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/subdomain/{sid}/nginx-settings", nginxsetH.Save)
 				r.With(middleware.AdminOnly).Get("/domains/{id}/custom-vhost", nginxsetH.ShowCustomVhost)
 				r.With(middleware.AdminOnly).Put("/domains/{id}/custom-vhost", nginxsetH.SaveCustomVhost)
 				// The PHP version/module LIST is open to resellers (needed while

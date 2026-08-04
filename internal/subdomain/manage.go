@@ -1,6 +1,7 @@
 package subdomain
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"net/http"
@@ -93,9 +94,11 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 	}
 	protected := provisioner.ProtectedBlocks(h.DB, id, sid, socket)
 	certPath, keyPath := certificatePaths(systemUser, fqdn)
-	config := vhost(fqdn, docroot, socket, protected)
-	if fileExists(certPath) && fileExists(keyPath) {
-		config = vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected)
+	https := fileExists(certPath) && fileExists(keyPath)
+	web := loadWebRender(r.Context(), h.DB, id, sid, fqdn, https)
+	config := vhost(fqdn, docroot, socket, protected, web)
+	if https {
+		config = vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected, web)
 	}
 	if err := applyVhost(confPath(systemUser, subdomainName), config); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "nginx rejected the configuration")
@@ -129,9 +132,11 @@ func ReRender(db *sql.DB, subdomainID int64) error {
 	docroot := docrootOf(systemUser, fqdn)
 	protected := provisioner.ProtectedBlocks(db, domainID, subdomainID, socket)
 	certPath, keyPath := certificatePaths(systemUser, fqdn)
-	config := vhost(fqdn, docroot, socket, protected)
-	if fileExists(certPath) && fileExists(keyPath) {
-		config = vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected)
+	https := fileExists(certPath) && fileExists(keyPath)
+	web := loadWebRender(context.Background(), db, domainID, subdomainID, fqdn, https)
+	config := vhost(fqdn, docroot, socket, protected, web)
+	if https {
+		config = vhostSSL(fqdn, docroot, socket, certPath, keyPath, protected, web)
 	}
 	return applyVhost(confPath(systemUser, subdomainName), config)
 }
