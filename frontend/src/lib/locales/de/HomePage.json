@@ -29,6 +29,12 @@
     "saveFailed": "Speichern fehlgeschlagen",
     "resetLayout": "Layout zurücksetzen"
   },
+  "panelVersion": {
+    "title": "Eine neue Panel-Version ist verfügbar",
+    "versions": "installiert {{current}} → neu {{latest}}",
+    "action": "Aktualisieren",
+    "dismiss": "Ausblenden"
+  },
   "quota": {
     "unsupportedTitle": "Festplatten-Kontingent ist auf diesem Dateisystem nicht verfügbar",
     "unsupportedBody": "Servika benötigt ein XFS-Root-Dateisystem für ein Festplatten-Kontingent pro Mandant. Ein Neustart aktiviert das Kontingent auf dem aktuellen Dateisystem nicht.",

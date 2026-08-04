@@ -29,6 +29,12 @@
     "saveFailed": "Échec de l'enregistrement",
     "resetLayout": "Réinitialiser la disposition"
   },
+  "panelVersion": {
+    "title": "Une nouvelle version du panneau est disponible",
+    "versions": "installée {{current}} → nouvelle {{latest}}",
+    "action": "Mettre à jour",
+    "dismiss": "Masquer"
+  },
   "quota": {
     "unsupportedTitle": "Le quota disque n'est pas disponible sur ce système de fichiers",
     "unsupportedBody": "Servika nécessite un système de fichiers racine XFS pour le quota disque par locataire. Un redémarrage n'activera pas le quota sur le système de fichiers actuel.",

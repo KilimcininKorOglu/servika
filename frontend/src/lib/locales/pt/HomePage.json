@@ -29,6 +29,12 @@
     "saveFailed": "Falha ao guardar",
     "resetLayout": "Repor Layout"
   },
+  "panelVersion": {
+    "title": "Está disponível uma nova versão do painel",
+    "versions": "instalada {{current}} → nova {{latest}}",
+    "action": "Atualizar",
+    "dismiss": "Dispensar"
+  },
   "quota": {
     "unsupportedTitle": "A quota de disco não está disponível neste sistema de ficheiros",
     "unsupportedBody": "O Servika necessita de um sistema de ficheiros XFS raiz para quota de disco por tenant. Um reinício não ativará a quota no sistema de ficheiros atual.",

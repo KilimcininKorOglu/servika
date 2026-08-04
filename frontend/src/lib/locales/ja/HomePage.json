@@ -29,6 +29,12 @@
     "saveFailed": "保存に失敗しました",
     "resetLayout": "レイアウトをリセット"
   },
+  "panelVersion": {
+    "title": "パネルの新しいバージョンがあります",
+    "versions": "インストール済み {{current}} → 新規 {{latest}}",
+    "action": "更新",
+    "dismiss": "閉じる"
+  },
   "quota": {
     "unsupportedTitle": "このファイルシステムではディスククォータを利用できません",
     "unsupportedBody": "Servika がテナントごとのディスククォータを使用するには、XFS ルートファイルシステムが必要です。再起動しても現在のファイルシステムではクォータは有効になりません。",

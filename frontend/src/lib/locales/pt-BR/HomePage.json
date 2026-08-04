@@ -29,6 +29,12 @@
     "saveFailed": "Falha ao salvar",
     "resetLayout": "Redefinir layout"
   },
+  "panelVersion": {
+    "title": "Uma nova versão do painel está disponível",
+    "versions": "instalada {{current}} → nova {{latest}}",
+    "action": "Atualizar",
+    "dismiss": "Dispensar"
+  },
   "quota": {
     "unsupportedTitle": "A cota de disco não está disponível neste sistema de arquivos",
     "unsupportedBody": "O Servika precisa de um sistema de arquivos raiz XFS para cota de disco por tenant. Uma reinicialização não ativará a cota no sistema de arquivos atual.",

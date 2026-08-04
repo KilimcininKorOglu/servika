@@ -29,6 +29,12 @@
     "saveFailed": "Save failed",
     "resetLayout": "Reset Layout"
   },
+  "panelVersion": {
+    "title": "A new panel version is available",
+    "versions": "installed {{current}} → new {{latest}}",
+    "action": "Update",
+    "dismiss": "Dismiss"
+  },
   "quota": {
     "unsupportedTitle": "Disk quota is unavailable on this filesystem",
     "unsupportedBody": "Servika needs an XFS root filesystem for per-tenant disk quota. A reboot will not enable quota on the current filesystem.",

@@ -37,6 +37,12 @@ type SystemUsage = {
 }
 type Domain = { id: number; domain_name: string; ssl: boolean; status: string }
 
+// The subset of GET /system/version-check this page renders. The backend polls
+// the release manifest once a day and caches the result; nothing here reaches out.
+type VersionCheck = {
+  current: string; latest: string; update_available: boolean
+  announcement?: string; critical?: boolean
+}
 type UpdateStatus = { tool_available: boolean; running: boolean; status: string }
 type OptimizeStatus = { running: boolean; status: string }
 type BackupRow = { domain_id: number; domain_name: string; count: number; total_b: number; last_backup: string }
@@ -74,6 +80,10 @@ const WIDGET_NAME: Record<string, string> = {
   'health': 'System Health', 'live-resources': 'Live Resources', 'subscriptions': 'My Subscriptions', 'network': 'Network Traffic',
 }
 const QUOTA_WARNING_DISMISSED_KEY = 'servika-quota-fs-warning-dismissed'
+// Holds the dismissed version, not one cookie per version: cookies travel on
+// every request, so a key per release would grow the header without bound. A
+// later release differs from the stored value and shows the notice again.
+const PANEL_UPDATE_DISMISSED_KEY = 'servika-panel-update-dismissed'
 
 function mergeLayout(saved: unknown): Layout {
   const src = (saved as { columns?: unknown })?.columns
@@ -115,6 +125,7 @@ function usePrefersReducedMotion(): boolean {
 export default function HomePage() {
   const { t } = useTranslation('HomePage')
   const user = useAuth((s) => s.username)
+  const role = user?.role
   const [s, setS] = useState<SystemUsage | null>(null)
   const [domains, setDomains] = useState<Domain[]>([])
   const [update, setUpdate] = useState<UpdateStatus | null>(null)
@@ -125,6 +136,8 @@ export default function HomePage() {
     if (typeof window === 'undefined') return false
     return getCookie(QUOTA_WARNING_DISMISSED_KEY) === '1'
   })
+  const [versionCheck, setVersionCheck] = useState<VersionCheck | null>(null)
+  const [dismissedVersion, setDismissedVersion] = useState(() => getCookie(PANEL_UPDATE_DISMISSED_KEY) || '')
 
   const [layout, setLayout] = useState<Layout>(DEFAULT_LAYOUT)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -176,6 +189,14 @@ export default function HomePage() {
     if (resetTimer.current) clearTimeout(resetTimer.current)
   }, [])
 
+  // Read the cached manifest check once per visit; it refreshes daily server-side,
+  // so polling it would only repeat the same answer. The endpoint is
+  // ResellerOrAbove, so a customer session must not fire it at all.
+  useEffect(() => {
+    if (role !== 'admin' && role !== 'reseller') return
+    api.get<VersionCheck>('/system/version-check').then((r) => setVersionCheck(r.data)).catch(() => {})
+  }, [role])
+
   useEffect(() => {
     const fetchUsage = () => {
       if (typeof document !== 'undefined' && document.hidden) return
@@ -224,6 +245,10 @@ export default function HomePage() {
         }
       : null
 
+  const panelUpdate = versionCheck?.update_available && versionCheck.latest !== dismissedVersion
+    ? versionCheck
+    : null
+
   const lastBackup = backup?.domains?.reduce((a, r) => (r.last_backup > a ? r.last_backup : a), '') || ''
   const backedUpDomains = backup?.domains?.filter((r) => r.count > 0).length ?? 0
 
@@ -246,6 +271,13 @@ export default function HomePage() {
       // Durable dismissal: keep it for a year rather than the browser session.
       setCookie(QUOTA_WARNING_DISMISSED_KEY, '1', 365 * 24 * 60 * 60)
     }
+  }
+
+  const dismissPanelUpdate = () => {
+    const latest = versionCheck?.latest
+    if (!latest) return
+    setDismissedVersion(latest)
+    setCookie(PANEL_UPDATE_DISMISSED_KEY, latest, 365 * 24 * 60 * 60)
   }
 
   const onDragOver = (e: DragOverEvent) => {
@@ -612,6 +644,40 @@ export default function HomePage() {
                 {t('quota.dismiss')}
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* A released version the host has not taken yet. Colour is never the only
+          signal: a critical release also says so in its announcement text. Only an
+          admin gets the link, because the update page's actions are admin-only. */}
+      {panelUpdate && (
+        <div className={`mb-4 rounded-2xl border p-4 ${panelUpdate.critical
+          ? 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800/50 dark:bg-rose-900/20 dark:text-rose-200'
+          : 'border-brand-200 bg-brand-50 text-brand-800 dark:border-brand-800/50 dark:bg-brand-900/20 dark:text-brand-200'}`}>
+          <div className="flex items-start gap-3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="mt-0.5 h-5 w-5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold">
+                {t('panelVersion.title')}
+                <span className="ml-2 text-xs font-normal opacity-80">
+                  {t('panelVersion.versions', { current: panelUpdate.current || '—', latest: panelUpdate.latest })}
+                </span>
+              </div>
+              {panelUpdate.announcement && (
+                <div className={`mt-1 text-xs leading-relaxed ${panelUpdate.critical ? 'text-rose-700 dark:text-rose-300' : 'text-brand-700 dark:text-brand-300'}`}>
+                  {panelUpdate.announcement}
+                </div>
+              )}
+            </div>
+            {role === 'admin' && (
+              <Link to="/tools/update" className="shrink-0 text-xs font-medium underline-offset-2 hover:underline">
+                {t('panelVersion.action')}
+              </Link>
+            )}
+            <button type="button" onClick={dismissPanelUpdate} className="shrink-0 text-xs font-medium underline-offset-2 opacity-80 hover:underline">
+              {t('panelVersion.dismiss')}
+            </button>
           </div>
         </div>
       )}

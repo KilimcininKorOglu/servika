@@ -29,6 +29,12 @@
     "saveFailed": "Salvarea a eșuat",
     "resetLayout": "Resetare aspect"
   },
+  "panelVersion": {
+    "title": "O nouă versiune a panoului este disponibilă",
+    "versions": "instalată {{current}} → nouă {{latest}}",
+    "action": "Actualizează",
+    "dismiss": "Închide"
+  },
   "quota": {
     "unsupportedTitle": "Cota de disc nu este disponibilă pe acest sistem de fișiere",
     "unsupportedBody": "Servika are nevoie de un sistem de fișiere rădăcină XFS pentru cota de disc per chiriaș. O repornire nu va activa cota pe sistemul de fișiere curent.",

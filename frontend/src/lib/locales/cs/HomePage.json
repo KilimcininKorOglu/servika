@@ -29,6 +29,12 @@
     "saveFailed": "Uložení se nezdařilo",
     "resetLayout": "Obnovit rozvržení"
   },
+  "panelVersion": {
+    "title": "Je k dispozici nová verze panelu",
+    "versions": "nainstalovaná {{current}} → nová {{latest}}",
+    "action": "Aktualizovat",
+    "dismiss": "Zavřít"
+  },
   "quota": {
     "unsupportedTitle": "Disková kvóta není na tomto souborovém systému dostupná",
     "unsupportedBody": "Servika potřebuje kořenový souborový systém XFS pro diskovou kvótu na tenanta. Restart kvótu na aktuálním souborovém systému nepovolí.",

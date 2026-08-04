@@ -29,6 +29,12 @@
     "saveFailed": "Salvataggio non riuscito",
     "resetLayout": "Ripristina Layout"
   },
+  "panelVersion": {
+    "title": "È disponibile una nuova versione del pannello",
+    "versions": "installata {{current}} → nuova {{latest}}",
+    "action": "Aggiorna",
+    "dismiss": "Chiudi"
+  },
   "quota": {
     "unsupportedTitle": "La quota disco non è disponibile su questo filesystem",
     "unsupportedBody": "Servika richiede un filesystem root XFS per la quota disco per tenant. Un riavvio non abiliterà la quota sul filesystem corrente.",

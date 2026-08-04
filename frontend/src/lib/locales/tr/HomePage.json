@@ -29,6 +29,12 @@
     "saveFailed": "Kaydetme başarısız",
     "resetLayout": "Düzeni Sıfırla"
   },
+  "panelVersion": {
+    "title": "Panelin yeni sürümü yayımlandı",
+    "versions": "kurulu {{current}} → yeni {{latest}}",
+    "action": "Güncelle",
+    "dismiss": "Kapat"
+  },
   "quota": {
     "unsupportedTitle": "Bu dosya sisteminde disk kotası kullanılamıyor",
     "unsupportedBody": "Servika, kiracı başına disk kotası için XFS kök dosya sistemine ihtiyaç duyar. Yeniden başlatma, geçerli dosya sisteminde kotayı etkinleştirmez.",

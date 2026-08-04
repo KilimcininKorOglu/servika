@@ -29,6 +29,12 @@
     "saveFailed": "保存失败",
     "resetLayout": "重置布局"
   },
+  "panelVersion": {
+    "title": "面板有新版本可用",
+    "versions": "已安装 {{current}} → 新版 {{latest}}",
+    "action": "更新",
+    "dismiss": "关闭"
+  },
   "quota": {
     "unsupportedTitle": "此文件系统不支持磁盘配额",
     "unsupportedBody": "Servika 需要 XFS 根文件系统才能实现按租户的磁盘配额。重启不会在当前文件系统上启用配额。",
