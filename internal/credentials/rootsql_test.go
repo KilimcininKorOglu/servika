@@ -1,12 +1,14 @@
 package credentials
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 // stubRootSQL replaces the privileged MariaDB client with a script that records
@@ -27,7 +29,9 @@ func stubRootSQL(t *testing.T, exitCode int) (argvPath, stdinPath string) {
 		t.Fatalf("write stub client: %v", err)
 	}
 	original := rootSQLCommand
-	rootSQLCommand = func() *exec.Cmd { return exec.Command(script) }
+	rootSQLCommand = func() (*exec.Cmd, context.CancelFunc) {
+		return exec.Command(script), func() {}
+	}
 	t.Cleanup(func() { rootSQLCommand = original })
 	return argvPath, stdinPath
 }
@@ -76,8 +80,37 @@ func TestRunRootSQLKeepsTheStatementsOutOfArgv(t *testing.T) {
 // unix_socket plugin from the panel's own identity. A guard against reviving
 // `mysql -e <sql>`, which is what put the password in argv.
 func TestRootSQLCommandTakesNoArguments(t *testing.T) {
-	if args := rootSQLCommand().Args; len(args) != 1 {
-		t.Fatalf("rootSQLCommand().Args = %q, want the binary alone", args)
+	cmd, cancel := rootSQLCommand()
+	defer cancel()
+	if len(cmd.Args) != 1 {
+		t.Fatalf("rootSQLCommand().Args = %q, want the binary alone", cmd.Args)
+	}
+	// exec.CommandContext installs Cancel; plain exec.Command leaves it nil, and
+	// then nothing can ever kill a client that stops making progress.
+	if cmd.Cancel == nil {
+		t.Error("rootSQLCommand() built a client with no deadline")
+	}
+}
+
+// A client waiting on a wedged server must be killed, not left to pin a
+// goroutine and a process for the life of the panel.
+func TestRunRootSQLKillsAClientThatNeverReturns(t *testing.T) {
+	original := rootSQLCommand
+	rootSQLCommand = func() (*exec.Cmd, context.CancelFunc) {
+		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+		return exec.CommandContext(ctx, "sleep", "60"), cancel
+	}
+	t.Cleanup(func() { rootSQLCommand = original })
+
+	start := time.Now()
+	err := runRootSQL("SELECT 1;")
+	elapsed := time.Since(start)
+
+	if err == nil {
+		t.Fatal("runRootSQL() = nil, want the deadline to abort the client")
+	}
+	if elapsed > 10*time.Second {
+		t.Fatalf("runRootSQL() waited %v, so the deadline never reached the process", elapsed)
 	}
 }
 

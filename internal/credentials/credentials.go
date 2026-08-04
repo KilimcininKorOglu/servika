@@ -2,6 +2,7 @@
 package credentials
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/subtle"
 	"database/sql"
@@ -10,6 +11,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 
 	"servika/internal/secret"
 )
@@ -321,14 +323,29 @@ func escapeSQLString(value string) string {
 	return strings.ReplaceAll(value, `'`, `\'`)
 }
 
+// rootSQLTimeout bounds one privileged MariaDB client run. Without it a client
+// waiting on a wedged server never returns: the chi Timeout middleware cancels
+// the request context but leaves the subprocess running, so every database
+// create, drop, or password change would pin a goroutine and a process for the
+// life of the panel. It is generous because DROP DATABASE on a multi-gigabyte
+// InnoDB schema legitimately takes minutes, and cutting that short would leave
+// the schema half removed.
+const rootSQLTimeout = 5 * time.Minute
+
 // rootSQLCommand builds the privileged MariaDB client invocation. root@localhost
 // authenticates through the unix_socket plugin, so the client needs no argument
 // at all: it inherits the panel's own root identity from the socket peer.
 // A variable so a test can substitute a stub and inspect what the process
 // actually receives.
-var rootSQLCommand = func() *exec.Cmd {
+//
+// The deadline is deliberately detached from the request context. These calls
+// destroy and rebuild state (create the user, then record it; drop the schema,
+// then delete the row), so a client that hangs up mid-flight must not truncate
+// the run and strand a MySQL account with no panel record.
+var rootSQLCommand = func() (*exec.Cmd, context.CancelFunc) {
+	ctx, cancel := context.WithTimeout(context.Background(), rootSQLTimeout)
 	// #nosec G204 G702 -- fixed binary with no arguments and no shell; the statements travel on stdin.
-	return exec.Command("mysql")
+	return exec.CommandContext(ctx, "mysql"), cancel
 }
 
 // runRootSQL executes statements against MariaDB as the OS root user.
@@ -341,7 +358,8 @@ var rootSQLCommand = func() *exec.Cmd {
 // password works from any local process because MariaDB listens on 127.0.0.1.
 // HashPassword feeds openssl on stdin for the same reason.
 func runRootSQL(statements ...string) error {
-	cmd := rootSQLCommand()
+	cmd, cancel := rootSQLCommand()
+	defer cancel()
 	cmd.Stdin = strings.NewReader(strings.Join(statements, "\n"))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
