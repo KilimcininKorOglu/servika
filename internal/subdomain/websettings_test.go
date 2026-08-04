@@ -67,3 +67,17 @@ func TestDisabledSecurityHeadersAreNotRendered(t *testing.T) {
 		t.Error("an enabled header was dropped")
 	}
 }
+
+func TestSubdomainInheritsParentExtraDirectivesUntilConfigured(t *testing.T) {
+	// The plan's client_max_body_size reaches a domain through the extra_directives
+	// of its own nginx_settings row. A subdomain with no row of its own must render
+	// that same directive, or it would reject uploads the parent accepts.
+	parent := nginxset.Defaults()
+	parent.ExtraDirectives = "client_max_body_size 64m;"
+	web := renderWebSettings(parent, "app.example.com", false)
+	config := vhost("app.example.com", "/home/c_example_com/subdomains/app.example.com",
+		"/run/php-fpm-c_example_com/sub-3.sock", "", web)
+	if !strings.Contains(config, "client_max_body_size 64m;") {
+		t.Error("the subdomain vhost dropped the inherited upload limit")
+	}
+}

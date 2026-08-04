@@ -39,7 +39,7 @@ func loadWebRender(ctx context.Context, db *sql.DB, domainID, subdomainID int64,
 	settings := nginxset.Defaults()
 	backend := "php-fpm"
 	if db != nil {
-		if loaded, err := nginxset.Get(ctx, db, domainID, subdomainID); err == nil {
+		if loaded, err := nginxset.GetScoped(ctx, db, domainID, subdomainID); err == nil {
 			settings = loaded
 		}
 		if subdomainID > 0 {

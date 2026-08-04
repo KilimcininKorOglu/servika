@@ -87,6 +87,28 @@ func Get(ctx context.Context, db *sql.DB, domainID, subdomainID int64) (Settings
 	return s, nil
 }
 
+// GetScoped returns the settings a scope renders with. A subdomain that has never
+// been configured has no row of its own, and bare defaults would drop it below the
+// parent: the plan's client_max_body_size is seeded into the DOMAIN row's
+// extra_directives at domain creation, so a subdomain falling back to Defaults()
+// would reject uploads the parent accepts. Inherit the domain row until the
+// subdomain is saved for the first time.
+func GetScoped(ctx context.Context, db *sql.DB, domainID, subdomainID int64) (Settings, error) {
+	if subdomainID <= 0 {
+		return Get(ctx, db, domainID, 0)
+	}
+	var exists int
+	err := db.QueryRowContext(ctx,
+		`SELECT 1 FROM nginx_settings WHERE domain_id=? AND subdomain_id=?`, domainID, subdomainID).Scan(&exists)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Get(ctx, db, domainID, 0)
+	}
+	if err != nil {
+		return Defaults(), err
+	}
+	return Get(ctx, db, domainID, subdomainID)
+}
+
 // Save persists nginx settings for a domain (subdomainID 0) or one of its subdomains.
 func Save(ctx context.Context, db *sql.DB, domainID, subdomainID int64, s Settings) error {
 	_, err := db.ExecContext(ctx,
@@ -248,7 +270,7 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
-	s, err := Get(r.Context(), h.DB, id, sid)
+	s, err := GetScoped(r.Context(), h.DB, id, sid)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to load nginx settings")
 		return
