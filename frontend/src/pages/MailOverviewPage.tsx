@@ -1,7 +1,7 @@
 // Server-wide mail overview: mailbox and alias counts per domain, so total
 // mail footprint is visible without opening each domain. Also exposes the live
 // Postfix queue with hold, release, requeue, delete, and flush controls.
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Link } from 'react-router'
@@ -64,15 +64,23 @@ export default function MailOverviewPage() {
   const [queueLoading, setQueueLoading] = useState(true)
   const [queueBusy, setQueueBusy] = useState('')
 
-  function loadQueue() {
-    setQueueLoading(true)
-    setQueueError(null)
+  // Split so the mount effect never writes state synchronously: fetchQueue
+  // settles only through promise callbacks, and loadQueue() adds the spinner for
+  // the refresh button and the refreshes that follow a queue action.
+  const fetchQueue = useCallback(() => {
     api.get<{ messages: QueueMessage[] }>('/admin/mail/queue')
       .then(response => setQueue(response.data.messages || []))
       .catch(cause => setQueueError(apiError(cause, t('errors.readFailed'))))
       .finally(() => setQueueLoading(false))
-  }
-  useEffect(loadQueue, [])
+  }, [t])
+
+  const loadQueue = useCallback(() => {
+    setQueueLoading(true)
+    setQueueError(null)
+    fetchQueue()
+  }, [fetchQueue])
+
+  useEffect(() => { fetchQueue() }, [fetchQueue])
 
   async function queueAction(action: 'flush' | 'delete' | 'hold' | 'release' | 'requeue', queueID = '') {
     if (action === 'delete' && !confirm(t('confirmDelete', { queueID }))) return
