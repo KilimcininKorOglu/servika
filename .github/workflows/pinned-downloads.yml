@@ -1,0 +1,83 @@
+name: Pinned downloads
+
+# servika-install.sh fetches wp-cli and phpMyAdmin from their upstream release
+# URLs and refuses them unless they match a checksum pinned in the script. A
+# version bumped without its checksum (or the reverse) therefore fails on a
+# customer's server during installation, where the only symptom is a warning and
+# a missing feature. Verify the pins here instead, so the mismatch surfaces on
+# the change that introduced it.
+#
+# Scoped to the one file that carries the pins: this job reaches the public
+# internet, so it must not run on unrelated commits.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "servika-install.sh"
+      - ".github/workflows/pinned-downloads.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "servika-install.sh"
+      - ".github/workflows/pinned-downloads.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  checksums:
+    name: Verify pinned checksums
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify wp-cli and phpMyAdmin against their pinned checksums
+        run: |
+          set -euo pipefail
+
+          # Read each pin straight out of the installer rather than repeating it
+          # here, so this job cannot drift from the value that actually ships.
+          pin() {
+            sed -n "s/^$1=\"\([^\"]*\)\"$/\1/p" servika-install.sh | head -n 1
+          }
+
+          check() {
+            name="$1"; url="$2"; expected="$3"
+            if [ -z "$expected" ]; then
+              echo "::error::$name has no pinned checksum in servika-install.sh"
+              exit 1
+            fi
+            echo "$name: $url"
+            curl -fsSL --retry 3 --retry-delay 5 -o artifact "$url"
+            actual="$(sha256sum artifact | cut -d' ' -f1)"
+            rm -f artifact
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::$name checksum mismatch"
+              echo "  pinned:   $expected"
+              echo "  upstream: $actual"
+              exit 1
+            fi
+            echo "$name OK ($actual)"
+          }
+
+          WP_CLI_VER="$(pin WP_CLI_VER)"
+          WP_CLI_SHA256="$(pin WP_CLI_SHA256)"
+          PMA_VER="$(pin PMA_VER)"
+          PMA_SHA256="$(pin PMA_SHA256)"
+
+          for var in WP_CLI_VER PMA_VER; do
+            eval "value=\${$var}"
+            if [ -z "$value" ]; then
+              echo "::error::$var was not found in servika-install.sh"
+              exit 1
+            fi
+          done
+
+          check "wp-cli ${WP_CLI_VER}" \
+            "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VER}/wp-cli-${WP_CLI_VER}.phar" \
+            "$WP_CLI_SHA256"
+
+          check "phpMyAdmin ${PMA_VER}" \
+            "https://files.phpmyadmin.net/phpMyAdmin/${PMA_VER}/phpMyAdmin-${PMA_VER}-all-languages.tar.gz" \
+            "$PMA_SHA256"
