@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
@@ -69,10 +70,14 @@ func rootShadowHash() string {
 // was deprecated in Python 3.11 and REMOVED in 3.13 — when the server upgrades
 // the panel login would break entirely.
 //
-// Legacy formats ($6$/$5$/$1$) retain the python3 fallback so login does not
-// break on those servers; they should be migrated to native as well.
+// Legacy formats ($6$/$5$/$1$), which a host imaged from an older release can
+// still carry, go through `openssl passwd`. That replaced a shell-out to python3's
+// crypt module, which was removed in Python 3.13: on a server whose platform Python
+// moved to 3.13 the panel login stopped working entirely. The openssl CLI is
+// installed by servika-install.sh and used by it to generate every runtime secret,
+// so it is already a hard dependency rather than a new one.
 //
-// Comparison uses subtle.ConstantTimeCompare.
+// Comparison uses subtle.ConstantTimeCompare on both paths.
 func verifyRootPassword(password string) bool {
 	hash := rootShadowHash()
 	// Locked ("!", "!!", "*") or passwordless account — never accept.
@@ -86,19 +91,75 @@ func verifyRootPassword(password string) bool {
 		}
 		return subtle.ConstantTimeCompare(computed, []byte(hash)) == 1
 	}
-	return pythonCryptVerify(password, hash)
+	return legacyCryptVerify(password, hash)
 }
 
-// pythonCryptVerify — LEGACY PATH: fallback for non-yescrypt formats only.
-// WARNING: python3 crypt module was removed in Python 3.13; this path will not work there.
-func pythonCryptVerify(password, hash string) bool {
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	cmd := exec.Command("python3", "-c",
-		"import sys, crypt; p = sys.stdin.read(); sys.stdout.write(crypt.crypt(p, sys.argv[1]))",
-		hash)
+// legacyCryptSalt splits "$id$[rounds=N$]salt$digest" into the format id and the
+// exact string openssl expects for -salt. openssl generates its own random salt
+// when handed something it cannot parse, which silently turns every login into a
+// mismatch, so the segments are validated rather than trusted: everything except
+// the "rounds=N" prefix must be within the crypt(3) alphabet (./0-9A-Za-z), which
+// also rules out a salt that could look like a command-line option.
+func legacyCryptSalt(hash string) (id, salt string, ok bool) {
+	parts := strings.Split(hash, "$")
+	switch {
+	case len(parts) == 4: // ["", id, salt, digest]
+		id, salt = parts[1], parts[2]
+	case len(parts) == 5 && strings.HasPrefix(parts[2], "rounds="): // ["", id, rounds=N, salt, digest]
+		rounds := strings.TrimPrefix(parts[2], "rounds=")
+		if rounds == "" || strings.IndexFunc(rounds, func(r rune) bool { return r < '0' || r > '9' }) >= 0 {
+			return "", "", false
+		}
+		id, salt = parts[1], parts[2]+"$"+parts[3]
+	default:
+		return "", "", false
+	}
+	if id == "" || salt == "" {
+		return "", "", false
+	}
+	for _, r := range strings.TrimPrefix(salt, "rounds=") {
+		switch {
+		case r >= '0' && r <= '9', r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r == '.', r == '/', r == '$':
+		default:
+			return "", "", false
+		}
+	}
+	return id, salt, true
+}
+
+// legacyCryptVerify recomputes a non-yescrypt crypt(3) hash with openssl and
+// compares it in constant time.
+func legacyCryptVerify(password, hash string) bool {
+	id, salt, ok := legacyCryptSalt(hash)
+	if !ok {
+		return false
+	}
+	var flag string
+	switch id {
+	case "6": // SHA-512
+		flag = "-6"
+	case "5": // SHA-256
+		flag = "-5"
+	case "1": // MD5
+		flag = "-1"
+	default:
+		return false // bcrypt, DES and anything else openssl passwd cannot recompute
+	}
+
+	// A hash carrying an absurd (but legal) rounds value makes openssl run for
+	// minutes. Only root writes /etc/shadow, so this is not reachable by a caller,
+	// but a login request must not be able to pin a process either way.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); the salt is validated above against the crypt(3) alphabet and the password goes over stdin, never argv.
+	cmd := exec.CommandContext(ctx, "openssl", "passwd", flag, "-salt", salt, "-stdin")
 	cmd.Stdin = strings.NewReader(password)
 	out, err := cmd.Output()
 	if err != nil {
+		// Distinguishable from a wrong password in the log, because a missing or
+		// failing openssl locks root out and must not look like a typo. The hash and
+		// the password are never logged.
+		log.Printf("root login: openssl passwd failed for a $%s$ hash: %v", id, err)
 		return false
 	}
 	return subtle.ConstantTimeCompare([]byte(strings.TrimSpace(string(out))), []byte(hash)) == 1
