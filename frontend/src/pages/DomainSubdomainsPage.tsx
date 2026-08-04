@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -17,12 +17,20 @@ export default function DomainSubdomainsPage() {
   const [saving, setSaving] = useState(false)
   const [sslBusy, setSSLBusy] = useState<number | null>(null)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchSubdomains
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchSubdomains = useCallback(() => {
     if (!id) return
-    setLoading(true)
     api.get<Sub[]>(`/domains/${id}/subdomain`).then(response => setSubdomains(response.data || [])).catch(error => setError(apiError(error))).finally(() => setLoading(false))
-  }
-  useEffect(load, [id])
+  }, [id])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchSubdomains()
+  }, [fetchSubdomains])
+
+  useEffect(() => { fetchSubdomains() }, [fetchSubdomains])
 
   async function create(event: React.FormEvent) {
     event.preventDefault()
