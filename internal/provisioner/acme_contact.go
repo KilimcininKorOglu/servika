@@ -1,6 +1,7 @@
 package provisioner
 
 import (
+	"errors"
 	"log"
 	"os"
 	"os/exec"
@@ -13,6 +14,16 @@ import (
 // letsEncryptDirectory is the acme.sh per-CA config directory for the Let's Encrypt
 // production endpoint; its ca.conf holds the registered contact address (CA_EMAIL).
 const letsEncryptDirectory = "ca/acme-v02.api.letsencrypt.org/directory"
+
+// IsACMERenewSkip reports whether an acme.sh command failed with RENEW_SKIP (exit code 2),
+// which means a valid certificate is already in the store and no renewal was due. That is a
+// success for every caller: the certificate exists and must still be deployed with
+// --install-cert. Treating it as a failure makes a second issuance attempt report an error
+// while a perfectly good certificate sits unused in the acme store.
+func IsACMERenewSkip(err error) bool {
+	var exitErr *exec.ExitError
+	return errors.As(err, &exitErr) && exitErr.ExitCode() == 2
+}
 
 // RunACMEIssue runs an acme.sh command and recovers from a permanently broken account
 // contact address.

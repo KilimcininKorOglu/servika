@@ -110,7 +110,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 	}
 	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)
 	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "pHP version is not installed on the server")
+		httpx.WriteError(w, http.StatusBadRequest, "PHP version is not installed on the server")
 		return
 	}
 	certPath, keyPath := certificatePaths(systemUser, fqdn)
@@ -125,7 +125,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		err = issueSelfSigned(fqdn, certPath, keyPath)
 	}
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "sSL installation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "SSL installation failed")
 		return
 	}
 	// #nosec G302 -- root-owned system file its daemon must read; secrets use 0600/0640 elsewhere.
@@ -138,7 +138,7 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 	protected := provisioner.ProtectedBlocks(h.DB, domainID, subdomainID, socket)
 	config := vhostSSL(fqdn, docrootOf(systemUser, fqdn), socket, certPath, keyPath, protected)
 	if err := applyVhost(confPath(systemUser, name), config); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "sSL installation failed")
+		httpx.WriteError(w, http.StatusInternalServerError, "SSL installation failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "fqdn": fqdn, "type": certificateType})
@@ -166,7 +166,7 @@ func (h *Handlers) SSLRemove(w http.ResponseWriter, r *http.Request) {
 	}
 	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)
 	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "pHP version is not installed on the server")
+		httpx.WriteError(w, http.StatusBadRequest, "PHP version is not installed on the server")
 		return
 	}
 	protected := provisioner.ProtectedBlocks(h.DB, domainID, subdomainID, socket)
@@ -193,9 +193,11 @@ func issueLetsEncrypt(fqdn, certPath, keyPath string) error {
 	}
 	_ = exec.Command("restorecon", "-R", "/var/www/_acme").Run()
 	// RunACMEIssue also recovers from an invalidContact account lock-out and sets HOME so
-	// acme.sh finds its own store.
+	// acme.sh finds its own store. RENEW_SKIP means the store already holds a valid
+	// certificate, so installation must continue instead of reporting a failure; without
+	// this a second issuance for the same subdomain fails with a good certificate on disk.
 	if _, err := provisioner.RunACMEIssue("--issue", "--webroot", "/var/www/_acme",
-		"-d", fqdn, "--keylength", "ec-256"); err != nil {
+		"-d", fqdn, "--keylength", "ec-256"); err != nil && !provisioner.IsACMERenewSkip(err) {
 		return err
 	}
 	return provisioner.ACMECommand("--install-cert", "-d", fqdn, "--ecc",
