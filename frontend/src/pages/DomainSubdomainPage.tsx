@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -40,9 +40,11 @@ export default function DomainSubdomainPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchDetail
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refresh that follows a write.
+  const fetchDetail = useCallback(() => {
     if (!id || !sid) return
-    setLoading(true); setError(null)
     api.get<Detail>(`/domains/${id}/subdomain/${sid}`)
       .then(response => { setDetail(response.data); setSelectedVersion(response.data.php_version) })
       .catch(error => setError(apiError(error)))
@@ -55,8 +57,15 @@ export default function DomainSubdomainPage() {
     api.get<{ active: boolean }>(`/domains/${id}/subdomain/${sid}/ssl`)
       .then(response => setSSLActive(response.data.active))
       .catch(() => setSSLActive(null))
-  }
-  useEffect(load, [id, sid])
+  }, [id, sid])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchDetail()
+  }, [fetchDetail])
+
+  useEffect(() => { fetchDetail() }, [fetchDetail])
 
   async function savePHP() {
     setError(null); setSuccess(null); setSaving(true)
