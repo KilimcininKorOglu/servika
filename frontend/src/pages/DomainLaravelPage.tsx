@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
@@ -68,9 +68,11 @@ export default function DomainLaravelPage() {
 
   const canPoll = useMemo(() => status?.last_deploy_status === 'installing' || status?.last_deploy_status === 'running', [status])
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchStatus
+  // settles only through promise callbacks, and load() adds the spinner plus the
+  // error reset for the poll and the refreshes that follow an action.
+  const fetchStatus = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     Promise.all([
       api.get<Status>(`/domains/${id}/laravel`),
       api.get<NodeVersions>(`/domains/${id}/laravel/node`),
@@ -86,15 +88,21 @@ export default function DomainLaravelPage() {
       setQueueConnection(statusResponse.data.queue_connection || 'database')
     }).catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
-  }
+  }, [id])
 
-  useEffect(load, [id])
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchStatus()
+  }, [fetchStatus])
+
+  useEffect(() => { fetchStatus() }, [fetchStatus])
 
   useEffect(() => {
     if (!id || !canPoll) return
     const timer = window.setInterval(load, 5000)
     return () => window.clearInterval(timer)
-  }, [id, canPoll])
+  }, [id, canPoll, load])
 
   async function runAction(label: string, fn: () => Promise<unknown>, refresh = true) {
     setRunning(label); setError(null); setSuccess(null)
