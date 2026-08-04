@@ -28,6 +28,14 @@
     "statistics": {
       "label": "統計",
       "description": "このサブドメインのみのトラフィック分析"
+    },
+    "php": {
+      "label": "PHP 設定",
+      "description": "このサブドメインの PHP バージョン、制限、プール設定"
+    },
+    "web-server": {
+      "label": "Web サーバー",
+      "description": "このサブドメインのセキュリティヘッダー、キャッシュ、バックエンド"
     }
   },
   "toast": {

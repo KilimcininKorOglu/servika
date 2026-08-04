@@ -28,6 +28,14 @@
     "statistics": {
       "label": "Statistiky",
       "description": "Analýza provozu pouze pro tuto subdoménu"
+    },
+    "php": {
+      "label": "Nastavení PHP",
+      "description": "Verze PHP, limity a nastavení poolu pro tuto subdoménu"
+    },
+    "web-server": {
+      "label": "Webový server",
+      "description": "Bezpečnostní hlavičky, cache a backend pro tuto subdoménu"
     }
   },
   "toast": {

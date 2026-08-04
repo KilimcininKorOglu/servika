@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import { useResourceScope } from '@/lib/scope'
 
 type Version = { version: string; pool_dir: string; sock_dir: string; service: string; description: string }
 
@@ -37,7 +38,7 @@ const PROCESS_MANAGER_OPTIONS = [
 
 export default function DomainPHPPage() {
   const { t } = useTranslation('DomainPHPPage')
-  const { id } = useParams()
+  const { id, base, isSubdomain, backHref } = useResourceScope()
   const [response, setResponse] = useState<Response | null>(null)
   const [selectedVersion, setSelectedVersion] = useState<string>('')
   const [settings, setSettings] = useState<Settings | null>(null)
@@ -69,11 +70,11 @@ export default function DomainPHPPage() {
   // refresh that follows a write.
   const fetchSettings = useCallback(() => {
     if (!id) return
-    api.get<Response>(`/domains/${id}/php-settings`)
+    api.get<Response>(`${base}/php-settings`)
       .then(r => { setResponse(r.data); setSelectedVersion(r.data.php_version); setSettings(r.data.settings); loadDebugLog() })
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }, [id, loadDebugLog])
+  }, [base, id, loadDebugLog])
 
   const load = useCallback(() => {
     setLoading(true)
@@ -87,7 +88,7 @@ export default function DomainPHPPage() {
     if (!settings) return
     setIsProcessing(true); setError(null); setSuccess(null)
     try {
-      const { data } = await api.put(`/domains/${id}/php-settings`, { php_version: selectedVersion, settings })
+      const { data } = await api.put(`${base}/php-settings`, { php_version: selectedVersion, settings })
       setSuccess(t('saved', { version: data.php_version, socket: data.socket }))
       load()
     } catch (e) {
@@ -118,13 +119,13 @@ export default function DomainPHPPage() {
     <div className="w-full px-6 py-5">
       <Breadcrumb items={[
         { label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.domains'), href: '/domains' },
-        { label: response?.domain_name || '...', href: `/subscriptions/${id}` },
+        { label: response?.domain_name || '...', href: backHref },
         { label: t('breadcrumb.phpSettings') },
       ]} />
 
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
       {response && <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-        <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">{response.domain_name}</Link>
+        <Link to={backHref} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">{response.domain_name}</Link>
         {' · '}{t('systemUser')}<code className="font-mono">{response.system_user}</code>
       </p>}
 
@@ -222,8 +223,10 @@ export default function DomainPHPPage() {
               <Txt value={settings.mail_force_extra_parameters} onChange={v => updateSetting('mail_force_extra_parameters', v)} mono />
             </Field>
           </Card>
-          {/* PHP Debug Mode */}
-          <Card title={t('cards.debugMode')}>
+          {/* PHP Debug Mode. The auto_prepend shim and its log are written once per
+              tenant home, so they belong to the domain scope; a subdomain would show
+              the parent's log rather than its own. */}
+          {!isSubdomain && <Card title={t('cards.debugMode')}>
             <div className="flex items-start gap-4">
               <button onClick={() => updateSetting('debug_mode', !settings.debug_mode)}
                 className={`flex-shrink-0 mt-0.5 relative inline-flex h-6 w-11 items-center rounded-full transition ${settings.debug_mode ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`}
@@ -249,10 +252,10 @@ export default function DomainPHPPage() {
                 <strong> {t('debug.warningBold2')}</strong>{t('debug.warningPost')}<strong>{t('debug.warningBold3')}</strong>{t('debug.warningEnd')}<strong>{t('debug.warningSave')}</strong>{t('debug.warningDot')}
               </div>
             )}
-          </Card>
+          </Card>}
 
           {/* Last Errors -- debug log panel */}
-          <Card title={t('cards.lastErrors')}>
+          {!isSubdomain && <Card title={t('cards.lastErrors')}>
             <div className="flex items-center justify-between gap-3 mb-3">
               <p className="text-xs text-slate-500 dark:text-slate-400 min-w-0 break-all">
                 {t('debugLog.sourcePre')}<code className="font-mono">/home/{response.system_user}/.servika/php_debug.log</code>{t('debugLog.sourcePost')}
@@ -283,7 +286,7 @@ export default function DomainPHPPage() {
                 </ul>
               </div>
             )}
-          </Card>
+          </Card>}
 
           {/* PHP-FPM pool */}
           <Card title={t('cards.fpmPool')}>

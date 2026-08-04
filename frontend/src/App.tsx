@@ -122,6 +122,8 @@ export default function App() {
         <Route path="domains/:id/subdomain/:sid/composer"     element={<DomainComposerPage />} />
         <Route path="domains/:id/subdomain/:sid/protection"   element={<DomainPasswordProtectPage />} />
         <Route path="domains/:id/subdomain/:sid/statistics"   element={<DomainStatsPage />} />
+        <Route path="domains/:id/subdomain/:sid/php"          element={<DomainPHPPage />} />
+        <Route path="domains/:id/subdomain/:sid/web-server"   element={<DomainWebServerPage />} />
         <Route path="subscriptions/:id/access-control" element={<DomainAccessControlPage />} />
         <Route path="subscriptions/:id/cron"          element={<DomainCronPage />} />
         <Route path="subscriptions/:id/logs"     element={<DomainLogsPage />} />

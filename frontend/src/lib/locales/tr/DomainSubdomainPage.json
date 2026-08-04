@@ -28,6 +28,14 @@
     "statistics": {
       "label": "İstatistikler",
       "description": "Yalnızca bu alt alan adı için trafik analizi"
+    },
+    "php": {
+      "label": "PHP Ayarları",
+      "description": "Bu alt alan için PHP sürümü, limitler ve havuz ayarları"
+    },
+    "web-server": {
+      "label": "Web Sunucusu",
+      "description": "Bu alt alan için güvenlik başlıkları, önbellek ve arka uç"
     }
   },
   "toast": {

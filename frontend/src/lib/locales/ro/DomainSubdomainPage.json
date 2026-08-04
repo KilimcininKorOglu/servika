@@ -28,6 +28,14 @@
     "statistics": {
       "label": "Statistici",
       "description": "Analiză de trafic doar pentru acest subdomeniu"
+    },
+    "php": {
+      "label": "Setări PHP",
+      "description": "Versiunea PHP, limitele și setările pool-ului pentru acest subdomeniu"
+    },
+    "web-server": {
+      "label": "Server web",
+      "description": "Anteturi de securitate, cache și backend pentru acest subdomeniu"
     }
   },
   "toast": {

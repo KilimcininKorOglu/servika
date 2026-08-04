@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useParams, Link } from 'react-router'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
+import { useResourceScope } from '@/lib/scope'
 import Breadcrumb from '@/components/Breadcrumb'
 import CodeMirror from '@uiw/react-codemirror'
 import { oneDark } from '@codemirror/theme-one-dark'
@@ -65,7 +66,7 @@ const HEADERS = [
 
 export default function DomainWebServerPage() {
   const { t } = useTranslation('DomainWebServerPage')
-  const { id } = useParams()
+  const { id, base, isSubdomain, backHref } = useResourceScope()
   const user = useAuth(state => state.username)
   const isAdmin = user?.role === 'admin'
   const [response, setResponse] = useState<Response | null>(null)
@@ -95,24 +96,28 @@ export default function DomainWebServerPage() {
   // reload button and the refreshes that follow a write.
   const fetchSettings = useCallback(() => {
     if (!id) return
+    // A subdomain has a fixed document root and no vhost file of its own, so the
+    // web-root and custom-vhost requests are skipped rather than 404ing.
     Promise.all([
-      api.get<Response>(`/domains/${id}/nginx-settings`),
-      api.get<{backend: string}>(`/domains/${id}/web-backend`),
-      api.get<WebRootResponse>(`/domains/${id}/web-root`),
-      isAdmin ? api.get<CustomVhostResponse>(`/domains/${id}/custom-vhost`) : Promise.resolve(null),
+      api.get<Response>(`${base}/nginx-settings`),
+      api.get<{backend: string}>(`${base}/web-backend`),
+      isSubdomain ? Promise.resolve(null) : api.get<WebRootResponse>(`/domains/${id}/web-root`),
+      isAdmin && !isSubdomain ? api.get<CustomVhostResponse>(`/domains/${id}/custom-vhost`) : Promise.resolve(null),
     ]).then(([settingsResponse, backendResponse, webRootResponse, customVhostResponse]) => {
       setResponse(settingsResponse.data); setSettings(settingsResponse.data.settings)
       setBackend(backendResponse.data.backend)
-      setWebRootPath(webRootResponse.data.web_root)
-      setWebRootSubdirectory(webRootResponse.data.subdirectory)
-      setWebRootCandidates(webRootResponse.data.candidates || [])
+      if (webRootResponse) {
+        setWebRootPath(webRootResponse.data.web_root)
+        setWebRootSubdirectory(webRootResponse.data.subdirectory)
+        setWebRootCandidates(webRootResponse.data.candidates || [])
+      }
       if (customVhostResponse) {
         setCustomVhost(customVhostResponse.data)
         setCustomVhostContent(customVhostResponse.data.content)
       }
     }).catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
-  }, [id, isAdmin])
+  }, [base, id, isAdmin, isSubdomain])
 
   const load = useCallback(() => {
     setLoading(true)
@@ -126,7 +131,7 @@ export default function DomainWebServerPage() {
     if (newBackend === backend || backendChanging) return
     setBackendChanging(true); setError(null); setSuccess(null)
     try {
-      await api.put(`/domains/${id}/web-backend`, { backend: newBackend })
+      await api.put(`${base}/web-backend`, { backend: newBackend })
       setBackend(newBackend)
       setSuccess(t('success.backendChanged', { name: t(`backend.${newBackend}.name`, { defaultValue: BACKEND_INFO[newBackend]?.name || newBackend }) }))
       setTimeout(() => setSuccess(null), 4000)
@@ -157,7 +162,7 @@ export default function DomainWebServerPage() {
     if (!settings) return
     setProcessing(true); setError(null); setSuccess(null)
     try {
-      await api.put(`/domains/${id}/nginx-settings`, { settings })
+      await api.put(`${base}/nginx-settings`, { settings })
       setSuccess(t('success.settingsApplied'))
       load()
     } catch (error) {
@@ -218,13 +223,13 @@ export default function DomainWebServerPage() {
     <div className="w-full px-6 py-5">
       <Breadcrumb items={[
         { label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.domains'), href: '/domains' },
-        { label: response?.domain_name || '...', href: `/subscriptions/${id}` },
+        { label: response?.domain_name || '...', href: backHref },
         { label: t('breadcrumb.settings') },
       ]} />
 
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('title')}</h1>
       {response && <p className="text-sm text-slate-500 dark:text-slate-500 mb-5">
-        <Link to={`/subscriptions/${id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{response.domain_name}</Link>
+        <Link to={backHref} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-300 font-medium">{response.domain_name}</Link>
         {' · '}{t('subtitle')}
       </p>}
 
@@ -243,7 +248,7 @@ export default function DomainWebServerPage() {
           {backendChanging && <span className="text-xs text-slate-400 dark:text-slate-500">{t('applying')}</span>}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {(['php-fpm','apache','static'] as const).map(k => {
+          {(isSubdomain ? (['php-fpm','static'] as const) : (['php-fpm','apache','static'] as const)).map(k => {
             const b = BACKEND_INFO[k]
             const enabled = backend === k
             const colorClasses: Record<string, string> = {
@@ -269,7 +274,7 @@ export default function DomainWebServerPage() {
         </div>
       </div>
 
-      <div className="mb-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+      {!isSubdomain && <div className="mb-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
             <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('docRoot.title')}</h3>
@@ -301,7 +306,7 @@ export default function DomainWebServerPage() {
         <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
           {t('docRoot.currentLabel')} <code className="font-mono text-slate-700 dark:text-slate-300 break-all">{webRootPath || 'public_html'}</code>
         </p>
-      </div>
+      </div>}
 
       <div className="mb-5 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
         <strong>HSTS</strong>{t('hstsNote.pre')}<code className="font-mono">nginx -t</code>{t('hstsNote.mid')}<code className="font-mono">reload</code>{t('hstsNote.post')}
@@ -309,7 +314,7 @@ export default function DomainWebServerPage() {
 
       {loading || !settings ? <div className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">{t('loading')}</div> : (
         <>
-          {customVhost?.enabled && (
+          {!isSubdomain && customVhost?.enabled && (
             <div className="mb-5 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
               ⚠️ <strong>{t('customVhostActive.boldPre')}</strong>{t('customVhostActive.post')}<strong>{t('customVhostActive.boldNot')}</strong>{t('customVhostActive.tail')}
             </div>
@@ -418,7 +423,7 @@ export default function DomainWebServerPage() {
             </div>
           </Card>
 
-          {isAdmin && customVhost && (
+          {isAdmin && !isSubdomain && customVhost && (
             <Card title={t('cards.vhostFile')}>
               <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-200">
                 {t('vhost.warningPre')}<strong>{t('vhost.warningBoldActually')}</strong>{t('vhost.warningMid')}<strong>{t('vhost.warningBoldEntire')}</strong>{t('vhost.warningPost')}

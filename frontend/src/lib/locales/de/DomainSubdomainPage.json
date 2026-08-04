@@ -28,6 +28,14 @@
     "statistics": {
       "label": "Statistiken",
       "description": "Traffic-Analyse nur für diese Subdomain"
+    },
+    "php": {
+      "label": "PHP-Einstellungen",
+      "description": "PHP-Version, Limits und Pool-Einstellungen für diese Subdomain"
+    },
+    "web-server": {
+      "label": "Webserver",
+      "description": "Sicherheits-Header, Caching und Backend für diese Subdomain"
     }
   },
   "toast": {

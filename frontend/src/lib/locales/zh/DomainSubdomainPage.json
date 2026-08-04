@@ -28,6 +28,14 @@
     "statistics": {
       "label": "统计",
       "description": "仅此子域名的流量分析"
+    },
+    "php": {
+      "label": "PHP 设置",
+      "description": "此子域的 PHP 版本、限制和进程池设置"
+    },
+    "web-server": {
+      "label": "Web 服务器",
+      "description": "此子域的安全标头、缓存和后端"
     }
   },
   "toast": {

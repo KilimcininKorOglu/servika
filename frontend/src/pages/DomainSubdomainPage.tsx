@@ -20,6 +20,8 @@ const TOOLS = [
   { slug: 'composer', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', color: 'amber' as const },
   { slug: 'protection', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', color: 'rose' as const },
   { slug: 'statistics', icon: 'M4 20h16M7 16V9m5 7V5m5 11v-4', color: 'violet' as const },
+  { slug: 'php', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4', color: 'indigo' as const },
+  { slug: 'web-server', icon: 'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01', color: 'emerald' as const },
 ]
 
 function formatDisk(diskKB: number): string {

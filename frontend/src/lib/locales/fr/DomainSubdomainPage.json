@@ -28,6 +28,14 @@
     "statistics": {
       "label": "Statistiques",
       "description": "Analyse du trafic pour ce sous-domaine uniquement"
+    },
+    "php": {
+      "label": "Paramètres PHP",
+      "description": "Version de PHP, limites et paramètres du pool pour ce sous-domaine"
+    },
+    "web-server": {
+      "label": "Serveur web",
+      "description": "En-têtes de sécurité, mise en cache et backend pour ce sous-domaine"
     }
   },
   "toast": {
