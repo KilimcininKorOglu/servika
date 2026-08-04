@@ -239,7 +239,7 @@ func (h *Handlers) packageAction(w http.ResponseWriter, systemUser, dir, package
 		httpx.WriteError(w, http.StatusBadRequest, "unknown action")
 		return
 	}
-	out, err := runWP(systemUser, args...)
+	out, err := runWPTimeout(wpNetworkTimeout, systemUser, args...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
@@ -301,7 +301,7 @@ func (h *Handlers) Repair(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	beforeOutput, beforeErr := runWP(systemUser, "core", "verify-checksums", "--path="+dir)
+	beforeOutput, beforeErr := runWPTimeout(wpNetworkTimeout, systemUser, "core", "verify-checksums", "--path="+dir)
 	before := "clean"
 	if beforeErr != nil {
 		before = "issues-found"
@@ -316,13 +316,13 @@ func (h *Handlers) Repair(w http.ResponseWriter, r *http.Request) {
 		dlArgs = append(dlArgs, "--version="+version)
 	}
 	// Reinstall core while preserving content, plugins, and themes, then update the database.
-	_, dlErr := runWP(systemUser, dlArgs...)
+	_, dlErr := runWPTimeout(wpNetworkTimeout, systemUser, dlArgs...)
 	if dlErr != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not download WordPress core")
 		return
 	}
 	_, _ = runWP(systemUser, "core", "update-db", "--path="+dir)
-	afterOutput, afterErr := runWP(systemUser, "core", "verify-checksums", "--path="+dir)
+	afterOutput, afterErr := runWPTimeout(wpNetworkTimeout, systemUser, "core", "verify-checksums", "--path="+dir)
 	after := "clean"
 	if afterErr != nil {
 		after = "issues-found"
@@ -361,12 +361,12 @@ func (h *Handlers) ToolAction(w http.ResponseWriter, r *http.Request) {
 		out, err = runWP(systemUser, "cache", "flush", "--path="+dir)
 	case "update-all":
 		var b strings.Builder
-		o1, e1 := runWP(systemUser, "core", "update", "--path="+dir)
+		o1, e1 := runWPTimeout(wpNetworkTimeout, systemUser, "core", "update", "--path="+dir)
 		b.Write(o1)
-		o2, _ := runWP(systemUser, "plugin", "update", "--all", "--path="+dir)
+		o2, _ := runWPTimeout(wpNetworkTimeout, systemUser, "plugin", "update", "--all", "--path="+dir)
 		b.WriteString("\n")
 		b.Write(o2)
-		o3, _ := runWP(systemUser, "theme", "update", "--all", "--path="+dir)
+		o3, _ := runWPTimeout(wpNetworkTimeout, systemUser, "theme", "update", "--all", "--path="+dir)
 		b.WriteString("\n")
 		b.Write(o3)
 		_, _ = runWP(systemUser, "core", "update-db", "--path="+dir)

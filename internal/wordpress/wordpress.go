@@ -79,14 +79,37 @@ func (h *Handlers) domain(r *http.Request) (id int64, systemUser, domainName, ro
 	return id, systemUser, domainName, root, cert != "", isDemo == 1, true
 }
 
+const (
+	// wpLocalTimeout bounds a wp-cli call that only touches the local site. It
+	// matches the router's own 300-second request timeout, so it cannot fail an
+	// operation whose caller is still waiting, while still keeping a wp-cli that
+	// hangs on an unreachable database from living for the rest of the panel's life.
+	wpLocalTimeout = 5 * time.Minute
+	// wpNetworkTimeout bounds the calls that download from wordpress.org (core
+	// download/update, plugin and theme updates, checksum verification). Those
+	// legitimately outlast the request on a slow link, so the budget is larger; the
+	// point is only that the process cannot run forever.
+	wpNetworkTimeout = 15 * time.Minute
+)
+
 // runWP runs wp-cli as the domain user with HOME set and without a shell.
 // It invokes PHP directly with a 512 MB memory limit because the raw .phar shebang does not read
 // WP_CLI_PHP_ARGS and archive extraction can exceed the default 128 MB limit.
 func runWP(systemUser string, args ...string) ([]byte, error) {
+	return runWPTimeout(wpLocalTimeout, systemUser, args...)
+}
+
+// runWPTimeout is runWP with an explicit budget, for the calls that reach
+// wordpress.org. The deadline is not tied to the HTTP request: an update that is
+// rewriting core files must not be killed halfway because the operator closed the
+// tab, which would leave the site on a mixture of two versions.
+func runWPTimeout(timeout time.Duration, systemUser string, args ...string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 	full := append([]string{"-u", systemUser, "--", "env", "HOME=/home/" + systemUser,
 		"/usr/bin/php", "-d", "memory_limit=512M", wpBin()}, args...)
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	cmd := exec.Command("runuser", full...)
+	cmd := exec.CommandContext(ctx, "runuser", full...)
 	return cmd.CombinedOutput()
 }
 
@@ -409,7 +432,7 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, stage+" failed: "+msg)
 	}
 
-	if out, err := runWP(systemUser, "core", "download", "--path="+target, "--locale=en_US"); err != nil {
+	if out, err := runWPTimeout(wpNetworkTimeout, systemUser, "core", "download", "--path="+target, "--locale=en_US"); err != nil {
 		fail("WordPress download", out)
 		return
 	}
@@ -468,7 +491,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	out1, e1 := runWP(systemUser, "core", "update", "--path="+dir)
+	out1, e1 := runWPTimeout(wpNetworkTimeout, systemUser, "core", "update", "--path="+dir)
 	out2, _ := runWP(systemUser, "core", "update-db", "--path="+dir)
 	if e1 != nil {
 		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
