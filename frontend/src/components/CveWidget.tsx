@@ -52,19 +52,23 @@ export default function CveWidget() {
   const pollRef = useRef<number | null>(null)
   const kcPollRef = useRef<number | null>(null)
 
-  async function fetch(force: boolean) {
-    try {
-      const { data } = await api.get<CveSummary>(`/system/cve${force ? '?refresh=1' : ''}`, { timeout: 120_000 })
-      setData(data)
-      setError('')
-      if (data.update_running) startPoll()
-    } catch (e) {
-      setError(apiError(e, t('errors.fetch')))
-    }
+  // Written with promise callbacks rather than await/try so no state write sits
+  // in the function body itself: the mount effect below calls this, and an
+  // awaited body still counts as the effect's own synchronous continuation. It
+  // returns the promise so the refresh handler can keep awaiting it. Also no
+  // longer named fetch, which shadowed the global of the same name.
+  function loadSummary(force: boolean) {
+    return api.get<CveSummary>(`/system/cve${force ? '?refresh=1' : ''}`, { timeout: 120_000 })
+      .then(r => {
+        setData(r.data)
+        setError('')
+        if (r.data.update_running) startPoll()
+      })
+      .catch(e => setError(apiError(e, t('errors.fetch'))))
   }
 
   useEffect(() => {
-    fetch(false)
+    loadSummary(false)
     return () => {
       if (pollRef.current) window.clearInterval(pollRef.current)
       if (kcPollRef.current) window.clearInterval(kcPollRef.current)
@@ -82,7 +86,7 @@ export default function CveWidget() {
           if (pollRef.current) { window.clearInterval(pollRef.current); pollRef.current = null }
           setUpdating(false)
           setMessage(t('messages.updatesComplete'))
-          fetch(true)
+          loadSummary(true)
         }
       } catch { /* transient — next tick retries */ }
     }, 5000)
@@ -91,7 +95,7 @@ export default function CveWidget() {
   async function rescan() {
     setScanning(true)
     setMessage('')
-    await fetch(true)
+    await loadSummary(true)
     setScanning(false)
   }
 
@@ -117,7 +121,7 @@ export default function CveWidget() {
           if (kcPollRef.current) { window.clearInterval(kcPollRef.current); kcPollRef.current = null }
           setKcRunning(false)
           setMessage(t('messages.livePatchApplied'))
-          fetch(true)
+          loadSummary(true)
         }
       } catch { /* transient — next tick retries */ }
     }, 5000)
