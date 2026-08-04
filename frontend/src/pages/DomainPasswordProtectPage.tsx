@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -19,13 +19,21 @@ export default function DomainPasswordProtectPage() {
   const [password, setPassword] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchProtections
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchProtections = useCallback(() => {
     if (!id) return
-    setLoading(true)
     api.get<Protection[]>(`${base}/protection`)
       .then(r => setProtections(r.data || [])).catch(e => setError(apiError(e))).finally(() => setLoading(false))
-  }
-  useEffect(load, [base])
+  }, [id, base])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchProtections()
+  }, [fetchProtections])
+
+  useEffect(() => { fetchProtections() }, [fetchProtections])
 
   async function add(e: React.FormEvent) {
     e.preventDefault()
