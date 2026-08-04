@@ -2,6 +2,7 @@
 package git
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
@@ -19,6 +20,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"servika/internal/httpx"
 	"servika/internal/netguard"
@@ -265,6 +267,19 @@ func githubTokenFor(db *sql.DB, domainID int64) string {
 // token is not exposed in the process listing. sudo needs --preserve-env for the
 // specific keys so it forwards them across the privilege drop.
 func runAsUserArgs(systemUser, cwd string, extraEnv []string, name string, commandArgs ...string) (string, error) {
+	return runAsUserArgsCtx(context.Background(), systemUser, cwd, extraEnv, name, commandArgs...)
+}
+
+// runAsUserArgsCtx is runAsUserArgs with a deadline, for the git operations that
+// talk to a remote host. Those are the only ones that can block indefinitely: an
+// unreachable or deliberately slow remote leaves a git process running for the
+// life of the panel, and the request that started it is long gone.
+//
+// The deadline deliberately does NOT hang off the HTTP request. A clone clears the
+// document root before it starts, so cancelling on client disconnect would leave a
+// tenant serving a half-written tree; the goal here is only that the process
+// cannot run forever.
+func runAsUserArgsCtx(ctx context.Context, systemUser, cwd string, extraEnv []string, name string, commandArgs ...string) (string, error) {
 	if !strings.HasPrefix(systemUser, "c_") {
 		return "", errors.New("invalid system user")
 	}
@@ -288,20 +303,27 @@ func runAsUserArgs(systemUser, cwd string, extraEnv []string, name string, comma
 	}
 	sudoArgs = append(append(sudoArgs, "--", name), commandArgs...)
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	cmd := exec.Command("sudo", sudoArgs...)
+	cmd := exec.CommandContext(ctx, "sudo", sudoArgs...)
 	cmd.Dir = cwd
 	cmd.Env = environment
 	out, err := cmd.CombinedOutput()
 	if errors.Is(err, exec.ErrNotFound) {
 		runuserArgs := append([]string{"-u", systemUser, "--", name}, commandArgs...)
 		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-		cmd = exec.Command("runuser", runuserArgs...)
+		cmd = exec.CommandContext(ctx, "runuser", runuserArgs...)
 		cmd.Dir = cwd
 		cmd.Env = environment
 		out, err = cmd.CombinedOutput()
 	}
 	return string(out), err
 }
+
+// gitNetworkTimeout bounds the two git operations that contact a remote (clone and
+// fetch). It sits above the router's own 300-second request timeout on purpose: the
+// request already gives up before this, and shortening the subprocess to match
+// would abandon large shallow clones that land today. The point is that the process
+// cannot outlive the panel, not that it finishes while the caller is still waiting.
+const gitNetworkTimeout = 10 * time.Minute
 
 // gitClone performs the initial clone and replaces an existing target directory.
 // token authenticates a private HTTPS repository (empty => public/deploy-key).
@@ -335,7 +357,9 @@ func gitClone(systemUser, repoURL, branch, targetDir, token string) (sha string,
 	if err != nil {
 		return "", "", errors.New("could not prepare git credentials")
 	}
-	out, err := runAsUserArgs(systemUser, home, authEnv, "git", "clone", "--depth", "1", "--branch", branch, "--", repoURL, dst)
+	ctx, cancel := context.WithTimeout(context.Background(), gitNetworkTimeout)
+	defer cancel()
+	out, err := runAsUserArgsCtx(ctx, systemUser, home, authEnv, "git", "clone", "--depth", "1", "--branch", branch, "--", repoURL, dst)
 	log = out
 	if err != nil {
 		return "", out, err
@@ -366,7 +390,9 @@ func gitPull(systemUser, targetDir, branch, token string) (sha string, log strin
 	if err != nil {
 		return "", "", errors.New("could not prepare git credentials")
 	}
-	out, err := runAsUserArgs(systemUser, dst, authEnv, "git", "-C", dst, "fetch", "origin", branch)
+	ctx, cancel := context.WithTimeout(context.Background(), gitNetworkTimeout)
+	defer cancel()
+	out, err := runAsUserArgsCtx(ctx, systemUser, dst, authEnv, "git", "-C", dst, "fetch", "origin", branch)
 	if err == nil {
 		resetOutput, resetErr := runAsUserArgs(systemUser, dst, nil, "git", "-C", dst, "reset", "--hard", "origin/"+branch)
 		out += resetOutput
