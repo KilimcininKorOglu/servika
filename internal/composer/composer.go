@@ -2,6 +2,7 @@
 package composer
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"servika/internal/config"
 	"servika/internal/httpx"
@@ -24,6 +26,11 @@ type Handlers struct {
 }
 
 var rePkg = regexp.MustCompile(`^[a-z0-9]([a-z0-9._-]*)/[a-z0-9]([a-z0-9._-]*)(:[\^~<>=0-9.* |,-]+)?$`)
+
+// composerTimeout bounds a dependency resolution that talks to packagist. It sits
+// above the router's own 300-second request timeout because a large install
+// legitimately outlasts the request; the point is that the process ends.
+const composerTimeout = 10 * time.Minute
 
 func composerBin() string { return config.ComposerBin() }
 
@@ -128,8 +135,14 @@ func (h *Handlers) Run(w http.ResponseWriter, r *http.Request) {
 		}
 		args = append(args, pkg)
 	}
+	// Composer resolves and downloads from packagist, so an unreachable mirror would
+	// otherwise leave the process running for the life of the panel. The deadline is
+	// not tied to the request: a half-written vendor/ directory is worse than one
+	// that finishes after the caller stopped waiting.
+	ctx, cancel := context.WithTimeout(context.Background(), composerTimeout)
+	defer cancel()
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	cmd := exec.Command("runuser", args...)
+	cmd := exec.CommandContext(ctx, "runuser", args...)
 	cmd.Env = []string{
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 		"HOME=/home/" + systemUser,
