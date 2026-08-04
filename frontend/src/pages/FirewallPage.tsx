@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -49,14 +49,22 @@ export default function FirewallPage() {
   const [protocol, setProtocol] = useState<'tcp' | 'udp'>('tcp')
   const [description, setDescription] = useState('')
 
-  function load() {
-    setLoading(true)
+  // Split so the mount effect never writes state synchronously: fetchRules
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refresh button and the refreshes that follow a write.
+  const fetchRules = useCallback(() => {
     api.get<ListResponse>('/firewall')
       .then(response => { setRules(response.data.rules || []); setProtectedPorts(response.data.protected_ports || []) })
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [])
+  }, [])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchRules()
+  }, [fetchRules])
+
+  useEffect(() => { fetchRules() }, [fetchRules])
 
   async function applyTemplate(template: typeof TEMPLATES[number]) {
     const templateName = t(`templates.${template.key}.name`)
