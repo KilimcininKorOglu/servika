@@ -59,7 +59,7 @@ export default function ServerStatusPage() {
       .catch((e) => { if (!cancelled) setError(apiError(e, t('errorLoad'))) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   const load = usage?.cpu
   const loadText = load ? t('loadText', { values: [load.load_1m, load.load_5m, load.load_15m].map((y) => (y ?? 0).toFixed(2)).join(' · ') }) : undefined
