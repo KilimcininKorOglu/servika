@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
@@ -17,12 +17,20 @@ export default function DomainComposerPage() {
   const [runningCommand, setRunningCommand] = useState<string | null>(null)
   const [packageName, setPackageName] = useState('')
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchStatus
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refresh that follows a composer command.
+  const fetchStatus = useCallback(() => {
     if (!id) return
-    setLoading(true)
     api.get<Status>(`${base}/composer`).then(r => setD(r.data)).catch(e => setError(apiError(e))).finally(() => setLoading(false))
-  }
-  useEffect(load, [base])
+  }, [id, base])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchStatus()
+  }, [fetchStatus])
+
+  useEffect(() => { fetchStatus() }, [fetchStatus])
 
   async function run(command: string, pkt?: string) {
     const cmd = `${command}${pkt ? ' ' + pkt : ''}`
