@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -48,39 +48,79 @@ export default function DomainMailPage() {
   const [limits, setLimits] = useState<SendLimits>({ mailbox_id: 0, email: '', hour_limit: 100, day_limit: 500, sent_hour: 0, sent_day: 0 })
   const [isSavingLimits, setIsSavingLimits] = useState(false)
 
-  function loadMail() {
+  // Declared before the loaders that call them: a function hoisted past its own
+  // use site cannot pick up a later definition, so the earlier call would keep
+  // an older closure over id and t.
+  // Promise callbacks rather than await/try: the seeding effect below calls
+  // both, and writes in an awaited body still count as the effect's own
+  // continuation.
+  const loadAutoresponder = useCallback((mailboxID: number) => {
+    if (!mailboxID) return
+    api.get<Autoresponder>(`/domains/${id}/mail/${mailboxID}/autoresponder`)
+      .then(response => setAutoresponder(response.data))
+      .catch(cause => setError(apiError(cause, t('errors.readAutoresponderFailed'))))
+  }, [id, t])
+
+  const loadSendLimits = useCallback((mailboxID: number) => {
+    if (!mailboxID) return
+    api.get<SendLimits>(`/domains/${id}/mail/${mailboxID}/send-limits`)
+      .then(response => setLimits(response.data))
+      .catch(cause => setError(apiError(cause, t('errors.readSendLimitsFailed'))))
+  }, [id, t])
+
+  // Split so the mount effect never writes state synchronously: fetchMail
+  // settles only through promise callbacks, and loadMail() adds the spinner for
+  // the refreshes that follow a write.
+  const fetchMail = useCallback(() => {
     if (!id) return
-    setLoading(true)
     Promise.all([
       api.get<MailStatus>(`/domains/${id}/mail/status`),
       api.get<Mailbox[]>(`/domains/${id}/mail`),
       api.get<Alias[]>(`/domains/${id}/mail/aliases`),
-      api.get<SpamResponse>(`/domains/${id}/mail/spam`).catch(() => ({ data: { settings: spam, rspamd: false } as SpamResponse })),
+      // Null rather than the current settings on failure: keeping the existing
+      // spam state out of this closure is what lets the fetch depend on id alone.
+      api.get<SpamResponse>(`/domains/${id}/mail/spam`).then(r => r.data).catch(() => null),
       api.get<MailFilter[]>(`/domains/${id}/mail/filters`).catch(() => ({ data: [] as MailFilter[] })),
     ])
       .then(([statusResponse, mailboxesResponse, aliasesResponse, spamResponse, filtersResponse]) => {
         setStatus(statusResponse.data)
         setMailboxes(mailboxesResponse.data || [])
         setAliases(aliasesResponse.data || [])
-        setSpam(spamResponse.data.settings)
-        setRspamd(spamResponse.data.rspamd)
+        if (spamResponse) {
+          setSpam(spamResponse.settings)
+          setRspamd(spamResponse.rspamd)
+        }
         setFilters(filtersResponse.data || [])
         const boxes = mailboxesResponse.data || []
-        if (!filter.mailbox_id && boxes.length) setFilter(current => ({ ...current, mailbox_id: boxes[0].id }))
-        if (!autoresponder.mailbox_id && boxes.length) loadAutoresponder(boxes[0].id)
-        if (!limits.mailbox_id && boxes.length) loadSendLimits(boxes[0].id)
+        if (boxes.length) setFilter(current => current.mailbox_id ? current : { ...current, mailbox_id: boxes[0].id })
       })
       .catch(cause => setError(apiError(cause)))
       .finally(() => setLoading(false))
-  }
+  }, [id])
+
+  const loadMail = useCallback(() => {
+    setLoading(true)
+    fetchMail()
+  }, [fetchMail])
 
   useEffect(() => {
     if (!id) return
     api.get<Domain>(`/domains/${id}`)
       .then(response => setDomain(response.data))
       .catch(cause => setError(apiError(cause, t('errors.loadDomainFailed'))))
-    loadMail()
-  }, [id])
+    fetchMail()
+  }, [id, t, fetchMail])
+
+  // Seed both pickers from the first mailbox once the list arrives; a picker the
+  // user has already chosen keeps its own mailbox.
+  const firstMailboxID = mailboxes[0]?.id ?? 0
+  const autoresponderMailbox = autoresponder.mailbox_id
+  const limitsMailbox = limits.mailbox_id
+  useEffect(() => {
+    if (!firstMailboxID) return
+    if (!autoresponderMailbox) loadAutoresponder(firstMailboxID)
+    if (!limitsMailbox) loadSendLimits(firstMailboxID)
+  }, [firstMailboxID, autoresponderMailbox, limitsMailbox, loadAutoresponder, loadSendLimits])
 
   async function enableMail() {
     setIsSaving(true)
@@ -213,16 +253,6 @@ export default function DomainMailPage() {
     }
   }
 
-  async function loadAutoresponder(mailboxID: number) {
-    if (!mailboxID) return
-    try {
-      const response = await api.get<Autoresponder>(`/domains/${id}/mail/${mailboxID}/autoresponder`)
-      setAutoresponder(response.data)
-    } catch (cause) {
-      setError(apiError(cause, t('errors.readAutoresponderFailed')))
-    }
-  }
-
   async function saveAutoresponder(event: React.FormEvent) {
     event.preventDefault()
     setIsSavingAutoresponder(true)
@@ -277,16 +307,6 @@ export default function DomainMailPage() {
       loadMail()
     } catch (cause) {
       setError(apiError(cause))
-    }
-  }
-
-  async function loadSendLimits(mailboxID: number) {
-    if (!mailboxID) return
-    try {
-      const response = await api.get<SendLimits>(`/domains/${id}/mail/${mailboxID}/send-limits`)
-      setLimits(response.data)
-    } catch (cause) {
-      setError(apiError(cause, t('errors.readSendLimitsFailed')))
     }
   }
 
