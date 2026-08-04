@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
@@ -35,14 +35,22 @@ export default function DomainDatabasesPage() {
   const [passwordVisibility, setPasswordVisibility] = useState<Record<number, boolean>>({})
   const [copiedValue, setCopiedValue] = useState<number | null>(null)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchDatabases
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchDatabases = useCallback(() => {
     if (!id) return
-    setLoading(true)
     api.get<DB[]>(`/domains/${id}/databases`)
       .then(r => setDatabases(r.data))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
+  }, [id])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchDatabases()
+  }, [fetchDatabases])
+
   async function openPma(d: DB) {
     try {
       const { data } = await api.post<{ token: string }>(`/databases/${d.id}/pma-token`)
@@ -67,8 +75,8 @@ export default function DomainDatabasesPage() {
 
   useEffect(() => {
     if (id) api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
-    load()
-  }, [id])
+    fetchDatabases()
+  }, [id, fetchDatabases])
 
   async function remove() {
     if (!databaseToDelete) return
