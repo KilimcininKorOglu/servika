@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -41,10 +41,11 @@ export default function DomainAccessControlPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchSettings
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchSettings = useCallback(() => {
     if (!id) return
-    setLoading(true)
-    setError(null)
     Promise.all([
       api.get<HotlinkSettings>(`/domains/${id}/hotlink`),
       api.get<IPRulesResponse>(`/domains/${id}/ip-rules`),
@@ -55,9 +56,15 @@ export default function DomainAccessControlPage() {
       setMode(rulesResponse.data?.mode || 'off')
       setRules(rulesResponse.data?.rules || [])
     }).catch(error => setError(apiError(error))).finally(() => setLoading(false))
-  }
+  }, [id])
 
-  useEffect(load, [id])
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchSettings()
+  }, [fetchSettings])
+
+  useEffect(() => { fetchSettings() }, [fetchSettings])
 
   function parseAllowedDomains() {
     return allowedInput
