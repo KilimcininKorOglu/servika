@@ -1,9 +1,0 @@
-{
-  "domains": "Domény",
-  "addDomain": "+ Přidat doménu",
-  "addDomainHint": "Bude k dispozici ve F2",
-  "loading": "Načítání…",
-  "noDomains": "Zatím žádné domény",
-  "ssl": "SSL",
-  "noSsl": "Bez SSL"
-}

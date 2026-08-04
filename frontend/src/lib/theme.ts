@@ -17,14 +17,14 @@ export function getTheme(): Theme {
   return v === 'dark' || v === 'light' || v === 'system' ? v : 'light'
 }
 
-export function effectiveTheme(t: Theme): 'light' | 'dark' {
+function effectiveTheme(t: Theme): 'light' | 'dark' {
   if (t === 'system') {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
   return t
 }
 
-export function applyTheme(t: Theme) {
+function applyTheme(t: Theme) {
   const eff = effectiveTheme(t)
   const html = document.documentElement
   if (eff === 'dark') html.classList.add('dark')

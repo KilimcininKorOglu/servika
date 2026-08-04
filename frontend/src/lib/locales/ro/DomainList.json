@@ -1,9 +1,0 @@
-{
-  "domains": "Domenii",
-  "addDomain": "+ Adăugare domeniu",
-  "addDomainHint": "Va fi disponibil în F2",
-  "loading": "Se încarcă…",
-  "noDomains": "Încă nu există domenii",
-  "ssl": "SSL",
-  "noSsl": "Fără SSL"
-}

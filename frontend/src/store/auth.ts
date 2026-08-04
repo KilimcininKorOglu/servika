@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { getCookie, setCookie, deleteCookie } from '@/lib/cookies'
 
-export type User = {
+type User = {
   id: number
   name: string
   role: 'admin' | 'reseller' | 'user'

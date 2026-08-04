@@ -1,8 +1,0 @@
-{
-  "notReady": "Nu este gata",
-  "construction": {
-    "heading": "În construcție",
-    "availablePre": "Acest modul va deveni disponibil în faza ",
-    "availablePost": ". Momentan este disponibil doar învelișul interfeței."
-  }
-}

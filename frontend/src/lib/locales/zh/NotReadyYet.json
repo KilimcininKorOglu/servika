@@ -1,8 +1,0 @@
-{
-  "notReady": "尚未就绪",
-  "construction": {
-    "heading": "建设中",
-    "availablePre": "此模块将在 ",
-    "availablePost": " 阶段推出。目前仅提供界面框架。"
-  }
-}

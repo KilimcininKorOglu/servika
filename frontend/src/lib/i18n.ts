@@ -110,5 +110,3 @@ export function applyServerDefaultLang() {
     })
     .catch(() => {}) // Login screen must never break over the default language.
 }
-
-export default i18n

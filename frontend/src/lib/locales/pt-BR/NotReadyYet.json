@@ -1,8 +1,0 @@
-{
-  "notReady": "Não disponível",
-  "construction": {
-    "heading": "Em construção",
-    "availablePre": "Este módulo ficará disponível na fase ",
-    "availablePost": ". Apenas o shell da interface está disponível no momento."
-  }
-}

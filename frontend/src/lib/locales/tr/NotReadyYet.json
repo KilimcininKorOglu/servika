@@ -1,8 +1,0 @@
-{
-  "notReady": "Hazır Değil",
-  "construction": {
-    "heading": "Yapım aşamasında",
-    "availablePre": "Bu modül ",
-    "availablePost": " aşamasında kullanılabilir olacak. Şu anda yalnızca arayüz kabuğu mevcuttur."
-  }
-}

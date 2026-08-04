@@ -8,8 +8,6 @@ export const tableHeadCellClass = 'px-4 py-3 text-left text-xs font-semibold upp
 
 export const tableCellClass = 'px-4 py-3 align-middle text-slate-700 dark:text-slate-300'
 
-export const tableActionCellClass = `${tableCellClass} whitespace-nowrap text-right`
-
 export const responsiveTableContainerClass = `responsive-table ${baseContainer} overflow-hidden`
 
 export const responsiveTableClass = 'block w-full text-left lg:table'
