@@ -61,13 +61,17 @@ export default function CodeEditor({ path, content, onChange, onSave, onClose }:
   const [language, setLanguage] = useState<Language>(() => detectLanguage(path))
   const [saveStatus, setSaveStatus] = useState<'clean' | 'dirty' | 'saving' | 'saved'>('clean')
   const [cursor, setCursor] = useState({ line: 1, column: 1 })
-  const [initialContent] = useState(content)
+  // Tracks the content as last persisted, NOT as first opened. Comparing against
+  // the opened content made every buffer look dirty forever after the first
+  // edit, so a successful save flipped its own badge from saved straight back to
+  // unsaved and left the save button enabled with nothing left to write.
+  const [savedContent, setSavedContent] = useState(content)
 
   // Adjusted during render rather than in an effect: the buffer is dirty the
-  // moment it differs from what the editor opened with, so deferring that to a
-  // commit only paints one frame with a stale badge. The extra 'dirty' guard is
-  // what makes it converge; the effect relied on setState bailing out instead.
-  if (content !== initialContent && saveStatus !== 'saving' && saveStatus !== 'dirty') {
+  // moment it differs from what was last written, so deferring that to a commit
+  // only paints one frame with a stale badge. The extra 'dirty' guard is what
+  // makes it converge; the effect relied on setState bailing out instead.
+  if (content !== savedContent && saveStatus !== 'saving' && saveStatus !== 'dirty') {
     setSaveStatus('dirty')
   }
 
@@ -88,6 +92,7 @@ export default function CodeEditor({ path, content, onChange, onSave, onClose }:
     setSaveStatus('saving')
     try {
       await onSave()
+      setSavedContent(content)
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus('clean'), 1200)
     } catch {
