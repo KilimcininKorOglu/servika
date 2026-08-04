@@ -53,6 +53,11 @@
     "confirm": "はい、削除します"
   },
   "createModal": {
+    "wwwRedirect": "正規ホスト名",
+    "wwwRedirectOff": "両方（リダイレクトなし）",
+    "wwwRedirectToWww": "www なしのドメインを www へリダイレクト",
+    "wwwRedirectToApex": "www を www なしのドメインへリダイレクト",
+    "wwwRedirectWarning": "ここを指す www の DNS レコードが必要です。後からドメインのページでも設定できます。",
     "title": "新しいドメインを作成",
     "subtitle": "Linux ユーザー、nginx vhost、PHP-FPM プール、FTP アカウント、MySQL データベース、DNS ゾーンが自動的に設定されます。",
     "domainName": "ドメイン名",
@@ -97,6 +102,8 @@
     "copied": "コピーしました"
   },
   "toast": {
+    "wwwRedirectSet": " 正規ホスト名を設定しました。",
+    "wwwRedirectFailed": "（正規ホスト名を設定できませんでした: {{reason}}）",
     "created": "✓ 「{{name}}」を作成しました。Linux ユーザー、nginx vhost、PHP-FPM プール、FTP アカウント、MySQL データベース、DNS ゾーンの準備が整いました。",
     "sslInstalled": " Let's Encrypt SSL をインストールしました。",
     "sslFailed": " (Let's Encrypt SSL を発行できませんでした — DNS A レコードがここを指していることを確認してから、SSL ページでインストールしてください。)",

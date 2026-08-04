@@ -53,6 +53,11 @@
     "confirm": "Ja, löschen"
   },
   "createModal": {
+    "wwwRedirect": "Kanonischer Hostname",
+    "wwwRedirectOff": "Beide (keine Weiterleitung)",
+    "wwwRedirectToWww": "Domain ohne www auf www weiterleiten",
+    "wwwRedirectToApex": "www auf die Domain ohne www weiterleiten",
+    "wwwRedirectWarning": "Erfordert einen www-DNS-Eintrag, der hierher zeigt; kann später auf der Domainseite gesetzt werden.",
     "title": "Neue Domain erstellen",
     "subtitle": "Der Linux-Benutzer, der nginx-vhost, der PHP-FPM-Pool, das FTP-Konto, die MySQL-Datenbank und die DNS-Zone werden automatisch konfiguriert.",
     "domainName": "Domainname",
@@ -97,6 +102,8 @@
     "copied": "Kopiert"
   },
   "toast": {
+    "wwwRedirectSet": " Der kanonische Hostname wurde gesetzt.",
+    "wwwRedirectFailed": " (Der kanonische Hostname konnte nicht gesetzt werden: {{reason}})",
     "created": "✓ \"{{name}}\" erstellt. Der Linux-Benutzer, der nginx-vhost, der PHP-FPM-Pool, das FTP-Konto, die MySQL-Datenbank und die DNS-Zone sind bereit.",
     "sslInstalled": " Let's-Encrypt-SSL wurde installiert.",
     "sslFailed": " (Let's-Encrypt-SSL konnte nicht ausgestellt werden — stellen Sie sicher, dass der DNS-A-Eintrag hierher verweist, und installieren Sie es dann auf der SSL-Seite.)",

@@ -53,6 +53,11 @@
     "confirm": "Yes, Delete"
   },
   "createModal": {
+    "wwwRedirect": "Canonical hostname",
+    "wwwRedirectOff": "Both (no redirect)",
+    "wwwRedirectToWww": "Redirect the bare domain to www",
+    "wwwRedirectToApex": "Redirect www to the bare domain",
+    "wwwRedirectWarning": "Requires a www DNS record pointing here; it can be set later from the domain page.",
     "title": "Create New Domain",
     "subtitle": "The Linux user, nginx vhost, PHP-FPM pool, FTP account, MySQL database, and DNS zone are configured automatically.",
     "domainName": "Domain name",
@@ -97,6 +102,8 @@
     "copied": "Copied"
   },
   "toast": {
+    "wwwRedirectSet": " The canonical hostname was set.",
+    "wwwRedirectFailed": " (The canonical hostname could not be set: {{reason}})",
     "created": "✓ \"{{name}}\" created. The Linux user, nginx vhost, PHP-FPM pool, FTP account, MySQL database, and DNS zone are ready.",
     "sslInstalled": " Let's Encrypt SSL was installed.",
     "sslFailed": " (Let's Encrypt SSL could not be issued — make sure the DNS A record points here, then install it from the SSL page.)",

@@ -53,6 +53,11 @@
     "confirm": "Sí, eliminar"
   },
   "createModal": {
+    "wwwRedirect": "Nombre de host canónico",
+    "wwwRedirectOff": "Ambos (sin redirección)",
+    "wwwRedirectToWww": "Redirigir el dominio sin www a www",
+    "wwwRedirectToApex": "Redirigir www al dominio sin www",
+    "wwwRedirectWarning": "Requiere un registro DNS www que apunte aquí; puede definirse después desde la página del dominio.",
     "title": "Crear nuevo dominio",
     "subtitle": "El usuario Linux, vhost nginx, pool PHP-FPM, cuenta FTP, base de datos MySQL y zona DNS se configuran automáticamente.",
     "domainName": "Nombre de dominio",
@@ -97,6 +102,8 @@
     "copied": "Copiado"
   },
   "toast": {
+    "wwwRedirectSet": " El nombre de host canónico se estableció.",
+    "wwwRedirectFailed": " (No se pudo establecer el nombre de host canónico: {{reason}})",
     "created": "✓ «{{name}}» creado. El usuario Linux, vhost nginx, pool PHP-FPM, cuenta FTP, base de datos MySQL y zona DNS están listos.",
     "sslInstalled": " SSL Let's Encrypt instalado.",
     "sslFailed": " (No se pudo emitir SSL Let's Encrypt. Asegúrese de que el registro DNS A apunta aquí e instálelo desde la página SSL.)",

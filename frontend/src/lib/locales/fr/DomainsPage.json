@@ -53,6 +53,11 @@
     "confirm": "Oui, supprimer"
   },
   "createModal": {
+    "wwwRedirect": "Nom d’hôte canonique",
+    "wwwRedirectOff": "Les deux (aucune redirection)",
+    "wwwRedirectToWww": "Rediriger le domaine nu vers www",
+    "wwwRedirectToApex": "Rediriger www vers le domaine nu",
+    "wwwRedirectWarning": "Nécessite un enregistrement DNS www pointant ici ; il peut être défini plus tard depuis la page du domaine.",
     "title": "Créer un nouveau domaine",
     "subtitle": "L'utilisateur Linux, le vhost nginx, le pool PHP-FPM, le compte FTP, la base de données MySQL et la zone DNS sont configurés automatiquement.",
     "domainName": "Nom de domaine",
@@ -97,6 +102,8 @@
     "copied": "Copié"
   },
   "toast": {
+    "wwwRedirectSet": " Le nom d’hôte canonique a été défini.",
+    "wwwRedirectFailed": " (Le nom d’hôte canonique n’a pas pu être défini : {{reason}})",
     "created": "✓ « {{name}} » créé. L'utilisateur Linux, le vhost nginx, le pool PHP-FPM, le compte FTP, la base de données MySQL et la zone DNS sont prêts.",
     "sslInstalled": " Le SSL Let's Encrypt a été installé.",
     "sslFailed": " (Le SSL Let's Encrypt n'a pas pu être émis — assurez-vous que l'enregistrement DNS A pointe ici, puis installez-le depuis la page SSL.)",

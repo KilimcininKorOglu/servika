@@ -71,6 +71,7 @@ export default function DomainsPage() {
   const [formPhpVersion, setFormPhpVersion] = useState('8.3')
   const [formPlanId, setFormPlanId] = useState<number | ''>('')
   const [formIssueSSL, setFormIssueSSL] = useState(false)
+  const [formWWWRedirect, setFormWWWRedirect] = useState<'off' | 'to_www' | 'to_apex'>('off')
 
   // The domain list depends only on /domains. /plans and /php/versions (which can be
   // slow due to dnf discovery) are loaded lazily when the create modal opens.
@@ -124,7 +125,7 @@ export default function DomainsPage() {
     // Default plan = "Starter" (if data has already arrived, pick it now; otherwise
     // loadModalData sets it once the fetch completes).
     const defaultPlan = plans.find(plan => plan.name === 'Starter') || plans[0]
-    setFormDomainName(''); setFormPhpVersion('8.3'); setFormPlanId(defaultPlan ? defaultPlan.id : ''); setFormIssueSSL(false)
+    setFormDomainName(''); setFormPhpVersion('8.3'); setFormPlanId(defaultPlan ? defaultPlan.id : ''); setFormIssueSSL(false); setFormWWWRedirect('off')
     setCreateOpen(true)
     loadModalData() // lazy: fetch plans/php versions if they haven't been loaded yet
   }
@@ -151,6 +152,18 @@ export default function DomainsPage() {
           successMsg += t('toast.sslInstalled')
         } catch {
           successMsg += t('toast.sslFailed')
+        }
+      }
+      // After SSL, because the backend refuses a canonical hostname the installed
+      // certificate does not name. The reason it gives is surfaced verbatim: on a new
+      // domain the usual one is that the www DNS record does not exist yet, which the
+      // operator can fix and retry from the domain's page.
+      if (formWWWRedirect !== 'off') {
+        try {
+          await api.put(`/domains/${response.data.id}/www-redirect`, { mode: formWWWRedirect })
+          successMsg += t('toast.wwwRedirectSet')
+        } catch (error) {
+          successMsg += t('toast.wwwRedirectFailed', { reason: apiError(error, '') })
         }
       }
       setSuccess(successMsg)
@@ -558,6 +571,18 @@ export default function DomainsPage() {
                   {t('createModal.sslWarning')}
                 </p>
               )}
+              <label className="block mt-3">
+                <span className="text-sm text-slate-600 dark:text-slate-300">{t('createModal.wwwRedirect')}</span>
+                <select value={formWWWRedirect} onChange={e => setFormWWWRedirect(e.target.value as 'off' | 'to_www' | 'to_apex')} disabled={creating}
+                  className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none">
+                  <option value="off">{t('createModal.wwwRedirectOff')}</option>
+                  <option value="to_www">{t('createModal.wwwRedirectToWww')}</option>
+                  <option value="to_apex">{t('createModal.wwwRedirectToApex')}</option>
+                </select>
+                {formWWWRedirect === 'to_www' && (
+                  <span className="mt-1.5 block text-[11px] text-amber-600 dark:text-amber-400">{t('createModal.wwwRedirectWarning')}</span>
+                )}
+              </label>
             </div>
 
             <div className="flex justify-end gap-2 mt-5">

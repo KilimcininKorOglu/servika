@@ -53,6 +53,11 @@
     "confirm": "Evet, Sil"
   },
   "createModal": {
+    "wwwRedirect": "Kanonik alan adı",
+    "wwwRedirectOff": "İkisi de (yönlendirme yok)",
+    "wwwRedirectToWww": "Çıplak alan adını www adresine yönlendir",
+    "wwwRedirectToApex": "www adresini çıplak alan adına yönlendir",
+    "wwwRedirectWarning": "Buraya işaret eden bir www DNS kaydı gerekir; daha sonra alan adı sayfasından da ayarlanabilir.",
     "title": "Yeni Alan Adı Oluştur",
     "subtitle": "Linux kullanıcısı, nginx vhost, PHP-FPM havuzu, FTP hesabı, MySQL veritabanı ve DNS bölgesi otomatik olarak yapılandırılır.",
     "domainName": "Alan adı",
@@ -97,6 +102,8 @@
     "copied": "Kopyalandı"
   },
   "toast": {
+    "wwwRedirectSet": " Kanonik alan adı ayarlandı.",
+    "wwwRedirectFailed": " (Kanonik alan adı ayarlanamadı: {{reason}})",
     "created": "✓ \"{{name}}\" oluşturuldu. Linux kullanıcısı, nginx vhost, PHP-FPM havuzu, FTP hesabı, MySQL veritabanı ve DNS bölgesi hazır.",
     "sslInstalled": " Let's Encrypt SSL kuruldu.",
     "sslFailed": " (Let's Encrypt SSL alınamadı — DNS A kaydının buraya işaret ettiğinden emin olun, sonra SSL sayfasından kurun.)",

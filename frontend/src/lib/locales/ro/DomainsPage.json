@@ -53,6 +53,11 @@
     "confirm": "Da, ștergeți"
   },
   "createModal": {
+    "wwwRedirect": "Nume de gazdă canonic",
+    "wwwRedirectOff": "Ambele (fără redirecționare)",
+    "wwwRedirectToWww": "Redirecționează domeniul fără www către www",
+    "wwwRedirectToApex": "Redirecționează www către domeniul fără www",
+    "wwwRedirectWarning": "Necesită o înregistrare DNS www care să indice aici; poate fi setat ulterior din pagina domeniului.",
     "title": "Creare domeniu nou",
     "subtitle": "Utilizatorul Linux, vhost-ul nginx, pool-ul PHP-FPM, contul FTP, baza de date MySQL și zona DNS sunt configurate automat.",
     "domainName": "Nume domeniu",
@@ -97,6 +102,8 @@
     "copied": "Copiat"
   },
   "toast": {
+    "wwwRedirectSet": " Numele de gazdă canonic a fost setat.",
+    "wwwRedirectFailed": " (Numele de gazdă canonic nu a putut fi setat: {{reason}})",
     "created": "✓ „{{name}}” a fost creat. Utilizatorul Linux, vhost-ul nginx, pool-ul PHP-FPM, contul FTP, baza de date MySQL și zona DNS sunt gata.",
     "sslInstalled": " SSL Let's Encrypt a fost instalat.",
     "sslFailed": " (SSL Let's Encrypt nu a putut fi emis — asigurați-vă că înregistrarea DNS A indică aici, apoi instalați-l din pagina SSL.)",

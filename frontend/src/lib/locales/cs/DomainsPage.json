@@ -53,6 +53,11 @@
     "confirm": "Ano, smazat"
   },
   "createModal": {
+    "wwwRedirect": "Kanonický název hostitele",
+    "wwwRedirectOff": "Obě (bez přesměrování)",
+    "wwwRedirectToWww": "Přesměrovat doménu bez www na www",
+    "wwwRedirectToApex": "Přesměrovat www na doménu bez www",
+    "wwwRedirectWarning": "Vyžaduje DNS záznam www směřující sem; lze nastavit později na stránce domény.",
     "title": "Vytvořit novou doménu",
     "subtitle": "Uživatel Linux, nginx vhost, pool PHP-FPM, účet FTP, databáze MySQL a zóna DNS se nastaví automaticky.",
     "domainName": "Název domény",
@@ -97,6 +102,8 @@
     "copied": "Zkopírováno"
   },
   "toast": {
+    "wwwRedirectSet": " Kanonický název hostitele byl nastaven.",
+    "wwwRedirectFailed": " (Kanonický název hostitele se nepodařilo nastavit: {{reason}})",
     "created": "✓ „{{name}}“ vytvořena. Uživatel Linux, nginx vhost, pool PHP-FPM, účet FTP, databáze MySQL a zóna DNS jsou připraveny.",
     "sslInstalled": " SSL Let's Encrypt bylo nainstalováno.",
     "sslFailed": " (SSL Let's Encrypt nelze vydat — ujistěte se, že záznam DNS A směřuje sem, poté ho nainstalujte ze stránky SSL.)",

@@ -53,6 +53,11 @@
     "confirm": "是的，删除"
   },
   "createModal": {
+    "wwwRedirect": "规范主机名",
+    "wwwRedirectOff": "两者（不重定向）",
+    "wwwRedirectToWww": "将不带 www 的域名重定向到 www",
+    "wwwRedirectToApex": "将 www 重定向到不带 www 的域名",
+    "wwwRedirectWarning": "需要指向本服务器的 www DNS 记录；也可以稍后在域名页面设置。",
     "title": "创建新域名",
     "subtitle": "系统将自动配置 Linux 用户、nginx vhost、PHP-FPM 池、FTP 账户、MySQL 数据库和 DNS 区域。",
     "domainName": "域名",
@@ -97,6 +102,8 @@
     "copied": "已复制"
   },
   "toast": {
+    "wwwRedirectSet": " 已设置规范主机名。",
+    "wwwRedirectFailed": "（无法设置规范主机名：{{reason}}）",
     "created": "✓ \"{{name}}\" 已创建。Linux 用户、nginx vhost、PHP-FPM 池、FTP 账户、MySQL 数据库和 DNS 区域均已就绪。",
     "sslInstalled": " Let's Encrypt SSL 已安装。",
     "sslFailed": " (无法签发 Let's Encrypt SSL，请确认 DNS A 记录指向此处，然后在 SSL 页面安装。)",
