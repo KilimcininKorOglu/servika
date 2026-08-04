@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -45,12 +45,12 @@ export default function SubscriptionDetailPage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [noticeError, setNoticeError] = useState(false)
 
-  function loadDomain() {
+  const loadDomain = useCallback(() => {
     if (!id) return
     api.get<Domain>(`/domains/${id}`)
       .then(r => setDomain(r.data))
       .catch(e => setError(apiError(e, t('errors.loadFailed'))))
-  }
+  }, [id, t])
 
   useEffect(() => {
     if (!id) return
@@ -58,7 +58,7 @@ export default function SubscriptionDetailPage() {
     api.get<{ disk_mb: { usage: number } }>(`/domains/${id}/resources`)
       .then(r => setDiskMB(r.data.disk_mb.usage))
       .catch(() => {})
-  }, [id])
+  }, [id, loadDomain])
 
   async function toggleSuspension() {
     if (!id || !domain) return
@@ -219,13 +219,17 @@ export default function SubscriptionDetailPage() {
 function WebSitePreview({ domainName, ssl }: { domainName: string; ssl: boolean }) {
   const { t } = useTranslation('SubscriptionDetailPage')
   const url = `${ssl ? 'https' : 'http'}://${domainName}`
+  // Seeded from the clock so a revisit does not reuse the cached preview, then
+  // only incremented: bumping it during render keeps the iframe from painting
+  // one frame of the previous site, and an increment stays pure where a second
+  // clock read would not be. The cache-buster belongs to the preview only; it
+  // never alters the real site URL.
   const [previewVersion, setPreviewVersion] = useState(() => Date.now())
-
-  // Reload the iframe with a fresh URL whenever the target changes. The
-  // cache-buster belongs to the preview only; it never alters the real site URL.
-  useEffect(() => {
-    setPreviewVersion(Date.now())
-  }, [domainName, ssl])
+  const [previewTarget, setPreviewTarget] = useState(url)
+  if (url !== previewTarget) {
+    setPreviewTarget(url)
+    setPreviewVersion(current => current + 1)
+  }
 
   const previewURL = `${url}/?servika_preview=${previewVersion}`
   return (
