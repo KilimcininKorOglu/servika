@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "Nu s-a putut încărca jurnalul"
+  },
+  "actionKind": {
+    "destructive": "Ștergere",
+    "create": "Creare",
+    "auth": "Autentificare",
+    "migration": "Migrare",
+    "change": "Modificare",
+    "other": "Altele"
   }
 }

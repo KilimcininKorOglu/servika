@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "无法加载日志"
+  },
+  "actionKind": {
+    "destructive": "删除",
+    "create": "创建",
+    "auth": "身份验证",
+    "migration": "迁移",
+    "change": "更改",
+    "other": "其他"
   }
 }

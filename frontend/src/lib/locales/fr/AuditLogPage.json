@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "Impossible de charger le journal"
+  },
+  "actionKind": {
+    "destructive": "Suppression",
+    "create": "Création",
+    "auth": "Authentification",
+    "migration": "Migration",
+    "change": "Modification",
+    "other": "Autre"
   }
 }

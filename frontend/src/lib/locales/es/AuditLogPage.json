@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "No se pudo cargar el registro"
+  },
+  "actionKind": {
+    "destructive": "Eliminación",
+    "create": "Creación",
+    "auth": "Autenticación",
+    "migration": "Migración",
+    "change": "Cambio",
+    "other": "Otro"
   }
 }

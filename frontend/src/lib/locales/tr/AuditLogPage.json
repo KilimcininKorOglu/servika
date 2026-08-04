@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "Günlük yüklenemedi"
+  },
+  "actionKind": {
+    "destructive": "Silme",
+    "create": "Oluşturma",
+    "auth": "Kimlik doğrulama",
+    "migration": "Taşıma",
+    "change": "Değişiklik",
+    "other": "Diğer"
   }
 }

@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "Não foi possível carregar o registo"
+  },
+  "actionKind": {
+    "destructive": "Eliminação",
+    "create": "Criação",
+    "auth": "Autenticação",
+    "migration": "Migração",
+    "change": "Alteração",
+    "other": "Outro"
   }
 }

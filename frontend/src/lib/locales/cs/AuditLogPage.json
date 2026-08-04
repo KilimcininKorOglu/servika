@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "Protokol nelze načíst"
+  },
+  "actionKind": {
+    "destructive": "Smazání",
+    "create": "Vytvoření",
+    "auth": "Ověření",
+    "migration": "Migrace",
+    "change": "Změna",
+    "other": "Ostatní"
   }
 }

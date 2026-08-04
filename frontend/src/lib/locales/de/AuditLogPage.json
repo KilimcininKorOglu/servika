@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "Das Protokoll konnte nicht geladen werden"
+  },
+  "actionKind": {
+    "destructive": "Löschen",
+    "create": "Erstellen",
+    "auth": "Authentifizierung",
+    "migration": "Migration",
+    "change": "Änderung",
+    "other": "Sonstiges"
   }
 }

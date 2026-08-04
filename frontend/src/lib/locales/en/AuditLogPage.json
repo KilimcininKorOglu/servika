@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "Could not load the log"
+  },
+  "actionKind": {
+    "destructive": "Delete",
+    "create": "Create",
+    "auth": "Authentication",
+    "migration": "Migration",
+    "change": "Change",
+    "other": "Other"
   }
 }

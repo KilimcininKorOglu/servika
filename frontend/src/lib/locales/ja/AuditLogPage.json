@@ -32,5 +32,13 @@
   },
   "errors": {
     "loadFailed": "ログを読み込めませんでした"
+  },
+  "actionKind": {
+    "destructive": "削除",
+    "create": "作成",
+    "auth": "認証",
+    "migration": "移行",
+    "change": "変更",
+    "other": "その他"
   }
 }
