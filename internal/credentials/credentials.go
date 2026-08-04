@@ -321,6 +321,35 @@ func escapeSQLString(value string) string {
 	return strings.ReplaceAll(value, `'`, `\'`)
 }
 
+// rootSQLCommand builds the privileged MariaDB client invocation. root@localhost
+// authenticates through the unix_socket plugin, so the client needs no argument
+// at all: it inherits the panel's own root identity from the socket peer.
+// A variable so a test can substitute a stub and inspect what the process
+// actually receives.
+var rootSQLCommand = func() *exec.Cmd {
+	// #nosec G204 G702 -- fixed binary with no arguments and no shell; the statements travel on stdin.
+	return exec.Command("mysql")
+}
+
+// runRootSQL executes statements against MariaDB as the OS root user.
+//
+// The statements travel on stdin and must never be handed over as `mysql -e
+// <sql>`: argv is world-readable through /proc/<pid>/cmdline, so a
+// `CREATE USER ... IDENTIFIED BY '<password>'` line publishes the new database
+// password to every local account for as long as the client runs. Tenants get
+// arbitrary shell commands through cron, so that window is reachable, and the
+// password works from any local process because MariaDB listens on 127.0.0.1.
+// HashPassword feeds openssl on stdin for the same reason.
+func runRootSQL(statements ...string) error {
+	cmd := rootSQLCommand()
+	cmd.Stdin = strings.NewReader(strings.Join(statements, "\n"))
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("mysql: %s: %w", strings.TrimSpace(string(out)), err)
+	}
+	return nil
+}
+
 // ErrInvalidMySQLCredentials indicates that a database name, user, or password is unsafe for SQL construction.
 var ErrInvalidMySQLCredentials = errors.New("invalid MySQL credentials")
 
@@ -343,17 +372,14 @@ func MySQLCreateDB(db *sql.DB, domainID int64, dbName, dbUser, dbPass string) er
 		return err
 	}
 	// Create the MariaDB database and user through root socket authentication.
-	stmts := []string{
+	if err := runRootSQL(
 		fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;", dbName),
 		fmt.Sprintf("CREATE USER IF NOT EXISTS '%s'@'localhost' IDENTIFIED BY '%s';", dbUser, escapeSQLString(dbPass)),
 		fmt.Sprintf("ALTER USER '%s'@'localhost' IDENTIFIED BY '%s';", dbUser, escapeSQLString(dbPass)),
 		fmt.Sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO '%s'@'localhost';", dbName, dbUser),
 		"FLUSH PRIVILEGES;",
-	}
-	sql := strings.Join(stmts, " ")
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	if out, err := exec.Command("mysql", "-e", sql).CombinedOutput(); err != nil {
-		return fmt.Errorf("mysql exec: %s: %w", strings.TrimSpace(string(out)), err)
+	); err != nil {
+		return err
 	}
 
 	// Record the account in the panel database. The password is encrypted at
@@ -391,14 +417,12 @@ func MySQLCreateDBForUser(db *sql.DB, domainID int64, dbName, dbUser string) err
 	}
 	// Create the database and grant the existing user access. No CREATE/ALTER USER statement, so
 	// the user's password is preserved.
-	stmts := []string{
+	if err := runRootSQL(
 		fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;", dbName),
 		fmt.Sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO '%s'@'localhost';", dbName, dbUser),
 		"FLUSH PRIVILEGES;",
-	}
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	if out, err := exec.Command("mysql", "-e", strings.Join(stmts, " ")).CombinedOutput(); err != nil {
-		return fmt.Errorf("mysql exec: %s: %w", strings.TrimSpace(string(out)), err)
+	); err != nil {
+		return err
 	}
 	encPass, err := encryptDBPass(dbUser, pass)
 	if err != nil {
@@ -419,14 +443,12 @@ func MySQLDropDB(db *sql.DB, dbName, dbUser string) error {
 	if !mysqlIdentifierPattern.MatchString(dbUser) {
 		return fmt.Errorf("%w: database user", ErrInvalidMySQLCredentials)
 	}
-	stmts := []string{
+	if err := runRootSQL(
 		fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", dbName),
 		fmt.Sprintf("DROP USER IF EXISTS '%s'@'localhost';", dbUser),
 		"FLUSH PRIVILEGES;",
-	}
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	if out, err := exec.Command("mysql", "-e", strings.Join(stmts, " ")).CombinedOutput(); err != nil {
-		return fmt.Errorf("mysql drop: %s: %w", strings.TrimSpace(string(out)), err)
+	); err != nil {
+		return err
 	}
 	_, err := db.Exec(`DELETE FROM db_accounts WHERE db_name=?`, dbName)
 	return err
@@ -439,10 +461,8 @@ func MySQLDropDBKeepUser(db *sql.DB, dbName string) error {
 	if !mysqlIdentifierPattern.MatchString(dbName) {
 		return fmt.Errorf("%w: database name", ErrInvalidMySQLCredentials)
 	}
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	if out, err := exec.Command("mysql", "-e",
-		fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", dbName)).CombinedOutput(); err != nil {
-		return fmt.Errorf("mysql drop: %s: %w", strings.TrimSpace(string(out)), err)
+	if err := runRootSQL(fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", dbName)); err != nil {
+		return err
 	}
 	_, err := db.Exec(`DELETE FROM db_accounts WHERE db_name=?`, dbName)
 	return err

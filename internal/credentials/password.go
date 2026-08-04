@@ -3,7 +3,6 @@ package credentials
 import (
 	"database/sql"
 	"fmt"
-	"os/exec"
 	"strings"
 )
 
@@ -21,14 +20,11 @@ func MySQLChangePassword(panelDB *sql.DB, dbUser, newPassword string) error {
 	if !mysqlPasswordPattern.MatchString(newPassword) {
 		return fmt.Errorf("%w: database password", ErrInvalidMySQLCredentials)
 	}
-	statements := []string{
+	if err := runRootSQL(
 		fmt.Sprintf("ALTER USER '%s'@'localhost' IDENTIFIED BY '%s';", dbUser, escapeSQLString(newPassword)),
 		"FLUSH PRIVILEGES;",
-	}
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	out, err := exec.Command("mysql", "-e", strings.Join(statements, " ")).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("mysql alter: %s: %w", strings.TrimSpace(string(out)), err)
+	); err != nil {
+		return fmt.Errorf("alter user: %w", err)
 	}
 	// Store the new password encrypted at rest (bound to the database user).
 	encPass, err := encryptDBPass(dbUser, newPassword)
