@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -34,15 +34,24 @@ export default function DomainWafPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchWaf settles
+  // only through promise callbacks, and load() adds the spinner for the reload
+  // button and the post-save refresh.
+  const fetchWaf = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     api.get<Response>(`/domains/${id}/waf`)
       .then(r => { setData(r.data); setSettings(r.data.settings) })
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [id])
+  }, [id])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchWaf()
+  }, [fetchWaf])
+
+  useEffect(() => { fetchWaf() }, [fetchWaf])
 
   async function save() {
     if (!settings) return
