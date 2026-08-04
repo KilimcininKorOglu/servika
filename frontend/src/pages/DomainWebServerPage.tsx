@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -90,9 +90,11 @@ export default function DomainWebServerPage() {
   const [webRootCandidates, setWebRootCandidates] = useState<string[]>([])
   const [webRootChanging, setWebRootChanging] = useState(false)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchSettings
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // reload button and the refreshes that follow a write.
+  const fetchSettings = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     Promise.all([
       api.get<Response>(`/domains/${id}/nginx-settings`),
       api.get<{backend: string}>(`/domains/${id}/web-backend`),
@@ -110,8 +112,15 @@ export default function DomainWebServerPage() {
       }
     }).catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [id, isAdmin])
+  }, [id, isAdmin])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchSettings()
+  }, [fetchSettings])
+
+  useEffect(() => { fetchSettings() }, [fetchSettings])
 
   async function saveBackend(newBackend: string) {
     if (newBackend === backend || backendChanging) return
