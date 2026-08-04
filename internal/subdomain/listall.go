@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"servika/internal/httpx"
+	"servika/internal/middleware"
 )
 
 // Overview is a subdomain enriched with its parent domain, for the Domains screen.
@@ -19,14 +20,20 @@ type Overview struct {
 	CreatedAt  string `json:"created_at"`
 }
 
-// GET /subdomains lists every subdomain with its parent domain so the Domains
-// screen can nest subdomains under the domain they belong to.
+// GET /subdomains lists the subdomains the caller may see, each with its parent domain, so
+// the Domains screen can nest subdomains under the domain they belong to and global search
+// can offer them.
+//
+// The scope is applied inside the query with middleware.ScopeSQL: a row-by-row ownership
+// check cannot secure a list endpoint, and this route is open to resellers, who must see
+// only the subdomains under their own customers.
 func (h *Handlers) ListAll(w http.ResponseWriter, r *http.Request) {
+	condition, args := middleware.ScopeSQL(r, "d")
 	rows, err := h.DB.QueryContext(r.Context(),
 		`SELECT s.id, s.subdomain, s.fqdn, s.domain_id, d.domain_name, d.system_user,
 		        s.php_version, DATE_FORMAT(s.created_at,'%Y-%m-%d %H:%i')
-		   FROM subdomains s JOIN domains d ON d.id = s.domain_id
-		  ORDER BY d.domain_name, s.subdomain`)
+		   FROM subdomains s JOIN domains d ON d.id = s.domain_id`+condition+`
+		  ORDER BY d.domain_name, s.subdomain`, args...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not list records")
 		return

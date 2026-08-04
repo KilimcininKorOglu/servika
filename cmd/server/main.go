@@ -478,7 +478,7 @@ func main() {
 				r.With(middleware.AdminOnly).Post("/firewall/template", fwH.Template)
 				r.With(middleware.AdminOnly).Delete("/firewall/{id}", fwH.Delete)
 				r.With(middleware.AdminOnly).Post("/firewall/{id}/status", fwH.Status)
-				r.With(middleware.AdminOnly).Get("/subdomains", subH.ListAll)
+				r.With(middleware.ResellerOrAbove).Get("/subdomains", subH.ListAll)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/subdomain", subH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/subdomain", subH.Create)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/subdomain/{sid}", subH.Delete)
