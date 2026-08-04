@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
@@ -35,8 +36,8 @@ export default function LoadHistoryChart() {
       try {
         const r = await api.get<Response>(`/system/load-history?hour=${hours}`)
         if (on) { setD(r.data); setForbidden(false) }
-      } catch (e: any) {
-        if (on && e?.response?.status === 403) setForbidden(true)
+      } catch (e) {
+        if (on && isAxiosError(e) && e.response?.status === 403) setForbidden(true)
       }
     }
     tick()

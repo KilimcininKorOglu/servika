@@ -35,13 +35,15 @@ export default function StatisticsPage() {
 
   function load() {
     api.get<Usage>('/system/usage').then(response => setUsage(response.data)).catch(caughtError => setError(apiError(caughtError)))
-    api.get('/domains').then(response => {
-      const domains = (response.data as any[]) || []
+    api.get<{ status?: string }[]>('/domains').then(response => {
+      const domains = response.data || []
       setCounts({
         domains: domains.length,
-        activeDomains: domains.filter((domain: any) => domain.status === 'active').length,
+        activeDomains: domains.filter(domain => domain.status === 'active').length,
       })
-    }).catch(() => {})
+    }).catch(() => {
+      // The counts are a secondary tile; the usage error above already reports.
+    })
   }
   useEffect(() => { load(); const timer = setInterval(load, 10000); return () => clearInterval(timer) }, [])
 

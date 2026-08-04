@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { api } from '@/lib/api'
+import { api, apiError } from '@/lib/api'
 
 type Status = { running: boolean; status: string }
 type LogResponse = { log: string; running: boolean; status: string }
@@ -53,8 +53,8 @@ export default function ServerOptimizeCard() {
       await api.post('/system/optimize/start')
       setLog(t('logStarted'))
       setRunning(true)
-    } catch (e: any) {
-      setError(e?.response?.data?.error || e?.message || t('errorStart'))
+    } catch (e) {
+      setError(apiError(e, t('errorStart')))
     } finally {
       setStarting(false)
     }

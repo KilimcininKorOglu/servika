@@ -111,8 +111,8 @@ export default function DomainLogsPage() {
             })
           }
         }
-      } catch (e: any) {
-        if (e.name !== 'AbortError') setError(e.message)
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') setError(e.message)
       }
     })()
     return () => ctrl.abort()

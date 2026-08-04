@@ -190,6 +190,9 @@ function Password({ e, onOpen }: { e: string; id: string; type: string; onOpen: 
   )
 }
 
+// Only the fields the reset flow reads; the endpoint returns more.
+type DatabaseRow = { id: number; db_pass?: string; db_pass_plain?: string }
+
 function PasswordResetModal({ type, domainId, ftpUser, dbUser, onClose }:
   { type: 'ftp' | 'db'; domainId: string; ftpUser: string; dbUser: string; onClose: () => void }) {
   const [newPassword, setNewPassword] = useState<string | null>(null)
@@ -207,7 +210,7 @@ function PasswordResetModal({ type, domainId, ftpUser, dbUser, onClose }:
         .then(r => setCurrentPassword(r.data.ftp_pass_plain || t('modal.notStored')))
         .catch(() => setCurrentPassword(t('modal.notAuthorized')))
     } else {
-      api.get<any[]>(`/domains/${domainId}/databases`)
+      api.get<DatabaseRow[]>(`/domains/${domainId}/databases`)
         .then(r => {
           const main = (r.data || [])[0]
           setCurrentPassword(main?.db_pass || main?.db_pass_plain || t('modal.notStored'))
@@ -224,7 +227,7 @@ function PasswordResetModal({ type, domainId, ftpUser, dbUser, onClose }:
         setNewPassword(r.data.password)
       } else {
         // Use the first database ID.
-        const dbs = await api.get<any[]>(`/domains/${domainId}/databases`)
+        const dbs = await api.get<DatabaseRow[]>(`/domains/${domainId}/databases`)
         const main = (dbs.data || [])[0]
         if (!main) throw new Error('no database')
         const r = await api.put<{ password: string }>(`/databases/${main.id}/password`, {})

@@ -1,3 +1,4 @@
+import type { AxiosProgressEvent } from 'axios'
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
@@ -177,7 +178,7 @@ export default function DomainFilesPage() {
       await api.post(`/domains/${id}/files/upload`, fd, {
         timeout: 0, // large upload: disable client timeout (backend 30m ceiling)
         params: { path },
-        onUploadProgress: (e: any) => {
+        onUploadProgress: (e: AxiosProgressEvent) => {
           if (onProgress && typeof e.loaded === 'number') {
             onProgress(e.loaded, e.total || f.size)
           }

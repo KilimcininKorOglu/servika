@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -433,7 +434,7 @@ export default function DomainPHPPage() {
 }
 
 // ----- Helper components -----
-function Card({ title, children }: { title: string; children: any }) {
+function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-5">
       <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">{title}</h3>
@@ -441,16 +442,16 @@ function Card({ title, children }: { title: string; children: any }) {
     </div>
   )
 }
-function Grid({ children }: { children: any }) {
+function Grid({ children }: { children: ReactNode }) {
   return <div className="grid grid-cols-2 gap-x-6 gap-y-3">{children}</div>
 }
-function Label({ children }: { children: any }) {
+function Label({ children }: { children: ReactNode }) {
   return <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">{children}</label>
 }
 function Hint({ text }: { text: string }) {
   return <span title={text} className="inline-block ml-1 text-slate-400 dark:text-slate-400 cursor-help">ⓘ</span>
 }
-function Field({ label, help, children }: { label: string; help: string; children: any }) {
+function Field({ label, help, children }: { label: string; help: string; children: ReactNode }) {
   return (
     <div className="mt-3">
       <Label>{label} <Hint text={help} /></Label>
@@ -458,7 +459,7 @@ function Field({ label, help, children }: { label: string; help: string; childre
     </div>
   )
 }
-function Section({ label, help, children }: { label: string; help: string; children: any }) {
+function Section({ label, help, children }: { label: string; help: string; children: ReactNode }) {
   return (
     <div>
       <Label>{label} <Hint text={help} /></Label>

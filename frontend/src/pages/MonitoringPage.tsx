@@ -370,9 +370,9 @@ function ServerLogs() {
 
   function load(selectedSource = source, lineCount = lastLineCount) {
     setLoading(true); setError(null)
-    api.get('/admin/system/logs', { params: { source: selectedSource, last: lineCount } })
-      .then((response: any) => { setLines(response.data.lines || []); if (response.data.sources) setSources(response.data.sources) })
-      .catch((caughtError: any) => setError(apiError(caughtError)))
+    api.get<{ lines?: string[]; sources?: string[] }>('/admin/system/logs', { params: { source: selectedSource, last: lineCount } })
+      .then(response => { setLines(response.data.lines || []); if (response.data.sources) setSources(response.data.sources) })
+      .catch(caughtError => setError(apiError(caughtError)))
       .finally(() => setLoading(false))
   }
   useEffect(() => { load(source, lastLineCount) }, [source, lastLineCount])
@@ -456,7 +456,7 @@ function Legend({ color, label }: { color: string; label: string }) {
 function MultiSeriesChart({
   dataPoints, series, yMax, suffix,
 }: {
-  dataPoints: any[]; series: { key: string; color: string }[]; yMax: number; suffix?: string
+  dataPoints: Record<string, number>[]; series: { key: string; color: string }[]; yMax: number; suffix?: string
 }) {
   const { t } = useTranslation('MonitoringPage')
   const W = 1000, H = 180, P = 8
