@@ -14,13 +14,14 @@ export default function ServerOptimizeCard() {
   const [confirmed, setConfirmed] = useState(false)
   const logRef = useRef<HTMLPreElement>(null)
 
-  const loadStatus = useCallback(async () => {
-    try {
-      const r = await api.get<Status>('/system/optimize')
-      setRunning(r.data.running)
-    } catch {
-      // Ignore transient failures so the card stays usable.
-    }
+  // Writes from the promise callback only: the mount effect calls this, and a
+  // write in an awaited body still counts as that effect's own continuation.
+  const loadStatus = useCallback(() => {
+    return api.get<Status>('/system/optimize')
+      .then(r => setRunning(r.data.running))
+      .catch(() => {
+        // Ignore transient failures so the card stays usable.
+      })
   }, [])
 
   useEffect(() => { loadStatus() }, [loadStatus])
