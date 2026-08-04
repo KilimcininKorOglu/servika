@@ -4,7 +4,7 @@
 // accounts beneath itself and may create customer accounts only. The role
 // restrictions here mirror those rules for the UI; they are not a security
 // boundary.
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -72,9 +72,16 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [query, setQuery] = useState(() => searchParams.get('q') || '')
-
-  useEffect(() => { setQuery(searchParams.get('q') || '') }, [searchParams])
+  const queryParam = searchParams.get('q') || ''
+  const [query, setQuery] = useState(queryParam)
+  // Adjusted during render rather than in an effect: a deep link that only
+  // changes ?q= must filter on the very first painted frame, not one frame
+  // later with the previous query still applied.
+  const [appliedQueryParam, setAppliedQueryParam] = useState(queryParam)
+  if (queryParam !== appliedQueryParam) {
+    setAppliedQueryParam(queryParam)
+    setQuery(queryParam)
+  }
 
   const [creating, setCreating] = useState<NewAccount | null>(null)
   const [saving, setSaving] = useState(false)
@@ -85,19 +92,19 @@ export default function UsersPage() {
   const [limit, setLimit] = useState<ResellerLimit | null>(null)
   const [limitLoading, setLimitLoading] = useState(false)
 
-  async function fetchList() {
-    setLoading(true)
-    try {
-      const r = await api.get<User[]>('/users')
-      setList(Array.isArray(r.data) ? r.data : [])
-      setError(null)
-    } catch (e) {
-      setError(apiError(e, t('errors.loadFailed')))
-    } finally {
-      setLoading(false)
-    }
-  }
-  useEffect(() => { fetchList() }, [])
+  // Promise callbacks rather than await/try: this is what the mount effect
+  // calls, and writes in an awaited body still count as the effect's own
+  // continuation. The spinner belongs to reload(), used by the write paths.
+  const fetchList = useCallback(() =>
+    api.get<User[]>('/users')
+      .then((r) => { setList(Array.isArray(r.data) ? r.data : []); setError(null) })
+      .catch((e) => setError(apiError(e, t('errors.loadFailed'))))
+      .finally(() => setLoading(false)),
+  [t])
+
+  const reload = useCallback(() => { setLoading(true); return fetchList() }, [fetchList])
+
+  useEffect(() => { fetchList() }, [fetchList])
 
   const filtered = useMemo(() => {
     const t = query.trim().toLowerCase()
@@ -113,7 +120,7 @@ export default function UsersPage() {
       await api.post('/users', creating)
       setSuccess(t('toast.created', { username: creating.username }))
       setCreating(null)
-      await fetchList()
+      await reload()
     } catch (e) {
       setError(apiError(e, t('errors.createFailed')))
     } finally {
@@ -180,7 +187,7 @@ export default function UsersPage() {
     try {
       await api.post(`/users/${k.id}/status`, { status: target })
       setSuccess(target === 'active' ? t('toast.enabled', { username: k.username }) : t('toast.suspended', { username: k.username }))
-      await fetchList()
+      await reload()
     } catch (e) {
       setError(apiError(e, t('errors.statusFailed')))
     }
@@ -192,7 +199,7 @@ export default function UsersPage() {
       await api.delete(`/users/${toDelete.id}`)
       setSuccess(t('toast.deleted', { username: toDelete.username }))
       setToDelete(null)
-      await fetchList()
+      await reload()
     } catch (e) {
       setError(apiError(e, t('errors.deleteFailed')))
       setToDelete(null)
