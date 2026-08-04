@@ -16,17 +16,19 @@ export default function HostnameSetting() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
-  const load = useCallback(async () => {
-    try {
-      const response = await api.get<HostnameStatus>('/system/hostname')
-      setStatus(response.data)
-      setHostname(response.data.hostname)
-    } catch (caughtError) {
-      setError(apiError(caughtError, t('errors.load')))
-    }
-  }, [])
+  // Promise callbacks rather than await/try: this is what the mount effect calls,
+  // and writes sitting in an awaited body still count as the effect's own
+  // continuation. t is a real dependency because the failure message uses it.
+  const load = useCallback(() => {
+    api.get<HostnameStatus>('/system/hostname')
+      .then(response => {
+        setStatus(response.data)
+        setHostname(response.data.hostname)
+      })
+      .catch(caughtError => setError(apiError(caughtError, t('errors.load'))))
+  }, [t])
 
-  useEffect(() => { void load() }, [load])
+  useEffect(() => { load() }, [load])
 
   async function save() {
     setError('')
