@@ -98,11 +98,24 @@
     "sslInstalled": " SSL Let's Encrypt foi instalado.",
     "sslFailed": " (SSL Let's Encrypt não pôde ser emitido — verifique se o registro DNS A aponta para cá, depois instale-o pela página SSL.)",
     "deleted": "✓ {{success}}/{{total}} domínios excluídos",
-    "statusChanged": "✓ {{count}} domínios alterados para \"{{status}}\""
+    "statusChanged": "✓ {{count}} domínios alterados para \"{{status}}\"",
+    "subdomainsDeleted": "{{success}} de {{total}} subdomínio(s) excluídos"
   },
   "errors": {
     "invalidDomain": "Nome de domínio inválido. Por exemplo: exemplo.com ou painel.exemplo.com",
     "createFailed": "Não foi possível criar o domínio",
     "statusFailed": "Não foi possível alterar o status"
+  },
+  "bulkSub": {
+    "selected": "{{count}} subdomínio(s) selecionado(s)",
+    "delete": "Excluir ({{count}})",
+    "selectOne": "Selecionar {{name}}"
+  },
+  "subDeleteConfirm": {
+    "title": "Excluir subdomínios",
+    "message": "{{count}} subdomínio(s) serão removidos junto com seu host virtual, registro DNS, certificado e raiz de documentos.",
+    "cancel": "Cancelar",
+    "confirm": "Excluir",
+    "working": "Excluindo..."
   }
 }

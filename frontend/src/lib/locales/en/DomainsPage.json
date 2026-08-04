@@ -98,11 +98,24 @@
     "sslInstalled": " Let's Encrypt SSL was installed.",
     "sslFailed": " (Let's Encrypt SSL could not be issued — make sure the DNS A record points here, then install it from the SSL page.)",
     "deleted": "✓ {{success}}/{{total}} domains deleted",
-    "statusChanged": "✓ {{count}} domains changed to \"{{status}}\""
+    "statusChanged": "✓ {{count}} domains changed to \"{{status}}\"",
+    "subdomainsDeleted": "{{success}} of {{total}} subdomain(s) deleted"
   },
   "errors": {
     "invalidDomain": "Invalid domain name. For example: example.com or panel.example.com",
     "createFailed": "Could not create domain",
     "statusFailed": "Could not change status"
+  },
+  "bulkSub": {
+    "selected": "{{count}} subdomain(s) selected",
+    "delete": "Delete ({{count}})",
+    "selectOne": "Select {{name}}"
+  },
+  "subDeleteConfirm": {
+    "title": "Delete subdomains",
+    "message": "{{count}} subdomain(s) will be removed together with their virtual host, DNS record, certificate and document root.",
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "working": "Deleting..."
   }
 }

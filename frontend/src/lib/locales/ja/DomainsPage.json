@@ -98,11 +98,24 @@
     "sslInstalled": " Let's Encrypt SSL をインストールしました。",
     "sslFailed": " (Let's Encrypt SSL を発行できませんでした — DNS A レコードがここを指していることを確認してから、SSL ページでインストールしてください。)",
     "deleted": "✓ {{success}}/{{total}} 個のドメインを削除しました",
-    "statusChanged": "✓ {{count}} 個のドメインを「{{status}}」に変更しました"
+    "statusChanged": "✓ {{count}} 個のドメインを「{{status}}」に変更しました",
+    "subdomainsDeleted": "{{total}} 件中 {{success}} 件のサブドメインを削除しました"
   },
   "errors": {
     "invalidDomain": "無効なドメイン名です。例: example.com または panel.example.com",
     "createFailed": "ドメインを作成できませんでした",
     "statusFailed": "ステータスを変更できませんでした"
+  },
+  "bulkSub": {
+    "selected": "{{count}} 件のサブドメインを選択中",
+    "delete": "削除 ({{count}})",
+    "selectOne": "{{name}} を選択"
+  },
+  "subDeleteConfirm": {
+    "title": "サブドメインを削除",
+    "message": "{{count}} 件のサブドメインが、仮想ホスト、DNS レコード、証明書、ドキュメントルートとともに削除されます。",
+    "cancel": "キャンセル",
+    "confirm": "削除",
+    "working": "削除中..."
   }
 }

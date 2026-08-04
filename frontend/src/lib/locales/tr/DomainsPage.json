@@ -98,11 +98,24 @@
     "sslInstalled": " Let's Encrypt SSL kuruldu.",
     "sslFailed": " (Let's Encrypt SSL alınamadı — DNS A kaydının buraya işaret ettiğinden emin olun, sonra SSL sayfasından kurun.)",
     "deleted": "✓ {{success}}/{{total}} alan adı silindi",
-    "statusChanged": "✓ {{count}} alan adı \"{{status}}\" durumuna değiştirildi"
+    "statusChanged": "✓ {{count}} alan adı \"{{status}}\" durumuna değiştirildi",
+    "subdomainsDeleted": "{{total}} alt alanın {{success}} tanesi silindi"
   },
   "errors": {
     "invalidDomain": "Geçersiz alan adı. Örneğin: example.com veya panel.example.com",
     "createFailed": "Alan adı oluşturulamadı",
     "statusFailed": "Durum değiştirilemedi"
+  },
+  "bulkSub": {
+    "selected": "{{count}} alt alan seçildi",
+    "delete": "Sil ({{count}})",
+    "selectOne": "{{name}} seç"
+  },
+  "subDeleteConfirm": {
+    "title": "Alt alanları sil",
+    "message": "{{count}} alt alan; sanal konağı, DNS kaydı, sertifikası ve belge kökü ile birlikte kaldırılacak.",
+    "cancel": "Vazgeç",
+    "confirm": "Sil",
+    "working": "Siliniyor..."
   }
 }

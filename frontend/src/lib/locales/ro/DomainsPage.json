@@ -98,11 +98,24 @@
     "sslInstalled": " SSL Let's Encrypt a fost instalat.",
     "sslFailed": " (SSL Let's Encrypt nu a putut fi emis — asigurați-vă că înregistrarea DNS A indică aici, apoi instalați-l din pagina SSL.)",
     "deleted": "✓ {{success}}/{{total}} domenii șterse",
-    "statusChanged": "✓ {{count}} domenii schimbate în „{{status}}”"
+    "statusChanged": "✓ {{count}} domenii schimbate în „{{status}}”",
+    "subdomainsDeleted": "{{success}} din {{total}} subdomeniu(ri) șterse"
   },
   "errors": {
     "invalidDomain": "Nume de domeniu invalid. De exemplu: example.com sau panel.example.com",
     "createFailed": "Nu s-a putut crea domeniul",
     "statusFailed": "Nu s-a putut schimba starea"
+  },
+  "bulkSub": {
+    "selected": "{{count}} subdomeniu(ri) selectat(e)",
+    "delete": "Șterge ({{count}})",
+    "selectOne": "Selectează {{name}}"
+  },
+  "subDeleteConfirm": {
+    "title": "Șterge subdomeniile",
+    "message": "{{count}} subdomeniu(ri) vor fi eliminate împreună cu gazda virtuală, înregistrarea DNS, certificatul și rădăcina de documente.",
+    "cancel": "Anulează",
+    "confirm": "Șterge",
+    "working": "Se șterge..."
   }
 }

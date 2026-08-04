@@ -98,11 +98,24 @@
     "sslInstalled": " Let's-Encrypt-SSL wurde installiert.",
     "sslFailed": " (Let's-Encrypt-SSL konnte nicht ausgestellt werden — stellen Sie sicher, dass der DNS-A-Eintrag hierher verweist, und installieren Sie es dann auf der SSL-Seite.)",
     "deleted": "✓ {{success}}/{{total}} Domains gelöscht",
-    "statusChanged": "✓ {{count}} Domains geändert auf \"{{status}}\""
+    "statusChanged": "✓ {{count}} Domains geändert auf \"{{status}}\"",
+    "subdomainsDeleted": "{{success}} von {{total}} Subdomain(s) gelöscht"
   },
   "errors": {
     "invalidDomain": "Ungültiger Domainname. Zum Beispiel: example.com oder panel.example.com",
     "createFailed": "Domain konnte nicht erstellt werden",
     "statusFailed": "Status konnte nicht geändert werden"
+  },
+  "bulkSub": {
+    "selected": "{{count}} Subdomain(s) ausgewählt",
+    "delete": "Löschen ({{count}})",
+    "selectOne": "{{name}} auswählen"
+  },
+  "subDeleteConfirm": {
+    "title": "Subdomains löschen",
+    "message": "{{count}} Subdomain(s) werden zusammen mit ihrem virtuellen Host, DNS-Eintrag, Zertifikat und Dokumentenstamm entfernt.",
+    "cancel": "Abbrechen",
+    "confirm": "Löschen",
+    "working": "Wird gelöscht..."
   }
 }

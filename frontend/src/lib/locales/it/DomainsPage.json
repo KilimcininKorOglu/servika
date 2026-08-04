@@ -98,11 +98,24 @@
     "sslInstalled": " L'SSL Let's Encrypt è stato installato.",
     "sslFailed": " (Impossibile emettere l'SSL Let's Encrypt — assicurati che il record DNS A punti qui, poi installalo dalla pagina SSL.)",
     "deleted": "✓ {{success}}/{{total}} domini eliminati",
-    "statusChanged": "✓ {{count}} domini cambiati in \"{{status}}\""
+    "statusChanged": "✓ {{count}} domini cambiati in \"{{status}}\"",
+    "subdomainsDeleted": "{{success}} di {{total}} sottodominio/i eliminati"
   },
   "errors": {
     "invalidDomain": "Nome dominio non valido. Ad esempio: example.com o panel.example.com",
     "createFailed": "Impossibile creare il dominio",
     "statusFailed": "Impossibile cambiare lo stato"
+  },
+  "bulkSub": {
+    "selected": "{{count}} sottodominio/i selezionato/i",
+    "delete": "Elimina ({{count}})",
+    "selectOne": "Seleziona {{name}}"
+  },
+  "subDeleteConfirm": {
+    "title": "Elimina sottodomini",
+    "message": "{{count}} sottodominio/i verranno rimossi insieme al loro host virtuale, record DNS, certificato e radice dei documenti.",
+    "cancel": "Annulla",
+    "confirm": "Elimina",
+    "working": "Eliminazione..."
   }
 }

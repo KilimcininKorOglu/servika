@@ -98,11 +98,24 @@
     "sslInstalled": " Let's Encrypt SSL 已安装。",
     "sslFailed": " (无法签发 Let's Encrypt SSL，请确认 DNS A 记录指向此处，然后在 SSL 页面安装。)",
     "deleted": "✓ 已删除 {{success}}/{{total}} 个域名",
-    "statusChanged": "✓ {{count}} 个域名已更改为 \"{{status}}\""
+    "statusChanged": "✓ {{count}} 个域名已更改为 \"{{status}}\"",
+    "subdomainsDeleted": "已删除 {{total}} 个子域中的 {{success}} 个"
   },
   "errors": {
     "invalidDomain": "无效的域名。例如：example.com 或 panel.example.com",
     "createFailed": "无法创建域名",
     "statusFailed": "无法更改状态"
+  },
+  "bulkSub": {
+    "selected": "已选择 {{count}} 个子域",
+    "delete": "删除 ({{count}})",
+    "selectOne": "选择 {{name}}"
+  },
+  "subDeleteConfirm": {
+    "title": "删除子域",
+    "message": "将删除 {{count}} 个子域及其虚拟主机、DNS 记录、证书和文档根目录。",
+    "cancel": "取消",
+    "confirm": "删除",
+    "working": "正在删除..."
   }
 }

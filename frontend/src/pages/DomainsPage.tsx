@@ -51,6 +51,10 @@ export default function DomainsPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<Set<number>>(new Set())
+  // Subdomain ids live in their own set: they share the numeric id space with
+  // domains, so one combined set would delete the wrong resource.
+  const [selectedSubs, setSelectedSubs] = useState<Set<number>>(new Set())
+  const [subDeleteOpen, setSubDeleteOpen] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
@@ -232,6 +236,32 @@ export default function DomainsPage() {
     setProcessing(false); load()
   }
 
+  function toggleSubSelection(id: number) {
+    setSelectedSubs(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  // Each subdomain is deleted through its own endpoint rather than a new bulk one:
+  // a delete already removes the vhost, the DNS record, the certificate and the
+  // document root, so the sequence is the same work either way.
+  async function bulkDeleteSubdomains() {
+    setSubDeleteOpen(false); setProcessing(true); setError(null)
+    const targets = subdomains.filter(sub => selectedSubs.has(sub.id))
+    let successCount = 0
+    for (const sub of targets) {
+      // One failure must not abandon the rest; the toast reports the successful
+      // count against the total, so failures stay visible.
+      try { await api.delete(`/domains/${sub.parent_id}/subdomain/${sub.id}`); successCount++ } catch { /* counted as a failure */ }
+    }
+    setSelectedSubs(new Set())
+    setSuccess(t('toast.subdomainsDeleted', { success: successCount, total: targets.length }))
+    setTimeout(() => setSuccess(null), 4000)
+    setProcessing(false); load()
+  }
+
   async function changeStatus(newStatus: 'active' | 'passive') {
     setProcessing(true); setError(null)
     const ids = Array.from(selected)
@@ -287,6 +317,20 @@ export default function DomainsPage() {
           </button>
           <button onClick={() => setSelected(new Set())} disabled={processing}
             className="text-xs px-3 py-1.5 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:bg-amber-900/30 rounded">
+            {t('bulk.clear')}
+          </button>
+        </div>
+      )}
+
+      {selectedSubs.size > 0 && (
+        <div className="mb-3 px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border border-sky-300 dark:border-sky-700 rounded-md flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-semibold text-sky-800 dark:text-sky-200">{t('bulkSub.selected', { count: selectedSubs.size })}</span>
+          <button onClick={() => setSubDeleteOpen(true)} disabled={processing}
+            className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-medium">
+            {t('bulkSub.delete', { count: selectedSubs.size })}
+          </button>
+          <button onClick={() => setSelectedSubs(new Set())} disabled={processing}
+            className="text-xs px-3 py-1.5 border border-sky-300 dark:border-sky-700 text-sky-800 dark:text-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 rounded">
             {t('bulk.clear')}
           </button>
         </div>
@@ -363,7 +407,12 @@ export default function DomainsPage() {
                   </tr>
                   {children.map(sub => (
                     <tr key={`s${sub.id}`} className={`${responsiveTableRowClass} bg-slate-50/60 dark:bg-slate-900/30`}>
-                      <td className={responsiveTableCellClass}></td>
+                      <td className={responsiveTableCellClass}>
+                        <input type="checkbox" checked={selectedSubs.has(sub.id)}
+                          onChange={() => toggleSubSelection(sub.id)}
+                          aria-label={t('bulkSub.selectOne', { name: sub.fqdn })}
+                          className="rounded border-slate-300 dark:border-slate-600" />
+                      </td>
                       <td data-label={t('columns.domainName')} className={responsiveTableCellClass}>
                         <div className="text-right lg:text-left lg:pl-5">
                           <span className="text-slate-300 dark:text-slate-600 mr-1 hidden lg:inline">└</span>
@@ -531,6 +580,37 @@ export default function DomainsPage() {
       )}
 
       {/* Bulk deletion confirmation */}
+      {/* Subdomain bulk delete confirmation. No typed name is demanded here: unlike a
+          domain this removes one document root and its vhost, not a whole tenant. */}
+      {subDeleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-xl p-5">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('subDeleteConfirm.title')}</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+              {t('subDeleteConfirm.message', { count: selectedSubs.size })}
+            </p>
+            <ul className="mb-4 max-h-40 overflow-y-auto text-sm text-slate-700 dark:text-slate-300 space-y-0.5">
+              {subdomains.filter(sub => selectedSubs.has(sub.id)).slice(0, 8).map(sub => (
+                <li key={sub.id} className="font-mono text-xs">{sub.fqdn}</li>
+              ))}
+              {selectedSubs.size > 8 && (
+                <li className="text-slate-400 dark:text-slate-500 italic">{t('deleteConfirm.moreItems', { count: selectedSubs.size - 8 })}</li>
+              )}
+            </ul>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setSubDeleteOpen(false)} disabled={processing}
+                className="px-3 py-1.5 text-sm rounded border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300">
+                {t('subDeleteConfirm.cancel')}
+              </button>
+              <button onClick={bulkDeleteSubdomains} disabled={processing}
+                className="px-3 py-1.5 text-sm rounded bg-red-600 hover:bg-red-700 text-white font-medium disabled:opacity-50">
+                {processing ? t('subDeleteConfirm.working') : t('subDeleteConfirm.confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {deleteConfirmationOpen && (() => {
         const selectedId = selected.size === 1 ? Array.from(selected)[0] : undefined
         const selectedDomain = selectedId !== undefined ? items.find(x => x.id === selectedId)?.domain_name : undefined

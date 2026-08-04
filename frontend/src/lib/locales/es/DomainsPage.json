@@ -1,5 +1,8 @@
 {
-  "breadcrumb": { "home": "Inicio", "domains": "Dominios" },
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios"
+  },
   "title": "Dominios",
   "subtitle": "Vea todos los dominios registrados, cambie su estado en bloque o elimínelos.",
   "loading": "Cargando...",
@@ -10,7 +13,16 @@
     "description": "Comience añadiendo su primer dominio. Se crearán automáticamente un usuario Linux, vhost nginx, pool PHP-FPM, cuenta FTP, base de datos MySQL y zona DNS.",
     "button": "Crear dominio"
   },
-  "columns": { "domainName": "Nombre de dominio", "systemUser": "Usuario del sistema", "plan": "Plan", "php": "PHP", "disk": "Disco", "status": "Estado", "created": "Creado", "actions": "Acciones" },
+  "columns": {
+    "domainName": "Nombre de dominio",
+    "systemUser": "Usuario del sistema",
+    "plan": "Plan",
+    "php": "PHP",
+    "disk": "Disco",
+    "status": "Estado",
+    "created": "Creado",
+    "actions": "Acciones"
+  },
   "openInNewTab": "Abrir en nueva pestaña",
   "sslExpires": "Vence: {{date}}",
   "sslActive": "SSL activo",
@@ -22,7 +34,13 @@
   "subdomainParentPlan": "Principal",
   "manage": "Gestionar",
   "addSubdomain": "+ Subdominio",
-  "bulk": { "selected": "{{count}} seleccionados", "activate": "▶ Activar", "deactivate": "⏸ Desactivar", "delete": "🗑 Eliminar ({{count}})", "clear": "Borrar selección" },
+  "bulk": {
+    "selected": "{{count}} seleccionados",
+    "activate": "▶ Activar",
+    "deactivate": "⏸ Desactivar",
+    "delete": "🗑 Eliminar ({{count}})",
+    "clear": "Borrar selección"
+  },
   "deleteConfirm": {
     "title": "⚠ Eliminación masiva de dominios",
     "messageMid": " dominios y todos los recursos dependientes (usuarios Linux, directorios home, bases de datos, cuentas FTP, vhosts y zonas DNS) serán eliminados ",
@@ -68,13 +86,36 @@
     "systemUser": "Usuario del sistema: ",
     "ok": "OK"
   },
-  "copyRow": { "hidden": "••••••••••", "clickToCopy": "Clic para copiar", "hide": "Ocultar", "show": "Mostrar", "copied": "Copiado" },
+  "copyRow": {
+    "hidden": "••••••••••",
+    "clickToCopy": "Clic para copiar",
+    "hide": "Ocultar",
+    "show": "Mostrar",
+    "copied": "Copiado"
+  },
   "toast": {
     "created": "✓ «{{name}}» creado. El usuario Linux, vhost nginx, pool PHP-FPM, cuenta FTP, base de datos MySQL y zona DNS están listos.",
     "sslInstalled": " SSL Let's Encrypt instalado.",
     "sslFailed": " (No se pudo emitir SSL Let's Encrypt. Asegúrese de que el registro DNS A apunta aquí e instálelo desde la página SSL.)",
     "deleted": "✓ {{success}}/{{total}} dominios eliminados",
-    "statusChanged": "✓ {{count}} dominios cambiados a «{{status}}»"
+    "statusChanged": "✓ {{count}} dominios cambiados a «{{status}}»",
+    "subdomainsDeleted": "{{success}} de {{total}} subdominio(s) eliminados"
   },
-  "errors": { "invalidDomain": "Nombre de dominio no válido. Por ejemplo: ejemplo.com o panel.ejemplo.com", "createFailed": "No se pudo crear el dominio", "statusFailed": "No se pudo cambiar el estado" }
+  "errors": {
+    "invalidDomain": "Nombre de dominio no válido. Por ejemplo: ejemplo.com o panel.ejemplo.com",
+    "createFailed": "No se pudo crear el dominio",
+    "statusFailed": "No se pudo cambiar el estado"
+  },
+  "bulkSub": {
+    "selected": "{{count}} subdominio(s) seleccionado(s)",
+    "delete": "Eliminar ({{count}})",
+    "selectOne": "Seleccionar {{name}}"
+  },
+  "subDeleteConfirm": {
+    "title": "Eliminar subdominios",
+    "message": "{{count}} subdominio(s) se eliminarán junto con su host virtual, registro DNS, certificado y raíz de documentos.",
+    "cancel": "Cancelar",
+    "confirm": "Eliminar",
+    "working": "Eliminando..."
+  }
 }
