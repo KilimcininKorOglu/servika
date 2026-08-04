@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] - 2026-08-04
+
+### Changed
+- Upgraded the panel to React 19 and React Router 8, closing a routing advisory that no 7.x release fixes, and patched a path traversal in the build-time postcss dependency.
+- Panel pages no longer paint one frame of the previous domain's data when you switch domain, directory, log file, or filter: the file-manager selection, log tail, monitoring panels, audit-log spinner, and search deep links now settle in the same render as the change.
+- Removed unreachable components and their translations, and added an ESLint gate over the whole frontend so this class of rendering defect is caught before it ships.
+
+### Fixed
+- The file editor marked a saved file as unsaved again right after saving, leaving the Save button enabled with nothing left to write.
+- The antivirus page could leave a scan poll running after the scan finished or the page changed.
+- The elapsed time and estimated remaining time of a finished site migration kept counting up instead of stopping where the job ended.
+- The stored FTP and database password shown in the connection dialog, and the server status load error, stayed in the previous language after a language switch.
+
 ## [1.1.4] - 2026-08-02
 
 ### Added
