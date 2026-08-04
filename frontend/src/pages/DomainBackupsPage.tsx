@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
@@ -51,9 +51,11 @@ export default function DomainBackupsPage() {
   const [destinationSaving, setDestinationSaving] = useState(false)
   const [destTest, setDestTest] = useState<{ ok: boolean; error?: string } | null>(null)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchBackups
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchBackups = useCallback(() => {
     if (!id) return
-    setLoading(true)
     Promise.all([
       api.get<Backup[]>(`/domains/${id}/backups`),
       api.get<Schedule>(`/domains/${id}/backup-schedule`).catch(() => ({ data: { freq: 'none', hour: 3, retention: 7 } as Schedule })),
@@ -80,7 +82,12 @@ export default function DomainBackupsPage() {
     })
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
+  }, [id])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchBackups()
+  }, [fetchBackups])
 
   async function saveDest() {
     setDestinationSaving(true); setError(null); setSuccess(null); setDestTest(null)
@@ -126,8 +133,8 @@ export default function DomainBackupsPage() {
   }
   useEffect(() => {
     if (id) api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
-    load()
-  }, [id])
+    fetchBackups()
+  }, [id, fetchBackups])
 
   async function saveSchedule(newSchedule: Schedule) {
     setScheduleSaving(true); setError(null); setSuccess(null)
