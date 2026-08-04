@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -34,18 +34,16 @@ export default function ServicesPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  async function load() {
-    try {
-      const response = await api.get<Service[]>('/system/services')
-      setServices(response.data)
-    } catch (caughtError) {
-      setError(apiError(caughtError, t('errors.loadFailed')))
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Promise callbacks rather than await/try: this is what the mount effect calls,
+  // and writes in an awaited body still count as the effect's own continuation.
+  const load = useCallback(() =>
+    api.get<Service[]>('/system/services')
+      .then(response => setServices(response.data))
+      .catch(caughtError => setError(apiError(caughtError, t('errors.loadFailed'))))
+      .finally(() => setLoading(false)),
+  [t])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
 
   async function applyAction(service: Service, action: 'restart' | 'reload') {
     setProcessingUnit(service.unit)
