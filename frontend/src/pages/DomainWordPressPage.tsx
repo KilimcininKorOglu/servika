@@ -32,14 +32,22 @@ export default function DomainWordPressPage() {
     // A subdomain scope names itself by FQDN so the header does not show the parent domain.
     api.get<{ domain_name?: string; fqdn?: string }>(isSubdomain ? base : `/domains/${id}`)
       .then(r => setDomainName(r.data.fqdn || r.data.domain_name || '')).catch(() => {})
-  }, [base])
+  }, [id, base, isSubdomain])
+
+  // Split so the mount effect never writes state synchronously: fetchInstalls
+  // settles only through promise callbacks, and list() adds the spinner for the
+  // refreshes that follow an install or removal.
+  const fetchInstalls = useCallback(() => {
+    if (!id) return
+    api.get<Install[]>(`${base}/wordpress`).then(r => setItems(r.data || [])).catch(() => setItems([])).finally(() => setLoading(false))
+  }, [id, base])
 
   const list = useCallback(() => {
-    if (!id) return
     setLoading(true)
-    api.get<Install[]>(`${base}/wordpress`).then(r => setItems(r.data || [])).catch(() => setItems([])).finally(() => setLoading(false))
-  }, [base])
-  useEffect(() => { list() }, [list])
+    fetchInstalls()
+  }, [fetchInstalls])
+
+  useEffect(() => { fetchInstalls() }, [fetchInstalls])
 
   async function install(e: React.FormEvent) {
     e.preventDefault()
