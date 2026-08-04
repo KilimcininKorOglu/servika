@@ -11,7 +11,7 @@ type TopBarProps = {
 }
 
 type SearchEntry = {
-  kind: 'page' | 'domain' | 'customer' | 'user'
+  kind: 'page' | 'domain' | 'subdomain' | 'customer' | 'user'
   title: string
   subtitle: string
   path: string
@@ -19,6 +19,7 @@ type SearchEntry = {
 }
 
 type DomainRow = { id: number; domain_name: string; system_user?: string; status?: string }
+type SubdomainRow = { id: number; fqdn: string; parent_id: number; parent_name?: string; system_user?: string }
 type CustomerRow = { id: number; name: string; email?: string; status?: string }
 type UserRow = { id: number; username: string; full_name?: string; email?: string; role?: string }
 
@@ -180,6 +181,13 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
           subtitle: `Domain${d.system_user ? ` · ${d.system_user}` : ''}${d.status ? ` · ${d.status}` : ''}`,
           path: `/subscriptions/${d.id}`, keywords: `site hosting ${d.system_user || ''}`,
         }))).catch(() => []),
+        // Scoped server-side, so a reseller gets only its own subdomains.
+        api.get<SubdomainRow[]>('/subdomains').then((r) => (Array.isArray(r.data) ? r.data : []).map((s) => ({
+          kind: 'subdomain' as const, title: s.fqdn,
+          subtitle: `Subdomain${s.parent_name ? ` · ${s.parent_name}` : ''}`,
+          path: `/domains/${s.parent_id}/subdomain/${s.id}`,
+          keywords: `${s.parent_name || ''} ${s.system_user || ''}`,
+        }))).catch(() => []),
         api.get<CustomerRow[]>('/customers').then((r) => (Array.isArray(r.data) ? r.data : []).map((c) => ({
           kind: 'customer' as const, title: c.name, subtitle: `Customer${c.email ? ` · ${c.email}` : ''}`,
           path: `/customers?q=${encodeURIComponent(c.email || c.name)}`, keywords: c.email || '',
@@ -323,10 +331,11 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
                   >
                     <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-semibold ${
                       entry.kind === 'domain' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
+                      : entry.kind === 'subdomain' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300'
                       : entry.kind === 'customer' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
                       : entry.kind === 'user' ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
                       : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-                    }`}>{entry.kind === 'domain' ? 'D' : entry.kind === 'customer' ? 'C' : entry.kind === 'user' ? 'U' : '↗'}</span>
+                    }`}>{entry.kind === 'domain' ? 'D' : entry.kind === 'subdomain' ? 'S' : entry.kind === 'customer' ? 'C' : entry.kind === 'user' ? 'U' : '↗'}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{entry.title}</span>
                       <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">{entry.subtitle}</span>
