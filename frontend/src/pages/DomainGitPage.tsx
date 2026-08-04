@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
 import { api, apiError as apiError } from '@/lib/api'
@@ -45,9 +45,23 @@ export default function DomainGitPage() {
   const [ghAutoDeploy, setGhAutoDeploy] = useState(true)
   const [ghLoading, setGhLoading] = useState(false)
 
-  function load() {
+  // Declared before the loader that calls it: a function hoisted past its own
+  // use site cannot pick up a later definition, so the earlier call would keep
+  // an older closure over id and t.
+  const ghLoadRepos = useCallback(async () => {
+    try {
+      const r = await api.get<GHRepo[]>(`/domains/${id}/github/repos`)
+      setGhRepos(r.data || [])
+    } catch (e) {
+      setError(apiError(e, t('errors.loadReposFailed')))
+    }
+  }, [id, t])
+
+  // Split so the mount effect never writes state synchronously: fetchRepo
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchRepo = useCallback(() => {
     if (!id) return
-    setLoading(true)
     api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
     api.get<Repo | null>(`/domains/${id}/git`)
       .then(r => { setRepo(r.data); if (r.data) { setRepoUrl(r.data.repo_url); setBranch(r.data.branch); setTargetDir(r.data.target_dir) } })
@@ -61,8 +75,14 @@ export default function DomainGitPage() {
         ghLoadRepos()
       }
     }).catch(() => {})
-  }
-  useEffect(load, [id])
+  }, [id, ghLoadRepos])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchRepo()
+  }, [fetchRepo])
+
+  useEffect(() => { fetchRepo() }, [fetchRepo])
 
   async function ghConnect() {
     if (!ghToken.trim()) { setError(t('errors.patRequired')); return }
@@ -75,15 +95,6 @@ export default function DomainGitPage() {
     } catch (e) {
       setError(apiError(e, t('errors.connectFailed')))
     } finally { setGhLoading(false) }
-  }
-
-  async function ghLoadRepos() {
-    try {
-      const r = await api.get<GHRepo[]>(`/domains/${id}/github/repos`)
-      setGhRepos(r.data || [])
-    } catch (e) {
-      setError(apiError(e, t('errors.loadReposFailed')))
-    }
   }
 
   async function ghLoadBranches(repoFull: string) {
