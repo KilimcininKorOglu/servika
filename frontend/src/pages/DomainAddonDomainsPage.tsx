@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -35,9 +35,11 @@ export default function DomainAddonDomainsPage() {
   const [targetURL, setTargetURL] = useState('')
   const [statusCode, setStatusCode] = useState(301)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchAddons
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchAddons = useCallback(() => {
     if (!id) return
-    setLoading(true)
     Promise.all([
       api.get<AddonDomain[]>(`/domains/${id}/addon-domains`),
       api.get<RedirectStatus>(`/domains/${id}/redirect`),
@@ -47,9 +49,14 @@ export default function DomainAddonDomainsPage() {
       setTargetURL(redirectResponse.data?.target_url || '')
       setStatusCode(redirectResponse.data?.status_code || 301)
     }).catch(error => setError(apiError(error))).finally(() => setLoading(false))
-  }
+  }, [id])
 
-  useEffect(load, [id])
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchAddons()
+  }, [fetchAddons])
+
+  useEffect(() => { fetchAddons() }, [fetchAddons])
 
   async function create(event: React.FormEvent) {
     event.preventDefault()
