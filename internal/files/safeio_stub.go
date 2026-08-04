@@ -75,3 +75,13 @@ func fchownRestoreFd(_ string, _ *os.File, _ string) {}
 func resetTreeBeneath(_, _, _ string, _, _ uint32) error {
 	return errSafeIOLinuxOnly
 }
+
+func ImportBeneath(_, _, _, _ string) error {
+	return errSafeIOLinuxOnly
+}
+
+func MkdirAllBeneath(_, _, _ string) error {
+	return errSafeIOLinuxOnly
+}
+
+func RestoreconBeneath(_, _ string) {}

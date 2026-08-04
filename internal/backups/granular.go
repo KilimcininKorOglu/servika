@@ -18,6 +18,7 @@ import (
 
 	"servika/internal/archivex"
 	"servika/internal/credentials"
+	"servika/internal/files"
 	"servika/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -271,18 +272,21 @@ func pathEscapes(p string) bool {
 // target == "in_place" -> original location (only the selected paths; home not wiped).
 func restoreSelectedFiles(ctx context.Context, tmp, systemUser string, paths []string, target string) (int, string, error) {
 	src := filepath.Join(tmp, systemUser)
-	rootTarget := "/home/" + systemUser
+	home := "/home/" + systemUser
 	subDir := ""
 	if target != "in_place" {
 		subDir = "restore-" + time.Now().Format("20060102-150405")
-		rootTarget = filepath.Join("/home/"+systemUser, subDir)
-		// 0750 matches the tenant home convention (owner + group, nginx reads via ACL).
-		if err := os.MkdirAll(rootTarget, 0750); err != nil {
+		// Symlink-safe: the stamp is predictable, so a tenant can pre-create the name
+		// as a symlink; os.MkdirAll would accept it and hand root a path outside home.
+		if err := files.MkdirAllBeneath(home, subDir, systemUser); err != nil {
 			return 0, "", fmt.Errorf("target directory: %w", err)
 		}
 	}
 	n := 0
 	for _, y := range paths {
+		if ctx.Err() != nil {
+			break
+		}
 		rel, ok := safeMemberPath(y)
 		if !ok {
 			continue
@@ -294,19 +298,19 @@ func restoreSelectedFiles(ctx context.Context, tmp, systemUser string, paths []s
 		if _, err := os.Lstat(s); err != nil {
 			continue
 		}
-		d := filepath.Join(rootTarget, rel)
-		if err := os.MkdirAll(filepath.Dir(d), 0750); err != nil {
-			continue
-		}
-		// #nosec G204 G702 -- fixed binary (cp) with separate args (no shell); s/d are under the validated tenant staging/home tree.
-		if _, err := newRestoreCommand(ctx, "cp", "-a", s, d).CombinedOutput(); err != nil {
+		// The whole destination path is tenant-controlled, and this runs as root, so
+		// the copy goes through openat2 instead of `cp`: `cp` follows a symlink at the
+		// destination, and a symlinked parent component would let a tenant redirect the
+		// write anywhere on the filesystem.
+		if err := files.ImportBeneath(home, filepath.Join(subDir, rel), s, systemUser); err != nil {
 			continue
 		}
 		n++
 	}
-	// #nosec G204 G702 -- fixed binaries (chown/restorecon) with separate args (no shell); systemUser is validated and rootTarget is internal.
-	_, _ = newRestoreCommand(ctx, "chown", "-R", systemUser+":"+systemUser, rootTarget).CombinedOutput()
-	_, _ = newRestoreCommand(ctx, "restorecon", "-R", rootTarget).CombinedOutput()
+	// No path-based `chown -R` here: ImportBeneath already chowns every entry it
+	// creates through its pinned fd, and a recursive chown by path would follow a
+	// tenant symlink and hand an unrelated tree to the tenant.
+	files.RestoreconBeneath(home, subDir)
 	return n, subDir, nil
 }
 

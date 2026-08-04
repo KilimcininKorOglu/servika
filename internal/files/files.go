@@ -67,6 +67,8 @@ var (
 	errEscape     = errors.New("security: escape from home directory blocked")
 	errNotRegular = errors.New("not a regular file")
 	errTooLarge   = errors.New("file exceeds the size limit")
+
+	errSafeIOBadTarget = errors.New("security: empty destination path")
 )
 
 type Entry struct {

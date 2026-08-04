@@ -565,3 +565,69 @@ func copyRegAt(sdir int, sname string, ddir int, dname string, perm uint32, uid,
 	}
 	return nil
 }
+
+// ImportBeneath copies srcAbs, a server-controlled staging path OUTSIDE the tenant
+// home (an extracted backup archive, a migration payload), to rel beneath home.
+//
+// The staging tree carries tenant-authored content, so its own symlinks are recreated
+// rather than followed. The destination side is the dangerous one: the tenant owns the
+// home and can plant a symlink at any component of rel, so root writing through a
+// path string would land outside the jail. Every destination component is therefore
+// pinned with openat2(RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS), and a leaf that is already
+// a symlink is unlinked instead of written through.
+func ImportBeneath(home, rel, srcAbs, systemUser string) error {
+	cleanRel := relClean(rel)
+	if cleanRel == "" || cleanRel == "." {
+		return errSafeIOBadTarget
+	}
+	if err := mkdirAllBeneath(home, filepath.Dir(cleanRel), systemUser); err != nil {
+		return err
+	}
+	srcDir, srcLeaf := filepath.Dir(srcAbs), filepath.Base(srcAbs)
+	sfd, err := unix.Open(srcDir, dirOpenFlags, 0)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = unix.Close(sfd) }() // staging dir fd release: Close error not actionable
+	dfd, dleaf, err := safeParentFd(home, cleanRel)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = unix.Close(dfd) }() // pinned parent dir fd release: Close error not actionable
+	var dst unix.Stat_t
+	if err := unix.Fstatat(dfd, dleaf, &dst, unix.AT_SYMLINK_NOFOLLOW); err == nil &&
+		dst.Mode&unix.S_IFMT == unix.S_IFLNK {
+		// The existing entry is a symlink. Remove the LINK (never its target) so the
+		// copy below creates a real entry in the tenant's own directory.
+		if err := unix.Unlinkat(dfd, dleaf, 0); err != nil {
+			return err
+		}
+	}
+	uid, gid, haveIDs := tenantIDs(systemUser)
+	return copyEntryAt(sfd, srcLeaf, dfd, dleaf, uid, gid, haveIDs)
+}
+
+// MkdirAllBeneath is the exported symlink-safe `mkdir -p` for callers outside this
+// package. Every component is created and reopened with O_NOFOLLOW, so a tenant
+// cannot swap one for a symlink and have root create directories elsewhere.
+func MkdirAllBeneath(home, rel, systemUser string) error {
+	return mkdirAllBeneath(home, rel, systemUser)
+}
+
+// RestoreconBeneath relabels rel and everything under it. The path handed to
+// restorecon is the kernel-resolved /proc/self/fd path of an openat2 fd rather than
+// the caller's string, so a tenant symlink cannot redirect a root relabel outside
+// the home. Best effort: a host without SELinux simply has nothing to do.
+func RestoreconBeneath(home, rel string) {
+	f, err := openAt2Beneath(home, rel, unix.O_RDONLY|unix.O_NONBLOCK, 0)
+	if err != nil {
+		return
+	}
+	defer func() { _ = f.Close() }() // relabel probe fd; Close error not actionable
+	real, err := os.Readlink("/proc/self/fd/" + strconv.Itoa(int(f.Fd())))
+	if err != nil || !withinHome(home, real) {
+		return
+	}
+	// #nosec G204 G702 -- fixed binary (restorecon) with separate args (no shell); real is a kernel-resolved path proven to be under the tenant home.
+	_, _ = exec.Command("restorecon", "-R", real).CombinedOutput()
+}
