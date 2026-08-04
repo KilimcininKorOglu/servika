@@ -73,6 +73,34 @@ func TestReadInfoReportsTheRunningVersion(t *testing.T) {
 	}
 }
 
+// The panel changes the hostname itself, so a cached copy would report the old
+// name until the service restarts. Only the warm read catches that, which is why
+// both are checked.
+func TestReadInfoReportsTheCurrentHostname(t *testing.T) {
+	previousRead := hostnameRead
+	hostnameRead = func() (string, error) { return "before.example.com", nil }
+	infoCacheMu.Lock()
+	previousCache := infoCache
+	infoCache = nil
+	infoCacheMu.Unlock()
+	t.Cleanup(func() {
+		hostnameRead = previousRead
+		infoCacheMu.Lock()
+		infoCache = previousCache
+		infoCacheMu.Unlock()
+	})
+
+	if got := ReadInfo().Hostname; got != "before.example.com" {
+		t.Fatalf("cold ReadInfo() hostname = %q, want %q", got, "before.example.com")
+	}
+
+	hostnameRead = func() (string, error) { return "after.example.com", nil }
+
+	if got := ReadInfo().Hostname; got != "after.example.com" {
+		t.Fatalf("warm ReadInfo() hostname = %q, want %q", got, "after.example.com")
+	}
+}
+
 func TestParseUnitStateSeparatesMissingFromStopped(t *testing.T) {
 	tests := []struct {
 		name              string

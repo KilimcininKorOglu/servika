@@ -470,21 +470,30 @@ var (
 	infoCacheMu sync.Mutex
 )
 
+// withLiveFields fills the parts of SystemInfo that change while the panel is
+// running, so they are read on every call rather than served from the cache. The
+// rest (kernel, OS name, CPU) only changes across a reboot, which restarts this
+// process anyway, and building it costs a subprocess plus two file reads, so it
+// stays cached. Add a field here rather than to the cached struct whenever the
+// panel itself can change it.
+func withLiveFields(info SystemInfo) SystemInfo {
+	info.IP = primaryIP()
+	// The panel changes the hostname itself (HostnameSave), so a cached copy keeps
+	// reporting the old name until the service is restarted.
+	info.Hostname, _ = hostnameRead()
+	// The running version reaches internal/system from main, which may happen after
+	// this cache is already warm.
+	info.PanelVersion = currentVersion()
+	return info
+}
+
 func ReadInfo() SystemInfo {
 	infoCacheMu.Lock()
 	defer infoCacheMu.Unlock()
 	if infoCache != nil {
-		c := *infoCache
-		c.IP = primaryIP()
-		// Read outside the cache for the same reason as the IP: the running
-		// version arrives from main after this cache may already be warm, and a
-		// version frozen into it would never correct itself.
-		c.PanelVersion = currentVersion()
-		return c
+		return withLiveFields(*infoCache)
 	}
-	info := SystemInfo{PanelVersion: currentVersion(), CPUCores: runtime.NumCPU(), Arch: runtime.GOARCH}
-	info.Hostname, _ = os.Hostname()
-	info.IP = primaryIP()
+	info := SystemInfo{CPUCores: runtime.NumCPU(), Arch: runtime.GOARCH}
 	if output, err := exec.Command("uname", "-r").Output(); err == nil {
 		info.Kernel = strings.TrimSpace(string(output))
 	}
@@ -513,7 +522,7 @@ func ReadInfo() SystemInfo {
 	}
 	cached := info
 	infoCache = &cached
-	return info
+	return withLiveFields(info)
 }
 
 var serviceList = []struct{ name, label string }{
