@@ -12,7 +12,7 @@
     "last-backup": "最新のサーバーバックアップ",
     "performance": "パフォーマンス / 最適化",
     "cve-security": "セキュリティアドバイザリ (CVE)",
-    "services": "サービス",
+    "services": "インストール済みサービス",
     "domains": "ドメイン",
     "server-info": "サーバー情報",
     "health": "システムヘルス",

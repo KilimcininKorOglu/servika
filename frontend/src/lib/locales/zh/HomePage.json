@@ -12,7 +12,7 @@
     "last-backup": "上次服务器备份",
     "performance": "性能 / 优化",
     "cve-security": "安全公告 (CVE)",
-    "services": "服务",
+    "services": "已安装服务",
     "domains": "域名",
     "server-info": "服务器信息",
     "health": "系统健康",

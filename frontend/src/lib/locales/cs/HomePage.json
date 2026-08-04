@@ -12,7 +12,7 @@
     "last-backup": "Poslední záloha serveru",
     "performance": "Výkon / optimalizace",
     "cve-security": "Bezpečnostní upozornění (CVE)",
-    "services": "Služby",
+    "services": "Nainstalované služby",
     "domains": "Domény",
     "server-info": "Informace o serveru",
     "health": "Zdraví systému",

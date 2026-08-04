@@ -12,7 +12,7 @@
     "last-backup": "Ultimo Backup Server",
     "performance": "Prestazioni / Ottimizza",
     "cve-security": "Avvisi di Sicurezza (CVE)",
-    "services": "Servizi",
+    "services": "Servizi installati",
     "domains": "Domini",
     "server-info": "Info Server",
     "health": "Salute del Sistema",

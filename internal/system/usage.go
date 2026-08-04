@@ -534,37 +534,66 @@ var serviceList = []struct{ name, label string }{
 	{"firewalld", "Firewalld"},
 }
 
+// parseUnitState reads systemctl show output for one unit. A unit that was never
+// installed still exits 0 and reports LoadState=not-found, which is why the state
+// is read this way rather than from is-active: is-active answers "inactive" for a
+// missing unit exactly as it does for a stopped one, so it cannot tell the two
+// apart. A masked unit reports LoadState=masked and counts as installed, because
+// it is present on the host and merely held off.
+func parseUnitState(output string) (installed, active bool) {
+	for line := range strings.SplitSeq(output, "\n") {
+		switch strings.TrimSpace(line) {
+		case "LoadState=not-found":
+			return false, false
+		case "ActiveState=active":
+			active = true
+		}
+	}
+	return true, active
+}
+
+// systemctlProbe reports whether a unit is installed on this host and running. It
+// is a variable so ReadServices can be exercised without systemd.
+var systemctlProbe = func(name string) (installed, active bool) {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); the unit name comes from the package-level serviceList, never from a request.
+	output, err := exec.Command("systemctl", "show", name+".service", "--property=LoadState", "--property=ActiveState").Output()
+	if err != nil {
+		// systemctl could not be run at all. Report the unit as present so a broken
+		// or absent systemd empties the widget of RUNNING services rather than of
+		// every service, which would read as "this host has nothing installed".
+		return true, false
+	}
+	return parseUnitState(string(output))
+}
+
+// ReadServices returns only the services that are actually installed. A service
+// that was never installed (a PHP version the operator never added, an FTP server
+// on a host that does not offer FTP) is omitted rather than listed as down, which
+// otherwise reported a permanent fault for software nobody asked for.
 func ReadServices() []ServiceStat {
 	out := make([]ServiceStat, 0, len(serviceList))
 	type res struct {
-		i       int
-		enabled bool
+		i         int
+		installed bool
+		enabled   bool
 	}
 	ch := make(chan res, len(serviceList))
 	for i, s := range serviceList {
 		go func(i int, name string) {
-			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-			cmd := exec.Command("systemctl", "is-active", name)
-			b, _ := cmd.Output()
-			ch <- res{i: i, enabled: strings.TrimSpace(string(b)) == "active"}
+			installed, active := systemctlProbe(name)
+			ch <- res{i: i, installed: installed, enabled: active}
 		}(i, s.name)
 	}
-	mat := make(map[int]bool)
+	mat := make(map[int]res, len(serviceList))
 	for range len(serviceList) {
 		r := <-ch
-		mat[r.i] = r.enabled
+		mat[r.i] = r
 	}
 	for i, s := range serviceList {
-		enabled := mat[i]
-		if !enabled && (s.name == "pure-ftpd" || strings.HasPrefix(s.name, "php")) {
-			// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-			cmd := exec.Command("systemctl", "list-unit-files", s.name+".service", "--no-legend")
-			b, _ := cmd.Output()
-			if len(strings.TrimSpace(string(b))) == 0 {
-				continue
-			}
+		if !mat[i].installed {
+			continue
 		}
-		out = append(out, ServiceStat{Name: s.name, Label: s.label, Enabled: enabled})
+		out = append(out, ServiceStat{Name: s.name, Label: s.label, Enabled: mat[i].enabled})
 	}
 	return out
 }

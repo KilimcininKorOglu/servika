@@ -73,6 +73,56 @@ func TestReadInfoReportsTheRunningVersion(t *testing.T) {
 	}
 }
 
+func TestParseUnitStateSeparatesMissingFromStopped(t *testing.T) {
+	tests := []struct {
+		name              string
+		output            string
+		installed, active bool
+	}{
+		{name: "running", output: "LoadState=loaded\nActiveState=active\n", installed: true, active: true},
+		{name: "stopped", output: "LoadState=loaded\nActiveState=inactive\n", installed: true},
+		{name: "never installed", output: "LoadState=not-found\nActiveState=inactive\n"},
+		{name: "masked counts as installed", output: "LoadState=masked\nActiveState=inactive\n", installed: true},
+		{name: "failed unit is installed", output: "LoadState=loaded\nActiveState=failed\n", installed: true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			installed, active := parseUnitState(tc.output)
+			if installed != tc.installed || active != tc.active {
+				t.Fatalf("parseUnitState() = (%v, %v), want (%v, %v)", installed, active, tc.installed, tc.active)
+			}
+		})
+	}
+}
+
+func TestReadServicesOmitsUnitsThatAreNotInstalled(t *testing.T) {
+	previous := systemctlProbe
+	// Only the panel's own unit exists on this imaginary host.
+	systemctlProbe = func(name string) (bool, bool) { return name == "servika", name == "servika" }
+	t.Cleanup(func() { systemctlProbe = previous })
+
+	services := ReadServices()
+	if len(services) != 1 {
+		t.Fatalf("ReadServices() returned %d services, want only the installed one", len(services))
+	}
+	if services[0].Name != "servika" || !services[0].Enabled {
+		t.Fatalf("ReadServices() returned %+v, want the running servika unit", services[0])
+	}
+}
+
+// A systemctl that cannot be run must not empty the list: reporting nothing would
+// read as "this host has no services", which is a worse lie than the old
+// everything-is-down list.
+func TestReadServicesKeepsEveryUnitWhenSystemctlIsUnavailable(t *testing.T) {
+	previous := systemctlProbe
+	systemctlProbe = func(string) (bool, bool) { return true, false }
+	t.Cleanup(func() { systemctlProbe = previous })
+
+	if got, want := len(ReadServices()), len(serviceList); got != want {
+		t.Fatalf("ReadServices() returned %d services, want all %d", got, want)
+	}
+}
+
 func TestScanLinesStopsWhenVisitorRequests(t *testing.T) {
 	var lines []string
 
