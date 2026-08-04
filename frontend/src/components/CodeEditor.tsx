@@ -63,11 +63,13 @@ export default function CodeEditor({ path, content, onChange, onSave, onClose }:
   const [cursor, setCursor] = useState({ line: 1, column: 1 })
   const [initialContent] = useState(content)
 
-  useEffect(() => {
-    if (content !== initialContent && saveStatus !== 'saving') {
-      setSaveStatus('dirty')
-    }
-  }, [content, initialContent, saveStatus])
+  // Adjusted during render rather than in an effect: the buffer is dirty the
+  // moment it differs from what the editor opened with, so deferring that to a
+  // commit only paints one frame with a stale badge. The extra 'dirty' guard is
+  // what makes it converge; the effect relied on setState bailing out instead.
+  if (content !== initialContent && saveStatus !== 'saving' && saveStatus !== 'dirty') {
+    setSaveStatus('dirty')
+  }
 
   // CTRL+S handler
   useEffect(() => {
