@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
@@ -60,9 +60,11 @@ export default function DomainCronPage() {
   const [error, setError] = useState<string | null>(null)
   const [modal, setModal] = useState(false)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchTasks
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchTasks = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     api.get<ListResponse>(`/domains/${id}/cron`)
       .then(r => setTasks(r.data.tasks.map(task => ({
         idx: task.idx,
@@ -76,12 +78,18 @@ export default function DomainCronPage() {
       }))))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
+  }, [id])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchTasks()
+  }, [fetchTasks])
 
   useEffect(() => {
     if (id) api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
-    load()
-  }, [id])
+    fetchTasks()
+  }, [id, fetchTasks])
 
   async function remove(task: Task) {
     if (!confirm(t('confirmDelete', { command: task.command.slice(0, 60) }))) return
