@@ -1503,11 +1503,15 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	}
 	sanHosts := certSANHosts(domainName)
 	out, e := RunACMEIssue(buildIssueArgs(sanHosts)...)
-	if e != nil && len(sanHosts) > 1 {
+	// RENEW_SKIP means the store already holds a valid certificate for these hosts, so
+	// there is nothing to retry and nothing to fail over: fall through to install-cert and
+	// deploy what acme.sh already has. The reuse-before-issue check above only skips
+	// issuance above 30 days, so this window is reachable.
+	if e != nil && !IsACMERenewSkip(e) && len(sanHosts) > 1 {
 		log.Printf("acme issue with www failed for %s, retrying apex-only: %s", domainName, strings.TrimSpace(string(out)))
 		out, e = RunACMEIssue(buildIssueArgs([]string{domainName})...)
 	}
-	if e != nil {
+	if e != nil && !IsACMERenewSkip(e) {
 		// FAIL-SAFE (no teardown): keep 443 alive with the existing/self-signed cert.
 		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme issue: "+strings.TrimSpace(string(out)))
 	}
