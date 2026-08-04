@@ -84,7 +84,10 @@
     "password": "密码",
     "database": "数据库",
     "systemUser": "系统用户：",
-    "ok": "确定"
+    "ok": "确定",
+    "copyAll": "全部复制",
+    "saveTxt": "保存为 TXT",
+    "copied": "已复制"
   },
   "copyRow": {
     "hidden": "••••••••••",

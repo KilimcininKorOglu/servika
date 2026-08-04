@@ -84,7 +84,10 @@
     "password": "Password",
     "database": "Database",
     "systemUser": "Utente di sistema: ",
-    "ok": "OK"
+    "ok": "OK",
+    "copyAll": "Copia tutto",
+    "saveTxt": "Salva come TXT",
+    "copied": "Copiato"
   },
   "copyRow": {
     "hidden": "••••••••••",

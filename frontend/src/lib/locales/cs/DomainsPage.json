@@ -84,7 +84,10 @@
     "password": "Heslo",
     "database": "Databáze",
     "systemUser": "Systémový uživatel: ",
-    "ok": "OK"
+    "ok": "OK",
+    "copyAll": "Kopírovat vše",
+    "saveTxt": "Uložit jako TXT",
+    "copied": "Zkopírováno"
   },
   "copyRow": {
     "hidden": "••••••••••",

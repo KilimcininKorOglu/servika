@@ -84,7 +84,10 @@
     "password": "Parola",
     "database": "Veritabanı",
     "systemUser": "Sistem kullanıcısı: ",
-    "ok": "Tamam"
+    "ok": "Tamam",
+    "copyAll": "Tümünü kopyala",
+    "saveTxt": "TXT olarak kaydet",
+    "copied": "Kopyalandı"
   },
   "copyRow": {
     "hidden": "••••••••••",

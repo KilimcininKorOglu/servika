@@ -84,7 +84,10 @@
     "password": "パスワード",
     "database": "データベース",
     "systemUser": "システムユーザー: ",
-    "ok": "OK"
+    "ok": "OK",
+    "copyAll": "すべてコピー",
+    "saveTxt": "TXT として保存",
+    "copied": "コピーしました"
   },
   "copyRow": {
     "hidden": "••••••••••",

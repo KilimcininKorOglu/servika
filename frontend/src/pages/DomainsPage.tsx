@@ -66,6 +66,7 @@ export default function DomainsPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [creationResult, setCreationResult] = useState<CreateResult | null>(null)
+  const [resultCopied, setResultCopied] = useState(false)
   const [formDomainName, setFormDomainName] = useState('')
   const [formPhpVersion, setFormPhpVersion] = useState('8.3')
   const [formPlanId, setFormPlanId] = useState<number | ''>('')
@@ -184,6 +185,42 @@ export default function DomainsPage() {
       // Prompts are blocked too, so there is no way left to hand over the text.
     }
     return false
+  }
+
+  // The passwords in this modal are shown once and never again, so the whole set
+  // has to leave the screen in one action. Both buttons render the same text, so
+  // a copy and a downloaded file cannot disagree.
+  function resultText(result: CreateResult) {
+    return [
+      `Servika - ${result.domain_name}`,
+      '',
+      t('resultModal.ftp'),
+      `  ${t('resultModal.host')}: ${result.ftp_host || '-'}`,
+      `  ${t('resultModal.username')}: ${result.ftp_user}`,
+      `  ${t('resultModal.password')}: ${result.created_passwords.ftp}`,
+      '',
+      t('resultModal.mysql'),
+      `  ${t('resultModal.host')}: ${result.db_host || 'localhost'}`,
+      `  ${t('resultModal.database')}: ${result.db_name}`,
+      `  ${t('resultModal.username')}: ${result.db_user}`,
+      `  ${t('resultModal.password')}: ${result.created_passwords.db}`,
+      '',
+      `${t('resultModal.systemUser')}${result.system_user}`,
+    ].join('\n')
+  }
+
+  function downloadResultText(result: CreateResult) {
+    const url = URL.createObjectURL(new Blob([resultText(result)], { type: 'text/plain;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${result.domain_name}-credentials.txt`
+    // Safari only honours a download from an anchor that is in the document, and
+    // revoking the object URL in the same tick can cancel the transfer, so the
+    // anchor is attached for the click and the URL is released on the next tick.
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setTimeout(() => URL.revokeObjectURL(url), 0)
   }
 
   // Subdomains grouped by parent domain id so each domain row can render its own
@@ -571,7 +608,20 @@ export default function DomainsPage() {
               </div>
             </div>
 
-            <div className="flex justify-end mt-5">
+            <div className="flex justify-end gap-2 mt-5">
+              <button onClick={async () => {
+                  if (await copyToClipboard(resultText(creationResult))) {
+                    setResultCopied(true)
+                    setTimeout(() => setResultCopied(false), 1500)
+                  }
+                }}
+                className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm rounded">
+                {resultCopied ? t('resultModal.copied') : t('resultModal.copyAll')}
+              </button>
+              <button onClick={() => downloadResultText(creationResult)}
+                className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm rounded">
+                {t('resultModal.saveTxt')}
+              </button>
               <button onClick={() => setCreationResult(null)}
                 className="px-4 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-sm rounded">{t('resultModal.ok')}</button>
             </div>
