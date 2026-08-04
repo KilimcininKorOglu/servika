@@ -15,7 +15,7 @@
     "verify": "Überprüfen und anmelden",
     "signIn": "Anmelden"
   },
-  "footer": "Servika · version 0.2.0-f1",
+  "footer": "Servika · Version {{version}}",
   "error": {
     "loginFailed": "Anmeldung fehlgeschlagen"
   }

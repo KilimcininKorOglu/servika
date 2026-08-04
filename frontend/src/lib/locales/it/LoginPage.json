@@ -15,7 +15,7 @@
     "verify": "Verifica e accedi",
     "signIn": "Accedi"
   },
-  "footer": "Servika · versione 0.2.0-f1",
+  "footer": "Servika · versione {{version}}",
   "error": {
     "loginFailed": "Accesso non riuscito"
   }

@@ -15,7 +15,7 @@
     "verify": "Doğrula ve giriş yap",
     "signIn": "Giriş yap"
   },
-  "footer": "Servika · sürüm 0.2.0-f1",
+  "footer": "Servika · sürüm {{version}}",
   "error": {
     "loginFailed": "Giriş başarısız"
   }

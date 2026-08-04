@@ -15,7 +15,7 @@
     "verify": "確認してサインイン",
     "signIn": "サインイン"
   },
-  "footer": "Servika · バージョン 0.2.0-f1",
+  "footer": "Servika · バージョン {{version}}",
   "error": {
     "loginFailed": "ログインに失敗しました"
   }

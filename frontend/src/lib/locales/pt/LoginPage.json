@@ -15,7 +15,7 @@
     "verify": "Verificar e iniciar sessão",
     "signIn": "Iniciar sessão"
   },
-  "footer": "Servika · versão 0.2.0-f1",
+  "footer": "Servika · versão {{version}}",
   "error": {
     "loginFailed": "Falha no início de sessão"
   }

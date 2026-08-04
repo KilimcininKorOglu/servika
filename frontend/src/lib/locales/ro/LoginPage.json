@@ -15,7 +15,7 @@
     "verify": "Verificare și conectare",
     "signIn": "Conectare"
   },
-  "footer": "Servika · versiunea 0.2.0-f1",
+  "footer": "Servika · versiunea {{version}}",
   "error": {
     "loginFailed": "Conectarea a eșuat"
   }

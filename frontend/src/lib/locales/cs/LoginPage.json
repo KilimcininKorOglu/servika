@@ -15,7 +15,7 @@
     "verify": "Ověřit a přihlásit se",
     "signIn": "Přihlásit se"
   },
-  "footer": "Servika · verze 0.2.0-f1",
+  "footer": "Servika · verze {{version}}",
   "error": {
     "loginFailed": "Přihlášení se nezdařilo"
   }

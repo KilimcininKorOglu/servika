@@ -15,7 +15,7 @@
     "verify": "验证并登录",
     "signIn": "登录"
   },
-  "footer": "Servika · 版本 0.2.0-f1",
+  "footer": "Servika · 版本 {{version}}",
   "error": {
     "loginFailed": "登录失败"
   }

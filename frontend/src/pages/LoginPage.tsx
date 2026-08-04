@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -21,6 +21,19 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const login = useAuth((state) => state.login)
+  const [version, setVersion] = useState('')
+
+  // The footer must never spell a version out. This screen is shown before any
+  // session exists, so it cannot use the authenticated version endpoint; it
+  // reads /healthz, which needs no auth and reports main.version, the panel's
+  // one version source. A literal here (or in the translations) goes stale at
+  // the first release nobody remembers to edit, which is exactly what happened.
+  useEffect(() => {
+    fetch('/healthz', { credentials: 'include' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body) => { if (typeof body?.version === 'string') setVersion(body.version) })
+      .catch(() => { /* the footer is decorative; a failed probe just hides it */ })
+  }, [])
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -118,9 +131,11 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-6">
-          {t('footer')}
-        </p>
+        {version && (
+          <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-6">
+            {t('footer', { version })}
+          </p>
+        )}
       </div>
     </div>
   )
