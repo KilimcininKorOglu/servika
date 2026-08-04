@@ -1,7 +1,7 @@
 // Security log — the readable face of audit_log. The table has been filling up
 // since the first release but was not surfaced anywhere in the panel; seeing
 // failed login attempts meant SSHing into the server.
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -21,7 +21,6 @@ export default function AuditLogPage() {
   const { t } = useTranslation('AuditLogPage')
   const [list, setList] = useState<Entry[]>([])
   const [actions, setActions] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const [action, setAction] = useState('')
@@ -29,24 +28,25 @@ export default function AuditLogPage() {
   const [limit, setLimit] = useState(200)
   const [query, setQuery] = useState('')
 
-  const fetchLog = useCallback(async () => {
-    setLoading(true)
-    try {
-      const p = new URLSearchParams()
-      p.set('limit', String(limit))
-      if (action) p.set('action', action)
-      if (onlyFailed) p.set('only_failed', '1')
-      const r = await api.get<Entry[]>(`/audit?${p.toString()}`)
-      setList(Array.isArray(r.data) ? r.data : [])
-      setError(null)
-    } catch (e) {
-      setError(apiError(e, t('errors.loadFailed')))
-    } finally {
-      setLoading(false)
-    }
-  }, [action, onlyFailed, limit, t])
+  // Derived instead of stored: loading means the request for the CURRENT filter
+  // combination has not settled, so changing a filter shows the spinner on the
+  // same render rather than one frame of the previous result set.
+  const filterKey = `${action}|${onlyFailed}|${limit}`
+  const [loadedFor, setLoadedFor] = useState<string | null>(null)
+  const loading = loadedFor !== filterKey
 
-  useEffect(() => { fetchLog() }, [fetchLog])
+  useEffect(() => {
+    let cancelled = false
+    const p = new URLSearchParams()
+    p.set('limit', String(limit))
+    if (action) p.set('action', action)
+    if (onlyFailed) p.set('only_failed', '1')
+    api.get<Entry[]>(`/audit?${p.toString()}`)
+      .then((r) => { if (!cancelled) { setList(Array.isArray(r.data) ? r.data : []); setError(null) } })
+      .catch((e) => { if (!cancelled) setError(apiError(e, t('errors.loadFailed'))) })
+      .finally(() => { if (!cancelled) setLoadedFor(filterKey) })
+    return () => { cancelled = true }
+  }, [action, onlyFailed, limit, filterKey, t])
 
   useEffect(() => {
     api.get<string[]>('/audit/actions')
