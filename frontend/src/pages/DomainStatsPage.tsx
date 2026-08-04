@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -21,15 +21,24 @@ export default function DomainStatsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchSummary
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refresh button.
+  const fetchSummary = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     api.get<Summary>(`${base}/statistics`)
       .then(response => setSummary(response.data))
       .catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [base])
+  }, [id, base])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchSummary()
+  }, [fetchSummary])
+
+  useEffect(() => { fetchSummary() }, [fetchSummary])
 
   if (loading) return <div className="px-6 py-5 text-slate-400">{t('loading')}</div>
   if (!summary) return <div className="px-6 py-5"><div className="text-sm text-red-600">{error || t('notFound')}</div></div>
