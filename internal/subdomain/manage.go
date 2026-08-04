@@ -82,12 +82,15 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
 		return
 	}
-	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)
+	docroot := docrootOf(systemUser, fqdn)
+	// The pool lives inside the parent tenant's own FPM unit whenever it can, so the
+	// subdomain stays in the tenant mount namespace and slice; ApplySubdomainFPM
+	// falls back to the shared master and reports the socket either way.
+	socket, err := provisioner.ApplySubdomainFPM(h.DB, id, sid, systemUser, docroot, phpVersion)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "PHP version is not installed on the server")
 		return
 	}
-	docroot := docrootOf(systemUser, fqdn)
 	protected := provisioner.ProtectedBlocks(h.DB, id, sid, socket)
 	certPath, keyPath := certificatePaths(systemUser, fqdn)
 	config := vhost(fqdn, docroot, socket, protected)
@@ -119,7 +122,7 @@ func ReRender(db *sql.DB, subdomainID int64) error {
 		Scan(&domainID, &systemUser, &subdomainName, &fqdn, &phpVersion); err != nil {
 		return err
 	}
-	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)
+	socket, err := provisioner.SubdomainFPMSocket(db, systemUser, domainID, subdomainID, phpVersion)
 	if err != nil {
 		return err
 	}

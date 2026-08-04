@@ -540,6 +540,33 @@ func TestTenantPoolUsesSafeDefaultWorkerLimit(t *testing.T) {
 	}
 }
 
+func TestSubdomainPoolIsSeparateAndNarrowerThanTheDomainPool(t *testing.T) {
+	sub := renderTenantPoolScoped(nil, "c_example_com", 0, 7, "/home/c_example_com/subdomains/app.example.com")
+	for _, want := range []string{
+		"[sub-7]",
+		"listen = /run/php-fpm-c_example_com/sub-7.sock",
+		"user = c_example_com",
+		"php_admin_value[open_basedir] = /home/c_example_com/subdomains/app.example.com/:/home/c_example_com/tmp/:/tmp/",
+	} {
+		if !strings.Contains(sub, want) {
+			t.Errorf("subdomain pool is missing %q", want)
+		}
+	}
+	// A subdomain pool must not reopen the parent document root through open_basedir.
+	if strings.Contains(sub, "php_admin_value[open_basedir] = /home/c_example_com/:") {
+		t.Error("subdomain pool grants the whole tenant home through open_basedir")
+	}
+}
+
+func TestTenantGlobalConfigIncludesThePoolDirectory(t *testing.T) {
+	// The include must be the directory, not a single file: a subdomain pool is added
+	// and removed as its own file without rewriting the domain's pool.
+	global := renderTenantGlobalConfig("c_example_com")
+	if !strings.Contains(global, "include=/etc/php-fpm-tenant/c_example_com/pool.d/*.conf") {
+		t.Fatalf("tenant global config does not include the pool directory:\n%s", global)
+	}
+}
+
 func TestApacheVhostDeniesScriptsBackupsAndForeignSymlinks(t *testing.T) {
 	var rendered bytes.Buffer
 	if err := apacheVhostTmpl.Execute(&rendered, VhostOpts{

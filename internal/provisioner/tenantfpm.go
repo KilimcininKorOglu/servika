@@ -41,6 +41,29 @@ func tenantCfgDir(systemUser string) string {
 	return filepath.Join(tenantCfgRoot, systemUser)
 }
 
+// tenantPoolDir holds one file per pool served by the tenant's own master: the
+// domain's pool plus one per subdomain that runs the parent's PHP version.
+func tenantPoolDir(systemUser string) string {
+	return filepath.Join(tenantCfgDir(systemUser), "pool.d")
+}
+
+func tenantMainPoolPath(systemUser string) string {
+	return filepath.Join(tenantPoolDir(systemUser), "main.conf")
+}
+
+func tenantSubPoolPath(systemUser string, subdomainID int64) string {
+	return filepath.Join(tenantPoolDir(systemUser), fmt.Sprintf("sub-%d.conf", subdomainID))
+}
+
+// tenantLegacyPoolPath is the single-pool layout used before pool.d existed.
+func tenantLegacyPoolPath(systemUser string) string {
+	return filepath.Join(tenantCfgDir(systemUser), "pool.conf")
+}
+
+func tenantSubSocket(systemUser string, subdomainID int64) string {
+	return filepath.Join(tenantRunDir(systemUser), fmt.Sprintf("sub-%d.sock", subdomainID))
+}
+
 const fpmSocketFcontextSpec = "/run/php-fpm-[^/]+(/.*)?"
 
 // mtaSpoolPaths are the mail spools a sendmail wrapper may need to write into. Only one of
@@ -214,7 +237,7 @@ type tenantPoolSettings struct {
 
 const hardenedDisableFunctions = "exec,passthru,shell_exec,system,proc_open,popen,proc_close,proc_get_status,proc_terminate,proc_nice,pcntl_exec,dl,symlink,link,posix_kill,posix_mkfifo,posix_setpgid,posix_setsid,posix_setuid,posix_setgid"
 
-func tenantReadPoolSettings(db *sql.DB, domainID int64) tenantPoolSettings {
+func tenantReadPoolSettings(db *sql.DB, domainID, subdomainID int64) tenantPoolSettings {
 	settings := tenantPoolSettings{
 		MemoryLimit:       "256M",
 		MaxExecutionTime:  30,
@@ -237,7 +260,7 @@ func tenantReadPoolSettings(db *sql.DB, domainID int64) tenantPoolSettings {
 	var maxExecutionTime, maxInputTime, maxRequests int
 	err := db.QueryRow(`SELECT memory_limit, max_execution_time, max_input_time,
 		post_max_size, upload_max_filesize, disable_functions, pm_strategy, pm_max_requests
-		FROM php_settings WHERE domain_id=? AND subdomain_id=0`, domainID).
+		FROM php_settings WHERE domain_id=? AND subdomain_id=?`, domainID, subdomainID).
 		Scan(&memoryLimit, &maxExecutionTime, &maxInputTime, &postMaxSize,
 			&uploadMaxFilesize, &disableFunctions, &strategy, &maxRequests)
 	if err != nil {
@@ -270,7 +293,7 @@ func tenantReadPoolSettings(db *sql.DB, domainID int64) tenantPoolSettings {
 	var er string
 	if derr := db.QueryRow(`SELECT COALESCE(display_errors,0), COALESCE(log_errors,1),
 	        COALESCE(error_reporting,''), COALESCE(debug_mode,0)
-	        FROM php_settings WHERE domain_id=? AND subdomain_id=0`, domainID).Scan(&de, &le, &er, &dm); derr == nil {
+	        FROM php_settings WHERE domain_id=? AND subdomain_id=?`, domainID, subdomainID).Scan(&de, &le, &er, &dm); derr == nil {
 		settings.DisplayErrors = de != 0
 		settings.LogErrors = le != 0
 		settings.DebugMode = dm != 0
@@ -282,16 +305,39 @@ func tenantReadPoolSettings(db *sql.DB, domainID int64) tenantPoolSettings {
 }
 
 func renderTenantPool(db *sql.DB, systemUser string, domainID int64) string {
-	settings := tenantReadPoolSettings(db, domainID)
+	return renderTenantPoolScoped(db, systemUser, domainID, 0, "")
+}
+
+// renderTenantPoolScoped renders one pool of the tenant's own master. subdomainID 0
+// is the domain's pool; a non-zero value is a subdomain pool, which gets its own
+// section name and socket and an open_basedir narrowed to that document root, so a
+// subdomain cannot read the parent's public_html through PHP.
+//
+// Both pools run inside the same unit on purpose: that unit carries the tenant mount
+// namespace and Slice=servika-<user>.slice, so a subdomain stays inside the plan
+// quotas that internal/resourcelimit applies. A pool opened in the shared per-version
+// master would sit outside both.
+func renderTenantPoolScoped(db *sql.DB, systemUser string, domainID, subdomainID int64, docRoot string) string {
+	settings := tenantReadPoolSettings(db, domainID, subdomainID)
 	maxChildren := tenantPMMaxChildren(db, domainID)
 	startServers := max(1, maxChildren/4)
 	maxSpareServers := max(1, maxChildren/2)
 
+	poolName, socket := systemUser, tenantSocket(systemUser)
+	openBasedir := fmt.Sprintf("/home/%s/:/tmp/", systemUser)
+	if subdomainID > 0 {
+		poolName = fmt.Sprintf("sub-%d", subdomainID)
+		socket = tenantSubSocket(systemUser, subdomainID)
+		if docRoot != "" {
+			openBasedir = fmt.Sprintf("%s/:/home/%s/tmp/:/tmp/", strings.TrimRight(docRoot, "/"), systemUser)
+		}
+	}
+
 	var body strings.Builder
-	fmt.Fprintf(&body, "[%s]\n", systemUser)
+	fmt.Fprintf(&body, "[%s]\n", poolName)
 	fmt.Fprintf(&body, "user = %s\n", systemUser)
 	fmt.Fprintf(&body, "group = %s\n", systemUser)
-	fmt.Fprintf(&body, "listen = %s\n", tenantSocket(systemUser))
+	fmt.Fprintf(&body, "listen = %s\n", socket)
 	body.WriteString("listen.owner = nginx\nlisten.group = nginx\nlisten.mode = 0660\n")
 	fmt.Fprintf(&body, "pm = %s\n", settings.PMStrategy)
 	fmt.Fprintf(&body, "pm.max_children = %d\n", maxChildren)
@@ -305,7 +351,7 @@ func renderTenantPool(db *sql.DB, systemUser string, domainID int64) string {
 	}
 	fmt.Fprintf(&body, "pm.max_requests = %d\n", settings.PMMaxRequests)
 	body.WriteString("; Security settings cannot be overridden by tenant code.\n")
-	fmt.Fprintf(&body, "php_admin_value[open_basedir] = /home/%s/:/tmp/\n", systemUser)
+	fmt.Fprintf(&body, "php_admin_value[open_basedir] = %s\n", openBasedir)
 	fmt.Fprintf(&body, "php_admin_value[disable_functions] = %s\n", settings.DisableFunctions)
 	fmt.Fprintf(&body, "php_admin_value[upload_tmp_dir] = /home/%s/tmp\n", systemUser)
 	fmt.Fprintf(&body, "php_admin_value[sys_temp_dir] = /home/%s/tmp\n", systemUser)
@@ -332,14 +378,36 @@ func renderTenantPool(db *sql.DB, systemUser string, domainID int64) string {
 	return body.String()
 }
 
+// renderTenantGlobalConfig includes a directory rather than a single file so a
+// subdomain pool can be added or removed without rewriting the domain's own pool.
 func renderTenantGlobalConfig(systemUser string) string {
 	return fmt.Sprintf(`[global]
 pid = %s/php-fpm.pid
 error_log = %s/tenant-%s.log
 log_level = warning
 daemonize = no
-include=%s/pool.conf
-`, tenantRunDir(systemUser), tenantLogDir, systemUser, tenantCfgDir(systemUser))
+include=%s/*.conf
+`, tenantRunDir(systemUser), tenantLogDir, systemUser, tenantPoolDir(systemUser))
+}
+
+// migrateTenantPoolLayout moves an installation from the old single pool.conf to the
+// pool.d directory. The global config is rewritten by the caller in the same pass, so
+// the include never points at a file that has already been moved.
+func migrateTenantPoolLayout(systemUser string) error {
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
+	if err := os.MkdirAll(tenantPoolDir(systemUser), 0755); err != nil {
+		return err
+	}
+	legacy := tenantLegacyPoolPath(systemUser)
+	if _, err := os.Stat(legacy); err != nil {
+		return nil
+	}
+	if _, err := os.Stat(tenantMainPoolPath(systemUser)); err == nil {
+		// The new layout already exists; the leftover file would be a second copy of
+		// the same pool, which php-fpm rejects as a duplicate section.
+		return os.Remove(legacy)
+	}
+	return os.Rename(legacy, tenantMainPoolPath(systemUser))
 }
 
 func renderTenantUnit(systemUser, fpmBinary string) string {
@@ -416,7 +484,10 @@ func EnableTenantFPM(db *sql.DB, domainID int64, systemUser, phpVersion string) 
 		return "", fmt.Errorf("create PHP-FPM log directory: %w", err)
 	}
 
-	poolPath := filepath.Join(configDir, "pool.conf")
+	if err := migrateTenantPoolLayout(systemUser); err != nil {
+		return "", fmt.Errorf("migrate tenant pool layout: %w", err)
+	}
+	poolPath := tenantMainPoolPath(systemUser)
 	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	previousPool, readErr := os.ReadFile(poolPath)
 	WriteDebugShim(db, systemUser, domainID)
@@ -483,6 +554,120 @@ func EnableTenantFPM(db *sql.DB, domainID int64, systemUser, phpVersion string) 
 		}
 	}
 	return socket, nil
+}
+
+// SubdomainFPMSocket returns the socket a subdomain's nginx vhost must use, WITHOUT
+// touching any configuration. It mirrors the decision ApplySubdomainFPM makes, so a
+// vhost re-render agrees with the pool that is actually installed.
+func SubdomainFPMSocket(db *sql.DB, systemUser string, domainID, subdomainID int64, phpVersion string) (string, error) {
+	if subdomainFPMEligible(db, systemUser, domainID, phpVersion) {
+		if _, err := os.Stat(tenantSubPoolPath(systemUser, subdomainID)); err == nil {
+			return tenantSubSocket(systemUser, subdomainID), nil
+		}
+	}
+	return PHPSocketFor(systemUser, phpVersion)
+}
+
+// subdomainFPMEligible reports whether a subdomain's pool can live in the parent
+// tenant's own master. That master runs ONE php-fpm binary, so a subdomain asking for
+// a different PHP version cannot be served from it and falls back to the shared
+// per-version master, exactly as every subdomain did before per-subdomain pools
+// existed. The fallback is not a new isolation loss, but it is a real one: state it
+// here rather than silently degrading.
+func subdomainFPMEligible(db *sql.DB, systemUser string, domainID int64, phpVersion string) bool {
+	if !TenantFPMActive(systemUser) || db == nil || domainID <= 0 {
+		return false
+	}
+	var parentPHP string
+	if err := db.QueryRow(`SELECT COALESCE(php_version,'') FROM domains WHERE id=?`, domainID).Scan(&parentPHP); err != nil {
+		return false
+	}
+	return normalizePHP(parentPHP) == normalizePHP(phpVersion)
+}
+
+// ApplySubdomainFPM installs (or removes) the subdomain's pool inside the parent
+// tenant's own FPM unit and returns the socket its vhost must point at.
+//
+// It is the caller's single entry point: when the subdomain is not eligible it clears
+// any pool left from an earlier eligible state, so switching a subdomain to a
+// different PHP version cannot leave a stale pool bound to the old socket.
+func ApplySubdomainFPM(db *sql.DB, domainID, subdomainID int64, systemUser, docRoot, phpVersion string) (string, error) {
+	if !tenantUserPattern.MatchString(systemUser) {
+		return "", fmt.Errorf("invalid system user: %q", systemUser)
+	}
+	if subdomainID <= 0 {
+		return "", fmt.Errorf("invalid subdomain id: %d", subdomainID)
+	}
+	if !subdomainFPMEligible(db, systemUser, domainID, phpVersion) {
+		RemoveSubdomainFPM(systemUser, subdomainID)
+		return PHPSocketFor(systemUser, phpVersion)
+	}
+	config := phpMap[normalizePHP(phpVersion)]
+	if config.FPMBin == "" {
+		return "", fmt.Errorf("PHP-FPM binary is undefined for %s", phpVersion)
+	}
+	if err := migrateTenantPoolLayout(systemUser); err != nil {
+		return "", fmt.Errorf("migrate tenant pool layout: %w", err)
+	}
+	poolPath := tenantSubPoolPath(systemUser, subdomainID)
+	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
+	previous, readErr := os.ReadFile(poolPath)
+	body := renderTenantPoolScoped(db, systemUser, domainID, subdomainID, docRoot)
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
+	if err := os.WriteFile(poolPath, []byte(body), 0644); err != nil {
+		return "", fmt.Errorf("write subdomain pool: %w", err)
+	}
+	globalPath := filepath.Join(tenantCfgDir(systemUser), "php-fpm.conf")
+	if output, err := tenantCommand(config.FPMBin, "-t", "-y", globalPath).CombinedOutput(); err != nil {
+		// Restore the previous state so a rejected pool cannot take the whole tenant
+		// master down on its next reload.
+		if readErr == nil {
+			// #nosec G306 G703 -- root-owned system integration file that its daemon must read; no secret stored here.
+			_ = os.WriteFile(poolPath, previous, 0644)
+		} else {
+			_ = os.Remove(poolPath)
+		}
+		return "", fmt.Errorf("validate subdomain pool: %s: %w", strings.TrimSpace(string(output)), err)
+	}
+	if output, err := tenantCommand("systemctl", "reload-or-restart", tenantUnitName(systemUser)).CombinedOutput(); err != nil {
+		if readErr == nil {
+			// #nosec G306 G703 -- root-owned system integration file that its daemon must read; no secret stored here.
+			_ = os.WriteFile(poolPath, previous, 0644)
+		} else {
+			_ = os.Remove(poolPath)
+		}
+		_, _ = tenantCommand("systemctl", "reload-or-restart", tenantUnitName(systemUser)).CombinedOutput()
+		return "", fmt.Errorf("reload tenant PHP-FPM: %s: %w", strings.TrimSpace(string(output)), err)
+	}
+	socket := tenantSubSocket(systemUser, subdomainID)
+	if !waitForSocket(socket, 6*time.Second) {
+		_ = os.Remove(poolPath)
+		_, _ = tenantCommand("systemctl", "reload-or-restart", tenantUnitName(systemUser)).CombinedOutput()
+		return "", fmt.Errorf("subdomain PHP-FPM socket was not created: %s", socket)
+	}
+	_, _ = tenantCommand("restorecon", socket).CombinedOutput()
+	return socket, nil
+}
+
+// RemoveSubdomainFPM drops a subdomain's pool from the parent tenant's master. It is
+// best effort: the caller has already decided the pool must not serve traffic, and a
+// reload failure is reported by the next apply rather than blocking a deletion.
+func RemoveSubdomainFPM(systemUser string, subdomainID int64) {
+	if !tenantUserPattern.MatchString(systemUser) || subdomainID <= 0 {
+		return
+	}
+	poolPath := tenantSubPoolPath(systemUser, subdomainID)
+	if _, err := os.Stat(poolPath); err != nil {
+		return
+	}
+	_ = os.Remove(poolPath)
+	if !TenantFPMActive(systemUser) {
+		return
+	}
+	if output, err := tenantCommand("systemctl", "reload-or-restart", tenantUnitName(systemUser)).CombinedOutput(); err != nil {
+		log.Printf("remove subdomain pool %d for %s: reload failed: %s", subdomainID, systemUser, strings.TrimSpace(string(output)))
+	}
+	_ = os.Remove(tenantSubSocket(systemUser, subdomainID))
 }
 
 // RollbackToSharedFPM restores a domain to the shared PHP-FPM master service.
@@ -593,14 +778,22 @@ func repairTenantPoolDrift(domainID int64, systemUser, phpVersion string) {
 		return
 	}
 	configDir := tenantCfgDir(systemUser)
-	poolPath := filepath.Join(configDir, "pool.conf")
+	legacyMoved := false
+	if _, err := os.Stat(tenantLegacyPoolPath(systemUser)); err == nil {
+		if err := migrateTenantPoolLayout(systemUser); err != nil {
+			log.Printf("repairTenantPoolDrift: %s pool layout migration failed: %v", systemUser, err)
+			return
+		}
+		legacyMoved = true
+	}
+	poolPath := tenantMainPoolPath(systemUser)
 	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	current, err := os.ReadFile(poolPath)
 	if err != nil {
-		return // pool.conf missing -- EnableTenantFPM handles creation
+		return // main pool missing -- EnableTenantFPM handles creation
 	}
 	expected := renderTenantPool(packageDB, systemUser, domainID)
-	if string(current) == expected {
+	if string(current) == expected && !legacyMoved {
 		return // no drift, no-op
 	}
 	phpVersion = normalizePHP(phpVersion)
@@ -614,6 +807,12 @@ func repairTenantPoolDrift(domainID int64, systemUser, phpVersion string) {
 		return
 	}
 	globalPath := filepath.Join(configDir, "php-fpm.conf")
+	// The global config must be rewritten in the same pass: an installation coming
+	// from the old layout still includes pool.conf, which no longer exists.
+	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
+	if err := os.WriteFile(globalPath, []byte(renderTenantGlobalConfig(systemUser)), 0644); err != nil {
+		return
+	}
 	if output, err := tenantCommand(config.FPMBin, "-t", "-y", globalPath).CombinedOutput(); err != nil {
 		// #nosec G306 G703 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
 		_ = os.WriteFile(poolPath, current, 0644) // rollback

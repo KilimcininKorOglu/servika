@@ -220,14 +220,29 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := h.DB.Exec(`INSERT INTO subdomains (domain_id, subdomain, fqdn, php_version) VALUES (?,?,?,?)`,
+	result, err := h.DB.Exec(`INSERT INTO subdomains (domain_id, subdomain, fqdn, php_version) VALUES (?,?,?,?)`,
 		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-		id, subdomainName, fqdn, phpVersion); err != nil {
+		id, subdomainName, fqdn, phpVersion)
+	if err != nil {
 		// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 		_ = os.Remove(conf)
 		_ = exec.Command("systemctl", "reload", "nginx").Run()
 		httpx.WriteError(w, http.StatusInternalServerError, "could not add record")
 		return
+	}
+	// The pool is keyed by the subdomain id, which only exists after the insert, so the
+	// vhost written above still points at the parent socket. Install the dedicated pool
+	// now and re-render. A failure here is not fatal: the subdomain already serves PHP
+	// through the parent pool, so log the loss of its own pool instead of deleting a
+	// working subdomain.
+	if sid, idErr := result.LastInsertId(); idErr == nil && sid > 0 {
+		if _, fpmErr := provisioner.ApplySubdomainFPM(h.DB, id, sid, systemUser, docroot, phpVersion); fpmErr != nil {
+			// #nosec G706 -- fqdn passed provisioner.ValidateDomain above, so it carries no CR/LF; the error value is command output, not raw tenant input.
+			log.Printf("subdomain %s dedicated PHP-FPM pool: %v", fqdn, fpmErr)
+		} else if rerr := ReRender(h.DB, sid); rerr != nil {
+			// #nosec G706 -- fqdn passed provisioner.ValidateDomain above, so it carries no CR/LF; the error value is command output, not raw tenant input.
+			log.Printf("subdomain %s vhost re-render after pool install: %v", fqdn, rerr)
+		}
 	}
 	// Add the DNS A record to the parent zone and rewrite the zone file.
 	if h.IPv4 != "" {
@@ -267,6 +282,16 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not delete subdomain")
 		return
 	}
+	// php_settings/nginx_settings use subdomain_id=0 for the domain's own row, so a
+	// foreign key cannot clean these up; remove them explicitly or the ids would be
+	// reused by a later subdomain and silently inherit the deleted one's settings.
+	if _, err := h.DB.Exec(`DELETE FROM php_settings WHERE domain_id=? AND subdomain_id=?`, id, sid); err != nil {
+		log.Printf("delete subdomain PHP settings %d: %v", sid, err)
+	}
+	if _, err := h.DB.Exec(`DELETE FROM nginx_settings WHERE domain_id=? AND subdomain_id=?`, id, sid); err != nil {
+		log.Printf("delete subdomain nginx settings %d: %v", sid, err)
+	}
+	provisioner.RemoveSubdomainFPM(systemUser, sid)
 	if _, err := h.DB.Exec(`DELETE FROM dns_records WHERE domain_id=? AND name=? AND type='A'`, id, subdomainName); err != nil {
 		log.Printf("delete subdomain DNS record %s: %v", subdomainName, err)
 		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
