@@ -750,6 +750,13 @@ func (h *Handlers) restoreMailboxes(ctx context.Context, archivePath, root, sour
 	if !strings.HasPrefix(sk, "c_") || root == "" {
 		return errors.New("unsafe target")
 	}
+	// Same pre-scan restoreWeb performs, for the same reason: the system tar below
+	// honors symlink/hardlink members and ".." paths, so an untrusted cPanel archive
+	// could escape /home/<sk>/mail. This path is reached independently of the web
+	// restore, so it cannot rely on that call having scanned the archive.
+	if err := archivex.Scan(ctx, archivePath, archivex.TypeTARGzip, archivex.Limits{}); err != nil {
+		return fmt.Errorf("unsafe archive: %w", err)
+	}
 	target := "/home/" + sk + "/mail"
 	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.Open(archivePath)
