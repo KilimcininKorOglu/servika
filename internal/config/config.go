@@ -19,9 +19,16 @@ type Config struct {
 
 // Load reads and validates runtime configuration from environment variables.
 func Load() (*Config, error) {
+	// No built-in DSN default: a fallback credential is the same string in every
+	// installation, so a server started without its environment file would come up
+	// silently on a publicly known account instead of refusing to start.
+	dsn := strings.TrimSpace(os.Getenv("SERVIKA_DB_DSN"))
+	if dsn == "" {
+		return nil, fmt.Errorf("SERVIKA_DB_DSN is required")
+	}
 	c := &Config{
 		ListenAddr:  envOr("SERVIKA_LISTEN", ":8080"),
-		DBDsn:       envOr("SERVIKA_DB_DSN", "panel:panelpw@unix(/var/lib/mysql/mysql.sock)/panel?parseTime=true&charset=utf8mb4&collation=utf8mb4_unicode_ci"),
+		DBDsn:       dsn,
 		Env:         envOr("SERVIKA_ENV", "production"),
 		JWTLifetime: envInt("SERVIKA_JWT_LIFETIME_SEC", 8*3600),
 	}
