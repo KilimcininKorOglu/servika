@@ -317,10 +317,16 @@ func restoreSelectedFiles(ctx context.Context, tmp, systemUser string, paths []s
 // restoreHome restores the whole home. clean=false -> no --delete (active files
 // absent from the backup are kept; only backed-up files are overwritten).
 // clean=true -> rsync --delete (exact backup state; the old, dangerous behavior).
-func restoreHome(ctx context.Context, tmp, systemUser string, clean bool) {
+//
+// rsync is the only copier used here on purpose. It replaces a destination symlink
+// instead of writing through it, and it replaces a symlinked destination directory
+// instead of descending into it, so a tenant cannot make this root-level copy land
+// outside their own home. `cp` does follow both, so a cp fallback would reopen that
+// hole whenever rsync happened to be missing; a failure is reported instead.
+func restoreHome(ctx context.Context, tmp, systemUser string, clean bool) error {
 	extractedHome := filepath.Join(tmp, systemUser)
 	if _, err := os.Stat(extractedHome); err != nil {
-		return
+		return nil
 	}
 	args := []string{"-a"}
 	if clean {
@@ -329,12 +335,14 @@ func restoreHome(ctx context.Context, tmp, systemUser string, clean bool) {
 	args = append(args, extractedHome+"/", "/home/"+systemUser+"/")
 	// #nosec G204 G702 -- fixed binary (rsync) with separate args (no shell); systemUser is validated and paths are internal.
 	if _, err := newRestoreCommand(ctx, "rsync", args...).CombinedOutput(); err != nil {
-		// #nosec G204 G702 -- rsync unavailable fallback: fixed binary (cp), separate args, validated paths.
-		_, _ = newRestoreCommand(ctx, "cp", "-af", extractedHome+"/.", "/home/"+systemUser+"/").CombinedOutput()
+		return fmt.Errorf("home directory copy failed: %w", err)
 	}
+	// chown -R defaults to -P, so it retags the symlink itself and never the file a
+	// tenant link points at; restorecon reads labels with lgetfilecon for the same reason.
 	// #nosec G204 G702 -- fixed binaries (chown/restorecon) with separate args (no shell); systemUser is validated.
 	_, _ = newRestoreCommand(ctx, "chown", "-R", systemUser+":"+systemUser, "/home/"+systemUser).CombinedOutput()
 	_, _ = newRestoreCommand(ctx, "restorecon", "-R", "/home/"+systemUser).CombinedOutput()
+	return nil
 }
 
 // ContentFile / ContentDB are the archive-listing output types.

@@ -131,13 +131,17 @@ func restoreCore(ctx context.Context, db *sql.DB, domainID, backupID int64, mode
 
 	switch mode {
 	case "full":
-		restoreHome(ctx, tmpDir, systemUser, clean)
+		if err := restoreHome(ctx, tmpDir, systemUser, clean); err != nil {
+			return "", fmt.Errorf("the home directory could not be restored")
+		}
 		if failedDBRestore(restoreAllDBs(ctx, db, domainID, tmpDir, systemUser, "")) {
 			return "", fmt.Errorf("files were restored but a database import failed")
 		}
 		return "restored files and databases", nil
 	case "files":
-		restoreHome(ctx, tmpDir, systemUser, clean)
+		if err := restoreHome(ctx, tmpDir, systemUser, clean); err != nil {
+			return "", fmt.Errorf("the home directory could not be restored")
+		}
 		return "restored files", nil
 	case "database":
 		if failedDBRestore(restoreAllDBs(ctx, db, domainID, tmpDir, systemUser, "")) {

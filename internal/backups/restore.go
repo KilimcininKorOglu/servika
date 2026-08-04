@@ -125,7 +125,10 @@ func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 
 	switch req.Mode {
 	case "full":
-		restoreHome(r.Context(), tmpDir, systemUser, req.Clean)
+		if err := restoreHome(r.Context(), tmpDir, systemUser, req.Clean); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "could not restore the home directory")
+			return
+		}
 		dbResults := restoreAllDBs(r.Context(), h.DB, id, tmpDir, systemUser, "")
 		result["databases"] = dbResults
 		result["warning"] = overwriteWarning(req.Clean)
@@ -136,7 +139,10 @@ func (h *Handlers) Restore(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "files":
-		restoreHome(r.Context(), tmpDir, systemUser, req.Clean)
+		if err := restoreHome(r.Context(), tmpDir, systemUser, req.Clean); err != nil {
+			httpx.WriteError(w, http.StatusInternalServerError, "could not restore the home directory")
+			return
+		}
 		result["warning"] = overwriteWarning(req.Clean)
 
 	case "database":
