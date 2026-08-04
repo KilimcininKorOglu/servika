@@ -14,14 +14,21 @@ export default function DomainPerformancePage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [summary, setSummary] = useState<Summary | null>(null)
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // Derived instead of stored: loading means the request for the CURRENT domain
+  // has not settled, so switching domain shows the spinner on the same render
+  // rather than one frame of the previous summary.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null)
+  const loading = loadedFor !== id
 
   useEffect(() => {
     if (!id) return
-    setLoading(true)
+    let cancelled = false
     api.get<Summary>(`/domains/${id}/performance`)
-      .then(r => setSummary(r.data)).catch(e => setError(apiError(e))).finally(() => setLoading(false))
+      .then(r => { if (!cancelled) setSummary(r.data) })
+      .catch(e => { if (!cancelled) setError(apiError(e)) })
+      .finally(() => { if (!cancelled) setLoadedFor(id) })
+    return () => { cancelled = true }
   }, [id])
 
   if (loading) return <div className="px-6 py-5 text-slate-400">{t('loading')}</div>
