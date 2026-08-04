@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 // useResourceScope resolves the API base path and the back link for pages that
 // serve both a domain and one of its subdomains. When the route carries an :sid

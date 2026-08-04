@@ -1,7 +1,7 @@
 // Server-wide database overview. Sizes come from the root mysql client because
 // the panel DSN cannot see other schemas (see internal/overview.dbSizes); 0
 // means "size unavailable" and renders as "—".
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import OverviewList, { type Column, type Badge } from '@/components/OverviewList'
 

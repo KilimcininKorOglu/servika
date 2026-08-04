@@ -7,7 +7,7 @@
 // The only panel login is the single admin (root); customers reach their own
 // domains via FTP identity at /cp.
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 type Color = 'amber' | 'violet' | 'sky' | 'indigo' | 'emerald' | 'teal' | 'slate' | 'orange' | 'rose'
 

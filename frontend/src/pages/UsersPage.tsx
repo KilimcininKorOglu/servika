@@ -5,7 +5,7 @@
 // restrictions here mirror those rules for the UI; they are not a security
 // boundary.
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'

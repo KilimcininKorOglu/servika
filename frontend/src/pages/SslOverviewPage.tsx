@@ -1,6 +1,6 @@
 // Server-wide certificate overview. Its real purpose is not missing one that
 // is about to expire: the list arrives sorted by nearest expiry date.
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import OverviewList, { type Column, type Badge } from '@/components/OverviewList'
 

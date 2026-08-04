@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router'
 import { useAuth } from '@/store/auth'
 import LoginPage from '@/pages/LoginPage'
 import DashboardLayout from '@/components/DashboardLayout'

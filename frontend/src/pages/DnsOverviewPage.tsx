@@ -1,6 +1,6 @@
 // Server-wide DNS overview: record counts per domain and DNSSEC status, so
 // "which domain is missing an MX record" is one screen instead of a walk.
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import OverviewList, { type Column, type Badge } from '@/components/OverviewList'
 

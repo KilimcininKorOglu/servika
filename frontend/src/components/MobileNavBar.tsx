@@ -1,5 +1,5 @@
 // Mobile bottom navigation for narrow screens.
-import { NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
 type MobileNavItem = {

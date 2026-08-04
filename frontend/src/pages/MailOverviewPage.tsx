@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import OverviewList, { type Column, type Badge } from '@/components/OverviewList'
 import { api, apiError } from '@/lib/api'
 

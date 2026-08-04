@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import MobileNavBar from './MobileNavBar'
