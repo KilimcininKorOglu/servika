@@ -2,6 +2,7 @@
 package phpext
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"servika/internal/config"
 	"servika/internal/httpx"
@@ -65,6 +67,11 @@ type Extension struct {
 	Enabled bool   `json:"active"`
 	INIFile string `json:"ini_file"`
 }
+
+// extensionInstallTimeout bounds dnf and pecl, both of which fetch from remote
+// repositories and can otherwise wait on an unreachable mirror indefinitely. A
+// PECL build compiles from source, so the budget covers a slow compile too.
+const extensionInstallTimeout = 15 * time.Minute
 
 type Handlers struct {
 	DB *sql.DB // Reserved for future audit storage.
@@ -277,7 +284,10 @@ func (h *Handlers) PECLInstall(w http.ResponseWriter, r *http.Request) {
 
 	if dnfPkg != "" {
 		// Install the available prebuilt package with DNF.
-		cmd := exec.Command("dnf", "install", "-y", dnfPkg)
+		ctx, cancel := context.WithTimeout(context.Background(), extensionInstallTimeout)
+		defer cancel()
+		// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
+		cmd := exec.CommandContext(ctx, "dnf", "install", "-y", dnfPkg)
 		_, err := cmd.CombinedOutput()
 		if err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError,
@@ -302,8 +312,10 @@ func (h *Handlers) PECLInstall(w http.ResponseWriter, r *http.Request) {
 			"no prebuilt DNF package is available and PECL is not installed")
 		return
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), extensionInstallTimeout)
+	defer cancel()
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	cmd := exec.Command(s.PECLBin, "install", "-f", req.Package)
+	cmd := exec.CommandContext(ctx, s.PECLBin, "install", "-f", req.Package)
 	cmd.Env = peclEnvironment(s.PHPBin)
 	_, err := cmd.CombinedOutput()
 	if err != nil {
