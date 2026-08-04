@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -25,14 +25,22 @@ export default function RedisPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
 
-  function load() {
-    setLoading(true)
+  // Split so the mount effect never writes state synchronously: fetchStatus
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refresh that follows a write.
+  const fetchStatus = useCallback(() => {
     api.get<Status>(`/domains/${id}/redis`)
       .then(response => setStatus(response.data))
       .catch(error => setError(apiError(error)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [id])
+  }, [id])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchStatus()
+  }, [fetchStatus])
+
+  useEffect(() => { fetchStatus() }, [fetchStatus])
 
   async function enable() {
     setError(null); setSuccess(null); setBusy(true)
