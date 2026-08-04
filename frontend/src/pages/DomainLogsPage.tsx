@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
@@ -52,29 +52,32 @@ export default function DomainLogsPage() {
       : api.get<Domain>(`/domains/${id}`)
     detail.then(r => setDomain(r.data as Domain)).catch(() => {})
     api.get<LogFile[]>(`${base}/logs`).then(r => setFiles(r.data)).catch(e => setError(apiError(e)))
-  }, [base])
+  }, [id, base, isSubdomain])
 
-  // Load the last N lines when the active file changes.
-  async function initialLoad() {
+  // Load the last N lines when the active file changes. Promise callbacks rather
+  // than await/try: this is what the effect below calls, and writes in an awaited
+  // body still count as the effect's own continuation.
+  const initialLoad = useCallback(() => {
     if (!id || !activeFile) return
-    try {
-      const { data } = await api.get<ReadResp>(`${base}/logs/read`, { params: { file: activeFile, last: 200 } })
-      setLines(data.lines || [])
-      setError(null)
-    } catch (e) {
-      setError(apiError(e))
-    }
-  }
-  useEffect(() => {
+    api.get<ReadResp>(`${base}/logs/read`, { params: { file: activeFile, last: 200 } })
+      .then(({ data }) => { setLines(data.lines || []); setError(null) })
+      .catch(e => setError(apiError(e)))
+  }, [id, base, activeFile])
+
+  // Stopped during render rather than in an effect: a tail still bound to the
+  // previous file would append its lines to the newly selected one for a frame.
+  const tailTarget = `${base}:${activeFile}`
+  const [tailedTarget, setTailedTarget] = useState(tailTarget)
+  if (tailTarget !== tailedTarget) {
+    setTailedTarget(tailTarget)
     setLive(false)
-    initialLoad()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFile, base])
+  }
+
+  useEffect(() => { initialLoad() }, [initialLoad])
 
   // Start or stop live tailing.
   useEffect(() => {
     if (!live || !id) return
-    setLines([]) // The live tail sends its own initial 200 lines.
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
@@ -116,8 +119,7 @@ export default function DomainLogsPage() {
       }
     })()
     return () => ctrl.abort()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live, activeFile, id])
+  }, [live, activeFile, id, base, t])
 
   // Automatic scrolling.
   useEffect(() => {
@@ -184,7 +186,11 @@ export default function DomainLogsPage() {
             {t('autoScroll')}
           </label>
           <button
-            onClick={() => setLive(c => !c)}
+            onClick={() => {
+              if (live) { setLive(false); return }
+              setLines([]) // The live tail sends its own initial 200 lines.
+              setLive(true)
+            }}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${
               live
                 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50'
