@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -70,8 +70,10 @@ export default function DomainsPage() {
   // The domain list depends only on /domains. /plans and /php/versions (which can be
   // slow due to dnf discovery) are loaded lazily when the create modal opens.
   // The list renders as soon as domains arrive and never blocks on dnf.
-  function load() {
-    setLoading(true)
+  // Split so the mount effect never writes state synchronously: fetchDomains
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchDomains = useCallback(() => {
     api.get<Domain[]>('/domains')
       .then(r => setItems(r.data))
       .catch(e => setError(apiError(e)))
@@ -81,8 +83,14 @@ export default function DomainsPage() {
     api.get<Subdomain[]>('/subdomains')
       .then(r => setSubdomains(r.data))
       .catch(() => setSubdomains([]))
-  }
-  useEffect(load, [])
+  }, [])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    fetchDomains()
+  }, [fetchDomains])
+
+  useEffect(() => { fetchDomains() }, [fetchDomains])
 
   // Load plans and PHP versions for the create modal separately from the list load.
   // Called lazily when the modal first opens; cached after the first successful fetch.
