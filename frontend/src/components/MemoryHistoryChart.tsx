@@ -42,7 +42,9 @@ export default function MemoryHistoryChart() {
     return () => { on = false; clearInterval(t) }
   }, [hours])
 
-  const pts = d?.points || []
+  // Memoized because the empty fallback is a fresh array on every render, which
+  // would defeat the path memoization further down.
+  const pts = useMemo(() => d?.points || [], [d])
   const latest = pts[pts.length - 1]
 
   // Measure card width for responsive viewBox.

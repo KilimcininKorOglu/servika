@@ -45,7 +45,9 @@ export default function LoadHistoryChart() {
     return () => { on = false; clearInterval(t) }
   }, [hours])
 
-  const pts = d?.points || []
+  // Memoized because the empty fallback is a fresh array on every render, which
+  // would defeat the path memoization further down.
+  const pts = useMemo(() => d?.points || [], [d])
   const cores = d?.cores || 0
   const latest = pts[pts.length - 1]
 
