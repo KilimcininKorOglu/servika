@@ -81,7 +81,9 @@ func resourceCommand(name string, args ...string) *exec.Cmd {
 	return resourceCommandContext(context.Background(), name, args...)
 }
 
-func resourceCommandContext(ctx context.Context, name string, args ...string) *exec.Cmd {
+// resourceCommandContext is a variable so a test can substitute a command that
+// actually hangs, which is the only way to prove a deadline takes effect.
+var resourceCommandContext = func(ctx context.Context, name string, args ...string) *exec.Cmd {
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	command := exec.CommandContext(ctx, name, args...)
 	command.Env = []string{
@@ -653,7 +655,17 @@ func queryExceedsLimit(seconds, limit int) bool {
 	return limit > 0 && seconds > limit
 }
 
+// governorScanKillTimeout bounds each mysql call the scan makes. The context main
+// passes in is never cancelled, so without a deadline of its own a single hung
+// mysql client blocks the scan, and the scan runs inline on the watchdog's ticker,
+// which means the guard against runaway queries stops running exactly when the
+// database is in the trouble it exists to catch. It is well under the 5-second
+// poll interval so a stuck call cannot pile up behind the next tick.
+const governorScanTimeout = 3 * time.Second
+
 func governorScanOnce(ctx context.Context, db *sql.DB) {
+	ctx, cancel := context.WithTimeout(ctx, governorScanTimeout)
+	defer cancel()
 	output, err := resourceCommandContext(ctx, "mysql", "-uroot", "-N", "-B", "-e",
 		"SELECT ID,USER,TIME FROM information_schema.PROCESSLIST WHERE COMMAND<>'Sleep' AND TIME>0").Output()
 	if err != nil {

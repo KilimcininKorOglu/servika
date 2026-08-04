@@ -1,8 +1,12 @@
 package resourcelimit
 
 import (
+	"context"
+	"database/sql"
+	"os/exec"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestMySQLLimitSQLRejectsInjectedOrProtectedAccount(t *testing.T) {
@@ -171,5 +175,43 @@ func TestCalculatePMMaxChildrenUsesPlanValueOrMemoryBudget(t *testing.T) {
 				t.Fatalf("calculatePMMaxChildren() = %d, want %d", got, test.want)
 			}
 		})
+	}
+}
+
+// The watchdog calls governorScanOnce inline on its ticker, and the context main
+// hands it never cancels, so a mysql client that hangs used to block the scan for
+// good: the guard against runaway queries stopped running exactly when the
+// database was in the trouble it exists to catch. A command that really hangs is
+// the only way to prove the deadline takes effect.
+func TestGovernorScanReturnsWhenMySQLHangs(t *testing.T) {
+	previous := resourceCommandContext
+	resourceCommandContext = func(ctx context.Context, _ string, _ ...string) *exec.Cmd {
+		return exec.CommandContext(ctx, "sleep", "60")
+	}
+	t.Cleanup(func() { resourceCommandContext = previous })
+
+	done := make(chan time.Duration, 1)
+	go func() {
+		start := time.Now()
+		governorScanOnce(context.Background(), &sql.DB{})
+		done <- time.Since(start)
+	}()
+
+	select {
+	case elapsed := <-done:
+		if elapsed > governorScanTimeout+2*time.Second {
+			t.Fatalf("governorScanOnce took %s, want it bounded near %s", elapsed, governorScanTimeout)
+		}
+	case <-time.After(governorScanTimeout + 5*time.Second):
+		t.Fatal("governorScanOnce never returned; a hung mysql client blocks the watchdog")
+	}
+}
+
+// The bound must stay under the poll interval, or a stuck scan piles up behind the
+// next tick instead of being replaced by it.
+func TestGovernorScanTimeoutFitsInsideThePollInterval(t *testing.T) {
+	if governorScanTimeout >= governorPollInterval {
+		t.Fatalf("governorScanTimeout %s must be shorter than governorPollInterval %s",
+			governorScanTimeout, governorPollInterval)
 	}
 }
