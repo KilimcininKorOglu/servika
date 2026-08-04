@@ -1,12 +1,14 @@
 package provisioner
 
 import (
+	"context"
 	"errors"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"servika/internal/config"
 )
@@ -40,14 +42,28 @@ func IsACMERenewSkip(err error) bool {
 // retry the command once. This also self-heals hosts already stuck in that state, without
 // needing shell access.
 func RunACMEIssue(args ...string) ([]byte, error) {
-	out, err := acmeCommand(args...).CombinedOutput()
+	out, err := runACME(args...)
 	if err == nil || !strings.Contains(string(out), "invalidContact") {
 		return out, err
 	}
 	log.Printf("acme: invalidContact, clearing the stored account contact and re-registering")
 	clearACMEContact()
-	_, _ = acmeCommand("--register-account", "--server", "letsencrypt").CombinedOutput()
-	return acmeCommand(args...).CombinedOutput()
+	_, _ = runACME("--register-account", "--server", "letsencrypt")
+	return runACME(args...)
+}
+
+// acmeTimeout bounds one acme.sh invocation. Issuance waits on Let's Encrypt to
+// validate the challenge, so an unreachable or rate-limiting CA would otherwise
+// leave the process running for the life of the panel. Each invocation gets its
+// own budget: RunACMEIssue may run three of them when it recovers a locked-out
+// account, and the recovery must not be cut short by the first attempt's spend.
+const acmeTimeout = 5 * time.Minute
+
+// runACME executes one acme.sh command under acmeTimeout.
+func runACME(args ...string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), acmeTimeout)
+	defer cancel()
+	return acmeCommandContext(ctx, args...).CombinedOutput()
 }
 
 // clearACMEContact empties the persisted acme.sh contact address in account.conf and in
@@ -83,6 +99,11 @@ func emptyACMEKey(path, key string) {
 	}
 }
 
-// ACMECommand exposes an acme.sh command with the panel's environment for callers outside
-// this package.
-func ACMECommand(args ...string) *exec.Cmd { return acmeCommand(args...) }
+// RunACMECommand runs an acme.sh command with the panel's environment under the same
+// deadline as issuance, for callers outside this package. It replaced an exported
+// constructor that handed back an *exec.Cmd, because a caller holding the command
+// cannot be given a deadline that is still meaningful when it finally runs it.
+func RunACMECommand(args ...string) error {
+	_, err := runACME(args...)
+	return err
+}

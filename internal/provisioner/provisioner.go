@@ -3,6 +3,7 @@ package provisioner
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
@@ -1797,8 +1798,12 @@ func HealHomePerms() {
 }
 
 func tenantCommand(name string, args ...string) *exec.Cmd {
+	return tenantCommandContext(context.Background(), name, args...)
+}
+
+func tenantCommandContext(ctx context.Context, name string, args ...string) *exec.Cmd {
 	// #nosec G204 G702 -- fixed/config binary with separate args (no shell); callers pass validated tenant input.
-	command := exec.Command(name, args...)
+	command := exec.CommandContext(ctx, name, args...)
 	command.Env = []string{
 		"PATH=/usr/sbin:/usr/bin:/sbin:/bin",
 		"LANG=C",
@@ -1808,7 +1813,11 @@ func tenantCommand(name string, args ...string) *exec.Cmd {
 }
 
 func acmeCommand(args ...string) *exec.Cmd {
-	command := tenantCommand(config.ACMEBin(), args...)
+	return acmeCommandContext(context.Background(), args...)
+}
+
+func acmeCommandContext(ctx context.Context, args ...string) *exec.Cmd {
+	command := tenantCommandContext(ctx, config.ACMEBin(), args...)
 	command.Env = append(command.Env, "HOME="+config.ACMEHome())
 	return command
 }

@@ -2,6 +2,7 @@ package provisioner
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -10,9 +11,12 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
+
+	"servika/internal/config"
 )
 
 func TestDangerousNginxDirectiveRejectsPrivilegedOperations(t *testing.T) {
@@ -594,5 +598,34 @@ func TestApacheVhostDeniesScriptsBackupsAndForeignSymlinks(t *testing.T) {
 		if strings.Contains(config, archiveExtension) {
 			t.Errorf("Apache vhost must not reject legitimate archive extension %q", archiveExtension)
 		}
+	}
+}
+
+// Every acme.sh invocation must be bounded: issuance waits on Let's Encrypt to
+// validate a challenge, so an unreachable or rate-limiting CA would otherwise leave
+// the process running for the life of the panel.
+func TestACMECommandCarriesADeadline(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	command := acmeCommandContext(ctx, "--version")
+	if command.Cancel == nil {
+		t.Fatal("acmeCommandContext built a command with no cancellation")
+	}
+	if !slices.Contains(command.Env, "HOME="+config.ACMEHome()) {
+		t.Error("acmeCommandContext dropped the acme.sh HOME, so acme.sh would not find its own store")
+	}
+}
+
+// A hung acme.sh must be killed rather than waited on forever.
+func TestTenantCommandContextKillsAHungProcess(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	err := tenantCommandContext(ctx, "sleep", "60").Run()
+	if err == nil {
+		t.Fatal("a command that outran its deadline reported success")
+	}
+	if elapsed := time.Since(start); elapsed > 10*time.Second {
+		t.Fatalf("the deadline took %s to take effect", elapsed)
 	}
 }

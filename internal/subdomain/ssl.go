@@ -202,8 +202,8 @@ func issueLetsEncrypt(fqdn, certPath, keyPath string) error {
 		"-d", fqdn, "--keylength", "ec-256"); err != nil && !provisioner.IsACMERenewSkip(err) {
 		return err
 	}
-	return provisioner.ACMECommand("--install-cert", "-d", fqdn, "--ecc",
-		"--key-file", keyPath, "--fullchain-file", certPath).Run()
+	return provisioner.RunACMECommand("--install-cert", "-d", fqdn, "--ecc",
+		"--key-file", keyPath, "--fullchain-file", certPath)
 }
 
 func applyVhost(path, config string) error {
