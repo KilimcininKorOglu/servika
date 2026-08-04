@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -25,15 +25,25 @@ export default function DomainSSHPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [key, setKey] = useState('')
 
-  function load() {
+  // Split in two on purpose. fetchStatus touches state only from the promise
+  // callbacks, so the mount effect can call it without forcing a second render
+  // pass; loading already starts true there. Raising the spinner belongs to the
+  // event path, so reload() wraps it for the handlers that refetch on change.
+  const fetchStatus = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     api.get<Status>(`/domains/${id}/ssh`)
       .then(r => setStatus(r.data))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
+  }, [id])
+
+  function reload() {
+    setLoading(true)
+    setError(null)
+    fetchStatus()
   }
-  useEffect(load, [id])
+
+  useEffect(() => { fetchStatus() }, [fetchStatus])
 
   async function toggle(active: boolean) {
     setIsProcessing(true); setError(null); setSuccess(null)
@@ -41,7 +51,7 @@ export default function DomainSSHPage() {
       await api.put(`/domains/${id}/ssh`, { active: active })
       setSuccess(active ? t('toast.accessActive') : t('toast.accessDisabled'))
       setTimeout(() => setSuccess(null), 4000)
-      load()
+      reload()
     } catch (e) {
       setError(apiError(e, t('toast.operationFailed')))
     } finally { setIsProcessing(false) }
@@ -54,7 +64,7 @@ export default function DomainSSHPage() {
       setSuccess(data.has_key ? t('toast.keySaved') : t('toast.keysCleared'))
       setTimeout(() => setSuccess(null), 4000)
       setKey('')
-      load()
+      reload()
     } catch (e) {
       setError(apiError(e, t('toast.keySaveFailed')))
     } finally { setIsProcessing(false) }
