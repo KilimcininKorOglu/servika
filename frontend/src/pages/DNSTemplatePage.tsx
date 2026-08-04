@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Breadcrumb from '@/components/Breadcrumb'
 import { api, apiError } from '@/lib/api'
@@ -46,9 +46,10 @@ export default function DNSTemplatePage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  function loadTemplate() {
-    setLoading(true)
-    setError(null)
+  // Split so the mount effect never writes state synchronously: fetchTemplate
+  // settles only through promise callbacks, and loadTemplate adds the spinner
+  // for the discard button and the post-save refresh.
+  const fetchTemplate = useCallback(() => {
     api.get<{ records: TemplateRow[]; meta: TemplateMeta }>('/dns-template')
       .then(response => {
         setRecords(response.data.records || [])
@@ -56,9 +57,15 @@ export default function DNSTemplatePage() {
       })
       .catch(cause => setError(apiError(cause, t('errors.loadFailed'))))
       .finally(() => setLoading(false))
-  }
+  }, [t])
 
-  useEffect(loadTemplate, [])
+  const loadTemplate = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchTemplate()
+  }, [fetchTemplate])
+
+  useEffect(() => { fetchTemplate() }, [fetchTemplate])
 
   function updateRecord(index: number, patch: Partial<TemplateRow>) {
     setRecords(current => current.map((record, recordIndex) => recordIndex === index ? { ...record, ...patch } : record))
