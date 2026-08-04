@@ -1,5 +1,5 @@
 import type { AxiosProgressEvent } from 'axios'
-import { useEffect, useLayoutEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
 import { api, apiError as apiError } from '@/lib/api'
@@ -82,16 +82,33 @@ export default function DomainFilesPage() {
     api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
   }, [id])
 
-  function scan() {
+  // Split so the directory effect never writes state synchronously: fetchEntries
+  // settles only through promise callbacks, and scan() adds the spinner for the
+  // refreshes that follow a file operation.
+  const fetchEntries = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     api.get<ListResp>(`/domains/${id}/files`, { params: { path } })
       .then(r => setContent(r.data.content))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
+  }, [id, path])
+
+  const scan = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchEntries()
+  }, [fetchEntries])
+
+  useEffect(() => { fetchEntries() }, [fetchEntries])
+
+  // Cleared during render rather than in an effect: a selection that survives
+  // into another directory would let a bulk action target paths that are no
+  // longer on screen.
+  const [selectionPath, setSelectionPath] = useState(path)
+  if (path !== selectionPath) {
+    setSelectionPath(path)
+    setSelectedPaths(new Set())
   }
-  useEffect(scan, [id, path])
-  useEffect(() => { setSelectedPaths(new Set()) }, [path])
 
   function navigateTo(newPath: string) {
     setPath(newPath)
