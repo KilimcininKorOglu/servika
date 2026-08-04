@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -48,15 +48,40 @@ export default function DomainPHPPage() {
   const [debugLog, setDebugLog] = useState<string[]>([])
   const [debugLogLoading, setDebugLogLoading] = useState(false)
 
-  function load() {
+  // Declared before the loader that calls it: a function hoisted past its own
+  // use site cannot pick up a later definition, so the earlier call would keep
+  // an older closure over id.
+  const loadDebugLog = useCallback(async () => {
     if (!id) return
-    setLoading(true); setError(null)
+    setDebugLogLoading(true)
+    try {
+      const { data } = await api.get<{ lines: string[] }>(`/domains/${id}/php/debug-log`)
+      setDebugLog(data.lines || [])
+    } catch {
+      setDebugLog([])
+    } finally {
+      setDebugLogLoading(false)
+    }
+  }, [id])
+
+  // Split so the mount effect never writes state synchronously: fetchSettings
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refresh that follows a write.
+  const fetchSettings = useCallback(() => {
+    if (!id) return
     api.get<Response>(`/domains/${id}/php-settings`)
       .then(r => { setResponse(r.data); setSelectedVersion(r.data.php_version); setSettings(r.data.settings); loadDebugLog() })
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [id])
+  }, [id, loadDebugLog])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchSettings()
+  }, [fetchSettings])
+
+  useEffect(() => { fetchSettings() }, [fetchSettings])
 
   async function save() {
     if (!settings) return
@@ -69,19 +94,6 @@ export default function DomainPHPPage() {
       setError(apiError(e, t('saveFailed')))
     } finally {
       setIsProcessing(false)
-    }
-  }
-
-  async function loadDebugLog() {
-    if (!id) return
-    setDebugLogLoading(true)
-    try {
-      const { data } = await api.get<{ lines: string[] }>(`/domains/${id}/php/debug-log`)
-      setDebugLog(data.lines || [])
-    } catch {
-      setDebugLog([])
-    } finally {
-      setDebugLogLoading(false)
     }
   }
 
