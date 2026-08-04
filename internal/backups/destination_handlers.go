@@ -237,6 +237,13 @@ func (h *Handlers) TestDestination(w http.ResponseWriter, r *http.Request) {
 		}
 		request.Port = port
 		request.RemoteDir = dz
+		// The ad-hoc test reaches lftp/ssh/curl with an unsaved host, so it needs the
+		// same host check the save path applies; object-storage types carry an
+		// endpoint instead and are validated by s3Endpoint.
+		if !objectStorageType(request.Type) && !validHost(request.Host) {
+			httpx.WriteError(w, http.StatusBadRequest, "host must be a valid hostname or IPv4/IPv6 address")
+			return
+		}
 		if msg := validDestinationInput(&request); msg != "" {
 			httpx.WriteError(w, http.StatusBadRequest, msg)
 			return
