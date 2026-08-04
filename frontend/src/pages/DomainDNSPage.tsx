@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
@@ -101,14 +101,22 @@ export default function DomainDNSPage() {
     } catch (e) { setError(apiError(e, t('import.failed'))) } finally { setImporting(false) }
   }
 
-  function load() {
+  // Split so the mount effect never writes state synchronously: fetchRecords
+  // settles only through promise callbacks, and load() adds the spinner for the
+  // refreshes that follow a write.
+  const fetchRecords = useCallback(() => {
     if (!id) return
-    setLoading(true); setError(null)
     api.get<RecordItem[]>(`/domains/${id}/dns`)
       .then(r => { setRecords(r.data); setSelected(new Set()) })
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
-  }
+  }, [id])
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    fetchRecords()
+  }, [fetchRecords])
 
   function toggleSelection(rid: number) {
     setSelected(prev => {
@@ -145,8 +153,8 @@ export default function DomainDNSPage() {
       api.get<SOA>(`/domains/${id}/dns/soa`).then(r => setSOA(r.data)).catch(() => {})
       api.get<DNSSECStatus>(`/domains/${id}/dns/dnssec`).then(r => setDNSSEC(r.data)).catch(() => {})
     }
-    load()
-  }, [id])
+    fetchRecords()
+  }, [id, fetchRecords])
 
   async function changeDNSSEC(active: boolean) {
     if (!id) return
