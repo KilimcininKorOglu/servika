@@ -15,16 +15,24 @@ export type Summary = {
 export default function DomainResourceCard({ domainId }: { domainId: number | string }) {
   const { t } = useTranslation('DomainResourceCard')
   const [summary, setSummary] = useState<Summary | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Bumped by the refresh button to re-run the fetch.
+  const [reloadToken, setReloadToken] = useState(0)
+  // Derived rather than stored: the skeleton shows until the fetch for the
+  // CURRENT domain and reload attempt has settled, so switching domain or
+  // hitting refresh falls back to the skeleton on the same render instead of
+  // briefly showing the previous numbers.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null)
+  const requestKey = `${domainId}:${reloadToken}`
+  const loading = loadedFor !== requestKey
 
-  function load() {
-    setLoading(true)
+  useEffect(() => {
+    let cancelled = false
     api.get<Summary>(`/domains/${domainId}/resources`)
-      .then(r => setSummary(r.data))
-      .catch(() => setSummary(null))
-      .finally(() => setLoading(false))
-  }
-  useEffect(load, [domainId])
+      .then(r => { if (!cancelled) setSummary(r.data) })
+      .catch(() => { if (!cancelled) setSummary(null) })
+      .finally(() => { if (!cancelled) setLoadedFor(requestKey) })
+    return () => { cancelled = true }
+  }, [domainId, requestKey])
 
   if (loading) {
     return (
@@ -46,7 +54,7 @@ export default function DomainResourceCard({ domainId }: { domainId: number | st
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('planAndResources')}</h3>
-          <button onClick={load} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" title={t('refresh')}>
+          <button onClick={() => setReloadToken(n => n + 1)} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" title={t('refresh')}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
