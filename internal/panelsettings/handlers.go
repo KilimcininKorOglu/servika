@@ -159,7 +159,7 @@ func issuePanelCertificate(domain string) error {
 	// RunACMEIssue also recovers from an invalidContact account lock-out, which otherwise
 	// blocks certificate issuance for every domain on the host, including this panel domain.
 	if out, err := provisioner.RunACMEIssue("--issue", "--webroot", acmeWebroot, "-d", domain, "--keylength", "2048"); err != nil {
-		if !isACMERenewSkip(err) {
+		if !provisioner.IsACMERenewSkip(err) {
 			return fmt.Errorf("acme issue failed: %s", strings.TrimSpace(string(out)))
 		}
 	}
@@ -177,11 +177,6 @@ func issuePanelCertificate(domain string) error {
 		return fmt.Errorf("set panel certificate permissions: %w", err)
 	}
 	return nil
-}
-
-func isACMERenewSkip(err error) bool {
-	var exitErr *exec.ExitError
-	return errors.As(err, &exitErr) && exitErr.ExitCode() == 2
 }
 
 func acmeEnv() []string {

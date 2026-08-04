@@ -1,29 +1,8 @@
 package panelsettings
 
 import (
-	"os/exec"
 	"testing"
 )
-
-func TestIsACMERenewSkip(t *testing.T) {
-	err := exec.Command("sh", "-c", "exit 2").Run()
-	if err == nil {
-		t.Fatal("expected command to fail")
-	}
-	if !isACMERenewSkip(err) {
-		t.Fatal("expected acme renew skip exit code to be accepted")
-	}
-}
-
-func TestIsACMERenewSkipRejectsOtherErrors(t *testing.T) {
-	err := exec.Command("sh", "-c", "exit 1").Run()
-	if err == nil {
-		t.Fatal("expected command to fail")
-	}
-	if isACMERenewSkip(err) {
-		t.Fatal("expected non-renew-skip exit code to be rejected")
-	}
-}
 
 func TestACMEEnvUsesExplicitAllowlist(t *testing.T) {
 	env := acmeEnv()
