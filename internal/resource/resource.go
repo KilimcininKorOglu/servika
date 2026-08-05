@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"servika/internal/diskusage"
 	"servika/internal/httpx"
 	"servika/internal/resourcelimit"
 
@@ -50,21 +51,6 @@ type Summary struct {
 
 type Handlers struct {
 	DB *sql.DB
-}
-
-// duMB returns the home directory's disk usage in megabytes.
-func duMB(home string) int64 {
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	out, err := exec.Command("du", "-sm", home).CombinedOutput()
-	if err != nil {
-		return 0
-	}
-	parts := strings.Fields(string(out))
-	if len(parts) == 0 {
-		return 0
-	}
-	n, _ := strconv.ParseInt(parts[0], 10, 64)
-	return n
 }
 
 // dbTotalMB returns the total database size for panel-managed users in megabytes.
@@ -125,10 +111,19 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 		o.PlanName = "Unlimited (no plan assigned)"
 	}
 
-	// Calculate disk usage.
+	// Calculate disk usage. A measurement that fails (a du deadline on a very
+	// large tree) must not be reported as zero and must not overwrite the stored
+	// size: zero reads as an empty home and would show a tenant far below a quota
+	// they may be over. The last known value is served instead.
 	home := "/home/" + o.SystemUser
-	o.DiskMB.Usage = duMB(home)
-	_, _ = h.DB.ExecContext(ctx, `UPDATE domains SET size_kb=? WHERE id=?`, o.DiskMB.Usage*1024, id)
+	if size, duErr := diskusage.Bytes(ctx, home); duErr == nil {
+		o.DiskMB.Usage = size / (1024 * 1024)
+		_, _ = h.DB.ExecContext(ctx, `UPDATE domains SET size_kb=? WHERE id=?`, size/1024, id)
+	} else {
+		var lastKB int64
+		_ = h.DB.QueryRowContext(ctx, `SELECT size_kb FROM domains WHERE id=?`, id).Scan(&lastKB)
+		o.DiskMB.Usage = lastKB / 1024
+	}
 	o.DiskMB.Limit = diskQuota
 	// When XFS user quota is ACTIVE, pull real disk usage/limit and inode usage/limit from
 	// the filesystem (more accurate than du, and includes inodes). On noquota, QuotaStatus

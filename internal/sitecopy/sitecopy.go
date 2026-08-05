@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/diskusage"
 	"servika/internal/files"
 	"servika/internal/httpx"
 
@@ -64,7 +65,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 			if fi, err := e.Info(); err == nil {
 				copyItem.Date = fi.ModTime().Format("2006-01-02 15:04")
 			}
-			copyItem.SizeMB = dirSizeMB(filepath.Join(dir, e.Name()))
+			copyItem.SizeMB = dirSizeMB(r.Context(), filepath.Join(dir, e.Name()))
 			out = append(out, copyItem)
 		}
 	}
@@ -94,7 +95,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "public_html not found")
 		return
 	}
-	if b := dirSizeBytes(source); b > maxCopyBytes {
+	if b := dirSizeBytes(r.Context(), source); b > maxCopyBytes {
 		httpx.WriteError(w, http.StatusRequestEntityTooLarge, "site exceeds 3 GB; use the Backups tool")
 		return
 	}
@@ -129,7 +130,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	_ = exec.Command("chown", "-Rh", systemUser+":"+systemUser, copyDir+"/"+name).Run()
 	files.RestoreconBeneath(home, "copies/"+name)
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "name": name, "size_mb": dirSizeMB(copyDir + "/" + name)})
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "name": name, "size_mb": dirSizeMB(r.Context(), copyDir+"/"+name)})
 }
 
 // DELETE /domains/{id}/copy/{name}
@@ -166,20 +167,22 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
-func dirSizeBytes(p string) int64 {
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	out, err := exec.Command("du", "-sb", p).Output()
+// dirSizeBytes measures a directory through internal/diskusage, which bounds the
+// scan with a deadline and caches it. Measuring here by hand let a customer turn
+// a held-down refresh of the copy list into one root-privileged full-tree scan
+// per copy per request, outside their own cgroup I/O limit.
+//
+// A failed measurement reports 0. Every caller of this helper is display-only or
+// compares against a ceiling, so a failure must not fail the request; the 3 GB
+// guard in Create still refuses on a real over-size measurement.
+func dirSizeBytes(ctx context.Context, p string) int64 {
+	size, err := diskusage.Bytes(ctx, p)
 	if err != nil {
 		return 0
 	}
-	f := strings.Fields(string(out))
-	if len(f) == 0 {
-		return 0
-	}
-	n, _ := strconv.ParseInt(f[0], 10, 64)
-	return n
+	return size
 }
 
-func dirSizeMB(p string) int64 {
-	return dirSizeBytes(p) / (1024 * 1024)
+func dirSizeMB(ctx context.Context, p string) int64 {
+	return dirSizeBytes(ctx, p) / (1024 * 1024)
 }

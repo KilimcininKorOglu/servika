@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"os/exec"
 	"strconv"
 	"strings"
 
+	"servika/internal/diskusage"
 	"servika/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -38,19 +38,12 @@ func (h *Handlers) CalculateDisk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	path := "/home/" + systemUser
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	out, err := exec.Command("du", "-sb", path).CombinedOutput()
+	size, err := diskusage.Bytes(r.Context(), path)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "disk usage calculation failed")
 		return
 	}
-	fields := strings.Fields(string(out))
-	if len(fields) < 1 {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not read disk usage output")
-		return
-	}
-	byteB, _ := strconv.ParseInt(fields[0], 10, 64)
-	kb := byteB / 1024
+	kb := size / 1024
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE domains SET size_kb=? WHERE id=?`, kb, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")

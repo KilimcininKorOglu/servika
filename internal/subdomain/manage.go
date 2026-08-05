@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"os/exec"
 	"strconv"
 	"strings"
 
+	"servika/internal/diskusage"
 	"servika/internal/httpx"
 	"servika/internal/provisioner"
 
@@ -43,7 +43,7 @@ func (h *Handlers) Detail(w http.ResponseWriter, r *http.Request) {
 		"created_at":  s.CreatedAt,
 		"parent_id":   id,
 		"parent_name": domainName,
-		"disk_kb":     docrootDiskKB(s.DocRoot),
+		"disk_kb":     docrootDiskKB(r.Context(), s.DocRoot),
 		"ipv4":        h.IPv4,
 	})
 }
@@ -142,17 +142,13 @@ func ReRender(db *sql.DB, subdomainID int64) error {
 }
 
 // docrootDiskKB reports the document root size in kilobytes. It is best effort:
-// a missing directory or a du failure reports 0 rather than failing the request.
-func docrootDiskKB(docroot string) int64 {
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	out, err := exec.Command("du", "-sk", docroot).Output()
+// a missing directory or a measurement failure reports 0 rather than failing the
+// request. The measurement goes through internal/diskusage so a customer cannot
+// turn repeated views into unbounded root-privileged disk I/O.
+func docrootDiskKB(ctx context.Context, docroot string) int64 {
+	size, err := diskusage.Bytes(ctx, docroot)
 	if err != nil {
 		return 0
 	}
-	fields := strings.Fields(string(out))
-	if len(fields) == 0 {
-		return 0
-	}
-	kb, _ := strconv.ParseInt(fields[0], 10, 64)
-	return kb
+	return size / 1024
 }
