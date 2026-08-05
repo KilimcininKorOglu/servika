@@ -397,6 +397,13 @@ func SeedDefaults(ctx context.Context, db *sql.DB, domainID int64, domainName, i
 		}
 		added++
 	}
+	// When the nameserver lives INSIDE this zone (the provider's own domain),
+	// BIND must find the glue A record in the zone file or the zone does not
+	// load at all. The template cannot express that statically, because the
+	// answer depends on the domain being seeded (see SyncGlueRecords).
+	if _, err := SyncGlueRecords(ctx, db, domainID, domainName, ipv4, ns1, ns2); err != nil {
+		log.Printf("dns sync glue records domain=%d: %v", domainID, err)
+	}
 	seedSOAFromMeta(ctx, db, domainID, domainName, meta)
 	return added, nil
 }

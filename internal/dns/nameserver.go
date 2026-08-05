@@ -28,6 +28,8 @@ package dns
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -125,4 +127,118 @@ func SuggestedNameservers(ctx context.Context, db *sql.DB) (ns1, ns2 string, ok 
 func NameserversConfigured(ctx context.Context, db *sql.DB) bool {
 	_, _, ok := panelNS(ctx, db)
 	return ok
+}
+
+// ErrGlueAddressMissing is returned when a zone needs an in-zone glue record
+// but the domain carries no IPv4 to point it at. The zone would not load at
+// all, so this is reported rather than skipped.
+var ErrGlueAddressMissing = errors.New("in-zone nameserver needs a glue A record but the domain has no IPv4 address")
+
+// inZoneLabel reports whether a nameserver hostname stays INSIDE the given
+// zone, and returns the relative label to write into the zone file ("ns1").
+// A nameserver that IS the zone returns "@": that glue is the apex A record,
+// which the template already owns.
+func inZoneLabel(nsHost, domainName string) (string, bool) {
+	host := strings.ToLower(strings.TrimSuffix(strings.TrimSpace(nsHost), "."))
+	zone := strings.ToLower(strings.TrimSuffix(strings.TrimSpace(domainName), "."))
+	if host == "" || zone == "" {
+		return "", false
+	}
+	if host == zone {
+		return "@", true
+	}
+	if strings.HasSuffix(host, "."+zone) {
+		return strings.TrimSuffix(host, "."+zone), true
+	}
+	return "", false
+}
+
+// SyncGlueRecords creates or updates the A (glue) record for a nameserver that
+// lives inside the zone itself, and removes the leftover ns1/ns2 A records of
+// the vanity model when the nameservers live elsewhere. It reports whether
+// anything changed.
+//
+// This is required because BIND must see the address record INSIDE the zone
+// file when a zone's NS records point at a host within that same zone
+// (in-bailiwick). Without it the zone does not load at all:
+//
+//	zone provider.com/IN: NS 'ns1.provider.com' has no address records (A or AAAA)
+//	zone provider.com/IN: not loaded due to errors.
+//
+// The provider's OWN domain, the one the nameservers live in, is exactly that
+// case. For a customer domain the nameserver is outside the zone
+// (ns1.provider.com), where an in-zone A record is neither needed nor
+// meaningful. So the decision is made per domain from where the hostname sits
+// relative to the zone, which a static template row cannot express.
+func SyncGlueRecords(ctx context.Context, db *sql.DB, domainID int64, domainName, ipv4, ns1, ns2 string) (bool, error) {
+	required := map[string]bool{}
+	for _, nsHost := range []string{ns1, ns2} {
+		if label, ok := inZoneLabel(nsHost, domainName); ok && label != "@" {
+			required[label] = true
+		}
+	}
+	if len(required) > 0 && ipv4 == "" {
+		return false, fmt.Errorf("%w: %s", ErrGlueAddressMissing, domainName)
+	}
+
+	changed := false
+	for label := range required {
+		var current string
+		err := db.QueryRowContext(ctx,
+			`SELECT value FROM dns_records WHERE domain_id=? AND name=? AND type='A' LIMIT 1`,
+			domainID, label).Scan(&current)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			if _, execErr := db.ExecContext(ctx,
+				`INSERT INTO dns_records(domain_id, name, type, value, ttl, priority, enabled)
+				 VALUES(?,?, 'A', ?, 3600, 0, 1)`, domainID, label, ipv4); execErr != nil {
+				return changed, execErr
+			}
+			changed = true
+		case err != nil:
+			return changed, err
+		case current != ipv4:
+			if _, execErr := db.ExecContext(ctx,
+				`UPDATE dns_records SET value=? WHERE domain_id=? AND name=? AND type='A'`,
+				ipv4, domainID, label); execErr != nil {
+				return changed, execErr
+			}
+			changed = true
+		}
+	}
+
+	// Clean up only the literal ns1/ns2 names the vanity template used to
+	// create; a deeper in-zone label was never produced by the template, so
+	// removing arbitrary names here would delete records an operator added.
+	rows, err := db.QueryContext(ctx,
+		`SELECT name FROM dns_records WHERE domain_id=? AND type='A' AND name IN ('ns1','ns2')`, domainID)
+	if err != nil {
+		return changed, err
+	}
+	var stale []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			_ = rows.Close()
+			return changed, err
+		}
+		if !required[name] {
+			stale = append(stale, name)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close()
+		return changed, err
+	}
+	if err := rows.Close(); err != nil {
+		return changed, err
+	}
+	for _, name := range stale {
+		if _, execErr := db.ExecContext(ctx,
+			`DELETE FROM dns_records WHERE domain_id=? AND type='A' AND name=?`, domainID, name); execErr != nil {
+			return changed, execErr
+		}
+		changed = true
+	}
+	return changed, nil
 }

@@ -218,7 +218,7 @@ func MigrateNameserverRecords(ctx context.Context, db *sql.DB) (MigrationResult,
 	for _, row := range domainList {
 		result.Total++
 		ns1, ns2 := NameserverPair(ctx, db, row.id, row.name)
-		changed, err := syncNameserverRecords(ctx, db, row.id, ns1, ns2)
+		changed, err := syncNameserverRecords(ctx, db, row.id, row.name, ns1, ns2)
 		if err != nil {
 			// The detail goes to the log, not the API response; the operator
 			// needs to know WHICH domain failed, and the server log carries why.
@@ -241,10 +241,10 @@ func MigrateNameserverRecords(ctx context.Context, db *sql.DB) (MigrationResult,
 // syncNameserverRecords makes a domain's apex NS records exactly {ns1, ns2} and
 // pulls the SOA primary NS onto ns1. It reports whether anything changed.
 //
-// Leftovers of the vanity model are cleaned up too: ns1/ns2 A records under the
-// customer's domain mean nothing in the shared model (the nameserver lives in
-// the provider's own domain) and only confuse DNS auditors if left behind.
-func syncNameserverRecords(ctx context.Context, db *sql.DB, domainID int64, ns1, ns2 string) (bool, error) {
+// Glue is delegated to SyncGlueRecords, which decides per domain: a nameserver
+// inside this zone needs an in-zone A record, one outside it leaves only the
+// vanity model's ns1/ns2 A records to clean up.
+func syncNameserverRecords(ctx context.Context, db *sql.DB, domainID int64, domainName, ns1, ns2 string) (bool, error) {
 	rows, err := db.QueryContext(ctx,
 		`SELECT value FROM dns_records WHERE domain_id=? AND type='NS' AND name='@'`, domainID)
 	if err != nil {
@@ -275,13 +275,6 @@ func syncNameserverRecords(ctx context.Context, db *sql.DB, domainID int64, ns1,
 		}
 	}
 
-	var vanityA int
-	if err := db.QueryRowContext(ctx,
-		`SELECT COUNT(*) FROM dns_records WHERE domain_id=? AND type='A' AND name IN ('ns1','ns2')`,
-		domainID).Scan(&vanityA); err != nil {
-		return false, err
-	}
-
 	var soaPrimary string
 	err = db.QueryRowContext(ctx, `SELECT primary_ns FROM dns_soa WHERE domain_id=?`, domainID).Scan(&soaPrimary)
 	// A domain with no SOA row yet gets one from the template path, not here.
@@ -291,7 +284,19 @@ func syncNameserverRecords(ctx context.Context, db *sql.DB, domainID int64, ns1,
 	}
 	soaCorrect := soaMissing || strings.EqualFold(strings.TrimSuffix(soaPrimary, "."), ns1)
 
-	if nsCorrect && vanityA == 0 && soaCorrect {
+	// Glue must be settled per domain: an in-zone nameserver needs an A record
+	// inside this very zone or BIND refuses to load it, while an out-of-zone one
+	// only leaves the vanity model's ns1/ns2 A records behind.
+	var ipv4 string
+	if err := db.QueryRowContext(ctx, `SELECT ipv4 FROM domains WHERE id=?`, domainID).Scan(&ipv4); err != nil {
+		return false, err
+	}
+	glueChanged, err := SyncGlueRecords(ctx, db, domainID, domainName, ipv4, ns1, ns2)
+	if err != nil {
+		return false, err
+	}
+
+	if nsCorrect && soaCorrect && !glueChanged {
 		return false, nil
 	}
 
@@ -306,13 +311,6 @@ func syncNameserverRecords(ctx context.Context, db *sql.DB, domainID int64, ns1,
 				 VALUES(?, '@', 'NS', ?, 86400, 0, 1)`, domainID, host); err != nil {
 				return false, err
 			}
-		}
-	}
-	if vanityA > 0 {
-		if _, err := db.ExecContext(ctx,
-			`DELETE FROM dns_records WHERE domain_id=? AND type='A' AND name IN ('ns1','ns2')`,
-			domainID); err != nil {
-			return false, err
 		}
 	}
 	if !soaCorrect {
