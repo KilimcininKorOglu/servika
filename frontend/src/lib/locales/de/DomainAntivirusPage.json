@@ -24,7 +24,8 @@
     "updateSignatures": "Signaturen aktualisieren",
     "scanning": "Scannen...",
     "scanNow": "Jetzt scannen",
-    "inProgress": "Scan läuft. Bei großen Websites kann dies mehrere Minuten dauern."
+    "inProgress": "Scan läuft. Bei großen Websites kann dies mehrere Minuten dauern.",
+    "resourceWarning": "Ein Scan erhöht die CPU-Last, solange er läuft, sodass ein großes Dokumentenverzeichnis den gesamten Server einige Minuten lang verlangsamen kann."
   },
   "findings": {
     "title": "Funde",

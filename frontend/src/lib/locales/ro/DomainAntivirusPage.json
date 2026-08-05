@@ -24,7 +24,8 @@
     "updateSignatures": "Actualizați semnăturile",
     "scanning": "Scanare în curs...",
     "scanNow": "Scanați acum",
-    "inProgress": "Scanare în curs. Site-urile mari pot dura câteva minute."
+    "inProgress": "Scanare în curs. Site-urile mari pot dura câteva minute.",
+    "resourceWarning": "O scanare crește utilizarea CPU cât timp rulează, așa că o rădăcină de documente mare poate încetini întregul server câteva minute."
   },
   "findings": {
     "title": "Rezultate",

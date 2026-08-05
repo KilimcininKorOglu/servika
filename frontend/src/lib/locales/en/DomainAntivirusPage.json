@@ -24,7 +24,8 @@
     "updateSignatures": "Update Signatures",
     "scanning": "Scanning...",
     "scanNow": "Scan Now",
-    "inProgress": "Scan in progress. Large sites may take several minutes."
+    "inProgress": "Scan in progress. Large sites may take several minutes.",
+    "resourceWarning": "A scan raises CPU use for as long as it runs, so a large document root can slow the whole server down for a few minutes."
   },
   "findings": {
     "title": "Findings",

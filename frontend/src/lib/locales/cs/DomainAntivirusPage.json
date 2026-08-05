@@ -24,7 +24,8 @@
     "updateSignatures": "Aktualizovat signatury",
     "scanning": "Kontrola...",
     "scanNow": "Zkontrolovat nyní",
-    "inProgress": "Kontrola probíhá. U velkých webů to může trvat několik minut."
+    "inProgress": "Kontrola probíhá. U velkých webů to může trvat několik minut.",
+    "resourceWarning": "Kontrola po celou dobu běhu zvyšuje využití CPU, takže velký kořen dokumentů může na několik minut zpomalit celý server."
   },
   "findings": {
     "title": "Nálezy",

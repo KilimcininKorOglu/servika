@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import ResourceNotice from '@/components/ResourceNotice'
 import {
   responsiveTableActionCellClass,
   responsiveTableBodyClass,
@@ -124,10 +125,16 @@ export default function DomainAntivirusPage() {
                 {scanning ? t('status.scanning') : t('status.scanNow')}</button>
             </div>
           </div>
-          {scanning && (
+          {scanning ? (
             <div className="mt-3 flex items-center gap-2 text-sm text-brand-600 dark:text-brand-400">
               <span className="inline-block w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
               {t('status.inProgress')}
+            </div>
+          ) : (
+            /* Stated before the scan starts, not while it runs: by then the cost
+               has already been paid and the progress line has the floor. */
+            <div className="mt-3">
+              <ResourceNotice>{t('status.resourceWarning')}</ResourceNotice>
             </div>
           )}
         </div>

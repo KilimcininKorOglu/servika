@@ -24,7 +24,8 @@
     "updateSignatures": "İmzaları Güncelle",
     "scanning": "Taranıyor...",
     "scanNow": "Şimdi Tara",
-    "inProgress": "Tarama sürüyor. Büyük siteler birkaç dakika sürebilir."
+    "inProgress": "Tarama sürüyor. Büyük siteler birkaç dakika sürebilir.",
+    "resourceWarning": "Tarama, sürdüğü süre boyunca CPU kullanımını yükseltir; büyük bir belge kökünde sunucunun tamamı birkaç dakika yavaşlayabilir."
   },
   "findings": {
     "title": "Bulgular",

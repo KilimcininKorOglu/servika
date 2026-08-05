@@ -24,7 +24,8 @@
     "updateSignatures": "Atualizar assinaturas",
     "scanning": "Verificando...",
     "scanNow": "Verificar agora",
-    "inProgress": "Verificação em andamento. Sites grandes podem levar vários minutos."
+    "inProgress": "Verificação em andamento. Sites grandes podem levar vários minutos.",
+    "resourceWarning": "Uma varredura aumenta o uso de CPU enquanto dura, então uma raiz de documentos grande pode deixar o servidor inteiro lento por alguns minutos."
   },
   "findings": {
     "title": "Ocorrências",

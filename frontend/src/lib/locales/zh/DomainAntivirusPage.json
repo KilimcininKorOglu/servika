@@ -24,7 +24,8 @@
     "updateSignatures": "更新特征库",
     "scanning": "扫描中...",
     "scanNow": "立即扫描",
-    "inProgress": "扫描进行中。大型站点可能需要几分钟。"
+    "inProgress": "扫描进行中。大型站点可能需要几分钟。",
+    "resourceWarning": "扫描在运行期间会持续提高 CPU 占用，因此文档根目录较大时整台服务器可能会变慢几分钟。"
   },
   "findings": {
     "title": "发现结果",

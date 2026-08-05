@@ -24,7 +24,8 @@
     "updateSignatures": "Aggiorna firme",
     "scanning": "Scansione...",
     "scanNow": "Scansiona ora",
-    "inProgress": "Scansione in corso. I siti di grandi dimensioni possono richiedere diversi minuti."
+    "inProgress": "Scansione in corso. I siti di grandi dimensioni possono richiedere diversi minuti.",
+    "resourceWarning": "Una scansione aumenta l'uso della CPU per tutta la sua durata, quindi una document root grande può rallentare l'intero server per qualche minuto."
   },
   "findings": {
     "title": "Risultati",

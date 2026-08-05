@@ -24,7 +24,8 @@
     "updateSignatures": "Mettre à jour les signatures",
     "scanning": "Analyse...",
     "scanNow": "Analyser maintenant",
-    "inProgress": "Analyse en cours. Les grands sites peuvent prendre plusieurs minutes."
+    "inProgress": "Analyse en cours. Les grands sites peuvent prendre plusieurs minutes.",
+    "resourceWarning": "Une analyse augmente l'usage du CPU pendant toute sa durée : avec une racine de documents volumineuse, tout le serveur peut ralentir quelques minutes."
   },
   "findings": {
     "title": "Résultats",
