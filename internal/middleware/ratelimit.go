@@ -13,6 +13,10 @@ package middleware
 //     password-only requests to keep the counter at zero and brute-force the
 //     TOTP code indefinitely. The counter ages out when the window expires.
 //   - Policy: 5 failed attempts in 15 minutes → IP banned for 30 minutes.
+//   - A SECOND counter keys on the account being tried, because the per-IP one
+//     never fills for an attacker who rotates addresses (a botnet, or anyone
+//     holding an IPv6 prefix), leaving a single account open to unlimited online
+//     guessing.
 //   - Graduated delay: each failed attempt slows the request (capped).
 //   - Records are periodically pruned (memory-bloat/DoS prevention).
 //
@@ -21,9 +25,13 @@ package middleware
 // X-Forwarded-For could bypass this limit.
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -64,6 +72,19 @@ func loginReaper() {
 			}
 		}
 		loginMu.Unlock()
+
+		// The account map is pruned too. Without this an attacker sending a
+		// different username on every request grows it without bound, and the
+		// surface is reachable before any authentication.
+		accountCutoff := now.Add(-(accountWindow + accountLock))
+		accountMu.Lock()
+		for name, r := range accountMap {
+			emptyAndStale := len(r.failures) == 0 || r.failures[len(r.failures)-1].Before(accountCutoff)
+			if r.lockedAt.Before(now) && emptyAndStale {
+				delete(accountMap, name)
+			}
+		}
+		accountMu.Unlock()
 	}
 }
 
@@ -104,6 +125,102 @@ func loginRecordFail(ip string) {
 		r.lockedAt = now.Add(loginLock)
 		r.failures = nil
 	}
+}
+
+// ---- Per-account counter (against a distributed attack) ----
+//
+// The limiter above keys on the source address alone. An attacker who makes each
+// attempt from a different address never fills that counter, so online guessing
+// against ONE account, in practice root, is unlimited.
+//
+// LOCKOUT TRADE-OFF: an account lock is itself a weapon, since anyone can send
+// deliberately wrong passwords to keep the operator out. The threshold is
+// therefore well above the per-IP one, so ordinary mistyping cannot reach it,
+// and the lock is short: the distributed attack drops from unlimited to about
+// eighty attempts an hour, while the operator waits at most fifteen minutes.
+const (
+	accountWindow  = 15 * time.Minute
+	accountMaxFail = 20
+	accountLock    = 15 * time.Minute
+)
+
+var (
+	accountMu  sync.Mutex
+	accountMap = map[string]*loginRecord{}
+)
+
+// accountLockRemaining reports how long the account stays locked, trimming
+// out-of-window failures on the way. Same sliding window as the per-IP counter,
+// on its own map and threshold.
+func accountLockRemaining(name string) time.Duration {
+	now := time.Now()
+	accountMu.Lock()
+	defer accountMu.Unlock()
+	r := accountMap[name]
+	if r == nil {
+		return 0
+	}
+	if now.Before(r.lockedAt) {
+		return r.lockedAt.Sub(now)
+	}
+	cutoff := now.Add(-accountWindow)
+	kept := r.failures[:0]
+	for _, t := range r.failures {
+		if t.After(cutoff) {
+			kept = append(kept, t)
+		}
+	}
+	r.failures = kept
+	return 0
+}
+
+func accountRecordFail(name string) {
+	now := time.Now()
+	accountMu.Lock()
+	defer accountMu.Unlock()
+	r := accountMap[name]
+	if r == nil {
+		r = &loginRecord{}
+		accountMap[name] = r
+	}
+	r.failures = append(r.failures, now)
+	if len(r.failures) >= accountMaxFail {
+		r.lockedAt = now.Add(accountLock)
+		r.failures = nil
+	}
+}
+
+// maxLoginBody bounds one login request body. A real one is a few hundred bytes
+// of username, password and code; the bound keeps the counter key from costing
+// arbitrary memory per request, before anything is authenticated.
+const maxLoginBody = 8 << 10
+
+// loginAccount reads the account being tried and PUTS THE BODY BACK for the
+// handler.
+//
+// oversize means the body passed the bound and the caller must refuse the
+// request. Truncating and carrying on would be wrong: the handler would fail on
+// the cut JSON and the attempt would pass through without reaching any counter.
+func loginAccount(r *http.Request) (name string, oversize bool) {
+	if r.Body == nil {
+		return "", false
+	}
+	body, err := io.ReadAll(io.LimitReader(r.Body, maxLoginBody+1))
+	_ = r.Body.Close()
+	if len(body) > maxLoginBody {
+		return "", true
+	}
+	r.Body = io.NopCloser(bytes.NewReader(body))
+	if err != nil {
+		return "", false
+	}
+	var payload struct {
+		Username string `json:"username"`
+	}
+	if json.Unmarshal(body, &payload) != nil {
+		return "", false // unreadable body; the per-IP counter still applies
+	}
+	return strings.ToLower(strings.TrimSpace(payload.Username)), false
 }
 
 // durationText formats remaining seconds into human-readable text.
@@ -204,6 +321,20 @@ func LoginRateLimit(next http.Handler) http.Handler {
 				fmt.Sprintf("too many failed login attempts — try again in %s", durationText(sec)))
 			return
 		}
+		account, oversize := loginAccount(r)
+		if oversize {
+			httpx.WriteError(w, http.StatusRequestEntityTooLarge, "login request is too large")
+			return
+		}
+		if account != "" {
+			if remaining := accountLockRemaining(account); remaining > 0 {
+				sec := int(remaining.Seconds()) + 1
+				w.Header().Set("Retry-After", strconv.Itoa(sec))
+				httpx.WriteError(w, http.StatusTooManyRequests,
+					fmt.Sprintf("too many failed login attempts for this account — try again in %s", durationText(sec)))
+				return
+			}
+		}
 		if count > 0 { // graduated slowdown
 			d := min(time.Duration(count)*250*time.Millisecond, loginMaxLag)
 			time.Sleep(d)
@@ -212,6 +343,13 @@ func LoginRateLimit(next http.Handler) http.Handler {
 		next.ServeHTTP(sw, r)
 		if sw.code == http.StatusUnauthorized {
 			loginRecordFail(ip)
+			// Not reset on success either, for the reason the per-IP counter is
+			// not: a correct password in the 2FA flow answers 200, so resetting
+			// would let an attacker who holds the password clear the counter
+			// before every TOTP guess.
+			if account != "" {
+				accountRecordFail(account)
+			}
 		}
 	})
 }
