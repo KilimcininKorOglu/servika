@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
 
-type Domain = { id: number; domain_name: string }
+type Domain = { id: number; domain_name: string; ssl: boolean }
 type Mailbox = { id: number; local_part: string; email: string; status: string; created_at: string }
 type MailStatus = { enabled: boolean; dkim_selector?: string }
 type Alias = { id: number; source: string; destination: string; catch_all: boolean; status: string; created_at: string }
@@ -326,9 +326,14 @@ export default function DomainMailPage() {
     }
   }
 
-  // Webmail is served from the panel's own origin, so the address follows
-  // whichever host the panel is being used on (custom domain or IP:8443).
-  const webmailURL = `${window.location.origin}/webmail/`
+  // Webmail is served from the customer's OWN domain, through the /webmail/
+  // block the panel renders into their vhost. The panel origin is only a
+  // fallback: it is what the address was before, and it is still the only
+  // encrypted route while the domain has no certificate, since the block is
+  // rendered onto the TLS vhost alone.
+  const webmailURL = domain?.ssl
+    ? `https://${domain.domain_name}/webmail/`
+    : `${window.location.origin}/webmail/`
 
   async function copyWebmailURL() {
     setError(null)
@@ -389,8 +394,8 @@ export default function DomainMailPage() {
           </div>
         ) : (
           <>
-            {/* Roundcube is served under /webmail/ on the panel's OWN origin
-                (assets/nginx/_panel.conf). It is NOT at mail.<domain>: that
+            {/* Roundcube is one shared installation reached under /webmail/ on
+                the domain's own TLS vhost. It is NOT at mail.<domain>: that
                 record exists to be the MX target and has no vhost, so a request
                 to it falls through to the catch-all. */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-5 shadow-sm flex flex-wrap items-center gap-4">
