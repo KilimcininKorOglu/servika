@@ -966,6 +966,7 @@ func installDebugShim(home, sk string, content []byte) {
 	restoreconFdPath(gpFd) // SELinux: relabel via pinned fd-path (no symlink -R).
 
 	// Debug log: tenant:tenant 0644. O_NOFOLLOW + fd-based Fchown/Fchmod.
+	clearUnsafeEntryAt(gpFd, "php_debug.log")
 	if lf, e := unix.Openat(gpFd, "php_debug.log",
 		unix.O_WRONLY|unix.O_CREAT|unix.O_APPEND|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0644); e == nil {
 		if uid, gid, ue := uidGid(sk); ue == nil {
@@ -977,6 +978,7 @@ func installDebugShim(home, sk string, content []byte) {
 	}
 
 	// auto_prepend shim: root:root -- tenant reads, cannot modify.
+	clearUnsafeEntryAt(gpFd, "debug_prepend.php")
 	if pf, e := unix.Openat(gpFd, "debug_prepend.php",
 		unix.O_WRONLY|unix.O_CREAT|unix.O_TRUNC|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0644); e == nil {
 		_, _ = unix.Write(pf, content)
@@ -985,6 +987,27 @@ func installDebugShim(home, sk string, content []byte) {
 		restoreconFdPath(pf)
 		_ = unix.Close(pf)
 	}
+}
+
+// clearUnsafeEntryAt removes name under parentFd when it is anything other than
+// a regular file, so the O_NOFOLLOW open that follows creates the real thing.
+//
+// ensureRootDirAt gives .servika the same treatment and leaves it root:root
+// 0755, which is what stops a tenant planting an entry inside it, so this is the
+// second line rather than the first. It matters because O_NOFOLLOW only refuses
+// to follow a symlink; it does not remove one. Without this the two opens below
+// fail with ELOOP and silently do nothing, leaving the planted link in place,
+// and a tenant who wins the window before .servika is created keeps their debug
+// log permanently broken.
+func clearUnsafeEntryAt(parentFd int, name string) {
+	var st unix.Stat_t
+	if unix.Fstatat(parentFd, name, &st, unix.AT_SYMLINK_NOFOLLOW) != nil {
+		return // absent, or unreadable: let the O_NOFOLLOW open decide
+	}
+	if st.Mode&unix.S_IFMT == unix.S_IFREG {
+		return
+	}
+	_ = removeAtRecursive(parentFd, name)
 }
 
 // ensureRootDirAt guarantees that `name` under parentFd is a real root:root 0755 directory.
