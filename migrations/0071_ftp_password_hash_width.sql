@@ -1,0 +1,23 @@
+-- 0071_ftp_password_hash_width.sql
+-- Widen ftp_accounts.password_md5 so it can hold the hash the panel actually
+-- writes.
+--
+-- The column was created VARCHAR(64) back when it held an MD5 (32 hex
+-- characters); the name is historical. It now stores a SHA-512-crypt hash from
+-- `openssl passwd -6`, which is 106 characters:
+--
+--   $6$ + 16-character salt + $ + 86-character digest
+--
+-- Every INSERT therefore failed with "Error 1406: Data too long for column
+-- 'password_md5'" in strict mode, so no FTP account was ever created; without
+-- strict mode the hash is truncated to 64 characters and can never verify, so
+-- FTP login fails instead. Either way FTP was unusable on every domain.
+--
+-- 255 leaves room for a longer salt or a future hash format without a further
+-- migration.
+--
+-- Existing domains cannot be repaired here: their INSERT never landed, and the
+-- password was never stored anywhere, so the FTP password must be reset from
+-- the panel for each affected domain.
+
+ALTER TABLE ftp_accounts MODIFY COLUMN password_md5 VARCHAR(255) NOT NULL;
