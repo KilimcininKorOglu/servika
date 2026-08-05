@@ -60,6 +60,10 @@ func TestS3UploadDownloadDelete(t *testing.T) {
 		}
 	}))
 	defer server.Close()
+	// The fake endpoint is on loopback, which the SSRF guard refuses by design.
+	// This is the operator opt-out the guard documents, used here for the same
+	// reason an operator would: the target really is on a private network.
+	t.Setenv("SERVIKA_ALLOW_PRIVATE_TARGETS", "1")
 	oldClient := s3HTTPClient
 	s3HTTPClient = server.Client()
 	defer func() { s3HTTPClient = oldClient }()

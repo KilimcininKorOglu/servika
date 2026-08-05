@@ -7,20 +7,41 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"strings"
 	"time"
+
+	"servika/internal/netguard"
 )
 
 const emptySHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
+// s3HTTPClient talks to the object-storage endpoint recorded on a backup
+// destination. That endpoint is customer-configurable (the routes are
+// CustomerScope), so the dialer refuses loopback, RFC1918, link-local and the
+// cloud metadata address. The check runs on the concrete IP at dial time, which
+// also closes DNS rebinding: a name that answers public for an upfront lookup
+// and private a moment later is still refused here.
 var s3HTTPClient = &http.Client{
 	Timeout: 30 * time.Minute,
 	CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 		return http.ErrUseLastResponse
+	},
+	Transport: &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   15 * time.Second,
+			KeepAlive: 30 * time.Second,
+			Control:   netguard.DialControl,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          10,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: time.Second,
 	},
 }
 
@@ -104,7 +125,7 @@ func uploadS3Object(ctx context.Context, d *Destination, localPath, objectName s
 		return err
 	}
 	defer func() { _ = body.Close() }()
-	// #nosec G704 -- URL derives from the admin-configured S3 backup destination (HTTPS-validated in s3Endpoint), not tenant input.
+	// #nosec G704 -- URL derives from the destination's own S3 endpoint, validated as HTTPS in s3Endpoint and checked against internal ranges in doS3Request.
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u.String(), body)
 	if err != nil {
 		return err
@@ -120,7 +141,7 @@ func testS3Connection(ctx context.Context, d *Destination) error {
 	if err != nil {
 		return err
 	}
-	// #nosec G704 -- URL derives from the admin-configured S3 backup destination (HTTPS-validated in s3Endpoint), not tenant input.
+	// #nosec G704 -- URL derives from the destination's own S3 endpoint, validated as HTTPS in s3Endpoint and checked against internal ranges in doS3Request.
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, u.String(), nil)
 	if err != nil {
 		return err
@@ -139,6 +160,10 @@ func downloadS3Object(ctx context.Context, d *Destination, objectName, localPath
 		return err
 	}
 	signS3Request(req, d, emptySHA256, time.Now().UTC())
+	if err := requireExternalEndpoint(req); err != nil {
+		return err
+	}
+	// #nosec G704 -- request target derives from the destination's own S3 endpoint, validated as HTTPS in s3Endpoint and checked against internal ranges above and at dial time.
 	resp, err := s3HTTPClient.Do(req)
 	if err != nil {
 		return err
@@ -180,8 +205,23 @@ func deleteS3Object(ctx context.Context, d *Destination, objectName string) erro
 	return doS3Request(req)
 }
 
+// requireExternalEndpoint refuses a destination whose endpoint resolves into an
+// internal network. The dialer already refuses it, but only with a bare dial
+// error; this names the cause for the operator. Every request must call it,
+// including downloadS3Object, which streams its response and does not go
+// through doS3Request.
+func requireExternalEndpoint(req *http.Request) error {
+	if err := netguard.CheckHost(req.URL.Hostname()); err != nil {
+		return fmt.Errorf("the S3 endpoint is not permitted: %w", err)
+	}
+	return nil
+}
+
 func doS3Request(req *http.Request) error {
-	// #nosec G704 -- request target derives from the admin-configured S3 backup destination (HTTPS-validated in s3Endpoint), not tenant input.
+	if err := requireExternalEndpoint(req); err != nil {
+		return err
+	}
+	// #nosec G704 -- request target derives from the destination's own S3 endpoint, validated as HTTPS in s3Endpoint and checked against internal ranges above and at dial time.
 	resp, err := s3HTTPClient.Do(req)
 	if err != nil {
 		return err
