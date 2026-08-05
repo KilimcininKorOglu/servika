@@ -1,0 +1,57 @@
+{
+  "breadcrumb": { "home": "Home", "domains": "Domini", "import": "Importazione sito" },
+  "title": "Importazione sito",
+  "subtitle": "Porta qui un sito da qualsiasi pannello: i suoi file, il suo database e la configurazione che collega i due.",
+  "note": "Ogni passaggio funziona da solo. Esegui solo quelli che ti servono, nell'ordine che preferisci.",
+  "back": "Torna all'abbonamento",
+  "archive": {
+    "title": "1. File del sito",
+    "description": "Carica un archivio zip, tar, tar.gz, tar.bz2, tar.xz o rar. Viene prima analizzato; non viene scritto nulla finché non confermi.",
+    "analyze": "Carica e analizza",
+    "uploading": "Caricamento...",
+    "file": "File",
+    "size": "Dimensione",
+    "members": "Voci",
+    "app": "Applicazione",
+    "target": "Directory di destinazione",
+    "skipRoot": "Salta la cartella contenitore \"{{root}}\" così il sito finisce direttamente nella destinazione",
+    "cleanDest": "Svuota prima la directory di destinazione. Questo elimina definitivamente tutto ciò che contiene.",
+    "extract": "Estrai",
+    "extracting": "Estrazione...",
+    "done": "L'archivio è stato estratto in {{target}}."
+  },
+  "apps": { "wordpress": "WordPress", "laravel": "Laravel", "joomla": "Joomla", "drupal": "Drupal", "unknown": "Non riconosciuta" },
+  "warnings": {
+    "empty": "L'archivio sembra vuoto.",
+    "no_container_root": "L'archivio ha più voci nella radice, quindi non esiste una singola cartella contenitore da saltare.",
+    "strip_unavailable": "Questo server non può saltare una cartella contenitore per questo formato di archivio. Estrailo per intero e sposta i file in seguito."
+  },
+  "database": {
+    "title": "2. Database",
+    "description": "Carica un dump .sql o .sql.gz in uno dei database di questo dominio. Un file gzip viene riconosciuto dal contenuto, qualunque sia il nome.",
+    "target": "Database di destinazione",
+    "truncate": "Elimina prima tutte le tabelle del database di destinazione. Questo cancella definitivamente i dati già presenti.",
+    "import": "Importa il dump",
+    "importing": "Importazione...",
+    "done": "{{size}} sono stati importati in {{db}}."
+  },
+  "config": {
+    "title": "3. Configurazione dell'applicazione",
+    "description": "Punta l'applicazione importata al suo nuovo database. Senza questo passaggio file e dati sono al loro posto ma il sito continua a segnalare un errore di connessione al database.",
+    "directory": "Directory dell'applicazione",
+    "rewrite": "Aggiorna la configurazione",
+    "rewriting": "Aggiornamento...",
+    "applied": "Aggiornati: {{fields}}",
+    "none": "In quella directory non è stato trovato alcun wp-config.php o .env.",
+    "notes": {
+      "no_plain_constants": "Le impostazioni del database non sono scritte come valori semplici (potrebbero provenire da getenv o da una variabile). Aggiorna questo file a mano.",
+      "write_failed": "Non è stato possibile scrivere il file."
+    }
+  },
+  "errors": {
+    "uploadFailed": "Non è stato possibile caricare l'archivio.",
+    "extractFailed": "Non è stato possibile estrarre l'archivio.",
+    "importFailed": "Non è stato possibile importare il dump.",
+    "configFailed": "Non è stato possibile aggiornare la configurazione."
+  }
+}

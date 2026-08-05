@@ -47,7 +47,8 @@
     "gitDeploy": "Git Deploy",
     "laravel": "Laravel Araçları",
     "logs": "Günlükler",
-    "backups": "Yedekler"
+    "backups": "Yedekler",
+    "siteImport": "Site İçe Aktarma"
   },
   "mobile": {
     "overview": "Genel Bakış",

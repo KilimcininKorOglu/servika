@@ -47,7 +47,8 @@
     "gitDeploy": "Git 部署",
     "laravel": "Laravel 工具包",
     "logs": "日志",
-    "backups": "备份"
+    "backups": "备份",
+    "siteImport": "站点导入"
   },
   "mobile": {
     "overview": "概览",

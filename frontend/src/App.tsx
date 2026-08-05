@@ -24,6 +24,7 @@ const DomainComposerPage = lazy(() => import('@/pages/DomainComposerPage'))
 const DomainPasswordProtectPage = lazy(() => import('@/pages/DomainPasswordProtectPage'))
 const DomainAntivirusPage = lazy(() => import('@/pages/DomainAntivirusPage'))
 const DomainCopyPage = lazy(() => import('@/pages/DomainCopyPage'))
+const DomainImportPage = lazy(() => import('@/pages/DomainImportPage'))
 const DomainCronPage = lazy(() => import('@/pages/DomainCronPage'))
 const DomainLogsPage = lazy(() => import('@/pages/DomainLogsPage'))
 const DomainDNSPage = lazy(() => import('@/pages/DomainDNSPage'))
@@ -111,6 +112,7 @@ export default function App() {
         <Route path="subscriptions/:id/password-protection"  element={<DomainPasswordProtectPage />} />
         <Route path="subscriptions/:id/imunify"       element={<DomainAntivirusPage />} />
         <Route path="subscriptions/:id/copy"       element={<DomainCopyPage />} />
+        <Route path="subscriptions/:id/import"     element={<DomainImportPage />} />
         <Route path="subscriptions/:id/wordpress"     element={<DomainWordPressPage />} />
         <Route path="subscriptions/:id/subdomains"  element={<DomainSubdomainsPage />} />
         <Route path="subscriptions/:id/addon-domains" element={<DomainAddonDomainsPage />} />

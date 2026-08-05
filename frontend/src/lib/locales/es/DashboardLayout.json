@@ -47,7 +47,8 @@
     "gitDeploy": "Despliegue Git",
     "laravel": "Herramientas Laravel",
     "logs": "Registros",
-    "backups": "Copias de seguridad"
+    "backups": "Copias de seguridad",
+    "siteImport": "Importación de sitio"
   },
   "mobile": {
     "overview": "Vista",

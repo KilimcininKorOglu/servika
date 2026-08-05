@@ -47,7 +47,8 @@
     "gitDeploy": "Git デプロイ",
     "laravel": "Laravel ツールキット",
     "logs": "ログ",
-    "backups": "バックアップ"
+    "backups": "バックアップ",
+    "siteImport": "サイトインポート"
   },
   "mobile": {
     "overview": "概要",

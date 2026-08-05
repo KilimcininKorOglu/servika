@@ -1,0 +1,63 @@
+{
+  "breadcrumb": { "home": "Startseite", "domains": "Domains", "import": "Site-Import" },
+  "title": "Site-Import",
+  "subtitle": "Holen Sie eine Website aus einem beliebigen Panel hierher: ihre Dateien, ihre Datenbank und die Konfiguration, die beides verbindet.",
+  "note": "Jeder Schritt funktioniert für sich. Führen Sie nur die aus, die Sie brauchen, in beliebiger Reihenfolge.",
+  "back": "Zurück zum Abonnement",
+  "archive": {
+    "title": "1. Website-Dateien",
+    "description": "Laden Sie ein zip-, tar-, tar.gz-, tar.bz2-, tar.xz- oder rar-Archiv hoch. Es wird zuerst analysiert; nichts wird geschrieben, bevor Sie bestätigen.",
+    "analyze": "Hochladen und analysieren",
+    "uploading": "Wird hochgeladen ...",
+    "file": "Datei",
+    "size": "Größe",
+    "members": "Einträge",
+    "app": "Anwendung",
+    "target": "Zielverzeichnis",
+    "skipRoot": "Das umschließende Verzeichnis \"{{root}}\" überspringen, damit die Website direkt im Ziel landet",
+    "cleanDest": "Das Zielverzeichnis zuerst leeren. Dies löscht alles dort Vorhandene endgültig.",
+    "extract": "Entpacken",
+    "extracting": "Wird entpackt ...",
+    "done": "Das Archiv wurde nach {{target}} entpackt."
+  },
+  "apps": {
+    "wordpress": "WordPress",
+    "laravel": "Laravel",
+    "joomla": "Joomla",
+    "drupal": "Drupal",
+    "unknown": "Nicht erkannt"
+  },
+  "warnings": {
+    "empty": "Das Archiv scheint leer zu sein.",
+    "no_container_root": "Das Archiv hat mehrere Einträge auf oberster Ebene, daher gibt es kein einzelnes umschließendes Verzeichnis zum Überspringen.",
+    "strip_unavailable": "Dieser Server kann bei diesem Archivformat kein umschließendes Verzeichnis überspringen. Entpacken Sie es vollständig und verschieben Sie die Dateien danach."
+  },
+  "database": {
+    "title": "2. Datenbank",
+    "description": "Laden Sie einen .sql- oder .sql.gz-Dump in eine der Datenbanken dieser Domain. Eine gzip-Datei wird an ihrem Inhalt erkannt, unabhängig vom Namen.",
+    "target": "Zieldatenbank",
+    "truncate": "Zuerst alle Tabellen der Zieldatenbank löschen. Dies löscht die dort vorhandenen Daten endgültig.",
+    "import": "Dump importieren",
+    "importing": "Wird importiert ...",
+    "done": "{{size}} wurden in {{db}} importiert."
+  },
+  "config": {
+    "title": "3. Anwendungskonfiguration",
+    "description": "Richten Sie die importierte Anwendung auf ihre neue Datenbank aus. Ohne diesen Schritt sind Dateien und Daten vorhanden, die Website meldet aber weiterhin einen Datenbankverbindungsfehler.",
+    "directory": "Anwendungsverzeichnis",
+    "rewrite": "Konfiguration aktualisieren",
+    "rewriting": "Wird aktualisiert ...",
+    "applied": "Aktualisiert: {{fields}}",
+    "none": "In diesem Verzeichnis wurde keine wp-config.php und keine .env gefunden.",
+    "notes": {
+      "no_plain_constants": "Die Datenbankeinstellungen stehen nicht als einfache Werte in der Datei (sie stammen möglicherweise aus getenv oder einer Variablen). Aktualisieren Sie diese Datei von Hand.",
+      "write_failed": "Die Datei konnte nicht geschrieben werden."
+    }
+  },
+  "errors": {
+    "uploadFailed": "Das Archiv konnte nicht hochgeladen werden.",
+    "extractFailed": "Das Archiv konnte nicht entpackt werden.",
+    "importFailed": "Der Dump konnte nicht importiert werden.",
+    "configFailed": "Die Konfiguration konnte nicht aktualisiert werden."
+  }
+}

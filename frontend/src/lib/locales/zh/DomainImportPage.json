@@ -1,0 +1,57 @@
+{
+  "breadcrumb": { "home": "首页", "domains": "域名", "import": "站点导入" },
+  "title": "站点导入",
+  "subtitle": "把站点从任何面板迁到这里：文件、数据库，以及把两者连接起来的配置。",
+  "note": "每个步骤都可单独使用。只运行你需要的步骤，顺序不限。",
+  "back": "返回订阅",
+  "archive": {
+    "title": "1. 站点文件",
+    "description": "上传 zip、tar、tar.gz、tar.bz2、tar.xz 或 rar 压缩包。先进行分析；在你确认之前不会写入任何内容。",
+    "analyze": "上传并分析",
+    "uploading": "上传中...",
+    "file": "文件",
+    "size": "大小",
+    "members": "条目数",
+    "app": "应用",
+    "target": "目标目录",
+    "skipRoot": "跳过外层目录“{{root}}”，让站点直接落在目标目录中",
+    "cleanDest": "先清空目标目录。这会永久删除其中已有的全部内容。",
+    "extract": "解压",
+    "extracting": "解压中...",
+    "done": "压缩包已解压到 {{target}}。"
+  },
+  "apps": { "wordpress": "WordPress", "laravel": "Laravel", "joomla": "Joomla", "drupal": "Drupal", "unknown": "无法识别" },
+  "warnings": {
+    "empty": "压缩包似乎是空的。",
+    "no_container_root": "压缩包根目录下有多个条目，因此没有可以跳过的单一外层目录。",
+    "strip_unavailable": "本服务器无法为此压缩格式跳过外层目录。请整体解压后再移动文件。"
+  },
+  "database": {
+    "title": "2. 数据库",
+    "description": "把 .sql 或 .sql.gz 转储上传到本域名的某个数据库。gzip 文件按内容识别，与文件名无关。",
+    "target": "目标数据库",
+    "truncate": "先删除目标数据库中的所有表。这会永久删除其中已有的数据。",
+    "import": "导入转储",
+    "importing": "导入中...",
+    "done": "已向 {{db}} 导入 {{size}}。"
+  },
+  "config": {
+    "title": "3. 应用配置",
+    "description": "把导入的应用指向它的新数据库。不做这一步，文件和数据虽已就位，站点仍会报数据库连接错误。",
+    "directory": "应用目录",
+    "rewrite": "更新配置",
+    "rewriting": "更新中...",
+    "applied": "已更新：{{fields}}",
+    "none": "该目录中未找到 wp-config.php 或 .env。",
+    "notes": {
+      "no_plain_constants": "数据库设置不是以字面值写入的（可能来自 getenv 或变量）。请手动更新此文件。",
+      "write_failed": "无法写入该文件。"
+    }
+  },
+  "errors": {
+    "uploadFailed": "无法上传压缩包。",
+    "extractFailed": "无法解压压缩包。",
+    "importFailed": "无法导入转储。",
+    "configFailed": "无法更新配置。"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "breadcrumb": { "home": "Acasă", "domains": "Domenii", "import": "Import site" },
+  "title": "Import site",
+  "subtitle": "Aduceți aici un site din orice panou: fișierele, baza de date și configurația care le leagă pe amândouă.",
+  "note": "Fiecare pas funcționează separat. Rulați doar pașii de care aveți nevoie, în orice ordine.",
+  "back": "Înapoi la abonament",
+  "archive": {
+    "title": "1. Fișierele site-ului",
+    "description": "Încărcați o arhivă zip, tar, tar.gz, tar.bz2, tar.xz sau rar. Este analizată mai întâi; nu se scrie nimic până nu confirmați.",
+    "analyze": "Încarcă și analizează",
+    "uploading": "Se încarcă...",
+    "file": "Fișier",
+    "size": "Dimensiune",
+    "members": "Intrări",
+    "app": "Aplicație",
+    "target": "Director destinație",
+    "skipRoot": "Sari peste folderul container „{{root}}” astfel încât site-ul să ajungă direct în destinație",
+    "cleanDest": "Golește mai întâi directorul destinație. Aceasta șterge definitiv tot ce se află acolo.",
+    "extract": "Extrage",
+    "extracting": "Se extrage...",
+    "done": "Arhiva a fost extrasă în {{target}}."
+  },
+  "apps": { "wordpress": "WordPress", "laravel": "Laravel", "joomla": "Joomla", "drupal": "Drupal", "unknown": "Nerecunoscută" },
+  "warnings": {
+    "empty": "Arhiva pare goală.",
+    "no_container_root": "Arhiva are mai multe intrări în rădăcină, deci nu există un singur folder container de sărit.",
+    "strip_unavailable": "Acest server nu poate sări peste un folder container pentru acest format de arhivă. Extrageți-o integral și mutați fișierele după aceea."
+  },
+  "database": {
+    "title": "2. Baza de date",
+    "description": "Încărcați un dump .sql sau .sql.gz într-una dintre bazele de date ale acestui domeniu. Un fișier gzip este recunoscut după conținut, indiferent de nume.",
+    "target": "Baza de date țintă",
+    "truncate": "Șterge mai întâi toate tabelele din baza de date țintă. Aceasta elimină definitiv datele aflate deja acolo.",
+    "import": "Importă dump-ul",
+    "importing": "Se importă...",
+    "done": "{{size}} au fost importați în {{db}}."
+  },
+  "config": {
+    "title": "3. Configurația aplicației",
+    "description": "Îndreptați aplicația importată către noua ei bază de date. Fără acest pas fișierele și datele sunt la locul lor, dar site-ul raportează în continuare o eroare de conectare la baza de date.",
+    "directory": "Directorul aplicației",
+    "rewrite": "Actualizează configurația",
+    "rewriting": "Se actualizează...",
+    "applied": "Actualizate: {{fields}}",
+    "none": "Nu s-a găsit niciun wp-config.php sau .env în acel director.",
+    "notes": {
+      "no_plain_constants": "Setările bazei de date nu sunt scrise ca valori simple (pot proveni din getenv sau dintr-o variabilă). Actualizați acest fișier manual.",
+      "write_failed": "Fișierul nu a putut fi scris."
+    }
+  },
+  "errors": {
+    "uploadFailed": "Arhiva nu a putut fi încărcată.",
+    "extractFailed": "Arhiva nu a putut fi extrasă.",
+    "importFailed": "Dump-ul nu a putut fi importat.",
+    "configFailed": "Configurația nu a putut fi actualizată."
+  }
+}

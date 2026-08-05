@@ -1,0 +1,57 @@
+{
+  "breadcrumb": { "home": "Início", "domains": "Domínios", "import": "Importação de site" },
+  "title": "Importação de site",
+  "subtitle": "Traga um site para cá a partir de qualquer painel: os arquivos, o banco de dados e a configuração que liga os dois.",
+  "note": "Cada etapa funciona sozinha. Execute apenas as que precisar, na ordem que quiser.",
+  "back": "Voltar para a assinatura",
+  "archive": {
+    "title": "1. Arquivos do site",
+    "description": "Envie um arquivo zip, tar, tar.gz, tar.bz2, tar.xz ou rar. Ele é analisado primeiro; nada é gravado até você confirmar.",
+    "analyze": "Enviar e analisar",
+    "uploading": "Enviando...",
+    "file": "Arquivo",
+    "size": "Tamanho",
+    "members": "Entradas",
+    "app": "Aplicação",
+    "target": "Diretório de destino",
+    "skipRoot": "Pular a pasta contêiner \"{{root}}\" para que o site fique direto no destino",
+    "cleanDest": "Esvaziar o diretório de destino primeiro. Isso exclui permanentemente tudo o que estiver lá.",
+    "extract": "Extrair",
+    "extracting": "Extraindo...",
+    "done": "O arquivo foi extraído em {{target}}."
+  },
+  "apps": { "wordpress": "WordPress", "laravel": "Laravel", "joomla": "Joomla", "drupal": "Drupal", "unknown": "Não reconhecida" },
+  "warnings": {
+    "empty": "O arquivo parece estar vazio.",
+    "no_container_root": "O arquivo tem várias entradas na raiz, então não há uma única pasta contêiner para pular.",
+    "strip_unavailable": "Este servidor não consegue pular uma pasta contêiner neste formato de arquivo. Extraia tudo e mova os arquivos depois."
+  },
+  "database": {
+    "title": "2. Banco de dados",
+    "description": "Envie um dump .sql ou .sql.gz para um dos bancos de dados deste domínio. Um arquivo gzip é reconhecido pelo conteúdo, qualquer que seja o nome.",
+    "target": "Banco de dados de destino",
+    "truncate": "Remover primeiro todas as tabelas do banco de dados de destino. Isso apaga permanentemente os dados que já estiverem lá.",
+    "import": "Importar o dump",
+    "importing": "Importando...",
+    "done": "{{size}} foram importados para {{db}}."
+  },
+  "config": {
+    "title": "3. Configuração da aplicação",
+    "description": "Aponte a aplicação importada para o novo banco de dados. Sem isso os arquivos e os dados estão no lugar, mas o site continua informando erro de conexão com o banco.",
+    "directory": "Diretório da aplicação",
+    "rewrite": "Atualizar a configuração",
+    "rewriting": "Atualizando...",
+    "applied": "Atualizados: {{fields}}",
+    "none": "Nenhum wp-config.php ou .env foi encontrado nesse diretório.",
+    "notes": {
+      "no_plain_constants": "As configurações do banco não estão escritas como valores simples (podem vir de getenv ou de uma variável). Atualize este arquivo à mão.",
+      "write_failed": "Não foi possível gravar o arquivo."
+    }
+  },
+  "errors": {
+    "uploadFailed": "Não foi possível enviar o arquivo.",
+    "extractFailed": "Não foi possível extrair o arquivo.",
+    "importFailed": "Não foi possível importar o dump.",
+    "configFailed": "Não foi possível atualizar a configuração."
+  }
+}

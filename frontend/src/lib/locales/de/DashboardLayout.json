@@ -47,7 +47,8 @@
     "gitDeploy": "Git-Bereitstellung",
     "laravel": "Laravel-Toolkit",
     "logs": "Protokolle",
-    "backups": "Backups"
+    "backups": "Backups",
+    "siteImport": "Site-Import"
   },
   "mobile": {
     "overview": "Übersicht",

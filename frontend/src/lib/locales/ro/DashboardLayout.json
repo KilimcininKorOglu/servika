@@ -47,7 +47,8 @@
     "gitDeploy": "Deploy Git",
     "laravel": "Toolkit Laravel",
     "logs": "Jurnale",
-    "backups": "Backup-uri"
+    "backups": "Backup-uri",
+    "siteImport": "Import site"
   },
   "mobile": {
     "overview": "Prezentare",

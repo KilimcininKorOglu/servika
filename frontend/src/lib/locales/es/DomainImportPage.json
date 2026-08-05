@@ -1,0 +1,57 @@
+{
+  "breadcrumb": { "home": "Inicio", "domains": "Dominios", "import": "Importación de sitio" },
+  "title": "Importación de sitio",
+  "subtitle": "Traiga un sitio aquí desde cualquier panel: sus archivos, su base de datos y la configuración que conecta ambos.",
+  "note": "Cada paso funciona por sí solo. Ejecute solo los que necesite, en el orden que prefiera.",
+  "back": "Volver a la suscripción",
+  "archive": {
+    "title": "1. Archivos del sitio",
+    "description": "Suba un archivo zip, tar, tar.gz, tar.bz2, tar.xz o rar. Primero se analiza; no se escribe nada hasta que usted confirme.",
+    "analyze": "Subir y analizar",
+    "uploading": "Subiendo...",
+    "file": "Archivo",
+    "size": "Tamaño",
+    "members": "Entradas",
+    "app": "Aplicación",
+    "target": "Directorio de destino",
+    "skipRoot": "Omitir la carpeta contenedora «{{root}}» para que el sitio quede directamente en el destino",
+    "cleanDest": "Vaciar primero el directorio de destino. Esto elimina de forma permanente todo lo que haya allí.",
+    "extract": "Extraer",
+    "extracting": "Extrayendo...",
+    "done": "El archivo se extrajo en {{target}}."
+  },
+  "apps": { "wordpress": "WordPress", "laravel": "Laravel", "joomla": "Joomla", "drupal": "Drupal", "unknown": "No reconocida" },
+  "warnings": {
+    "empty": "El archivo parece estar vacío.",
+    "no_container_root": "El archivo tiene varias entradas en su raíz, así que no hay una única carpeta contenedora que omitir.",
+    "strip_unavailable": "Este servidor no puede omitir una carpeta contenedora en este formato de archivo. Extráigalo completo y mueva los archivos después."
+  },
+  "database": {
+    "title": "2. Base de datos",
+    "description": "Suba un volcado .sql o .sql.gz a una de las bases de datos de este dominio. Un archivo gzip se reconoce por su contenido, sea cual sea su nombre.",
+    "target": "Base de datos de destino",
+    "truncate": "Eliminar primero todas las tablas de la base de datos de destino. Esto borra de forma permanente los datos que ya haya allí.",
+    "import": "Importar el volcado",
+    "importing": "Importando...",
+    "done": "Se importaron {{size}} en {{db}}."
+  },
+  "config": {
+    "title": "3. Configuración de la aplicación",
+    "description": "Apunte la aplicación importada a su nueva base de datos. Sin esto los archivos y los datos están en su sitio, pero la web sigue informando un error de conexión con la base de datos.",
+    "directory": "Directorio de la aplicación",
+    "rewrite": "Actualizar la configuración",
+    "rewriting": "Actualizando...",
+    "applied": "Actualizados: {{fields}}",
+    "none": "No se encontró ningún wp-config.php ni .env en ese directorio.",
+    "notes": {
+      "no_plain_constants": "Los ajustes de la base de datos no están escritos como valores simples (puede que vengan de getenv o de una variable). Actualice este archivo a mano.",
+      "write_failed": "No se pudo escribir el archivo."
+    }
+  },
+  "errors": {
+    "uploadFailed": "No se pudo subir el archivo.",
+    "extractFailed": "No se pudo extraer el archivo.",
+    "importFailed": "No se pudo importar el volcado.",
+    "configFailed": "No se pudo actualizar la configuración."
+  }
+}

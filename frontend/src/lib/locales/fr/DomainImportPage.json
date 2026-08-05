@@ -1,0 +1,63 @@
+{
+  "breadcrumb": { "home": "Accueil", "domains": "Domaines", "import": "Import de site" },
+  "title": "Import de site",
+  "subtitle": "Amenez un site ici depuis n'importe quel panneau : ses fichiers, sa base de données et la configuration qui relie les deux.",
+  "note": "Chaque étape fonctionne seule. N'exécutez que celles dont vous avez besoin, dans l'ordre que vous voulez.",
+  "back": "Retour à l'abonnement",
+  "archive": {
+    "title": "1. Fichiers du site",
+    "description": "Téléversez une archive zip, tar, tar.gz, tar.bz2, tar.xz ou rar. Elle est d'abord analysée ; rien n'est écrit avant votre confirmation.",
+    "analyze": "Téléverser et analyser",
+    "uploading": "Téléversement...",
+    "file": "Fichier",
+    "size": "Taille",
+    "members": "Entrées",
+    "app": "Application",
+    "target": "Répertoire de destination",
+    "skipRoot": "Ignorer le dossier conteneur « {{root}} » pour que le site arrive directement dans la destination",
+    "cleanDest": "Vider d'abord le répertoire de destination. Cela supprime définitivement tout ce qui s'y trouve.",
+    "extract": "Extraire",
+    "extracting": "Extraction...",
+    "done": "L'archive a été extraite dans {{target}}."
+  },
+  "apps": {
+    "wordpress": "WordPress",
+    "laravel": "Laravel",
+    "joomla": "Joomla",
+    "drupal": "Drupal",
+    "unknown": "Non reconnue"
+  },
+  "warnings": {
+    "empty": "L'archive semble vide.",
+    "no_container_root": "L'archive comporte plusieurs entrées à sa racine, il n'y a donc pas de dossier conteneur unique à ignorer.",
+    "strip_unavailable": "Ce serveur ne peut pas ignorer un dossier conteneur pour ce format d'archive. Extrayez-la entièrement puis déplacez les fichiers."
+  },
+  "database": {
+    "title": "2. Base de données",
+    "description": "Téléversez un dump .sql ou .sql.gz dans l'une des bases de ce domaine. Un fichier gzip est reconnu à son contenu, quel que soit son nom.",
+    "target": "Base de données cible",
+    "truncate": "Supprimer d'abord toutes les tables de la base cible. Cela supprime définitivement les données qui s'y trouvent.",
+    "import": "Importer le dump",
+    "importing": "Import en cours...",
+    "done": "{{size}} ont été importés dans {{db}}."
+  },
+  "config": {
+    "title": "3. Configuration de l'application",
+    "description": "Faites pointer l'application importée vers sa nouvelle base de données. Sans cela, les fichiers et les données sont en place mais le site signale toujours une erreur de connexion à la base.",
+    "directory": "Répertoire de l'application",
+    "rewrite": "Mettre à jour la configuration",
+    "rewriting": "Mise à jour...",
+    "applied": "Mis à jour : {{fields}}",
+    "none": "Aucun wp-config.php ni .env n'a été trouvé dans ce répertoire.",
+    "notes": {
+      "no_plain_constants": "Les paramètres de base de données ne sont pas écrits en valeurs simples (ils proviennent peut-être de getenv ou d'une variable). Modifiez ce fichier à la main.",
+      "write_failed": "Le fichier n'a pas pu être écrit."
+    }
+  },
+  "errors": {
+    "uploadFailed": "L'archive n'a pas pu être téléversée.",
+    "extractFailed": "L'archive n'a pas pu être extraite.",
+    "importFailed": "Le dump n'a pas pu être importé.",
+    "configFailed": "La configuration n'a pas pu être mise à jour."
+  }
+}

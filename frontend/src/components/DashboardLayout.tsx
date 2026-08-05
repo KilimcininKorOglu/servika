@@ -117,6 +117,7 @@ function domainNav(id: string): NavGroup[] {
       { to: s('/laravel'), labelKey: 'laravel', icon: ICONS.extensions },
       { to: s('/logs'), labelKey: 'logs', icon: ICONS.stats },
       { to: s('/backups'), labelKey: 'backups', icon: ICONS.tools },
+      { to: s('/import'), labelKey: 'siteImport', icon: ICONS.tools },
     ]},
   ]
 }

@@ -1,0 +1,57 @@
+{
+  "breadcrumb": { "home": "Início", "domains": "Domínios", "import": "Importação de site" },
+  "title": "Importação de site",
+  "subtitle": "Traga um site para aqui a partir de qualquer painel: os ficheiros, a base de dados e a configuração que liga os dois.",
+  "note": "Cada passo funciona sozinho. Execute apenas os que precisar, pela ordem que quiser.",
+  "back": "Voltar à subscrição",
+  "archive": {
+    "title": "1. Ficheiros do site",
+    "description": "Carregue um arquivo zip, tar, tar.gz, tar.bz2, tar.xz ou rar. É analisado primeiro; nada é escrito até confirmar.",
+    "analyze": "Carregar e analisar",
+    "uploading": "A carregar...",
+    "file": "Ficheiro",
+    "size": "Tamanho",
+    "members": "Entradas",
+    "app": "Aplicação",
+    "target": "Diretório de destino",
+    "skipRoot": "Ignorar a pasta contentora \"{{root}}\" para que o site fique diretamente no destino",
+    "cleanDest": "Esvaziar primeiro o diretório de destino. Isto elimina permanentemente tudo o que lá estiver.",
+    "extract": "Extrair",
+    "extracting": "A extrair...",
+    "done": "O arquivo foi extraído para {{target}}."
+  },
+  "apps": { "wordpress": "WordPress", "laravel": "Laravel", "joomla": "Joomla", "drupal": "Drupal", "unknown": "Não reconhecida" },
+  "warnings": {
+    "empty": "O arquivo parece estar vazio.",
+    "no_container_root": "O arquivo tem várias entradas na raiz, por isso não existe uma única pasta contentora para ignorar.",
+    "strip_unavailable": "Este servidor não consegue ignorar uma pasta contentora neste formato de arquivo. Extraia-o por inteiro e mova os ficheiros depois."
+  },
+  "database": {
+    "title": "2. Base de dados",
+    "description": "Carregue um dump .sql ou .sql.gz para uma das bases de dados deste domínio. Um ficheiro gzip é reconhecido pelo conteúdo, seja qual for o nome.",
+    "target": "Base de dados de destino",
+    "truncate": "Eliminar primeiro todas as tabelas da base de dados de destino. Isto apaga permanentemente os dados que lá estiverem.",
+    "import": "Importar o dump",
+    "importing": "A importar...",
+    "done": "Foram importados {{size}} para {{db}}."
+  },
+  "config": {
+    "title": "3. Configuração da aplicação",
+    "description": "Aponte a aplicação importada para a nova base de dados. Sem isto os ficheiros e os dados estão no lugar, mas o site continua a indicar um erro de ligação à base de dados.",
+    "directory": "Diretório da aplicação",
+    "rewrite": "Atualizar a configuração",
+    "rewriting": "A atualizar...",
+    "applied": "Atualizados: {{fields}}",
+    "none": "Não foi encontrado nenhum wp-config.php nem .env nesse diretório.",
+    "notes": {
+      "no_plain_constants": "As definições da base de dados não estão escritas como valores simples (podem vir de getenv ou de uma variável). Atualize este ficheiro à mão.",
+      "write_failed": "Não foi possível escrever o ficheiro."
+    }
+  },
+  "errors": {
+    "uploadFailed": "Não foi possível carregar o arquivo.",
+    "extractFailed": "Não foi possível extrair o arquivo.",
+    "importFailed": "Não foi possível importar o dump.",
+    "configFailed": "Não foi possível atualizar a configuração."
+  }
+}

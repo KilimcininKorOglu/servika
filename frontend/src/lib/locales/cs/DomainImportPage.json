@@ -1,0 +1,57 @@
+{
+  "breadcrumb": { "home": "Domů", "domains": "Domény", "import": "Import webu" },
+  "title": "Import webu",
+  "subtitle": "Přeneste sem web z libovolného panelu: jeho soubory, jeho databázi a konfiguraci, která obojí spojuje.",
+  "note": "Každý krok funguje samostatně. Spusťte jen ty, které potřebujete, v libovolném pořadí.",
+  "back": "Zpět na předplatné",
+  "archive": {
+    "title": "1. Soubory webu",
+    "description": "Nahrajte archiv zip, tar, tar.gz, tar.bz2, tar.xz nebo rar. Nejprve se analyzuje; nic se nezapíše, dokud to nepotvrdíte.",
+    "analyze": "Nahrát a analyzovat",
+    "uploading": "Nahrávání...",
+    "file": "Soubor",
+    "size": "Velikost",
+    "members": "Položky",
+    "app": "Aplikace",
+    "target": "Cílový adresář",
+    "skipRoot": "Přeskočit obalovou složku \"{{root}}\", aby web skončil přímo v cíli",
+    "cleanDest": "Nejprve vyprázdnit cílový adresář. Tím se trvale smaže vše, co v něm je.",
+    "extract": "Rozbalit",
+    "extracting": "Rozbalování...",
+    "done": "Archiv byl rozbalen do {{target}}."
+  },
+  "apps": { "wordpress": "WordPress", "laravel": "Laravel", "joomla": "Joomla", "drupal": "Drupal", "unknown": "Nerozpoznáno" },
+  "warnings": {
+    "empty": "Archiv se zdá být prázdný.",
+    "no_container_root": "Archiv má v kořeni více položek, takže neexistuje jediná obalová složka, kterou by šlo přeskočit.",
+    "strip_unavailable": "Tento server neumí u tohoto formátu archivu přeskočit obalovou složku. Rozbalte jej celý a soubory přesuňte potom."
+  },
+  "database": {
+    "title": "2. Databáze",
+    "description": "Nahrajte dump .sql nebo .sql.gz do jedné z databází této domény. Soubor gzip se pozná podle obsahu, bez ohledu na název.",
+    "target": "Cílová databáze",
+    "truncate": "Nejprve zahodit všechny tabulky cílové databáze. Tím se trvale smažou data, která tam už jsou.",
+    "import": "Importovat dump",
+    "importing": "Importování...",
+    "done": "Do {{db}} bylo importováno {{size}}."
+  },
+  "config": {
+    "title": "3. Konfigurace aplikace",
+    "description": "Nasměrujte importovanou aplikaci na její novou databázi. Bez toho jsou soubory i data na místě, ale web dál hlásí chybu připojení k databázi.",
+    "directory": "Adresář aplikace",
+    "rewrite": "Aktualizovat konfiguraci",
+    "rewriting": "Aktualizace...",
+    "applied": "Aktualizováno: {{fields}}",
+    "none": "V tomto adresáři nebyl nalezen žádný wp-config.php ani .env.",
+    "notes": {
+      "no_plain_constants": "Nastavení databáze nejsou zapsána jako prosté hodnoty (mohou pocházet z getenv nebo z proměnné). Upravte tento soubor ručně.",
+      "write_failed": "Soubor se nepodařilo zapsat."
+    }
+  },
+  "errors": {
+    "uploadFailed": "Archiv se nepodařilo nahrát.",
+    "extractFailed": "Archiv se nepodařilo rozbalit.",
+    "importFailed": "Dump se nepodařilo importovat.",
+    "configFailed": "Konfiguraci se nepodařilo aktualizovat."
+  }
+}

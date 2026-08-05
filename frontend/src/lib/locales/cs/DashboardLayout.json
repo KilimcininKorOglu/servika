@@ -47,7 +47,8 @@
     "gitDeploy": "Nasazení Git",
     "laravel": "Sada nástrojů Laravel",
     "logs": "Protokoly",
-    "backups": "Zálohy"
+    "backups": "Zálohy",
+    "siteImport": "Import webu"
   },
   "mobile": {
     "overview": "Přehled",

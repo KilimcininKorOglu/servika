@@ -1,0 +1,63 @@
+{
+  "breadcrumb": { "home": "Ana Sayfa", "domains": "Alan Adları", "import": "Site İçe Aktarma" },
+  "title": "Site İçe Aktarma",
+  "subtitle": "Bir siteyi hangi panelden gelirse gelsin buraya taşıyın: dosyaları, veritabanı ve ikisini bağlayan yapılandırma.",
+  "note": "Her adım tek başına çalışır. Yalnız ihtiyacınız olanları, istediğiniz sırayla uygulayın.",
+  "back": "Aboneliğe dön",
+  "archive": {
+    "title": "1. Site dosyaları",
+    "description": "zip, tar, tar.gz, tar.bz2, tar.xz veya rar arşivi yükleyin. Önce çözümlenir; siz onaylamadan hiçbir şey yazılmaz.",
+    "analyze": "Yükle ve çözümle",
+    "uploading": "Yükleniyor...",
+    "file": "Dosya",
+    "size": "Boyut",
+    "members": "Girdi",
+    "app": "Uygulama",
+    "target": "Hedef dizin",
+    "skipRoot": "\"{{root}}\" kapsayıcı klasörünü atla, böylece site doğrudan hedefe açılsın",
+    "cleanDest": "Hedef dizini önce boşalt. Bu, orada bulunan her şeyi kalıcı olarak siler.",
+    "extract": "Çıkar",
+    "extracting": "Çıkarılıyor...",
+    "done": "Arşiv {{target}} dizinine çıkarıldı."
+  },
+  "apps": {
+    "wordpress": "WordPress",
+    "laravel": "Laravel",
+    "joomla": "Joomla",
+    "drupal": "Drupal",
+    "unknown": "Tanınmadı"
+  },
+  "warnings": {
+    "empty": "Arşiv boş görünüyor.",
+    "no_container_root": "Arşivin kökünde birden fazla girdi var, bu yüzden atlanacak tek bir kapsayıcı klasör yok.",
+    "strip_unavailable": "Bu sunucu, bu arşiv biçiminde kapsayıcı klasörü atlayamıyor. Arşivi bütün olarak çıkarın ve dosyaları sonra taşıyın."
+  },
+  "database": {
+    "title": "2. Veritabanı",
+    "description": "Bu alan adının veritabanlarından birine .sql veya .sql.gz dökümü yükleyin. Gzip dosyası, adı ne olursa olsun içeriğinden tanınır.",
+    "target": "Hedef veritabanı",
+    "truncate": "Önce hedef veritabanındaki tüm tabloları düşür. Bu, orada bulunan veriyi kalıcı olarak siler.",
+    "import": "Dökümü içe aktar",
+    "importing": "İçe aktarılıyor...",
+    "done": "{{db}} veritabanına {{size}} aktarıldı."
+  },
+  "config": {
+    "title": "3. Uygulama yapılandırması",
+    "description": "İçe aktarılan uygulamayı yeni veritabanına yönlendirin. Bu olmadan dosyalar ve veri yerindedir ama site yine veritabanı bağlantı hatası verir.",
+    "directory": "Uygulama dizini",
+    "rewrite": "Yapılandırmayı güncelle",
+    "rewriting": "Güncelleniyor...",
+    "applied": "Güncellendi: {{fields}}",
+    "none": "Bu dizinde wp-config.php veya .env bulunamadı.",
+    "notes": {
+      "no_plain_constants": "Veritabanı ayarları düz değer olarak yazılmamış (getenv veya bir değişkenden geliyor olabilir). Bu dosyayı elle güncelleyin.",
+      "write_failed": "Dosya yazılamadı."
+    }
+  },
+  "errors": {
+    "uploadFailed": "Arşiv yüklenemedi.",
+    "extractFailed": "Arşiv çıkarılamadı.",
+    "importFailed": "Döküm içe aktarılamadı.",
+    "configFailed": "Yapılandırma güncellenemedi."
+  }
+}

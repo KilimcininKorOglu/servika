@@ -1,0 +1,63 @@
+{
+  "breadcrumb": { "home": "Home", "domains": "Domains", "import": "Site Import" },
+  "title": "Site Import",
+  "subtitle": "Bring a site here from any panel: its files, its database, and the configuration that connects the two.",
+  "note": "Each step works on its own. Run only the ones you need, in any order.",
+  "back": "Back to the subscription",
+  "archive": {
+    "title": "1. Site files",
+    "description": "Upload a zip, tar, tar.gz, tar.bz2, tar.xz or rar archive. It is analysed first; nothing is written until you confirm.",
+    "analyze": "Upload and analyse",
+    "uploading": "Uploading...",
+    "file": "File",
+    "size": "Size",
+    "members": "Entries",
+    "app": "Application",
+    "target": "Destination directory",
+    "skipRoot": "Skip the container directory \"{{root}}\" so the site lands directly in the destination",
+    "cleanDest": "Empty the destination directory first. This permanently deletes everything already there.",
+    "extract": "Extract",
+    "extracting": "Extracting...",
+    "done": "The archive was extracted into {{target}}."
+  },
+  "apps": {
+    "wordpress": "WordPress",
+    "laravel": "Laravel",
+    "joomla": "Joomla",
+    "drupal": "Drupal",
+    "unknown": "Not recognised"
+  },
+  "warnings": {
+    "empty": "The archive appears to be empty.",
+    "no_container_root": "The archive has several entries at its root, so there is no single container directory to skip.",
+    "strip_unavailable": "This server cannot skip a container directory for this archive format. Extract it whole and move the files afterwards."
+  },
+  "database": {
+    "title": "2. Database",
+    "description": "Upload a .sql or .sql.gz dump into one of this domain's databases. A gzip file is detected by its content, whatever it is named.",
+    "target": "Target database",
+    "truncate": "Drop every table in the target database first. This permanently deletes the data already there.",
+    "import": "Import the dump",
+    "importing": "Importing...",
+    "done": "{{size}} was imported into {{db}}."
+  },
+  "config": {
+    "title": "3. Application configuration",
+    "description": "Point the imported application at its new database. Without this the files and data are in place but the site still reports a database connection error.",
+    "directory": "Application directory",
+    "rewrite": "Update the configuration",
+    "rewriting": "Updating...",
+    "applied": "Updated: {{fields}}",
+    "none": "No wp-config.php or .env was found in that directory.",
+    "notes": {
+      "no_plain_constants": "The database settings are not written as plain values (they may come from getenv or a variable). Update this file by hand.",
+      "write_failed": "The file could not be written."
+    }
+  },
+  "errors": {
+    "uploadFailed": "The archive could not be uploaded.",
+    "extractFailed": "The archive could not be extracted.",
+    "importFailed": "The dump could not be imported.",
+    "configFailed": "The configuration could not be updated."
+  }
+}
