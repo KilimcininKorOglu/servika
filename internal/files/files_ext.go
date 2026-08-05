@@ -200,6 +200,37 @@ func newFileCommand(ctx context.Context, name string, arguments ...string) *exec
 	return command
 }
 
+// archiveCommand builds the tool and arguments for one archive request.
+//
+// zip is given -y so a symbolic link is stored AS a link. Without it Info-ZIP
+// follows the link and copies the CONTENT of its target into the archive, which
+// is the opposite of tar's default and turns "archive my home" into a way to
+// read whatever the link points at. tar needs no flag for this, and must never
+// be given -h, which is the same trap.
+func archiveCommand(format, output string, sources []string) (tool string, args []string) {
+	if format == "zip" {
+		return "zip", append([]string{"-r", "-q", "-y", output}, sources...)
+	}
+	return "tar", append([]string{"-czf", output}, sources...)
+}
+
+// tenantFileCommand runs an external file tool under the tenant's own uid. The
+// panel runs as root, so a tool that walks a tenant-controlled tree would follow
+// tenant symlinks with root's rights; under the tenant uid the kernel's own
+// permission checks apply to every file it touches.
+func tenantFileCommand(ctx context.Context, systemUser, name string, arguments ...string) *exec.Cmd {
+	full := append([]string{"-u", systemUser, "--", name}, arguments...)
+	// #nosec G204 G702 -- fixed binary (runuser) with separate args (no shell); systemUser comes from the domains row, not from the request.
+	command := exec.CommandContext(ctx, "runuser", full...)
+	command.Env = []string{
+		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+		"HOME=/home/" + systemUser,
+		"USER=" + systemUser,
+		"LOGNAME=" + systemUser,
+	}
+	return command
+}
+
 func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 	home, systemUser, err := h.home(r)
 	if err != nil {
@@ -391,53 +422,51 @@ func (h *Handlers) Archive(w http.ResponseWriter, r *http.Request) {
 	if req.Format == "" {
 		req.Format = "zip"
 	}
-	outputAbs, err := jailJoinStrict(home, req.OutputPath)
+	// The archive is written into a directory resolved symlink-safe, and the tool is
+	// given the kernel's own path for it so the entry names stay meaningful.
+	outputRel := relClean(req.OutputPath)
+	if err := mkdirAllBeneath(home, filepath.Dir(outputRel), systemUser); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	outputParent, err := realPathBeneath(home, filepath.Dir(outputRel))
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
-	_ = os.MkdirAll(filepath.Dir(outputAbs), 0755)
+	outputAbs := filepath.Join(outputParent, filepath.Base(outputRel))
 
-	// Resolve all resources beneath home and archive them with relative names.
-	// Find their common parent and run from there.
-	var args []string
-	if req.Format == "zip" {
-		args = []string{"-r", "-q", outputAbs}
-		for _, k := range req.Resources {
-			kAbs, err := jailJoinStrict(home, k)
-			if err != nil {
-				continue
-			}
-			// Change directory and use a relative name.
-			args = append(args, kAbs)
-		}
-		_, err := newFileCommand(r.Context(), "zip", args...).CombinedOutput()
+	// Every source is resolved before the tool starts. A source that cannot be
+	// resolved fails the request: dropping it would hand back an archive silently
+	// missing what was asked for.
+	sources := make([]string, 0, len(req.Resources))
+	for _, resource := range req.Resources {
+		resourceAbs, err := realPathBeneath(home, resource)
 		if err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+			httpx.WriteError(w, http.StatusBadRequest, "invalid request")
 			return
 		}
-	} else { // tar.gz
-		args = []string{"-czf", outputAbs}
-		for _, k := range req.Resources {
-			kAbs, err := jailJoinStrict(home, k)
-			if err != nil {
-				continue
-			}
-			args = append(args, kAbs)
-		}
-		_, err := newFileCommand(r.Context(), "tar", args...).CombinedOutput()
-		if err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
-			return
-		}
+		sources = append(sources, resourceAbs)
 	}
-	_, _ = newFileCommand(r.Context(), "chown", systemUser+":"+systemUser, outputAbs).CombinedOutput()
+
+	// The tool runs under the tenant uid. That is the boundary that matters here:
+	// it walks the tree itself, so any symlink it meets on the way is followed with
+	// the tenant's own rights instead of root's.
+	//
+	// The panel's 300-second request timeout already bounds the run, and the
+	// request context cancels the tool when the browser goes away.
+	tool, args := archiveCommand(req.Format, outputAbs, sources)
+	if _, err := tenantFileCommand(r.Context(), systemUser, tool, args...).CombinedOutput(); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		return
+	}
+	// No chown: the tool ran as the tenant, so the archive is already theirs. The
+	// relabel stays because restorecon reads the link itself (lgetfilecon) and so
+	// cannot be redirected by one.
 	_, _ = newFileCommand(r.Context(), "restorecon", outputAbs).CombinedOutput()
 
-	info, _ := os.Stat(outputAbs)
 	var size int64
-	if info != nil {
+	if info, err := statBeneath(home, outputRel); err == nil {
 		size = info.Size()
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{

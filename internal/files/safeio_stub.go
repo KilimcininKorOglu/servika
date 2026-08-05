@@ -50,6 +50,10 @@ func copyTreeBeneath(_, _, _, _ string) error {
 	return errSafeIOLinuxOnly
 }
 
+func realPathBeneath(_, _ string) (string, error) {
+	return "", errSafeIOLinuxOnly
+}
+
 func isDirBeneath(_, _ string) (bool, error) {
 	return false, errSafeIOLinuxOnly
 }

@@ -128,6 +128,34 @@ func openReadBeneath(home, rel string) (*os.File, error) {
 	return openAt2Beneath(home, rel, unix.O_RDONLY|unix.O_NONBLOCK, 0)
 }
 
+// realPathBeneath returns the kernel's own absolute path for rel under home,
+// proven free of symlink components because openat2 resolved it with
+// RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS.
+//
+// It exists for the external tools (zip, tar) that must be given a REAL path:
+// they write the given name into the archive, so a /proc/self/fd path would put
+// the panel's file-descriptor numbers in the entry names. The tool still runs
+// under the tenant uid, so the path is not a privilege boundary on its own; this
+// only keeps the panel from handing the tool a path outside the jail.
+//
+// O_PATH is used because the target may be a directory or a file and nothing is
+// read through this descriptor.
+func realPathBeneath(home, rel string) (string, error) {
+	f, err := openAt2Beneath(home, rel, unix.O_PATH, 0)
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = f.Close() }() // reference-only fd; Close error not actionable
+	resolved, err := os.Readlink("/proc/self/fd/" + strconv.Itoa(int(f.Fd())))
+	if err != nil {
+		return "", err
+	}
+	if !withinHome(home, resolved) {
+		return "", errEscape
+	}
+	return resolved, nil
+}
+
 // isDirBeneath reports whether rel is a DIRECTORY under home (symlink-safe; errors on
 // intermediate symlinks).
 func isDirBeneath(home, rel string) (bool, error) {
