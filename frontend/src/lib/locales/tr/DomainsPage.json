@@ -92,7 +92,9 @@
     "ok": "Tamam",
     "copyAll": "Tümünü kopyala",
     "saveTxt": "TXT olarak kaydet",
-    "copied": "Kopyalandı"
+    "copied": "Kopyalandı",
+    "nameservers": "AD SUNUCULARI (DOMAIN DELEGASYONU)",
+    "nameserversNote": "Alan adının kayıt şirketinde ad sunucularını bu değerlerle değiştirin. Yayılma 1 ila 24 saat sürer; sonrasında tüm DNS kayıtları panelden yönetilir."
   },
   "copyRow": {
     "hidden": "••••••••••",

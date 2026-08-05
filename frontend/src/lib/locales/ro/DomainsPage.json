@@ -92,7 +92,9 @@
     "ok": "OK",
     "copyAll": "Copiază tot",
     "saveTxt": "Salvează ca TXT",
-    "copied": "Copiat"
+    "copied": "Copiat",
+    "nameservers": "SERVERE DE NUME (DELEGAREA DOMENIULUI)",
+    "nameserversNote": "Schimbați serverele de nume la registrarul domeniului cu aceste valori. Propagarea durează între 1 și 24 de ore; apoi toate înregistrările DNS se administrează din panou."
   },
   "copyRow": {
     "hidden": "••••••••••",

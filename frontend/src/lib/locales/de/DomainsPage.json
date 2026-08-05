@@ -92,7 +92,9 @@
     "ok": "OK",
     "copyAll": "Alles kopieren",
     "saveTxt": "Als TXT speichern",
-    "copied": "Kopiert"
+    "copied": "Kopiert",
+    "nameservers": "NAMESERVER (DOMAIN-DELEGIERUNG)",
+    "nameserversNote": "Ändern Sie die Nameserver beim Registrar der Domain auf diese Werte. Die Verbreitung dauert 1 bis 24 Stunden; danach werden alle DNS-Einträge im Panel verwaltet."
   },
   "copyRow": {
     "hidden": "••••••••••",

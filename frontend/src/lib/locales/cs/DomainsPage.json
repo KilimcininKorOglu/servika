@@ -92,7 +92,9 @@
     "ok": "OK",
     "copyAll": "Kopírovat vše",
     "saveTxt": "Uložit jako TXT",
-    "copied": "Zkopírováno"
+    "copied": "Zkopírováno",
+    "nameservers": "JMENNÉ SERVERY (DELEGOVÁNÍ DOMÉNY)",
+    "nameserversNote": "Změňte jmenné servery u registrátora domény na tyto hodnoty. Šíření trvá 1 až 24 hodin; poté se všechny DNS záznamy spravují z panelu."
   },
   "copyRow": {
     "hidden": "••••••••••",

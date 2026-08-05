@@ -92,7 +92,9 @@
     "ok": "OK",
     "copyAll": "Copiar tudo",
     "saveTxt": "Salvar como TXT",
-    "copied": "Copiado"
+    "copied": "Copiado",
+    "nameservers": "SERVIDORES DE NOMES (DELEGAÇÃO DO DOMÍNIO)",
+    "nameserversNote": "Altere os servidores de nomes no registrador do domínio para estes valores. A propagação leva de 1 a 24 horas; depois disso todos os registros DNS são gerenciados pelo painel."
   },
   "copyRow": {
     "hidden": "••••••••••",

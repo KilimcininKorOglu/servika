@@ -92,7 +92,9 @@
     "ok": "OK",
     "copyAll": "Copy all",
     "saveTxt": "Save as TXT",
-    "copied": "Copied"
+    "copied": "Copied",
+    "nameservers": "NAMESERVERS (DOMAIN DELEGATION)",
+    "nameserversNote": "Change the nameservers at the domain's registrar to these values. Propagation takes 1 to 24 hours; after that every DNS record is managed from the panel."
   },
   "copyRow": {
     "hidden": "••••••••••",

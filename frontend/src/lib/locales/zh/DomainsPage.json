@@ -92,7 +92,9 @@
     "ok": "确定",
     "copyAll": "全部复制",
     "saveTxt": "保存为 TXT",
-    "copied": "已复制"
+    "copied": "已复制",
+    "nameservers": "域名服务器（域名委派）",
+    "nameserversNote": "请在域名注册商处将域名服务器改为这些值。生效需要 1 至 24 小时；之后所有 DNS 记录都在面板中管理。"
   },
   "copyRow": {
     "hidden": "••••••••••",

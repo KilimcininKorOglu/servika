@@ -146,6 +146,18 @@ type createResp struct {
 		FTP string `json:"ftp"`
 		DB  string `json:"db"`
 	} `json:"created_passwords"`
+	// Nameservers is the pair the customer enters at their registrar. It rides
+	// on the create response rather than a separate endpoint because it is
+	// needed at exactly the same "shown once, write it down" moment as the
+	// passwords, and because the pair depends on the RESELLER that created the
+	// domain, so a client cannot work it out on its own. It is omitted when no
+	// real pair is configured.
+	Nameservers *nameserverPair `json:"nameservers,omitempty"`
+}
+
+type nameserverPair struct {
+	NS1 string `json:"ns1"`
+	NS2 string `json:"ns2"`
 }
 
 func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
@@ -312,6 +324,13 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	resp := createResp{Domain: d}
 	resp.CreatedPasswords.FTP = ftpPass
 	resp.CreatedPasswords.DB = dbPass
+	// Only shown when a REAL pair is configured. The vanity values returned
+	// otherwise (ns1.<domain>) cannot be handed to a customer, because they
+	// would need a separate glue record at that domain's own registrar.
+	if dns.NameserversConfigured(r.Context(), h.DB) {
+		ns1, ns2 := dns.NameserverPair(r.Context(), h.DB, d.ID, d.DomainName)
+		resp.Nameservers = &nameserverPair{NS1: ns1, NS2: ns2}
+	}
 	httpx.WriteJSON(w, http.StatusCreated, resp)
 }
 

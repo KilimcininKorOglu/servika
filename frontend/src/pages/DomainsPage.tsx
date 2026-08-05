@@ -34,6 +34,10 @@ type CreateResult = {
   domain_name: string; system_user: string; ftp_user: string; ftp_host: string
   db_host: string; db_user: string; db_name: string
   created_passwords: { ftp: string; db: string }
+  // Omitted by the backend when the server has no shared nameservers, because
+  // the vanity values it would fall back to cannot be given to a customer; the
+  // section is then not shown at all.
+  nameservers?: { ns1: string; ns2: string }
 }
 
 function fmtKB(kb: number) {
@@ -218,6 +222,13 @@ export default function DomainsPage() {
       `  ${t('resultModal.username')}: ${result.db_user}`,
       `  ${t('resultModal.password')}: ${result.created_passwords.db}`,
       '',
+      ...(result.nameservers ? [
+        t('resultModal.nameservers'),
+        `  NS1: ${result.nameservers.ns1}`,
+        `  NS2: ${result.nameservers.ns2}`,
+        `  ${t('resultModal.nameserversNote')}`,
+        '',
+      ] : []),
       `${t('resultModal.systemUser')}${result.system_user}`,
     ].join('\n')
   }
@@ -627,6 +638,15 @@ export default function DomainsPage() {
                 <CopyRow label={t('resultModal.username')} value={creationResult.db_user} copy={copyToClipboard} />
                 <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.db} copy={copyToClipboard} password />
               </div>
+
+              {creationResult.nameservers && (
+                <div className="border border-emerald-200 dark:border-emerald-800 rounded-md p-3 bg-emerald-50 dark:bg-emerald-900/20">
+                  <div className="text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300 font-semibold mb-2">{t('resultModal.nameservers')}</div>
+                  <CopyRow label="NS1" value={creationResult.nameservers.ns1} copy={copyToClipboard} />
+                  <CopyRow label="NS2" value={creationResult.nameservers.ns2} copy={copyToClipboard} />
+                  <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-2">{t('resultModal.nameserversNote')}</p>
+                </div>
+              )}
 
               <div className="text-[11px] text-slate-500 dark:text-slate-500 italic">
                 {t('resultModal.systemUser')}<span className="font-mono">{creationResult.system_user}</span>
