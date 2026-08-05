@@ -50,5 +50,8 @@
     "bullet3": "⚠ Doména musí směřovat na tento server přes DNS",
     "installing": "Instalace…",
     "install": "Získat certifikát Let's Encrypt"
+  },
+  "warning": {
+    "letsencryptFallback": "Let's Encrypt nemohl vydat certifikát, web je proto dočasně chráněn certifikátem podepsaným sám sebou a prohlížeče budou návštěvníky varovat. Odstraňte níže uvedenou příčinu a zkuste to znovu."
   }
 }

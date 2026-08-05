@@ -50,5 +50,8 @@
     "bullet3": "⚠ 域名必须通过 DNS 指向此服务器",
     "installing": "安装中…",
     "install": "获取 Let's Encrypt 证书"
+  },
+  "warning": {
+    "letsencryptFallback": "Let's Encrypt 未能签发证书，站点暂时使用自签名证书保护，浏览器会向访客发出警告。请解决下面显示的原因后重试。"
   }
 }

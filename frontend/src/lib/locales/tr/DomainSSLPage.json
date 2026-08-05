@@ -50,5 +50,8 @@
     "bullet3": "⚠ Alan adı DNS ile bu sunucuya yönlendirilmelidir",
     "installing": "Kuruluyor…",
     "install": "Let's Encrypt Sertifikası Al"
+  },
+  "warning": {
+    "letsencryptFallback": "Let's Encrypt sertifika veremedi, bu yüzden site geçici olarak kendinden imzalı bir sertifikayla korunuyor ve tarayıcılar ziyaretçileri uyaracak. Aşağıdaki sebebi giderip tekrar deneyin."
   }
 }

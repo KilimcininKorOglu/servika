@@ -21,6 +21,7 @@ export default function DomainSSLPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   function load() {
     if (!id) return
@@ -31,10 +32,19 @@ export default function DomainSSLPage() {
 
   async function issue(type: 'self-signed' | 'letsencrypt') {
     if (type === 'letsencrypt' && !confirm(t('confirm.letsencrypt'))) return
-    setIsProcessing(true); setError(null); setSuccess(null)
+    setIsProcessing(true); setError(null); setSuccess(null); setWarning(null)
     try {
       const { data } = await api.post(`/domains/${id}/ssl/issue`, { type })
-      setSuccess(t('success.installed', { type, expires: data.expires_at }))
+      // data.type is what was ACTUALLY installed, which is not always what was
+      // asked for: a Let's Encrypt request that fails falls back to a
+      // self-signed certificate so port 443 keeps serving. Reporting the
+      // requested type here is what let the panel say "Let's Encrypt installed"
+      // while the browser said the site was not secure.
+      if (data.warning) {
+        setWarning(data.reason ? `${t('warning.letsencryptFallback')} ${data.reason}` : t('warning.letsencryptFallback'))
+      } else {
+        setSuccess(t('success.installed', { type: data.type ?? type, expires: data.expires_at }))
+      }
       load()
     } catch (e) {
       setError(apiError(e, t('errors.installFailed')))
@@ -45,7 +55,7 @@ export default function DomainSSLPage() {
 
   async function disable() {
     if (!confirm(t('confirm.disable'))) return
-    setIsProcessing(true); setError(null); setSuccess(null)
+    setIsProcessing(true); setError(null); setSuccess(null); setWarning(null)
     try {
       await api.delete(`/domains/${id}/ssl`)
       setSuccess(t('success.removed'))
@@ -77,6 +87,7 @@ export default function DomainSSLPage() {
 
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
+      {warning && <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-800 dark:text-amber-300">{warning}</div>}
 
       {/* Status card */}
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 mb-5">

@@ -50,5 +50,8 @@
     "bullet3": "⚠ Die Domain muss per DNS auf diesen Server verweisen",
     "installing": "Wird installiert…",
     "install": "Let's-Encrypt-Zertifikat abrufen"
+  },
+  "warning": {
+    "letsencryptFallback": "Let's Encrypt konnte kein Zertifikat ausstellen, daher ist die Website vorübergehend mit einem selbstsignierten Zertifikat geschützt und Browser warnen Besucher. Beheben Sie die untenstehende Ursache und versuchen Sie es erneut."
   }
 }

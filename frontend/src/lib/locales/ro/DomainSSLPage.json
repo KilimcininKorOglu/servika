@@ -50,5 +50,8 @@
     "bullet3": "⚠ Domeniul trebuie să indice către acest server prin DNS",
     "installing": "Se instalează…",
     "install": "Obținere certificat Let's Encrypt"
+  },
+  "warning": {
+    "letsencryptFallback": "Let's Encrypt nu a putut emite un certificat, așa că site-ul este protejat temporar cu unul autosemnat, iar browserele vor avertiza vizitatorii. Remediați cauza de mai jos și încercați din nou."
   }
 }

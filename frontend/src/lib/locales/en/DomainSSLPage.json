@@ -50,5 +50,8 @@
     "bullet3": "⚠ The domain must point to this server via DNS",
     "installing": "Installing…",
     "install": "Get Let's Encrypt Certificate"
+  },
+  "warning": {
+    "letsencryptFallback": "Let's Encrypt could not issue a certificate, so the site is temporarily protected with a self-signed one and browsers will warn visitors. Fix the cause below and try again."
   }
 }

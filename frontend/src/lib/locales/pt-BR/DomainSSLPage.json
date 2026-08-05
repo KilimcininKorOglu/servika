@@ -50,5 +50,8 @@
     "bullet3": "⚠ O domínio deve apontar para este servidor via DNS",
     "installing": "Instalando…",
     "install": "Obter certificado Let's Encrypt"
+  },
+  "warning": {
+    "letsencryptFallback": "O Let's Encrypt não conseguiu emitir um certificado, então o site está temporariamente protegido por um certificado autoassinado e os navegadores vão avisar os visitantes. Corrija a causa indicada abaixo e tente de novo."
   }
 }
