@@ -130,5 +130,13 @@
     "addFilterFailed": "Could not add the mail filter",
     "readSendLimitsFailed": "Could not read the send limits",
     "saveSendLimitsFailed": "Could not save the send limits"
+  },
+  "webmail": {
+    "title": "Webmail",
+    "description": "Sign in with the full email address and its mailbox password.",
+    "open": "Open webmail",
+    "copy": "Copy address",
+    "copied": "Webmail address copied.",
+    "copyUnavailable": "The address could not be copied; copy it from the field by hand."
   }
 }

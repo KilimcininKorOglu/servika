@@ -130,5 +130,13 @@
     "addFilterFailed": "Não foi possível adicionar o filtro de e-mail",
     "readSendLimitsFailed": "Não foi possível ler os limites de envio",
     "saveSendLimitsFailed": "Não foi possível salvar os limites de envio"
+  },
+  "webmail": {
+    "title": "Webmail",
+    "description": "Entre com o endereço de e-mail completo e a senha da caixa postal.",
+    "open": "Abrir o webmail",
+    "copy": "Copiar endereço",
+    "copied": "Endereço do webmail copiado.",
+    "copyUnavailable": "Não foi possível copiar o endereço; copie-o manualmente do campo."
   }
 }

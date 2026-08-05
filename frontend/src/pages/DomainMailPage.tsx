@@ -326,6 +326,27 @@ export default function DomainMailPage() {
     }
   }
 
+  // Webmail is served from the panel's own origin, so the address follows
+  // whichever host the panel is being used on (custom domain or IP:8443).
+  const webmailURL = `${window.location.origin}/webmail/`
+
+  async function copyWebmailURL() {
+    setError(null)
+    setSuccess(null)
+    // The clipboard API is unavailable outside a secure context, and a silent
+    // no-op would look like the copy worked.
+    if (!navigator.clipboard || !window.isSecureContext) {
+      setError(t('webmail.copyUnavailable'))
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(webmailURL)
+      setSuccess(t('webmail.copied'))
+    } catch {
+      setError(t('webmail.copyUnavailable'))
+    }
+  }
+
   return (
     <div className="px-6 py-5">
       <div>
@@ -368,6 +389,33 @@ export default function DomainMailPage() {
           </div>
         ) : (
           <>
+            {/* Roundcube is served under /webmail/ on the panel's OWN origin
+                (assets/nginx/_panel.conf). It is NOT at mail.<domain>: that
+                record exists to be the MX target and has no vhost, so a request
+                to it falls through to the catch-all. */}
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-5 shadow-sm flex flex-wrap items-center gap-4">
+              <div className="w-11 h-11 shrink-0 rounded-xl bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.7}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+              </div>
+              <div className="min-w-[200px] flex-1">
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('webmail.title')}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t('webmail.description')}</div>
+                <code className="text-[11px] text-slate-500 dark:text-slate-500 font-mono break-all">{webmailURL}</code>
+              </div>
+              <div className="flex items-center gap-2">
+                <a href={webmailURL} target="_blank" rel="noopener noreferrer"
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg">
+                  {t('webmail.open')}
+                </a>
+                <button type="button" onClick={copyWebmailURL}
+                  className="px-3 py-2 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm rounded-lg">
+                  {t('webmail.copy')}
+                </button>
+              </div>
+            </div>
+
             <form onSubmit={addMailbox} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-5 shadow-sm">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('mailboxAdd.title')}</h3>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

@@ -130,5 +130,13 @@
     "addFilterFailed": "Posta filtresi eklenemedi",
     "readSendLimitsFailed": "Gönderim limitleri okunamadı",
     "saveSendLimitsFailed": "Gönderim limitleri kaydedilemedi"
+  },
+  "webmail": {
+    "title": "Webmail",
+    "description": "Tam e-posta adresi ve posta kutusu parolası ile giriş yapın.",
+    "open": "Webmail'i aç",
+    "copy": "Adresi kopyala",
+    "copied": "Webmail adresi kopyalandı.",
+    "copyUnavailable": "Adres kopyalanamadı; alandan elle kopyalayın."
   }
 }

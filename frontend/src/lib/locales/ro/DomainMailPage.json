@@ -130,5 +130,13 @@
     "addFilterFailed": "Nu s-a putut adăuga filtrul de mail",
     "readSendLimitsFailed": "Nu s-au putut citi limitele de trimitere",
     "saveSendLimitsFailed": "Nu s-au putut salva limitele de trimitere"
+  },
+  "webmail": {
+    "title": "Webmail",
+    "description": "Conectați-vă cu adresa de e-mail completă și parola căsuței.",
+    "open": "Deschide webmail",
+    "copy": "Copiază adresa",
+    "copied": "Adresa webmail a fost copiată.",
+    "copyUnavailable": "Adresa nu a putut fi copiată; copiați-o manual din câmp."
   }
 }

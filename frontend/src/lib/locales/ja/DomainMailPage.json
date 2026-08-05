@@ -130,5 +130,13 @@
     "addFilterFailed": "メールフィルターを追加できませんでした",
     "readSendLimitsFailed": "送信制限を読み込めませんでした",
     "saveSendLimitsFailed": "送信制限を保存できませんでした"
+  },
+  "webmail": {
+    "title": "ウェブメール",
+    "description": "完全なメールアドレスとメールボックスのパスワードでログインしてください。",
+    "open": "ウェブメールを開く",
+    "copy": "アドレスをコピー",
+    "copied": "ウェブメールのアドレスをコピーしました。",
+    "copyUnavailable": "アドレスをコピーできませんでした。欄から手動でコピーしてください。"
   }
 }

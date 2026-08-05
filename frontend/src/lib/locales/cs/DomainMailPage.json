@@ -130,5 +130,13 @@
     "addFilterFailed": "Filtr pošty nelze přidat",
     "readSendLimitsFailed": "Limity odesílání nelze načíst",
     "saveSendLimitsFailed": "Limity odesílání nelze uložit"
+  },
+  "webmail": {
+    "title": "Webmail",
+    "description": "Přihlaste se celou e-mailovou adresou a heslem schránky.",
+    "open": "Otevřít webmail",
+    "copy": "Kopírovat adresu",
+    "copied": "Adresa webmailu byla zkopírována.",
+    "copyUnavailable": "Adresu se nepodařilo zkopírovat; zkopírujte ji ručně z pole."
   }
 }

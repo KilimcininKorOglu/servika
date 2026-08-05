@@ -130,5 +130,13 @@
     "addFilterFailed": "Der Mail-Filter konnte nicht hinzugefügt werden",
     "readSendLimitsFailed": "Die Sendelimits konnten nicht gelesen werden",
     "saveSendLimitsFailed": "Die Sendelimits konnten nicht gespeichert werden"
+  },
+  "webmail": {
+    "title": "Webmail",
+    "description": "Melden Sie sich mit der vollständigen E-Mail-Adresse und dem Postfach-Passwort an.",
+    "open": "Webmail öffnen",
+    "copy": "Adresse kopieren",
+    "copied": "Webmail-Adresse kopiert.",
+    "copyUnavailable": "Die Adresse konnte nicht kopiert werden; kopieren Sie sie von Hand aus dem Feld."
   }
 }
