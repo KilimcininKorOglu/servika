@@ -19,14 +19,18 @@ import (
 
 // Destination describes a remote backup upload destination.
 type Destination struct {
-	ID         int64  `json:"id"`
-	DomainID   int64  `json:"domain_id"`
-	Type       string `json:"type"` // "ftp" | "sftp"
-	Host       string `json:"host"`
-	Port       int    `json:"port"`
-	Username   string `json:"username"`
-	Password   string `json:"password,omitempty"` // write-only: returns empty on GET
-	RemoteDir  string `json:"remote_dir"`
+	ID        int64  `json:"id"`
+	DomainID  int64  `json:"domain_id"`
+	Type      string `json:"type"` // "ftp" | "sftp"
+	Host      string `json:"host"`
+	Port      int    `json:"port"`
+	Username  string `json:"username"`
+	Password  string `json:"password,omitempty"` // write-only: returns empty on GET
+	RemoteDir string `json:"remote_dir"`
+	// HostKey is the SFTP host key pinned on first use. It never leaves the
+	// server: publishing it would let a caller confirm which host a destination
+	// points at, and the operator has no use for it in the UI.
+	HostKey    string `json:"-"`
 	Bucket     string `json:"bucket,omitempty"`
 	Region     string `json:"region,omitempty"`
 	Endpoint   string `json:"endpoint,omitempty"`
@@ -56,11 +60,11 @@ func readDestination(ctx context.Context, db *sql.DB, domainID int64) (*Destinat
 	var enabled int
 	var lastUpload sql.NullString
 	err := db.QueryRowContext(ctx,
-		`SELECT id, type, host, port, username, password, remote_dir,
+		`SELECT id, type, host, port, username, password, remote_dir, host_key,
 		        bucket, region, endpoint, path_style, enabled,
 		        DATE_FORMAT(last_upload,'%Y-%m-%d %H:%i'), last_status, last_error
 		 FROM backup_destinations WHERE domain_id=?`, domainID).
-		Scan(&d.ID, &d.Type, &d.Host, &d.Port, &d.Username, &d.Password, &d.RemoteDir,
+		Scan(&d.ID, &d.Type, &d.Host, &d.Port, &d.Username, &d.Password, &d.RemoteDir, &d.HostKey,
 			&d.Bucket, &d.Region, &d.Endpoint, &d.PathStyle, &enabled, &lastUpload,
 			&d.LastStatus, &d.LastError)
 	if err == sql.ErrNoRows {
@@ -94,7 +98,7 @@ func lftpURL(d *Destination) string {
 
 // uploadToRemote: uploads the local tar.gz to the remote destination.
 // With lftp: connect, cd, put. Auto-confirm host key for SFTP.
-func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName string) error {
+func uploadToRemote(ctx context.Context, db *sql.DB, d *Destination, localPath, fileName string) error {
 	if !d.Enabled {
 		return nil // Skip disabled destinations.
 	}
@@ -107,6 +111,11 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 	if err := credentialSafe(d.Password); err != nil {
 		return err
 	}
+	hostKey, cleanupHostKey, err := lftpHostKeySettings(ctx, db, d)
+	if err != nil {
+		return err
+	}
+	defer cleanupHostKey()
 	// The URL is double-quoted in every script below. validHost rejects a host
 	// carrying lftp meta-characters on the way in, but rows saved before that check
 	// existed are still read back from the database, so the quoting stands on its
@@ -114,7 +123,7 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 	// with cmd:fail-exit, lftp exits non-zero if any command fails
 	script := fmt.Sprintf(
 		`set cmd:fail-exit yes; `+
-			`set sftp:auto-confirm yes; `+
+			`%s`+
 			`set ssl:verify-certificate no; `+
 			`set ftp:ssl-allow no; `+
 			`set net:max-retries 1; `+
@@ -125,11 +134,10 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 			`cd "%s"; `+
 			`put -O . "%s"; `+
 			`bye`,
-		lftpOpen(d),
+		hostKey, lftpOpen(d),
 		lftpEscape(d.RemoteDir), lftpEscape(d.RemoteDir), lftpEscape(localPath))
 
-	cmd := lftpCommand(ctx, d, script)
-	out, err := cmd.CombinedOutput()
+	out, err := lftpCommand(ctx, d, script).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("lftp: %s: %w", strings.TrimSpace(string(out)), err)
 	}
@@ -148,7 +156,7 @@ func uploadToRemote(ctx context.Context, d *Destination, localPath, fileName str
 // downloadFromRemote fetches a single backup file from the destination into localPath.
 //
 //nolint:unused // reserved for the remote-restore path (not yet wired to a handler); kept alongside uploadToRemote so the destination round-trip stays complete.
-func downloadFromRemote(ctx context.Context, d *Destination, fileName, localPath string) error {
+func downloadFromRemote(ctx context.Context, db *sql.DB, d *Destination, fileName, localPath string) error {
 	if objectStorageType(d.Type) {
 		return downloadS3Object(ctx, d, fileName, localPath)
 	}
@@ -158,12 +166,17 @@ func downloadFromRemote(ctx context.Context, d *Destination, fileName, localPath
 	if err := credentialSafe(d.Password); err != nil {
 		return err
 	}
+	hostKey, cleanupHostKey, err := lftpHostKeySettings(ctx, db, d)
+	if err != nil {
+		return err
+	}
+	defer cleanupHostKey()
 	script := fmt.Sprintf(
-		`set cmd:fail-exit yes; set sftp:auto-confirm yes; `+
+		`set cmd:fail-exit yes; %s`+
 			`set ssl:verify-certificate no; set ftp:ssl-allow no; `+
 			`set net:max-retries 1; set net:timeout 15; `+
 			`%s; cd "%s"; get "%s" -o "%s"; bye`,
-		lftpOpen(d),
+		hostKey, lftpOpen(d),
 		lftpEscape(d.RemoteDir), lftpEscape(fileName), lftpEscape(localPath))
 	out, err := lftpCommand(ctx, d, script).CombinedOutput()
 	if err != nil {
@@ -176,7 +189,7 @@ func downloadFromRemote(ctx context.Context, d *Destination, fileName, localPath
 // deleteFromRemote removes a single backup file from the destination.
 //
 //nolint:unused // reserved for the remote retention-prune path (not yet wired to a handler); kept alongside uploadToRemote so the destination round-trip stays complete.
-func deleteFromRemote(ctx context.Context, d *Destination, fileName string) error {
+func deleteFromRemote(ctx context.Context, db *sql.DB, d *Destination, fileName string) error {
 	if objectStorageType(d.Type) {
 		return deleteS3Object(ctx, d, fileName)
 	}
@@ -186,18 +199,49 @@ func deleteFromRemote(ctx context.Context, d *Destination, fileName string) erro
 	if err := credentialSafe(d.Password); err != nil {
 		return err
 	}
+	hostKey, cleanupHostKey, err := lftpHostKeySettings(ctx, db, d)
+	if err != nil {
+		return err
+	}
+	defer cleanupHostKey()
 	script := fmt.Sprintf(
-		`set cmd:fail-exit yes; set sftp:auto-confirm yes; `+
+		`set cmd:fail-exit yes; %s`+
 			`set ssl:verify-certificate no; set ftp:ssl-allow no; `+
 			`set net:max-retries 1; set net:timeout 15; `+
 			`%s; cd "%s"; rm "%s"; bye`,
-		lftpOpen(d),
+		hostKey, lftpOpen(d),
 		lftpEscape(d.RemoteDir), lftpEscape(fileName))
 	out, err := lftpCommand(ctx, d, script).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("lftp: %s: %w", strings.TrimSpace(string(out)), err)
 	}
 	return nil
+}
+
+// lftpHostKeySettings pins an SFTP destination to the host key recorded on its
+// row and returns the cleanup for the temporary known_hosts file. lftp spawns
+// ssh for sftp:// transfers, so the pin is installed through its connect
+// program. An FTP destination has no host key and gets nothing.
+//
+// The previous setting was `sftp:auto-confirm yes`, which accepts whatever key
+// answers, on every connection.
+func lftpHostKeySettings(ctx context.Context, db *sql.DB, d *Destination) (string, func(), error) {
+	if d.Type != "sftp" {
+		return "", func() {}, nil
+	}
+	key, err := ensureHostKey(ctx, db, d)
+	if err != nil {
+		return "", func() {}, err
+	}
+	path, cleanup, err := knownHostsFile(key)
+	if err != nil {
+		return "", func() {}, err
+	}
+	return `set sftp:auto-confirm no; ` +
+		`set sftp:connect-program "ssh -a -x` +
+		` -o StrictHostKeyChecking=yes` +
+		` -o UserKnownHostsFile=` + lftpEscape(path) +
+		` -o GlobalKnownHostsFile=/dev/null"; `, cleanup, nil
 }
 
 // lftpOpen renders the lftp connect command. The password is NOT in it: it
@@ -278,7 +322,7 @@ func validHost(h string) bool {
 
 // testConnection verifies the destination credentials.
 // sshpass+ssh for SFTP, curl for FTP; both return an auth-specific exit code.
-func testConnection(ctx context.Context, d *Destination) error {
+func testConnection(ctx context.Context, db *sql.DB, d *Destination) error {
 	if objectStorageType(d.Type) {
 		return testS3Connection(ctx, d)
 	}
@@ -289,6 +333,17 @@ func testConnection(ctx context.Context, d *Destination) error {
 		return err
 	}
 	if d.Type == "sftp" {
+		// The connection test is the first thing that touches a new destination,
+		// so it is where the host key gets pinned.
+		key, err := ensureHostKey(ctx, db, d)
+		if err != nil {
+			return err
+		}
+		knownHosts, cleanup, err := knownHostsFile(key)
+		if err != nil {
+			return err
+		}
+		defer cleanup()
 		// Force password authentication through sshpass and disable public-key fallback.
 		// This ensures the supplied user password is actually valid.
 		// Pass the user with -l and the host after --, so neither can be
@@ -302,13 +357,12 @@ func testConnection(ctx context.Context, d *Destination) error {
 			"-p", fmt.Sprintf("%d", d.Port),
 			"-l", d.Username,
 			"-o", "ConnectTimeout=10",
-			"-o", "StrictHostKeyChecking=no",
-			"-o", "UserKnownHostsFile=/dev/null",
 			"-o", "PreferredAuthentications=password",
 			"-o", "PubkeyAuthentication=no",
 			"-o", "BatchMode=no",
-			"--", d.Host, "true",
 		}
+		args = append(args, sshHostKeyOptions(knownHosts)...)
+		args = append(args, "--", d.Host, "true")
 		out, err := sshpassCommand(ctx, d, args...).CombinedOutput()
 		if err != nil {
 			short := strings.TrimSpace(string(out))
@@ -355,7 +409,7 @@ func pushToDestinationAsync(db *sql.DB, domainID, backupID int64, localPath, fil
 			return
 		}
 		_, _ = db.Exec(`UPDATE backups SET remote_status='uploading', remote_error='' WHERE id=?`, backupID)
-		if err := uploadToRemote(ctx, d, localPath, fileName); err != nil {
+		if err := uploadToRemote(ctx, db, d, localPath, fileName); err != nil {
 			short := err.Error()
 			if len(short) > 500 {
 				short = short[:500]

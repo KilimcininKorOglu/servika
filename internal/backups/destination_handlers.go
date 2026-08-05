@@ -127,10 +127,15 @@ func (h *Handlers) PutDestination(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, msg)
 		return
 	}
-	// Was the password sent empty? Keep the current record.
-	var existingPassword string
+	// Was the password sent empty? Keep the current record. The host, port and
+	// type come back too, because a change to any of them invalidates the pinned
+	// SSH host key.
+	var existingPassword, existingHost, existingType string
+	var existingPort int
 	_ = h.DB.QueryRowContext(r.Context(),
-		`SELECT COALESCE(password,'') FROM backup_destinations WHERE domain_id=?`, id).Scan(&existingPassword)
+		`SELECT COALESCE(password,''), COALESCE(host,''), COALESCE(port,0), COALESCE(type,'')
+		 FROM backup_destinations WHERE domain_id=?`, id).
+		Scan(&existingPassword, &existingHost, &existingPort, &existingType)
 	if req.Password == "" {
 		req.Password = existingPassword
 	}
@@ -153,18 +158,30 @@ func (h *Handlers) PutDestination(w http.ResponseWriter, r *http.Request) {
 	if req.Enabled {
 		enabled = 1
 	}
+	// A pinned SSH host key belongs to one host on one port over one protocol.
+	// Saving a different one must drop it, or every later transfer fails on a
+	// key mismatch the operator has no way to clear; saving the same one must
+	// keep it, or the pin resets on every edit and stops being a pin. The
+	// decision is made here rather than inside ON DUPLICATE KEY UPDATE, where it
+	// would depend on whether host and port are evaluated before host_key.
+	hostKey := ""
+	if req.Host == existingHost && req.Port == existingPort && req.Type == existingType {
+		_ = h.DB.QueryRowContext(r.Context(),
+			`SELECT COALESCE(host_key,'') FROM backup_destinations WHERE domain_id=?`, id).Scan(&hostKey)
+	}
 	_, err = h.DB.ExecContext(r.Context(),
 		`INSERT INTO backup_destinations(domain_id, type, host, port, username, password, remote_dir,
-		   bucket, region, endpoint, path_style, enabled)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+		   bucket, region, endpoint, path_style, enabled, host_key)
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
 		 ON DUPLICATE KEY UPDATE
 		   type=VALUES(type), host=VALUES(host), port=VALUES(port),
 		   username=VALUES(username), password=VALUES(password),
 		   remote_dir=VALUES(remote_dir), bucket=VALUES(bucket), region=VALUES(region),
 		   endpoint=VALUES(endpoint), path_style=VALUES(path_style), enabled=VALUES(enabled),
+		   host_key=VALUES(host_key),
 		   last_status='', last_error=''`,
 		id, req.Type, req.Host, req.Port, req.Username, storedPassword, req.RemoteDir,
-		req.Bucket, req.Region, req.Endpoint, boolToInt(req.PathStyle), enabled)
+		req.Bucket, req.Region, req.Endpoint, boolToInt(req.PathStyle), enabled, hostKey)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not save backup destination")
 		return
@@ -248,6 +265,9 @@ func (h *Handlers) TestDestination(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, http.StatusBadRequest, msg)
 			return
 		}
+		// A form-supplied destination is not stored yet, so it carries no pinned
+		// host key. ensureHostKey scans one and, with DomainID set, records it on
+		// the row the operator is about to save.
 		d = &Destination{
 			DomainID: id, Type: request.Type, Host: request.Host, Port: port,
 			Username: request.Username, Password: request.Password, RemoteDir: dz, Enabled: true,
@@ -262,7 +282,7 @@ func (h *Handlers) TestDestination(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
-	if err := testConnection(ctx, d); err != nil {
+	if err := testConnection(ctx, h.DB, d); err != nil {
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{
 			"ok":    false,
 			"error": "connection test failed",
