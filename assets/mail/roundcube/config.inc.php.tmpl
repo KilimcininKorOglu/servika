@@ -45,7 +45,11 @@ $config['product_name'] = 'Servika Webmail';
 $config['des_key']      = '__SERVIKA_ROUNDCUBE_DES_KEY__';
 $config['plugins']      = ['archive'];
 $config['skin']         = 'elastic';
-$config['language']     = 'tr_TR';
+// Left unset on purpose. Roundcube documents null as "leave empty for
+// auto-detection" and then follows the browser's own language, which gives each
+// mailbox user their own; a fixed value here served Turkish to every user of a
+// panel that ships twelve interface languages.
+$config['language']     = null;
 $config['temp_dir']     = '/var/lib/roundcube/temp';
 
 $config['session_lifetime'] = 60;
