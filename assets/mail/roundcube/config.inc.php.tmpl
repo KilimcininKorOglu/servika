@@ -8,12 +8,37 @@ $config = [];
 $config['db_dsnw'] = 'mysql://roundcube:__SERVIKA_ROUNDCUBE_DB_PASS__@localhost/roundcube';
 
 // IMAP and SMTP stay on loopback. Users sign in with their mailbox address and password.
-$config['default_host'] = 'localhost';
-$config['default_port'] = 143;
-$config['smtp_server']  = 'localhost';
-$config['smtp_port']    = 587;
-$config['smtp_user']    = '%u';
-$config['smtp_pass']    = '%p';
+//
+// OPTION NAMES: Roundcube 1.5 replaced default_host/default_port and
+// smtp_server/smtp_port with imap_host and smtp_host, where the port is part of
+// the host string. Roundcube 1.7, the version installed here, IGNORES the old
+// names, so writing them means the setting is never applied and the client
+// silently falls back to its own defaults instead of reporting anything.
+$config['imap_host'] = 'localhost:143';
+
+// SMTP submission (587). Postfix serves that port with
+// smtpd_tls_security_level=encrypt (assets/mail/postfix/master.cf.append), so
+// it advertises AUTH only AFTER STARTTLS. Without the tls:// prefix Roundcube
+// connects in the clear, never sees AUTH in the EHLO reply, and tells the user
+// authentication failed without having attempted it: webmail can then read mail
+// but not send it.
+$config['smtp_host'] = 'tls://localhost:587';
+$config['smtp_user'] = '%u';
+$config['smtp_pass'] = '%p';
+
+// Certificate NAME verification on the loopback connection: the certificate
+// Postfix presents belongs to the server's own hostname while the connection is
+// made to 'localhost', so the names cannot match and the handshake would fail.
+// The traffic never leaves the machine (127.0.0.1), so name and chain checking
+// are relaxed here; the session is still encrypted, which is what Postfix
+// requires before it will offer AUTH at all.
+$config['smtp_conn_options'] = [
+    'ssl' => [
+        'verify_peer'       => false,
+        'verify_peer_name'  => false,
+        'allow_self_signed' => true,
+    ],
+];
 
 $config['support_url']  = '';
 $config['product_name'] = 'Servika Webmail';
