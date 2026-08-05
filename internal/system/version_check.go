@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -303,6 +304,53 @@ func VersionCheckRefresh(w http.ResponseWriter, r *http.Request) {
 	VersionCheckStatus(w, r)
 }
 
+// releaseIsNewer reports whether latest is a strictly newer release than
+// current. Asking only whether the two differ turns any manifest that trails
+// the installed build into an update notice pointing backwards, which the
+// operator reads as "you are out of date" while running the newer release. The
+// published manifest can trail for a few minutes after a release, because the
+// raw content endpoint is served from a CDN cache.
+//
+// Both values are the X.Y.Z form every Servika release carries. When either
+// side is not in that form the answer falls back to plain inequality, matching
+// the previous behaviour: an unreadable version must not silently suppress a
+// real update notice.
+func releaseIsNewer(latest, current string) bool {
+	newer, ok := parseReleaseVersion(latest)
+	if !ok {
+		return latest != current
+	}
+	running, ok := parseReleaseVersion(current)
+	if !ok {
+		return latest != current
+	}
+	for i := range newer {
+		if newer[i] != running[i] {
+			return newer[i] > running[i]
+		}
+	}
+	return false
+}
+
+// parseReleaseVersion splits a strict X.Y.Z version. Anything else, including a
+// build suffix or a leading "v", is reported as unparseable rather than guessed
+// at.
+func parseReleaseVersion(value string) ([3]int, bool) {
+	var parts [3]int
+	fields := strings.Split(strings.TrimSpace(value), ".")
+	if len(fields) != len(parts) {
+		return parts, false
+	}
+	for i, field := range fields {
+		number, err := strconv.Atoi(field)
+		if err != nil || number < 0 {
+			return parts, false
+		}
+		parts[i] = number
+	}
+	return parts, true
+}
+
 // VersionCheckStatus returns the current version check state. The optional lang
 // parameter carries the language the panel is displaying, which selects the
 // announcement translation; the response itself always holds a single string.
@@ -316,7 +364,7 @@ func VersionCheckStatus(w http.ResponseWriter, r *http.Request) {
 	enabled := versionEnabled
 	versionMu.RUnlock()
 
-	updateAvailable := enabled && manifest.Latest != "" && manifest.Latest != current
+	updateAvailable := enabled && manifest.Latest != "" && releaseIsNewer(manifest.Latest, current)
 	response := map[string]any{
 		"enabled":          enabled,
 		"current":          current,

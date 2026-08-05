@@ -311,3 +311,91 @@ func TestLoadVersionCacheDropsThePreviousBuildsManifest(t *testing.T) {
 		t.Errorf("loaded latest %q, want the cache restored across a plain restart", got)
 	}
 }
+
+// An update notice must mean "a newer release exists", not "the two strings
+// differ". The published manifest is served from a CDN cache, so it can trail
+// the installed build for a few minutes after a release, and a bare inequality
+// then tells the operator to update while they are already on the newer one.
+func TestReleaseIsNewerOnlyPointsForward(t *testing.T) {
+	tests := []struct {
+		name            string
+		latest, running string
+		want            bool
+	}{
+		{name: "patch ahead", latest: "1.1.1", running: "1.1.0", want: true},
+		{name: "minor ahead", latest: "1.2.0", running: "1.1.9", want: true},
+		{name: "major ahead", latest: "2.0.0", running: "1.9.9", want: true},
+		{name: "identical", latest: "1.1.0", running: "1.1.0", want: false},
+		{name: "manifest trails by a patch", latest: "1.0.9", running: "1.1.0", want: false},
+		{name: "manifest trails by a minor", latest: "1.1.0", running: "1.2.0", want: false},
+		{name: "manifest trails by a major", latest: "1.9.9", running: "2.0.0", want: false},
+		// Double-digit segments must compare as numbers, not as text.
+		{name: "ten is newer than nine", latest: "1.10.0", running: "1.9.0", want: true},
+		{name: "nine is not newer than ten", latest: "1.9.0", running: "1.10.0", want: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := releaseIsNewer(test.latest, test.running); got != test.want {
+				t.Errorf("releaseIsNewer(%q, %q) = %t, want %t", test.latest, test.running, got, test.want)
+			}
+		})
+	}
+}
+
+// An unreadable version on either side must not silently suppress a real update
+// notice, so the answer falls back to the plain inequality used before.
+func TestReleaseIsNewerFallsBackForUnreadableVersions(t *testing.T) {
+	tests := []struct {
+		latest, running string
+		want            bool
+	}{
+		{latest: "1.2", running: "1.1.0", want: true},
+		{latest: "1.2.0-rc1", running: "1.1.0", want: true},
+		{latest: "v1.2.0", running: "1.1.0", want: true},
+		{latest: "1.2.0", running: "dev", want: true},
+		{latest: "not a version", running: "not a version", want: false},
+		{latest: "1.1.0", running: "", want: true},
+	}
+	for _, test := range tests {
+		if got := releaseIsNewer(test.latest, test.running); got != test.want {
+			t.Errorf("releaseIsNewer(%q, %q) = %t, want %t", test.latest, test.running, got, test.want)
+		}
+	}
+}
+
+// The wiring: a trailing manifest must not set update_available in the response
+// the dashboard reads.
+func TestVersionCheckStatusHidesAnUpdateThatPointsBackwards(t *testing.T) {
+	versionMu.Lock()
+	previous := struct {
+		manifest VersionManifest
+		current  string
+		enabled  bool
+	}{versionManifest, versionCurrent, versionEnabled}
+	versionManifest = VersionManifest{Latest: "1.0.9", Announcement: map[string]string{"en": "older"}, Critical: true}
+	versionCurrent = "1.1.0"
+	versionEnabled = true
+	versionMu.Unlock()
+	t.Cleanup(func() {
+		versionMu.Lock()
+		versionManifest, versionCurrent, versionEnabled = previous.manifest, previous.current, previous.enabled
+		versionMu.Unlock()
+	})
+
+	recorder := httptest.NewRecorder()
+	VersionCheckStatus(recorder, httptest.NewRequest("GET", "/system/version-check", nil))
+
+	var body struct {
+		UpdateAvailable bool `json:"update_available"`
+		Critical        bool `json:"critical"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &body); err != nil {
+		t.Fatalf("response is not the documented shape: %v", err)
+	}
+	if body.UpdateAvailable {
+		t.Error("update_available is set for a manifest older than the running build, which reads as \"downgrade now\"")
+	}
+	if body.Critical {
+		t.Error("critical is set for an update that does not exist, which paints the notice red")
+	}
+}
