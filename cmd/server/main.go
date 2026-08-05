@@ -725,9 +725,15 @@ func main() {
 		Addr:              cfg.ListenAddr,
 		Handler:           r,
 		ReadHeaderTimeout: 5 * time.Second,
-		ReadTimeout:       30 * time.Minute,
-		WriteTimeout:      30 * time.Minute,
-		IdleTimeout:       120 * time.Second,
+		// These apply to EVERY endpoint, login included. At thirty minutes a
+		// client dribbling one byte a second held a connection, and its file
+		// descriptor, for half an hour per request. Six minutes leaves room above
+		// the 300-second handler timeout above, and the handful of endpoints that
+		// genuinely move gigabytes lift it for their own request with
+		// httpx.ExtendDeadline.
+		ReadTimeout:  6 * time.Minute,
+		WriteTimeout: 6 * time.Minute,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	monitor.StartLoadSampler(d, 60*time.Second) // dashboard load-history sampler
