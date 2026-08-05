@@ -60,8 +60,10 @@ func TestEnforceCustomerNotSuspendedFailsClosedWhenSuspensionCannotBeVerified(t 
 	if EnforceCustomerNotSuspended(response, reqRole(RoleUser, 5), 42) {
 		t.Fatal("EnforceCustomerNotSuspended() allowed access without verifying suspension state")
 	}
-	if response.Code != http.StatusInternalServerError {
-		t.Fatalf("status = %d, want %d", response.Code, http.StatusInternalServerError)
+	// Denied, and the status says why: the panel could not check, which is a
+	// "come back" rather than "your request was wrong".
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusServiceUnavailable)
 	}
 }
 

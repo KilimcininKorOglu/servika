@@ -19,10 +19,17 @@ var suspendedDomainLookup = func(ctx context.Context, domainID int64) (bool, err
 	if scopeDB == nil {
 		return false, nil
 	}
-	var suspended int
-	err := scopeDB.QueryRowContext(ctx,
-		`SELECT COALESCE(suspended,0) FROM domains WHERE id=?`, domainID).
-		Scan(&suspended)
+	// Read through readState so a momentary database failure retries and then
+	// falls back to the flag last read for this domain; see dbresilience.go. A
+	// suspended domain stays refused on that path too.
+	suspended, err := readState(ctx, "suspended:"+strconv.FormatInt(domainID, 10),
+		func(ctx context.Context) (int64, error) {
+			var flag int64
+			err := scopeDB.QueryRowContext(ctx,
+				`SELECT COALESCE(suspended,0) FROM domains WHERE id=?`, domainID).
+				Scan(&flag)
+			return flag, err
+		})
 	return suspended == 1, err
 }
 
@@ -37,13 +44,22 @@ func Init(db *sql.DB) {
 // error returns (false, err) so the caller denies access. When scopeDB is unset
 // (tests) it accepts, so token-only tests keep working. The table argument is a
 // fixed internal literal, never user input.
+//
+// The read goes through readState, which retries a transient failure and then
+// falls back to the version last read for this identity; see dbresilience.go.
+// A bumped version is refused from that fallback exactly as it is from the
+// database, because the fallback replays an answer rather than granting one.
 func tokenVersionMatches(ctx context.Context, table string, id, claimVersion int64) (bool, error) {
 	if scopeDB == nil {
 		return true, nil
 	}
-	var current int64
-	err := scopeDB.QueryRowContext(ctx,
-		"SELECT token_version FROM "+table+" WHERE id=?", id).Scan(&current)
+	current, err := readState(ctx, "token_version:"+table+":"+strconv.FormatInt(id, 10),
+		func(ctx context.Context) (int64, error) {
+			var version int64
+			err := scopeDB.QueryRowContext(ctx,
+				"SELECT token_version FROM "+table+" WHERE id=?", id).Scan(&version)
+			return version, err
+		})
 	if err != nil {
 		return false, err
 	}
@@ -81,7 +97,10 @@ func RequireAuth(secret []byte) func(http.Handler) http.Handler {
 			}
 			ok, verr := tokenVersionMatches(r.Context(), "users", c.UserID, c.TokenVersion)
 			if verr != nil {
-				httpx.WriteError(w, http.StatusInternalServerError, "could not verify session")
+				// 503, not 500: the session may well be valid, the panel just
+				// cannot say so at this moment. The client is being told to come
+				// back, not that its request was wrong.
+				httpx.WriteError(w, http.StatusServiceUnavailable, "could not verify session")
 				return
 			}
 			if !ok {
@@ -194,7 +213,7 @@ func CustomerScopeParam(param string) func(http.Handler) http.Handler {
 					}
 					suspended, err := suspendedDomainLookup(r.Context(), urlID)
 					if err != nil {
-						httpx.WriteError(w, http.StatusInternalServerError, "could not verify account status")
+						httpx.WriteError(w, http.StatusServiceUnavailable, "could not verify account status")
 						return
 					}
 					if suspended {
@@ -366,7 +385,7 @@ func EnforceCustomerNotSuspended(w http.ResponseWriter, r *http.Request, domainI
 	}
 	suspended, err := suspendedDomainLookup(r.Context(), domainID)
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not verify account status")
+		httpx.WriteError(w, http.StatusServiceUnavailable, "could not verify account status")
 		return false
 	}
 	if suspended {
