@@ -210,7 +210,8 @@ func Init(db *sql.DB) {
 	healPanelIndexNoCacheOnStartup()
 	ensurePMAStartup()
 	healVhostsOnStartup()
-	HealNginxLogPerms() // close /var/log/nginx to tenants (cross-tenant log reading)
+	healWebmailVhostsOnStartup() // serve Roundcube from each customer's own domain under /webmail/
+	HealNginxLogPerms()          // close /var/log/nginx to tenants (cross-tenant log reading)
 	HealHomePerms()
 	ensureFPMSELinuxFcontext()
 	ensureHTTPDHomeBooleans()
@@ -666,7 +667,7 @@ server {
 
     # ---- Security headers (managed by the panel) ----
 {{.SecHeaders}}
-{{.ModSec}}{{.IPRules}}{{.DenyBlocks}}{{.HotlinkLocation}}
+{{.ModSec}}{{.IPRules}}{{.DenyBlocks}}{{.HotlinkLocation}}{{.WebmailBlock}}
 
     access_log /var/log/nginx/{{.DomainName}}.access.log;
     error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
@@ -1056,6 +1057,10 @@ type VhostOpts struct {
 	ModSec          string // WAF (ModSecurity) server-context directive block; empty when WAF is off or module absent
 	IPRules         string // IP allow/deny directives; empty when access control is off
 	HotlinkLocation string // valid_referers image location; empty when hotlink protection is off
+	// WebmailBlock is the `location ^~ /webmail/` block that serves Roundcube
+	// from the domain's own name. It is computed on every render rather than
+	// stored, and stays empty when Roundcube is absent or the vhost has no TLS.
+	WebmailBlock string
 }
 
 func (o VhostOpts) SSL() bool {
@@ -1273,6 +1278,12 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 		opts.ModSec = buildModSec(systemUser)
 		opts.IPRules = buildIPRules(opts.DomainName)
 		opts.HotlinkLocation = buildHotlink(opts.DomainName)
+		// Webmail only on the TLS vhost. On a domain without a certificate the
+		// block would carry mailbox passwords in the clear; the mail page keeps
+		// pointing such a domain at the panel's own HTTPS webmail instead.
+		if opts.SSL() {
+			opts.WebmailBlock = webmailBlock()
+		}
 	}
 
 	if !opts.Suspended && opts.CustomVhostContent == "" && packageDB != nil {
