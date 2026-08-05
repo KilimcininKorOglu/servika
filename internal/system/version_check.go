@@ -59,6 +59,13 @@ func (m VersionManifest) localizedAnnouncement(lang string) string {
 type versionCache struct {
 	Manifest  VersionManifest `json:"manifest"`
 	LastCheck time.Time       `json:"last_check"`
+	// Current is the compiled version that wrote this file. The cache lives at
+	// /opt/servika/version-cache.json, which servika-update never replaces (it
+	// swaps bin/, frontend-dist and src/ only), so after an update the previous
+	// build's manifest is still on disk and would be compared against the new
+	// binary. Written before this field existed, it unmarshals to "" and the
+	// cache is refused, which is the safe answer.
+	Current string `json:"current"`
 }
 
 var (
@@ -241,7 +248,7 @@ func setVersionError(message string) {
 
 func saveVersionCache() {
 	versionMu.RLock()
-	cache := versionCache{Manifest: versionManifest, LastCheck: versionLast}
+	cache := versionCache{Manifest: versionManifest, LastCheck: versionLast, Current: versionCurrent}
 	versionMu.RUnlock()
 	content, err := json.Marshal(cache)
 	if err != nil {
@@ -254,6 +261,11 @@ func saveVersionCache() {
 	_ = os.WriteFile(path, content, 0o644)
 }
 
+// loadVersionCache restores the last known state across a restart so the panel
+// does not show "never checked" the moment it comes up. A cache left by a
+// different build is discarded instead: showing nothing until the first
+// background scan (10-60 seconds after boot) or the sign-in trigger is always
+// better than showing a comparison against someone else's version.
 func loadVersionCache() {
 	content, err := os.ReadFile(config.VersionCachePath())
 	if err != nil {
@@ -264,9 +276,21 @@ func loadVersionCache() {
 		return
 	}
 	versionMu.Lock()
+	defer versionMu.Unlock()
+	// Read the field directly: currentVersion() takes the read lock, which this
+	// goroutine already holds for writing.
+	if !versionCacheUsable(cache.Current, versionCurrent) {
+		return
+	}
 	versionManifest = cache.Manifest
 	versionLast = cache.LastCheck
-	versionMu.Unlock()
+}
+
+// versionCacheUsable reports whether a cache file may be trusted. Split out so
+// the rule is testable without a filesystem. An empty cacheCurrent is a file
+// written before the field existed and counts as a different build.
+func versionCacheUsable(cacheCurrent, runningCurrent string) bool {
+	return cacheCurrent != "" && cacheCurrent == runningCurrent
 }
 
 // VersionCheckRefresh runs an immediate version check when it is enabled.

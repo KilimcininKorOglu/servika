@@ -235,3 +235,79 @@ func waitForRequests(t *testing.T, counter *atomic.Int32, want int32) {
 	}
 	t.Fatalf("the endpoint received %d requests, want %d: the trigger never fetched", counter.Load(), want)
 }
+
+// servika-update swaps bin/, frontend-dist and src/ but leaves
+// /opt/servika/version-cache.json in place, so the previous build's manifest
+// survives an update. Loading it produced "installed 1.1.0, new 1.0.9": an
+// update notice pointing at an OLDER release than the one running.
+func TestVersionCacheUsableRefusesAnotherBuildsCache(t *testing.T) {
+	tests := []struct {
+		name           string
+		cached, riding string
+		want           bool
+	}{
+		{name: "same build, plain restart", cached: "1.1.0", riding: "1.1.0", want: true},
+		{name: "cache from the previous build", cached: "1.0.9", riding: "1.1.0", want: false},
+		{name: "cache from a newer build after a rollback", cached: "1.2.0", riding: "1.1.0", want: false},
+		{name: "cache written before the field existed", cached: "", riding: "1.1.0", want: false},
+		{name: "version not yet published to internal/system", cached: "1.1.0", riding: "", want: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := versionCacheUsable(test.cached, test.riding); got != test.want {
+				t.Errorf("versionCacheUsable(%q, %q) = %t, want %t", test.cached, test.riding, got, test.want)
+			}
+		})
+	}
+}
+
+// End to end over the real file, because the bug was in what loadVersionCache
+// trusted, not in the comparison alone.
+func TestLoadVersionCacheDropsThePreviousBuildsManifest(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "version-cache.json")
+	t.Setenv("SERVIKA_VERSION_CACHE", path)
+
+	writeCache := func(t *testing.T, cache versionCache) {
+		t.Helper()
+		content, err := json.Marshal(cache)
+		if err != nil {
+			t.Fatalf("marshal cache: %v", err)
+		}
+		if err := os.WriteFile(path, content, 0o600); err != nil {
+			t.Fatalf("write cache: %v", err)
+		}
+	}
+	reset := func(t *testing.T, running string) {
+		t.Helper()
+		versionMu.Lock()
+		defer versionMu.Unlock()
+		versionCurrent = running
+		versionManifest = VersionManifest{}
+		versionLast = time.Time{}
+	}
+	loadedLatest := func() string {
+		versionMu.RLock()
+		defer versionMu.RUnlock()
+		return versionManifest.Latest
+	}
+
+	stale := versionCache{
+		Manifest:  VersionManifest{Latest: "1.0.9", Announcement: map[string]string{"en": "older release"}},
+		LastCheck: time.Now().Add(-time.Hour),
+		Current:   "1.0.9",
+	}
+
+	writeCache(t, stale)
+	reset(t, "1.1.0")
+	loadVersionCache()
+	if got := loadedLatest(); got != "" {
+		t.Errorf("loaded latest %q from the previous build's cache, so the panel would offer a downgrade", got)
+	}
+
+	// The same file is still usable by the build that wrote it.
+	reset(t, "1.0.9")
+	loadVersionCache()
+	if got := loadedLatest(); got != "1.0.9" {
+		t.Errorf("loaded latest %q, want the cache restored across a plain restart", got)
+	}
+}
