@@ -170,12 +170,16 @@ systemctl restart mariadb >/dev/null 2>&1; sleep 2
 systemctl is-active --quiet mariadb || die "MariaDB (after security hardening) did not start"
 ok "MariaDB security: 3306 bound to loopback + local-infile disabled"
 
-if [ -s /etc/servika/env ]; then
-  DBPASS=$(sed -n 's/^SERVIKA_DB_PASS=//p' /etc/servika/env | tail -n 1)
-  [ -n "${DBPASS:-}" ] || DBPASS=$(sed -n 's/^SERVIKA_DB_DSN=panel:\([^@]*\)@.*/\1/p' /etc/servika/env | tail -n 1)
-  JWT=$(sed -n 's/^SERVIKA_JWT_SECRET=//p' /etc/servika/env | tail -n 1)
-  RADMIN=$(sed -n 's/^SERVIKA_REDIS_ADMIN_PASS=//p' /etc/servika/env | tail -n 1)
-  SECRETKEY=$(sed -n 's/^SERVIKA_SECRET_KEY=//p' /etc/servika/env | tail -n 1)
+ENVF=/etc/servika/env
+# env_value <key>: the value already stored in the environment file, or empty.
+env_value(){ [ -s "$ENVF" ] && sed -n "s/^$1=//p" "$ENVF" | tail -n 1; }
+
+if [ -s "$ENVF" ]; then
+  DBPASS=$(env_value SERVIKA_DB_PASS)
+  [ -n "${DBPASS:-}" ] || DBPASS=$(sed -n 's/^SERVIKA_DB_DSN=panel:\([^@]*\)@.*/\1/p' "$ENVF" | tail -n 1)
+  JWT=$(env_value SERVIKA_JWT_SECRET)
+  RADMIN=$(env_value SERVIKA_REDIS_ADMIN_PASS)
+  SECRETKEY=$(env_value SERVIKA_SECRET_KEY)
 fi
 [ -n "${DBPASS:-}" ] || DBPASS=$(openssl rand -hex 16)
 [ -n "${JWT:-}" ] || JWT=$(openssl rand -hex 32)
@@ -188,29 +192,74 @@ ALTER USER 'panel'@'127.0.0.1' IDENTIFIED BY '$DBPASS';
 GRANT ALL PRIVILEGES ON panel.* TO 'panel'@'127.0.0.1';
 FLUSH PRIVILEGES;
 SQL
-ok "panel DB + user (panel@127.0.0.1)"
+# "ALTER USER did not fail" is not proof that the panel can log in. Connect as the
+# panel user with the password that is about to be written into the environment
+# file; without this check a mismatch surfaces much later, as a service that
+# starts and then cannot reach its own database. The password goes through a
+# 0600 defaults file rather than the command line, because /proc/<pid>/cmdline is
+# world-readable.
+DBCHECK=$(mktemp); chmod 600 "$DBCHECK"
+printf '[client]\nuser=panel\npassword=%s\nhost=127.0.0.1\n' "$DBPASS" > "$DBCHECK"
+if mysql --defaults-extra-file="$DBCHECK" -e 'SELECT 1' panel >/dev/null 2>&1; then
+  rm -f "$DBCHECK"
+  ok "panel DB + user (panel@127.0.0.1) — connection verified"
+else
+  rm -f "$DBCHECK"
+  die "the panel database user could not be verified with the stored password; installation stopped before writing the environment file"
+fi
 
 # ============ 5) DIRECTORIES + ENV ============
 step "5) Directories + environment"
 mkdir -p /opt/servika/bin /opt/servika/frontend-dist /opt/servika/src/migrations \
          /opt/servika/src/mail-templates /opt/servika/src/scripts /opt/servika/pma-signon /etc/servika /etc/ssl/servika
-cat > /etc/servika/env <<ENV
-SERVIKA_LISTEN=127.0.0.1:8080
+# Values the panel or its operations tools write LATER, and settings an operator
+# may have tuned. A re-run used to blank every one of them: servika-mail-setup
+# stores the Postfix/Dovecot and Roundcube database passwords and the Roundcube
+# DES key here, so wiping them leaves those services holding credentials the
+# environment file no longer knows, and rotating the DES key invalidates stored
+# Roundcube sessions. Carry the existing value over whenever there is one.
+LISTEN_ADDR=$(env_value SERVIKA_LISTEN);            [ -n "${LISTEN_ADDR:-}" ] || LISTEN_ADDR=127.0.0.1:8080
+JWT_LIFETIME=$(env_value SERVIKA_JWT_LIFETIME_SEC); [ -n "${JWT_LIFETIME:-}" ] || JWT_LIFETIME=43200
+VERSION_CHECK=$(env_value SERVIKA_VERSION_CHECK);   [ -n "${VERSION_CHECK:-}" ] || VERSION_CHECK=1
+PUBLIC_IPV4=$(env_value SERVIKA_PUBLIC_IPV4)
+MAINT_MODE=$(env_value SERVIKA_MAINTENANCE_MODE)
+MAIL_DB_PASS=$(env_value SERVIKA_MAIL_DB_PASS)
+RC_DB_PASS=$(env_value SERVIKA_ROUNDCUBE_DB_PASS)
+RC_DES_KEY=$(env_value SERVIKA_ROUNDCUBE_DES_KEY)
+SEED_PASSWORD=$(env_value SERVIKA_SEED_PASSWORD)
+ASSETS_OVERRIDE=$(env_value SERVIKA_ASSETS_OVERRIDE)
+
+# Keys this block owns. Anything else already in the file belongs to the operator
+# (or to a future release) and is carried over verbatim rather than dropped.
+ENV_MANAGED='SERVIKA_LISTEN|SERVIKA_ENV|SERVIKA_DB_DSN|SERVIKA_DB_PASS|SERVIKA_JWT_SECRET|SERVIKA_SECRET_KEY|SERVIKA_JWT_LIFETIME_SEC|SERVIKA_PUBLIC_IPV4|SERVIKA_MAINTENANCE_MODE|SERVIKA_VERSION_CHECK|SERVIKA_VERSION_ENDPOINT|SERVIKA_REDIS_ADMIN_PASS|SERVIKA_MAIL_DB_PASS|SERVIKA_ROUNDCUBE_DB_PASS|SERVIKA_ROUNDCUBE_DES_KEY|SERVIKA_SEED_PASSWORD|SERVIKA_REPO|SERVIKA_PREFIX|SERVIKA_BIN|SERVIKA_SEED|SERVIKA_FDIST|SERVIKA_MIGR|SERVIKA_SCRIPTS|SERVIKA_OPSBIN|SERVIKA_SVC|SERVIKA_HEALTH|SERVIKA_DBBK|SERVIKA_DBDIR|SERVIKA_ASSETS_OVERRIDE|SERVIKA_COMPOSER_BIN|SERVIKA_WPCLI_BIN|SERVIKA_CLAMSCAN_BIN|SERVIKA_FRESHCLAM_BIN|SERVIKA_PECL_BIN|SERVIKA_REMI_PECL_ROOT|SERVIKA_ACME_HOME|SERVIKA_ACME_BIN|SERVIKA_BACKUP_ROOT|SERVIKA_LARAVEL_LOG_DIR|SERVIKA_PLUGIN_ROOT|SERVIKA_LOG_DIR|SERVIKA_UPDATE_LOG|SERVIKA_KERNELCARE_LOG|SERVIKA_KERNELCARE_WRAPPER|SERVIKA_CVE_LOG|SERVIKA_INSTALLATION_ID|SERVIKA_VERSION_CACHE|SERVIKA_PMA_TOKEN|SERVIKA_PMA_SIGNON_DIR|SERVIKA_PHPMYADMIN_ROOT|SERVIKA_PHPMYADMIN_CONFIG|SERVIKA_CERT_ROOT|SERVIKA_NGINX_CACHE_DIR|SERVIKA_NGINX_CACHE_CONF|SERVIKA_NGINX_CACHE_TEMP_CONF|SERVIKA_NGINX_CACHE_LOG_CONF|SERVIKA_GITHUB_API|SERVIKA_IONCUBE_URL|SERVIKA_UPDATE_BOOTSTRAP_URL'
+ENV_EXTRA=""
+if [ -s "$ENVF" ]; then
+  ENV_EXTRA=$(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENVF" | grep -vE "^(${ENV_MANAGED})=" || true)
+fi
+
+# Written to a sibling temporary file and renamed into place. A truncating
+# redirect leaves a half-written file if this step dies, and the server refuses
+# to boot without SERVIKA_DB_DSN, SERVIKA_JWT_SECRET and SERVIKA_SECRET_KEY, so
+# an interrupted write used to mean a panel that would not come back.
+ENVTMP=$(mktemp /etc/servika/.env.XXXXXX) || die "could not create a temporary environment file"
+chmod 600 "$ENVTMP"
+cat > "$ENVTMP" <<ENV
+SERVIKA_LISTEN=${LISTEN_ADDR}
 SERVIKA_ENV=production
 SERVIKA_DB_DSN=panel:${DBPASS}@tcp(127.0.0.1:3306)/panel?parseTime=true&charset=utf8mb4&collation=utf8mb4_unicode_ci
 SERVIKA_DB_PASS=${DBPASS}
 SERVIKA_JWT_SECRET=${JWT}
 SERVIKA_SECRET_KEY=${SECRETKEY}
-SERVIKA_JWT_LIFETIME_SEC=43200
-SERVIKA_PUBLIC_IPV4=
-SERVIKA_MAINTENANCE_MODE=
-SERVIKA_VERSION_CHECK=1
+SERVIKA_JWT_LIFETIME_SEC=${JWT_LIFETIME}
+SERVIKA_PUBLIC_IPV4=${PUBLIC_IPV4}
+SERVIKA_MAINTENANCE_MODE=${MAINT_MODE}
+SERVIKA_VERSION_CHECK=${VERSION_CHECK}
 SERVIKA_VERSION_ENDPOINT=https://raw.githubusercontent.com/ServikaPanel/servika/main/version.json
 SERVIKA_REDIS_ADMIN_PASS=${RADMIN}
-SERVIKA_MAIL_DB_PASS=
-SERVIKA_ROUNDCUBE_DB_PASS=
-SERVIKA_ROUNDCUBE_DES_KEY=
-SERVIKA_SEED_PASSWORD=
+SERVIKA_MAIL_DB_PASS=${MAIL_DB_PASS}
+SERVIKA_ROUNDCUBE_DB_PASS=${RC_DB_PASS}
+SERVIKA_ROUNDCUBE_DES_KEY=${RC_DES_KEY}
+SERVIKA_SEED_PASSWORD=${SEED_PASSWORD}
 SERVIKA_REPO=ServikaPanel/servika
 SERVIKA_PREFIX=/opt/servika
 SERVIKA_BIN=/opt/servika/bin/servika-server
@@ -223,7 +272,7 @@ SERVIKA_SVC=servika
 SERVIKA_HEALTH=http://127.0.0.1:8080/healthz
 SERVIKA_DBBK=/usr/local/bin/servika-db-backup
 SERVIKA_DBDIR=/var/backups/servika/db
-SERVIKA_ASSETS_OVERRIDE=
+SERVIKA_ASSETS_OVERRIDE=${ASSETS_OVERRIDE}
 SERVIKA_COMPOSER_BIN=/usr/local/bin/composer
 SERVIKA_WPCLI_BIN=/usr/local/bin/wp
 SERVIKA_CLAMSCAN_BIN=/usr/bin/clamscan
@@ -255,8 +304,12 @@ SERVIKA_GITHUB_API=https://api.github.com
 SERVIKA_IONCUBE_URL=https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
 SERVIKA_UPDATE_BOOTSTRAP_URL=https://raw.githubusercontent.com/ServikaPanel/servika/main/assets/ops/servika-update
 ENV
-chmod 600 /etc/servika/env
-ok "/etc/servika/env (production runtime and operations environment preserved or generated)"
+if [ -n "$ENV_EXTRA" ]; then printf '%s\n' "$ENV_EXTRA" >> "$ENVTMP"; fi
+mv -f "$ENVTMP" "$ENVF" || die "could not put the environment file in place"
+chmod 600 "$ENVF"
+ENV_EXTRA_COUNT=0
+if [ -n "$ENV_EXTRA" ]; then ENV_EXTRA_COUNT=$(printf '%s\n' "$ENV_EXTRA" | wc -l | tr -d ' '); fi
+ok "$ENVF (secrets and operator settings preserved; $ENV_EXTRA_COUNT additional key(s) carried over)"
 
 # ============ 6) ARTIFACT DEPLOYMENT ============
 step "6) Panel binary + frontend + migrations"
