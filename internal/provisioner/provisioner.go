@@ -1575,16 +1575,16 @@ func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certP
 //     This never triggers a re-issue with the same SAN set (LE 429 rate-limit).
 //  2. FAIL-SAFE: when issuance fails (including 429), sslFailSafe keeps 443 alive with the
 //     existing/self-signed certificate. The vhost is never dropped to HTTP-only.
-func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, real bool, err error) {
+func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, real bool, note string, err error) {
 	if err := ValidateDomain(domainName); err != nil {
-		return "", "", false, err
+		return "", "", false, "", err
 	}
 	domainName = strings.ToLower(strings.TrimSpace(domainName))
 	phpVersion = normalizePHP(phpVersion)
 
 	sslDir, err := prepareCertificateDir(domainName)
 	if err != nil {
-		return "", "", false, err
+		return "", "", false, "", err
 	}
 	certPath = filepath.Join(sslDir, domainName+".crt")
 	keyPath = filepath.Join(sslDir, domainName+".key")
@@ -1593,12 +1593,22 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	if src, srcKey := reusableLetsEncryptCertificate(domainName, 30); src != "" {
 		if cp, kp, e := installToPKI(domainName, src, srcKey); e == nil {
 			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, "letsencrypt"); e != nil {
-				return "", "", false, e
+				return "", "", false, "", e
 			}
 			removeHomeCertificate(systemUser, domainName)
 			log.Printf("ssl reuse: %s valid letsencrypt certificate found; fresh LE issuance skipped (rate-limit protection)", domainName)
-			return cp, kp, true, nil
+			return cp, kp, true, "", nil
 		}
+	}
+
+	// An apex that does not resolve cannot pass http-01, so calling acme.sh would
+	// only spend one of the five failed validations Let's Encrypt allows per
+	// hostname per hour and leave the user with a generic failure. Refuse here
+	// instead, keep 443 alive, and say what to fix. certSANHosts drops www when
+	// DNS does not support it, so www alone never reaches this point.
+	if !domainResolves(domainName) {
+		return sslFailSafe(domainName, systemUser, phpVersion, backend,
+			"DNS problem: "+domainName+" does not resolve, so Let's Encrypt cannot reach it for validation")
 	}
 
 	// (2) Real issuance/renewal (only reached when <30 days remain or no cert exists).
@@ -1632,7 +1642,7 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	}
 	if e != nil && !IsACMERenewSkip(e) {
 		// FAIL-SAFE (no teardown): keep 443 alive with the existing/self-signed cert.
-		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme issue: "+strings.TrimSpace(string(out)))
+		return sslFailSafe(domainName, systemUser, phpVersion, backend, strings.TrimSpace(string(out)))
 	}
 
 	// Install the certificate into the target paths with acme.sh install-cert.
@@ -1648,13 +1658,21 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme install-cert: "+strings.TrimSpace(string(out)))
 	}
 	if err := applyCertificatePermissions(sslDir, certPath, keyPath); err != nil {
-		return "", "", false, err
+		return "", "", false, "", err
 	}
 	if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPath, "letsencrypt"); e != nil {
-		return "", "", false, e
+		return "", "", false, "", e
 	}
 	removeHomeCertificate(systemUser, domainName)
-	return certPath, keyPath, true, nil
+	return certPath, keyPath, true, "", nil
+}
+
+// domainResolves reports whether a hostname has any address record. A transient
+// resolver failure is indistinguishable from NXDOMAIN here, and both mean the
+// same thing for http-01: the CA will not reach this host.
+func domainResolves(host string) bool {
+	addresses, err := net.LookupHost(host)
+	return err == nil && len(addresses) > 0
 }
 
 // DisableSSL re-renders the vhost without SSL while retaining certificate files for reuse.

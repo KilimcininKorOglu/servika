@@ -80,14 +80,14 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var certPath, keyPath string
+	var certPath, keyPath, note string
 	actualType := req.Type
 	switch req.Type {
 	case "self-signed":
 		certPath, keyPath, err = provisioner.EnableSelfSigned(domainName, systemUser, phpVersion, backend)
 	case "letsencrypt":
 		var real bool
-		certPath, keyPath, real, err = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
+		certPath, keyPath, real, note, err = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
 		if !real {
 			actualType = "self-signed"
 		}
@@ -119,6 +119,12 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Type == "letsencrypt" && actualType != "letsencrypt" {
 		response["warning"] = "Let's Encrypt certificate issuance failed; the site is temporarily protected with a self-signed certificate. Fix DNS and try again."
+		// The reason is what makes the warning actionable. Without it the panel
+		// reports a certificate was installed while the browser reports the site
+		// is not secure, and nothing on screen connects the two.
+		if note != "" {
+			response["reason"] = note
+		}
 	}
 	httpx.WriteJSON(w, http.StatusOK, response)
 }

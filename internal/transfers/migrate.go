@@ -199,7 +199,7 @@ func (h *Handlers) MigrateAccount(ctx context.Context, source *RemoteSource, acc
 	// --- 5. SSL ------------------------------------------------------------
 	if settings.SSL {
 		logf("requesting an SSL certificate...")
-		certPath, keyPath, real, sslErr := provisioner.EnableLetsEncrypt(
+		certPath, keyPath, real, sslNote, sslErr := provisioner.EnableLetsEncrypt(
 			domainName, systemUser, installedPHPOrClosest(php), "php-fpm")
 		if certPath != "" {
 			sourceName := "self-signed"
@@ -211,8 +211,11 @@ func (h *Handlers) MigrateAccount(ctx context.Context, source *RemoteSource, acc
 				sourceName, certPath, keyPath, result.DomainID)
 			logf("SSL: %s", sourceName)
 			if !real {
-				result.Warnings = append(result.Warnings,
-					"SSL is self-signed — renew it once DNS points at this server")
+				warning := "SSL is self-signed — renew it once DNS points at this server"
+				if sslNote != "" {
+					warning += " (" + sslNote + ")"
+				}
+				result.Warnings = append(result.Warnings, warning)
 			}
 		} else {
 			logf("warning: SSL could not be obtained: %v", sslErr)

@@ -257,7 +257,7 @@ func writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPat
 // the vhost to HTTP-only. When a valid certificate (acme store or /etc/pki, not expired,
 // matching the required hostnames and key) exists it deploys it; when none exists it generates a
 // self-signed one. In both cases the vhost is rendered with SSL (443 listens).
-func sslFailSafe(domainName, systemUser, phpVersion, backend, reason string) (certPath, keyPath string, real bool, err error) {
+func sslFailSafe(domainName, systemUser, phpVersion, backend, reason string) (certPath, keyPath string, real bool, note string, err error) {
 	if src, srcKey, real := bestCertificate(domainName, 0); src != "" {
 		if cp, kp, e := installToPKI(domainName, src, srcKey); e == nil {
 			source := "self-signed"
@@ -265,22 +265,57 @@ func sslFailSafe(domainName, systemUser, phpVersion, backend, reason string) (ce
 				source = "letsencrypt"
 			}
 			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, source); e != nil {
-				return "", "", false, e
+				return "", "", false, "", e
 			}
 			log.Printf("ssl fail-safe: %s LE issuance failed (%s); 443 kept alive with existing %s certificate", domainName, reason, source)
-			return cp, kp, real, nil
+			return cp, kp, real, summarizeSSLReason(reason), nil
 		}
 	}
 	// No valid certificate -> self-signed fallback (443 still listens, no teardown).
 	cp, kp, e := generateSelfSigned(domainName)
 	if e != nil {
-		return "", "", false, fmt.Errorf("%s + self-signed fallback: %w", reason, e)
+		return "", "", false, "", fmt.Errorf("%s + self-signed fallback: %w", reason, e)
 	}
 	if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, "self-signed"); e != nil {
-		return "", "", false, e
+		return "", "", false, "", e
 	}
 	log.Printf("ssl fail-safe: %s LE issuance failed (%s); self-signed generated, 443 kept alive", domainName, reason)
-	return cp, kp, false, nil
+	return cp, kp, false, summarizeSSLReason(reason), nil
+}
+
+// summarizeSSLReason reduces an acme.sh transcript to the part that tells the
+// domain owner what to fix.
+//
+// The reason has to reach the user. Without it the panel reports a certificate
+// was installed while the browser reports the site is not secure, and there is
+// nothing on screen connecting the two. acme.sh prints many lines, so the
+// validation error is picked out and the result is bounded: this is CA output
+// about the caller's own domain, not an internal error trace.
+func summarizeSSLReason(reason string) string {
+	const limit = 300
+	best := ""
+	for _, line := range strings.Split(reason, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		lower := strings.ToLower(line)
+		// The lines that name a cause, in the order acme.sh emits them.
+		if strings.Contains(lower, "dns problem") || strings.Contains(lower, "invalid status") ||
+			strings.Contains(lower, "detail:") || strings.Contains(lower, "rate limit") ||
+			strings.Contains(lower, "too many") {
+			best = line
+			break
+		}
+		if best == "" {
+			best = line
+		}
+	}
+	best = strings.TrimSpace(best)
+	if len(best) > limit {
+		best = best[:limit] + "..."
+	}
+	return best
 }
 
 // HealSSLVhost443OnStartup verifies that every SSL-enabled (ssl_enabled=1) domain's
