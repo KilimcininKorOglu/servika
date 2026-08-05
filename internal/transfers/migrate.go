@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"compress/gzip"
 	"context"
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"net"
@@ -25,6 +23,7 @@ import (
 	"servika/internal/phpversion"
 	"servika/internal/provisioner"
 	"servika/internal/resourcelimit"
+	"servika/internal/sqlimport"
 )
 
 // MigrationResult reports what one account migration produced.
@@ -414,18 +413,6 @@ func (h *Handlers) copyDatabase(ctx context.Context, source *RemoteSource, sourc
 		return fmt.Errorf("the dump came back empty")
 	}
 
-	importUser, importPass, err := h.createImportUser(ctx, targetDB)
-	if err != nil {
-		return fmt.Errorf("import user: %w", err)
-	}
-	defer h.dropImportUser(importUser)
-
-	cnfName, err := writeImportCnf(importUser, importPass)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = os.Remove(cnfName) }()
-
 	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	f, err := os.Open(tmpName)
 	if err != nil {
@@ -438,14 +425,15 @@ func (h *Handlers) copyDatabase(ctx context.Context, source *RemoteSource, sourc
 	}
 	defer func() { _ = gz.Close() }()
 
-	imp := newTransferCommand(ctx, "mysql", "--defaults-extra-file="+cnfName,
-		"--default-character-set=utf8mb4", targetDB)
+	// The dump came off the remote host and is hostile input. sqlimport owns the
+	// scoped-account, option-file and DEFINER handling this function used to
+	// carry itself; the local copy also passed the account password on
+	// `mysql -e "CREATE USER ... IDENTIFIED BY '<pass>'"`, which publishes it
+	// through /proc/<pid>/cmdline for the life of that client.
 	filter := &dumpFilter{}
-	imp.Stdin = filter.Wrap(io.LimitReader(gz, maxDumpExpandedBytes))
-	var importErr strings.Builder
-	imp.Stderr = &importErr
-	if err := imp.Run(); err != nil {
-		return fmt.Errorf("import: %s", truncate(sanitizeRemoteError(importErr.String()), 200))
+	if err := sqlimport.Import(ctx, targetDB,
+		filter.Wrap(io.LimitReader(gz, maxDumpExpandedBytes))); err != nil {
+		return fmt.Errorf("import: %s", truncate(sanitizeRemoteError(err.Error()), 200))
 	}
 	// mysqldump ends its output with "-- Dump completed". A missing marker means
 	// the dump was cut short (remote error, dropped connection, locked table).
@@ -453,23 +441,6 @@ func (h *Handlers) copyDatabase(ctx context.Context, source *RemoteSource, sourc
 		return fmt.Errorf("the dump is incomplete (mysqldump failed on the source server)")
 	}
 	return nil
-}
-
-func writeImportCnf(user, pass string) (string, error) {
-	c, err := os.CreateTemp("", "servika_import_*.cnf")
-	if err != nil {
-		return "", err
-	}
-	name := c.Name()
-	_ = c.Chmod(0o600)
-	_, err = c.WriteString("[client]\nuser=" + user + "\npassword=" + pass +
-		"\nsocket=/var/lib/mysql/mysql.sock\n")
-	_ = c.Close()
-	if err != nil {
-		_ = os.Remove(name)
-		return "", err
-	}
-	return name, nil
 }
 
 type limitedWriter struct {
@@ -491,10 +462,9 @@ func (w *limitedWriter) Write(p []byte) (int, error) {
 	return n, err
 }
 
-var reDefiner = regexp.MustCompile("(?i)/\\*![0-9]* *DEFINER *= *[^*]*\\*/|DEFINER *= *`[^`]*`@`[^`]*`")
-
-// dumpFilter strips DEFINER clauses (a restricted import user cannot assign a
-// DEFINER to somebody else) and watches for the end-of-dump marker.
+// dumpFilter watches the stream for mysqldump's completion marker so a dump cut
+// short by the remote host is not mistaken for a finished one. Rewriting the
+// dump is sqlimport's job, not this one's.
 type dumpFilter struct{ Complete bool }
 
 func (d *dumpFilter) Wrap(r io.Reader) io.Reader {
@@ -508,7 +478,7 @@ func (d *dumpFilter) Wrap(r io.Reader) io.Reader {
 			if strings.Contains(line, dumpCompleteMark) {
 				d.Complete = true
 			}
-			if _, err := pw.Write([]byte(reDefiner.ReplaceAllString(line, "") + "\n")); err != nil {
+			if _, err := pw.Write([]byte(line + "\n")); err != nil {
 				return
 			}
 		}
@@ -517,41 +487,6 @@ func (d *dumpFilter) Wrap(r io.Reader) io.Reader {
 		}
 	}()
 	return pr
-}
-
-// createImportUser makes a temporary user that is only privileged on targetDB.
-func (h *Handlers) createImportUser(ctx context.Context, targetDB string) (string, string, error) {
-	if !reRemoteDBName.MatchString(targetDB) {
-		return "", "", fmt.Errorf("invalid target database")
-	}
-	raw := make([]byte, 9)
-	if _, err := rand.Read(raw); err != nil {
-		return "", "", err
-	}
-	user := "svk_imp_" + hex.EncodeToString(raw)[:12]
-	pass := credentials.RandomPassword(28)
-	for _, q := range []string{
-		"CREATE USER '" + user + "'@'localhost' IDENTIFIED BY '" + pass + "'",
-		"GRANT ALL PRIVILEGES ON `" + targetDB + "`.* TO '" + user + "'@'localhost'",
-		"FLUSH PRIVILEGES",
-	} {
-		c := newTransferCommand(ctx, "mysql", "-e", q)
-		var stderr strings.Builder
-		c.Stderr = &stderr
-		if err := c.Run(); err != nil {
-			h.dropImportUser(user)
-			return "", "", fmt.Errorf("%s", truncate(sanitizeRemoteError(stderr.String()), 150))
-		}
-	}
-	return user, pass, nil
-}
-
-func (h *Handlers) dropImportUser(user string) {
-	if user == "" {
-		return
-	}
-	_ = newTransferCommand(context.Background(), "mysql", "-e",
-		"DROP USER IF EXISTS '"+user+"'@'localhost'").Run()
 }
 
 // ---------------------------------------------------------------------------

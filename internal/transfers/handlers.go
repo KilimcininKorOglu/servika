@@ -2,7 +2,6 @@ package transfers
 
 import (
 	"archive/tar"
-	"bufio"
 	"bytes"
 	"compress/gzip"
 	"context"
@@ -28,6 +27,7 @@ import (
 	"servika/internal/httpx"
 	"servika/internal/mail"
 	"servika/internal/provisioner"
+	"servika/internal/sqlimport"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -632,44 +632,20 @@ func (h *Handlers) restoreDatabases(ctx context.Context, archivePath, root strin
 	return nil
 }
 
+// pipeDumpToMySQL imports one SQL dump out of a cPanel archive into targetDB.
+//
+// The dump was produced on somebody else's server and is hostile input, the
+// same as everything else this package ingests. It used to run on the panel's
+// own root MariaDB connection, where `mysql <db>` sets a DEFAULT schema and
+// imposes no privilege boundary at all, guarded only by a line filter that
+// dropped `USE ` and `CREATE DATABASE `. That filter never saw
+// `/*!50000 USE mysql */`, so an archive carrying a GRANT could take the whole
+// database server, with every other tenant's data on it. internal/sqlimport
+// imports as an account privileged on targetDB alone and lets MariaDB draw the
+// line instead; it still drops the schema-selection lines, now openly as a
+// compatibility measure rather than as a defence.
 func pipeDumpToMySQL(ctx context.Context, dump io.Reader, targetDB string) error {
-	cmd := newTransferCommand(ctx, "mysql", targetDB)
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return err
-	}
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	bw := bufio.NewWriter(stdin)
-	br := bufio.NewReader(dump)
-	for {
-		line, readErr := br.ReadString('\n')
-		upper := strings.ToUpper(strings.TrimSpace(line))
-		if !strings.HasPrefix(upper, "CREATE DATABASE ") && !strings.HasPrefix(upper, "USE ") {
-			if _, err := bw.WriteString(line); err != nil {
-				_ = stdin.Close()
-				_ = cmd.Wait()
-				return err
-			}
-		}
-		if readErr == io.EOF {
-			break
-		}
-		if readErr != nil {
-			_ = stdin.Close()
-			_ = cmd.Wait()
-			return readErr
-		}
-	}
-	_ = bw.Flush()
-	_ = stdin.Close()
-	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("mysql: %s", strings.TrimSpace(stderr.String()))
-	}
-	return nil
+	return sqlimport.Import(ctx, targetDB, dump)
 }
 
 // importMail provisions the domain's mail infrastructure, recreates each source

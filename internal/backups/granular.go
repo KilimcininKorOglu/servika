@@ -20,6 +20,7 @@ import (
 	"servika/internal/credentials"
 	"servika/internal/files"
 	"servika/internal/httpx"
+	"servika/internal/sqlimport"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -188,14 +189,22 @@ func archiveDBFiles(tmp, systemUser string) map[string]string {
 }
 
 // importDB imports a .sql file into a (whitelisted) database.
+//
+// It goes through internal/sqlimport rather than the panel's own root MariaDB
+// connection. Naming the database on a root `mysql <db>` only sets a DEFAULT
+// schema and is not a privilege boundary, so every statement in the file would
+// run with full server rights. The whitelist above decides WHICH database the
+// panel intends to write; it says nothing about where the file's own statements
+// go. sqlimport imports as an account granted on that schema alone, so MariaDB
+// enforces the intent.
 func importDB(ctx context.Context, dbName, sqlPath string) error {
-	// #nosec G204 G702 -- dbName is a credentials.ValidDBIdentifier-checked, non-system, domain-owned name and sqlPath is an internal staging path, both shell-quoted; no tenant shell input.
-	cmd := newRestoreCommand(ctx, "bash", "-c", fmt.Sprintf("mysql %s < %s 2>&1", shellQuote(dbName), shellQuote(sqlPath)))
-	out, err := cmd.CombinedOutput()
+	// #nosec G304 G703 -- sqlPath is a server-internal staging path under the panel temp dir, produced by extracting the archive; no tenant path input.
+	dump, err := os.Open(sqlPath)
 	if err != nil {
-		return fmt.Errorf("%s", strings.TrimSpace(string(out)))
+		return err
 	}
-	return nil
+	defer func() { _ = dump.Close() }()
+	return sqlimport.Import(ctx, dbName, dump)
 }
 
 // restoreAllDBs imports every domain-owned DB present in the archive (mode full/database).

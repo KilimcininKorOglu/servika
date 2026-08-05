@@ -371,6 +371,43 @@ func runRootSQL(statements ...string) error {
 // ErrInvalidMySQLCredentials indicates that a database name, user, or password is unsafe for SQL construction.
 var ErrInvalidMySQLCredentials = errors.New("invalid MySQL credentials")
 
+// MySQLCreateScopedUser creates an account privileged on exactly one schema.
+//
+// It exists so an untrusted SQL dump can be imported without touching the
+// panel's own root connection. `mysql <db>` as root only selects a DEFAULT
+// schema; it imposes no privilege boundary whatsoever, so statements inside the
+// dump run with full server rights and a planted
+//
+//	USE mysql; CREATE USER ...; GRANT ALL PRIVILEGES ON *.* TO ...;
+//
+// hands over the whole database server. Filtering the dump text is not a
+// substitute for the account, because the server accepts spellings a line
+// filter does not recognize (`/*!50000 USE mysql */` among them). Let MariaDB
+// enforce the boundary instead of trying to out-parse it.
+//
+// The grant is schema-scoped, so it also carries no GRANT OPTION and no FILE
+// privilege: the dump cannot widen its own rights or reach the filesystem
+// through `INTO OUTFILE`.
+func MySQLCreateScopedUser(dbUser, dbPass, dbName string) error {
+	if err := validateMySQLCredentials(dbName, dbUser, dbPass); err != nil {
+		return err
+	}
+	return runRootSQL(
+		fmt.Sprintf("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';", dbUser, escapeSQLString(dbPass)),
+		fmt.Sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO '%s'@'localhost';", dbName, dbUser),
+		"FLUSH PRIVILEGES;",
+	)
+}
+
+// MySQLDropUser removes an account. It is idempotent so a caller can defer it
+// without having to know whether creation got that far.
+func MySQLDropUser(dbUser string) error {
+	if !mysqlIdentifierPattern.MatchString(dbUser) {
+		return fmt.Errorf("%w: database user", ErrInvalidMySQLCredentials)
+	}
+	return runRootSQL(fmt.Sprintf("DROP USER IF EXISTS '%s'@'localhost';", dbUser))
+}
+
 func validateMySQLCredentials(dbName, dbUser, dbPass string) error {
 	if !mysqlIdentifierPattern.MatchString(dbName) {
 		return fmt.Errorf("%w: database name", ErrInvalidMySQLCredentials)
