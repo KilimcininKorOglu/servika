@@ -89,6 +89,53 @@ var systemDatabases = map[string]bool{
 // privileged on targetDB alone, which is dropped when the import returns however
 // it returns.
 func Import(ctx context.Context, targetDB string, dump io.Reader) error {
+	return withScopedAccount(ctx, targetDB, func(client *exec.Cmd) error {
+		client.Stdin = normalize(dump)
+		return nil
+	})
+}
+
+// Truncate drops every table and view in targetDB, for an import that must
+// replace a schema rather than merge into one.
+//
+// It runs through the same scoped account, so it can only empty the schema the
+// caller named. DATABASE() resolves to the connection's own default schema,
+// which means the statement text carries no identifier at all and there is
+// nothing to quote or escape.
+func Truncate(ctx context.Context, targetDB string) error {
+	return withScopedAccount(ctx, targetDB, func(client *exec.Cmd) error {
+		client.Stdin = strings.NewReader(truncateScript)
+		return nil
+	})
+}
+
+// truncateScript empties the default schema. GROUP_CONCAT is capped at 1 KiB by
+// default, which would silently drop tables past the cap and leave a
+// half-emptied schema, so the session limit is raised first. Views are dropped
+// separately because DROP TABLE does not remove them.
+const truncateScript = `
+SET FOREIGN_KEY_CHECKS = 0;
+SET SESSION group_concat_max_len = 1000000;
+SELECT GROUP_CONCAT(CONCAT('` + "`" + `', table_name, '` + "`" + `')) INTO @tables
+  FROM information_schema.tables
+  WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE';
+SET @statement := IFNULL(CONCAT('DROP TABLE IF EXISTS ', @tables), 'DO 0');
+PREPARE dropTables FROM @statement;
+EXECUTE dropTables;
+DEALLOCATE PREPARE dropTables;
+SELECT GROUP_CONCAT(CONCAT('` + "`" + `', table_name, '` + "`" + `')) INTO @views
+  FROM information_schema.views
+  WHERE table_schema = DATABASE();
+SET @statement := IFNULL(CONCAT('DROP VIEW IF EXISTS ', @views), 'DO 0');
+PREPARE dropViews FROM @statement;
+EXECUTE dropViews;
+DEALLOCATE PREPARE dropViews;
+SET FOREIGN_KEY_CHECKS = 1;
+`
+
+// withScopedAccount runs one MariaDB client against targetDB as a temporary
+// account granted on that schema alone. prepare supplies the client's input.
+func withScopedAccount(ctx context.Context, targetDB string, prepare func(*exec.Cmd) error) error {
 	if !credentials.ValidDBIdentifier(targetDB) || systemDatabases[strings.ToLower(targetDB)] {
 		return fmt.Errorf("%w: %s", ErrInvalidTarget, targetDB)
 	}
@@ -117,9 +164,11 @@ func Import(ctx context.Context, targetDB string, dump io.Reader) error {
 		"--default-character-set=utf8mb4",
 		targetDB)
 	command.Env = commandEnv
-	command.Stdin = normalize(dump)
 	var stderr strings.Builder
 	command.Stderr = &stderr
+	if err := prepare(command); err != nil {
+		return err
+	}
 	if err := command.Run(); err != nil {
 		return fmt.Errorf("import into %s failed: %s", targetDB, strings.TrimSpace(stderr.String()))
 	}

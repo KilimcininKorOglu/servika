@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os/exec"
 	"path"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -141,10 +142,8 @@ func depth(p string) int {
 }
 
 func appendUnique(list []string, value string) []string {
-	for _, existing := range list {
-		if existing == value {
-			return list
-		}
+	if slices.Contains(list, value) {
+		return list
 	}
 	return append(list, value)
 }

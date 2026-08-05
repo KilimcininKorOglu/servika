@@ -26,5 +26,7 @@ func BodyLimit(next http.Handler) http.Handler {
 func isStreamingUpload(p string) bool {
 	return strings.HasSuffix(p, "/files/upload") ||
 		strings.HasSuffix(p, "/admin/transfers/analyze") ||
-		strings.HasSuffix(p, "/admin/transfers/import")
+		strings.HasSuffix(p, "/admin/transfers/import") ||
+		strings.HasSuffix(p, "/import/archive") ||
+		strings.HasSuffix(p, "/import/sql")
 }

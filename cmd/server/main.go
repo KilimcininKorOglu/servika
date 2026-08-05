@@ -59,6 +59,7 @@ import (
 	"servika/internal/resourcelimit"
 	"servika/internal/secret"
 	"servika/internal/sitecopy"
+	"servika/internal/siteimport"
 	"servika/internal/sshaccess"
 	"servika/internal/stats"
 	"servika/internal/subdomain"
@@ -219,6 +220,7 @@ func main() {
 	protectionH := &passwordprotect.Handlers{DB: d}
 	avH := &antivirus.Handlers{DB: d}
 	copyH := &sitecopy.Handlers{DB: d}
+	importH := &siteimport.Handlers{DB: d}
 	wpH := &wordpress.Handlers{DB: d}
 	fwH := &firewall.Handlers{DB: d}
 	wafH := &waf.Handlers{DB: d}
@@ -447,6 +449,12 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/antivirus/scan/{sid}", avH.ScanStatus)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/antivirus/quarantine", avH.Quarantine)
 				r.With(middleware.AdminOnly).Post("/domains/{id}/antivirus/update-signature", avH.UpdateSignature)
+				// Generic import: a site archive, a SQL dump and the config rewrite
+				// that points the imported application at its new database.
+				r.With(middleware.CustomerScope).Post("/domains/{id}/import/archive", importH.UploadArchive)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/import/archive/apply", importH.ApplyArchive)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/import/sql", importH.UploadSQL)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/import/config", importH.RewriteConfig)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/copy", copyH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/copy", copyH.Create)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/copy/{name}", copyH.Delete)

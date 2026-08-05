@@ -21,6 +21,13 @@ func TestBodyLimitExemptsUpload(t *testing.T) {
 		capped bool // true when the body should be truncated to the JSON cap
 	}{
 		{"upload exempt", http.MethodPost, "/api/v1/domains/5/files/upload", false},
+		// A site archive and a SQL dump both stream; capping them at the JSON
+		// limit would truncate the body before the handler ever sees it.
+		{"import archive exempt", http.MethodPost, "/api/v1/domains/5/import/archive", false},
+		{"import sql exempt", http.MethodPost, "/api/v1/domains/5/import/sql", false},
+		// The apply and config calls are ordinary JSON and stay capped.
+		{"import apply capped", http.MethodPost, "/api/v1/domains/5/import/archive/apply", true},
+		{"import config capped", http.MethodPost, "/api/v1/domains/5/import/config", true},
 		{"json capped", http.MethodPost, "/api/v1/domains/5/databases", true},
 		{"get on upload path capped", http.MethodGet, "/api/v1/domains/5/files/upload", true},
 	}
