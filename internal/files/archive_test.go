@@ -93,3 +93,30 @@ func TestZipFollowsSymlinksWithoutTheFlag(t *testing.T) {
 		t.Errorf("dropping -y no longer packages the target's content, so the flag guards nothing: %q", got)
 	}
 }
+
+// The tree-walking tools are pointed at a /proc/self/fd path, so they must
+// dereference that ONE argument and nothing else. -L dereferences every symlink
+// met during the walk, which put the whole host inside a tenant's search results
+// and inside their reported folder size.
+func TestWalkArgumentsDereferenceOnlyTheStartingPoint(t *testing.T) {
+	find := searchArgs("/proc/self/fd/7", "*needle*")
+	if !slices.Contains(find, "-H") {
+		t.Errorf("find is not given -H, so it cannot enter the pinned directory: %v", find)
+	}
+	if slices.Contains(find, "-L") {
+		t.Errorf("find is given -L, which follows tenant symlinks out of the tree: %v", find)
+	}
+	if find[1] != "/proc/self/fd/7" {
+		t.Errorf("the starting point is not the first operand: %v", find)
+	}
+
+	du := sizeArgs("/proc/self/fd/7")
+	if !slices.Contains(du, "-D") {
+		t.Errorf("du is not given -D, so it measures the link rather than the directory: %v", du)
+	}
+	for _, forbidden := range []string{"-L", "--dereference", "-sbL"} {
+		if slices.Contains(du, forbidden) {
+			t.Errorf("du is given %q, which measures whatever tenant symlinks point at: %v", forbidden, du)
+		}
+	}
+}

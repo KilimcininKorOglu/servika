@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"servika/internal/archivex"
 	"servika/internal/httpx"
@@ -198,6 +199,26 @@ func newFileCommand(ctx context.Context, name string, arguments ...string) *exec
 	command := exec.CommandContext(ctx, name, arguments...)
 	command.Env = []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
 	return command
+}
+
+// Bounds for the two tree-walking tools. Both are far shorter than the panel's
+// 300-second request timeout, which is the only limit they had.
+const (
+	searchTimeout = 20 * time.Second
+	sizeTimeout   = 30 * time.Second
+)
+
+// searchArgs and sizeArgs carry the flag that decides whether the walk can leave
+// the tenant's tree. -H (find) and -D (du) dereference ONLY the command-line
+// argument, which is what makes the /proc/self/fd pin usable while leaving every
+// symlink inside the tree unfollowed. -L, the flag both used to carry,
+// dereferences everything and puts the whole host within reach of the walk.
+func searchArgs(base, pattern string) []string {
+	return []string{"-H", base, "-iname", pattern, "-printf", "%p\t%s\t%y\t%T@\n"}
+}
+
+func sizeArgs(path string) []string {
+	return []string{"-sb", "-D", path}
 }
 
 // archiveCommand builds the tool and arguments for one archive request.
@@ -516,7 +537,16 @@ func (h *Handlers) CalculateSize(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { _ = pinned.Close() }()
 	fdPath := "/proc/self/fd/" + strconv.Itoa(int(pinned.Fd()))
-	out, err := newFileCommand(r.Context(), "du", "-sbL", fdPath).CombinedOutput()
+	// -D dereferences ONLY the command-line argument, which is what makes the
+	// /proc/self/fd pin usable. -L, which was here before, also followed every
+	// symlink inside the tree, so a link to / had root measure the whole host and
+	// report its size back to the tenant.
+	//
+	// The bound is its own, well under the panel's 300-second request timeout: a
+	// deep tree otherwise keeps a root process busy for five minutes per request.
+	sizeCtx, cancelSize := context.WithTimeout(r.Context(), sizeTimeout)
+	defer cancelSize()
+	out, err := newFileCommand(sizeCtx, "du", sizeArgs(fdPath)...).CombinedOutput()
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
@@ -572,8 +602,16 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 	q = strings.ReplaceAll(q, "?", "")
 	pattern := "*" + q + "*"
 
-	// -L follows the /proc/self/fd symlink into the real base directory.
-	out, _ := newFileCommand(r.Context(), "find", "-L", fdBase, "-iname", pattern, "-printf", "%p\t%s\t%y\t%T@\n").Output()
+	// -H follows the /proc/self/fd symlink into the real base directory and NOTHING
+	// else. -L, which was here before, followed every symlink met during the walk,
+	// so a tenant link to / had root search the whole host and hand back its file
+	// names, sizes and owners; the os.Lstat below then read those paths too.
+	//
+	// The search is bounded well under the panel's 300-second request timeout,
+	// because an unbounded walk is a cheap way to hold a root process.
+	searchCtx, cancelSearch := context.WithTimeout(r.Context(), searchTimeout)
+	defer cancelSearch()
+	out, _ := newFileCommand(searchCtx, "find", searchArgs(fdBase, pattern)...).Output()
 	relBase := "/" + strings.Trim(relClean(rel), "/")
 	results := []Entry{}
 	for ln := range strings.SplitSeq(string(out), "\n") {
