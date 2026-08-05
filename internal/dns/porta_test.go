@@ -44,7 +44,7 @@ _sip._tcp	IN	SRV	10 5 5060 sip.example.com.
 }
 
 func TestRenderBindZoneRoundTrip(t *testing.T) {
-	soa := defaultSOA("example.com")
+	soa := defaultSOA("example.com", "")
 	in := []Record{
 		{Name: "@", Type: "A", Value: "192.0.2.10", TTL: 3600},
 		{Name: "@", Type: "MX", Value: "mail.example.com", TTL: 3600, Priority: 0},

@@ -25,9 +25,18 @@ type SOA struct {
 	TTL        int    `json:"ttl"`
 }
 
-func defaultSOA(domainName string) SOA {
+// defaultSOA builds the SOA defaults for a domain. The primary NS must be
+// CONSISTENT with the zone's NS records, so it is the first of the shared
+// nameserver pair (see nameserver.go). It used to be hardcoded to
+// "ns1.<domain>", which under the shared model writes a host into the SOA that
+// appears nowhere in the zone's NS records: named-checkzone accepts that "lame
+// SOA", but DNS auditors and some registry checks flag it.
+func defaultSOA(domainName, ns1 string) SOA {
+	if !ValidNSHost(ns1) {
+		ns1 = "ns1." + domainName
+	}
 	return SOA{
-		PrimaryNS:  "ns1." + domainName,
+		PrimaryNS:  ns1,
 		Hostmaster: "admin@" + domainName,
 		Refresh:    3600,
 		Retry:      900,
@@ -39,7 +48,8 @@ func defaultSOA(domainName string) SOA {
 
 // LoadSOA returns the stored SOA settings or domain-specific defaults.
 func LoadSOA(ctx context.Context, db *sql.DB, domainID int64, domainName string) SOA {
-	soa := defaultSOA(domainName)
+	ns1, _ := NameserverPair(ctx, db, domainID, domainName)
+	soa := defaultSOA(domainName, ns1)
 	var primaryNS, hostmaster string
 	var refresh, retry, expire, minimum, ttl int
 	if err := db.QueryRowContext(ctx,
@@ -100,7 +110,8 @@ func (h *Handlers) PutSOA(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	defaults := defaultSOA(domainName)
+	ns1, _ := NameserverPair(r.Context(), h.DB, id, domainName)
+	defaults := defaultSOA(domainName, ns1)
 	if soa.PrimaryNS = strings.TrimSpace(soa.PrimaryNS); soa.PrimaryNS == "" {
 		soa.PrimaryNS = defaults.PrimaryNS
 	}

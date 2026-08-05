@@ -1,4 +1,8 @@
 // template.go provides the server-wide DNS template and DKIM key generation.
+//
+// Placeholders: {DOMAIN} domain name, {IP} domain IPv4, {SELECTOR} DKIM
+// selector, {DKIM} DKIM public TXT, {NS1}/{NS2} the shared nameserver pair
+// (see nameserver.go).
 package dns
 
 import (
@@ -58,10 +62,12 @@ func builtinDefaults() []TemplateRow {
 		{Name: "@", Type: "TXT", Value: "v=spf1 a mx ip4:{IP} ~all", TTL: 3600, SortOrder: 50, Enabled: true},
 		{Name: "_dmarc", Type: "TXT", Value: "v=DMARC1; p=quarantine; rua=mailto:postmaster@{DOMAIN}; ruf=mailto:postmaster@{DOMAIN}; fo=1; adkim=r; aspf=r", TTL: 3600, SortOrder: 60, Enabled: true},
 		{Name: "{SELECTOR}._domainkey", Type: "TXT", Value: "{DKIM}", TTL: 3600, SortOrder: 70, Enabled: true},
-		{Name: "ns1", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 80, Enabled: true},
-		{Name: "ns2", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 90, Enabled: true},
-		{Name: "@", Type: "NS", Value: "ns1.{DOMAIN}", TTL: 86400, SortOrder: 100, Enabled: true},
-		{Name: "@", Type: "NS", Value: "ns2.{DOMAIN}", TTL: 86400, SortOrder: 110, Enabled: true},
+		// The NS records name the SHARED nameserver pair. No ns1/ns2 A record is
+		// placed under the customer's domain: the nameserver lives in the
+		// provider's (or reseller's) own domain, where glue is needed once
+		// instead of once per customer domain. See nameserver.go.
+		{Name: "@", Type: "NS", Value: "{NS1}", TTL: 86400, SortOrder: 100, Enabled: true},
+		{Name: "@", Type: "NS", Value: "{NS2}", TTL: 86400, SortOrder: 110, Enabled: true},
 	}
 }
 
@@ -130,11 +136,13 @@ func LoadTemplateMeta(ctx context.Context, db *sql.DB) TemplateMeta {
 	return meta
 }
 
-func substituteTemplate(value, domainName, ipv4, selector, dkim string) string {
+func substituteTemplate(value, domainName, ipv4, selector, dkim, ns1, ns2 string) string {
 	value = strings.ReplaceAll(value, "{DOMAIN}", domainName)
 	value = strings.ReplaceAll(value, "{IP}", ipv4)
 	value = strings.ReplaceAll(value, "{SELECTOR}", selector)
-	return strings.ReplaceAll(value, "{DKIM}", dkim)
+	value = strings.ReplaceAll(value, "{DKIM}", dkim)
+	value = strings.ReplaceAll(value, "{NS1}", ns1)
+	return strings.ReplaceAll(value, "{NS2}", ns2)
 }
 
 // EnsureDKIM returns a domain's existing DKIM public record or creates a 2048-bit key pair.

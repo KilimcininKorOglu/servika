@@ -354,6 +354,7 @@ func SeedDefaults(ctx context.Context, db *sql.DB, domainID int64, domainName, i
 	}
 	meta := LoadTemplateMeta(ctx, db)
 	selector := meta.DKIMSelector
+	ns1, ns2 := NameserverPair(ctx, db, domainID, domainName)
 
 	dkimTXT := ""
 	if meta.DKIMEnabled {
@@ -376,8 +377,8 @@ func SeedDefaults(ctx context.Context, db *sql.DB, domainID int64, domainName, i
 		if strings.Contains(row.Value, "{DKIM}") && (!meta.DKIMEnabled || dkimTXT == "") {
 			continue
 		}
-		name := substituteTemplate(row.Name, domainName, ipv4, selector, dkimTXT)
-		value := substituteTemplate(row.Value, domainName, ipv4, selector, dkimTXT)
+		name := substituteTemplate(row.Name, domainName, ipv4, selector, dkimTXT, ns1, ns2)
+		value := substituteTemplate(row.Value, domainName, ipv4, selector, dkimTXT, ns1, ns2)
 		recordType := strings.ToUpper(strings.TrimSpace(row.Type))
 		var count int
 		_ = db.QueryRowContext(ctx,
@@ -406,7 +407,8 @@ func seedSOAFromMeta(ctx context.Context, db *sql.DB, domainID int64, domainName
 	if count > 0 {
 		return
 	}
-	defaults := defaultSOA(domainName)
+	ns1, _ := NameserverPair(ctx, db, domainID, domainName)
+	defaults := defaultSOA(domainName, ns1)
 	_, _ = db.ExecContext(ctx,
 		`INSERT INTO dns_soa(domain_id, primary_ns, hostmaster, refresh, retry, expire, minimum, ttl)
 		 VALUES(?,?,?,?,?,?,?,?)

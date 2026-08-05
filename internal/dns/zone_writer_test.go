@@ -132,7 +132,7 @@ func TestZoneTemplateWritesPriorityOnlyForSupportedTypes(t *testing.T) {
 	ctx := zoneCtx{
 		DomainName: "example.com",
 		Serial:     "2026071801",
-		SOA:        defaultSOA("example.com"),
+		SOA:        defaultSOA("example.com", ""),
 		Records: []Record{
 			{Name: "@", Type: "A", Value: "192.0.2.10", TTL: 3600, Priority: 10},
 			{Name: "@", Type: "MX", Value: "mail.example.com", TTL: 3600, Priority: 10},

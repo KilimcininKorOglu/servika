@@ -330,6 +330,15 @@ func main() {
 			// adding a customer domain); editing the template is admin's product config.
 			r.With(middleware.ResellerOrAbove).Get("/dns-template", dnsH.GetTemplate)
 			r.With(middleware.AdminOnly).Put("/dns-template", dnsH.PutTemplate)
+			// Shared nameserver pair, published as the NS records of every customer
+			// domain. The reseller endpoints are reseller-only on purpose: an admin
+			// row in reseller_nameservers would never be read, because a customer
+			// managed directly by the admin has a NULL owner_user_id.
+			r.With(middleware.AdminOnly).Get("/nameservers", dnsH.GetNameserver)
+			r.With(middleware.AdminOnly).Put("/nameservers", dnsH.PutNameserver)
+			r.With(middleware.AdminOnly).Post("/nameservers/migrate", dnsH.MigrateNameservers)
+			r.With(middleware.RequireRole(middleware.RoleReseller)).Get("/reseller/nameservers", dnsH.GetResellerNameserver)
+			r.With(middleware.RequireRole(middleware.RoleReseller)).Put("/reseller/nameservers", dnsH.PutResellerNameserver)
 			// Server-wide read-only overview lists — the sidebar's DNS / SSL /
 			// Mail / Databases pages read these. Editing still happens on the
 			// domain-scoped endpoints.
@@ -573,6 +582,7 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/template", dnsH.ApplyTemplate)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/bulk-delete", dnsH.BulkDelete)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/bulk-status", dnsH.BulkStatus)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/nameservers", dnsH.GetDomainNameserver)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/dns/soa", dnsH.GetSOA)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/dns/soa", dnsH.PutSOA)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/dns/dnssec", dnsH.GetDNSSEC)
