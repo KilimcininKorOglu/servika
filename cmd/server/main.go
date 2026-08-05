@@ -583,6 +583,7 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/bulk-delete", dnsH.BulkDelete)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/dns/bulk-status", dnsH.BulkStatus)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/nameservers", dnsH.GetDomainNameserver)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/dns/verify", dnsH.Verify)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/dns/soa", dnsH.GetSOA)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/dns/soa", dnsH.PutSOA)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/dns/dnssec", dnsH.GetDNSSEC)

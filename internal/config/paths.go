@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -37,6 +38,12 @@ const (
 	DefaultNginxCacheTempConf = "/etc/nginx/conf.d/00-servikacache-temporary.conf"
 	DefaultNginxCacheLogConf  = "/etc/nginx/conf.d/00-servika-cache-log.conf"
 	DefaultGitHubAPI          = "https://api.github.com"
+	// DefaultDNSVerifyResolver is the recursive resolver the DNS verification
+	// screen queries. It is deliberately NOT the system resolver: the panel host
+	// runs an authoritative BIND for the domains it hosts, so /etc/resolv.conf
+	// pointing at it would answer from the local zone and hide the mismatch the
+	// screen exists to find.
+	DefaultDNSVerifyResolver  = "1.1.1.1:53"
 	DefaultIonCubeURL         = "https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz"
 	DefaultUpdateBootstrapURL = "https://raw.githubusercontent.com/ServikaPanel/servika/main/assets/ops/servika-update"
 	DefaultVersionEndpoint    = "https://raw.githubusercontent.com/ServikaPanel/servika/main/version.json"
@@ -126,6 +133,25 @@ func NginxCacheTempConf() string {
 func NginxCacheLogConf() string {
 	return mustAbsPath("SERVIKA_NGINX_CACHE_LOG_CONF", DefaultNginxCacheLogConf)
 }
+
+// DNSVerifyResolver returns the host:port of the recursive resolver used by the
+// DNS verification screen. An override without a port gets the default one, and
+// anything unparseable falls back to the default rather than producing a dialer
+// that fails every lookup.
+func DNSVerifyResolver() string {
+	value := strings.TrimSpace(os.Getenv("SERVIKA_DNS_VERIFY_RESOLVER"))
+	if value == "" {
+		return DefaultDNSVerifyResolver
+	}
+	if _, _, err := net.SplitHostPort(value); err != nil {
+		value = net.JoinHostPort(value, "53")
+	}
+	if host, _, err := net.SplitHostPort(value); err != nil || net.ParseIP(host) == nil {
+		return DefaultDNSVerifyResolver
+	}
+	return value
+}
+
 func GitHubAPI() string  { return mustURL("SERVIKA_GITHUB_API", DefaultGitHubAPI) }
 func IonCubeURL() string { return mustURL("SERVIKA_IONCUBE_URL", DefaultIonCubeURL) }
 func UpdateBootstrapURL() string {
