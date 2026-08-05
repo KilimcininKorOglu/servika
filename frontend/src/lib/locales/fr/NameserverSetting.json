@@ -27,5 +27,6 @@
     "title": "Appliquer aux domaines existants",
     "message": "Les enregistrements NS et le serveur de noms primaire SOA de chaque domaine sont réglés sur la paire actuelle, les enregistrements A ns1/ns2 résiduels sont supprimés et les zones sont réécrites. Les domaines déjà corrects ne sont pas touchés.",
     "action": "Appliquer"
-  }
+  },
+  "migrateDisabledHint": "Définissez et enregistrez d'abord les serveurs de noms ; sans eux, la migration écrirait ns1.<domaine> dans chaque zone."
 }

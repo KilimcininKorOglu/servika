@@ -27,5 +27,6 @@
     "title": "Aplică la domeniile existente",
     "message": "Înregistrările NS și serverul de nume primar din SOA al fiecărui domeniu sunt setate la perechea curentă, înregistrările A ns1/ns2 rămase sunt eliminate, iar zonele sunt rescrise. Domeniile deja corecte rămân neatinse.",
     "action": "Aplică"
-  }
+  },
+  "migrateDisabledHint": "Setați și salvați mai întâi serverele de nume; fără ele migrarea ar scrie ns1.<domeniu> în fiecare zonă."
 }

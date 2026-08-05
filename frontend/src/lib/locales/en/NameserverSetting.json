@@ -27,5 +27,6 @@
     "title": "Apply to existing domains",
     "message": "The NS records and the SOA primary nameserver of every domain are set to the current pair, leftover ns1/ns2 A records are removed and the zones are rewritten. Domains that are already correct are left alone.",
     "action": "Apply"
-  }
+  },
+  "migrateDisabledHint": "Set the nameservers and save them first; without them the migration would write ns1.<domain> into every zone."
 }

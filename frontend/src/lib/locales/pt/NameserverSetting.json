@@ -27,5 +27,6 @@
     "title": "Aplicar aos domínios existentes",
     "message": "Os registos NS e o servidor de nomes primário do SOA de cada domínio passam para o par atual, os registos A ns1/ns2 remanescentes são removidos e as zonas são reescritas. Os domínios já corretos ficam intactos.",
     "action": "Aplicar"
-  }
+  },
+  "migrateDisabledHint": "Defina e guarde primeiro os servidores de nomes; sem eles a migração escreveria ns1.<domínio> em cada zona."
 }

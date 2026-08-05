@@ -27,5 +27,6 @@
     "title": "Mevcut alan adlarına uygula",
     "message": "Her alan adının NS kayıtları ve SOA birincil ad sunucusu geçerli çifte ayarlanır, artakalan ns1/ns2 A kayıtları silinir ve bölgeler yeniden yazılır. Zaten doğru olan alan adlarına dokunulmaz.",
     "action": "Uygula"
-  }
+  },
+  "migrateDisabledHint": "Önce ad sunucularını ayarlayıp kaydedin; onlar olmadan taşıma her bölgeye ns1.<alanadı> yazardı."
 }

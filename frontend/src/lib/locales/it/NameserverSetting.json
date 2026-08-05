@@ -27,5 +27,6 @@
     "title": "Applica ai domini esistenti",
     "message": "I record NS e il server dei nomi primario SOA di ogni dominio vengono impostati sulla coppia corrente, i record A ns1/ns2 residui vengono rimossi e le zone riscritte. I domini già corretti non vengono toccati.",
     "action": "Applica"
-  }
+  },
+  "migrateDisabledHint": "Imposta e salva prima i server dei nomi; senza di essi la migrazione scriverebbe ns1.<dominio> in ogni zona."
 }

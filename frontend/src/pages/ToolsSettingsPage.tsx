@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import Breadcrumb from '@/components/Breadcrumb'
 import PanelUpdate from '@/components/PanelUpdate'
 import ServerOptimizeCard from '@/components/ServerOptimizeCard'
+import NameserverSetting from '@/components/NameserverSetting'
 
 /*
  * Tools & Settings — server-wide management hub.
@@ -191,6 +192,7 @@ export default function ToolsSettingsPage() {
         <div className="space-y-3">
           <PanelUpdate />
           <ServerOptimizeCard />
+          <NameserverSetting audience="admin" />
         </div>
       </section>
 

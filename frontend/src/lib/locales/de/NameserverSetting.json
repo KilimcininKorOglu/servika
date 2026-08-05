@@ -27,5 +27,6 @@
     "title": "Auf bestehende Domains anwenden",
     "message": "Die NS-Records und der primäre SOA-Nameserver jeder Domain werden auf das aktuelle Paar gesetzt, übrig gebliebene ns1/ns2 A-Records werden entfernt und die Zonen neu geschrieben. Bereits korrekte Domains bleiben unberührt.",
     "action": "Anwenden"
-  }
+  },
+  "migrateDisabledHint": "Setzen und speichern Sie zuerst die Nameserver; ohne sie würde die Migration ns1.<Domain> in jede Zone schreiben."
 }

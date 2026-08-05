@@ -27,5 +27,6 @@
     "title": "Použít na stávající domény",
     "message": "Záznamy NS a primární jmenný server v SOA každé domény se nastaví na aktuální dvojici, zbylé záznamy A ns1/ns2 se odstraní a zóny se přepíší. Domény, které jsou již správné, zůstanou beze změny.",
     "action": "Použít"
-  }
+  },
+  "migrateDisabledHint": "Nejprve nastavte a uložte jmenné servery; bez nich by migrace zapsala ns1.<doména> do každé zóny."
 }

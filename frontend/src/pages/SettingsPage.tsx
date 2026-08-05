@@ -145,7 +145,10 @@ export default function SettingsPage() {
       <div className="space-y-5">
         <PanelDomain />
         <HostnameSetting />
-        <NameserverSetting role={currentUser?.role} />
+        {/* Resellers only: the admin pair lives under Tools & Settings, which is
+            where the admin menu's Settings entry goes and which a reseller
+            never sees. */}
+        <NameserverSetting audience="reseller" />
         <ServerRebootButton />
 
         {/* 1. Account information */}
