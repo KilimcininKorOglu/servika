@@ -244,6 +244,14 @@ sed "s/__SERVIKA_MAIL_DB_PASS__/${DBPASS}/" "$TMPL/dovecot/dovecot-sql.conf.ext.
 chown root:dovecot /etc/dovecot/dovecot-sql.conf.ext
 chmod 640 /etc/dovecot/dovecot-sql.conf.ext
 cp "$TMPL/dovecot/10-servika-mail.conf.tmpl" /etc/dovecot/conf.d/10-servika-mail.conf
+# Turn off the stock PAM passdb: every mailbox here is virtual (SQL passdb).
+# Dovecot loads conf.d alphabetically, so 10-auth.conf wins and PAM is asked
+# first on every login; the account does not exist on the system, pam_unix
+# applies its failure delay, and the login takes seconds. It also exposes system
+# accounts to password guessing over IMAP. Idempotent: only the active line is
+# commented, an already commented one does not match.
+sed -i 's|^!include auth-system\.conf\.ext[[:space:]]*$|#!include auth-system.conf.ext  # Servika: mailboxes are virtual (SQL passdb)|' \
+  /etc/dovecot/conf.d/10-auth.conf 2>/dev/null || true
 log "dovecot-sql.conf.ext and 10-servika-mail.conf installed"
 
 echo "════ OpenDKIM ════"

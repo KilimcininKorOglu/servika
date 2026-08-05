@@ -3,6 +3,13 @@ protocols = imap lmtp
 
 mail_location = maildir:~/
 
+# The stock `!include auth-system.conf.ext` in 10-auth.conf MUST be commented
+# out; servika-mail-setup and the HealDovecotAuth startup repair both do it.
+# Dovecot loads conf.d alphabetically, so 10-auth.conf is read BEFORE this file
+# and registers `passdb { driver = pam }` first. Passdbs are tried in order, so
+# every virtual mailbox login queries PAM first; the user does not exist on the
+# system, pam_unix applies its failure delay, and the login takes seconds. PAM
+# also lets IMAP clients guess passwords for system accounts, root included.
 passdb {
   driver = sql
   args = /etc/dovecot/dovecot-sql.conf.ext
@@ -11,6 +18,12 @@ userdb {
   driver = sql
   args = /etc/dovecot/dovecot-sql.conf.ext
 }
+
+# Authentication cache. Roundcube opens a NEW IMAP session on every HTTP
+# request, so without it each request repeats the passdb query.
+auth_cache_size = 10M
+auth_cache_ttl = 1 hours
+auth_cache_negative_ttl = 1 mins
 
 service auth {
   unix_listener /var/spool/postfix/private/auth {

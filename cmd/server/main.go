@@ -183,6 +183,11 @@ func main() {
 	// script, so a repair added there would only take effect one update later.
 	// Startup is the first point that runs with the new release in place.
 	mail.HealRoundcubeSMTP(context.Background())
+	// The stock Dovecot PAM passdb delays every virtual mailbox login and lets
+	// IMAP clients guess system account passwords. servika-mail-setup disables it
+	// too, but it can exit before that step and this repair also has to reach
+	// hosts that were installed before it existed.
+	mail.HealDovecotAuth(context.Background())
 	mail.StartPolicyServer(d, "127.0.0.1:10040")
 	// Called synchronously: this publishes the running version to internal/system,
 	// which /system/usage reports as panel_version. Only local file work happens
