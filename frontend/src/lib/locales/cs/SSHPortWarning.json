@@ -1,0 +1,14 @@
+{
+  "title": "SSH běží na výchozím portu (22)",
+  "badge": "Bezpečnostní riziko",
+  "description": "Port 22 je prvním cílem automatických skenerů a útoků hrubou silou na internetu. Přesun SSH na jiný port odstraní téměř veškerý tento provoz.",
+  "descriptionMixed": "Port 22 je stále otevřený, vedle portů {{ports}}. Po ověření přesunu port 22 zavřete; do té doby zůstává útočná plocha otevřená.",
+  "how": "Jak jej změnit",
+  "step1": "Vytvořte soubor s portem:",
+  "step2": "Oznamte nový port SELinuxu. Bez tohoto kroku se sshd vůbec nespustí:",
+  "step3": "Otevřete nový port a zavřete 22 v sekci",
+  "firewallLink": "Firewall",
+  "step4": "Zkontrolujte konfiguraci a restartujte sshd:",
+  "step5": "BEZ UZAVŘENÍ AKTUÁLNÍ RELACE SSH otevřete druhou relaci na novém portu a ověřte, že funguje. Teprve poté zavřete port 22.",
+  "note": "Toto upozornění zmizí samo, jakmile sshd přestane odpovídat na portu 22."
+}

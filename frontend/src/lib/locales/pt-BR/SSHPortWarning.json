@@ -1,0 +1,14 @@
+{
+  "title": "O SSH está rodando na porta padrão (22)",
+  "badge": "Risco de segurança",
+  "description": "A porta 22 é o primeiro alvo dos scanners automáticos e do tráfego de força bruta na internet. Mudar o SSH para outra porta elimina quase todo esse tráfego.",
+  "descriptionMixed": "A porta 22 continua aberta, junto de {{ports}}. Feche a 22 depois de confirmar a mudança; até lá a superfície de ataque permanece aberta.",
+  "how": "Como alterar",
+  "step1": "Crie um arquivo de porta:",
+  "step2": "Informe a nova porta ao SELinux. Sem esta etapa o sshd não inicia de jeito nenhum:",
+  "step3": "Abra a nova porta e feche a 22 em",
+  "firewallLink": "Firewall",
+  "step4": "Verifique a configuração e reinicie o sshd:",
+  "step5": "SEM FECHAR A SESSÃO SSH ATUAL, abra uma segunda sessão na nova porta e confirme que funciona. Só então feche a porta 22.",
+  "note": "Este aviso desaparece sozinho assim que o sshd não responder mais na 22."
+}

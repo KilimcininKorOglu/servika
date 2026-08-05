@@ -1,0 +1,14 @@
+{
+  "title": "SSH rulează pe portul implicit (22)",
+  "badge": "Risc de securitate",
+  "description": "Portul 22 este prima țintă a scanerelor automate și a traficului de forță brută de pe internet. Mutarea SSH pe alt port elimină aproape tot acest trafic.",
+  "descriptionMixed": "Portul 22 este încă deschis, alături de {{ports}}. Închideți portul 22 după ce verificați mutarea; până atunci suprafața de atac rămâne deschisă.",
+  "how": "Cum îl schimbați",
+  "step1": "Creați un fișier de port:",
+  "step2": "Anunțați noul port în SELinux. Fără acest pas, sshd nu pornește deloc:",
+  "step3": "Deschideți noul port și închideți-l pe 22 în",
+  "firewallLink": "Firewall",
+  "step4": "Verificați configurația și reporniți sshd:",
+  "step5": "FĂRĂ A ÎNCHIDE SESIUNEA SSH CURENTĂ, deschideți o a doua sesiune pe noul port și confirmați că funcționează. Abia apoi închideți portul 22.",
+  "note": "Această avertizare dispare de la sine imediat ce sshd nu mai răspunde pe 22."
+}

@@ -5,6 +5,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import PanelUpdate from '@/components/PanelUpdate'
 import ServerOptimizeCard from '@/components/ServerOptimizeCard'
 import NameserverSetting from '@/components/NameserverSetting'
+import SSHPortWarning from '@/components/SSHPortWarning'
 
 /*
  * Tools & Settings — server-wide management hub.
@@ -156,6 +157,10 @@ export default function ToolsSettingsPage() {
   return (
     <div className="px-6 py-5">
       <Breadcrumb items={[{ label: t('breadcrumb.home'), href: '/' }, { label: t('breadcrumb.current') }]} />
+
+      {/* Standing warning while sshd answers on the default port. It sits above
+          the header and the search box because it is not one of the tools. */}
+      <SSHPortWarning />
 
       {/* Header + search */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

@@ -1,0 +1,14 @@
+{
+  "title": "SSH fonctionne sur le port par défaut (22)",
+  "badge": "Risque de sécurité",
+  "description": "Le port 22 est la première cible des scanners automatiques et du trafic de force brute sur internet. Déplacer SSH vers un autre port supprime la quasi-totalité de ce trafic.",
+  "descriptionMixed": "Le port 22 reste ouvert, à côté de {{ports}}. Fermez le port 22 une fois le changement vérifié ; jusque-là, la surface d'attaque reste ouverte.",
+  "how": "Comment le changer",
+  "step1": "Créez un fichier de port :",
+  "step2": "Déclarez le nouveau port à SELinux. Sans cette étape, sshd ne démarre pas du tout :",
+  "step3": "Ouvrez le nouveau port et fermez le 22 dans",
+  "firewallLink": "Pare-feu",
+  "step4": "Vérifiez la configuration et redémarrez sshd :",
+  "step5": "SANS FERMER LA SESSION SSH ACTUELLE, ouvrez une seconde session sur le nouveau port et confirmez qu'elle fonctionne. Ne fermez le port 22 qu'ensuite.",
+  "note": "Cet avertissement disparaît de lui-même dès que sshd ne répond plus sur le port 22."
+}

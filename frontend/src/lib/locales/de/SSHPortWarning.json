@@ -1,0 +1,14 @@
+{
+  "title": "SSH läuft auf dem Standardport (22)",
+  "badge": "Sicherheitsrisiko",
+  "description": "Port 22 ist das erste Ziel der automatischen Scanner und des Brute-Force-Verkehrs im Internet. Ein Wechsel auf einen anderen Port entfernt fast den gesamten Verkehr.",
+  "descriptionMixed": "Port 22 ist neben {{ports}} weiterhin offen. Schließen Sie 22, sobald der Wechsel geprüft ist; bis dahin bleibt die Angriffsfläche bestehen.",
+  "how": "So ändern Sie ihn",
+  "step1": "Legen Sie eine Portdatei an:",
+  "step2": "Machen Sie den neuen Port SELinux bekannt. Ohne diesen Schritt startet sshd überhaupt nicht:",
+  "step3": "Öffnen Sie den neuen Port und schließen Sie 22 unter",
+  "firewallLink": "Firewall",
+  "step4": "Prüfen Sie die Konfiguration und starten Sie sshd neu:",
+  "step5": "OHNE DIE AKTUELLE SSH-SITZUNG ZU SCHLIESSEN, öffnen Sie eine zweite Sitzung auf dem neuen Port und bestätigen Sie, dass sie funktioniert. Erst danach schließen Sie Port 22.",
+  "note": "Diese Warnung verschwindet von selbst, sobald sshd auf 22 nicht mehr antwortet."
+}
