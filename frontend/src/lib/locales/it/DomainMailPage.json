@@ -17,7 +17,8 @@
     "notEnabled": "L'hosting email non è ancora abilitato per questo dominio.",
     "info": "Abilitandolo si aggiungono i record DNS MX, SPF, DKIM e DMARC quando possibile.",
     "enabling": "Abilitazione…",
-    "button": "Abilita email"
+    "button": "Abilita email",
+    "resourceWarning": "Lo stack di posta (Postfix, Dovecot, Rspamd, webmail) serve l'intero server e consuma RAM e CPU aggiuntive. Valutate il carico attuale prima di attivarlo su un server piccolo."
   },
   "mailboxAdd": {
     "title": "Aggiungi casella di posta",

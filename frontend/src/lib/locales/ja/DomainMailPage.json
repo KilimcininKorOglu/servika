@@ -17,7 +17,8 @@
     "notEnabled": "このドメインではメールホスティングがまだ有効になっていません。",
     "info": "有効にすると、可能な場合 MX、SPF、DKIM、DMARC の DNS レコードが追加されます。",
     "enabling": "有効化中…",
-    "button": "メールを有効化"
+    "button": "メールを有効化",
+    "resourceWarning": "メール一式 (Postfix、Dovecot、Rspamd、ウェブメール) はサーバー全体で動作し、追加の RAM と CPU を消費します。小規模なサーバーで有効にする前に、現在の負荷を確認してください。"
   },
   "mailboxAdd": {
     "title": "メールボックスを追加",

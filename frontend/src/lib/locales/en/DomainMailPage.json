@@ -17,7 +17,8 @@
     "notEnabled": "Email hosting is not enabled for this domain yet.",
     "info": "Enabling it adds MX, SPF, DKIM, and DMARC DNS records when possible.",
     "enabling": "Enabling…",
-    "button": "Enable Email"
+    "button": "Enable Email",
+    "resourceWarning": "The mail stack (Postfix, Dovecot, Rspamd, webmail) serves the whole server and takes extra RAM and CPU. Weigh the current load before enabling it on a small server."
   },
   "mailboxAdd": {
     "title": "Add mailbox",

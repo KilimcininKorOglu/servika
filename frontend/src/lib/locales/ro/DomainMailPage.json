@@ -17,7 +17,8 @@
     "notEnabled": "Găzduirea email nu este încă activată pentru acest domeniu.",
     "info": "Activarea adaugă înregistrări DNS MX, SPF, DKIM și DMARC atunci când este posibil.",
     "enabling": "Se activează…",
-    "button": "Activare email"
+    "button": "Activare email",
+    "resourceWarning": "Stiva de e-mail (Postfix, Dovecot, Rspamd, webmail) deservește întregul server și consumă RAM și CPU suplimentare. Evaluați încărcarea curentă înainte de a o activa pe un server mic."
   },
   "mailboxAdd": {
     "title": "Adăugare cutie poștală",

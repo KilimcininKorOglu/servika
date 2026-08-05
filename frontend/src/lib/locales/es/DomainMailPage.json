@@ -5,7 +5,7 @@
   "loading": "Cargando…",
   "back": "← Volver a la suscripción",
   "generatedPassword": { "title": "Contraseña para {{email}}", "saveNote": "Guárdela ahora. No se mostrará de nuevo.", "copy": "Copiar" },
-  "enable": { "notEnabled": "El alojamiento de correo aún no está activado para este dominio.", "info": "Al activarlo se añaden registros DNS MX, SPF, DKIM y DMARC cuando sea posible.", "enabling": "Activando…", "button": "Activar correo" },
+  "enable": { "notEnabled": "El alojamiento de correo aún no está activado para este dominio.", "info": "Al activarlo se añaden registros DNS MX, SPF, DKIM y DMARC cuando sea posible.", "enabling": "Activando…", "button": "Activar correo" ,"resourceWarning":"La pila de correo (Postfix, Dovecot, Rspamd, webmail) da servicio a todo el servidor y consume RAM y CPU adicionales. Valore la carga actual antes de activarla en un servidor pequeño."},
   "mailboxAdd": { "title": "Añadir buzón", "localPlaceholder": "info", "passwordPlaceholder": "contraseña, generada si está vacío", "adding": "Añadiendo…", "add": "Añadir" },
   "mailboxes": { "title": "Buzones", "empty": "Aún no hay buzones.", "suspended": "suspendido", "suspend": "Suspender", "activate": "Activar", "resetPassword": "Restablecer contraseña", "delete": "Eliminar" },
   "forwarders": {

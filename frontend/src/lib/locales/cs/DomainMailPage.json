@@ -17,7 +17,8 @@
     "notEnabled": "E-mailový hosting zatím není pro tuto doménu povolen.",
     "info": "Jeho povolení přidá pokud možno záznamy DNS MX, SPF, DKIM a DMARC.",
     "enabling": "Povolování…",
-    "button": "Povolit e-mail"
+    "button": "Povolit e-mail",
+    "resourceWarning": "Poštovní sada (Postfix, Dovecot, Rspamd, webmail) obsluhuje celý server a spotřebuje další RAM a CPU. Před zapnutím na malém serveru zvažte aktuální zatížení."
   },
   "mailboxAdd": {
     "title": "Přidat schránku",

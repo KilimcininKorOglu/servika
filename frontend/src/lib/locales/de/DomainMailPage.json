@@ -17,7 +17,8 @@
     "notEnabled": "E-Mail-Hosting ist für diese Domain noch nicht aktiviert.",
     "info": "Die Aktivierung fügt nach Möglichkeit MX-, SPF-, DKIM- und DMARC-DNS-Einträge hinzu.",
     "enabling": "Wird aktiviert…",
-    "button": "E-Mail aktivieren"
+    "button": "E-Mail aktivieren",
+    "resourceWarning": "Der Mail-Stack (Postfix, Dovecot, Rspamd, Webmail) bedient den gesamten Server und benötigt zusätzlichen RAM und CPU. Prüfen Sie die aktuelle Last, bevor Sie ihn auf einem kleinen Server aktivieren."
   },
   "mailboxAdd": {
     "title": "Postfach hinzufügen",

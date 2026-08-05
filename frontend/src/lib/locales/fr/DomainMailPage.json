@@ -17,7 +17,8 @@
     "notEnabled": "L'hébergement e-mail n'est pas encore activé pour ce domaine.",
     "info": "Son activation ajoute les enregistrements DNS MX, SPF, DKIM et DMARC lorsque c'est possible.",
     "enabling": "Activation…",
-    "button": "Activer l'e-mail"
+    "button": "Activer l'e-mail",
+    "resourceWarning": "La pile de messagerie (Postfix, Dovecot, Rspamd, webmail) dessert tout le serveur et consomme de la RAM et du CPU supplémentaires. Évaluez la charge actuelle avant de l'activer sur un petit serveur."
   },
   "mailboxAdd": {
     "title": "Ajouter une boîte aux lettres",

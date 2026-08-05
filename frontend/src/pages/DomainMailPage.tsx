@@ -387,6 +387,16 @@ export default function DomainMailPage() {
             <div className="text-3xl mb-2">📧</div>
             <p className="text-sm text-slate-600 dark:text-slate-300 mb-1">{t('enable.notEnabled')}</p>
             <p className="text-xs text-slate-500 dark:text-slate-500 mb-4">{t('enable.info')}</p>
+            {/* Enabling mail starts a whole stack on the server, not a setting on
+                this domain alone, so the cost is stated before the button. */}
+            <div className="flex justify-center mb-4">
+              <div className="inline-flex items-start gap-2 text-left px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <svg className="w-4 h-4 shrink-0 mt-0.5 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+                <span className="text-xs text-amber-800 dark:text-amber-300">{t('enable.resourceWarning')}</span>
+              </div>
+            </div>
             <button type="button" onClick={enableMail} disabled={isSaving}
               className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
               {isSaving ? t('enable.enabling') : t('enable.button')}

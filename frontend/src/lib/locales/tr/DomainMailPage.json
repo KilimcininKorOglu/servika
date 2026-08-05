@@ -17,7 +17,8 @@
     "notEnabled": "Bu alan adı için e-posta barındırma henüz etkin değil.",
     "info": "Etkinleştirmek, mümkün olduğunda MX, SPF, DKIM ve DMARC DNS kayıtlarını ekler.",
     "enabling": "Etkinleştiriliyor…",
-    "button": "E-postayı Etkinleştir"
+    "button": "E-postayı Etkinleştir",
+    "resourceWarning": "Posta yığını (Postfix, Dovecot, Rspamd, webmail) sunucunun tamamına hizmet eder ve ek RAM ile CPU tüketir. Küçük bir sunucuda etkinleştirmeden önce mevcut yükü değerlendirin."
   },
   "mailboxAdd": {
     "title": "Posta kutusu ekle",

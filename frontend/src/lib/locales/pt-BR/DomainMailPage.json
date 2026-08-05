@@ -17,7 +17,8 @@
     "notEnabled": "A hospedagem de e-mail ainda não está ativada para este domínio.",
     "info": "Ao ativar, registros DNS MX, SPF, DKIM e DMARC são adicionados quando possível.",
     "enabling": "Ativando…",
-    "button": "Ativar e-mail"
+    "button": "Ativar e-mail",
+    "resourceWarning": "A pilha de e-mail (Postfix, Dovecot, Rspamd, webmail) atende o servidor inteiro e consome RAM e CPU adicionais. Avalie a carga atual antes de ativá-la em um servidor pequeno."
   },
   "mailboxAdd": {
     "title": "Adicionar caixa de e-mail",
