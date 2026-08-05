@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"os"
 	"os/exec"
 	"os/user"
@@ -1130,16 +1129,21 @@ func wwwHostNames(domain string) []string {
 // wwwSANEligible reports whether www.<domain> may be included in ACME validation.
 // Rule: www must RESOLVE in DNS and point to the SAME address(es) as the apex.
 // Otherwise HTTP-01 validation for www would land on a different server and fail
-// the WHOLE order. When DNS cannot be read (transient error) www is left out — an
-// apex-only certificate always beats the self-signed fail-safe, which on
+// the WHOLE order. When DNS still cannot be read after retrying, www is left out
+// — an apex-only certificate always beats the self-signed fail-safe, which on
 // HSTS-preload TLDs (e.g. .app) makes the site entirely unreachable.
+//
+// Each name is looked up through lookupHostRetrying: dropping www because of one
+// slow resolver answer costs a certificate that omits it, and the canonical www
+// redirect is then refused for a host the certificate does not name. A mismatch
+// is not retried; that is an answer.
 func wwwSANEligible(domain string) bool {
-	apex, err := net.LookupHost(domain)
-	if err != nil || len(apex) == 0 {
+	apex := lookupHostRetrying(domain)
+	if len(apex) == 0 {
 		return false
 	}
-	www, err := net.LookupHost("www." + domain)
-	if err != nil || len(www) == 0 {
+	www := lookupHostRetrying("www." + domain)
+	if len(www) == 0 {
 		return false
 	}
 	apexSet := make(map[string]bool, len(apex))
@@ -1678,12 +1682,12 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	return certPath, keyPath, true, "", nil
 }
 
-// domainResolves reports whether a hostname has any address record. A transient
-// resolver failure is indistinguishable from NXDOMAIN here, and both mean the
-// same thing for http-01: the CA will not reach this host.
+// domainResolves reports whether a hostname has any address record. Refusing
+// issuance here keeps the site on its fail-safe certificate, so the answer is
+// worth retrying: a resolver that is briefly unavailable would otherwise read as
+// NXDOMAIN and cost the domain a real certificate until someone tries again.
 func domainResolves(host string) bool {
-	addresses, err := net.LookupHost(host)
-	return err == nil && len(addresses) > 0
+	return len(lookupHostRetrying(host)) > 0
 }
 
 // DisableSSL re-renders the vhost without SSL while retaining certificate files for reuse.
