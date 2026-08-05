@@ -19,6 +19,7 @@ import (
 	"servika/internal/config"
 	"servika/internal/credentials"
 	"servika/internal/httpx"
+	"servika/internal/system"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -26,7 +27,6 @@ import (
 const (
 	enabledShell  = "/bin/bash"
 	disabledShell = "/usr/sbin/nologin"
-	sshPort       = 22
 )
 
 func servikaJailBin() string { return config.OpsTool("servika-jail") }
@@ -102,9 +102,12 @@ func (h *Handlers) Show(w http.ResponseWriter, r *http.Request) {
 		Enabled:    shell == enabledShell,
 		Shell:      shell,
 		SSHHost:    h.IPv4,
-		SSHPort:    sshPort,
-		HasKey:     hasKey(systemUser),
-		IsDemo:     demo,
+		// Read from sshd rather than fixed at 22: an administrator who moved the
+		// port would otherwise have the panel tell every customer a port that
+		// refuses the connection.
+		SSHPort: system.FirstSSHPort(),
+		HasKey:  hasKey(systemUser),
+		IsDemo:  demo,
 	})
 }
 
