@@ -236,7 +236,7 @@ func TestValidateBSDTarListingsRejectsUnsafeRARMembers(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := validateBSDTarListings([]byte(test.names), []byte(test.verbose), Limits{})
+			err := validateBSDTarListings([]byte(test.names), []byte(test.verbose), Limits{}, nil)
 			if !errors.Is(err, test.want) {
 				t.Fatalf("validateBSDTarListings() error = %v, want %v", err, test.want)
 			}
@@ -259,7 +259,7 @@ func TestValidateLSARListingRejectsUnsafeRARMembers(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := validateLSARListing([]byte(test.json), test.limits)
+			err := validateLSARListing([]byte(test.json), test.limits, nil)
 			if !errors.Is(err, test.want) {
 				t.Fatalf("validateLSARListing() error = %v, want %v", err, test.want)
 			}

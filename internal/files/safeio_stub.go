@@ -97,3 +97,23 @@ func MkdirAllBeneath(_, _, _ string) error {
 }
 
 func RestoreconBeneath(_, _ string) {}
+
+func ReadFileBeneath(_, _ string, _ int64) ([]byte, error) {
+	return nil, errSafeIOLinuxOnly
+}
+
+func WriteFileBeneath(_, _ string, _ []byte, _ uint32, _ string) error {
+	return errSafeIOLinuxOnly
+}
+
+func StreamIntoBeneath(_, _ string, _ io.Reader, _ string) (int64, error) {
+	return 0, errSafeIOLinuxOnly
+}
+
+func ListNamesBeneath(_, _ string) ([]string, error) {
+	return nil, errSafeIOLinuxOnly
+}
+
+func StatBeneath(_, _ string) (os.FileInfo, error) {
+	return nil, errSafeIOLinuxOnly
+}

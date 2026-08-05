@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -111,13 +112,21 @@ func unsafeMemberName(name string) bool {
 // Scan validates every archive member without writing files. limits bounds the
 // declared expansion (zero fields = unbounded) to reject decompression bombs.
 func Scan(ctx context.Context, archivePath string, archiveType Type, limits Limits) error {
+	return scan(ctx, archivePath, archiveType, limits, nil)
+}
+
+// scan is Scan with an optional collector, called once per member AFTER that
+// member passed validation. Summarize rides on this rather than listing the
+// archive a second time, so an inventory inherits the same rejection of
+// absolute paths, ".." components, links and special files.
+func scan(ctx context.Context, archivePath string, archiveType Type, limits Limits, collect func(name string, size int64)) error {
 	switch archiveType {
 	case TypeZIP:
-		return scanZIP(ctx, archivePath, limits)
+		return scanZIP(ctx, archivePath, limits, collect)
 	case TypeTAR, TypeTARGzip, TypeTARBzip2, TypeTARXz:
-		return scanTAR(ctx, archivePath, archiveType, limits)
+		return scanTAR(ctx, archivePath, archiveType, limits, collect)
 	case TypeRAR:
-		return scanRAR(ctx, archivePath, limits)
+		return scanRAR(ctx, archivePath, limits, collect)
 	default:
 		return ErrUnsupported
 	}
@@ -151,18 +160,18 @@ func rarTool() (string, bool) {
 	return "", false
 }
 
-func scanRAR(ctx context.Context, archivePath string, limits Limits) error {
+func scanRAR(ctx context.Context, archivePath string, limits Limits, collect func(string, int64)) error {
 	tool, ok := rarTool()
 	if !ok {
 		return ErrRARUnavailable
 	}
 	if tool == "bsdtar" {
-		return scanRARWithBSDTar(ctx, archivePath, limits)
+		return scanRARWithBSDTar(ctx, archivePath, limits, collect)
 	}
-	return scanRARWithLSAR(ctx, archivePath, limits)
+	return scanRARWithLSAR(ctx, archivePath, limits, collect)
 }
 
-func scanRARWithBSDTar(ctx context.Context, archivePath string, limits Limits) error {
+func scanRARWithBSDTar(ctx context.Context, archivePath string, limits Limits, collect func(string, int64)) error {
 	namesOutput, err := safeCommand(ctx, "bsdtar", "-tf", archivePath).Output()
 	if err != nil {
 		return ErrInvalidArchive
@@ -171,10 +180,10 @@ func scanRARWithBSDTar(ctx context.Context, archivePath string, limits Limits) e
 	if err != nil {
 		return ErrInvalidArchive
 	}
-	return validateBSDTarListings(namesOutput, verboseOutput, limits)
+	return validateBSDTarListings(namesOutput, verboseOutput, limits, collect)
 }
 
-func validateBSDTarListings(namesOutput, verboseOutput []byte, limits Limits) error {
+func validateBSDTarListings(namesOutput, verboseOutput []byte, limits Limits, collect func(string, int64)) error {
 	members := 0
 	for line := range strings.SplitSeq(string(namesOutput), "\n") {
 		name := strings.TrimSuffix(line, "\r")
@@ -187,6 +196,10 @@ func validateBSDTarListings(namesOutput, verboseOutput []byte, limits Limits) er
 		members++
 		if limits.exceedsMembers(members) {
 			return ErrTooManyMembers
+		}
+		if collect != nil {
+			// bsdtar -tf gives no size; the inventory only needs names here.
+			collect(name, 0)
 		}
 	}
 	for line := range strings.SplitSeq(string(verboseOutput), "\n") {
@@ -201,15 +214,15 @@ func validateBSDTarListings(namesOutput, verboseOutput []byte, limits Limits) er
 	return nil
 }
 
-func scanRARWithLSAR(ctx context.Context, archivePath string, limits Limits) error {
+func scanRARWithLSAR(ctx context.Context, archivePath string, limits Limits, collect func(string, int64)) error {
 	output, err := safeCommand(ctx, "lsar", "-json", archivePath).Output()
 	if err != nil {
 		return ErrInvalidArchive
 	}
-	return validateLSARListing(output, limits)
+	return validateLSARListing(output, limits, collect)
 }
 
-func validateLSARListing(output []byte, limits Limits) error {
+func validateLSARListing(output []byte, limits Limits, collect func(string, int64)) error {
 	var listing lsarListing
 	if err := json.Unmarshal(output, &listing); err != nil || len(listing.Contents) == 0 {
 		return ErrInvalidArchive
@@ -229,11 +242,14 @@ func validateLSARListing(output []byte, limits Limits) error {
 		if limits.exceedsBytes(total) {
 			return ErrArchiveTooLarge
 		}
+		if collect != nil {
+			collect(member.Name, member.Size)
+		}
 	}
 	return nil
 }
 
-func scanZIP(ctx context.Context, archivePath string, limits Limits) error {
+func scanZIP(ctx context.Context, archivePath string, limits Limits, collect func(string, int64)) error {
 	reader, err := zip.OpenReader(archivePath)
 	if err != nil {
 		return fmt.Errorf("open ZIP archive: %w", err)
@@ -265,11 +281,14 @@ func scanZIP(ctx context.Context, archivePath string, limits Limits) error {
 		if limits.exceedsBytes(total) {
 			return ErrArchiveTooLarge
 		}
+		if collect != nil {
+			collect(member.Name, int64(member.UncompressedSize64))
+		}
 	}
 	return nil
 }
 
-func scanTAR(ctx context.Context, archivePath string, archiveType Type, limits Limits) error {
+func scanTAR(ctx context.Context, archivePath string, archiveType Type, limits Limits, collect func(string, int64)) error {
 	// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 	file, err := os.Open(archivePath)
 	if err != nil {
@@ -342,6 +361,9 @@ func scanTAR(ctx context.Context, archivePath string, archiveType Type, limits L
 		if limits.exceedsBytes(total) {
 			return ErrArchiveTooLarge
 		}
+		if collect != nil {
+			collect(header.Name, header.Size)
+		}
 	}
 
 	if xzCommand != nil {
@@ -352,6 +374,11 @@ func scanTAR(ctx context.Context, archivePath string, archiveType Type, limits L
 		}
 	}
 	return nil
+}
+
+// stripFlag renders the leading-component count both tar and bsdtar accept.
+func stripFlag(strip int) string {
+	return "--strip-components=" + strconv.Itoa(strip)
 }
 
 func tenantCommand(ctx context.Context, systemUser string, arguments ...string) *exec.Cmd {
@@ -370,6 +397,21 @@ func tenantCommand(ctx context.Context, systemUser string, arguments ...string) 
 // Extract validates an archive and extracts it as the owning tenant user.
 // limits bounds the declared expansion (zero fields = unbounded) to reject bombs.
 func Extract(ctx context.Context, archivePath, destination, systemUser string, limits Limits) (string, error) {
+	return ExtractStrip(ctx, archivePath, destination, systemUser, 0, limits)
+}
+
+// ExtractStrip is Extract with strip leading path components removed from every
+// member, which is how a site backup wrapped in one container directory lands
+// as the site rather than as public_html/backup/public_html.
+//
+// unzip has no equivalent, so zip and rar with strip > 0 go through bsdtar and
+// report ErrStripUnsupported when it is absent. Extraction still runs as the
+// tenant through runuser, so the kernel's own permission check is the last line
+// even if a member slips past the pre-scan.
+func ExtractStrip(ctx context.Context, archivePath, destination, systemUser string, strip int, limits Limits) (string, error) {
+	if strip < 0 {
+		return "", ErrUnsupported
+	}
 	archiveType := DetectType(archivePath)
 	if archiveType == TypeUnknown {
 		return "", ErrUnsupported
@@ -389,6 +431,14 @@ func Extract(ctx context.Context, archivePath, destination, systemUser string, l
 	var command *exec.Cmd
 	switch archiveType {
 	case TypeZIP:
+		if strip > 0 {
+			if _, err := exec.LookPath("bsdtar"); err != nil {
+				return "", ErrStripUnsupported
+			}
+			command = tenantCommand(ctx, systemUser, "bsdtar", "-x", stripFlag(strip),
+				"-f", archivePath, "-C", destination)
+			break
+		}
 		command = tenantCommand(ctx, systemUser, "unzip", "-o", "-q", archivePath, "-d", destination)
 	case TypeRAR:
 		tool, ok := rarTool()
@@ -396,10 +446,18 @@ func Extract(ctx context.Context, archivePath, destination, systemUser string, l
 			return "", ErrRARUnavailable
 		}
 		if tool == "bsdtar" {
-			command = tenantCommand(ctx, systemUser, "bsdtar", "-x", "-f", archivePath, "-C", destination)
-		} else {
-			command = tenantCommand(ctx, systemUser, "unar", "-f", "-D", "-o", destination, archivePath)
+			arguments := []string{"bsdtar", "-x"}
+			if strip > 0 {
+				arguments = append(arguments, stripFlag(strip))
+			}
+			command = tenantCommand(ctx, systemUser, append(arguments, "-f", archivePath, "-C", destination)...)
+			break
 		}
+		// unar unpacks whole; it cannot drop a leading component.
+		if strip > 0 {
+			return "", ErrStripUnsupported
+		}
+		command = tenantCommand(ctx, systemUser, "unar", "-f", "-D", "-o", destination, archivePath)
 	default:
 		// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 		file, err := os.Open(archivePath)
@@ -417,7 +475,11 @@ func Extract(ctx context.Context, archivePath, destination, systemUser string, l
 		case TypeTARXz:
 			flag = "-xJ"
 		}
-		command = tenantCommand(ctx, systemUser, "tar", flag, "-f", "-", "-C", destination)
+		arguments := []string{"tar", flag}
+		if strip > 0 {
+			arguments = append(arguments, stripFlag(strip))
+		}
+		command = tenantCommand(ctx, systemUser, append(arguments, "-f", "-", "-C", destination)...)
 		command.Stdin = file
 	}
 

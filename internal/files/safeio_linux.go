@@ -673,3 +673,53 @@ func RestoreconBeneath(home, rel string) {
 	// #nosec G204 G702 -- fixed binary (restorecon) with separate args (no shell); real is a kernel-resolved path proven to be under the tenant home.
 	_, _ = exec.Command("restorecon", "-R", real).CombinedOutput()
 }
+
+// ReadFileBeneath reads rel beneath home, refusing anything that is not a
+// regular file and anything larger than maxBytes. Every path component is
+// pinned with openat2, so a tenant symlink at any level cannot redirect a
+// root-privileged read at a file outside the home.
+func ReadFileBeneath(home, rel string, maxBytes int64) ([]byte, error) {
+	data, _, err := readFileBeneath(home, rel, maxBytes)
+	return data, err
+}
+
+// WriteFileBeneath replaces rel beneath home with data, owned by systemUser. A
+// leaf that is already a symlink is unlinked rather than written through.
+func WriteFileBeneath(home, rel string, data []byte, mode uint32, systemUser string) error {
+	return writeBeneath(home, rel, data, mode, systemUser)
+}
+
+// StreamIntoBeneath writes src to a NEW file at rel beneath home, owned by
+// systemUser, and reports how many bytes landed. It fails when rel already
+// exists, so a caller staging an upload cannot be tricked into appending to
+// something the tenant put there first.
+func StreamIntoBeneath(home, rel string, src io.Reader, systemUser string) (int64, error) {
+	if err := createExclBeneath(home, rel, systemUser); err != nil {
+		return 0, err
+	}
+	return copyStreamBeneath(home, rel, src, systemUser)
+}
+
+// ListNamesBeneath returns the entry names directly under rel beneath home.
+// A missing directory reports no names and no error, because callers use this
+// to sweep an area that may not exist yet.
+func ListNamesBeneath(home, rel string) ([]string, error) {
+	entries, err := readDirBeneath(home, rel)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	names := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		names = append(names, entry.Name())
+	}
+	return names, nil
+}
+
+// StatBeneath reports rel beneath home without following a symlink at any
+// component.
+func StatBeneath(home, rel string) (os.FileInfo, error) {
+	return statBeneath(home, rel)
+}
