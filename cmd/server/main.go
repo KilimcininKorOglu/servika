@@ -378,6 +378,7 @@ func main() {
 			r.With(middleware.ResellerOrAbove).Get("/system/optimize", system.OptimizeStatus)
 			r.With(middleware.AdminOnly).Post("/system/optimize/start", system.OptimizeStart)
 			r.With(middleware.AdminOnly).Get("/system/optimize/log", system.OptimizeLog)
+			r.With(middleware.AdminOnly).Get("/system/ssh-security", system.SSHSecurity)
 			r.With(middleware.AdminOnly).Get("/system/cve", system.CveStatus)
 			r.With(middleware.AdminOnly).Post("/system/cve/update", system.CveUpdate)
 			r.With(middleware.AdminOnly).Get("/system/cve/log", system.CveLog)
