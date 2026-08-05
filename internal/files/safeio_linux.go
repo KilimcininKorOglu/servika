@@ -4,7 +4,7 @@ package files
 
 // safeio — TOCTOU symlink-race-resistant file mutations using openat2(RESOLVE_BENEATH).
 //
-// PROBLEM: jailJoinStrict() resolves a path STRING via EvalSymlinks and returns it.
+// PROBLEM: resolving a path STRING (EvalSymlinks and friends) and returning it.
 // Mutations (os.Chmod/os.WriteFile/os.Rename/os.RemoveAll/os.Create) later operate
 // on that string as root. A tenant can swap an intermediate directory with a symlink
 // between the check and the operation, tricking root into mutating a file OUTSIDE the

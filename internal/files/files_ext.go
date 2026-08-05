@@ -35,43 +35,24 @@ func relClean(userPath string) string {
 	return strings.TrimPrefix(filepath.Clean("/"+userPath), "/")
 }
 
-// jailJoinStrict is symlink-aware. It resolves the parent directory with EvalSymlinks,
-// then joins the leaf and prevents escape through symlinks.
-func jailJoinStrict(home, rel string) (string, error) {
-	rel = filepath.Clean("/" + rel)
-	wanted := filepath.Clean(filepath.Join(home, rel))
+// A resolved path STRING is deliberately not offered here. Resolving a path and
+// then operating on the result are two steps, and a tenant can swap a component
+// for a symlink in between, which is how root ends up writing outside the jail.
+// Every operation goes through the openat2 helpers in safeio_linux.go instead,
+// where resolution and the operation are one kernel step.
 
-	// homeResolved
-	homeResolved, err := filepath.EvalSymlinks(home)
-	if err != nil {
-		homeResolved = home
+// statusFromPathErr maps what the openat2 helpers report onto a status code. A
+// refused resolution (a symlink component, or an attempt to leave home) and a
+// missing path are the caller's problem, not the server's; the message stays
+// generic either way.
+func statusFromPathErr(err error) int {
+	switch {
+	case errors.Is(err, errEscape), errors.Is(err, syscall.ELOOP), errors.Is(err, syscall.EXDEV):
+		return http.StatusForbidden
+	case errors.Is(err, os.ErrNotExist), errors.Is(err, syscall.ENOTDIR):
+		return http.StatusNotFound
 	}
-
-	// Find the resolvable portion of wanted.
-	test := wanted
-	for {
-		if r, err := filepath.EvalSymlinks(test); err == nil {
-			// The test path exists. Append and validate the remainder.
-			rest := strings.TrimPrefix(wanted, test)
-			full := filepath.Clean(filepath.Join(r, rest))
-			if full == homeResolved || strings.HasPrefix(full, homeResolved+string(filepath.Separator)) {
-				return full, nil
-			}
-			return "", errEscape
-		}
-		// Otherwise, ascend to the parent.
-		parent := filepath.Dir(test)
-		if parent == test {
-			// The root has been reached.
-			break
-		}
-		test = parent
-	}
-	// No ancestor resolved, which is rare. Fall back to a plain check.
-	if wanted == homeResolved || strings.HasPrefix(wanted, homeResolved+string(filepath.Separator)) {
-		return wanted, nil
-	}
-	return "", errEscape
+	return http.StatusInternalServerError
 }
 
 // ----- Write (editor save) -----
@@ -133,16 +114,6 @@ func (h *Handlers) Rename(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	// Verify source exists under home (read-only check; the actual rename is symlink-safe).
-	_, err = jailJoinStrict(home, req.Old)
-	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	if _, err := jailJoinStrict(home, req.New); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
 	if req.Old == "/" || req.New == "/" {
 		httpx.WriteError(w, http.StatusBadRequest, "the home directory cannot be moved")
 		return
@@ -150,7 +121,7 @@ func (h *Handlers) Rename(w http.ResponseWriter, r *http.Request) {
 	// Ensure the target parent directory exists (symlink-safe).
 	_ = mkdirAllBeneath(home, filepath.Dir(req.New), systemUser)
 	if err := renameBeneath(home, req.Old, req.New, systemUser); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
+		httpx.WriteError(w, statusFromPathErr(err), "operation failed")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "old": req.Old, "new": req.New})

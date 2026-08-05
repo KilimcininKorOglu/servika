@@ -1,11 +1,15 @@
 package files
 
 import (
+	"errors"
+	"io/fs"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
 	"testing"
 )
 
@@ -141,5 +145,27 @@ func TestDescribeModeRendersWhatWasRead(t *testing.T) {
 	// its "symlink" type off exactly this.
 	if _, permissions, _, _ := describeMode(os.ModeSymlink|0o777, 0, 0); !strings.HasPrefix(permissions, "L") {
 		t.Errorf("permissions = %q, want a symlink prefix", permissions)
+	}
+}
+
+// A refused resolution and a missing path are the caller's problem. Reporting
+// either as 500 tells an operator the server broke when it did not.
+func TestStatusFromPathErr(t *testing.T) {
+	for name, tc := range map[string]struct {
+		err  error
+		want int
+	}{
+		"escape":     {errEscape, http.StatusForbidden},
+		"symlink":    {&fs.PathError{Err: syscall.ELOOP}, http.StatusForbidden},
+		"crossMount": {&fs.PathError{Err: syscall.EXDEV}, http.StatusForbidden},
+		"missing":    {fs.ErrNotExist, http.StatusNotFound},
+		"notADir":    {&fs.PathError{Err: syscall.ENOTDIR}, http.StatusNotFound},
+		"other":      {errors.New("disk failure"), http.StatusInternalServerError},
+	} {
+		t.Run(name, func(t *testing.T) {
+			if got := statusFromPathErr(tc.err); got != tc.want {
+				t.Errorf("statusFromPathErr(%v) = %d, want %d", tc.err, got, tc.want)
+			}
+		})
 	}
 }
