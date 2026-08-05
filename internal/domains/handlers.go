@@ -693,6 +693,17 @@ func (h *Handlers) SetFTPPassword(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
+	// A swallowed Scan error would update the FTP password of the empty system
+	// user, which matches no account and still answers 200 with the new
+	// password, and would leave isDemo reading 0 so the guard below is bypassed.
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
+		return
+	}
+	if sk == "" {
+		httpx.WriteError(w, http.StatusInternalServerError, "domain record is incomplete")
+		return
+	}
 	if isDemo == 1 {
 		httpx.WriteError(w, http.StatusForbidden, "fTP passwords cannot be changed for demo subscriptions")
 		return
@@ -971,15 +982,33 @@ func (h *Handlers) DeleteDatabase(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "database record not found")
 		return
 	}
+	// A swallowed Scan error would leave isDemo reading 0, bypassing the demo
+	// guard below, and would send empty identifiers into the drop path.
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
+		return
+	}
+	if dbName == "" || dbUser == "" {
+		httpx.WriteError(w, http.StatusInternalServerError, "database record is incomplete")
+		return
+	}
 	if isDemo == 1 {
 		httpx.WriteError(w, http.StatusForbidden, "databases cannot be deleted from demo subscriptions")
 		return
 	}
 	// When the user is shared across other databases (existing-user mode), drop only the database
 	// and keep the user, so the sharing databases keep their access.
+	//
+	// The count decides whether the MySQL user survives, so a failed query must
+	// not read as "not shared": that branch drops a user other databases still
+	// authenticate with, and no later step would notice.
 	var shared int
-	_ = h.DB.QueryRowContext(r.Context(),
-		`SELECT COUNT(*) FROM db_accounts WHERE db_user=? AND db_name<>?`, dbUser, dbName).Scan(&shared)
+	if err := h.DB.QueryRowContext(r.Context(),
+		`SELECT COUNT(*) FROM db_accounts WHERE db_user=? AND db_name<>?`, dbUser, dbName).
+		Scan(&shared); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
+		return
+	}
 	if shared > 0 {
 		if err := credentials.MySQLDropDBKeepUser(h.DB, dbName); err != nil {
 			httpx.WriteError(w, http.StatusInternalServerError, "database deletion failed")

@@ -75,6 +75,19 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
 	}
+	// Any other Scan error has to stop the request here. It cannot be checked
+	// further down because the switch below assigns to err, which would discard
+	// it; and continuing means calling the provisioner with an empty domain name
+	// and system user while isDemo still reads 0, so the demo guard above is
+	// bypassed as well.
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
+		return
+	}
+	if domainName == "" || systemUser == "" {
+		httpx.WriteError(w, http.StatusInternalServerError, "domain record is incomplete")
+		return
+	}
 	if isDemo == 1 {
 		httpx.WriteError(w, http.StatusForbidden, "SSL cannot be installed for demo subscriptions")
 		return
@@ -138,6 +151,16 @@ func (h *Handlers) SSLDisable(w http.ResponseWriter, r *http.Request) {
 		Scan(&domainName, &systemUser, &phpVersion, &isDemo, &backend)
 	if errors.Is(err, sql.ErrNoRows) {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	// Same class as SSLIssue: a swallowed Scan error would take DisableSSL an
+	// empty domain name, and would leave the demo guard below reading 0.
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "database read failed")
+		return
+	}
+	if domainName == "" || systemUser == "" {
+		httpx.WriteError(w, http.StatusInternalServerError, "domain record is incomplete")
 		return
 	}
 	if isDemo == 1 {
