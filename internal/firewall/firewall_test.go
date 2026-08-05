@@ -1,6 +1,9 @@
 package firewall
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 func TestValidIP(t *testing.T) {
 	tests := []struct {
@@ -58,11 +61,53 @@ func TestDport(t *testing.T) {
 }
 
 func TestFirewallTemplatesAvoidProtectedPorts(t *testing.T) {
+	stubSSHPorts(t, []int{22})
 	for name, rules := range firewallTemplates {
 		for _, rule := range rules {
-			if protectedPorts[rule.Port] {
+			if isProtectedPort(rule.Port) {
 				t.Fatalf("template %q targets protected port %d", name, rule.Port)
 			}
 		}
+	}
+}
+
+// stubSSHPorts stands in for the host probe so the guard can be tested against a
+// server whose SSH has been moved.
+func stubSSHPorts(t *testing.T, ports []int) {
+	t.Helper()
+	previous := sshPorts
+	sshPorts = func() []int { return ports }
+	t.Cleanup(func() { sshPorts = previous })
+}
+
+// The guard has to follow sshd. Protecting a fixed 22 locks the administrator out
+// of the port they actually use, and refuses to close the one the panel's own
+// warning tells them to close.
+func TestProtectedPortFollowsTheRunningSSHPort(t *testing.T) {
+	stubSSHPorts(t, []int{2222})
+	if !isProtectedPort(2222) {
+		t.Error("the port sshd serves is not protected, so closing it locks the administrator out")
+	}
+	if isProtectedPort(22) {
+		t.Error("port 22 stays protected after the move, so the advised cleanup is refused")
+	}
+	for _, port := range []int{80, 443, 8080, 8443, 53} {
+		if !isProtectedPort(port) {
+			t.Errorf("port %d lost its protection", port)
+		}
+	}
+}
+
+// A half-finished move keeps both ports in service, and both have to stay closed
+// to the firewall screen.
+func TestProtectedPortCoversEverySSHPort(t *testing.T) {
+	stubSSHPorts(t, []int{22, 2222})
+	for _, port := range []int{22, 2222} {
+		if !isProtectedPort(port) {
+			t.Errorf("port %d is not protected while sshd serves it", port)
+		}
+	}
+	if got := protectedPortList(); !slices.Equal(got, []int{22, 53, 80, 443, 2222, 8080, 8443}) {
+		t.Errorf("protectedPortList() = %v", got)
 	}
 }

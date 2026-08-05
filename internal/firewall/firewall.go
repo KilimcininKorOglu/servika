@@ -19,11 +19,13 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
 	"servika/internal/httpx"
+	"servika/internal/system"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -34,13 +36,41 @@ const (
 )
 
 // Protected ports cannot be closed without disrupting the server, panel, or hosted sites.
+// SSH is deliberately NOT listed here: the port it serves is read from sshd, so
+// that an administrator who moves it keeps the guard on the port in use and can
+// close 22, which is exactly what the panel's own warning asks them to do.
 var protectedPorts = map[int]bool{
-	22:   true, // SSH management access.
 	80:   true, // Customer sites over HTTP.
 	443:  true, // Customer sites over HTTPS.
 	8080: true, // Panel API.
 	8443: true, // Panel UI.
 	53:   true, // DNS through named.
+}
+
+// sshPorts is a package variable so tests can stand in for the host probe.
+// It falls back to port 22 when sshd cannot be asked, so a failed detection
+// keeps the old guard rather than dropping it.
+var sshPorts = system.SSHPorts
+
+// isProtectedPort reports whether closing this port would cut off the server, the
+// panel, hosted sites, or the administrator's own SSH session.
+func isProtectedPort(port int) bool {
+	return protectedPorts[port] || slices.Contains(sshPorts(), port)
+}
+
+// protectedPortList is what the firewall screen greys out.
+func protectedPortList() []int {
+	ports := make([]int, 0, len(protectedPorts)+1)
+	for port := range protectedPorts {
+		ports = append(ports, port)
+	}
+	for _, port := range sshPorts() {
+		if !protectedPorts[port] {
+			ports = append(ports, port)
+		}
+	}
+	slices.Sort(ports)
+	return ports
 }
 
 // firewallTemplates contains ready-to-use rule sets that close commonly exposed ports.
@@ -105,11 +135,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	_ = rows.Err()
-	protected := make([]int, 0, len(protectedPorts))
-	for p := range protectedPorts {
-		protected = append(protected, p)
-	}
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{"rules": out, "protected_ports": protected})
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"rules": out, "protected_ports": protectedPortList()})
 }
 
 // POST /firewall  {type, ip, port, protocol, description}
@@ -151,7 +177,7 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, http.StatusBadRequest, "specify a port to close")
 			return
 		}
-		if protectedPorts[req.Port] {
+		if isProtectedPort(req.Port) {
 			httpx.WriteError(w, http.StatusBadRequest,
 				fmt.Sprintf("port %d is critical for SSH, web, panel, or DNS access and cannot be closed", req.Port))
 			return
@@ -200,7 +226,7 @@ func (h *Handlers) Template(w http.ResponseWriter, r *http.Request) {
 	}
 	added := 0
 	for _, rule := range rules {
-		if protectedPorts[rule.Port] { // Skip critical ports even though templates must not contain them.
+		if isProtectedPort(rule.Port) { // Skip critical ports even though templates must not contain them.
 			continue
 		}
 		var count int
