@@ -19,7 +19,8 @@
     "message": "Bu alan adı için Redis önbellek devre dışı.",
     "hint": "Etkinleştirmek, yalıtılmış bir ACL kullanıcısı ve bağlantı bilgileri oluşturur.",
     "enable": "Redis Önbelleği Etkinleştir",
-    "enabling": "Etkinleştiriliyor…"
+    "enabling": "Etkinleştiriliyor…",
+    "resourceWarning": "Redis, sunucunun tamamı için paylaşımlı tek bir önbellek süreci çalıştırır; 256 MB ile sınırlıdır ve LRU politikası uygular. Küçük bir sunucuda etkinleştirmeden önce mevcut yükü değerlendirin."
   },
   "connection": {
     "title": "Bağlantı Bilgileri",

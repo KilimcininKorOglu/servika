@@ -67,7 +67,8 @@
       "level2": "Niveau 2 (Moyen)",
       "level3": "Niveau 3 (Élevé)",
       "level4": "Niveau 4 (Strict)"
-    }
+    },
+    "highLevelWarning": "Aux niveaux 3 et 4, le jeu de règles OWASP évalue bien plus de règles à chaque requête, ce qui augmente l'usage du CPU et le temps de réponse. Tenez-en compte sur un petit serveur."
   },
   "actions": {
     "save": "Enregistrer et appliquer",

@@ -19,7 +19,8 @@
     "message": "El Redis Cache está desactivado para este dominio.",
     "hint": "Al activarlo se crea un usuario ACL aislado con sus detalles de conexión.",
     "enable": "Activar Redis Cache",
-    "enabling": "Activando…"
+    "enabling": "Activando…",
+    "resourceWarning": "Redis ejecuta un único proceso de caché compartido para todo el servidor, limitado a 256 MB con política LRU. Valore la carga actual antes de activarlo en un servidor pequeño."
   },
   "connection": {
     "title": "Detalles de conexión",

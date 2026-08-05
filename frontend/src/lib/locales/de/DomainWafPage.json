@@ -67,7 +67,8 @@
       "level2": "Stufe 2 (Mittel)",
       "level3": "Stufe 3 (Hoch)",
       "level4": "Stufe 4 (Streng)"
-    }
+    },
+    "highLevelWarning": "Auf den Stufen 3 und 4 wertet das OWASP-Core-Rule-Set bei jeder Anfrage deutlich mehr Regeln aus, was CPU-Last und Antwortzeit erhöht. Bedenken Sie das auf einem kleinen Server."
   },
   "actions": {
     "save": "Speichern und anwenden",

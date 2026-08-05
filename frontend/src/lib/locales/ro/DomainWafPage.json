@@ -67,7 +67,8 @@
       "level2": "Nivel 2 (mediu)",
       "level3": "Nivel 3 (ridicat)",
       "level4": "Nivel 4 (strict)"
-    }
+    },
+    "highLevelWarning": "La nivelurile 3 și 4, setul de reguli OWASP evaluează mult mai multe reguli la fiecare cerere, ceea ce crește utilizarea CPU și timpul de răspuns. Țineți cont de asta pe un server mic."
   },
   "actions": {
     "save": "Salvare și aplicare",

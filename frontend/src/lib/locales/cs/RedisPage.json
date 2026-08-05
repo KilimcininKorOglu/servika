@@ -19,7 +19,8 @@
     "message": "Cache Redis je pro tuto doménu zakázána.",
     "hint": "Její povolení vytvoří izolovaného uživatele ACL a údaje o připojení.",
     "enable": "Povolit cache Redis",
-    "enabling": "Povolování…"
+    "enabling": "Povolování…",
+    "resourceWarning": "Redis provozuje jeden sdílený proces mezipaměti pro celý server, omezený na 256 MB s politikou LRU. Před zapnutím na malém serveru zvažte aktuální zatížení."
   },
   "connection": {
     "title": "Údaje o připojení",

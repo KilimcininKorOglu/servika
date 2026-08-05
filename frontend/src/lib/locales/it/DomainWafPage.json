@@ -67,7 +67,8 @@
       "level2": "Livello 2 (Medio)",
       "level3": "Livello 3 (Alto)",
       "level4": "Livello 4 (Rigoroso)"
-    }
+    },
+    "highLevelWarning": "Ai livelli 3 e 4 il core rule set OWASP valuta molte più regole a ogni richiesta, aumentando l'uso della CPU e i tempi di risposta. Tenetene conto su un server piccolo."
   },
   "actions": {
     "save": "Salva e applica",

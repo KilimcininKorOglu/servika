@@ -19,7 +19,8 @@
     "message": "Der Redis-Cache ist für diese Domain deaktiviert.",
     "hint": "Beim Aktivieren werden ein isolierter ACL-Benutzer und Verbindungsdetails erstellt.",
     "enable": "Redis-Cache aktivieren",
-    "enabling": "Wird aktiviert…"
+    "enabling": "Wird aktiviert…",
+    "resourceWarning": "Redis betreibt einen gemeinsamen Cache-Prozess für den gesamten Server, begrenzt auf 256 MB mit LRU-Richtlinie. Prüfen Sie die aktuelle Last, bevor Sie ihn auf einem kleinen Server aktivieren."
   },
   "connection": {
     "title": "Verbindungsdetails",

@@ -19,7 +19,8 @@
     "message": "Cache-ul Redis este dezactivat pentru acest domeniu.",
     "hint": "Activarea creează un utilizator ACL izolat și detalii de conexiune.",
     "enable": "Activare cache Redis",
-    "enabling": "Se activează…"
+    "enabling": "Se activează…",
+    "resourceWarning": "Redis rulează un singur proces de cache partajat pentru întregul server, limitat la 256 MB cu politică LRU. Evaluați încărcarea curentă înainte de a-l activa pe un server mic."
   },
   "connection": {
     "title": "Detalii de conexiune",

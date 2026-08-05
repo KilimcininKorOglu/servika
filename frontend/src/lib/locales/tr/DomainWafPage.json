@@ -67,7 +67,8 @@
       "level2": "Düzey 2 (Orta)",
       "level3": "Düzey 3 (Yüksek)",
       "level4": "Düzey 4 (Katı)"
-    }
+    },
+    "highLevelWarning": "Seviye 3 ve 4'te OWASP çekirdek kural seti her istekte çok daha fazla kural değerlendirir; bu CPU kullanımını ve yanıt süresini artırır. Küçük bir sunucuda bunu göz önünde bulundurun."
   },
   "actions": {
     "save": "Kaydet ve Uygula",

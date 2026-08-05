@@ -19,7 +19,8 @@
     "message": "Redis cache is disabled for this domain.",
     "hint": "Enabling it creates an isolated ACL user and connection details.",
     "enable": "Enable Redis Cache",
-    "enabling": "Enabling…"
+    "enabling": "Enabling…",
+    "resourceWarning": "Redis runs one shared cache process for the whole server, capped at 256 MB with an LRU policy. Weigh the current load before enabling it on a small server."
   },
   "connection": {
     "title": "Connection Details",

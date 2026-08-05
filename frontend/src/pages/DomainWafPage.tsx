@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import ResourceNotice from '@/components/ResourceNotice'
 
 type Mode = 'inherit' | 'off' | 'block' | 'detect'
 type Settings = { mode: Mode; paranoia: number }
@@ -71,6 +72,15 @@ export default function DomainWafPage() {
       setSaving(false)
     }
   }
+
+  // The level the server will actually run, which is what the cost warning is
+  // about: a domain that inherits (mode inherit, or paranoia 0) takes the plan's
+  // level, and nothing runs at all while the mode is off. This mirrors
+  // provisioner.WAFEffective.
+  const paranoiaInEffect =
+    !settings || !data || settings.mode === 'off' ? 0
+      : settings.mode === 'inherit' ? (data.plan.active ? data.plan.paranoia : 0)
+        : settings.paranoia || data.plan.paranoia
 
   return (
     <div className="w-full px-6 py-5">
@@ -165,6 +175,11 @@ export default function DomainWafPage() {
               </select>
               <span className="text-xs text-slate-500 dark:text-slate-400">{t(`paranoiaDescription.${settings.paranoia}`)}</span>
             </div>
+            {paranoiaInEffect >= 3 && (
+              <div className="mt-3">
+                <ResourceNotice>{t('paranoiaCard.highLevelWarning')}</ResourceNotice>
+              </div>
+            )}
           </Card>
 
           <div className="flex gap-3 mt-6">

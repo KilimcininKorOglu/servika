@@ -67,7 +67,8 @@
       "level2": "Nível 2 (Médio)",
       "level3": "Nível 3 (Alto)",
       "level4": "Nível 4 (Estrito)"
-    }
+    },
+    "highLevelWarning": "Nos níveis 3 e 4, o conjunto de regras OWASP avalia muito mais regras em cada requisição, o que aumenta o uso de CPU e o tempo de resposta. Leve isso em conta em um servidor pequeno."
   },
   "actions": {
     "save": "Salvar e aplicar",

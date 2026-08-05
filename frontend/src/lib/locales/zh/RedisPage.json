@@ -19,7 +19,8 @@
     "message": "此域名的 Redis 缓存已禁用。",
     "hint": "启用后会创建一个隔离的 ACL 用户和连接详情。",
     "enable": "启用 Redis 缓存",
-    "enabling": "启用中…"
+    "enabling": "启用中…",
+    "resourceWarning": "Redis 为整台服务器运行一个共享的缓存进程，上限 256 MB，采用 LRU 淘汰策略。在小型服务器上启用前请评估当前负载。"
   },
   "connection": {
     "title": "连接详情",

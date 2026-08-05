@@ -67,7 +67,8 @@
       "level2": "Úroveň 2 (střední)",
       "level3": "Úroveň 3 (vysoká)",
       "level4": "Úroveň 4 (přísná)"
-    }
+    },
+    "highLevelWarning": "Na úrovních 3 a 4 vyhodnocuje základní sada pravidel OWASP při každém požadavku výrazně více pravidel, což zvyšuje využití CPU i dobu odezvy. Na malém serveru to zvažte."
   },
   "actions": {
     "save": "Uložit a použít",

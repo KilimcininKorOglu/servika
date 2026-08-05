@@ -19,7 +19,8 @@
     "message": "La cache Redis è disabilitata per questo dominio.",
     "hint": "Abilitarla crea un utente ACL isolato e i dettagli di connessione.",
     "enable": "Abilita Cache Redis",
-    "enabling": "Abilitazione in corso…"
+    "enabling": "Abilitazione in corso…",
+    "resourceWarning": "Redis esegue un unico processo di cache condiviso per l'intero server, limitato a 256 MB con criterio LRU. Valutate il carico attuale prima di attivarlo su un server piccolo."
   },
   "connection": {
     "title": "Dettagli di Connessione",

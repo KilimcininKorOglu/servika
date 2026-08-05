@@ -3,6 +3,7 @@ import { useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import Breadcrumb from '@/components/Breadcrumb'
+import ResourceNotice from '@/components/ResourceNotice'
 
 type Status = {
   enabled: boolean
@@ -98,6 +99,11 @@ export default function RedisPage() {
           <div className="text-3xl mb-2">⚡</div>
           <p className="text-sm text-slate-600 dark:text-slate-300 mb-1">{t('empty.message')}</p>
           <p className="text-xs text-slate-400 mb-4">{t('empty.hint')}</p>
+          {/* The cache process is shared by the whole server, so its cost is not
+              charged to the domain being configured. */}
+          <div className="flex justify-center mb-4">
+            <ResourceNotice>{t('empty.resourceWarning')}</ResourceNotice>
+          </div>
           <button onClick={enable} disabled={busy}
             className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
             {busy ? t('empty.enabling') : t('empty.enable')}
