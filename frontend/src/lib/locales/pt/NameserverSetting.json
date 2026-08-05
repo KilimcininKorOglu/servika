@@ -1,0 +1,31 @@
+{
+  "title": "Servidores de nomes",
+  "descriptionAdmin": "O par partilhado de servidores de nomes para o qual aponta cada domínio de cliente.",
+  "descriptionReseller": "Os seus próprios servidores de nomes white-label, usados pelos domínios dos clientes que gere.",
+  "warnings": {
+    "unconfiguredAdmin": "Não há servidores de nomes definidos. As zonas recorrem a ns1.<domínio> e os clientes não conseguem apontar os seus domínios para o painel.",
+    "unconfiguredReseller": "O servidor não tem servidores de nomes partilhados definidos. Contacte o seu administrador.",
+    "suggestion": "Os campos contêm uma sugestão derivada do domínio do painel. Verifique-a antes de guardar.",
+    "usingPanelPair": "Não tem servidores de nomes próprios, por isso é usado o par de todo o painel."
+  },
+  "glueReminder": "Crie registos A para ambos os nomes de anfitrião a apontar para o endereço IP deste servidor e registe-os como registos glue no registrar desse domínio.",
+  "save": "Guardar",
+  "saving": "A guardar...",
+  "migrate": "Aplicar aos domínios existentes",
+  "migrating": "A aplicar...",
+  "messages": {
+    "saved": "Servidores de nomes guardados. Aplique-os aos domínios existentes para atualizar as respetivas zonas.",
+    "savedReseller": "Servidores de nomes guardados. Aponte os respetivos registos A para este servidor no seu próprio fornecedor de DNS, caso contrário os domínios dos seus clientes não serão resolvidos.",
+    "migrated": "{{updated}} de {{total}} domínios atualizados."
+  },
+  "errors": {
+    "save": "Não foi possível guardar os servidores de nomes.",
+    "migrate": "Não foi possível atualizar os domínios.",
+    "migratePartial": "Estes domínios não foram atualizados: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Aplicar aos domínios existentes",
+    "message": "Os registos NS e o servidor de nomes primário do SOA de cada domínio passam para o par atual, os registos A ns1/ns2 remanescentes são removidos e as zonas são reescritas. Os domínios já corretos ficam intactos.",
+    "action": "Aplicar"
+  }
+}

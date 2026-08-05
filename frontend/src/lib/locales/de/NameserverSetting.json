@@ -1,0 +1,31 @@
+{
+  "title": "Nameserver",
+  "descriptionAdmin": "Das gemeinsame Nameserver-Paar, auf das jede Kundendomain zeigt.",
+  "descriptionReseller": "Ihre eigenen White-Label-Nameserver, die von den Domains Ihrer Kunden genutzt werden.",
+  "warnings": {
+    "unconfiguredAdmin": "Es sind keine Nameserver gesetzt. Zonen fallen auf ns1.<Domain> zurück und Kunden können ihre Domains nicht auf das Panel richten.",
+    "unconfiguredReseller": "Auf dem Server sind keine gemeinsamen Nameserver gesetzt. Wenden Sie sich an Ihren Administrator.",
+    "suggestion": "Die Felder enthalten einen aus der Panel-Domain abgeleiteten Vorschlag. Prüfen Sie ihn vor dem Speichern.",
+    "usingPanelPair": "Sie haben keine eigenen Nameserver, daher wird das panelweite Paar verwendet."
+  },
+  "glueReminder": "Legen Sie für beide Hostnamen A-Records an, die auf die IP-Adresse dieses Servers zeigen, und tragen Sie sie beim Registrar dieser Domain als Glue-Records ein.",
+  "save": "Speichern",
+  "saving": "Wird gespeichert...",
+  "migrate": "Auf bestehende Domains anwenden",
+  "migrating": "Wird angewendet...",
+  "messages": {
+    "saved": "Nameserver gespeichert. Wenden Sie sie auf bestehende Domains an, um deren Zonen zu aktualisieren.",
+    "savedReseller": "Nameserver gespeichert. Richten Sie deren A-Records bei Ihrem eigenen DNS-Anbieter auf diesen Server, sonst lösen die Domains Ihrer Kunden nicht auf.",
+    "migrated": "{{updated}} von {{total}} Domains aktualisiert."
+  },
+  "errors": {
+    "save": "Nameserver konnten nicht gespeichert werden.",
+    "migrate": "Die Domains konnten nicht aktualisiert werden.",
+    "migratePartial": "Diese Domains konnten nicht aktualisiert werden: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Auf bestehende Domains anwenden",
+    "message": "Die NS-Records und der primäre SOA-Nameserver jeder Domain werden auf das aktuelle Paar gesetzt, übrig gebliebene ns1/ns2 A-Records werden entfernt und die Zonen neu geschrieben. Bereits korrekte Domains bleiben unberührt.",
+    "action": "Anwenden"
+  }
+}

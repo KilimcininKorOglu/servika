@@ -1,0 +1,31 @@
+{
+  "title": "Serveurs de noms",
+  "descriptionAdmin": "La paire de serveurs de noms partagée vers laquelle pointe chaque domaine client.",
+  "descriptionReseller": "Vos propres serveurs de noms en marque blanche, utilisés par les domaines des clients que vous gérez.",
+  "warnings": {
+    "unconfiguredAdmin": "Aucun serveur de noms n'est défini. Les zones retombent sur ns1.<domaine> et les clients ne peuvent pas pointer leurs domaines vers le panneau.",
+    "unconfiguredReseller": "Aucun serveur de noms partagé n'est défini sur le serveur. Contactez votre administrateur.",
+    "suggestion": "Les champs contiennent une suggestion dérivée du domaine du panneau. Vérifiez-la avant d'enregistrer.",
+    "usingPanelPair": "Vous n'avez pas de serveurs de noms propres, la paire globale du panneau est donc utilisée."
+  },
+  "glueReminder": "Créez pour les deux noms d'hôte des enregistrements A pointant vers l'adresse IP de ce serveur, puis déclarez-les comme enregistrements glue chez le registraire de ce domaine.",
+  "save": "Enregistrer",
+  "saving": "Enregistrement...",
+  "migrate": "Appliquer aux domaines existants",
+  "migrating": "Application...",
+  "messages": {
+    "saved": "Serveurs de noms enregistrés. Appliquez-les aux domaines existants pour mettre à jour leurs zones.",
+    "savedReseller": "Serveurs de noms enregistrés. Pointez leurs enregistrements A vers ce serveur chez votre propre fournisseur DNS, sinon les domaines de vos clients ne seront pas résolus.",
+    "migrated": "{{updated}} domaines sur {{total}} mis à jour."
+  },
+  "errors": {
+    "save": "Les serveurs de noms n'ont pas pu être enregistrés.",
+    "migrate": "Les domaines n'ont pas pu être mis à jour.",
+    "migratePartial": "Ces domaines n'ont pas pu être mis à jour : {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Appliquer aux domaines existants",
+    "message": "Les enregistrements NS et le serveur de noms primaire SOA de chaque domaine sont réglés sur la paire actuelle, les enregistrements A ns1/ns2 résiduels sont supprimés et les zones sont réécrites. Les domaines déjà corrects ne sont pas touchés.",
+    "action": "Appliquer"
+  }
+}

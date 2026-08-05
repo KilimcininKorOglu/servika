@@ -31,6 +31,9 @@ type RecordItem = {
 type Domain = { id: number; domain_name: string; ipv4: string }
 type SOA = { primary_ns: string; hostmaster: string; refresh: number; retry: number; expire: number; minimum: number; ttl: number }
 type DNSSECStatus = { active: boolean; signed: boolean; ds: string[]; status: string }
+// The shared nameserver pair a customer points the domain at. It is resolved on
+// the server, because a reseller may publish its own white-label pair.
+type Nameservers = { ns1: string; ns2: string; source?: string }
 
 const RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SRV', 'CAA', 'PTR', 'DS', 'TLSA', 'SSHFP', 'NAPTR']
 
@@ -64,6 +67,7 @@ export default function DomainDNSPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [bulkDeleteConfirmationOpen, setBulkDeleteConfirmationOpen] = useState(false)
   const [soa, setSOA] = useState<SOA | null>(null)
+  const [nameservers, setNameservers] = useState<Nameservers | null>(null)
   const [soaOpen, setSOAOpen] = useState(false)
   const [dnssec, setDNSSEC] = useState<DNSSECStatus | null>(null)
   const [dnssecProcessing, setDNSSECProcessing] = useState(false)
@@ -152,6 +156,7 @@ export default function DomainDNSPage() {
       api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
       api.get<SOA>(`/domains/${id}/dns/soa`).then(r => setSOA(r.data)).catch(() => {})
       api.get<DNSSECStatus>(`/domains/${id}/dns/dnssec`).then(r => setDNSSEC(r.data)).catch(() => {})
+      api.get<Nameservers>(`/domains/${id}/nameservers`).then(r => setNameservers(r.data)).catch(() => {})
     }
     fetchRecords()
   }, [id, fetchRecords])
@@ -229,9 +234,18 @@ export default function DomainDNSPage() {
         </p>
       )}
 
-      <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-md px-3 py-2 text-xs text-sky-800 dark:text-sky-200 mb-4">
-        <strong>{t('authoritative.label')}</strong>{t('authoritative.pre')}<span className="font-mono">ns1.{domain?.domain_name || 'your-domain'}</span>{t('authoritative.mid')}<span className="font-mono">ns2.{domain?.domain_name || 'your-domain'}</span>{t('authoritative.post')}
-      </div>
+      {/* The pair comes from the server. It used to be printed as
+          ns1.<this domain>, which is a vanity nameserver: it resolves only with
+          a glue record at this domain's own registrar, so telling a customer to
+          use it left the domain unreachable. */}
+      {nameservers && (
+        <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-md px-3 py-2 text-xs text-sky-800 dark:text-sky-200 mb-4">
+          <strong>{t('authoritative.label')}</strong>{t('authoritative.pre')}<span className="font-mono">{nameservers.ns1}</span>{t('authoritative.mid')}<span className="font-mono">{nameservers.ns2}</span>{t('authoritative.post')}
+          {nameservers.source === 'none' && (
+            <span className="block mt-1 text-amber-800 dark:text-amber-300">{t('authoritative.unconfigured')}</span>
+          )}
+        </div>
+      )}
 
       {soa && (
         <div className="border border-slate-200 dark:border-slate-800 rounded-xl mb-4 overflow-hidden">

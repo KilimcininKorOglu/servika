@@ -10,7 +10,8 @@
     "label": "DNS faisant autorité :",
     "pre": " BIND publie ces enregistrements. Pointez le domaine vers ",
     "mid": " et ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "Aucun serveur de noms partagé n'est défini sur le serveur : ce ne sont que des valeurs indicatives, à ne pas communiquer à un client."
   },
   "loading": "Chargement...",
   "recordCount": "{{count}} enregistrements",

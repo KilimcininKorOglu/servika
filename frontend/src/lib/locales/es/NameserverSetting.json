@@ -1,0 +1,31 @@
+{
+  "title": "Servidores de nombres",
+  "descriptionAdmin": "El par compartido de servidores de nombres al que apunta cada dominio de cliente.",
+  "descriptionReseller": "Sus propios servidores de nombres de marca blanca, usados por los dominios de los clientes que gestiona.",
+  "warnings": {
+    "unconfiguredAdmin": "No hay servidores de nombres definidos. Las zonas recurren a ns1.<dominio> y los clientes no pueden apuntar sus dominios al panel.",
+    "unconfiguredReseller": "El servidor no tiene servidores de nombres compartidos definidos. Contacte con su administrador.",
+    "suggestion": "Los campos contienen una sugerencia derivada del dominio del panel. Compruébela antes de guardar.",
+    "usingPanelPair": "No tiene servidores de nombres propios, así que se usa el par de todo el panel."
+  },
+  "glueReminder": "Cree registros A para ambos nombres de host que apunten a la dirección IP de este servidor y regístrelos como registros glue en el registrador de ese dominio.",
+  "save": "Guardar",
+  "saving": "Guardando...",
+  "migrate": "Aplicar a los dominios existentes",
+  "migrating": "Aplicando...",
+  "messages": {
+    "saved": "Servidores de nombres guardados. Aplíquelos a los dominios existentes para actualizar sus zonas.",
+    "savedReseller": "Servidores de nombres guardados. Apunte sus registros A a este servidor en su propio proveedor de DNS; de lo contrario, los dominios de sus clientes no se resolverán.",
+    "migrated": "{{updated}} de {{total}} dominios actualizados."
+  },
+  "errors": {
+    "save": "No se pudieron guardar los servidores de nombres.",
+    "migrate": "No se pudieron actualizar los dominios.",
+    "migratePartial": "Estos dominios no se pudieron actualizar: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Aplicar a los dominios existentes",
+    "message": "Los registros NS y el servidor de nombres primario del SOA de cada dominio se ajustan al par actual, se eliminan los registros A ns1/ns2 sobrantes y se reescriben las zonas. Los dominios ya correctos no se tocan.",
+    "action": "Aplicar"
+  }
+}

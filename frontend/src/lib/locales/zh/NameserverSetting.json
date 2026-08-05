@@ -1,0 +1,31 @@
+{
+  "title": "域名服务器",
+  "descriptionAdmin": "每个客户域名所指向的共享域名服务器对。",
+  "descriptionReseller": "您自己的白标域名服务器，供您管理的客户域名使用。",
+  "warnings": {
+    "unconfiguredAdmin": "未设置域名服务器。区域将回退到 ns1.<域名>，客户无法将域名指向面板。",
+    "unconfiguredReseller": "服务器上未设置共享域名服务器。请联系管理员。",
+    "suggestion": "字段中是根据面板域名推测出的建议值。保存前请先核对。",
+    "usingPanelPair": "您没有自己的域名服务器，因此使用面板级别的域名服务器对。"
+  },
+  "glueReminder": "为这两个主机名创建指向本服务器 IP 地址的 A 记录，并在该域名的注册商处将其登记为 glue 记录。",
+  "save": "保存",
+  "saving": "正在保存...",
+  "migrate": "应用到现有域名",
+  "migrating": "正在应用...",
+  "messages": {
+    "saved": "域名服务器已保存。请应用到现有域名以更新其区域。",
+    "savedReseller": "域名服务器已保存。请在您自己的 DNS 服务商处将其 A 记录指向本服务器，否则客户的域名将无法解析。",
+    "migrated": "已更新 {{total}} 个域名中的 {{updated}} 个。"
+  },
+  "errors": {
+    "save": "无法保存域名服务器。",
+    "migrate": "无法更新域名。",
+    "migratePartial": "以下域名未能更新：{{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "应用到现有域名",
+    "message": "每个域名的 NS 记录和 SOA 主域名服务器都会设置为当前的域名服务器对，残留的 ns1/ns2 A 记录会被删除，区域文件会重新写入。已经正确的域名不会改动。",
+    "action": "应用"
+  }
+}

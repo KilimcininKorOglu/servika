@@ -10,7 +10,8 @@
     "label": "Autoritatives DNS:",
     "pre": " BIND veröffentlicht diese Einträge. Richten Sie die Domain auf ",
     "mid": " und ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "Auf dem Server sind keine gemeinsamen Nameserver gesetzt, daher sind dies nur Platzhalter und dürfen nicht an Kunden weitergegeben werden."
   },
   "loading": "Laden...",
   "recordCount": "{{count}} Einträge",

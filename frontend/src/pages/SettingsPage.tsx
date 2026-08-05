@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import PanelDomain from '@/components/PanelDomain'
 import HostnameSetting from '@/components/HostnameSetting'
+import NameserverSetting from '@/components/NameserverSetting'
 import ServerRebootButton from '@/components/ServerRebootButton'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useAuth } from '@/store/auth'
@@ -144,6 +145,7 @@ export default function SettingsPage() {
       <div className="space-y-5">
         <PanelDomain />
         <HostnameSetting />
+        <NameserverSetting role={currentUser?.role} />
         <ServerRebootButton />
 
         {/* 1. Account information */}

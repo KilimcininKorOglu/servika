@@ -10,7 +10,8 @@
   "cards": {
     "ftp": "FTP / SFTP",
     "mysql": "MySQL / MariaDB",
-    "web": "Web"
+    "web": "Web",
+    "nameservers": "Nameservers"
   },
   "rows": {
     "host": "Host",
@@ -58,5 +59,9 @@
   "copyButton": {
     "copy": "Copy",
     "copied": "✓ Copied"
+  },
+  "nameservers": {
+    "description": "Enter these nameservers at your domain's registrar.",
+    "unconfigured": "These addresses cannot be used yet because the server has no shared nameservers. Contact your administrator."
   }
 }

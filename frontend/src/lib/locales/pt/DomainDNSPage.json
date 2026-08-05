@@ -10,7 +10,8 @@
     "label": "DNS autoritativo:",
     "pre": " O BIND publica estes registos. Aponte o domínio para ",
     "mid": " e ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "O servidor não tem servidores de nomes partilhados definidos, por isso estes valores são apenas indicativos e não devem ser dados a um cliente."
   },
   "loading": "A carregar...",
   "recordCount": "{{count}} registos",

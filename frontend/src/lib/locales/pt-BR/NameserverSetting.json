@@ -1,0 +1,31 @@
+{
+  "title": "Servidores de nomes",
+  "descriptionAdmin": "O par compartilhado de servidores de nomes para o qual cada domínio de cliente aponta.",
+  "descriptionReseller": "Seus próprios servidores de nomes white-label, usados pelos domínios dos clientes que você gerencia.",
+  "warnings": {
+    "unconfiguredAdmin": "Nenhum servidor de nomes está definido. As zonas recorrem a ns1.<domínio> e os clientes não conseguem apontar seus domínios para o painel.",
+    "unconfiguredReseller": "O servidor não tem servidores de nomes compartilhados definidos. Fale com seu administrador.",
+    "suggestion": "Os campos contêm uma sugestão derivada do domínio do painel. Confira antes de salvar.",
+    "usingPanelPair": "Você não tem servidores de nomes próprios, então o par de todo o painel é usado."
+  },
+  "glueReminder": "Crie registros A para os dois nomes de host apontando para o endereço IP deste servidor e cadastre-os como registros glue no registrador daquele domínio.",
+  "save": "Salvar",
+  "saving": "Salvando...",
+  "migrate": "Aplicar aos domínios existentes",
+  "migrating": "Aplicando...",
+  "messages": {
+    "saved": "Servidores de nomes salvos. Aplique-os aos domínios existentes para atualizar as zonas.",
+    "savedReseller": "Servidores de nomes salvos. Aponte os registros A deles para este servidor no seu próprio provedor de DNS, caso contrário os domínios dos seus clientes não serão resolvidos.",
+    "migrated": "{{updated}} de {{total}} domínios atualizados."
+  },
+  "errors": {
+    "save": "Não foi possível salvar os servidores de nomes.",
+    "migrate": "Não foi possível atualizar os domínios.",
+    "migratePartial": "Estes domínios não foram atualizados: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Aplicar aos domínios existentes",
+    "message": "Os registros NS e o servidor de nomes primário do SOA de cada domínio passam para o par atual, os registros A ns1/ns2 remanescentes são removidos e as zonas são reescritas. Domínios já corretos não são tocados.",
+    "action": "Aplicar"
+  }
+}

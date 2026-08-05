@@ -10,7 +10,8 @@
   "cards": {
     "ftp": "FTP / SFTP",
     "mysql": "MySQL / MariaDB",
-    "web": "Web"
+    "web": "Web",
+    "nameservers": "Servere de nume"
   },
   "rows": {
     "host": "Gazdă",
@@ -58,5 +59,9 @@
   "copyButton": {
     "copy": "Copiere",
     "copied": "✓ Copiat"
+  },
+  "nameservers": {
+    "description": "Introduceți aceste servere de nume la registrarul domeniului dumneavoastră.",
+    "unconfigured": "Aceste adrese nu pot fi folosite încă deoarece pe server nu sunt setate servere de nume comune. Contactați administratorul."
   }
 }

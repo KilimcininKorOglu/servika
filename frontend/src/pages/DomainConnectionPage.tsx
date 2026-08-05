@@ -47,6 +47,10 @@ type Domain = {
   system_user: string; web_root: string
 }
 
+// The shared nameserver pair the domain is pointed at. The customer enters
+// these at their registrar instead of maintaining A records by hand.
+type Nameservers = { ns1: string; ns2: string; source?: string }
+
 export default function DomainConnectionPage() {
   const { t } = useTranslation('DomainConnectionPage')
   const { id } = useParams()
@@ -54,10 +58,14 @@ export default function DomainConnectionPage() {
   const [error, setError] = useState<string | null>(null)
   const [copiedValue, setCopiedValue] = useState<string | null>(null)
   const [passwordModal, setPasswordModal] = useState<{ type: 'ftp' | 'db' } | null>(null)
+  const [nameservers, setNameservers] = useState<Nameservers | null>(null)
 
   useEffect(() => {
     if (!id) return
     api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(e => setError(apiError(e)))
+    // The pair comes from its own endpoint, where the panel-wide setting and a
+    // reseller override are resolved.
+    api.get<Nameservers>(`/domains/${id}/nameservers`).then(r => setNameservers(r.data)).catch(() => { /* the card stays hidden */ })
   }, [id])
 
   function copy(value: string) {
@@ -111,6 +119,19 @@ export default function DomainConnectionPage() {
             <Row e={t('rows.httpUrl')} d={`http://${domain.domain_name}/`} onCopy={copy} copiedValue={copiedValue} />
             <Row e={t('rows.httpsUrl')} d={`https://${domain.domain_name}/`} onCopy={copy} copiedValue={copiedValue} />
           </Card>
+
+          {nameservers && (
+            <Card title={t('cards.nameservers')} color="emerald" icon="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" wide>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t('nameservers.description')}</p>
+              <Row e="NS1" d={nameservers.ns1} onCopy={copy} copiedValue={copiedValue} mono />
+              <Row e="NS2" d={nameservers.ns2} onCopy={copy} copiedValue={copiedValue} mono />
+              {nameservers.source === 'none' && (
+                <p className="mt-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-300">
+                  {t('nameservers.unconfigured')}
+                </p>
+              )}
+            </Card>
+          )}
         </div>
       )}
 
@@ -132,6 +153,7 @@ function Card({ title, color, icon, children, wide }: { title: string; color: st
     sky: 'bg-sky-100 text-sky-700',
     violet: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300',
     amber: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+    emerald: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
   }
   return (
     <div className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 ${wide ? 'lg:col-span-2' : ''}`}>

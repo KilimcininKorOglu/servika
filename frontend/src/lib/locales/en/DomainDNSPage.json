@@ -10,7 +10,8 @@
     "label": "Authoritative DNS:",
     "pre": " BIND publishes these records. Point the domain to ",
     "mid": " and ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "No shared nameservers are set on the server, so these are only a placeholder and cannot be given to a customer."
   },
   "loading": "Loading...",
   "recordCount": "{{count}} records",

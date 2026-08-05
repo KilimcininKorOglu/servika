@@ -10,7 +10,8 @@
     "label": "Yetkili DNS:",
     "pre": " Bu kayıtları BIND yayınlar. Alan adını şuraya yönlendirin: ",
     "mid": " ve ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "Sunucuda ortak ad sunucusu tanımlı olmadığı için bunlar yalnızca yer tutucudur ve müşteriye verilemez."
   },
   "loading": "Yükleniyor...",
   "recordCount": "{{count}} kayıt",

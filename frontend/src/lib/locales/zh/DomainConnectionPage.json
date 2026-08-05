@@ -10,7 +10,8 @@
   "cards": {
     "ftp": "FTP / SFTP",
     "mysql": "MySQL / MariaDB",
-    "web": "Web"
+    "web": "Web",
+    "nameservers": "域名服务器"
   },
   "rows": {
     "host": "主机",
@@ -58,5 +59,9 @@
   "copyButton": {
     "copy": "复制",
     "copied": "✓ 已复制"
+  },
+  "nameservers": {
+    "description": "请在您域名的注册商处填写这些域名服务器。",
+    "unconfigured": "服务器上未设置共享域名服务器，因此这些地址暂时无法使用。请联系管理员。"
   }
 }

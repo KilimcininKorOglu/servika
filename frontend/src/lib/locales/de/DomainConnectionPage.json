@@ -10,7 +10,8 @@
   "cards": {
     "ftp": "FTP / SFTP",
     "mysql": "MySQL / MariaDB",
-    "web": "Web"
+    "web": "Web",
+    "nameservers": "Nameserver"
   },
   "rows": {
     "host": "Host",
@@ -58,5 +59,9 @@
   "copyButton": {
     "copy": "Kopieren",
     "copied": "✓ Kopiert"
+  },
+  "nameservers": {
+    "description": "Tragen Sie diese Nameserver beim Registrar Ihrer Domain ein.",
+    "unconfigured": "Diese Adressen sind noch nicht nutzbar, weil auf dem Server keine gemeinsamen Nameserver gesetzt sind. Wenden Sie sich an Ihren Administrator."
   }
 }

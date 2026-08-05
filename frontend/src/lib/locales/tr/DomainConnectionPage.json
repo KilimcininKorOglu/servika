@@ -10,7 +10,8 @@
   "cards": {
     "ftp": "FTP / SFTP",
     "mysql": "MySQL / MariaDB",
-    "web": "Web"
+    "web": "Web",
+    "nameservers": "Ad sunucuları"
   },
   "rows": {
     "host": "Sunucu",
@@ -58,5 +59,9 @@
   "copyButton": {
     "copy": "Kopyala",
     "copied": "✓ Kopyalandı"
+  },
+  "nameservers": {
+    "description": "Bu ad sunucularını alan adınızın kayıt şirketine girin.",
+    "unconfigured": "Sunucuda ortak ad sunucusu tanımlı olmadığı için bu adresler henüz kullanılamaz. Yöneticinize başvurun."
   }
 }

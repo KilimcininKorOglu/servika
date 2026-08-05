@@ -10,7 +10,8 @@
     "label": "DNS autoritativo:",
     "pre": " BIND pubblica questi record. Punta il dominio a ",
     "mid": " e ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "Sul server non è impostato alcun server dei nomi condiviso, quindi questi sono solo segnaposto e non vanno forniti a un cliente."
   },
   "loading": "Caricamento...",
   "recordCount": "{{count}} record",

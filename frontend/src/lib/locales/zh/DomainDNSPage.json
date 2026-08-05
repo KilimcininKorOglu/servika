@@ -1,7 +1,7 @@
 {
   "breadcrumb": {"home":"主页","domains":"域名","dnsSettings":"DNS 设置"},
   "title":"DNS 设置","ipLabel":"IP：",
-  "authoritative":{"label":"权威 DNS：","pre":" BIND 发布这些记录。请将域名指向 ","mid":" 和 ","post":"。"},
+  "authoritative":{"label":"权威 DNS：","pre":" BIND 发布这些记录。请将域名指向 ","mid":" 和 ","post":"。","unconfigured":"服务器上未设置共享域名服务器，因此这些只是占位值，不能提供给客户。"},
   "loading":"加载中...","recordCount":"{{count}} 条记录",
   "valueHint":{"A":"IPv4 地址，例如 203.0.113.10","AAAA":"IPv6 地址，例如 2a01:4f8:1c1c::1","CNAME":"目标域名，例如 target.example.com","MX":"邮件服务器，例如 mail.example.com（优先级单独设置）","TXT":"自由格式文本，例如 v=spf1 mx ~all","NS":"名称服务器，例如 ns1.example.com","SRV":"权重 端口 目标，例如 5 5060 sip.example.com（优先级单独设置）","CAA":"标志 标签 \"值\"，例如 0 issue \"letsencrypt.org\"","PTR":"目标域名，例如 host.example.com","DS":"密钥标签 算法 摘要类型 摘要，例如 12345 13 2 49FD46E6C4B45C55D4AC...","TLSA":"用途 选择器 匹配类型 数据，例如 3 1 1 0B9FA5A59EED715C26C1020C...","SSHFP":"算法 类型 指纹，例如 4 2 123456789ABCDEF...","NAPTR":"顺序 偏好 \"标志\" \"服务\" \"正则表达式\" 替换"},
   "soa":{"title":"SOA 设置","titleHint":"（权威、刷新、重试、过期和 TTL）","hide":"▲ 隐藏","edit":"▼ 编辑","primaryNs":"主 NS","hostmasterEmail":"主机管理员电子邮件","fields":{"refresh":"刷新","retry":"重试","expire":"过期","minimum":"最小值","ttl":"ttl"},"save":"保存 SOA","saved":"SOA 设置已保存","saveFailed":"无法保存 SOA 设置"},

@@ -10,7 +10,8 @@
     "label": "DNS autoritar:",
     "pre": " BIND publică aceste înregistrări. Direcționați domeniul către ",
     "mid": " și ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "Pe server nu sunt setate servere de nume comune, deci acestea sunt doar valori provizorii și nu pot fi date unui client."
   },
   "loading": "Se încarcă...",
   "recordCount": "{{count}} înregistrări",

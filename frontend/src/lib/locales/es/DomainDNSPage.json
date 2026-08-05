@@ -2,7 +2,7 @@
   "breadcrumb": { "home": "Inicio", "domains": "Dominios", "dnsSettings": "Configuración DNS" },
   "title": "Configuración DNS",
   "ipLabel": "IP:",
-  "authoritative": { "label": "DNS autoritativo:", "pre": " BIND publica estos registros. Apunte el dominio a ", "mid": " y ", "post": "." },
+  "authoritative": { "label": "DNS autoritativo:", "pre": " BIND publica estos registros. Apunte el dominio a ", "mid": " y ", "post": "." ,"unconfigured":"El servidor no tiene servidores de nombres compartidos definidos, por lo que estos valores son solo provisionales y no deben darse a un cliente."},
   "loading": "Cargando...",
   "recordCount": "{{count}} registros",
   "valueHint": {

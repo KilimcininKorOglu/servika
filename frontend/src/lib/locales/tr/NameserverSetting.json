@@ -1,0 +1,31 @@
+{
+  "title": "Ad sunucuları",
+  "descriptionAdmin": "Her müşteri alan adının yönlendirildiği ortak ad sunucusu çifti.",
+  "descriptionReseller": "Yönettiğiniz müşterilerin alan adlarının kullandığı kendi markalı ad sunucularınız.",
+  "warnings": {
+    "unconfiguredAdmin": "Ad sunucusu tanımlı değil. Bölgeler ns1.<alanadı> değerine düşer ve müşteriler alan adlarını panele yönlendiremez.",
+    "unconfiguredReseller": "Sunucuda ortak ad sunucusu tanımlı değil. Yöneticinize başvurun.",
+    "suggestion": "Alanlarda panel alan adından türetilen bir öneri var. Kaydetmeden önce doğrulayın.",
+    "usingPanelPair": "Kendi ad sunucunuz yok, bu yüzden panel geneli çift kullanılıyor."
+  },
+  "glueReminder": "Her iki ana bilgisayar adı için bu sunucunun IP adresini gösteren A kayıtları oluşturun ve bunları o alan adının kayıt şirketinde glue kaydı olarak tanımlayın.",
+  "save": "Kaydet",
+  "saving": "Kaydediliyor...",
+  "migrate": "Mevcut alan adlarına uygula",
+  "migrating": "Uygulanıyor...",
+  "messages": {
+    "saved": "Ad sunucuları kaydedildi. Bölgelerin güncellenmesi için mevcut alan adlarına uygulayın.",
+    "savedReseller": "Ad sunucuları kaydedildi. Kendi DNS sağlayıcınızda A kayıtlarını bu sunucuya yönlendirin, aksi halde müşterilerinizin alan adları çözülmez.",
+    "migrated": "{{total}} alan adının {{updated}} tanesi güncellendi."
+  },
+  "errors": {
+    "save": "Ad sunucuları kaydedilemedi.",
+    "migrate": "Alan adları güncellenemedi.",
+    "migratePartial": "Bu alan adları güncellenemedi: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Mevcut alan adlarına uygula",
+    "message": "Her alan adının NS kayıtları ve SOA birincil ad sunucusu geçerli çifte ayarlanır, artakalan ns1/ns2 A kayıtları silinir ve bölgeler yeniden yazılır. Zaten doğru olan alan adlarına dokunulmaz.",
+    "action": "Uygula"
+  }
+}

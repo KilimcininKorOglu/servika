@@ -1,0 +1,31 @@
+{
+  "title": "Servere de nume",
+  "descriptionAdmin": "Perechea comună de servere de nume către care indică fiecare domeniu de client.",
+  "descriptionReseller": "Propriile dumneavoastră servere de nume white-label, folosite de domeniile clienților pe care îi administrați.",
+  "warnings": {
+    "unconfiguredAdmin": "Nu sunt setate servere de nume. Zonele revin la ns1.<domeniu>, iar clienții nu își pot îndrepta domeniile către panou.",
+    "unconfiguredReseller": "Pe server nu sunt setate servere de nume comune. Contactați administratorul.",
+    "suggestion": "Câmpurile conțin o sugestie derivată din domeniul panoului. Verificați-o înainte de salvare.",
+    "usingPanelPair": "Nu aveți servere de nume proprii, așa că se folosește perechea de la nivelul panoului."
+  },
+  "glueReminder": "Creați pentru ambele nume de gazdă înregistrări A care indică adresa IP a acestui server și înregistrați-le ca înregistrări glue la registrarul acelui domeniu.",
+  "save": "Salvează",
+  "saving": "Se salvează...",
+  "migrate": "Aplică la domeniile existente",
+  "migrating": "Se aplică...",
+  "messages": {
+    "saved": "Serverele de nume au fost salvate. Aplicați-le la domeniile existente pentru a le actualiza zonele.",
+    "savedReseller": "Serverele de nume au fost salvate. Îndreptați înregistrările lor A către acest server la propriul furnizor DNS, altfel domeniile clienților nu se vor rezolva.",
+    "migrated": "{{updated}} din {{total}} domenii actualizate."
+  },
+  "errors": {
+    "save": "Serverele de nume nu au putut fi salvate.",
+    "migrate": "Domeniile nu au putut fi actualizate.",
+    "migratePartial": "Aceste domenii nu au putut fi actualizate: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Aplică la domeniile existente",
+    "message": "Înregistrările NS și serverul de nume primar din SOA al fiecărui domeniu sunt setate la perechea curentă, înregistrările A ns1/ns2 rămase sunt eliminate, iar zonele sunt rescrise. Domeniile deja corecte rămân neatinse.",
+    "action": "Aplică"
+  }
+}

@@ -10,7 +10,8 @@
   "cards": {
     "ftp": "FTP / SFTP",
     "mysql": "MySQL / MariaDB",
-    "web": "Web"
+    "web": "Web",
+    "nameservers": "Servidores de nomes"
   },
   "rows": {
     "host": "Anfitrião",
@@ -58,5 +59,9 @@
   "copyButton": {
     "copy": "Copiar",
     "copied": "✓ Copiado"
+  },
+  "nameservers": {
+    "description": "Introduza estes servidores de nomes no registrar do seu domínio.",
+    "unconfigured": "Estes endereços ainda não podem ser usados porque o servidor não tem servidores de nomes partilhados. Contacte o seu administrador."
   }
 }

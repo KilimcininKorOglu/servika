@@ -10,7 +10,8 @@
   "cards": {
     "ftp": "FTP / SFTP",
     "mysql": "MySQL / MariaDB",
-    "web": "Web"
+    "web": "Web",
+    "nameservers": "Jmenné servery"
   },
   "rows": {
     "host": "Host",
@@ -58,5 +59,9 @@
   "copyButton": {
     "copy": "Kopírovat",
     "copied": "✓ Zkopírováno"
+  },
+  "nameservers": {
+    "description": "Zadejte tyto jmenné servery u registrátora své domény.",
+    "unconfigured": "Tyto adresy zatím nelze použít, protože na serveru nejsou nastaveny sdílené jmenné servery. Obraťte se na svého správce."
   }
 }

@@ -10,7 +10,8 @@
     "label": "DNS autoritativo:",
     "pre": " O BIND publica esses registros. Aponte o domínio para ",
     "mid": " e ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "O servidor não tem servidores de nomes compartilhados definidos, então estes valores são apenas provisórios e não devem ser passados a um cliente."
   },
   "loading": "Carregando...",
   "recordCount": "{{count}} registros",

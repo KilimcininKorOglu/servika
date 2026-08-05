@@ -10,7 +10,8 @@
     "label": "Autoritativní DNS:",
     "pre": " BIND publikuje tyto záznamy. Nasměrujte doménu na ",
     "mid": " a ",
-    "post": "."
+    "post": ".",
+    "unconfigured": "Na serveru nejsou nastaveny sdílené jmenné servery, takže jde jen o zástupné hodnoty, které nelze předat zákazníkovi."
   },
   "loading": "Načítání...",
   "recordCount": "{{count}} záznamů",

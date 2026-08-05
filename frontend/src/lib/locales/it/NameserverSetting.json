@@ -1,0 +1,31 @@
+{
+  "title": "Server dei nomi",
+  "descriptionAdmin": "La coppia condivisa di server dei nomi verso cui punta ogni dominio cliente.",
+  "descriptionReseller": "I tuoi server dei nomi white-label, usati dai domini dei clienti che gestisci.",
+  "warnings": {
+    "unconfiguredAdmin": "Nessun server dei nomi è impostato. Le zone ricadono su ns1.<dominio> e i clienti non possono puntare i loro domini al pannello.",
+    "unconfiguredReseller": "Sul server non è impostato alcun server dei nomi condiviso. Contatta il tuo amministratore.",
+    "suggestion": "I campi contengono un suggerimento derivato dal dominio del pannello. Verificalo prima di salvare.",
+    "usingPanelPair": "Non hai server dei nomi propri, quindi viene usata la coppia dell'intero pannello."
+  },
+  "glueReminder": "Crea per entrambi i nomi host dei record A che puntano all'indirizzo IP di questo server e registrali come record glue presso il registrar di quel dominio.",
+  "save": "Salva",
+  "saving": "Salvataggio...",
+  "migrate": "Applica ai domini esistenti",
+  "migrating": "Applicazione...",
+  "messages": {
+    "saved": "Server dei nomi salvati. Applicali ai domini esistenti per aggiornarne le zone.",
+    "savedReseller": "Server dei nomi salvati. Punta i loro record A a questo server presso il tuo provider DNS, altrimenti i domini dei tuoi clienti non verranno risolti.",
+    "migrated": "{{updated}} domini su {{total}} aggiornati."
+  },
+  "errors": {
+    "save": "Impossibile salvare i server dei nomi.",
+    "migrate": "Impossibile aggiornare i domini.",
+    "migratePartial": "Questi domini non sono stati aggiornati: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Applica ai domini esistenti",
+    "message": "I record NS e il server dei nomi primario SOA di ogni dominio vengono impostati sulla coppia corrente, i record A ns1/ns2 residui vengono rimossi e le zone riscritte. I domini già corretti non vengono toccati.",
+    "action": "Applica"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Nameservers",
+  "descriptionAdmin": "The shared nameserver pair every customer domain is pointed at.",
+  "descriptionReseller": "Your own white-label nameservers, used by the domains of the customers you manage.",
+  "warnings": {
+    "unconfiguredAdmin": "No nameservers are set, so zones fall back to ns1.<domain> and customers cannot point their domains at the panel.",
+    "unconfiguredReseller": "The server has no shared nameservers set. Contact your administrator.",
+    "suggestion": "The fields hold a suggestion derived from the panel domain. Check it before you save.",
+    "usingPanelPair": "You have no nameservers of your own, so the panel-wide pair is used."
+  },
+  "glueReminder": "Create A records for both hostnames that point at this server's IP address, and register them as glue records at the registrar of that domain.",
+  "save": "Save",
+  "saving": "Saving...",
+  "migrate": "Apply to existing domains",
+  "migrating": "Applying...",
+  "messages": {
+    "saved": "Nameservers saved. Apply them to existing domains to update their zones.",
+    "savedReseller": "Nameservers saved. Point their A records at this server in your own DNS provider, otherwise your customers' domains will not resolve.",
+    "migrated": "{{updated}} of {{total}} domains updated."
+  },
+  "errors": {
+    "save": "Nameservers could not be saved.",
+    "migrate": "The domains could not be updated.",
+    "migratePartial": "These domains could not be updated: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Apply to existing domains",
+    "message": "The NS records and the SOA primary nameserver of every domain are set to the current pair, leftover ns1/ns2 A records are removed and the zones are rewritten. Domains that are already correct are left alone.",
+    "action": "Apply"
+  }
+}

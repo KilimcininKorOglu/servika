@@ -1,0 +1,31 @@
+{
+  "title": "Jmenné servery",
+  "descriptionAdmin": "Sdílená dvojice jmenných serverů, na kterou míří každá zákaznická doména.",
+  "descriptionReseller": "Vaše vlastní white-label jmenné servery, které používají domény zákazníků, jež spravujete.",
+  "warnings": {
+    "unconfiguredAdmin": "Nejsou nastaveny žádné jmenné servery. Zóny se vracejí k ns1.<doména> a zákazníci nemohou své domény nasměrovat na panel.",
+    "unconfiguredReseller": "Na serveru nejsou nastaveny sdílené jmenné servery. Obraťte se na svého správce.",
+    "suggestion": "Pole obsahují návrh odvozený z domény panelu. Před uložením jej zkontrolujte.",
+    "usingPanelPair": "Nemáte vlastní jmenné servery, proto se používá dvojice platná pro celý panel."
+  },
+  "glueReminder": "Vytvořte pro oba názvy hostitelů záznamy A mířící na IP adresu tohoto serveru a zaregistrujte je jako glue záznamy u registrátora dané domény.",
+  "save": "Uložit",
+  "saving": "Ukládání...",
+  "migrate": "Použít na stávající domény",
+  "migrating": "Používání...",
+  "messages": {
+    "saved": "Jmenné servery uloženy. Použijte je na stávající domény, aby se aktualizovaly jejich zóny.",
+    "savedReseller": "Jmenné servery uloženy. Nasměrujte jejich záznamy A na tento server u svého poskytovatele DNS, jinak se domény vašich zákazníků nepřeloží.",
+    "migrated": "Aktualizováno {{updated}} z {{total}} domén."
+  },
+  "errors": {
+    "save": "Jmenné servery se nepodařilo uložit.",
+    "migrate": "Domény se nepodařilo aktualizovat.",
+    "migratePartial": "Tyto domény se nepodařilo aktualizovat: {{domains}}"
+  },
+  "migrateConfirm": {
+    "title": "Použít na stávající domény",
+    "message": "Záznamy NS a primární jmenný server v SOA každé domény se nastaví na aktuální dvojici, zbylé záznamy A ns1/ns2 se odstraní a zóny se přepíší. Domény, které jsou již správné, zůstanou beze změny.",
+    "action": "Použít"
+  }
+}

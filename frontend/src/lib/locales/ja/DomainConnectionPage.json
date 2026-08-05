@@ -10,7 +10,8 @@
   "cards": {
     "ftp": "FTP / SFTP",
     "mysql": "MySQL / MariaDB",
-    "web": "Web"
+    "web": "Web",
+    "nameservers": "ネームサーバー"
   },
   "rows": {
     "host": "ホスト",
@@ -58,5 +59,9 @@
   "copyButton": {
     "copy": "コピー",
     "copied": "✓ コピーしました"
+  },
+  "nameservers": {
+    "description": "これらのネームサーバーをドメインのレジストラに入力してください。",
+    "unconfigured": "サーバーに共有ネームサーバーが設定されていないため、これらのアドレスはまだ使用できません。管理者に連絡してください。"
   }
 }
