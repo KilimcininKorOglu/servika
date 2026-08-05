@@ -15,5 +15,60 @@
   "delete":{"title":"删除 DNS 记录","message":"删除“{{name}} {{type}} {{value}}”？","confirm":"是，删除","failed":"删除失败"},
   "bulkDelete":{"title":"删除所选 DNS 记录","message":"将永久删除 {{count}} 条 DNS 记录。此操作无法撤销。是否继续？","confirm":"是，删除 {{count}} 条记录"},
   "dnssecDisable":{"title":"禁用 DNSSEC","message":"请在域名注册商处删除 DS 记录，并在禁用 DNSSEC 前等待其 TTL。否则域名可能停止解析并显示 SERVFAIL。仅在 DS 记录已删除后继续。","confirm":"DS 已删除，禁用 DNSSEC"},
-  "modal":{"newTitle":"新建 DNS 记录","editTitle":"编辑 DNS 记录","nameLabel":"名称（子域名）","nameHint":"“@”是根域名。其他示例包括“www”和“mail”。","typeLabel":"类型","valueLabel":"值","ttlLabel":"TTL（秒）","priorityLabel":"优先级","active":"启用","cancel":"取消","saving":"保存中...","create":"创建","update":"更新","saveFailed":"无法保存记录"}
+  "modal":{"newTitle":"新建 DNS 记录","editTitle":"编辑 DNS 记录","nameLabel":"名称（子域名）","nameHint":"“@”是根域名。其他示例包括“www”和“mail”。","typeLabel":"类型","valueLabel":"值","ttlLabel":"TTL（秒）","priorityLabel":"优先级","active":"启用","cancel":"取消","saving":"保存中...","create":"创建","update":"更新","saveFailed":"无法保存记录"},
+  "verify": {
+    "title": "DNS 验证",
+    "hint": "向公共解析器查询实际已发布的内容",
+    "button": "运行检查",
+    "running": "正在检查...",
+    "failed": "无法运行 DNS 检查。",
+    "expected": "期望值：",
+    "okCount": "{{count}} 项正常",
+    "warningCount": "{{count}} 项待确认",
+    "errorCount": "{{count}} 项有误",
+    "checks": {
+      "ns": "域名服务器委派",
+      "a": "A 记录（{{host}}）",
+      "mail_a": "A 记录（{{host}}）",
+      "mx": "MX 记录",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "查询失败，无法读取该记录。",
+      "missing": "该记录未发布。",
+      "elsewhere": "该记录未指向本服务器。",
+      "ns": {
+        "missing": "该域名没有域名服务器记录；请确认它已注册且处于有效状态。",
+        "partial": "域名服务器中只有一个属于本服务器；请在注册商处同时设置两个。",
+        "elsewhere": "该域名未委派给本面板，其 DNS 由别处提供，下面的记录是从那里读取的。在本面板中所做的修改不会生效；请到该服务商处更新。"
+      },
+      "a": {
+        "missing": "该域名无法解析到任何地址。"
+      },
+      "mail_a": {
+        "missing": "{{host}} 无法解析，因此邮件无法投递：MX 记录指向该主机。",
+        "elsewhere": "{{host}} 未指向本服务器。"
+      },
+      "mx": {
+        "missing": "没有 MX 记录，该域名无法接收邮件。",
+        "elsewhere": "邮件被路由到其他服务器；如果您使用外部邮件服务，这是正常的。"
+      },
+      "spf": {
+        "missing": "没有 SPF 记录，您发出的邮件可能被判为垃圾邮件。",
+        "multiple": "存在多条 SPF 记录，这会使 SPF 完全失效。请只保留一条。",
+        "unauthorized": "SPF 记录似乎未授权本服务器；缺少匹配的 ip4、a 或 mx 机制。"
+      },
+      "dkim": {
+        "no_key": "面板中尚未为该域名生成 DKIM 密钥。",
+        "missing": "{{host}} 的 TXT 记录未发布。",
+        "mismatch": "已发布的 DKIM 密钥与面板生成的不一致，因此无法验证签名。"
+      },
+      "dmarc": {
+        "missing": "没有 DMARC 记录。它不是必需的，但能提高送达率。",
+        "malformed": "存在 TXT 记录，但它不是以 v=DMARC1 开头。"
+      }
+    }
+  }
 }

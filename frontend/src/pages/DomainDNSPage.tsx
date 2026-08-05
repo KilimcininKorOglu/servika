@@ -34,6 +34,23 @@ type DNSSECStatus = { active: boolean; signed: boolean; ds: string[]; status: st
 // The shared nameserver pair a customer points the domain at. It is resolved on
 // the server, because a reseller may publish its own white-label pair.
 type Nameservers = { ns1: string; ns2: string; source?: string }
+// One verification check. The backend returns stable key and reason codes
+// instead of prose, so the wording lives in the 12 interface languages.
+type VerifyCheck = {
+  key: string
+  host?: string
+  status: 'ok' | 'warning' | 'error'
+  reason?: string
+  expected?: string
+  found?: string
+}
+type VerifyResult = {
+  domain_name: string
+  checks: VerifyCheck[]
+  ok_count: number
+  warning_count: number
+  error_count: number
+}
 
 const RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SRV', 'CAA', 'PTR', 'DS', 'TLSA', 'SSHFP', 'NAPTR']
 
@@ -68,6 +85,8 @@ export default function DomainDNSPage() {
   const [bulkDeleteConfirmationOpen, setBulkDeleteConfirmationOpen] = useState(false)
   const [soa, setSOA] = useState<SOA | null>(null)
   const [nameservers, setNameservers] = useState<Nameservers | null>(null)
+  const [verification, setVerification] = useState<VerifyResult | null>(null)
+  const [isVerifying, setIsVerifying] = useState(false)
   const [soaOpen, setSOAOpen] = useState(false)
   const [dnssec, setDNSSEC] = useState<DNSSECStatus | null>(null)
   const [dnssecProcessing, setDNSSECProcessing] = useState(false)
@@ -161,6 +180,20 @@ export default function DomainDNSPage() {
     fetchRecords()
   }, [id, fetchRecords])
 
+  // Verification is on demand rather than on load: it makes seven live DNS
+  // lookups, which is not something to spend on every visit to the page.
+  async function verifyDNS() {
+    setIsVerifying(true); setError(null)
+    try {
+      const { data } = await api.get<VerifyResult>(`/domains/${id}/dns/verify`)
+      setVerification(data)
+    } catch (caught) {
+      setError(apiError(caught, t('verify.failed')))
+    } finally {
+      setIsVerifying(false)
+    }
+  }
+
   async function changeDNSSEC(active: boolean) {
     if (!id) return
     setError(null); setSuccess(null); setDNSSECDisableConfirmationOpen(false); setDNSSECProcessing(true)
@@ -246,6 +279,37 @@ export default function DomainDNSPage() {
           )}
         </div>
       )}
+
+      {/* Verification asks a PUBLIC resolver what the world sees, which is not
+          the same thing as what this panel has written locally. */}
+      <div className="border border-slate-200 dark:border-slate-800 rounded-xl mb-4 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5">
+          <div className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            {t('verify.title')}
+            <span className="ml-2 text-xs font-normal text-slate-400">{t('verify.hint')}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {verification && (
+              <span className="text-xs text-slate-500">
+                <span className="text-emerald-600 dark:text-emerald-400">{t('verify.okCount', { count: verification.ok_count })}</span>
+                {verification.warning_count > 0 && <span className="text-amber-600 dark:text-amber-400"> · {t('verify.warningCount', { count: verification.warning_count })}</span>}
+                {verification.error_count > 0 && <span className="text-red-600 dark:text-red-400"> · {t('verify.errorCount', { count: verification.error_count })}</span>}
+              </span>
+            )}
+            <button type="button" onClick={verifyDNS} disabled={isVerifying}
+              className="text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50">
+              {isVerifying ? t('verify.running') : t('verify.button')}
+            </button>
+          </div>
+        </div>
+        {verification && (
+          <div className="border-t border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
+            {verification.checks.map(check => (
+              <VerifyRow key={check.key} check={check} />
+            ))}
+          </div>
+        )}
+      </div>
 
       {soa && (
         <div className="border border-slate-200 dark:border-slate-800 rounded-xl mb-4 overflow-hidden">
@@ -582,5 +646,39 @@ function RecordModal({ current, domainId, ipv4, onClose, onSaved }: {
         </div>
       </form>
     </Modal>
+  )
+}
+// VerifyRow renders one check. The backend sends a key and a reason code, so
+// the label and the explanation are resolved here: an English sentence from the
+// API could not be shown in the other eleven interface languages. The reason
+// falls back to a shared wording when a check has nothing specific to add.
+function VerifyRow({ check }: { check: VerifyCheck }) {
+  const { t } = useTranslation('DomainDNSPage')
+  const tone = check.status === 'ok'
+    ? 'text-emerald-600 dark:text-emerald-400'
+    : check.status === 'warning'
+      ? 'text-amber-600 dark:text-amber-400'
+      : 'text-red-600 dark:text-red-400'
+  const mark = check.status === 'ok' ? '✓' : check.status === 'warning' ? '!' : '✗'
+  const message = check.reason
+    ? t([`verify.reasons.${check.key}.${check.reason}`, `verify.reasons.${check.reason}`], { host: check.host })
+    : ''
+
+  return (
+    <div className="px-4 py-2.5 flex items-start gap-3">
+      <span className={`mt-0.5 text-sm shrink-0 ${tone}`}>{mark}</span>
+      <div className="min-w-0 flex-1">
+        <div className="text-xs font-medium text-slate-700 dark:text-slate-200">
+          {t(`verify.checks.${check.key}`, { host: check.host })}
+        </div>
+        {check.found && <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 break-all mt-0.5">{check.found}</div>}
+        {check.status !== 'ok' && check.expected && (
+          <div className="text-[11px] text-slate-400 break-all">{t('verify.expected')} <span className="font-mono">{check.expected}</span></div>
+        )}
+        {message && (
+          <div className={`text-[11px] mt-0.5 ${check.status === 'error' ? 'text-red-600 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'}`}>{message}</div>
+        )}
+      </div>
+    </div>
   )
 }

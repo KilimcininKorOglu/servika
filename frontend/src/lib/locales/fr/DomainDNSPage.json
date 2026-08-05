@@ -156,5 +156,60 @@
     "create": "Créer",
     "update": "Mettre à jour",
     "saveFailed": "Impossible d'enregistrer l'enregistrement"
+  },
+  "verify": {
+    "title": "Vérification DNS",
+    "hint": "demande à un résolveur public ce qui est réellement publié",
+    "button": "Lancer la vérification",
+    "running": "Vérification...",
+    "failed": "La vérification DNS n'a pas pu être lancée.",
+    "expected": "Attendu :",
+    "okCount": "{{count}} correct(s)",
+    "warningCount": "{{count}} à revoir",
+    "errorCount": "{{count}} en erreur",
+    "checks": {
+      "ns": "Délégation des serveurs de noms",
+      "a": "Enregistrement A ({{host}})",
+      "mail_a": "Enregistrement A ({{host}})",
+      "mx": "Enregistrement MX",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "La requête a échoué, l'enregistrement n'a pas pu être lu.",
+      "missing": "L'enregistrement n'est pas publié.",
+      "elsewhere": "L'enregistrement ne pointe pas vers ce serveur.",
+      "ns": {
+        "missing": "Le domaine n'a aucun enregistrement de serveur de noms ; vérifiez qu'il est enregistré et actif.",
+        "partial": "Un seul des serveurs de noms appartient à ce serveur ; déclarez les deux chez le registraire.",
+        "elsewhere": "Le domaine n'est pas délégué à ce panneau, son DNS est servi ailleurs et les enregistrements ci-dessous ont été lus là-bas. Les modifications faites dans ce panneau ne seront PAS publiées ; mettez-les à jour chez ce fournisseur."
+      },
+      "a": {
+        "missing": "Le domaine ne résout vers aucune adresse."
+      },
+      "mail_a": {
+        "missing": "{{host}} ne résout pas, le courrier ne peut donc pas être livré : l'enregistrement MX pointe vers lui.",
+        "elsewhere": "{{host}} ne pointe pas vers ce serveur."
+      },
+      "mx": {
+        "missing": "Il n'y a pas d'enregistrement MX, ce domaine ne peut pas recevoir de courrier.",
+        "elsewhere": "Le courrier est routé vers un autre serveur, ce qui est normal avec un service de messagerie externe."
+      },
+      "spf": {
+        "missing": "Il n'y a pas d'enregistrement SPF, vos envois risquent d'être classés comme spam.",
+        "multiple": "Il y a plus d'un enregistrement SPF, ce qui rend SPF totalement invalide. N'en gardez qu'un.",
+        "unauthorized": "L'enregistrement SPF ne semble pas autoriser ce serveur ; aucun mécanisme ip4, a ou mx correspondant."
+      },
+      "dkim": {
+        "no_key": "Aucune clé DKIM n'a été générée pour ce domaine dans le panneau.",
+        "missing": "L'enregistrement TXT {{host}} n'est pas publié.",
+        "mismatch": "La clé DKIM publiée diffère de celle générée par le panneau, les signatures ne peuvent donc pas être vérifiées."
+      },
+      "dmarc": {
+        "missing": "Il n'y a pas d'enregistrement DMARC. Ce n'est pas obligatoire, mais cela améliore la délivrabilité.",
+        "malformed": "Un enregistrement TXT existe mais ne commence pas par v=DMARC1."
+      }
+    }
   }
 }

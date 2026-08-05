@@ -156,5 +156,60 @@
     "create": "Create",
     "update": "Update",
     "saveFailed": "Could not save record"
+  },
+  "verify": {
+    "title": "DNS verification",
+    "hint": "asks a public resolver what is actually published",
+    "button": "Run the check",
+    "running": "Checking...",
+    "failed": "The DNS check could not be run.",
+    "expected": "Expected:",
+    "okCount": "{{count}} correct",
+    "warningCount": "{{count}} to review",
+    "errorCount": "{{count}} broken",
+    "checks": {
+      "ns": "Nameserver delegation",
+      "a": "A record ({{host}})",
+      "mail_a": "A record ({{host}})",
+      "mx": "MX record",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "The lookup failed, so the record could not be read.",
+      "missing": "The record is not published.",
+      "elsewhere": "The record does not point at this server.",
+      "ns": {
+        "missing": "The domain has no nameserver records; check that it is registered and active.",
+        "partial": "Only one of the nameservers belongs to this server; set both at the registrar.",
+        "elsewhere": "The domain is not delegated to this panel, so its DNS is served elsewhere and the records below were read from there. Changes made in this panel will NOT go live; update them at that provider."
+      },
+      "a": {
+        "missing": "The domain does not resolve to any address."
+      },
+      "mail_a": {
+        "missing": "{{host}} does not resolve, so mail cannot be delivered: the MX record points at it.",
+        "elsewhere": "{{host}} does not point at this server."
+      },
+      "mx": {
+        "missing": "There is no MX record, so this domain cannot receive mail.",
+        "elsewhere": "Mail is routed to another server, which is expected if you use an external mail service."
+      },
+      "spf": {
+        "missing": "There is no SPF record, so the mail you send may be treated as spam.",
+        "multiple": "There is more than one SPF record, which makes SPF invalid altogether. Keep exactly one.",
+        "unauthorized": "The SPF record does not appear to authorize this server; it has no matching ip4, a or mx mechanism."
+      },
+      "dkim": {
+        "no_key": "No DKIM key has been generated for this domain in the panel.",
+        "missing": "The {{host}} TXT record is not published.",
+        "mismatch": "The published DKIM key differs from the one the panel generated, so signatures cannot be verified."
+      },
+      "dmarc": {
+        "missing": "There is no DMARC record. It is not required, but it improves deliverability.",
+        "malformed": "A TXT record exists but it does not start with v=DMARC1."
+      }
+    }
   }
 }

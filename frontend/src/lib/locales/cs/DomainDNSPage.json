@@ -156,5 +156,60 @@
     "create": "Vytvořit",
     "update": "Aktualizovat",
     "saveFailed": "Záznam nelze uložit"
+  },
+  "verify": {
+    "title": "Ověření DNS",
+    "hint": "zeptá se veřejného resolveru, co je skutečně publikováno",
+    "button": "Spustit kontrolu",
+    "running": "Probíhá kontrola...",
+    "failed": "Kontrolu DNS se nepodařilo spustit.",
+    "expected": "Očekáváno:",
+    "okCount": "{{count}} v pořádku",
+    "warningCount": "{{count}} ke kontrole",
+    "errorCount": "{{count}} chybných",
+    "checks": {
+      "ns": "Delegování jmenných serverů",
+      "a": "Záznam A ({{host}})",
+      "mail_a": "Záznam A ({{host}})",
+      "mx": "Záznam MX",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "Dotaz selhal, záznam nebylo možné přečíst.",
+      "missing": "Záznam není publikován.",
+      "elsewhere": "Záznam neukazuje na tento server.",
+      "ns": {
+        "missing": "Doména nemá žádné záznamy jmenných serverů; ověřte, že je registrovaná a aktivní.",
+        "partial": "Jen jeden ze jmenných serverů patří tomuto serveru; nastavte u registrátora oba.",
+        "elsewhere": "Doména není delegována na tento panel, její DNS je obsluhováno jinde a záznamy níže byly načteny odtud. Změny provedené v tomto panelu se NEPROJEVÍ; upravte je u onoho poskytovatele."
+      },
+      "a": {
+        "missing": "Doména se nepřekládá na žádnou adresu."
+      },
+      "mail_a": {
+        "missing": "{{host}} se nepřekládá, takže poštu nelze doručit: záznam MX na něj ukazuje.",
+        "elsewhere": "{{host}} neukazuje na tento server."
+      },
+      "mx": {
+        "missing": "Neexistuje záznam MX, tato doména nemůže přijímat poštu.",
+        "elsewhere": "Pošta je směrována na jiný server, což je při externí poštovní službě očekávané."
+      },
+      "spf": {
+        "missing": "Neexistuje záznam SPF, odesílaná pošta může být považována za spam.",
+        "multiple": "Existuje více než jeden záznam SPF, což SPF zcela zneplatňuje. Ponechte právě jeden.",
+        "unauthorized": "Záznam SPF zřejmě tento server neautorizuje; chybí odpovídající mechanismus ip4, a nebo mx."
+      },
+      "dkim": {
+        "no_key": "V panelu nebyl pro tuto doménu vygenerován žádný klíč DKIM.",
+        "missing": "Záznam TXT {{host}} není publikován.",
+        "mismatch": "Publikovaný klíč DKIM se liší od klíče vygenerovaného panelem, podpisy proto nelze ověřit."
+      },
+      "dmarc": {
+        "missing": "Neexistuje záznam DMARC. Není povinný, ale zlepšuje doručitelnost.",
+        "malformed": "Záznam TXT existuje, ale nezačíná na v=DMARC1."
+      }
+    }
   }
 }

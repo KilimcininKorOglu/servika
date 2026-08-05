@@ -156,5 +156,60 @@
     "create": "Crea",
     "update": "Aggiorna",
     "saveFailed": "Impossibile salvare il record"
+  },
+  "verify": {
+    "title": "Verifica DNS",
+    "hint": "chiede a un resolver pubblico cosa è davvero pubblicato",
+    "button": "Avvia la verifica",
+    "running": "Verifica in corso...",
+    "failed": "Non è stato possibile eseguire la verifica DNS.",
+    "expected": "Atteso:",
+    "okCount": "{{count}} corretti",
+    "warningCount": "{{count}} da rivedere",
+    "errorCount": "{{count}} con errori",
+    "checks": {
+      "ns": "Delega dei server dei nomi",
+      "a": "Record A ({{host}})",
+      "mail_a": "Record A ({{host}})",
+      "mx": "Record MX",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "La query è fallita, il record non è stato letto.",
+      "missing": "Il record non è pubblicato.",
+      "elsewhere": "Il record non punta a questo server.",
+      "ns": {
+        "missing": "Il dominio non ha record dei server dei nomi; verifica che sia registrato e attivo.",
+        "partial": "Solo uno dei server dei nomi appartiene a questo server; impostali entrambi presso il registrar.",
+        "elsewhere": "Il dominio non è delegato a questo pannello, il suo DNS è servito altrove e i record sotto sono stati letti da lì. Le modifiche fatte in questo pannello NON andranno online; aggiornale presso quel provider."
+      },
+      "a": {
+        "missing": "Il dominio non si risolve in alcun indirizzo."
+      },
+      "mail_a": {
+        "missing": "{{host}} non si risolve, quindi la posta non può essere consegnata: il record MX punta a esso.",
+        "elsewhere": "{{host}} non punta a questo server."
+      },
+      "mx": {
+        "missing": "Non c'è un record MX, questo dominio non può ricevere posta.",
+        "elsewhere": "La posta è instradata verso un altro server, cosa normale con un servizio di posta esterno."
+      },
+      "spf": {
+        "missing": "Non c'è un record SPF, la posta che invii potrebbe finire come spam.",
+        "multiple": "C'è più di un record SPF, il che rende SPF del tutto non valido. Tienine esattamente uno.",
+        "unauthorized": "Il record SPF non sembra autorizzare questo server; manca un meccanismo ip4, a o mx corrispondente."
+      },
+      "dkim": {
+        "no_key": "Nel pannello non è stata generata alcuna chiave DKIM per questo dominio.",
+        "missing": "Il record TXT {{host}} non è pubblicato.",
+        "mismatch": "La chiave DKIM pubblicata è diversa da quella generata dal pannello, quindi le firme non possono essere verificate."
+      },
+      "dmarc": {
+        "missing": "Non c'è un record DMARC. Non è obbligatorio, ma migliora la recapitabilità.",
+        "malformed": "Esiste un record TXT ma non inizia con v=DMARC1."
+      }
+    }
   }
 }

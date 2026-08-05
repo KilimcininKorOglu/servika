@@ -156,5 +156,60 @@
     "create": "Oluştur",
     "update": "Güncelle",
     "saveFailed": "Kayıt kaydedilemedi"
+  },
+  "verify": {
+    "title": "DNS doğrulama",
+    "hint": "gerçekten yayında olanı genel bir çözümleyiciye sorar",
+    "button": "Denetimi çalıştır",
+    "running": "Denetleniyor...",
+    "failed": "DNS denetimi çalıştırılamadı.",
+    "expected": "Beklenen:",
+    "okCount": "{{count}} doğru",
+    "warningCount": "{{count}} gözden geçirilmeli",
+    "errorCount": "{{count}} hatalı",
+    "checks": {
+      "ns": "Ad sunucusu delegasyonu",
+      "a": "A kaydı ({{host}})",
+      "mail_a": "A kaydı ({{host}})",
+      "mx": "MX kaydı",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "Sorgu başarısız oldu, kayıt okunamadı.",
+      "missing": "Kayıt yayında değil.",
+      "elsewhere": "Kayıt bu sunucuyu göstermiyor.",
+      "ns": {
+        "missing": "Alan adının ad sunucusu kaydı yok; kayıtlı ve etkin olduğunu doğrulayın.",
+        "partial": "Ad sunucularından yalnız biri bu sunucuya ait; kayıt şirketinde ikisini de tanımlayın.",
+        "elsewhere": "Alan adı bu panele delege edilmemiş, DNS başka bir yerde sunuluyor ve aşağıdaki kayıtlar oradan okundu. Panelde yaptığınız değişiklikler yayına ÇIKMAZ; o sağlayıcıda güncelleyin."
+      },
+      "a": {
+        "missing": "Alan adı hiçbir adrese çözülmüyor."
+      },
+      "mail_a": {
+        "missing": "{{host}} çözülmüyor, bu yüzden e-posta teslim edilemez: MX kaydı bu adresi gösteriyor.",
+        "elsewhere": "{{host}} bu sunucuyu göstermiyor."
+      },
+      "mx": {
+        "missing": "MX kaydı yok, bu alan adına e-posta gönderilemez.",
+        "elsewhere": "E-posta başka bir sunucuya yönlendiriliyor; harici bir e-posta servisi kullanıyorsanız beklenen durumdur."
+      },
+      "spf": {
+        "missing": "SPF kaydı yok, gönderdiğiniz e-postalar spam sayılabilir.",
+        "multiple": "Birden fazla SPF kaydı var, bu SPF'i tamamen geçersiz kılar. Yalnız bir tane bırakın.",
+        "unauthorized": "SPF kaydı bu sunucuyu yetkilendirmiyor görünüyor; eşleşen ip4, a veya mx mekanizması yok."
+      },
+      "dkim": {
+        "no_key": "Panelde bu alan adı için DKIM anahtarı üretilmemiş.",
+        "missing": "{{host}} TXT kaydı yayında değil.",
+        "mismatch": "Yayındaki DKIM anahtarı panelin ürettiğinden farklı, bu yüzden imzalar doğrulanamaz."
+      },
+      "dmarc": {
+        "missing": "DMARC kaydı yok. Zorunlu değil ama teslim edilebilirliği artırır.",
+        "malformed": "TXT kaydı var ama v=DMARC1 ile başlamıyor."
+      }
+    }
   }
 }

@@ -156,5 +156,60 @@
     "create": "Creare",
     "update": "Actualizare",
     "saveFailed": "Nu s-a putut salva înregistrarea"
+  },
+  "verify": {
+    "title": "Verificare DNS",
+    "hint": "întreabă un resolver public ce este publicat cu adevărat",
+    "button": "Rulează verificarea",
+    "running": "Se verifică...",
+    "failed": "Verificarea DNS nu a putut fi rulată.",
+    "expected": "Așteptat:",
+    "okCount": "{{count}} corecte",
+    "warningCount": "{{count}} de revizuit",
+    "errorCount": "{{count}} cu erori",
+    "checks": {
+      "ns": "Delegarea serverelor de nume",
+      "a": "Înregistrare A ({{host}})",
+      "mail_a": "Înregistrare A ({{host}})",
+      "mx": "Înregistrare MX",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "Interogarea a eșuat, înregistrarea nu a putut fi citită.",
+      "missing": "Înregistrarea nu este publicată.",
+      "elsewhere": "Înregistrarea nu indică acest server.",
+      "ns": {
+        "missing": "Domeniul nu are înregistrări de servere de nume; verificați dacă este înregistrat și activ.",
+        "partial": "Doar unul dintre serverele de nume aparține acestui server; setați-le pe amândouă la registrar.",
+        "elsewhere": "Domeniul nu este delegat acestui panou, DNS-ul său este servit în altă parte, iar înregistrările de mai jos au fost citite de acolo. Modificările făcute în acest panou NU vor intra în vigoare; actualizați-le la acel furnizor."
+      },
+      "a": {
+        "missing": "Domeniul nu se rezolvă la nicio adresă."
+      },
+      "mail_a": {
+        "missing": "{{host}} nu se rezolvă, deci e-mailul nu poate fi livrat: înregistrarea MX îl indică.",
+        "elsewhere": "{{host}} nu indică acest server."
+      },
+      "mx": {
+        "missing": "Nu există înregistrare MX, acest domeniu nu poate primi e-mail.",
+        "elsewhere": "E-mailul este dirijat către alt server, ceea ce este normal dacă folosiți un serviciu de e-mail extern."
+      },
+      "spf": {
+        "missing": "Nu există înregistrare SPF, e-mailurile trimise pot fi tratate ca spam.",
+        "multiple": "Există mai multe înregistrări SPF, ceea ce invalidează complet SPF. Păstrați exact una.",
+        "unauthorized": "Înregistrarea SPF nu pare să autorizeze acest server; lipsește un mecanism ip4, a sau mx corespunzător."
+      },
+      "dkim": {
+        "no_key": "În panou nu a fost generată nicio cheie DKIM pentru acest domeniu.",
+        "missing": "Înregistrarea TXT {{host}} nu este publicată.",
+        "mismatch": "Cheia DKIM publicată diferă de cea generată de panou, deci semnăturile nu pot fi verificate."
+      },
+      "dmarc": {
+        "missing": "Nu există înregistrare DMARC. Nu este obligatorie, dar îmbunătățește livrabilitatea.",
+        "malformed": "Există o înregistrare TXT, dar nu începe cu v=DMARC1."
+      }
+    }
   }
 }

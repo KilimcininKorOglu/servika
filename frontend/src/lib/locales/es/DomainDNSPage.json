@@ -74,5 +74,60 @@
   "delete": { "title": "Eliminar registro DNS", "message": "¿Eliminar «{{name}} {{type}} {{value}}»?", "confirm": "Sí, eliminar", "failed": "La eliminación falló" },
   "bulkDelete": { "title": "Eliminar registros DNS seleccionados", "message": "Se eliminarán permanentemente {{count}} registros DNS. Esta acción no puede deshacerse. ¿Continuar?", "confirm": "Sí, eliminar {{count}} registros" },
   "dnssecDisable": { "title": "Desactivar DNSSEC", "message": "Elimine el registro DS en su registrador y espere su TTL antes de desactivar DNSSEC. De lo contrario, el dominio puede dejar de resolver con SERVFAIL. Continúe solo después de haber eliminado el registro DS.", "confirm": "DS eliminado, desactivar DNSSEC" },
-  "modal": { "newTitle": "Nuevo registro DNS", "editTitle": "Editar registro DNS", "nameLabel": "Nombre (subdominio)", "nameHint": "«@» es el dominio raíz. Otros ejemplos: «www» y «correo».", "typeLabel": "Tipo", "valueLabel": "Valor", "ttlLabel": "TTL (seg)", "priorityLabel": "Prioridad", "active": "Activo", "cancel": "Cancelar", "saving": "Guardando...", "create": "Crear", "update": "Actualizar", "saveFailed": "No se pudo guardar el registro" }
+  "modal": { "newTitle": "Nuevo registro DNS", "editTitle": "Editar registro DNS", "nameLabel": "Nombre (subdominio)", "nameHint": "«@» es el dominio raíz. Otros ejemplos: «www» y «correo».", "typeLabel": "Tipo", "valueLabel": "Valor", "ttlLabel": "TTL (seg)", "priorityLabel": "Prioridad", "active": "Activo", "cancel": "Cancelar", "saving": "Guardando...", "create": "Crear", "update": "Actualizar", "saveFailed": "No se pudo guardar el registro" },
+  "verify": {
+    "title": "Verificación de DNS",
+    "hint": "pregunta a un resolvedor público qué está realmente publicado",
+    "button": "Ejecutar la comprobación",
+    "running": "Comprobando...",
+    "failed": "No se pudo ejecutar la comprobación de DNS.",
+    "expected": "Esperado:",
+    "okCount": "{{count}} correctos",
+    "warningCount": "{{count}} a revisar",
+    "errorCount": "{{count}} con error",
+    "checks": {
+      "ns": "Delegación de servidores de nombres",
+      "a": "Registro A ({{host}})",
+      "mail_a": "Registro A ({{host}})",
+      "mx": "Registro MX",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "La consulta falló, no se pudo leer el registro.",
+      "missing": "El registro no está publicado.",
+      "elsewhere": "El registro no apunta a este servidor.",
+      "ns": {
+        "missing": "El dominio no tiene registros de servidores de nombres; compruebe que está registrado y activo.",
+        "partial": "Solo uno de los servidores de nombres pertenece a este servidor; defina los dos en el registrador.",
+        "elsewhere": "El dominio no está delegado a este panel, su DNS se sirve en otro sitio y los registros de abajo se leyeron de allí. Los cambios hechos en este panel NO se publicarán; actualícelos en ese proveedor."
+      },
+      "a": {
+        "missing": "El dominio no resuelve a ninguna dirección."
+      },
+      "mail_a": {
+        "missing": "{{host}} no resuelve, por lo que el correo no se puede entregar: el registro MX apunta a él.",
+        "elsewhere": "{{host}} no apunta a este servidor."
+      },
+      "mx": {
+        "missing": "No hay registro MX, este dominio no puede recibir correo.",
+        "elsewhere": "El correo se enruta a otro servidor, algo esperado si usa un servicio de correo externo."
+      },
+      "spf": {
+        "missing": "No hay registro SPF, el correo que envía puede tratarse como spam.",
+        "multiple": "Hay más de un registro SPF, lo que invalida SPF por completo. Deje exactamente uno.",
+        "unauthorized": "El registro SPF no parece autorizar este servidor; no tiene un mecanismo ip4, a o mx que coincida."
+      },
+      "dkim": {
+        "no_key": "En el panel no se ha generado ninguna clave DKIM para este dominio.",
+        "missing": "El registro TXT {{host}} no está publicado.",
+        "mismatch": "La clave DKIM publicada es distinta de la que generó el panel, por lo que las firmas no se pueden verificar."
+      },
+      "dmarc": {
+        "missing": "No hay registro DMARC. No es obligatorio, pero mejora la entregabilidad.",
+        "malformed": "Existe un registro TXT pero no empieza por v=DMARC1."
+      }
+    }
+  }
 }

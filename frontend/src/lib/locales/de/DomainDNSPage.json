@@ -156,5 +156,60 @@
     "create": "Erstellen",
     "update": "Aktualisieren",
     "saveFailed": "Eintrag konnte nicht gespeichert werden"
+  },
+  "verify": {
+    "title": "DNS-Prüfung",
+    "hint": "fragt einen öffentlichen Resolver, was tatsächlich veröffentlicht ist",
+    "button": "Prüfung starten",
+    "running": "Wird geprüft...",
+    "failed": "Die DNS-Prüfung konnte nicht ausgeführt werden.",
+    "expected": "Erwartet:",
+    "okCount": "{{count}} korrekt",
+    "warningCount": "{{count}} zu prüfen",
+    "errorCount": "{{count}} fehlerhaft",
+    "checks": {
+      "ns": "Nameserver-Delegierung",
+      "a": "A-Eintrag ({{host}})",
+      "mail_a": "A-Eintrag ({{host}})",
+      "mx": "MX-Eintrag",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "Die Abfrage ist fehlgeschlagen, der Eintrag konnte nicht gelesen werden.",
+      "missing": "Der Eintrag ist nicht veröffentlicht.",
+      "elsewhere": "Der Eintrag verweist nicht auf diesen Server.",
+      "ns": {
+        "missing": "Die Domain hat keine Nameserver-Einträge; prüfen Sie, ob sie registriert und aktiv ist.",
+        "partial": "Nur einer der Nameserver gehört zu diesem Server; tragen Sie beim Registrar beide ein.",
+        "elsewhere": "Die Domain ist nicht an dieses Panel delegiert, ihr DNS wird anderswo bereitgestellt und die Einträge unten wurden von dort gelesen. Änderungen in diesem Panel werden NICHT wirksam; aktualisieren Sie sie bei jenem Anbieter."
+      },
+      "a": {
+        "missing": "Die Domain löst zu keiner Adresse auf."
+      },
+      "mail_a": {
+        "missing": "{{host}} löst nicht auf, daher kann keine E-Mail zugestellt werden: der MX-Eintrag verweist darauf.",
+        "elsewhere": "{{host}} verweist nicht auf diesen Server."
+      },
+      "mx": {
+        "missing": "Es gibt keinen MX-Eintrag, diese Domain kann keine E-Mail empfangen.",
+        "elsewhere": "E-Mail wird an einen anderen Server geleitet, was bei einem externen Maildienst zu erwarten ist."
+      },
+      "spf": {
+        "missing": "Es gibt keinen SPF-Eintrag, Ihre gesendeten E-Mails können als Spam gelten.",
+        "multiple": "Es gibt mehr als einen SPF-Eintrag, was SPF vollständig ungültig macht. Behalten Sie genau einen.",
+        "unauthorized": "Der SPF-Eintrag autorisiert diesen Server offenbar nicht; es fehlt ein passender ip4-, a- oder mx-Mechanismus."
+      },
+      "dkim": {
+        "no_key": "Im Panel wurde für diese Domain kein DKIM-Schlüssel erzeugt.",
+        "missing": "Der TXT-Eintrag {{host}} ist nicht veröffentlicht.",
+        "mismatch": "Der veröffentlichte DKIM-Schlüssel weicht von dem im Panel erzeugten ab, daher können Signaturen nicht geprüft werden."
+      },
+      "dmarc": {
+        "missing": "Es gibt keinen DMARC-Eintrag. Er ist nicht erforderlich, verbessert aber die Zustellbarkeit.",
+        "malformed": "Ein TXT-Eintrag existiert, beginnt aber nicht mit v=DMARC1."
+      }
+    }
   }
 }

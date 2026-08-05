@@ -156,5 +156,60 @@
     "create": "Criar",
     "update": "Atualizar",
     "saveFailed": "Não foi possível guardar o registo"
+  },
+  "verify": {
+    "title": "Verificação de DNS",
+    "hint": "pergunta a um resolvedor público o que está mesmo publicado",
+    "button": "Executar a verificação",
+    "running": "A verificar...",
+    "failed": "Não foi possível executar a verificação de DNS.",
+    "expected": "Esperado:",
+    "okCount": "{{count}} corretos",
+    "warningCount": "{{count}} a rever",
+    "errorCount": "{{count}} com erro",
+    "checks": {
+      "ns": "Delegação dos servidores de nomes",
+      "a": "Registo A ({{host}})",
+      "mail_a": "Registo A ({{host}})",
+      "mx": "Registo MX",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "A consulta falhou, o registo não pôde ser lido.",
+      "missing": "O registo não está publicado.",
+      "elsewhere": "O registo não aponta para este servidor.",
+      "ns": {
+        "missing": "O domínio não tem registos de servidores de nomes; confirme que está registado e ativo.",
+        "partial": "Só um dos servidores de nomes pertence a este servidor; defina ambos no registrar.",
+        "elsewhere": "O domínio não está delegado a este painel, o seu DNS é servido noutro lugar e os registos abaixo foram lidos daí. As alterações feitas neste painel NÃO entram em vigor; atualize-as nesse fornecedor."
+      },
+      "a": {
+        "missing": "O domínio não resolve para nenhum endereço."
+      },
+      "mail_a": {
+        "missing": "{{host}} não resolve, por isso o correio não pode ser entregue: o registo MX aponta para ele.",
+        "elsewhere": "{{host}} não aponta para este servidor."
+      },
+      "mx": {
+        "missing": "Não há registo MX, este domínio não pode receber correio.",
+        "elsewhere": "O correio é encaminhado para outro servidor, o que é normal se usar um serviço de e-mail externo."
+      },
+      "spf": {
+        "missing": "Não há registo SPF, o correio que envia pode ser tratado como spam.",
+        "multiple": "Há mais do que um registo SPF, o que torna o SPF totalmente inválido. Mantenha exatamente um.",
+        "unauthorized": "O registo SPF parece não autorizar este servidor; não tem um mecanismo ip4, a ou mx correspondente."
+      },
+      "dkim": {
+        "no_key": "Não foi gerada nenhuma chave DKIM para este domínio no painel.",
+        "missing": "O registo TXT {{host}} não está publicado.",
+        "mismatch": "A chave DKIM publicada é diferente da que o painel gerou, por isso as assinaturas não podem ser verificadas."
+      },
+      "dmarc": {
+        "missing": "Não há registo DMARC. Não é obrigatório, mas melhora a entregabilidade.",
+        "malformed": "Existe um registo TXT mas não começa por v=DMARC1."
+      }
+    }
   }
 }

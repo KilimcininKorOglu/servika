@@ -156,5 +156,60 @@
     "create": "Criar",
     "update": "Atualizar",
     "saveFailed": "Não foi possível salvar o registro"
+  },
+  "verify": {
+    "title": "Verificação de DNS",
+    "hint": "pergunta a um resolvedor público o que está realmente publicado",
+    "button": "Executar a verificação",
+    "running": "Verificando...",
+    "failed": "Não foi possível executar a verificação de DNS.",
+    "expected": "Esperado:",
+    "okCount": "{{count}} corretos",
+    "warningCount": "{{count}} a revisar",
+    "errorCount": "{{count}} com erro",
+    "checks": {
+      "ns": "Delegação dos servidores de nomes",
+      "a": "Registro A ({{host}})",
+      "mail_a": "Registro A ({{host}})",
+      "mx": "Registro MX",
+      "spf": "SPF",
+      "dkim": "DKIM",
+      "dmarc": "DMARC"
+    },
+    "reasons": {
+      "unreadable": "A consulta falhou, o registro não pôde ser lido.",
+      "missing": "O registro não está publicado.",
+      "elsewhere": "O registro não aponta para este servidor.",
+      "ns": {
+        "missing": "O domínio não tem registros de servidores de nomes; confirme que ele está registrado e ativo.",
+        "partial": "Só um dos servidores de nomes pertence a este servidor; defina os dois no registrador.",
+        "elsewhere": "O domínio não está delegado a este painel, o DNS dele é servido em outro lugar e os registros abaixo foram lidos de lá. As alterações feitas neste painel NÃO entram no ar; atualize-as naquele provedor."
+      },
+      "a": {
+        "missing": "O domínio não resolve para nenhum endereço."
+      },
+      "mail_a": {
+        "missing": "{{host}} não resolve, então o e-mail não pode ser entregue: o registro MX aponta para ele.",
+        "elsewhere": "{{host}} não aponta para este servidor."
+      },
+      "mx": {
+        "missing": "Não há registro MX, este domínio não pode receber e-mail.",
+        "elsewhere": "O e-mail é roteado para outro servidor, o que é normal se você usa um serviço de e-mail externo."
+      },
+      "spf": {
+        "missing": "Não há registro SPF, o e-mail que você envia pode ser tratado como spam.",
+        "multiple": "Há mais de um registro SPF, o que torna o SPF totalmente inválido. Mantenha exatamente um.",
+        "unauthorized": "O registro SPF parece não autorizar este servidor; não há um mecanismo ip4, a ou mx correspondente."
+      },
+      "dkim": {
+        "no_key": "Nenhuma chave DKIM foi gerada para este domínio no painel.",
+        "missing": "O registro TXT {{host}} não está publicado.",
+        "mismatch": "A chave DKIM publicada é diferente da que o painel gerou, então as assinaturas não podem ser verificadas."
+      },
+      "dmarc": {
+        "missing": "Não há registro DMARC. Não é obrigatório, mas melhora a entregabilidade.",
+        "malformed": "Existe um registro TXT, mas ele não começa com v=DMARC1."
+      }
+    }
   }
 }
