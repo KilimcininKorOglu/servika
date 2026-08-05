@@ -62,7 +62,7 @@ func statBeneath(_, _ string) (os.FileInfo, error) {
 	return nil, errSafeIOLinuxOnly
 }
 
-func readDirBeneath(_, _ string) ([]os.DirEntry, error) {
+func readDirBeneath(_, _ string) ([]dirEntry, error) {
 	return nil, errSafeIOLinuxOnly
 }
 

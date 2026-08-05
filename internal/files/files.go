@@ -18,6 +18,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"servika/internal/httpx"
 
@@ -83,19 +84,35 @@ type Entry struct {
 	Changed     string `json:"changed"` // RFC3339
 }
 
+// dirEntry is one listing row, filled while the directory fd is still pinned.
+type dirEntry struct {
+	Name    string
+	Mode    os.FileMode
+	Size    int64
+	UID     uint32
+	GID     uint32
+	ModTime time.Time
+}
+
 func fileMetadata(info os.FileInfo) (mode, permissions, owner, group string) {
-	mode = "0" + strconv.FormatInt(int64(info.Mode().Perm()), 8)
-	permissions = info.Mode().String()
 	stat, ok := info.Sys().(*syscall.Stat_t)
 	if !ok {
-		return mode, permissions, "", ""
+		return "0" + strconv.FormatInt(int64(info.Mode().Perm()), 8), info.Mode().String(), "", ""
 	}
+	return describeMode(info.Mode(), stat.Uid, stat.Gid)
+}
 
-	owner = strconv.FormatUint(uint64(stat.Uid), 10)
+// describeMode renders one entry's mode and resolves its owner and group names.
+// It takes the raw ids rather than an os.FileInfo so a listing can report what
+// was read through the pinned directory fd, with no second, path-based stat.
+func describeMode(fileMode os.FileMode, uid, gid uint32) (mode, permissions, owner, group string) {
+	mode = "0" + strconv.FormatInt(int64(fileMode.Perm()), 8)
+	permissions = fileMode.String()
+	owner = strconv.FormatUint(uint64(uid), 10)
 	if account, err := user.LookupId(owner); err == nil {
 		owner = account.Username
 	}
-	group = strconv.FormatUint(uint64(stat.Gid), 10)
+	group = strconv.FormatUint(uint64(gid), 10)
 	if accountGroup, err := user.LookupGroupId(group); err == nil {
 		group = accountGroup.Name
 	}
@@ -121,27 +138,24 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	}
 	out := make([]Entry, 0, len(dir))
 	for _, e := range dir {
-		info, err := e.Info()
-		if err != nil {
-			continue
-		}
 		ftype := "file"
-		if info.IsDir() {
+		switch {
+		case e.Mode.IsDir():
 			ftype = "folder"
-		} else if info.Mode()&os.ModeSymlink != 0 {
+		case e.Mode&os.ModeSymlink != 0:
 			ftype = "symlink"
 		}
-		mode, permissions, owner, group := fileMetadata(info)
+		mode, permissions, owner, group := describeMode(e.Mode, e.UID, e.GID)
 		out = append(out, Entry{
-			Name:        e.Name(),
-			Path:        filepath.ToSlash(filepath.Join(rel, e.Name())),
+			Name:        e.Name,
+			Path:        filepath.ToSlash(filepath.Join(rel, e.Name)),
 			Type:        ftype,
-			SizeBytes:   info.Size(),
+			SizeBytes:   e.Size,
 			Mode:        mode,
 			Permissions: permissions,
 			Owner:       owner,
 			Group:       group,
-			Changed:     info.ModTime().UTC().Format("2006-01-02T15:04:05Z"),
+			Changed:     e.ModTime.UTC().Format("2006-01-02T15:04:05Z"),
 		})
 	}
 	// Sort folders first, then alphabetically.

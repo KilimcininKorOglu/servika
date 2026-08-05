@@ -120,3 +120,26 @@ func TestWalkArgumentsDereferenceOnlyTheStartingPoint(t *testing.T) {
 		}
 	}
 }
+
+// The listing renders what was read through the pinned directory fd. Rendering
+// used to run off an os.FileInfo obtained by lstatting the path again, which is
+// the step a tenant could race; describeMode takes the ids directly so there is
+// no second lookup to redirect.
+func TestDescribeModeRendersWhatWasRead(t *testing.T) {
+	mode, permissions, owner, group := describeMode(os.ModeDir|0o750, 0, 0)
+	if mode != "0750" {
+		t.Errorf("mode = %q, want 0750", mode)
+	}
+	if permissions != "drwxr-x---" {
+		t.Errorf("permissions = %q, want drwxr-x---", permissions)
+	}
+	if owner != "root" || group == "" {
+		t.Errorf("owner/group = %q/%q, want the resolved names for uid 0", owner, group)
+	}
+
+	// The symlink bit has to survive into the rendered string: the listing keys
+	// its "symlink" type off exactly this.
+	if _, permissions, _, _ := describeMode(os.ModeSymlink|0o777, 0, 0); !strings.HasPrefix(permissions, "L") {
+		t.Errorf("permissions = %q, want a symlink prefix", permissions)
+	}
+}

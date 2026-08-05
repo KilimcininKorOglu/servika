@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/sys/unix"
 )
@@ -86,14 +87,69 @@ func statBeneath(home, rel string) (os.FileInfo, error) {
 	return f.Stat()
 }
 
-// readDirBeneath lists rel under home through a symlink-safe directory fd.
-func readDirBeneath(home, rel string) ([]os.DirEntry, error) {
+// readDirBeneath lists rel under home through a symlink-safe directory fd, and
+// stats every entry through THAT fd.
+//
+// The metadata cannot be left to os.DirEntry.Info(): it lstats parent + "/" +
+// name as a path, so a tenant who swaps a component for a symlink between the
+// listing and the call has root read metadata from outside the jail. fstatat on
+// the pinned fd has no path to race, and AT_SYMLINK_NOFOLLOW reports the link
+// itself rather than its target.
+func readDirBeneath(home, rel string) ([]dirEntry, error) {
 	f, err := openAt2Beneath(home, rel, unix.O_DIRECTORY|unix.O_RDONLY|unix.O_NONBLOCK, 0)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }() // read-only dir listing; Close error not actionable
-	return f.ReadDir(-1)
+	names, err := f.Readdirnames(-1)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]dirEntry, 0, len(names))
+	for _, name := range names {
+		var st unix.Stat_t
+		if err := unix.Fstatat(int(f.Fd()), name, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+			continue // removed between the listing and the stat
+		}
+		out = append(out, dirEntry{
+			Name:    name,
+			Mode:    modeFromStat(&st),
+			Size:    st.Size,
+			UID:     st.Uid,
+			GID:     st.Gid,
+			ModTime: time.Unix(st.Mtim.Unix()),
+		})
+	}
+	return out, nil
+}
+
+// modeFromStat converts a raw st_mode into the os.FileMode the listing reports.
+func modeFromStat(st *unix.Stat_t) os.FileMode {
+	mode := os.FileMode(st.Mode & 0o777)
+	switch st.Mode & unix.S_IFMT {
+	case unix.S_IFDIR:
+		mode |= os.ModeDir
+	case unix.S_IFLNK:
+		mode |= os.ModeSymlink
+	case unix.S_IFIFO:
+		mode |= os.ModeNamedPipe
+	case unix.S_IFSOCK:
+		mode |= os.ModeSocket
+	case unix.S_IFBLK:
+		mode |= os.ModeDevice
+	case unix.S_IFCHR:
+		mode |= os.ModeDevice | os.ModeCharDevice
+	}
+	if st.Mode&unix.S_ISUID != 0 {
+		mode |= os.ModeSetuid
+	}
+	if st.Mode&unix.S_ISGID != 0 {
+		mode |= os.ModeSetgid
+	}
+	if st.Mode&unix.S_ISVTX != 0 {
+		mode |= os.ModeSticky
+	}
+	return mode
 }
 
 // readFileBeneath reads at most maxBytes of rel under home through a symlink-safe fd.
@@ -670,7 +726,7 @@ func ClearBeneath(home, rel string) error {
 		return err
 	}
 	for _, entry := range entries {
-		if err := removeAllBeneath(home, filepath.Join(rel, entry.Name())); err != nil {
+		if err := removeAllBeneath(home, filepath.Join(rel, entry.Name)); err != nil {
 			return err
 		}
 	}
@@ -741,7 +797,7 @@ func ListNamesBeneath(home, rel string) ([]string, error) {
 	}
 	names := make([]string, 0, len(entries))
 	for _, entry := range entries {
-		names = append(names, entry.Name())
+		names = append(names, entry.Name)
 	}
 	return names, nil
 }
