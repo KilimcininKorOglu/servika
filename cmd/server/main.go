@@ -141,6 +141,9 @@ func main() {
 	} else if n > 0 {
 		log.Printf("db password backfill: encrypted %d cleartext account(s)", n)
 	}
+	// Encrypt the remaining credentials that were stored before their column
+	// gained encryption (GitHub PATs, remote backup passwords). Idempotent.
+	datamigrate.EncryptStoredCredentials(context.Background(), d)
 	provisioner.Init(d)
 	middleware.Init(d)
 	if err := dns.SeedTemplateIfEmpty(context.Background(), d); err != nil {
