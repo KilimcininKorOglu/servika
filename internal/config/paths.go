@@ -31,6 +31,7 @@ const (
 	DefaultPMAToken           = "/etc/servika/pma-internal.token" // #nosec G101 -- filesystem path, not a credential
 	DefaultPMASignonDir       = "/opt/servika/pma-signon"
 	DefaultPHPMyAdminRoot     = "/opt/phpmyadmin"
+	DefaultRoundcubeConfig    = "/opt/roundcube/config/config.inc.php"
 	DefaultPHPMyAdminConfig   = "/opt/phpmyadmin/config.inc.php"
 	DefaultCertRoot           = "/etc/pki/servika"
 	DefaultNginxCacheDir      = "/var/cache/nginx/servikacache"
@@ -123,6 +124,9 @@ func PMATokenPath() string     { return mustAbsPath("SERVIKA_PMA_TOKEN", Default
 func PMASignonDir() string     { return mustAbsPath("SERVIKA_PMA_SIGNON_DIR", DefaultPMASignonDir) }
 func PHPMyAdminConfig() string {
 	return mustAbsPath("SERVIKA_PHPMYADMIN_CONFIG", DefaultPHPMyAdminConfig)
+}
+func RoundcubeConfig() string {
+	return mustAbsPath("SERVIKA_ROUNDCUBE_CONFIG", DefaultRoundcubeConfig)
 }
 func CertRoot() string       { return mustAbsPath("SERVIKA_CERT_ROOT", DefaultCertRoot) }
 func NginxCacheDir() string  { return mustAbsPath("SERVIKA_NGINX_CACHE_DIR", DefaultNginxCacheDir) }

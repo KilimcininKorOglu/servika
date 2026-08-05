@@ -178,6 +178,11 @@ func main() {
 	// panel boot is not blocked.
 	go resourcelimit.HealQuotaOnStartup(context.Background(), d)
 	mail.HealMailOnStartup(context.Background(), d)
+	// Webmail outgoing-mail repair. It cannot live in servika-update: the
+	// updater replaces itself, but the copy running through an update is the OLD
+	// script, so a repair added there would only take effect one update later.
+	// Startup is the first point that runs with the new release in place.
+	mail.HealRoundcubeSMTP(context.Background())
 	mail.StartPolicyServer(d, "127.0.0.1:10040")
 	// Called synchronously: this publishes the running version to internal/system,
 	// which /system/usage reports as panel_version. Only local file work happens
