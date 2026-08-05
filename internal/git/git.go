@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/files"
 	"servika/internal/httpx"
 	"servika/internal/netguard"
 	"servika/internal/secret"
@@ -128,33 +129,19 @@ func validRepoURL(repoURL string) bool {
 	return !strings.ContainsAny(repoURL, " \t\r\n;&|`$(){}[]<>\\\"'")
 }
 
-func clearDirectoryContents(directory string) error {
-	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-	info, err := os.Lstat(directory)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	if info.Mode()&os.ModeSymlink != 0 {
-		return errors.New("target directory cannot be a symlink")
-	}
-	if !info.IsDir() {
-		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-		return os.Remove(directory)
-	}
-	entries, err := os.ReadDir(directory)
-	if err != nil {
-		return err
-	}
-	for _, entry := range entries {
-		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-		if err := os.RemoveAll(filepath.Join(directory, entry.Name())); err != nil {
-			return err
-		}
-	}
-	return nil
+// clearDirectoryContents empties the deploy target before a clone, leaving the
+// directory itself in place. targetDir is chosen by the tenant and this runs as
+// root, so every component is resolved with openat2(RESOLVE_BENEATH|
+// RESOLVE_NO_SYMLINKS) instead of by path.
+//
+// Resolving by path was an escape. validTargetDir allows a separator, so
+// `target_dir = "pwn/cron.d"` with a tenant symlink at ~/pwn pointing to /etc
+// made os.Lstat check only the last component, os.ReadDir list /etc/cron.d and
+// os.RemoveAll delete every file in it as root. The os.MkdirAll and chown that
+// followed then handed the tenant ownership of that directory, which is a root
+// cron job away from running code as root.
+func clearDirectoryContents(home, targetDir string) error {
+	return files.ClearBeneath(home, targetDir)
 }
 
 // generateDeployKey creates a passphrase-free Ed25519 key under /home/<systemUser>/.ssh/.
@@ -343,15 +330,16 @@ func gitClone(systemUser, repoURL, branch, targetDir, token string) (sha string,
 	home := "/home/" + systemUser
 	dst := filepath.Join(home, targetDir)
 	// Clear the target. Existing public_html content is lost, as warned in the UI.
-	if err := clearDirectoryContents(dst); err != nil {
-		return "", "", err
+	if err := clearDirectoryContents(home, targetDir); err != nil {
+		return "", "", fmt.Errorf("target directory could not be cleared: %w", err)
 	}
-	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
-	if err := os.MkdirAll(dst, 0755); err != nil {
-		return "", "", err
+	// Symlink-safe mkdir -p: os.MkdirAll follows a tenant symlink at any
+	// component and would create the tree outside the home, as root. This also
+	// chowns each directory it creates through its own fd, so the recursive
+	// chown by path that used to follow is gone with it.
+	if err := files.MkdirAllBeneath(home, targetDir, systemUser); err != nil {
+		return "", "", fmt.Errorf("target directory is not safe: %w", err)
 	}
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	_, _ = exec.Command("chown", systemUser+":"+systemUser, dst).CombinedOutput()
 
 	authEnv, err := gitAuthEnv(token)
 	if err != nil {
@@ -366,8 +354,7 @@ func gitClone(systemUser, repoURL, branch, targetDir, token string) (sha string,
 	}
 	shaOut, _ := runAsUserArgs(systemUser, dst, nil, "git", "-C", dst, "rev-parse", "HEAD")
 	sha = strings.TrimSpace(shaOut)
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	_, _ = exec.Command("restorecon", "-R", dst).CombinedOutput()
+	files.RestoreconBeneath(home, targetDir)
 	return sha, log, nil
 }
 
@@ -382,6 +369,13 @@ func gitPull(systemUser, targetDir, branch, token string) (sha string, log strin
 	}
 	home := "/home/" + systemUser
 	dst := filepath.Join(home, targetDir)
+	// Resolve the target through openat2 before touching it. git itself runs as
+	// the tenant, so DAC already bounds the damage, but a symlinked component
+	// would silently point the pull at an unrelated directory; refusing here
+	// tells the operator why instead.
+	if isDir, err := files.IsDirBeneath(home, targetDir); err != nil || !isDir {
+		return "", "", errors.New("target directory is not safe; re-create it and clone again")
+	}
 	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	if _, err := os.Stat(filepath.Join(dst, ".git")); err != nil {
 		return "", "", errors.New("target directory is not a Git repository; clone it first")
@@ -404,8 +398,7 @@ func gitPull(systemUser, targetDir, branch, token string) (sha string, log strin
 	}
 	shaOut, _ := runAsUserArgs(systemUser, dst, nil, "git", "-C", dst, "rev-parse", "HEAD")
 	sha = strings.TrimSpace(shaOut)
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	_, _ = exec.Command("restorecon", "-R", dst).CombinedOutput()
+	files.RestoreconBeneath(home, targetDir)
 	return sha, log, nil
 }
 

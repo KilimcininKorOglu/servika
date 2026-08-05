@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"servika/internal/files"
 	"servika/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -98,35 +99,36 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	copyDir := home + "/copies"
-	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
-	if err := os.MkdirAll(copyDir, 0o711); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not create copies directory")
+	name := "copy_" + time.Now().Format("20060102_150405")
+	relTarget := "copies/" + name + "/public_html"
+	// The tenant owns this home and can replace any component with a symlink, so
+	// the whole chain is created through openat2(RESOLVE_BENEATH|NO_SYMLINKS).
+	// os.MkdirAll accepts a symlinked component, and the `chown` that used to
+	// follow accepts one too: `chown` dereferences by default, so with
+	// ~/copies pointing at /etc this handed the tenant ownership of /etc, and
+	// with it /etc/passwd and /etc/cron.d. MkdirAllBeneath chowns each directory
+	// it creates through that directory's own fd, so no path chown is needed.
+	if err := files.MkdirAllBeneath(home, relTarget, systemUser); err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "could not create the copy directory")
 		return
 	}
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	_ = exec.Command("chown", systemUser+":"+systemUser, copyDir).Run() // Assign the copies directory to the customer.
-	name := "copy_" + time.Now().Format("20060102_150405")
-	target := copyDir + "/" + name + "/public_html"
+	target := home + "/" + relTarget
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer cancel()
-	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
-	if err := os.MkdirAll(target, 0o755); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "could not create target")
-		return
-	}
 	// The trailing slash makes rsync copy directory contents. Omit --delete to keep the operation non-destructive.
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
 	if _, err := exec.CommandContext(ctx, "rsync", "-a", "--no-owner", "--no-group", source+"/", target+"/").CombinedOutput(); err != nil {
-		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-		_ = os.RemoveAll(copyDir + "/" + name)
+		// Symlink-safe removal: a path-based RemoveAll would follow a component
+		// the tenant swapped while rsync was running.
+		_ = files.RemoveAllBeneath(home, "copies/"+name)
 		httpx.WriteError(w, http.StatusInternalServerError, "operation failed")
 		return
 	}
-	// Assign ownership to the domain user.
+	// Assign ownership to the domain user. -h keeps chown on the link itself so a
+	// tenant symlink inside the copy cannot retarget it.
 	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	_ = exec.Command("chown", "-R", systemUser+":"+systemUser, copyDir+"/"+name).Run()
-	// #nosec G204 G702 -- fixed binary with separate args (no shell); tenant input is validated before exec.
-	_ = exec.Command("restorecon", "-R", copyDir+"/"+name).Run()
+	_ = exec.Command("chown", "-Rh", systemUser+":"+systemUser, copyDir+"/"+name).Run()
+	files.RestoreconBeneath(home, "copies/"+name)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "name": name, "size_mb": dirSizeMB(copyDir + "/" + name)})
 }
 
@@ -146,20 +148,18 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid copy name")
 		return
 	}
-	copyDir := "/home/" + systemUser + "/copies"
-	target := filepath.Join(copyDir, name)
-	// Layered guard verifies the prefix, cleaned path, and directory type.
-	clean := filepath.Clean(target)
-	if !strings.HasPrefix(clean, copyDir+"/") {
-		httpx.WriteError(w, http.StatusBadRequest, "path is outside the copies directory")
-		return
-	}
-	fi, err := os.Stat(clean)
-	if err != nil || !fi.IsDir() {
+	home := "/home/" + systemUser
+	rel := "copies/" + name
+	// os.Stat and os.RemoveAll resolve by path, so a tenant symlink at ~/copies
+	// would have this root-run delete empty a directory elsewhere. Both steps go
+	// through openat2(RESOLVE_BENEATH|NO_SYMLINKS) instead; the prefix check
+	// above only proves the string is well formed, not where it lands.
+	isDir, err := files.IsDirBeneath(home, rel)
+	if err != nil || !isDir {
 		httpx.WriteError(w, http.StatusNotFound, "copy not found")
 		return
 	}
-	if err := os.RemoveAll(clean); err != nil { // Remove only a regular directory without bind mounts or fuser.
+	if err := files.RemoveAllBeneath(home, rel); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not delete record")
 		return
 	}

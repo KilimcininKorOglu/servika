@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html"
 	"log"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 
 	"servika/internal/credentials"
 	"servika/internal/dns"
+	"servika/internal/files"
 	"servika/internal/httpx"
 	"servika/internal/provisioner"
 	"servika/internal/quota"
@@ -283,8 +285,16 @@ func Cleanup(ctx context.Context, db *sql.DB, addonID int64) (string, error) {
 }
 
 func prepareDocRoot(docroot, systemUser, domainName string) error {
-	if err := os.MkdirAll(docroot, 0750); err != nil {
-		return err
+	// os.MkdirAll follows a symlink at any component, and the tenant owns this
+	// home, so root could be made to build the document root outside the jail.
+	// Resolve every component with openat2(RESOLVE_BENEATH|NO_SYMLINKS) instead.
+	home := "/home/" + systemUser
+	rel, ok := strings.CutPrefix(docroot, home+"/")
+	if !ok {
+		return fmt.Errorf("document root is outside the tenant home")
+	}
+	if err := files.MkdirAllBeneath(home, rel, systemUser); err != nil {
+		return fmt.Errorf("document root is not safe: %w", err)
 	}
 	index := filepath.Join(docroot, "index.html")
 	// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).

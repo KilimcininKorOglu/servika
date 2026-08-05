@@ -80,6 +80,18 @@ func ImportBeneath(_, _, _, _ string) error {
 	return errSafeIOLinuxOnly
 }
 
+func RemoveAllBeneath(_, _ string) error {
+	return errSafeIOLinuxOnly
+}
+
+func IsDirBeneath(_, _ string) (bool, error) {
+	return false, errSafeIOLinuxOnly
+}
+
+func ClearBeneath(_, _ string) error {
+	return errSafeIOLinuxOnly
+}
+
 func MkdirAllBeneath(_, _, _ string) error {
 	return errSafeIOLinuxOnly
 }

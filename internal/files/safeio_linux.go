@@ -17,6 +17,7 @@ package files
 // AlmaLinux 10 / kernel 6.12 supports openat2.
 
 import (
+	"errors"
 	"io"
 	"os"
 	"os/exec"
@@ -605,6 +606,47 @@ func ImportBeneath(home, rel, srcAbs, systemUser string) error {
 	}
 	uid, gid, haveIDs := tenantIDs(systemUser)
 	return copyEntryAt(sfd, srcLeaf, dfd, dleaf, uid, gid, haveIDs)
+}
+
+// RemoveAllBeneath deletes rel under home and everything below it. Every
+// component is pinned with openat2(RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS) and the
+// recursion is fd-relative, so a symlink is unlinked rather than followed and a
+// tenant cannot redirect a root-run cleanup outside their home.
+func RemoveAllBeneath(home, rel string) error {
+	return removeAllBeneath(home, rel)
+}
+
+// IsDirBeneath reports whether rel under home resolves to a directory without
+// crossing a symlink or leaving the home. Callers that only need to VERIFY a
+// tenant-supplied target (rather than write to it) use this instead of os.Stat,
+// which resolves by path and would happily confirm a directory outside the jail.
+func IsDirBeneath(home, rel string) (bool, error) {
+	return isDirBeneath(home, rel)
+}
+
+// ClearBeneath empties rel under home, leaving rel itself in place. It exists so
+// a root-run "wipe the deploy target before cloning" step cannot be redirected:
+// os.ReadDir plus os.RemoveAll resolve by path, so a tenant symlink at ANY
+// component of rel makes root list and delete somewhere else entirely.
+//
+// Both halves stay inside the jail. The listing is read through an openat2 fd,
+// and every removal re-pins its own path with RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS,
+// so an entry swapped for a symlink between the two steps fails rather than
+// escaping. A missing directory is not an error: there is nothing to clear.
+func ClearBeneath(home, rel string) error {
+	entries, err := readDirBeneath(home, rel)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	for _, entry := range entries {
+		if err := removeAllBeneath(home, filepath.Join(rel, entry.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // MkdirAllBeneath is the exported symlink-safe `mkdir -p` for callers outside this

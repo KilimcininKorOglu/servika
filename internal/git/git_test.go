@@ -3,7 +3,10 @@ package git
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
+
+	"servika/internal/files"
 )
 
 func TestValidTargetDir(t *testing.T) {
@@ -79,7 +82,12 @@ func TestValidRepoURL(t *testing.T) {
 }
 
 func TestClearDirectoryContentsPreservesTarget(t *testing.T) {
-	target := t.TempDir()
+	requireSafeIO(t)
+	home := t.TempDir()
+	target := filepath.Join(home, "public_html")
+	if err := os.Mkdir(target, 0750); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(filepath.Join(target, "index.html"), []byte("site"), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +99,7 @@ func TestClearDirectoryContentsPreservesTarget(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := clearDirectoryContents(target); err != nil {
+	if err := clearDirectoryContents(home, "public_html"); err != nil {
 		t.Fatalf("clearDirectoryContents() error = %v", err)
 	}
 	entries, err := os.ReadDir(target)
@@ -104,7 +112,12 @@ func TestClearDirectoryContentsPreservesTarget(t *testing.T) {
 }
 
 func TestClearDirectoryContentsRejectsSymlink(t *testing.T) {
+	requireSafeIO(t)
 	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	if err := os.Mkdir(home, 0750); err != nil {
+		t.Fatal(err)
+	}
 	outside := filepath.Join(root, "outside")
 	if err := os.Mkdir(outside, 0700); err != nil {
 		t.Fatal(err)
@@ -113,15 +126,63 @@ func TestClearDirectoryContentsRejectsSymlink(t *testing.T) {
 	if err := os.WriteFile(protected, []byte("keep"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	link := filepath.Join(root, "target")
-	if err := os.Symlink(outside, link); err != nil {
+	if err := os.Symlink(outside, filepath.Join(home, "target")); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := clearDirectoryContents(link); err == nil {
+	if err := clearDirectoryContents(home, "target"); err == nil {
 		t.Fatal("clearDirectoryContents() error = nil, want symlink rejection")
 	}
 	if _, err := os.Stat(protected); err != nil {
 		t.Fatalf("symlink destination content changed: %v", err)
+	}
+}
+
+// The escape this closed: validTargetDir permits a separator, so only the LAST
+// component was ever checked. A tenant symlink at an INTERMEDIATE component
+// made the panel list and delete a directory outside the home as root, and the
+// mkdir and chown that followed handed that directory to the tenant. Pointing
+// it at /etc/cron.d turns that into running code as root.
+func TestClearDirectoryContentsRejectsAnIntermediateSymlink(t *testing.T) {
+	requireSafeIO(t)
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	if err := os.Mkdir(home, 0750); err != nil {
+		t.Fatal(err)
+	}
+	outside := filepath.Join(root, "etc")
+	if err := os.MkdirAll(filepath.Join(outside, "cron.d"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	rootJob := filepath.Join(outside, "cron.d", "root-job")
+	if err := os.WriteFile(rootJob, []byte("* * * * * root id\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	// What the tenant does through FTP, SSH or PHP symlink().
+	if err := os.Symlink(outside, filepath.Join(home, "pwn")); err != nil {
+		t.Fatal(err)
+	}
+
+	const targetDir = "pwn/cron.d"
+	if !validTargetDir(targetDir) {
+		t.Fatalf("validTargetDir(%q) = false; the escape path is unreachable and this test proves nothing", targetDir)
+	}
+	if err := clearDirectoryContents(home, targetDir); err == nil {
+		t.Error("clearDirectoryContents() error = nil for a symlinked intermediate component")
+	}
+	if err := files.MkdirAllBeneath(home, targetDir, "c_example"); err == nil {
+		t.Error("MkdirAllBeneath() error = nil for a symlinked intermediate component")
+	}
+	if _, err := os.Stat(rootJob); err != nil {
+		t.Fatalf("ESCAPE: the panel reached %s outside the tenant home: %v", rootJob, err)
+	}
+}
+
+// safeio is openat2, so it only works on Linux; on macOS every call returns the
+// platform error and these tests would pass for the wrong reason.
+func requireSafeIO(t *testing.T) {
+	t.Helper()
+	if runtime.GOOS != "linux" {
+		t.Skip("safeio needs openat2, which is Linux-only")
 	}
 }

@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"servika/internal/dns"
+	"servika/internal/files"
 	"servika/internal/httpx"
 	"servika/internal/provisioner"
 
@@ -176,8 +177,11 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	docroot := docrootOf(systemUser, fqdn)
-	// #nosec G301 G703 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
-	if err := os.MkdirAll(docroot, 0o755); err != nil {
+	// The tenant owns this home and can replace ~/subdomains with a symlink, and
+	// os.MkdirAll follows one, so root would create the document root outside the
+	// jail. openat2(RESOLVE_BENEATH|NO_SYMLINKS) refuses that, and chowns each
+	// directory it creates through that directory's own fd.
+	if err := files.MkdirAllBeneath("/home/"+systemUser, "subdomains/"+fqdn, systemUser); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not create document root")
 		return
 	}
