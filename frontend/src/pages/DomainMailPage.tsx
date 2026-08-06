@@ -273,7 +273,9 @@ export default function DomainMailPage() {
       const { data } = await api.post<{ token: string }>(`/domains/${id}/mail/${mailbox.id}/webmail-token`)
       const form = document.createElement('form')
       form.method = 'POST'
-      form.action = '/webmail/index.php'
+      // The same address the page advertises, so the Roundcube session lands on
+      // the host the customer is told to use rather than on the panel origin.
+      form.action = `${webmailURL}index.php`
       form.target = '_blank'
       for (const [name, value] of [['_task', 'login'], ['_action', 'login'], ['_servika_token', data.token]]) {
         const input = document.createElement('input')
