@@ -78,6 +78,10 @@ export default function DomainsPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [creationResult, setCreationResult] = useState<CreateResult | null>(null)
+  // Whether an SSL installation was queued for the domain the result modal is
+  // about. Kept apart from the form's checkbox so the modal reports the request
+  // that was actually SENT rather than whatever the form happens to hold.
+  const [sslQueued, setSslQueued] = useState(false)
   const [resultCopied, setResultCopied] = useState(false)
   const [formDomainName, setFormDomainName] = useState('')
   const [formPhpVersion, setFormPhpVersion] = useState('8.3')
@@ -92,16 +96,19 @@ export default function DomainsPage() {
   // Split so the mount effect never writes state synchronously: fetchDomains
   // settles only through promise callbacks, and load() adds the spinner for the
   // refreshes that follow a write.
+  // Returns a promise so a caller can wait for the refresh it asked for; the
+  // refresh button uses it to know when to stop being disabled.
   const fetchDomains = useCallback(() => {
-    api.get<Domain[]>('/domains')
+    const domains = api.get<Domain[]>('/domains')
       .then(r => setItems(r.data))
       .catch(e => setError(apiError(e)))
       .finally(() => setLoading(false))
     // Subdomains render nested under their parent. The endpoint is administrator-only,
     // so a customer session simply shows no nested rows instead of an error.
-    api.get<Subdomain[]>('/subdomains')
+    const subs = api.get<Subdomain[]>('/subdomains')
       .then(r => setSubdomains(r.data))
       .catch(() => setSubdomains([]))
+    return Promise.all([domains, subs])
   }, [])
 
   const load = useCallback(() => {
@@ -134,7 +141,7 @@ export default function DomainsPage() {
   }
 
   function openCreate() {
-    setError(null); setSuccess(null); setCreationResult(null)
+    setError(null); setSuccess(null); setCreationResult(null); setSslQueued(false)
     // Default plan = "Starter" (if data has already arrived, pick it now; otherwise
     // loadModalData sets it once the fetch completes).
     const defaultPlan = plans.find(plan => plan.name === 'Starter') || plans[0]
@@ -158,19 +165,33 @@ export default function DomainsPage() {
       const response = await api.post<CreateResult>('/domains', request)
       setCreateOpen(false)
       setCreationResult(response.data)
+      // Refresh the list HERE, before the steps that follow. The domain exists
+      // the moment this POST returns, but the refresh used to sit at the very
+      // bottom, so the list stayed stale for as long as the canonical-hostname
+      // call took. Silent, because the table is already populated and emptying
+      // it for a moment reads as the domain having vanished.
+      fetchDomains()
       let successMsg = t('toast.created', { name: domainName })
       if (formIssueSSL) {
         try {
+          // The endpoint answers 202 and installs in the background: two ACME
+          // orders with a per-name pre-flight run for minutes. So this can only
+          // report that the work STARTED. What was actually installed, and
+          // whether it fell back to a self-signed certificate, is on the
+          // domain's SSL page, which polls the progress endpoint.
           await api.post(`/domains/${response.data.id}/ssl/issue`, { type: 'letsencrypt' })
-          successMsg += t('toast.sslInstalled')
+          setSslQueued(true)
+          successMsg += t('toast.sslStarted')
         } catch {
-          successMsg += t('toast.sslFailed')
+          successMsg += t('toast.sslNotStarted')
         }
       }
-      // After SSL, because the backend refuses a canonical hostname the installed
-      // certificate does not name. The reason it gives is surfaced verbatim: on a new
-      // domain the usual one is that the www DNS record does not exist yet, which the
-      // operator can fix and retry from the domain's page.
+      // After SSL, but note that SSL has only been QUEUED at this point, so the
+      // certificate that would name the canonical hostname does not exist yet
+      // and the backend's certificate check cannot run. What still protects the
+      // site is the DNS check: a target that does not resolve here is refused,
+      // and the reason is surfaced verbatim so the operator can fix it and retry
+      // from the domain's page.
       if (formWWWRedirect !== 'off') {
         try {
           await api.put(`/domains/${response.data.id}/www-redirect`, { mode: formWWWRedirect })
@@ -181,7 +202,9 @@ export default function DomainsPage() {
       }
       setSuccess(successMsg)
       setTimeout(() => setSuccess(null), 10000)
-      load()
+      // The canonical hostname is stored on the domain row, so pick it up. Still
+      // silent, for the same reason as above.
+      if (formWWWRedirect !== 'off') fetchDomains()
     } catch (error) {
       setError(apiError(error, t('errors.createFailed')))
     } finally {
@@ -715,6 +738,23 @@ export default function DomainsPage() {
                   <CopyRow label={t('resultModal.database')} value={creationResult.db_name} copy={copyToClipboard} />
                   <CopyRow label={t('resultModal.username')} value={creationResult.db_user} copy={copyToClipboard} />
                   <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.db} copy={copyToClipboard} password />
+                </div>
+              )}
+
+              {/* The certificate is still being issued when this modal opens, and
+                  it may end on the self-signed fail-safe. Neither outcome can be
+                  reported here, so point at the SSL page, which polls the
+                  progress endpoint and shows the steps and the fallback. */}
+              {sslQueued && (
+                <div className="border border-amber-200 dark:border-amber-800 rounded-md p-3 bg-amber-50 dark:bg-amber-900/20">
+                  <div className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold mb-2">{t('resultModal.ssl')}</div>
+                  <p className="text-[11px] text-amber-800 dark:text-amber-300 mb-2">{t('resultModal.sslNote')}</p>
+                  <Link
+                    to={`/subscriptions/${creationResult.id}/ssl`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded font-medium"
+                  >
+                    {t('resultModal.sslAction')}
+                  </Link>
                 </div>
               )}
 
