@@ -110,7 +110,8 @@
     "autoresponderRemoved": "Automatická odpověď byla odebrána.",
     "filterAdded": "Filtr pošty byl zkompilován a povolen.",
     "sendLimitsSaved": "Limity odesílání byly uloženy.",
-    "disabled": "E-mailová služba byla vypnuta. Schránky a uložené zprávy zůstaly zachovány."
+    "disabled": "E-mailová služba byla vypnuta. Schránky a uložené zprávy zůstaly zachovány.",
+    "purged": "E-mailová služba i všechny uložené zprávy byly smazány."
   },
   "confirm": {
     "deleteMailbox": "Smazat schránku „{{email}}“? Maildir zůstane na disku, odebere se pouze záznam účtu.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Limity odesílání nelze načíst",
     "saveSendLimitsFailed": "Limity odesílání nelze uložit",
     "webmail": "Webmail se nepodařilo otevřít",
-    "disableFailed": "E-mailovou službu se nepodařilo vypnout"
+    "disableFailed": "E-mailovou službu se nepodařilo vypnout",
+    "purgeFailed": "E-mailovou službu se nepodařilo odstranit"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Zastaví doručování pro tuto doménu a zablokuje přihlášení do všech schránek. Nic se nemaže: schránky, přesměrování i uložené zprávy zůstávají a po opětovném zapnutí se vrátí přesně tak, jak byly.",
     "button": "Vypnout e-mail",
     "working": "Vypínání…"
+  },
+  "purge": {
+    "title": "Vypnout a smazat",
+    "description": "Trvale odstraní e-mailovou službu. Tuto akci nelze vrátit zpět.",
+    "itemMailboxes": "Všechny schránky, přesměrování, filtry a automatické odpovědi",
+    "itemFiles": "Všechny zprávy uložené na disku i místo, které zabírají",
+    "itemDNS": "Záznamy DNS (MX, SPF, DKIM, DMARC) zůstávají, spravujte je na stránce DNS",
+    "button": "Vypnout a smazat",
+    "working": "Mazání…",
+    "confirmTitle": "Smazat e-mailovou službu",
+    "confirmBody": "Tato akce smaže všechny schránky domény {{domain}} i všechny zprávy uložené na disku. Nelze ji vrátit zpět.",
+    "typeLabel": "Pro potvrzení napište název domény: ",
+    "cancel": "Zrušit",
+    "confirm": "Trvale smazat",
+    "warning": {
+      "mail_files_not_removed": "E-mailová služba byla smazána, ale některé soubory se zprávami se nepodařilo odstranit a stále zabírají místo na disku. Obraťte se na správce."
+    }
   }
 }

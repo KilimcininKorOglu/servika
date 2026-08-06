@@ -110,7 +110,8 @@
     "autoresponderRemoved": "La respuesta automática ha sido eliminada.",
     "filterAdded": "El filtro de correo ha sido compilado y activado.",
     "sendLimitsSaved": "Los límites de envío han sido guardados.",
-    "disabled": "El alojamiento de correo se ha desactivado. Se conservaron los buzones y los mensajes almacenados."
+    "disabled": "El alojamiento de correo se ha desactivado. Se conservaron los buzones y los mensajes almacenados.",
+    "purged": "El alojamiento de correo y todos los mensajes almacenados se han eliminado."
   },
   "confirm": {
     "deleteMailbox": "¿Eliminar el buzón «{{email}}»? El Maildir permanecerá en disco y solo se eliminará la fila de la cuenta.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "No se pudieron leer los límites de envío",
     "saveSendLimitsFailed": "No se pudieron guardar los límites de envío",
     "webmail": "No se pudo abrir el webmail",
-    "disableFailed": "No se pudo desactivar el alojamiento de correo"
+    "disableFailed": "No se pudo desactivar el alojamiento de correo",
+    "purgeFailed": "No se pudo eliminar el alojamiento de correo"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Detiene la entrega en este dominio y bloquea el inicio de sesión en todos los buzones. No se elimina nada: los buzones, los reenvíos y los mensajes almacenados se mantienen, y al volver a activarlo quedan igual que antes.",
     "button": "Desactivar el correo",
     "working": "Desactivando…"
+  },
+  "purge": {
+    "title": "Desactivar y eliminar",
+    "description": "Elimina el alojamiento de correo de forma definitiva. Esta acción no se puede deshacer.",
+    "itemMailboxes": "Todos los buzones, reenvíos, filtros y respuestas automáticas",
+    "itemFiles": "Todos los mensajes almacenados en el disco y el espacio que ocupan",
+    "itemDNS": "Los registros DNS (MX, SPF, DKIM, DMARC) se conservan, gestiónelos en la página DNS",
+    "button": "Desactivar y eliminar",
+    "working": "Eliminando…",
+    "confirmTitle": "Eliminar el alojamiento de correo",
+    "confirmBody": "Esta acción elimina todos los buzones de {{domain}} y todos los mensajes almacenados en el disco. No se puede deshacer.",
+    "typeLabel": "Escriba el nombre de dominio para confirmar: ",
+    "cancel": "Cancelar",
+    "confirm": "Eliminar definitivamente",
+    "warning": {
+      "mail_files_not_removed": "El alojamiento de correo se eliminó, pero algunos archivos de mensajes no se pudieron borrar y siguen ocupando espacio en disco. Póngase en contacto con su administrador."
+    }
   }
 }

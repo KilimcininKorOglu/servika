@@ -110,7 +110,8 @@
     "autoresponderRemoved": "Răspunsul automat a fost eliminat.",
     "filterAdded": "Filtrul de mail a fost compilat și activat.",
     "sendLimitsSaved": "Limitele de trimitere au fost salvate.",
-    "disabled": "Serviciul de e-mail a fost dezactivat. Căsuțele și mesajele stocate au fost păstrate."
+    "disabled": "Serviciul de e-mail a fost dezactivat. Căsuțele și mesajele stocate au fost păstrate.",
+    "purged": "Serviciul de e-mail și toate mesajele stocate au fost șterse."
   },
   "confirm": {
     "deleteMailbox": "Ștergeți cutia poștală „{{email}}”? Maildir-ul va rămâne pe disc și doar rândul contului va fi eliminat.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Nu s-au putut citi limitele de trimitere",
     "saveSendLimitsFailed": "Nu s-au putut salva limitele de trimitere",
     "webmail": "Webmail nu a putut fi deschis",
-    "disableFailed": "Serviciul de e-mail nu a putut fi dezactivat"
+    "disableFailed": "Serviciul de e-mail nu a putut fi dezactivat",
+    "purgeFailed": "Serviciul de e-mail nu a putut fi eliminat"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Oprește livrarea pentru acest domeniu și blochează autentificarea în toate căsuțele. Nu se șterge nimic: căsuțele, redirecționările și mesajele stocate rămân, iar la reactivare revin exact cum erau.",
     "button": "Dezactivează e-mailul",
     "working": "Se dezactivează…"
+  },
+  "purge": {
+    "title": "Dezactivează și șterge",
+    "description": "Elimină definitiv serviciul de e-mail. Această acțiune nu poate fi anulată.",
+    "itemMailboxes": "Toate căsuțele, redirecționările, filtrele și răspunsurile automate",
+    "itemFiles": "Toate mesajele stocate pe disc și spațiul pe care îl ocupă",
+    "itemDNS": "Înregistrările DNS (MX, SPF, DKIM, DMARC) sunt păstrate, gestionați-le din pagina DNS",
+    "button": "Dezactivează și șterge",
+    "working": "Se șterge…",
+    "confirmTitle": "Șterge serviciul de e-mail",
+    "confirmBody": "Această acțiune șterge toate căsuțele domeniului {{domain}} și toate mesajele stocate pe disc. Nu poate fi anulată.",
+    "typeLabel": "Scrieți numele domeniului pentru confirmare: ",
+    "cancel": "Anulează",
+    "confirm": "Șterge definitiv",
+    "warning": {
+      "mail_files_not_removed": "Serviciul de e-mail a fost șters, dar unele fișiere de mesaje nu au putut fi eliminate și ocupă în continuare spațiu pe disc. Contactați administratorul."
+    }
   }
 }

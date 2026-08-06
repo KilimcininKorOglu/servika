@@ -110,7 +110,8 @@
     "autoresponderRemoved": "La réponse automatique a été supprimée.",
     "filterAdded": "Le filtre de courrier a été compilé et activé.",
     "sendLimitsSaved": "Les limites d'envoi ont été enregistrées.",
-    "disabled": "L'hébergement e-mail a été désactivé. Les boîtes et les messages stockés ont été conservés."
+    "disabled": "L'hébergement e-mail a été désactivé. Les boîtes et les messages stockés ont été conservés.",
+    "purged": "L'hébergement e-mail et tous les messages stockés ont été supprimés."
   },
   "confirm": {
     "deleteMailbox": "Supprimer la boîte aux lettres « {{email}} » ? Le Maildir restera sur le disque, et seule la fiche du compte sera supprimée.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Impossible de lire les limites d'envoi",
     "saveSendLimitsFailed": "Impossible d'enregistrer les limites d'envoi",
     "webmail": "Impossible d'ouvrir le webmail",
-    "disableFailed": "Impossible de désactiver l'hébergement e-mail"
+    "disableFailed": "Impossible de désactiver l'hébergement e-mail",
+    "purgeFailed": "Impossible de supprimer l'hébergement e-mail"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Arrête la distribution pour ce domaine et bloque toute connexion aux boîtes. Rien n'est supprimé : les boîtes, les redirections et les messages stockés sont conservés, et la réactivation les rétablit à l'identique.",
     "button": "Désactiver l'e-mail",
     "working": "Désactivation…"
+  },
+  "purge": {
+    "title": "Désactiver et supprimer",
+    "description": "Supprime définitivement l'hébergement e-mail. Cette action est irréversible.",
+    "itemMailboxes": "Toutes les boîtes, redirections, règles et réponses automatiques",
+    "itemFiles": "Tous les messages stockés sur le disque et l'espace qu'ils occupent",
+    "itemDNS": "Les enregistrements DNS (MX, SPF, DKIM, DMARC) sont conservés, gérez-les sur la page DNS",
+    "button": "Désactiver et supprimer",
+    "working": "Suppression…",
+    "confirmTitle": "Supprimer l'hébergement e-mail",
+    "confirmBody": "Cette action supprime toutes les boîtes de {{domain}} et tous les messages stockés sur le disque. Elle est irréversible.",
+    "typeLabel": "Saisissez le nom de domaine pour confirmer : ",
+    "cancel": "Annuler",
+    "confirm": "Supprimer définitivement",
+    "warning": {
+      "mail_files_not_removed": "L'hébergement e-mail a été supprimé, mais certains fichiers de messages n'ont pas pu être retirés et occupent toujours de l'espace disque. Contactez votre administrateur."
+    }
   }
 }

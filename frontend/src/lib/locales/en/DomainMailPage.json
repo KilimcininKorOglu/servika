@@ -110,7 +110,8 @@
     "autoresponderRemoved": "The autoresponder has been removed.",
     "filterAdded": "The mail filter has been compiled and enabled.",
     "sendLimitsSaved": "The send limits have been saved.",
-    "disabled": "Email hosting has been turned off. Mailboxes and stored messages were kept."
+    "disabled": "Email hosting has been turned off. Mailboxes and stored messages were kept.",
+    "purged": "Email hosting and every stored message have been deleted."
   },
   "confirm": {
     "deleteMailbox": "Delete the mailbox \"{{email}}\"? The Maildir will remain on disk, and only the account row will be removed.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Could not read the send limits",
     "saveSendLimitsFailed": "Could not save the send limits",
     "webmail": "Could not open webmail",
-    "disableFailed": "Could not turn off email hosting"
+    "disableFailed": "Could not turn off email hosting",
+    "purgeFailed": "Could not remove email hosting"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Stops delivery for this domain and blocks every mailbox sign-in. Nothing is deleted: mailboxes, forwarders and the stored messages all stay, and turning it back on restores them exactly as they were.",
     "button": "Turn off email",
     "working": "Turning off…"
+  },
+  "purge": {
+    "title": "Turn off and delete",
+    "description": "Removes email hosting for good. This cannot be undone.",
+    "itemMailboxes": "Every mailbox, forwarder, filter and autoresponder",
+    "itemFiles": "Every stored message on disk, and the space it uses",
+    "itemDNS": "DNS records (MX, SPF, DKIM, DMARC) are kept, manage them on the DNS page",
+    "button": "Turn off and delete",
+    "working": "Deleting…",
+    "confirmTitle": "Delete email hosting",
+    "confirmBody": "This deletes every mailbox for {{domain}} and every message stored on disk. It cannot be undone.",
+    "typeLabel": "Type the domain name to confirm: ",
+    "cancel": "Cancel",
+    "confirm": "Delete for good",
+    "warning": {
+      "mail_files_not_removed": "Email hosting was deleted, but some message files could not be removed and still use disk space. Contact your administrator."
+    }
   }
 }

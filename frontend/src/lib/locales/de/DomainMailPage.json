@@ -110,7 +110,8 @@
     "autoresponderRemoved": "Der Autoresponder wurde entfernt.",
     "filterAdded": "Der Mail-Filter wurde kompiliert und aktiviert.",
     "sendLimitsSaved": "Die Sendelimits wurden gespeichert.",
-    "disabled": "Der E-Mail-Dienst wurde deaktiviert. Postfächer und gespeicherte Nachrichten wurden beibehalten."
+    "disabled": "Der E-Mail-Dienst wurde deaktiviert. Postfächer und gespeicherte Nachrichten wurden beibehalten.",
+    "purged": "Der E-Mail-Dienst und alle gespeicherten Nachrichten wurden gelöscht."
   },
   "confirm": {
     "deleteMailbox": "Das Postfach \"{{email}}\" löschen? Das Maildir bleibt auf der Festplatte, nur die Kontozeile wird entfernt.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Die Sendelimits konnten nicht gelesen werden",
     "saveSendLimitsFailed": "Die Sendelimits konnten nicht gespeichert werden",
     "webmail": "Webmail konnte nicht geöffnet werden",
-    "disableFailed": "E-Mail-Dienst konnte nicht deaktiviert werden"
+    "disableFailed": "E-Mail-Dienst konnte nicht deaktiviert werden",
+    "purgeFailed": "E-Mail-Dienst konnte nicht entfernt werden"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Stoppt die Zustellung für diese Domain und sperrt jede Postfach-Anmeldung. Es wird nichts gelöscht: Postfächer, Weiterleitungen und gespeicherte Nachrichten bleiben erhalten, und beim Wiedereinschalten sind sie genau wie zuvor.",
     "button": "E-Mail deaktivieren",
     "working": "Wird deaktiviert…"
+  },
+  "purge": {
+    "title": "Deaktivieren und löschen",
+    "description": "Entfernt den E-Mail-Dienst endgültig. Das lässt sich nicht rückgängig machen.",
+    "itemMailboxes": "Alle Postfächer, Weiterleitungen, Filter und Abwesenheitsnotizen",
+    "itemFiles": "Alle auf der Festplatte gespeicherten Nachrichten und ihr Speicherplatz",
+    "itemDNS": "DNS-Einträge (MX, SPF, DKIM, DMARC) bleiben erhalten, verwalten Sie sie auf der DNS-Seite",
+    "button": "Deaktivieren und löschen",
+    "working": "Wird gelöscht…",
+    "confirmTitle": "E-Mail-Dienst löschen",
+    "confirmBody": "Damit werden alle Postfächer von {{domain}} und alle gespeicherten Nachrichten gelöscht. Das lässt sich nicht rückgängig machen.",
+    "typeLabel": "Zur Bestätigung den Domainnamen eingeben: ",
+    "cancel": "Abbrechen",
+    "confirm": "Endgültig löschen",
+    "warning": {
+      "mail_files_not_removed": "Der E-Mail-Dienst wurde gelöscht, aber einige Nachrichtendateien konnten nicht entfernt werden und belegen weiterhin Speicherplatz. Wenden Sie sich an Ihren Administrator."
+    }
   }
 }

@@ -110,7 +110,8 @@
     "autoresponderRemoved": "自动回复已移除。",
     "filterAdded": "邮件过滤器已编译并启用。",
     "sendLimitsSaved": "发送限制已保存。",
-    "disabled": "邮件服务已关闭。邮箱和已存储的邮件均已保留。"
+    "disabled": "邮件服务已关闭。邮箱和已存储的邮件均已保留。",
+    "purged": "邮件服务和所有已存储的邮件均已删除。"
   },
   "confirm": {
     "deleteMailbox": "删除邮箱“{{email}}”？Maildir 将保留在磁盘上，仅移除账户记录。",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "无法读取发送限制",
     "saveSendLimitsFailed": "无法保存发送限制",
     "webmail": "无法打开网页邮箱",
-    "disableFailed": "无法关闭邮件服务"
+    "disableFailed": "无法关闭邮件服务",
+    "purgeFailed": "无法移除邮件服务"
   },
   "webmail": {
     "title": "网页邮箱",
@@ -174,5 +176,22 @@
     "description": "停止向该域名投递邮件，并阻止所有邮箱登录。不会删除任何内容：邮箱、转发规则和已存储的邮件都会保留，重新开启后完全恢复原状。",
     "button": "关闭邮件",
     "working": "正在关闭…"
+  },
+  "purge": {
+    "title": "关闭并删除",
+    "description": "永久移除邮件服务。此操作无法撤销。",
+    "itemMailboxes": "所有邮箱、转发规则、过滤器和自动回复",
+    "itemFiles": "磁盘上存储的所有邮件及其占用的空间",
+    "itemDNS": "DNS 记录 (MX、SPF、DKIM、DMARC) 会保留，请在 DNS 页面管理",
+    "button": "关闭并删除",
+    "working": "正在删除…",
+    "confirmTitle": "删除邮件服务",
+    "confirmBody": "此操作会删除 {{domain}} 的所有邮箱以及磁盘上存储的所有邮件，且无法撤销。",
+    "typeLabel": "请输入域名以确认: ",
+    "cancel": "取消",
+    "confirm": "永久删除",
+    "warning": {
+      "mail_files_not_removed": "邮件服务已删除，但部分邮件文件无法移除，仍占用磁盘空间。请联系管理员。"
+    }
   }
 }

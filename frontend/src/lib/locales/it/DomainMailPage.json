@@ -110,7 +110,8 @@
     "autoresponderRemoved": "Il risponditore automatico è stato rimosso.",
     "filterAdded": "Il filtro di posta è stato compilato e abilitato.",
     "sendLimitsSaved": "I limiti di invio sono stati salvati.",
-    "disabled": "Il servizio e-mail è stato disattivato. Caselle e messaggi archiviati sono stati conservati."
+    "disabled": "Il servizio e-mail è stato disattivato. Caselle e messaggi archiviati sono stati conservati.",
+    "purged": "Il servizio e-mail e tutti i messaggi archiviati sono stati eliminati."
   },
   "confirm": {
     "deleteMailbox": "Eliminare la casella di posta \"{{email}}\"? La Maildir rimarrà sul disco e verrà rimossa solo la riga dell'account.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Impossibile leggere i limiti di invio",
     "saveSendLimitsFailed": "Impossibile salvare i limiti di invio",
     "webmail": "Impossibile aprire la webmail",
-    "disableFailed": "Impossibile disattivare il servizio e-mail"
+    "disableFailed": "Impossibile disattivare il servizio e-mail",
+    "purgeFailed": "Impossibile rimuovere il servizio e-mail"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Interrompe la consegna per questo dominio e blocca ogni accesso alle caselle. Non viene eliminato nulla: caselle, inoltri e messaggi archiviati restano, e riattivandolo tornano esattamente come prima.",
     "button": "Disattiva e-mail",
     "working": "Disattivazione…"
+  },
+  "purge": {
+    "title": "Disattiva ed elimina",
+    "description": "Rimuove definitivamente il servizio e-mail. L'operazione non è reversibile.",
+    "itemMailboxes": "Tutte le caselle, gli inoltri, i filtri e le risposte automatiche",
+    "itemFiles": "Tutti i messaggi archiviati su disco e lo spazio che occupano",
+    "itemDNS": "I record DNS (MX, SPF, DKIM, DMARC) vengono conservati, gestiscili dalla pagina DNS",
+    "button": "Disattiva ed elimina",
+    "working": "Eliminazione…",
+    "confirmTitle": "Elimina il servizio e-mail",
+    "confirmBody": "Questa operazione elimina tutte le caselle di {{domain}} e tutti i messaggi archiviati su disco. Non è reversibile.",
+    "typeLabel": "Digita il nome di dominio per confermare: ",
+    "cancel": "Annulla",
+    "confirm": "Elimina definitivamente",
+    "warning": {
+      "mail_files_not_removed": "Il servizio e-mail è stato eliminato, ma alcuni file dei messaggi non sono stati rimossi e occupano ancora spazio su disco. Contatta l'amministratore."
+    }
   }
 }

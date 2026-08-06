@@ -110,7 +110,8 @@
     "autoresponderRemoved": "A resposta automática foi removida.",
     "filterAdded": "O filtro de e-mail foi compilado e ativado.",
     "sendLimitsSaved": "Os limites de envio foram salvos.",
-    "disabled": "A hospedagem de e-mail foi desativada. As caixas e as mensagens armazenadas foram mantidas."
+    "disabled": "A hospedagem de e-mail foi desativada. As caixas e as mensagens armazenadas foram mantidas.",
+    "purged": "A hospedagem de e-mail e todas as mensagens armazenadas foram excluídas."
   },
   "confirm": {
     "deleteMailbox": "Excluir a caixa \"{{email}}\"? O Maildir permanecerá no disco e somente o registro da conta será removido.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Não foi possível ler os limites de envio",
     "saveSendLimitsFailed": "Não foi possível salvar os limites de envio",
     "webmail": "Não foi possível abrir o webmail",
-    "disableFailed": "Não foi possível desativar a hospedagem de e-mail"
+    "disableFailed": "Não foi possível desativar a hospedagem de e-mail",
+    "purgeFailed": "Não foi possível remover a hospedagem de e-mail"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Interrompe a entrega neste domínio e bloqueia todos os logins nas caixas. Nada é excluído: caixas, encaminhamentos e mensagens armazenadas permanecem, e ao reativar voltam exatamente como estavam.",
     "button": "Desativar e-mail",
     "working": "Desativando…"
+  },
+  "purge": {
+    "title": "Desativar e excluir",
+    "description": "Remove a hospedagem de e-mail definitivamente. Esta ação não pode ser desfeita.",
+    "itemMailboxes": "Todas as caixas, encaminhamentos, filtros e respostas automáticas",
+    "itemFiles": "Todas as mensagens armazenadas no disco e o espaço que ocupam",
+    "itemDNS": "Os registros DNS (MX, SPF, DKIM, DMARC) são mantidos, gerencie-os na página DNS",
+    "button": "Desativar e excluir",
+    "working": "Excluindo…",
+    "confirmTitle": "Excluir a hospedagem de e-mail",
+    "confirmBody": "Esta ação exclui todas as caixas de {{domain}} e todas as mensagens armazenadas no disco. Não pode ser desfeita.",
+    "typeLabel": "Digite o nome do domínio para confirmar: ",
+    "cancel": "Cancelar",
+    "confirm": "Excluir definitivamente",
+    "warning": {
+      "mail_files_not_removed": "A hospedagem de e-mail foi excluída, mas alguns arquivos de mensagens não puderam ser removidos e ainda ocupam espaço em disco. Fale com seu administrador."
+    }
   }
 }

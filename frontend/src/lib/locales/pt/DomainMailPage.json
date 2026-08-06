@@ -110,7 +110,8 @@
     "autoresponderRemoved": "A resposta automática foi removida.",
     "filterAdded": "O filtro de correio foi compilado e ativado.",
     "sendLimitsSaved": "Os limites de envio foram guardados.",
-    "disabled": "O alojamento de e-mail foi desativado. As caixas e as mensagens guardadas foram mantidas."
+    "disabled": "O alojamento de e-mail foi desativado. As caixas e as mensagens guardadas foram mantidas.",
+    "purged": "O alojamento de e-mail e todas as mensagens guardadas foram eliminados."
   },
   "confirm": {
     "deleteMailbox": "Eliminar a caixa de correio \"{{email}}\"? O Maildir permanecerá no disco e apenas o registo da conta será removido.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Não foi possível ler os limites de envio",
     "saveSendLimitsFailed": "Não foi possível guardar os limites de envio",
     "webmail": "Não foi possível abrir o webmail",
-    "disableFailed": "Não foi possível desativar o alojamento de e-mail"
+    "disableFailed": "Não foi possível desativar o alojamento de e-mail",
+    "purgeFailed": "Não foi possível remover o alojamento de e-mail"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Para a entrega neste domínio e bloqueia todos os inícios de sessão nas caixas. Nada é eliminado: caixas, reencaminhamentos e mensagens guardadas permanecem, e ao reativar voltam exatamente como estavam.",
     "button": "Desativar e-mail",
     "working": "A desativar…"
+  },
+  "purge": {
+    "title": "Desativar e eliminar",
+    "description": "Remove definitivamente o alojamento de e-mail. Esta ação não pode ser anulada.",
+    "itemMailboxes": "Todas as caixas, reencaminhamentos, filtros e respostas automáticas",
+    "itemFiles": "Todas as mensagens guardadas no disco e o espaço que ocupam",
+    "itemDNS": "Os registos DNS (MX, SPF, DKIM, DMARC) são mantidos, faça a gestão na página DNS",
+    "button": "Desativar e eliminar",
+    "working": "A eliminar…",
+    "confirmTitle": "Eliminar o alojamento de e-mail",
+    "confirmBody": "Esta ação elimina todas as caixas de {{domain}} e todas as mensagens guardadas no disco. Não pode ser anulada.",
+    "typeLabel": "Escreva o nome do domínio para confirmar: ",
+    "cancel": "Cancelar",
+    "confirm": "Eliminar definitivamente",
+    "warning": {
+      "mail_files_not_removed": "O alojamento de e-mail foi eliminado, mas alguns ficheiros de mensagens não puderam ser removidos e continuam a ocupar espaço em disco. Contacte o seu administrador."
+    }
   }
 }

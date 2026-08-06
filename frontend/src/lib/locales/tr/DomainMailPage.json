@@ -110,7 +110,8 @@
     "autoresponderRemoved": "Otomatik yanıt kaldırıldı.",
     "filterAdded": "Posta filtresi derlendi ve etkinleştirildi.",
     "sendLimitsSaved": "Gönderim limitleri kaydedildi.",
-    "disabled": "E-posta hizmeti kapatıldı. Posta kutuları ve saklanan iletiler korundu."
+    "disabled": "E-posta hizmeti kapatıldı. Posta kutuları ve saklanan iletiler korundu.",
+    "purged": "E-posta hizmeti ve saklanan tüm iletiler silindi."
   },
   "confirm": {
     "deleteMailbox": "\"{{email}}\" posta kutusu silinsin mi? Maildir diskte kalır ve yalnızca hesap satırı kaldırılır.",
@@ -135,7 +136,8 @@
     "readSendLimitsFailed": "Gönderim limitleri okunamadı",
     "saveSendLimitsFailed": "Gönderim limitleri kaydedilemedi",
     "webmail": "Webmail açılamadı",
-    "disableFailed": "E-posta hizmeti kapatılamadı"
+    "disableFailed": "E-posta hizmeti kapatılamadı",
+    "purgeFailed": "E-posta hizmeti kaldırılamadı"
   },
   "webmail": {
     "title": "Webmail",
@@ -174,5 +176,22 @@
     "description": "Bu alan adına teslimatı durdurur ve her posta kutusu girişini engeller. Hiçbir şey silinmez: posta kutuları, yönlendiriciler ve saklanan iletiler kalır, tekrar açtığınızda hepsi olduğu gibi geri gelir.",
     "button": "E-postayı kapat",
     "working": "Kapatılıyor…"
+  },
+  "purge": {
+    "title": "Kapat ve sil",
+    "description": "E-posta hizmetini kalıcı olarak kaldırır. Bu işlem geri alınamaz.",
+    "itemMailboxes": "Tüm posta kutuları, yönlendiriciler, filtreler ve otomatik yanıtlar",
+    "itemFiles": "Diskte saklanan tüm iletiler ve kapladıkları alan",
+    "itemDNS": "DNS kayıtları (MX, SPF, DKIM, DMARC) korunur, DNS sayfasından yönetin",
+    "button": "Kapat ve sil",
+    "working": "Siliniyor…",
+    "confirmTitle": "E-posta hizmetini sil",
+    "confirmBody": "Bu işlem {{domain}} alan adının tüm posta kutularını ve diskte saklanan tüm iletileri siler. Geri alınamaz.",
+    "typeLabel": "Onaylamak için alan adını yazın: ",
+    "cancel": "Vazgeç",
+    "confirm": "Kalıcı olarak sil",
+    "warning": {
+      "mail_files_not_removed": "E-posta hizmeti silindi, fakat bazı ileti dosyaları kaldırılamadı ve disk alanı kullanmaya devam ediyor. Yöneticinizle görüşün."
+    }
   }
 }

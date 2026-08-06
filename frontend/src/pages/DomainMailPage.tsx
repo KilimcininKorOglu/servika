@@ -44,6 +44,9 @@ export default function DomainMailPage() {
   const [localPart, setLocalPart] = useState('')
   const [password, setPassword] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isPurging, setIsPurging] = useState(false)
+  const [purgeConfirmOpen, setPurgeConfirmOpen] = useState(false)
+  const [purgeConfirmationText, setPurgeConfirmationText] = useState('')
   const [generatedPassword, setGeneratedPassword] = useState<{ email: string; password: string } | null>(null)
   const [aliasLocalPart, setAliasLocalPart] = useState('')
   const [aliasDestination, setAliasDestination] = useState('')
@@ -193,6 +196,28 @@ export default function DomainMailPage() {
       setError(apiError(cause, t('errors.disableFailed')))
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  // The destructive counterpart. The server answers 200 with a warning code when
+  // it cleared the database but could not remove the files: the service is gone
+  // either way, so this is not an error, but the disk is still occupied and
+  // saying nothing would leave the customer looking for space that never came
+  // back.
+  async function purgeMail() {
+    setIsPurging(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const response = await api.delete<{ ok: boolean; warning?: string }>(`/domains/${id}/mail/service`)
+      setPurgeConfirmOpen(false)
+      if (response.data.warning) setError(t(`purge.warning.${response.data.warning}`))
+      else setSuccess(t('messages.purged'))
+      loadMail()
+    } catch (cause) {
+      setError(apiError(cause, t('errors.purgeFailed')))
+    } finally {
+      setIsPurging(false)
     }
   }
 
@@ -825,19 +850,75 @@ export default function DomainMailPage() {
               )}
             </div>
 
-            {/* Last and full width, outside the settings grid: it acts on the
-                whole service rather than one setting. Bordered red because it
-                stops delivery, but it is not the delete button it resembles. */}
-            <div className="mt-5 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 rounded-2xl p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('disable.title')}</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">{t('disable.description')}</p>
-              <button type="button" onClick={disableMail} disabled={isSaving}
-                className="mt-3 px-4 py-2 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 text-sm font-medium rounded-lg">
-                {isSaving ? t('disable.working') : t('disable.button')}
-              </button>
+            {/* The two ways to stop the service, side by side and outside the
+                settings grid: both act on the whole service rather than one
+                setting. The difference has to be legible before the click, so
+                the reversible one is amber and outlined while the irreversible
+                one is red and filled. In one colour they would read as equals. */}
+            <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+              <div className="bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('disable.title')}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('disable.description')}</p>
+                <button type="button" onClick={disableMail} disabled={isSaving || isPurging}
+                  className="mt-3 px-4 py-2 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/30 disabled:opacity-50 text-sm font-medium rounded-lg">
+                  {isSaving ? t('disable.working') : t('disable.button')}
+                </button>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 border border-red-300 dark:border-red-800 rounded-2xl p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-red-800 dark:text-red-300">{t('purge.title')}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('purge.description')}</p>
+                <ul className="mt-2 space-y-0.5 text-xs text-slate-500 dark:text-slate-400 list-disc list-inside">
+                  <li>{t('purge.itemMailboxes')}</li>
+                  <li>{t('purge.itemFiles')}</li>
+                  <li>{t('purge.itemDNS')}</li>
+                </ul>
+                <button type="button" onClick={() => { setPurgeConfirmationText(''); setPurgeConfirmOpen(true) }}
+                  disabled={isSaving || isPurging}
+                  className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 text-sm font-medium rounded-lg">
+                  {isPurging ? t('purge.working') : t('purge.button')}
+                </button>
+              </div>
             </div>
           </>
         )}
+
+        {/* A single confirm() is not enough for something this final, so the
+            domain name has to be typed, the same bar the panel already sets for
+            deleting a subscription. */}
+        {purgeConfirmOpen && (() => {
+          const expected = domain?.domain_name || ''
+          const confirmed = purgeConfirmationText.trim().toLowerCase() === expected.toLowerCase()
+          return (
+            <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setPurgeConfirmOpen(false)}>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={event => event.stopPropagation()}>
+                <h3 className="text-base font-semibold text-red-700 dark:text-red-300 mb-2">{t('purge.confirmTitle')}</h3>
+                <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">{t('purge.confirmBody', { domain: expected })}</p>
+                <label className="block text-xs text-slate-500 dark:text-slate-500 mb-1.5">
+                  {t('purge.typeLabel')}<span className="font-mono font-semibold text-red-700 dark:text-red-300">{expected}</span>
+                </label>
+                <input
+                  type="text"
+                  autoFocus
+                  value={purgeConfirmationText}
+                  onChange={event => setPurgeConfirmationText(event.target.value)}
+                  onKeyDown={event => { if (event.key === 'Enter' && confirmed && !isPurging) purgeMail() }}
+                  placeholder={expected}
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="w-full px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm font-mono bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 mb-4 focus:outline-none focus:ring-2 focus:ring-red-500" />
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={() => setPurgeConfirmOpen(false)}
+                    className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('purge.cancel')}</button>
+                  <button type="button" onClick={purgeMail} disabled={isPurging || !confirmed}
+                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded font-medium">
+                    {isPurging ? t('purge.working') : t('purge.confirm')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         <div className="mt-4"><Link to={`/subscriptions/${id}`} className="text-sm text-brand-600 dark:text-brand-400">{t('back')}</Link></div>
       </div>
