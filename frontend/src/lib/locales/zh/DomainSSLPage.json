@@ -54,7 +54,8 @@
     "install": "获取 Let's Encrypt 证书"
   },
   "warning": {
-    "letsencryptFallback": "Let's Encrypt 未能签发证书，站点暂时使用自签名证书保护，浏览器会向访客发出警告。请解决下面显示的原因后重试。"
+    "letsencryptFallback": "Let's Encrypt 未能签发证书，站点暂时使用自签名证书保护，浏览器会向访客发出警告。请解决下面显示的原因后重试。",
+    "namesSkipped": "以下名称未包含在证书中：{{skipped}}。查找这些名称的邮件客户端将转而要求手动填写设置。"
   },
   "mailSSL": {
     "option": "同时保护邮件服务器",

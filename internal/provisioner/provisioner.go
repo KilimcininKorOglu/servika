@@ -827,6 +827,8 @@ server {
 // The ACME challenge location stays open here: HTTP-01 validation for the
 // redirected host must still be answerable, or the certificate could not be
 // renewed with both hostnames on it.
+var discoveryVhostTmpl = template.Must(template.New("discovery").Parse(discoveryVhostNginx))
+
 var wwwRedirectTmpl = template.Must(template.New("wwwredirect").Parse(`
 # {{.RedirectFromHost}} — redirected to the canonical hostname {{.RedirectToHost}}
 server {
@@ -1114,6 +1116,26 @@ func (o VhostOpts) RedirectFromHost() string {
 	return "www." + o.DomainName
 }
 
+// DiscoveryHosts returns the server_name list for the auto-configuration vhost.
+func (o VhostOpts) DiscoveryHosts() string {
+	return strings.Join(discoverySANHosts(o.DomainName), " ")
+}
+
+// discoveryEligible reports whether the auto-configuration vhost may be
+// rendered.
+//
+// The installed certificate has to name both hosts. Serving them from a
+// certificate that omits them is worse than not answering at all: the client
+// gets a name mismatch on the very connection it is making to learn where to
+// send a mailbox password, whereas an unanswered name simply moves it on to the
+// next lookup in its own order.
+func (o VhostOpts) discoveryEligible() bool {
+	if o.Suspended || !o.SSL() {
+		return false
+	}
+	return certValid(o.CertPath, o.KeyPath, 0, discoverySANHosts(o.DomainName)...)
+}
+
 // ErrorPageBlock returns the nginx block that wires the brand 404 page and the
 // shared /_srv/ asset location into the vhost. Exposed as a method so the vhost
 // template can inject it with {{.ErrorPageBlock}}.
@@ -1146,20 +1168,44 @@ func wwwSANEligible(domain string) bool {
 	if len(apex) == 0 {
 		return false
 	}
-	www := lookupHostRetrying("www." + domain)
-	if len(www) == 0 {
+	return sanEligible(apex, "www."+domain)
+}
+
+// sanEligible reports whether host may join the SAN of the apex's certificate.
+//
+// The apex addresses are passed in rather than looked up, because the caller
+// judges several optional names against the same apex and resolving it once per
+// name multiplies a retrying lookup across every domain the startup heal walks.
+func sanEligible(apexAddresses []string, host string) bool {
+	if len(apexAddresses) == 0 {
 		return false
 	}
-	apexSet := make(map[string]bool, len(apex))
-	for _, ip := range apex {
+	addresses := lookupHostRetrying(host)
+	if len(addresses) == 0 {
+		return false
+	}
+	apexSet := make(map[string]bool, len(apexAddresses))
+	for _, ip := range apexAddresses {
 		apexSet[ip] = true
 	}
-	for _, ip := range www {
+	for _, ip := range addresses {
 		if !apexSet[ip] {
-			return false // www points to a different server
+			return false // the name points at a different server
 		}
 	}
 	return true
+}
+
+// discoverySANHosts are the optional names a mail client looks for before it
+// falls back to the domain itself.
+//
+// Thunderbird probes autoconfig.<domain> FIRST and only then the domain's own
+// /.well-known path; Outlook probes the domain first and autodiscover.<domain>
+// second. Covering both names means the client succeeds on its first attempt,
+// and it is the only route that works at all when the apex resolves to someone
+// else's server while mail is hosted here.
+func discoverySANHosts(domain string) []string {
+	return []string{"autoconfig." + domain, "autodiscover." + domain}
 }
 
 // WWWResolvesToApex reports whether www.<domain> resolves to the same address(es)
@@ -1175,16 +1221,37 @@ func CertificateCoversHost(certPath, keyPath, host string) bool {
 }
 
 // certSANHosts returns the hostnames a real certificate must cover for a domain:
-// the apex always, plus www only when wwwSANEligible allows it. This is the DNS
-// aware counterpart to wwwHostNames, used by ACME issuance and real-CA reuse.
+// the apex always, plus www and the mail-discovery names when DNS supports them.
+// This is the DNS aware counterpart to wwwHostNames, used by ACME issuance and
+// real-CA reuse.
+//
+// Every optional name goes through the SAME gate here, and that is what keeps
+// issuance stable. The set this returns is both what is ORDERED and what a
+// stored certificate is REQUIRED to cover before it may be reused
+// (ssl_heal.go bestCertificate), so a name added unconditionally would make
+// every existing certificate fail the reuse check, and one that never resolves
+// for a customer would keep failing it after each order — a re-issuance on every
+// attempt, against Let's Encrypt's weekly per-registered-domain limit.
 func certSANHosts(domain string) []string {
 	if strings.HasPrefix(strings.ToLower(domain), "www.") {
 		return []string{domain}
 	}
-	if wwwSANEligible(domain) {
-		return []string{domain, "www." + domain}
+	apex := lookupHostRetrying(domain)
+	if len(apex) == 0 {
+		return []string{domain}
 	}
-	return []string{domain}
+	hosts := []string{domain}
+	if sanEligible(apex, "www."+domain) {
+		hosts = append(hosts, "www."+domain)
+	}
+	// Order is fixed so the SAN set does not differ between two runs that agree
+	// on which names are eligible.
+	for _, host := range discoverySANHosts(domain) {
+		if sanEligible(apex, host) {
+			hosts = append(hosts, host)
+		}
+	}
+	return hosts
 }
 
 type Result struct {
@@ -1336,11 +1403,19 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 	if opts.CustomVhostContent != "" && !opts.Suspended {
 		buf.WriteString(strings.TrimSpace(opts.CustomVhostContent))
 		buf.WriteByte('\n')
-	} else if err := tmpl.Execute(&buf, opts); err != nil {
-		return fmt.Errorf("template render: %w", err)
-	} else if opts.RedirectFromHost() != "" {
-		if err := wwwRedirectTmpl.Execute(&buf, opts); err != nil {
-			return fmt.Errorf("canonical redirect render: %w", err)
+	} else {
+		if err := tmpl.Execute(&buf, opts); err != nil {
+			return fmt.Errorf("template render: %w", err)
+		}
+		if opts.RedirectFromHost() != "" {
+			if err := wwwRedirectTmpl.Execute(&buf, opts); err != nil {
+				return fmt.Errorf("canonical redirect render: %w", err)
+			}
+		}
+		if opts.discoveryEligible() {
+			if err := discoveryVhostTmpl.Execute(&buf, opts); err != nil {
+				return fmt.Errorf("auto-configuration vhost render: %w", err)
+			}
 		}
 	}
 	cfgPath := opts.ConfigPath
@@ -1595,16 +1670,32 @@ func EnableSelfSigned(domainName, systemUser, phpVersion, backend string) (certP
 //     This never triggers a re-issue with the same SAN set (LE 429 rate-limit).
 //  2. FAIL-SAFE: when issuance fails (including 429), sslFailSafe keeps 443 alive with the
 //     existing/self-signed certificate. The vhost is never dropped to HTTP-only.
-func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, real bool, note string, err error) {
+//
+// IssueOutcome carries everything the caller needs to explain an issuance, as
+// codes rather than prose: the panel is English and the interface ships twelve
+// languages, so a sentence produced here could never be translated.
+type IssueOutcome struct {
+	// Real reports whether a real CA issued the certificate. False means the
+	// self-signed fail-safe kept 443 alive instead.
+	Real bool
+	// Reason is the stable failure code when Real is false, empty otherwise.
+	Reason string
+	// Skipped maps a hostname left out of the SAN to the code explaining why.
+	// A name is dropped so one unreachable host cannot fail the whole order, so
+	// the caller has to be able to say which coverage the customer did not get.
+	Skipped map[string]string
+}
+
+func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (certPath, keyPath string, outcome IssueOutcome, err error) {
 	if err := ValidateDomain(domainName); err != nil {
-		return "", "", false, "", err
+		return "", "", IssueOutcome{}, err
 	}
 	domainName = strings.ToLower(strings.TrimSpace(domainName))
 	phpVersion = normalizePHP(phpVersion)
 
 	sslDir, err := prepareCertificateDir(domainName)
 	if err != nil {
-		return "", "", false, "", err
+		return "", "", IssueOutcome{}, err
 	}
 	certPath = filepath.Join(sslDir, domainName+".crt")
 	keyPath = filepath.Join(sslDir, domainName+".key")
@@ -1613,11 +1704,11 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	if src, srcKey := reusableLetsEncryptCertificate(domainName, 30); src != "" {
 		if cp, kp, e := installToPKI(domainName, src, srcKey); e == nil {
 			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, "letsencrypt"); e != nil {
-				return "", "", false, "", e
+				return "", "", IssueOutcome{}, e
 			}
 			removeHomeCertificate(systemUser, domainName)
 			log.Printf("ssl reuse: %s valid letsencrypt certificate found; fresh LE issuance skipped (rate-limit protection)", domainName)
-			return cp, kp, true, "", nil
+			return cp, kp, IssueOutcome{Real: true}, nil
 		}
 	}
 
@@ -1657,14 +1748,25 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	// vhost claiming the name all resolve perfectly well and still fail
 	// validation, and one failing name fails the WHOLE order.
 	sanHosts, droppedHosts := validatedSANHosts(certSANHosts(domainName))
+	// The customer has to be able to see which coverage they did not get. A name
+	// is dropped so one unreachable host cannot fail the whole order, and until
+	// now that only reached the panel log.
+	skipped := map[string]string{}
+	for host, reason := range droppedHosts {
+		if host == domainName {
+			continue // the apex is the failure itself, reported as the reason
+		}
+		skipped[host] = string(reason)
+	}
 	if reason, apexFailed := droppedHosts[domainName]; apexFailed {
 		// Ordering anyway would spend one of the five validation failures Let's
 		// Encrypt allows per hostname per hour and leave the same result.
 		// The probe already produced a code; passing it through keeps the screen
 		// telling the owner which of the challenge failures they are looking at.
 		return sslFailSafe(domainName, systemUser, phpVersion, backend, sslReason{
-			Code:   string(reason),
-			Detail: domainName + " does not answer the ACME challenge path from the public internet",
+			Code:    string(reason),
+			Detail:  domainName + " does not answer the ACME challenge path from the public internet",
+			Skipped: skipped,
 		})
 	}
 	out, e := RunACMEIssue(buildIssueArgs(sanHosts)...)
@@ -1678,7 +1780,7 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	}
 	if e != nil && !IsACMERenewSkip(e) {
 		// FAIL-SAFE (no teardown): keep 443 alive with the existing/self-signed cert.
-		return sslFailSafe(domainName, systemUser, phpVersion, backend, classifySSLFailure(string(out)))
+		return sslFailSafe(domainName, systemUser, phpVersion, backend, classifySSLFailure(string(out)).with(skipped))
 	}
 
 	// Install the certificate into the target paths with acme.sh install-cert.
@@ -1692,18 +1794,19 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	}
 	if out, e := acmeCommand(insArgs...).CombinedOutput(); e != nil {
 		return sslFailSafe(domainName, systemUser, phpVersion, backend, sslReason{
-			Code:   sslReasonInstallFailed,
-			Detail: summarizeSSLReason(string(out)),
+			Code:    sslReasonInstallFailed,
+			Detail:  summarizeSSLReason(string(out)),
+			Skipped: skipped,
 		})
 	}
 	if err := applyCertificatePermissions(sslDir, certPath, keyPath); err != nil {
-		return "", "", false, "", err
+		return "", "", IssueOutcome{}, err
 	}
 	if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPath, "letsencrypt"); e != nil {
-		return "", "", false, "", e
+		return "", "", IssueOutcome{}, e
 	}
 	removeHomeCertificate(systemUser, domainName)
-	return certPath, keyPath, true, "", nil
+	return certPath, keyPath, IssueOutcome{Real: true, Skipped: skipped}, nil
 }
 
 // domainResolves reports whether a hostname has any address record. Refusing

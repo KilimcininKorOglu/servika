@@ -54,7 +54,8 @@
     "install": "Get Let's Encrypt Certificate"
   },
   "warning": {
-    "letsencryptFallback": "Let's Encrypt could not issue a certificate, so the site is temporarily protected with a self-signed one and browsers will warn visitors. Fix the cause below and try again."
+    "letsencryptFallback": "Let's Encrypt could not issue a certificate, so the site is temporarily protected with a self-signed one and browsers will warn visitors. Fix the cause below and try again.",
+    "namesSkipped": "These names were left out of the certificate: {{skipped}}. A mail client that looks for them will fall back to asking for the settings."
   },
   "mailSSL": {
     "option": "Also secure the mail server",

@@ -46,3 +46,39 @@ const autoconfigNginx = `
 // read them over plain HTTP would have taken that instruction from anyone on the
 // path. Outlook refuses an unencrypted answer outright.
 func autoconfigBlock() string { return autoconfigNginx }
+
+// discoveryVhostNginx answers the two names a mail client looks for before it
+// falls back to the domain itself.
+//
+// It is a server block of its own rather than two more names on the main vhost's
+// server_name, for two reasons. A canonical www redirect narrows that
+// server_name to a single host (VhostOpts.ServerNames), so names appended there
+// would disappear the moment the customer turns the redirect on. And the site
+// itself must not answer on a hostname it was never given: `location /` returns
+// 404 so these names serve the auto-configuration XML and nothing else.
+//
+// There is no port 80 block. Both clients fetch these URLs over HTTPS, and the
+// ACME challenge for the names is already answered by the port 80 catch-all
+// (assets/nginx/_default80.conf) from the shared webroot.
+const discoveryVhostNginx = `
+# Mail client auto-configuration hostnames for {{.DomainName}}.
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name {{.DiscoveryHosts}};
+
+    ssl_certificate     {{.CertPath}};
+    ssl_certificate_key {{.KeyPath}};
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+` + autoconfigNginx + `
+    location / { return 404; }
+
+    access_log /var/log/nginx/{{.DomainName}}.access.log;
+    error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
+}
+`

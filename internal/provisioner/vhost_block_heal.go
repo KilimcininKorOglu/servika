@@ -13,6 +13,7 @@ import (
 const (
 	webmailMarker    = "location ^~ /webmail/"
 	autoconfigMarker = "location = /.well-known/autoconfig/mail/config-v1.1.xml"
+	discoveryMarker  = "# Mail client auto-configuration hostnames for"
 )
 
 // normalVhostMarker identifies a vhost rendered from the ordinary template. The
@@ -45,7 +46,9 @@ func healTLSVhostBlocksOnStartup() {
 	}
 
 	rows, err := packageDB.Query(
-		`SELECT id, system_user, domain_name, parent_domain_id FROM domains ORDER BY id`)
+		`SELECT id, system_user, domain_name, parent_domain_id,
+		        COALESCE(cert_path,''), COALESCE(key_path,'')
+		   FROM domains ORDER BY id`)
 	if err != nil {
 		log.Printf("vhost block repair: could not list domains: %v", err)
 		return
@@ -55,11 +58,14 @@ func healTLSVhostBlocksOnStartup() {
 		systemUser string
 		domainName string
 		parentID   sql.NullInt64
+		certPath   string
+		keyPath    string
 	}
 	var domains []domain
 	for rows.Next() {
 		var item domain
-		if err := rows.Scan(&item.id, &item.systemUser, &item.domainName, &item.parentID); err != nil {
+		if err := rows.Scan(&item.id, &item.systemUser, &item.domainName, &item.parentID,
+			&item.certPath, &item.keyPath); err != nil {
 			log.Printf("vhost block repair: could not read domain row: %v", err)
 			continue
 		}
@@ -89,7 +95,15 @@ func healTLSVhostBlocksOnStartup() {
 		if !strings.Contains(body, "listen 443 ssl") || !strings.Contains(body, normalVhostMarker) {
 			continue
 		}
-		if !missingAnyBlock(body, required) {
+		// The auto-configuration hostnames are conditional on the certificate
+		// naming them, so the marker is only expected where that holds. Adding it
+		// to the shared list would re-render every domain whose certificate omits
+		// the names on every boot, and never satisfy the check.
+		expected := required
+		if certValid(item.certPath, item.keyPath, 0, discoverySANHosts(item.domainName)...) {
+			expected = append(append([]string{}, required...), discoveryMarker)
+		}
+		if !missingAnyBlock(body, expected) {
 			continue
 		}
 		if err := RerenderVhost(packageDB, item.id); err != nil {

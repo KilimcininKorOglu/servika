@@ -266,6 +266,14 @@ func writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPat
 type sslReason struct {
 	Code   string
 	Detail string
+	// Skipped names the hosts left out of the SAN, mapped to their own codes.
+	Skipped map[string]string
+}
+
+// with attaches the dropped-name map to a classified failure.
+func (r sslReason) with(skipped map[string]string) sslReason {
+	r.Skipped = skipped
+	return r
 }
 
 // Failure codes the SSL screen renders. Adding one here means adding its
@@ -295,7 +303,7 @@ func classifySSLFailure(transcript string) sslReason {
 	}
 }
 
-func sslFailSafe(domainName, systemUser, phpVersion, backend string, reason sslReason) (certPath, keyPath string, real bool, note string, err error) {
+func sslFailSafe(domainName, systemUser, phpVersion, backend string, reason sslReason) (certPath, keyPath string, outcome IssueOutcome, err error) {
 	if src, srcKey, real := bestCertificate(domainName, 0); src != "" {
 		if cp, kp, e := installToPKI(domainName, src, srcKey); e == nil {
 			source := "self-signed"
@@ -303,22 +311,22 @@ func sslFailSafe(domainName, systemUser, phpVersion, backend string, reason sslR
 				source = "letsencrypt"
 			}
 			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, source); e != nil {
-				return "", "", false, "", e
+				return "", "", IssueOutcome{}, e
 			}
 			log.Printf("ssl fail-safe: %s LE issuance failed (%s: %s); 443 kept alive with existing %s certificate", domainName, reason.Code, reason.Detail, source)
-			return cp, kp, real, reason.Code, nil
+			return cp, kp, IssueOutcome{Real: real, Reason: reason.Code, Skipped: reason.Skipped}, nil
 		}
 	}
 	// No valid certificate -> self-signed fallback (443 still listens, no teardown).
 	cp, kp, e := generateSelfSigned(domainName)
 	if e != nil {
-		return "", "", false, "", fmt.Errorf("%s + self-signed fallback: %w", reason.Code, e)
+		return "", "", IssueOutcome{}, fmt.Errorf("%s + self-signed fallback: %w", reason.Code, e)
 	}
 	if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, "self-signed"); e != nil {
-		return "", "", false, "", e
+		return "", "", IssueOutcome{}, e
 	}
 	log.Printf("ssl fail-safe: %s LE issuance failed (%s: %s); self-signed generated, 443 kept alive", domainName, reason.Code, reason.Detail)
-	return cp, kp, false, reason.Code, nil
+	return cp, kp, IssueOutcome{Reason: reason.Code, Skipped: reason.Skipped}, nil
 }
 
 // summarizeSSLReason reduces an acme.sh transcript to the part that tells the

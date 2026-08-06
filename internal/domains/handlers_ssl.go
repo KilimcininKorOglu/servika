@@ -100,15 +100,15 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var certPath, keyPath, note string
+	var certPath, keyPath string
+	var outcome provisioner.IssueOutcome
 	actualType := req.Type
 	switch req.Type {
 	case "self-signed":
 		certPath, keyPath, err = provisioner.EnableSelfSigned(domainName, systemUser, phpVersion, backend)
 	case "letsencrypt":
-		var real bool
-		certPath, keyPath, real, note, err = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
-		if !real {
+		certPath, keyPath, outcome, err = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
+		if !outcome.Real {
 			actualType = "self-signed"
 		}
 	}
@@ -177,13 +177,20 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// A name left out of the SAN is not a failure, so it is reported alongside a
+	// successful issuance too: the certificate is real and the site is secured,
+	// but the coverage the customer expected is not all there, and without this
+	// the only symptom is a mail client that keeps asking for a password.
+	if len(outcome.Skipped) > 0 {
+		response["web_ssl_skipped"] = outcome.Skipped
+	}
 	if req.Type == "letsencrypt" && actualType != "letsencrypt" {
-		response["warning"] = "Let's Encrypt certificate issuance failed; the site is temporarily protected with a self-signed certificate. Fix DNS and try again."
+		response["warning"] = "letsencrypt_fallback"
 		// The reason is what makes the warning actionable. Without it the panel
 		// reports a certificate was installed while the browser reports the site
 		// is not secure, and nothing on screen connects the two.
-		if note != "" {
-			response["reason"] = note
+		if outcome.Reason != "" {
+			response["reason"] = outcome.Reason
 		}
 	}
 	httpx.WriteJSON(w, http.StatusOK, response)

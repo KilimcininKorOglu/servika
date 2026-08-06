@@ -54,7 +54,8 @@
     "install": "Obtenir un certificat Let's Encrypt"
   },
   "warning": {
-    "letsencryptFallback": "Let's Encrypt n'a pas pu délivrer de certificat, le site est donc temporairement protégé par un certificat auto-signé et les navigateurs avertiront les visiteurs. Corrigez la cause ci-dessous puis réessayez."
+    "letsencryptFallback": "Let's Encrypt n'a pas pu délivrer de certificat, le site est donc temporairement protégé par un certificat auto-signé et les navigateurs avertiront les visiteurs. Corrigez la cause ci-dessous puis réessayez.",
+    "namesSkipped": "Ces noms ne figurent pas dans le certificat : {{skipped}}. Un client de messagerie qui les cherche demandera les réglages à la place."
   },
   "mailSSL": {
     "option": "Sécuriser aussi le serveur de messagerie",

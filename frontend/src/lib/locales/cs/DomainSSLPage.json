@@ -54,7 +54,8 @@
     "install": "Získat certifikát Let's Encrypt"
   },
   "warning": {
-    "letsencryptFallback": "Let's Encrypt nemohl vydat certifikát, web je proto dočasně chráněn certifikátem podepsaným sám sebou a prohlížeče budou návštěvníky varovat. Odstraňte níže uvedenou příčinu a zkuste to znovu."
+    "letsencryptFallback": "Let's Encrypt nemohl vydat certifikát, web je proto dočasně chráněn certifikátem podepsaným sám sebou a prohlížeče budou návštěvníky varovat. Odstraňte níže uvedenou příčinu a zkuste to znovu.",
+    "namesSkipped": "Tyto názvy nejsou v certifikátu: {{skipped}}. Poštovní klient, který je hledá, se místo toho zeptá na nastavení."
   },
   "mailSSL": {
     "option": "Zabezpečit i poštovní server",

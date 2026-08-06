@@ -54,7 +54,8 @@
     "install": "Obtener certificado Let's Encrypt"
   },
   "warning": {
-    "letsencryptFallback": "Let's Encrypt no pudo emitir un certificado, así que el sitio está protegido temporalmente con uno autofirmado y los navegadores avisarán a los visitantes. Corrija la causa indicada abajo e inténtelo de nuevo."
+    "letsencryptFallback": "Let's Encrypt no pudo emitir un certificado, así que el sitio está protegido temporalmente con uno autofirmado y los navegadores avisarán a los visitantes. Corrija la causa indicada abajo e inténtelo de nuevo.",
+    "namesSkipped": "Estos nombres quedaron fuera del certificado: {{skipped}}. Un cliente de correo que los busque pedirá la configuración en su lugar."
   },
   "mailSSL": {
     "option": "Proteger también el servidor de correo",

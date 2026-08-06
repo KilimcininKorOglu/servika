@@ -105,3 +105,102 @@ func TestLookupRetryDelayIsBounded(t *testing.T) {
 			resolveRetryDelay*time.Duration(resolveAttempts-1))
 	}
 }
+
+// The discovery names ride the same DNS gate as www.
+//
+// This is the property that keeps issuance stable: certSANHosts produces both
+// the set that is ORDERED and the set a stored certificate must cover before it
+// is reused, so a name that goes in unconditionally would make every reuse check
+// fail and turn each attempt into a fresh order.
+func TestDiscoveryNamesJoinTheSANOnlyWhenTheyPointHere(t *testing.T) {
+	const apexAddress = "203.0.113.10"
+	cases := []struct {
+		name    string
+		answer  func(host string) ([]string, error)
+		want    []string
+		wantNot []string
+	}{
+		{
+			name: "all names point at the apex",
+			answer: func(string) ([]string, error) {
+				return []string{apexAddress}, nil
+			},
+			want: []string{
+				"example.com", "www.example.com",
+				"autoconfig.example.com", "autodiscover.example.com",
+			},
+		},
+		{
+			name: "discovery names do not exist",
+			answer: func(host string) ([]string, error) {
+				if host == "example.com" || host == "www.example.com" {
+					return []string{apexAddress}, nil
+				}
+				return nil, errors.New("no such host")
+			},
+			want:    []string{"example.com", "www.example.com"},
+			wantNot: []string{"autoconfig.example.com", "autodiscover.example.com"},
+		},
+		{
+			name: "a discovery name points at another server",
+			answer: func(host string) ([]string, error) {
+				if host == "autodiscover.example.com" {
+					return []string{"198.51.100.7"}, nil
+				}
+				return []string{apexAddress}, nil
+			},
+			want:    []string{"example.com", "www.example.com", "autoconfig.example.com"},
+			wantNot: []string{"autodiscover.example.com"},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			stubResolver(t, tc.answer)
+			got := certSANHosts("example.com")
+			if len(got) != len(tc.want) {
+				t.Fatalf("SAN = %v, want %v", got, tc.want)
+			}
+			for i, host := range tc.want {
+				if got[i] != host {
+					t.Fatalf("SAN = %v, want %v", got, tc.want)
+				}
+			}
+			for _, host := range tc.wantNot {
+				for _, present := range got {
+					if present == host {
+						t.Errorf("%s was accepted into the SAN", host)
+					}
+				}
+			}
+		})
+	}
+}
+
+// The apex is resolved once per call, not once per candidate name.
+//
+// certSANHosts runs for every SSL domain in the startup heal, and each lookup
+// retries, so re-resolving the apex three times multiplies that walk by the
+// resolver's worst case.
+func TestCertSANHostsResolvesTheApexOnce(t *testing.T) {
+	apexLookups := 0
+	stubResolver(t, func(host string) ([]string, error) {
+		if host == "example.com" {
+			apexLookups++
+		}
+		return []string{"203.0.113.10"}, nil
+	})
+
+	certSANHosts("example.com")
+	if apexLookups != 1 {
+		t.Errorf("apex resolved %d times, want 1", apexLookups)
+	}
+}
+
+// A www host has no www, autoconfig or autodiscover of its own to add.
+func TestCertSANHostsLeavesAWWWHostAlone(t *testing.T) {
+	stubResolver(t, func(string) ([]string, error) { return []string{"203.0.113.10"}, nil })
+	got := certSANHosts("www.example.com")
+	if len(got) != 1 || got[0] != "www.example.com" {
+		t.Errorf("SAN = %v, want [www.example.com]", got)
+	}
+}

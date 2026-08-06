@@ -129,3 +129,24 @@ func TestSSLFailureCodesAreLookupKeys(t *testing.T) {
 		}
 	}
 }
+
+// A dropped name is reported as a code the interface can translate, keyed by the
+// host it belongs to, and the apex is never in that map: when the apex fails
+// there is no certificate to report partial coverage for, only a failure.
+func TestSkippedNamesAreCodesKeyedByHost(t *testing.T) {
+	outcome := IssueOutcome{
+		Real: true,
+		Skipped: map[string]string{
+			"autoconfig.example.com":   string(reasonUnreachable),
+			"autodiscover.example.com": string(reasonWrongContent),
+		},
+	}
+	for host, code := range outcome.Skipped {
+		if strings.ContainsAny(code, " :\n") {
+			t.Errorf("%s carries %q, which is not usable as a translation key", host, code)
+		}
+	}
+	if _, present := outcome.Skipped["example.com"]; present {
+		t.Error("the apex appears in the skipped map instead of as the failure reason")
+	}
+}

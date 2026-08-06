@@ -53,11 +53,23 @@ export default function DomainSSLPage() {
       // self-signed certificate so port 443 keeps serving. Reporting the
       // requested type here is what let the panel say "Let's Encrypt installed"
       // while the browser said the site was not secure.
+      // A name left out of the certificate is not a failure, so it is reported
+      // whether the issuance succeeded or fell back. Without it the only symptom
+      // is a mail client that keeps asking for a password.
+      const webSkipped = Object.entries((data.web_ssl_skipped ?? {}) as Record<string, string>)
+        .map(([host, code]) => `${host} (${t(`reasons.${code}`, { defaultValue: code })})`)
+        .join(', ')
+      const skippedNote = webSkipped ? ` ${t('warning.namesSkipped', { skipped: webSkipped })}` : ''
+
       if (data.warning) {
         const reason = data.reason
           ? t(`reasons.${data.reason}`, { defaultValue: data.reason })
           : ''
-        setWarning(reason ? `${t('warning.letsencryptFallback')} ${reason}` : t('warning.letsencryptFallback'))
+        const fallback = t('warning.letsencryptFallback')
+        setWarning((reason ? `${fallback} ${reason}` : fallback) + skippedNote)
+      } else if (skippedNote) {
+        setSuccess(t('success.installed', { type: data.type ?? type, expires: data.expires_at }))
+        setWarning(skippedNote.trim())
       } else {
         setSuccess(t('success.installed', { type: data.type ?? type, expires: data.expires_at }))
       }

@@ -54,7 +54,8 @@
     "install": "Let's-Encrypt-Zertifikat abrufen"
   },
   "warning": {
-    "letsencryptFallback": "Let's Encrypt konnte kein Zertifikat ausstellen, daher ist die Website vorübergehend mit einem selbstsignierten Zertifikat geschützt und Browser warnen Besucher. Beheben Sie die untenstehende Ursache und versuchen Sie es erneut."
+    "letsencryptFallback": "Let's Encrypt konnte kein Zertifikat ausstellen, daher ist die Website vorübergehend mit einem selbstsignierten Zertifikat geschützt und Browser warnen Besucher. Beheben Sie die untenstehende Ursache und versuchen Sie es erneut.",
+    "namesSkipped": "Diese Namen fehlen im Zertifikat: {{skipped}}. Ein Mail-Client, der sie sucht, fragt stattdessen nach den Einstellungen."
   },
   "mailSSL": {
     "option": "Auch den Mailserver absichern",
