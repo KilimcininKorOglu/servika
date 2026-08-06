@@ -8,6 +8,9 @@
   "loading": "Se încarcă...",
   "searchPlaceholder": "🔍 Căutare domenii...",
   "newDomain": "Domeniu nou",
+  "actions": {
+    "refresh": "Reîmprospătați"
+  },
   "empty": {
     "title": "Încă nu există domenii",
     "description": "Începeți prin adăugarea primului dvs. domeniu. Un utilizator Linux, un vhost nginx, un pool PHP-FPM, un cont FTP, o bază de date MySQL și o zonă DNS vor fi create automat.",

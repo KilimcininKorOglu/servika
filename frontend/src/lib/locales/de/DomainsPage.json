@@ -8,6 +8,9 @@
   "loading": "Laden...",
   "searchPlaceholder": "🔍 Domains suchen...",
   "newDomain": "Neue Domain",
+  "actions": {
+    "refresh": "Aktualisieren"
+  },
   "empty": {
     "title": "Noch keine Domains",
     "description": "Beginnen Sie mit dem Hinzufügen Ihrer ersten Domain. Ein Linux-Benutzer, ein nginx-vhost, ein PHP-FPM-Pool, ein FTP-Konto, eine MySQL-Datenbank und eine DNS-Zone werden automatisch erstellt.",

@@ -64,6 +64,7 @@ export default function DomainsPage() {
   const [selectedSubs, setSelectedSubs] = useState<Set<number>>(new Set())
   const [subDeleteOpen, setSubDeleteOpen] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
   const [ownerOpen, setOwnerOpen] = useState(false)
@@ -420,6 +421,15 @@ export default function DomainsPage() {
             className="w-full px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm focus:border-brand-500 outline-none" />
         </div>
         <span className="text-xs text-slate-500 dark:text-slate-500">{filtered.length} / {items.length}</span>
+        {/* Provisioning finishes work after the create call returns: the SSL job
+            runs in the background for minutes, so a domain's SSL badge appears
+            long after its row does. Without this the only way to see it was to
+            reload the page. Silent, so the table does not empty while it runs. */}
+        <button onClick={() => { setRefreshing(true); fetchDomains().finally(() => setRefreshing(false)) }}
+          disabled={refreshing}
+          className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm rounded-md">
+          {t('actions.refresh')}
+        </button>
         <button onClick={openCreate}
           className="inline-flex items-center justify-center gap-1.5 text-sm px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-md font-medium shadow-sm sm:ml-auto">
           <span className="text-base leading-none">+</span> {t('newDomain')}

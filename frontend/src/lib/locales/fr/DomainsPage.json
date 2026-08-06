@@ -8,6 +8,9 @@
   "loading": "Chargement…",
   "searchPlaceholder": "🔍 Rechercher des domaines…",
   "newDomain": "Nouveau domaine",
+  "actions": {
+    "refresh": "Actualiser"
+  },
   "empty": {
     "title": "Aucun domaine pour l'instant",
     "description": "Commencez par ajouter votre premier domaine. Un utilisateur Linux, un vhost nginx, un pool PHP-FPM, un compte FTP, une base de données MySQL et une zone DNS seront créés automatiquement.",

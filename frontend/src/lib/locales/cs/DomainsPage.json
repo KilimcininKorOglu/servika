@@ -8,6 +8,9 @@
   "loading": "Načítání...",
   "searchPlaceholder": "🔍 Hledat domény...",
   "newDomain": "Nová doména",
+  "actions": {
+    "refresh": "Obnovit"
+  },
   "empty": {
     "title": "Zatím žádné domény",
     "description": "Začněte přidáním své první domény. Automaticky se vytvoří uživatel Linux, nginx vhost, pool PHP-FPM, účet FTP, databáze MySQL a zóna DNS.",

@@ -8,6 +8,9 @@
   "loading": "Yükleniyor...",
   "searchPlaceholder": "🔍 Alan adı ara...",
   "newDomain": "Yeni Alan Adı",
+  "actions": {
+    "refresh": "Yenile"
+  },
   "empty": {
     "title": "Henüz alan adı yok",
     "description": "İlk alan adınızı ekleyerek başlayın. Bir Linux kullanıcısı, nginx vhost, PHP-FPM havuzu, FTP hesabı, MySQL veritabanı ve DNS bölgesi otomatik olarak oluşturulur.",
