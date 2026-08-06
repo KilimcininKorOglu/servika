@@ -86,9 +86,12 @@ func builtinDefaults() []TemplateRow {
 // is no POP3 service and no implicit-TLS listener to point a client at, and
 // _imap._tcp/143 with STARTTLS is what a client can actually reach.
 //
-// autoconfig and autodiscover are deliberately NOT here: nothing serves those
-// endpoints yet, and publishing a record for a service that answers 404 tells
-// clients to try something that cannot work.
+// autoconfig and autodiscover are deliberately NOT here even though the panel
+// answers both. They are served on the domain's own vhost, which is the first
+// place each client looks, so a subdomain would only add an A record and a
+// certificate name per domain; and _autodiscover._tcp exists solely to point
+// Outlook at a DIFFERENT host, which makes it show a redirect warning for a host
+// it was already going to try.
 func MailDiscoveryRows() []TemplateRow {
 	return []TemplateRow{
 		{Name: "smtp", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 31, Enabled: true},

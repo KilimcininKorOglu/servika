@@ -35,9 +35,12 @@ func TestTemplateCarriesTheMailClientNames(t *testing.T) {
 	}
 }
 
-// Publishing a record for an endpoint nothing serves tells clients to try
-// something that cannot work, so these stay out until there is something behind
-// them.
+// The autoconfig and autodiscover endpoints ARE served now, but on the domain's
+// own vhost, and both clients try that before any subdomain. An autoconfig. or
+// autodiscover. A record would need an extra name on the certificate for every
+// domain, and _autodiscover._tcp exists only to send Outlook to a DIFFERENT
+// host, which makes it show a redirect warning for a host it was already going
+// to reach. So none of them belong in the zone.
 func TestTemplateDoesNotAdvertiseUnservedEndpoints(t *testing.T) {
 	for _, row := range builtinDefaults() {
 		if strings.HasPrefix(row.Name, "autoconfig") || strings.HasPrefix(row.Name, "autodiscover") ||
