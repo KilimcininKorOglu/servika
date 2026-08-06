@@ -153,15 +153,15 @@ func (h *Handlers) Outlook(w http.ResponseWriter, r *http.Request) {
 // mail hostname it is safe to announce, or writes the response and reports
 // false.
 func (h *Handlers) resolve(w http.ResponseWriter, r *http.Request) (domain, mailHost string, ok bool) {
-	domain = normalizeHost(r.Host)
-	if domain == "" {
+	requested := normalizeHost(r.Host)
+	if requested == "" {
 		httpx.WriteError(w, http.StatusNotFound, "unknown host")
 		return "", "", false
 	}
-	hosted, err := h.hostsMail(r, domain)
+	domain, hosted, err := h.hostedDomainFor(r, requested)
 	if err != nil {
-		// #nosec G706 -- domain came through normalizeHost, which accepts only the hostname alphabet, so it cannot carry CR/LF or control characters; err is a database driver error.
-		log.Printf("autoconfig lookup for %s: %v", domain, err)
+		// #nosec G706 -- requested came through normalizeHost, which accepts only the hostname alphabet, so it cannot carry CR/LF or control characters; err is a database driver error.
+		log.Printf("autoconfig lookup for %s: %v", requested, err)
 		httpx.WriteError(w, http.StatusServiceUnavailable, "mail settings are temporarily unavailable")
 		return "", "", false
 	}
@@ -182,6 +182,41 @@ func (h *Handlers) resolve(w http.ResponseWriter, r *http.Request) (domain, mail
 // hostsMail reports whether the domain has active mail service here. A domain
 // that merely exists in the panel is not enough: answering for it would send a
 // client at a mailbox that cannot be created.
+// hostedDomainFor maps the requested host onto the domain whose mail settings
+// answer for it.
+//
+// Thunderbird asks autoconfig.<domain> and Outlook asks autodiscover.<domain>,
+// so those two hosts stand for the domain underneath them. The literal host is
+// tried FIRST: a customer may legitimately host a domain that is itself called
+// autoconfig.example.com, and that domain's own settings must win over the
+// settings of example.com.
+func (h *Handlers) hostedDomainFor(r *http.Request, requested string) (domain string, hosted bool, err error) {
+	found, err := h.hostsMail(r, requested)
+	if err != nil {
+		return "", false, err
+	}
+	if found {
+		return requested, true, nil
+	}
+	for _, prefix := range []string{"autoconfig.", "autodiscover."} {
+		if !strings.HasPrefix(requested, prefix) {
+			continue
+		}
+		parent := strings.TrimPrefix(requested, prefix)
+		if parent == "" {
+			continue
+		}
+		found, err := h.hostsMail(r, parent)
+		if err != nil {
+			return "", false, err
+		}
+		if found {
+			return parent, true, nil
+		}
+	}
+	return "", false, nil
+}
+
 func (h *Handlers) hostsMail(r *http.Request, domain string) (bool, error) {
 	var count int
 	err := h.DB.QueryRowContext(r.Context(),
