@@ -6,6 +6,7 @@ package plugin
 import (
 	"context"
 	"database/sql"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -20,6 +21,14 @@ import (
 	"servika/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
+)
+
+const (
+	// pluginDialAttempts and pluginDialDelay together cover a plugin restart:
+	// long enough for a service to come back, short enough that a genuinely dead
+	// plugin still answers within a second and a half instead of hanging.
+	pluginDialAttempts = 6
+	pluginDialDelay    = 250 * time.Millisecond
 )
 
 func bundleRoot() string { return config.PluginRoot() }
@@ -134,8 +143,7 @@ func (h *Handlers) Proxy(w http.ResponseWriter, r *http.Request) {
 	proxy := &httputil.ReverseProxy{
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
-				var dialer net.Dialer
-				return dialer.DialContext(ctx, "unix", plugin.socket)
+				return dialPluginSocket(ctx, plugin.socket)
 			},
 			ResponseHeaderTimeout: 0,
 		},
@@ -157,8 +165,13 @@ func (h *Handlers) Proxy(w http.ResponseWriter, r *http.Request) {
 			}
 		},
 		FlushInterval: -1,
-		ErrorHandler: func(w http.ResponseWriter, _ *http.Request, _ error) {
-			httpx.WriteError(w, http.StatusBadGateway, "plugin is unavailable")
+		ErrorHandler: func(w http.ResponseWriter, _ *http.Request, err error) {
+			// The panel stays up when a plugin does not. The real error goes to the
+			// log; the caller gets a code it can act on, plus the header that tells
+			// a client this is worth retrying rather than a permanent gateway fault.
+			log.Printf("plugin proxy %s: %v", name, err)
+			w.Header().Set("Retry-After", "3")
+			httpx.WriteError(w, http.StatusServiceUnavailable, "plugin is restarting")
 		},
 	}
 	proxy.ServeHTTP(w, r)
@@ -213,4 +226,34 @@ func (h *Handlers) HealthLoop(ctx context.Context) {
 func (h *Handlers) Routes(r chi.Router) {
 	r.With(middleware.AdminOnly).Get("/plugins", h.List)
 	r.With(middleware.AdminOnly).HandleFunc("/plugin/{name}/*", h.Proxy)
+}
+
+// dialPluginSocket connects to a plugin's socket, retrying briefly.
+//
+// Installing or updating a plugin restarts it, and its socket disappears for a
+// second or two. Without this the panel answers an error for every request that
+// lands in that window, which reads as a broken module rather than one being
+// restarted.
+//
+// Retrying the DIAL is safe for any method: the request is only written once a
+// connection exists, so a POST is never delivered twice. Retrying the request
+// itself would not be.
+func dialPluginSocket(ctx context.Context, socket string) (net.Conn, error) {
+	var dialer net.Dialer
+	var lastErr error
+	for attempt := 0; attempt < pluginDialAttempts; attempt++ {
+		if attempt > 0 {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(pluginDialDelay):
+			}
+		}
+		conn, err := dialer.DialContext(ctx, "unix", socket)
+		if err == nil {
+			return conn, nil
+		}
+		lastErr = err
+	}
+	return nil, lastErr
 }
