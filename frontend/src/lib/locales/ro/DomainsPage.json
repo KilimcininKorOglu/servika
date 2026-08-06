@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ Înregistrarea DNS A a domeniului trebuie să indice deja către acest server, altfel emiterea eșuează și puteți reîncerca ulterior din pagina SSL.",
     "cancel": "Anulare",
     "creating": "Se creează...",
+    "stages": {
+      "domain": "Se creează domeniul și conturile sale",
+      "ssl": "Se pornește certificatul",
+      "redirect": "Se setează numele de gazdă canonic"
+    },
     "create": "Creare"
   },
   "resultModal": {

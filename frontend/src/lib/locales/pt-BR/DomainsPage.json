@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ O registro DNS A do domínio já deve apontar para este servidor, caso contrário a emissão falhará e você poderá tentar novamente depois pela página SSL.",
     "cancel": "Cancelar",
     "creating": "Criando...",
+    "stages": {
+      "domain": "Criando o domínio e suas contas",
+      "ssl": "Iniciando o certificado",
+      "redirect": "Definindo o nome de host canônico"
+    },
     "create": "Criar"
   },
   "resultModal": {

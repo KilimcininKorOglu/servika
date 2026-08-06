@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ Der DNS-A-Eintrag der Domain muss bereits auf diesen Server verweisen, andernfalls schlägt die Ausstellung fehl und Sie können es später auf der SSL-Seite erneut versuchen.",
     "cancel": "Abbrechen",
     "creating": "Wird erstellt...",
+    "stages": {
+      "domain": "Domain und zugehörige Konten werden erstellt",
+      "ssl": "Zertifikat wird gestartet",
+      "redirect": "Kanonischer Hostname wird gesetzt"
+    },
     "create": "Erstellen"
   },
   "resultModal": {

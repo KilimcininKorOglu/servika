@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ 域名的 DNS A 记录必须已指向此服务器，否则签发将失败，稍后您可以在 SSL 页面重试。",
     "cancel": "取消",
     "creating": "创建中...",
+    "stages": {
+      "domain": "正在创建域名及其账户",
+      "ssl": "正在启动证书",
+      "redirect": "正在设置规范主机名"
+    },
     "create": "创建"
   },
   "resultModal": {

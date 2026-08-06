@@ -99,6 +99,9 @@ export default function DomainsPage() {
   const [modalReady, setModalReady] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [creating, setCreating] = useState(false)
+  // Which of the create's three calls is running. Named stages rather than a
+  // percentage: the server reports no progress, so a number would be invented.
+  const [createStage, setCreateStage] = useState<'domain' | 'ssl' | 'redirect'>('domain')
   const [creationResult, setCreationResult] = useState<CreateResult | null>(null)
   // Whether an SSL installation was queued for the domain the result modal is
   // about. Kept apart from the form's checkbox so the modal reports the request
@@ -199,6 +202,7 @@ export default function DomainsPage() {
       return
     }
     setCreating(true)
+    setCreateStage('domain')
     try {
       const request: {
         domain_name: string; php_version: string; site_type: SiteType
@@ -210,8 +214,6 @@ export default function DomainsPage() {
       if (formCustomerID !== '') request.customer_id = formCustomerID
       else if (formOwnerUserID !== '') request.owner_user_id = formOwnerUserID
       const response = await api.post<CreateResult>('/domains', request)
-      setCreateOpen(false)
-      setCreationResult(response.data)
       // Refresh the list HERE, before the steps that follow. The domain exists
       // the moment this POST returns, but the refresh used to sit at the very
       // bottom, so the list stayed stale for as long as the canonical-hostname
@@ -219,33 +221,46 @@ export default function DomainsPage() {
       // it for a moment reads as the domain having vanished.
       fetchDomains()
       let successMsg = t('toast.created', { name: domainName })
-      if (formIssueSSL) {
-        try {
-          // The endpoint answers 202 and installs in the background: two ACME
-          // orders with a per-name pre-flight run for minutes. So this can only
-          // report that the work STARTED. What was actually installed, and
-          // whether it fell back to a self-signed certificate, is on the
-          // domain's SSL page, which polls the progress endpoint.
-          await api.post(`/domains/${response.data.id}/ssl/issue`, { type: 'letsencrypt' })
-          setSslQueued(true)
-          successMsg += t('toast.sslStarted')
-        } catch {
-          successMsg += t('toast.sslNotStarted')
+      try {
+        if (formIssueSSL) {
+          setCreateStage('ssl')
+          try {
+            // The endpoint answers 202 and installs in the background: two ACME
+            // orders with a per-name pre-flight run for minutes. So this can only
+            // report that the work STARTED. What was actually installed, and
+            // whether it fell back to a self-signed certificate, is on the
+            // domain's SSL page, which polls the progress endpoint.
+            await api.post(`/domains/${response.data.id}/ssl/issue`, { type: 'letsencrypt' })
+            setSslQueued(true)
+            successMsg += t('toast.sslStarted')
+          } catch {
+            successMsg += t('toast.sslNotStarted')
+          }
         }
-      }
-      // After SSL, but note that SSL has only been QUEUED at this point, so the
-      // certificate that would name the canonical hostname does not exist yet
-      // and the backend's certificate check cannot run. What still protects the
-      // site is the DNS check: a target that does not resolve here is refused,
-      // and the reason is surfaced verbatim so the operator can fix it and retry
-      // from the domain's page.
-      if (formWWWRedirect !== 'off') {
-        try {
-          await api.put(`/domains/${response.data.id}/www-redirect`, { mode: formWWWRedirect })
-          successMsg += t('toast.wwwRedirectSet')
-        } catch (error) {
-          successMsg += t('toast.wwwRedirectFailed', { reason: apiError(error, '') })
+        // After SSL, but note that SSL has only been QUEUED at this point, so the
+        // certificate that would name the canonical hostname does not exist yet
+        // and the backend's certificate check cannot run. What still protects the
+        // site is the DNS check: a target that does not resolve here is refused,
+        // and the reason is surfaced verbatim so the operator can fix it and retry
+        // from the domain's page.
+        if (formWWWRedirect !== 'off') {
+          setCreateStage('redirect')
+          try {
+            await api.put(`/domains/${response.data.id}/www-redirect`, { mode: formWWWRedirect })
+            successMsg += t('toast.wwwRedirectSet')
+          } catch (error) {
+            successMsg += t('toast.wwwRedirectFailed', { reason: apiError(error, '') })
+          }
         }
+      } finally {
+        // The form stays open until here so the operator watches the work
+        // finish instead of reading "ready" while the canonical hostname is
+        // still being written and its outcome lands in a toast behind the
+        // result. A finally rather than the tail of the try because the
+        // passwords are shown ONCE: whatever went wrong above, they still have
+        // to be handed over.
+        setCreateOpen(false)
+        setCreationResult(response.data)
       }
       setSuccess(successMsg)
       setTimeout(() => setSuccess(null), 10000)
@@ -809,6 +824,19 @@ export default function DomainsPage() {
                 )}
               </label>
             </div>
+
+            {/* Named stages, no percentage: the server reports no progress for
+                any of these calls, so a bar would be showing an invented
+                number. */}
+            {creating && (
+              <div className="mt-4 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                <svg className="animate-spin w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.3"/>
+                  <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3"/>
+                </svg>
+                {t(`createModal.stages.${createStage}`)}
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 mt-5">
               <button type="button" onClick={() => setCreateOpen(false)} disabled={creating}

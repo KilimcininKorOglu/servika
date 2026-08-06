@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ Záznam DNS A domény musí již směřovat na tento server, jinak vydání selže a můžete to zkusit znovu později ze stránky SSL.",
     "cancel": "Zrušit",
     "creating": "Vytváření...",
+    "stages": {
+      "domain": "Vytváří se doména a její účty",
+      "ssl": "Spouští se certifikát",
+      "redirect": "Nastavuje se kanonický název hostitele"
+    },
     "create": "Vytvořit"
   },
   "resultModal": {

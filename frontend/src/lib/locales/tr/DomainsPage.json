@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ Alan adının DNS A kaydı bu sunucuyu göstermelidir, aksi halde sertifika alınamaz ve daha sonra SSL sayfasından yeniden deneyebilirsiniz.",
     "cancel": "İptal",
     "creating": "Oluşturuluyor...",
+    "stages": {
+      "domain": "Alan adı ve hesapları oluşturuluyor",
+      "ssl": "Sertifika başlatılıyor",
+      "redirect": "Kanonik ana makine adı ayarlanıyor"
+    },
     "create": "Oluştur"
   },
   "resultModal": {

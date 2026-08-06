@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ Il record DNS A del dominio deve già puntare a questo server, altrimenti l'emissione non riesce e potrai riprovare in seguito dalla pagina SSL.",
     "cancel": "Annulla",
     "creating": "Creazione...",
+    "stages": {
+      "domain": "Creazione del dominio e dei suoi account",
+      "ssl": "Avvio del certificato",
+      "redirect": "Impostazione del nome host canonico"
+    },
     "create": "Crea"
   },
   "resultModal": {

@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ L'enregistrement DNS A du domaine doit déjà pointer vers ce serveur, sinon l'émission échoue et vous pourrez réessayer plus tard depuis la page SSL.",
     "cancel": "Annuler",
     "creating": "Création…",
+    "stages": {
+      "domain": "Création du domaine et de ses comptes",
+      "ssl": "Démarrage du certificat",
+      "redirect": "Définition du nom d'hôte canonique"
+    },
     "create": "Créer"
   },
   "resultModal": {

@@ -95,6 +95,11 @@
     "sslWarning": "⚠️ The domain's DNS A record must already point to this server, otherwise issuance fails and you can retry later from the SSL page.",
     "cancel": "Cancel",
     "creating": "Creating...",
+    "stages": {
+      "domain": "Creating the domain and its accounts",
+      "ssl": "Starting the certificate",
+      "redirect": "Setting the canonical hostname"
+    },
     "create": "Create"
   },
   "resultModal": {
