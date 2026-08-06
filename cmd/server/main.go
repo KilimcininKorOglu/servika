@@ -351,6 +351,9 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/nameservers", dnsH.GetNameserver)
 			r.With(middleware.AdminOnly).Put("/nameservers", dnsH.PutNameserver)
 			r.With(middleware.AdminOnly).Post("/nameservers/migrate", dnsH.MigrateNameservers)
+			// Adds the mail client discovery records to the template and to every
+			// existing zone; the template alone only shapes zones created after it.
+			r.With(middleware.AdminOnly).Post("/dns/mail-discovery/migrate", dnsH.MigrateMailDiscovery)
 			r.With(middleware.RequireRole(middleware.RoleReseller)).Get("/reseller/nameservers", dnsH.GetResellerNameserver)
 			r.With(middleware.RequireRole(middleware.RoleReseller)).Put("/reseller/nameservers", dnsH.PutResellerNameserver)
 			// Server-wide read-only overview lists — the sidebar's DNS / SSL /

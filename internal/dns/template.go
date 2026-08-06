@@ -54,7 +54,7 @@ type TemplateMeta struct {
 }
 
 func builtinDefaults() []TemplateRow {
-	return []TemplateRow{
+	rows := []TemplateRow{
 		{Name: "@", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 10, Enabled: true},
 		{Name: "www", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 20, Enabled: true},
 		{Name: "mail", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 30, Enabled: true},
@@ -68,6 +68,30 @@ func builtinDefaults() []TemplateRow {
 		// instead of once per customer domain. See nameserver.go.
 		{Name: "@", Type: "NS", Value: "{NS1}", TTL: 86400, SortOrder: 100, Enabled: true},
 		{Name: "@", Type: "NS", Value: "{NS2}", TTL: 86400, SortOrder: 110, Enabled: true},
+	}
+	return append(rows, MailDiscoveryRows()...)
+}
+
+// MailDiscoveryRows are the records a mail client needs to find and trust the
+// server.
+//
+// The A records exist because people type smtp./imap./pop. into a mail client
+// out of habit; without them those names do not resolve at all, and the mail
+// certificate cannot cover a name that does not exist. The SRV records are the
+// standard way (RFC 6186) for a client to discover the ports without being told.
+//
+// autoconfig and autodiscover are deliberately NOT here: nothing serves those
+// endpoints yet, and publishing a record for a service that answers 404 tells
+// clients to try something that cannot work.
+func MailDiscoveryRows() []TemplateRow {
+	return []TemplateRow{
+		{Name: "smtp", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 31, Enabled: true},
+		{Name: "imap", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 32, Enabled: true},
+		{Name: "pop", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 33, Enabled: true},
+		// SRV value is "weight port target"; the priority lives in its own column.
+		{Name: "_imaps._tcp", Type: "SRV", Value: "1 993 mail.{DOMAIN}", TTL: 3600, Priority: 10, SortOrder: 120, Enabled: true},
+		{Name: "_submission._tcp", Type: "SRV", Value: "1 587 mail.{DOMAIN}", TTL: 3600, Priority: 10, SortOrder: 122, Enabled: true},
+		{Name: "_pop3s._tcp", Type: "SRV", Value: "1 995 mail.{DOMAIN}", TTL: 3600, Priority: 10, SortOrder: 124, Enabled: true},
 	}
 }
 
