@@ -20,6 +20,7 @@ import (
 	"servika/internal/addondomains"
 	"servika/internal/antivirus"
 	"servika/internal/auth"
+	"servika/internal/autoconfig"
 	"servika/internal/backups"
 	"servika/internal/composer"
 	"servika/internal/config"
@@ -220,6 +221,7 @@ func main() {
 	gitH := &git.Handlers{DB: d}
 	githubH := &githubpkg.Handlers{DB: d, WebhookBase: "https://" + ipv4 + ":8443"}
 	pmaH := &pma.Handlers{DB: d}
+	autoconfigH := &autoconfig.Handlers{DB: d}
 	phpH := &php.Handlers{DB: d}
 	resourceH := &resource.Handlers{DB: d}
 	monitorH := &monitor.Handlers{DB: d}
@@ -287,6 +289,15 @@ func main() {
 	r.With(middleware.RateLimit("git-webhook", 30, time.Minute)).
 		Post("/api/v1/git-webhook/{secret}", gitH.Webhook)
 	r.Post("/api/v1/internal/pma-redeem", pmaH.Redeem)
+
+	// Mail client auto-configuration. These cannot sit behind RequireAuth: a mail
+	// client has no panel session, which is the whole point of the endpoints. They
+	// answer only with what the domain's MX record already reveals, and they are
+	// throttled per IP because they are reachable from every tenant vhost.
+	r.With(middleware.RateLimit("autoconfig", 60, time.Minute)).
+		Get("/.well-known/autoconfig/mail/config-v1.1.xml", autoconfigH.Thunderbird)
+	r.With(middleware.RateLimit("autoconfig", 60, time.Minute)).
+		Post("/autodiscover/autodiscover.xml", autoconfigH.Outlook)
 	r.Get("/api/v1/plugin-bundle/{name}/app.js", pluginH.Bundle)
 
 	r.Get("/healthz", func(w http.ResponseWriter, req *http.Request) {

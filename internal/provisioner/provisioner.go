@@ -209,8 +209,8 @@ func Init(db *sql.DB) {
 	healPanelIndexNoCacheOnStartup()
 	ensurePMAStartup()
 	healVhostsOnStartup()
-	healWebmailVhostsOnStartup() // serve Roundcube from each customer's own domain under /webmail/
-	HealNginxLogPerms()          // close /var/log/nginx to tenants (cross-tenant log reading)
+	healTLSVhostBlocksOnStartup() // webmail and mail auto-configuration on each customer's own domain
+	HealNginxLogPerms()           // close /var/log/nginx to tenants (cross-tenant log reading)
 	HealHomePerms()
 	ensureFPMSELinuxFcontext()
 	ensureHTTPDHomeBooleans()
@@ -666,7 +666,7 @@ server {
 
     # ---- Security headers (managed by the panel) ----
 {{.SecHeaders}}
-{{.ModSec}}{{.IPRules}}{{.DenyBlocks}}{{.HotlinkLocation}}{{.WebmailBlock}}
+{{.ModSec}}{{.IPRules}}{{.DenyBlocks}}{{.HotlinkLocation}}{{.WebmailBlock}}{{.AutoconfigBlock}}
 
     access_log /var/log/nginx/{{.DomainName}}.access.log;
     error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
@@ -1060,6 +1060,10 @@ type VhostOpts struct {
 	// from the domain's own name. It is computed on every render rather than
 	// stored, and stays empty when Roundcube is absent or the vhost has no TLS.
 	WebmailBlock string
+	// AutoconfigBlock proxies the Thunderbird and Outlook auto-configuration
+	// paths to the panel. Empty on a vhost without TLS, where those endpoints
+	// would be handing out a password destination over plain HTTP.
+	AutoconfigBlock string
 }
 
 func (o VhostOpts) SSL() bool {
@@ -1287,6 +1291,7 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 		// pointing such a domain at the panel's own HTTPS webmail instead.
 		if opts.SSL() {
 			opts.WebmailBlock = webmailBlock()
+			opts.AutoconfigBlock = autoconfigBlock()
 		}
 	}
 

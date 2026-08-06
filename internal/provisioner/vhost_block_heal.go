@@ -7,37 +7,47 @@ import (
 	"strings"
 )
 
-// webmailMarker identifies a vhost that already serves webmail. A test keeps it
-// in step with the block itself.
-const webmailMarker = "location ^~ /webmail/"
+// webmailMarker identifies a vhost that already serves webmail, and
+// autoconfigMarker one that already answers the mail client auto-configuration
+// paths. Tests keep both in step with the blocks themselves.
+const (
+	webmailMarker    = "location ^~ /webmail/"
+	autoconfigMarker = "location = /.well-known/autoconfig/mail/config-v1.1.xml"
+)
 
 // normalVhostMarker identifies a vhost rendered from the ordinary template. The
 // suspended, redirect-only and operator-written shapes do not carry the deny
-// blocks, and none of them can hold the webmail block either, so a vhost without
-// this marker must not be re-rendered: it would never gain the block and the
-// repair would reload nginx for nothing on every boot.
+// blocks, and none of them can hold these blocks either, so a vhost without this
+// marker must not be re-rendered: it would never gain them and the repair would
+// reload nginx for nothing on every boot.
 const normalVhostMarker = "# ---- Deny CGI and interpreter scripts ----"
 
-// healWebmailVhostsOnStartup writes the `/webmail/` block into the vhosts of
-// domains that already existed before webmail moved onto the customer's own
-// name.
+// healTLSVhostBlocksOnStartup writes the blocks that are computed at render time
+// into the vhosts of domains that already existed before those blocks did.
 //
-// The block is computed on every render (see webmailBlock), but existing vhost
-// files are not rewritten on their own: without this pass a customer would have
-// to wait for the next certificate renewal or PHP version change before webmail
-// answered on their own domain.
+// Both blocks are produced on every render, but existing vhost files are not
+// rewritten on their own: without this pass a customer would have to wait for the
+// next certificate renewal or PHP version change before webmail answered on their
+// own domain, or before a mail client could configure itself.
 //
-// Only vhosts that would actually gain the block are re-rendered, so the pass
+// Only vhosts that would actually gain something are re-rendered, so the pass
 // costs one small file read per domain when there is nothing to do. The ordinary
 // render path is used, which keeps its nginx validation and rollback.
-func healWebmailVhostsOnStartup() {
-	if packageDB == nil || !webmailInstalled() {
-		return // no Roundcube on this host, so there is nothing to point at
+func healTLSVhostBlocksOnStartup() {
+	if packageDB == nil {
+		return
 	}
+	// Webmail is only expected where Roundcube is installed; the auto-configuration
+	// endpoints are answered by the panel itself and are always expected.
+	required := []string{autoconfigMarker}
+	if webmailInstalled() {
+		required = append(required, webmailMarker)
+	}
+
 	rows, err := packageDB.Query(
 		`SELECT id, system_user, domain_name, parent_domain_id FROM domains ORDER BY id`)
 	if err != nil {
-		log.Printf("webmail vhost repair: could not list domains: %v", err)
+		log.Printf("vhost block repair: could not list domains: %v", err)
 		return
 	}
 	type domain struct {
@@ -50,7 +60,7 @@ func healWebmailVhostsOnStartup() {
 	for rows.Next() {
 		var item domain
 		if err := rows.Scan(&item.id, &item.systemUser, &item.domainName, &item.parentID); err != nil {
-			log.Printf("webmail vhost repair: could not read domain row: %v", err)
+			log.Printf("vhost block repair: could not read domain row: %v", err)
 			continue
 		}
 		domains = append(domains, item)
@@ -58,7 +68,7 @@ func healWebmailVhostsOnStartup() {
 	rowsErr := rows.Err()
 	_ = rows.Close()
 	if rowsErr != nil {
-		log.Printf("webmail vhost repair: domain iteration failed: %v", rowsErr)
+		log.Printf("vhost block repair: domain iteration failed: %v", rowsErr)
 		return
 	}
 
@@ -71,28 +81,39 @@ func healWebmailVhostsOnStartup() {
 		// #nosec G304 -- path is a fixed system/config path, a server-internal temp/archive path, or built from a validated identifier; tenant file reads go through safeio (openat2), not this call.
 		content, err := os.ReadFile(configPath)
 		if err != nil {
-			continue // no vhost yet; the first render will carry the block
+			continue // no vhost yet; the first render will carry the blocks
 		}
 		body := string(content)
-		if strings.Contains(body, webmailMarker) {
-			continue // already serving webmail
-		}
-		// Webmail is only rendered onto the TLS vhost, and only into the ordinary
-		// shape. Anything else can never gain the block.
+		// Both blocks are rendered onto the TLS vhost only, and only into the
+		// ordinary shape. Anything else can never gain them.
 		if !strings.Contains(body, "listen 443 ssl") || !strings.Contains(body, normalVhostMarker) {
 			continue
 		}
+		if !missingAnyBlock(body, required) {
+			continue
+		}
 		if err := RerenderVhost(packageDB, item.id); err != nil {
-			log.Printf("webmail vhost repair: %s vhost update failed: %v", item.domainName, err)
+			log.Printf("vhost block repair: %s vhost update failed: %v", item.domainName, err)
 			failed++
 			continue
 		}
 		updated++
 	}
 	if updated > 0 {
-		log.Printf("webmail vhost repair: /webmail/ added to %d domain vhosts", updated)
+		log.Printf("vhost block repair: %d domain vhosts brought up to date", updated)
 	}
 	if failed > 0 {
-		log.Printf("webmail vhost repair: %d of %d domains failed, retry scheduled for next startup", failed, len(domains))
+		log.Printf("vhost block repair: %d of %d domains failed, retry scheduled for next startup", failed, len(domains))
 	}
+}
+
+// missingAnyBlock reports whether the vhost body lacks at least one of the
+// markers it is expected to carry.
+func missingAnyBlock(body string, required []string) bool {
+	for _, marker := range required {
+		if !strings.Contains(body, marker) {
+			return true
+		}
+	}
+	return false
 }
