@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { AxiosError } from 'axios'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -8,7 +9,7 @@ import ResourceNotice from '@/components/ResourceNotice'
 
 type Domain = { id: number; domain_name: string; ssl: boolean }
 type Mailbox = { id: number; local_part: string; email: string; status: string; created_at: string }
-type MailStatus = { enabled: boolean; dkim_selector?: string }
+type MailStatus = { enabled: boolean; dkim_selector?: string; infrastructure_missing?: string[] }
 type Alias = { id: number; source: string; destination: string; catch_all: boolean; status: string; created_at: string }
 type SpamSettings = { enabled: boolean; greylist_score: number; add_header_score: number; reject_score: number }
 type SpamResponse = { settings: SpamSettings; rspamd: boolean }
@@ -69,6 +70,10 @@ export default function DomainMailPage() {
   const [isSavingFilter, setIsSavingFilter] = useState(false)
   const [limits, setLimits] = useState<SendLimits>({ mailbox_id: 0, email: '', hour_limit: 100, day_limit: 500, sent_hour: 0, sent_day: 0 })
   const [isSavingLimits, setIsSavingLimits] = useState(false)
+
+  // Derived, not state: the server decides this and the page only reflects it.
+  const missingServices = (status?.infrastructure_missing || []).join(', ')
+  const stackDown = missingServices !== ''
 
   // Declared before the loaders that call them: a function hoisted past its own
   // use site cannot pick up a later definition, so the earlier call would keep
@@ -171,7 +176,16 @@ export default function DomainMailPage() {
       setSuccess(t('messages.enabled'))
       loadMail()
     } catch (cause) {
-      setError(apiError(cause, t('errors.enableFailed')))
+      // 503 is the server's own stack check. The button is disabled from the
+      // status response, so this only happens on a tab that loaded before the
+      // services went down; answering it in the reader's language rather than
+      // with the API's English keeps that case readable.
+      if ((cause as AxiosError)?.response?.status === 503) {
+        setError(t('enable.infrastructureMissingGeneric'))
+      } else {
+        setError(apiError(cause, t('errors.enableFailed')))
+      }
+      loadMail()
     } finally {
       setIsSaving(false)
     }
@@ -480,6 +494,12 @@ export default function DomainMailPage() {
           {t('subtitle')}
         </p>
 
+        {status?.enabled && stackDown && (
+          <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-200">
+            {t('enable.deliveryStopped', { services: missingServices })}
+          </div>
+        )}
+
         {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">{error}</div>}
         {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
 
@@ -506,8 +526,16 @@ export default function DomainMailPage() {
             <div className="flex justify-center mb-4">
               <ResourceNotice>{t('enable.resourceWarning')}</ResourceNotice>
             </div>
-            <button type="button" onClick={enableMail} disabled={isSaving}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
+            {/* The server refuses this while its mail services are down, and
+                enabling would otherwise publish MX for a service that never
+                runs. Saying so here beats letting the click fail. */}
+            {stackDown && (
+              <div className="mx-auto mb-4 max-w-lg px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-800 dark:text-amber-200">
+                {t('enable.infrastructureMissing', { services: missingServices })}
+              </div>
+            )}
+            <button type="button" onClick={enableMail} disabled={isSaving || stackDown}
+              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
               {isSaving ? t('enable.enabling') : t('enable.button')}
             </button>
           </div>

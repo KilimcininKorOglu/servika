@@ -18,7 +18,10 @@
     "info": "Ao ativar, registros DNS MX, SPF, DKIM e DMARC são adicionados quando possível.",
     "enabling": "Ativando…",
     "button": "Ativar e-mail",
-    "resourceWarning": "A pilha de e-mail (Postfix, Dovecot, Rspamd, webmail) atende o servidor inteiro e consome RAM e CPU adicionais. Avalie a carga atual antes de ativá-la em um servidor pequeno."
+    "resourceWarning": "A pilha de e-mail (Postfix, Dovecot, Rspamd, webmail) atende o servidor inteiro e consome RAM e CPU adicionais. Avalie a carga atual antes de ativá-la em um servidor pequeno.",
+    "infrastructureMissing": "O e-mail não pode ser ativado: os serviços de e-mail deste servidor não estão em execução ({{services}}). Peça ao administrador do servidor para executar servika-mail-setup.",
+    "infrastructureMissingGeneric": "O e-mail não pode ser ativado porque os serviços de e-mail deste servidor não estão em execução. Peça ao administrador do servidor para executar servika-mail-setup.",
+    "deliveryStopped": "A entrega de e-mail parou neste servidor ({{services}} não estão em execução). Suas caixas e mensagens estão intactas, mas nada é entregue nem enviado. Peça ao administrador do servidor para executar servika-mail-setup."
   },
   "mailboxAdd": {
     "title": "Adicionar caixa de e-mail",

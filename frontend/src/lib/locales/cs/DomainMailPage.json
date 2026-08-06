@@ -18,7 +18,10 @@
     "info": "Jeho povolení přidá pokud možno záznamy DNS MX, SPF, DKIM a DMARC.",
     "enabling": "Povolování…",
     "button": "Povolit e-mail",
-    "resourceWarning": "Poštovní sada (Postfix, Dovecot, Rspamd, webmail) obsluhuje celý server a spotřebuje další RAM a CPU. Před zapnutím na malém serveru zvažte aktuální zatížení."
+    "resourceWarning": "Poštovní sada (Postfix, Dovecot, Rspamd, webmail) obsluhuje celý server a spotřebuje další RAM a CPU. Před zapnutím na malém serveru zvažte aktuální zatížení.",
+    "infrastructureMissing": "E-mail nelze zapnout: poštovní služby na tomto serveru neběží ({{services}}). Požádejte správce serveru, aby spustil servika-mail-setup.",
+    "infrastructureMissingGeneric": "E-mail nelze zapnout, protože poštovní služby na tomto serveru neběží. Požádejte správce serveru, aby spustil servika-mail-setup.",
+    "deliveryStopped": "Doručování pošty na tomto serveru se zastavilo ({{services}} neběží). Vaše schránky a zprávy zůstávají nedotčené, ale nic se nedoručuje ani neodesílá. Požádejte správce serveru, aby spustil servika-mail-setup."
   },
   "mailboxAdd": {
     "title": "Přidat schránku",

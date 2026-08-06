@@ -18,7 +18,10 @@
     "info": "Etkinleştirmek, mümkün olduğunda MX, SPF, DKIM ve DMARC DNS kayıtlarını ekler.",
     "enabling": "Etkinleştiriliyor…",
     "button": "E-postayı Etkinleştir",
-    "resourceWarning": "Posta yığını (Postfix, Dovecot, Rspamd, webmail) sunucunun tamamına hizmet eder ve ek RAM ile CPU tüketir. Küçük bir sunucuda etkinleştirmeden önce mevcut yükü değerlendirin."
+    "resourceWarning": "Posta yığını (Postfix, Dovecot, Rspamd, webmail) sunucunun tamamına hizmet eder ve ek RAM ile CPU tüketir. Küçük bir sunucuda etkinleştirmeden önce mevcut yükü değerlendirin.",
+    "infrastructureMissing": "E-posta etkinleştirilemez: bu sunucudaki posta servisleri çalışmıyor ({{services}}). Sunucu yöneticisinden servika-mail-setup çalıştırmasını isteyin.",
+    "infrastructureMissingGeneric": "Bu sunucudaki posta servisleri çalışmadığı için e-posta etkinleştirilemez. Sunucu yöneticisinden servika-mail-setup çalıştırmasını isteyin.",
+    "deliveryStopped": "Bu sunucuda posta teslimatı durdu ({{services}} çalışmıyor). Posta kutularınız ve iletileriniz duruyor, fakat hiçbir ileti teslim edilmiyor veya gönderilmiyor. Sunucu yöneticisinden servika-mail-setup çalıştırmasını isteyin."
   },
   "mailboxAdd": {
     "title": "Posta kutusu ekle",

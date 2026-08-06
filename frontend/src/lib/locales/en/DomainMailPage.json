@@ -18,7 +18,10 @@
     "info": "Enabling it adds MX, SPF, DKIM, and DMARC DNS records when possible.",
     "enabling": "Enabling…",
     "button": "Enable Email",
-    "resourceWarning": "The mail stack (Postfix, Dovecot, Rspamd, webmail) serves the whole server and takes extra RAM and CPU. Weigh the current load before enabling it on a small server."
+    "resourceWarning": "The mail stack (Postfix, Dovecot, Rspamd, webmail) serves the whole server and takes extra RAM and CPU. Weigh the current load before enabling it on a small server.",
+    "infrastructureMissing": "Email cannot be enabled: the mail services on this server are not running ({{services}}). Ask the server administrator to run servika-mail-setup.",
+    "infrastructureMissingGeneric": "Email cannot be enabled because the mail services on this server are not running. Ask the server administrator to run servika-mail-setup.",
+    "deliveryStopped": "Mail delivery has stopped on this server ({{services}} not running). Your mailboxes and messages are intact, but nothing is being delivered or sent. Ask the server administrator to run servika-mail-setup."
   },
   "mailboxAdd": {
     "title": "Add mailbox",

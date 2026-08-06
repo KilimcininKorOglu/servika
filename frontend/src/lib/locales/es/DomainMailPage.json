@@ -18,7 +18,10 @@
     "info": "Al activarlo se añaden registros DNS MX, SPF, DKIM y DMARC cuando sea posible.",
     "enabling": "Activando…",
     "button": "Activar correo",
-    "resourceWarning": "La pila de correo (Postfix, Dovecot, Rspamd, webmail) da servicio a todo el servidor y consume RAM y CPU adicionales. Valore la carga actual antes de activarla en un servidor pequeño."
+    "resourceWarning": "La pila de correo (Postfix, Dovecot, Rspamd, webmail) da servicio a todo el servidor y consume RAM y CPU adicionales. Valore la carga actual antes de activarla en un servidor pequeño.",
+    "infrastructureMissing": "No se puede activar el correo: los servicios de correo de este servidor no están en ejecución ({{services}}). Pida al administrador del servidor que ejecute servika-mail-setup.",
+    "infrastructureMissingGeneric": "No se puede activar el correo porque los servicios de correo de este servidor no están en ejecución. Pida al administrador del servidor que ejecute servika-mail-setup.",
+    "deliveryStopped": "La entrega de correo se ha detenido en este servidor ({{services}} no están en ejecución). Sus buzones y mensajes están intactos, pero no se entrega ni se envía nada. Pida al administrador del servidor que ejecute servika-mail-setup."
   },
   "mailboxAdd": {
     "title": "Añadir buzón",

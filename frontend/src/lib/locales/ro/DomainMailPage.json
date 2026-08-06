@@ -18,7 +18,10 @@
     "info": "Activarea adaugă înregistrări DNS MX, SPF, DKIM și DMARC atunci când este posibil.",
     "enabling": "Se activează…",
     "button": "Activare email",
-    "resourceWarning": "Stiva de e-mail (Postfix, Dovecot, Rspamd, webmail) deservește întregul server și consumă RAM și CPU suplimentare. Evaluați încărcarea curentă înainte de a o activa pe un server mic."
+    "resourceWarning": "Stiva de e-mail (Postfix, Dovecot, Rspamd, webmail) deservește întregul server și consumă RAM și CPU suplimentare. Evaluați încărcarea curentă înainte de a o activa pe un server mic.",
+    "infrastructureMissing": "E-mailul nu poate fi activat: serviciile de e-mail de pe acest server nu rulează ({{services}}). Cereți administratorului serverului să ruleze servika-mail-setup.",
+    "infrastructureMissingGeneric": "E-mailul nu poate fi activat deoarece serviciile de e-mail de pe acest server nu rulează. Cereți administratorului serverului să ruleze servika-mail-setup.",
+    "deliveryStopped": "Livrarea e-mailurilor s-a oprit pe acest server ({{services}} nu rulează). Căsuțele și mesajele dumneavoastră sunt intacte, dar nu se livrează și nu se trimite nimic. Cereți administratorului serverului să ruleze servika-mail-setup."
   },
   "mailboxAdd": {
     "title": "Adăugare cutie poștală",

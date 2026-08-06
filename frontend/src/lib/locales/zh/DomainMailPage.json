@@ -18,7 +18,10 @@
     "info": "启用后会在可能的情况下添加 MX、SPF、DKIM 和 DMARC DNS 记录。",
     "enabling": "启用中…",
     "button": "启用电子邮件",
-    "resourceWarning": "邮件组件（Postfix、Dovecot、Rspamd、网页邮箱）为整台服务器提供服务，会额外占用内存和 CPU。在小型服务器上启用前请评估当前负载。"
+    "resourceWarning": "邮件组件（Postfix、Dovecot、Rspamd、网页邮箱）为整台服务器提供服务，会额外占用内存和 CPU。在小型服务器上启用前请评估当前负载。",
+    "infrastructureMissing": "无法启用邮件：本服务器的邮件服务未运行 ({{services}})。请联系服务器管理员运行 servika-mail-setup。",
+    "infrastructureMissingGeneric": "本服务器的邮件服务未运行，因此无法启用邮件。请联系服务器管理员运行 servika-mail-setup。",
+    "deliveryStopped": "本服务器的邮件投递已停止 ({{services}} 未运行)。您的邮箱和邮件仍然完好，但目前无法收发任何邮件。请联系服务器管理员运行 servika-mail-setup。"
   },
   "mailboxAdd": {
     "title": "添加邮箱",

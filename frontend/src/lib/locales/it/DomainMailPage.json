@@ -18,7 +18,10 @@
     "info": "Abilitandolo si aggiungono i record DNS MX, SPF, DKIM e DMARC quando possibile.",
     "enabling": "Abilitazione…",
     "button": "Abilita email",
-    "resourceWarning": "Lo stack di posta (Postfix, Dovecot, Rspamd, webmail) serve l'intero server e consuma RAM e CPU aggiuntive. Valutate il carico attuale prima di attivarlo su un server piccolo."
+    "resourceWarning": "Lo stack di posta (Postfix, Dovecot, Rspamd, webmail) serve l'intero server e consuma RAM e CPU aggiuntive. Valutate il carico attuale prima di attivarlo su un server piccolo.",
+    "infrastructureMissing": "L'e-mail non può essere attivata: i servizi di posta su questo server non sono in esecuzione ({{services}}). Chiedi all'amministratore del server di eseguire servika-mail-setup.",
+    "infrastructureMissingGeneric": "L'e-mail non può essere attivata perché i servizi di posta su questo server non sono in esecuzione. Chiedi all'amministratore del server di eseguire servika-mail-setup.",
+    "deliveryStopped": "La consegna della posta su questo server è ferma ({{services}} non in esecuzione). Le tue caselle e i tuoi messaggi sono intatti, ma non viene consegnato né inviato nulla. Chiedi all'amministratore del server di eseguire servika-mail-setup."
   },
   "mailboxAdd": {
     "title": "Aggiungi casella di posta",

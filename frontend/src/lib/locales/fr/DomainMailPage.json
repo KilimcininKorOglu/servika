@@ -18,7 +18,10 @@
     "info": "Son activation ajoute les enregistrements DNS MX, SPF, DKIM et DMARC lorsque c'est possible.",
     "enabling": "Activation…",
     "button": "Activer l'e-mail",
-    "resourceWarning": "La pile de messagerie (Postfix, Dovecot, Rspamd, webmail) dessert tout le serveur et consomme de la RAM et du CPU supplémentaires. Évaluez la charge actuelle avant de l'activer sur un petit serveur."
+    "resourceWarning": "La pile de messagerie (Postfix, Dovecot, Rspamd, webmail) dessert tout le serveur et consomme de la RAM et du CPU supplémentaires. Évaluez la charge actuelle avant de l'activer sur un petit serveur.",
+    "infrastructureMissing": "L'e-mail ne peut pas être activé : les services de messagerie de ce serveur ne fonctionnent pas ({{services}}). Demandez à l'administrateur du serveur d'exécuter servika-mail-setup.",
+    "infrastructureMissingGeneric": "L'e-mail ne peut pas être activé car les services de messagerie de ce serveur ne fonctionnent pas. Demandez à l'administrateur du serveur d'exécuter servika-mail-setup.",
+    "deliveryStopped": "La distribution du courrier est arrêtée sur ce serveur ({{services}} ne fonctionnent pas). Vos boîtes et vos messages sont intacts, mais rien n'est distribué ni envoyé. Demandez à l'administrateur du serveur d'exécuter servika-mail-setup."
   },
   "mailboxAdd": {
     "title": "Ajouter une boîte aux lettres",

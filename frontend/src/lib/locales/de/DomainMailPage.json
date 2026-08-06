@@ -18,7 +18,10 @@
     "info": "Die Aktivierung fügt nach Möglichkeit MX-, SPF-, DKIM- und DMARC-DNS-Einträge hinzu.",
     "enabling": "Wird aktiviert…",
     "button": "E-Mail aktivieren",
-    "resourceWarning": "Der Mail-Stack (Postfix, Dovecot, Rspamd, Webmail) bedient den gesamten Server und benötigt zusätzlichen RAM und CPU. Prüfen Sie die aktuelle Last, bevor Sie ihn auf einem kleinen Server aktivieren."
+    "resourceWarning": "Der Mail-Stack (Postfix, Dovecot, Rspamd, Webmail) bedient den gesamten Server und benötigt zusätzlichen RAM und CPU. Prüfen Sie die aktuelle Last, bevor Sie ihn auf einem kleinen Server aktivieren.",
+    "infrastructureMissing": "E-Mail kann nicht aktiviert werden: Die Maildienste auf diesem Server laufen nicht ({{services}}). Bitten Sie den Serveradministrator, servika-mail-setup auszuführen.",
+    "infrastructureMissingGeneric": "E-Mail kann nicht aktiviert werden, weil die Maildienste auf diesem Server nicht laufen. Bitten Sie den Serveradministrator, servika-mail-setup auszuführen.",
+    "deliveryStopped": "Die Mailzustellung auf diesem Server ist gestoppt ({{services}} laufen nicht). Ihre Postfächer und Nachrichten sind unversehrt, es wird jedoch nichts zugestellt oder versendet. Bitten Sie den Serveradministrator, servika-mail-setup auszuführen."
   },
   "mailboxAdd": {
     "title": "Postfach hinzufügen",
