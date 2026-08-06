@@ -561,7 +561,13 @@ export default function DomainMailPage() {
               )}
             </div>
 
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
+            {/* The settings cards pair up on a wide screen; gap-5 replaces the
+                per-card margin they carried while they were stacked, and
+                items-start keeps a short card from stretching to its
+                neighbour's height. The mailbox list and the delivery table stay
+                full width: both hold rows too wide for half a column. */}
+            <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('forwarders.title')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
                 {t('forwarders.description')}
@@ -622,7 +628,7 @@ export default function DomainMailPage() {
               )}
             </div>
 
-            <form onSubmit={saveSpam} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
+            <form onSubmit={saveSpam} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('spam.title')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
                 {t('spam.description')}
@@ -632,7 +638,7 @@ export default function DomainMailPage() {
                 <input type="checkbox" checked={spam.enabled} onChange={event => setSpam({ ...spam, enabled: event.target.checked })} />
                 {t('spam.enable')}
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {([['greylist_score', t('spam.greylist')], ['add_header_score', t('spam.addHeader')], ['reject_score', t('spam.reject')]] as const).map(([key, label]) => (
                   <label key={key} className="text-xs text-slate-600 dark:text-slate-300">
                     {label}
@@ -648,7 +654,7 @@ export default function DomainMailPage() {
             </form>
 
             {mailboxes.length > 0 && (
-            <form onSubmit={saveAutoresponder} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
+            <form onSubmit={saveAutoresponder} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('autoresponder.title')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('autoresponder.description')}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -682,7 +688,7 @@ export default function DomainMailPage() {
             )}
 
             {mailboxes.length > 0 && (
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('filters.title')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('filters.description')}</p>
               <form onSubmit={addFilter} className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
@@ -728,12 +734,12 @@ export default function DomainMailPage() {
             )}
 
             {mailboxes.length > 0 && (
-            <form onSubmit={saveSendLimits} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
+            <form onSubmit={saveSendLimits} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('sendLimits.title')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
                 {t('sendLimits.description')}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 <label className="text-xs text-slate-600 dark:text-slate-300">{t('sendLimits.mailbox')}
                   <select value={limits.mailbox_id} onChange={event => loadSendLimits(Number(event.target.value))}
                     className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
@@ -758,6 +764,7 @@ export default function DomainMailPage() {
               </button>
             </form>
             )}
+            </div>
 
             {/* Delivery history. The Postfix queue above only shows what has not
                 gone out yet; this answers "did it arrive?" after the fact. */}
