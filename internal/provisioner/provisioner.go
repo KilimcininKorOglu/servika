@@ -2454,6 +2454,15 @@ func healPanelVhostHeadersOnStartup() {
 		const oldStrictCSP = "script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'self'"
 		const newStrictCSP = "script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; frame-src https: http:; frame-ancestors 'self'"
 		patched := strings.ReplaceAll(content, oldStrictCSP, newStrictCSP)
+		// object-src falls back to default-src, which is 'self', so a same-origin
+		// upload served back to the browser could still be embedded as a plugin
+		// object. Nothing the panel or phpMyAdmin serves needs one.
+		//
+		// The anchor covers the strict and the relaxed copies alike, and the
+		// replacement consumes it, so re-running finds nothing left to do.
+		const beforeObjectSrc = "frame-ancestors 'self'; base-uri 'self'"
+		const afterObjectSrc = "frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+		patched = strings.ReplaceAll(patched, beforeObjectSrc, afterObjectSrc)
 		if patched == content {
 			return // already current
 		}
