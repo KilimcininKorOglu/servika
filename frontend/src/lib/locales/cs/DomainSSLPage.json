@@ -31,7 +31,9 @@
     "keyPathLabel": "Cesta ke klíči",
     "empty": "—",
     "remove": "Odebrat SSL (přepnout na HTTP)",
-    "noCert": "Pro tuto doménu není aktivní žádný certifikát SSL. Nainstalujte jej níže."
+    "noCert": "Pro tuto doménu není aktivní žádný certifikát SSL. Nainstalujte jej níže.",
+    "selfSignedBadge": "Vlastnoručně podepsaný",
+    "issuingNotice": "Probíhá. Ověření Let’s Encrypt trvá jednu až dvě minuty, s poštovními názvy déle. Zůstaňte prosím na této stránce."
   },
   "selfSigned": {
     "title": "Certifikát podepsaný svým vlastníkem",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "Poštovní certifikát byl vydán, ale poštovní server jej zatím nepřevzal.",
       "generic": "Krok s poštovním certifikátem se nedokončil."
     }
+  },
+  "reasons": {
+    "dns_unresolved": "doména se nepřekládá na tento server",
+    "rate_limited": "Let’s Encrypt omezuje tuto doménu; zkuste to později",
+    "dns_problem": "Let’s Encrypt hlásí problém s DNS",
+    "acme_failed": "objednávka certifikátu selhala; podívejte se do logu panelu",
+    "acme_install_failed": "certifikát byl vydán, ale nepodařilo se ho nainstalovat",
+    "challenge_unreachable": "ověřovací cesta není dostupná přes HTTP",
+    "challenge_status": "ověřovací cesta odpověděla neočekávaným stavem",
+    "challenge_mismatch": "na toto jméno odpovídá jiný server",
+    "challenge_webroot_unwritable": "do ověřovacího adresáře nelze zapisovat"
   }
 }

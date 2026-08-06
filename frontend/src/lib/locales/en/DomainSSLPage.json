@@ -31,7 +31,9 @@
     "keyPathLabel": "Key path",
     "empty": "—",
     "remove": "Remove SSL (switch to HTTP)",
-    "noCert": "There is no active SSL certificate for this domain. Install one below."
+    "noCert": "There is no active SSL certificate for this domain. Install one below.",
+    "selfSignedBadge": "Self-signed",
+    "issuingNotice": "Working. A Let’s Encrypt validation can take one to two minutes, longer when the mail hostnames are included. Please stay on this page."
   },
   "selfSigned": {
     "title": "Self-Signed Certificate",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "The mail certificate was issued, but the mail server has not picked it up yet.",
       "generic": "The mail certificate step did not finish."
     }
+  },
+  "reasons": {
+    "dns_unresolved": "the domain does not resolve to this server",
+    "rate_limited": "Let’s Encrypt is rate limiting this domain; try again later",
+    "dns_problem": "Let’s Encrypt reported a DNS problem",
+    "acme_failed": "the certificate order failed; see the panel log",
+    "acme_install_failed": "the certificate was issued but could not be installed",
+    "challenge_unreachable": "the challenge path is not reachable over HTTP",
+    "challenge_status": "the challenge path answered with an unexpected status",
+    "challenge_mismatch": "another server answers this name",
+    "challenge_webroot_unwritable": "the challenge directory could not be written"
   }
 }

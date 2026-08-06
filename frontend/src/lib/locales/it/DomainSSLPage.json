@@ -31,7 +31,9 @@
     "keyPathLabel": "Percorso chiave",
     "empty": "—",
     "remove": "Rimuovi SSL (passa a HTTP)",
-    "noCert": "Non c'è alcun certificato SSL attivo per questo dominio. Installane uno qui sotto."
+    "noCert": "Non c'è alcun certificato SSL attivo per questo dominio. Installane uno qui sotto.",
+    "selfSignedBadge": "Auto-firmato",
+    "issuingNotice": "Operazione in corso. Una convalida Let’s Encrypt richiede uno o due minuti, di più con i nomi di posta. Resta su questa pagina."
   },
   "selfSigned": {
     "title": "Certificato autofirmato",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "Il certificato di posta è stato emesso, ma il server di posta non lo ha ancora adottato.",
       "generic": "Il passaggio del certificato di posta non è stato completato."
     }
+  },
+  "reasons": {
+    "dns_unresolved": "il dominio non risolve verso questo server",
+    "rate_limited": "Let’s Encrypt sta limitando questo dominio; riprova più tardi",
+    "dns_problem": "Let’s Encrypt ha segnalato un problema DNS",
+    "acme_failed": "l’ordine del certificato non è riuscito; consulta il log del pannello",
+    "acme_install_failed": "il certificato è stato emesso ma non è stato installato",
+    "challenge_unreachable": "il percorso di verifica non è raggiungibile via HTTP",
+    "challenge_status": "il percorso di verifica ha risposto con uno stato inatteso",
+    "challenge_mismatch": "un altro server risponde per questo nome",
+    "challenge_webroot_unwritable": "la directory di verifica non è scrivibile"
   }
 }

@@ -31,7 +31,9 @@
     "keyPathLabel": "Anahtar yolu",
     "empty": "—",
     "remove": "SSL'i Kaldır (HTTP'ye geç)",
-    "noCert": "Bu alan adı için etkin bir SSL sertifikası yok. Aşağıdan bir tane kurun."
+    "noCert": "Bu alan adı için etkin bir SSL sertifikası yok. Aşağıdan bir tane kurun.",
+    "selfSignedBadge": "Öz-imzalı",
+    "issuingNotice": "İşlem sürüyor. Let’s Encrypt doğrulaması bir ila iki dakika sürebilir, posta adları da eklenmişse daha uzun. Lütfen bu sayfada kalın."
   },
   "selfSigned": {
     "title": "Kendinden İmzalı Sertifika",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "Posta sertifikası alındı ama posta sunucusu henüz devreye almadı.",
       "generic": "Posta sertifikası adımı tamamlanmadı."
     }
+  },
+  "reasons": {
+    "dns_unresolved": "alan adı bu sunucuya çözülmüyor",
+    "rate_limited": "Let’s Encrypt bu alan adına hız sınırı uyguluyor; daha sonra tekrar deneyin",
+    "dns_problem": "Let’s Encrypt bir DNS sorunu bildirdi",
+    "acme_failed": "sertifika siparişi başarısız oldu; panel günlüğüne bakın",
+    "acme_install_failed": "sertifika alındı ama kurulamadı",
+    "challenge_unreachable": "doğrulama yoluna HTTP üzerinden erişilemiyor",
+    "challenge_status": "doğrulama yolu beklenmeyen bir durum kodu döndü",
+    "challenge_mismatch": "bu adı başka bir sunucu yanıtlıyor",
+    "challenge_webroot_unwritable": "doğrulama dizini yazılamadı"
   }
 }

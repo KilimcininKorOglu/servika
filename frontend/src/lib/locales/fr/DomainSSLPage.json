@@ -31,7 +31,9 @@
     "keyPathLabel": "Chemin de la clé",
     "empty": "—",
     "remove": "Supprimer le SSL (passer en HTTP)",
-    "noCert": "Il n'y a aucun certificat SSL actif pour ce domaine. Installez-en un ci-dessous."
+    "noCert": "Il n'y a aucun certificat SSL actif pour ce domaine. Installez-en un ci-dessous.",
+    "selfSignedBadge": "Auto-signé",
+    "issuingNotice": "Traitement en cours. Une validation Let’s Encrypt prend une à deux minutes, davantage avec les noms de messagerie. Veuillez rester sur cette page."
   },
   "selfSigned": {
     "title": "Certificat auto-signé",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "Le certificat de messagerie a été émis, mais le serveur de messagerie ne l'a pas encore pris en compte.",
       "generic": "L'étape du certificat de messagerie ne s'est pas terminée."
     }
+  },
+  "reasons": {
+    "dns_unresolved": "le domaine ne pointe pas vers ce serveur",
+    "rate_limited": "Let’s Encrypt limite ce domaine ; réessayez plus tard",
+    "dns_problem": "Let’s Encrypt a signalé un problème DNS",
+    "acme_failed": "la commande du certificat a échoué ; consultez le journal du panneau",
+    "acme_install_failed": "le certificat a été émis mais n’a pas pu être installé",
+    "challenge_unreachable": "le chemin de validation n’est pas accessible en HTTP",
+    "challenge_status": "le chemin de validation a répondu avec un statut inattendu",
+    "challenge_mismatch": "un autre serveur répond pour ce nom",
+    "challenge_webroot_unwritable": "le répertoire de validation n’a pas pu être écrit"
   }
 }

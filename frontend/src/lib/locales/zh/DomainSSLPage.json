@@ -31,7 +31,9 @@
     "keyPathLabel": "密钥路径",
     "empty": "—",
     "remove": "移除 SSL（切换到 HTTP）",
-    "noCert": "此域名没有活动的 SSL 证书。请在下方安装一个。"
+    "noCert": "此域名没有活动的 SSL 证书。请在下方安装一个。",
+    "selfSignedBadge": "自签名",
+    "issuingNotice": "正在处理。Let’s Encrypt 验证需要一到两分钟，包含邮件主机名时更久。请停留在本页面。"
   },
   "selfSigned": {
     "title": "自签名证书",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "邮件证书已签发，但邮件服务器尚未启用。",
       "generic": "邮件证书步骤未完成。"
     }
+  },
+  "reasons": {
+    "dns_unresolved": "域名未解析到本服务器",
+    "rate_limited": "Let’s Encrypt 正在对该域名限速，请稍后重试",
+    "dns_problem": "Let’s Encrypt 报告了 DNS 问题",
+    "acme_failed": "证书申请失败，请查看面板日志",
+    "acme_install_failed": "证书已签发但未能安装",
+    "challenge_unreachable": "无法通过 HTTP 访问验证路径",
+    "challenge_status": "验证路径返回了意外的状态码",
+    "challenge_mismatch": "另一台服务器在响应该名称",
+    "challenge_webroot_unwritable": "无法写入验证目录"
   }
 }

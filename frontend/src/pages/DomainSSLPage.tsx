@@ -43,14 +43,21 @@ export default function DomainSSLPage() {
     try {
       const body: { type: string; mail_ssl?: boolean } = { type }
       if (type === 'letsencrypt' && alsoSecureMail) body.mail_ssl = true
-      const { data } = await api.post(`/domains/${id}/ssl/issue`, body)
+      // Issuance outlives the client's default patience: an ACME order plus the
+      // mail certificate probes several names and waits on the CA. The global
+      // 30s timeout aborted the request while the work continued on the server,
+      // so the user was told it failed and then found the site already secured.
+      const { data } = await api.post(`/domains/${id}/ssl/issue`, body, { timeout: 180_000 })
       // data.type is what was ACTUALLY installed, which is not always what was
       // asked for: a Let's Encrypt request that fails falls back to a
       // self-signed certificate so port 443 keeps serving. Reporting the
       // requested type here is what let the panel say "Let's Encrypt installed"
       // while the browser said the site was not secure.
       if (data.warning) {
-        setWarning(data.reason ? `${t('warning.letsencryptFallback')} ${data.reason}` : t('warning.letsencryptFallback'))
+        const reason = data.reason
+          ? t(`reasons.${data.reason}`, { defaultValue: data.reason })
+          : ''
+        setWarning(reason ? `${t('warning.letsencryptFallback')} ${reason}` : t('warning.letsencryptFallback'))
       } else {
         setSuccess(t('success.installed', { type: data.type ?? type, expires: data.expires_at }))
       }
@@ -112,6 +119,11 @@ export default function DomainSSLPage() {
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
       {warning && <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-800 dark:text-amber-300">{warning}</div>}
+      {isProcessing && (
+        <div className="mb-3 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-sm text-blue-700 dark:text-blue-300">
+          {t('status.issuingNotice')}
+        </div>
+      )}
       {mailNote && <div className="mb-3 px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-md text-sm text-sky-800 dark:text-sky-300">{mailNote}</div>}
 
       {/* Status card */}
@@ -119,10 +131,19 @@ export default function DomainSSLPage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{t('status.title')}</h2>
           {status && (
-            status.active ? (
+            // Only a real CA is trusted by a browser. A self-signed certificate
+            // encrypts the connection and still shows the visitor a warning
+            // page, so a green "protected" badge would report the fail-safe as
+            // the outcome the customer asked for.
+            status.active && status.source === 'letsencrypt' ? (
               <span className="text-xs px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded uppercase font-semibold tracking-wider flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 {t('status.protected')}
+              </span>
+            ) : status.active ? (
+              <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded uppercase font-semibold tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                {t('status.selfSignedBadge')}
               </span>
             ) : (
               <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded uppercase font-semibold tracking-wider flex items-center gap-1.5">

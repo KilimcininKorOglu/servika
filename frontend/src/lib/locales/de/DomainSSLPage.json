@@ -31,7 +31,9 @@
     "keyPathLabel": "Schlüsselpfad",
     "empty": "—",
     "remove": "SSL entfernen (zu HTTP wechseln)",
-    "noCert": "Es gibt kein aktives SSL-Zertifikat für diese Domain. Installieren Sie unten eines."
+    "noCert": "Es gibt kein aktives SSL-Zertifikat für diese Domain. Installieren Sie unten eines.",
+    "selfSignedBadge": "Selbstsigniert",
+    "issuingNotice": "Vorgang läuft. Eine Let’s-Encrypt-Validierung dauert ein bis zwei Minuten, mit den Mail-Hostnamen länger. Bitte bleiben Sie auf dieser Seite."
   },
   "selfSigned": {
     "title": "Selbstsigniertes Zertifikat",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "Das Mailzertifikat wurde ausgestellt, der Mailserver hat es aber noch nicht übernommen.",
       "generic": "Der Schritt für das Mailzertifikat wurde nicht abgeschlossen."
     }
+  },
+  "reasons": {
+    "dns_unresolved": "die Domain löst nicht auf diesen Server auf",
+    "rate_limited": "Let’s Encrypt begrenzt die Rate für diese Domain; später erneut versuchen",
+    "dns_problem": "Let’s Encrypt meldete ein DNS-Problem",
+    "acme_failed": "die Zertifikatsbestellung ist fehlgeschlagen; siehe Panel-Log",
+    "acme_install_failed": "das Zertifikat wurde ausgestellt, konnte aber nicht installiert werden",
+    "challenge_unreachable": "der Challenge-Pfad ist über HTTP nicht erreichbar",
+    "challenge_status": "der Challenge-Pfad antwortete mit einem unerwarteten Status",
+    "challenge_mismatch": "ein anderer Server antwortet auf diesen Namen",
+    "challenge_webroot_unwritable": "das Challenge-Verzeichnis konnte nicht beschrieben werden"
   }
 }

@@ -31,7 +31,9 @@
     "keyPathLabel": "キーパス",
     "empty": "—",
     "remove": "SSL を削除 (HTTP に切り替え)",
-    "noCert": "このドメインには有効な SSL 証明書がありません。以下からインストールしてください。"
+    "noCert": "このドメインには有効な SSL 証明書がありません。以下からインストールしてください。",
+    "selfSignedBadge": "自己署名",
+    "issuingNotice": "処理中です。Let’s Encrypt の検証には 1〜2 分かかります。メールのホスト名を含めるとさらに時間がかかります。このページを開いたままお待ちください。"
   },
   "selfSigned": {
     "title": "自己署名証明書",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "メール証明書は発行されましたが、メールサーバーがまだ反映していません。",
       "generic": "メール証明書の手順が完了しませんでした。"
     }
+  },
+  "reasons": {
+    "dns_unresolved": "ドメインがこのサーバーに解決されません",
+    "rate_limited": "Let’s Encrypt がこのドメインをレート制限しています。時間をおいて再試行してください",
+    "dns_problem": "Let’s Encrypt が DNS の問題を報告しました",
+    "acme_failed": "証明書の発注に失敗しました。パネルのログを確認してください",
+    "acme_install_failed": "証明書は発行されましたが、インストールできませんでした",
+    "challenge_unreachable": "チャレンジパスに HTTP で到達できません",
+    "challenge_status": "チャレンジパスが予期しないステータスを返しました",
+    "challenge_mismatch": "この名前には別のサーバーが応答しています",
+    "challenge_webroot_unwritable": "チャレンジディレクトリに書き込めませんでした"
   }
 }

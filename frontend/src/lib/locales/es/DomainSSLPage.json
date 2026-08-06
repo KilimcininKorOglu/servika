@@ -31,7 +31,9 @@
     "keyPathLabel": "Ruta de la clave",
     "empty": "—",
     "remove": "Eliminar SSL (volver a HTTP)",
-    "noCert": "No hay ningún certificado SSL activo para este dominio. Instale uno a continuación."
+    "noCert": "No hay ningún certificado SSL activo para este dominio. Instale uno a continuación.",
+    "selfSignedBadge": "Autofirmado",
+    "issuingNotice": "En curso. Una validación de Let’s Encrypt tarda de uno a dos minutos, más con los nombres de correo. Permanezca en esta página."
   },
   "selfSigned": {
     "title": "Certificado autofirmado",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "El certificado de correo se emitió, pero el servidor de correo aún no lo ha adoptado.",
       "generic": "El paso del certificado de correo no se completó."
     }
+  },
+  "reasons": {
+    "dns_unresolved": "el dominio no resuelve a este servidor",
+    "rate_limited": "Let’s Encrypt está limitando este dominio; inténtelo más tarde",
+    "dns_problem": "Let’s Encrypt informó de un problema de DNS",
+    "acme_failed": "el pedido del certificado falló; consulte el registro del panel",
+    "acme_install_failed": "el certificado se emitió pero no se pudo instalar",
+    "challenge_unreachable": "la ruta de validación no es accesible por HTTP",
+    "challenge_status": "la ruta de validación respondió con un estado inesperado",
+    "challenge_mismatch": "otro servidor responde por este nombre",
+    "challenge_webroot_unwritable": "no se pudo escribir en el directorio de validación"
   }
 }

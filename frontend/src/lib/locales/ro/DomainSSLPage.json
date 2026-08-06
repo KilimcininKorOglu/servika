@@ -31,7 +31,9 @@
     "keyPathLabel": "Cale cheie",
     "empty": "—",
     "remove": "Eliminare SSL (trecere la HTTP)",
-    "noCert": "Nu există un certificat SSL activ pentru acest domeniu. Instalați unul mai jos."
+    "noCert": "Nu există un certificat SSL activ pentru acest domeniu. Instalați unul mai jos.",
+    "selfSignedBadge": "Auto-semnat",
+    "issuingNotice": "În curs. O validare Let’s Encrypt durează unu până la două minute, mai mult cu numele de e-mail. Rămâneți pe această pagină."
   },
   "selfSigned": {
     "title": "Certificat autosemnat",
@@ -70,5 +72,16 @@
       "mail_sni_apply_failed": "Certificatul de e-mail a fost emis, dar serverul de e-mail nu l-a preluat încă.",
       "generic": "Pasul certificatului de e-mail nu s-a încheiat."
     }
+  },
+  "reasons": {
+    "dns_unresolved": "domeniul nu se rezolvă către acest server",
+    "rate_limited": "Let’s Encrypt limitează acest domeniu; încercați mai târziu",
+    "dns_problem": "Let’s Encrypt a raportat o problemă DNS",
+    "acme_failed": "comanda certificatului a eșuat; consultați jurnalul panoului",
+    "acme_install_failed": "certificatul a fost emis, dar nu a putut fi instalat",
+    "challenge_unreachable": "calea de validare nu este accesibilă prin HTTP",
+    "challenge_status": "calea de validare a răspuns cu un status neașteptat",
+    "challenge_mismatch": "alt server răspunde pentru acest nume",
+    "challenge_webroot_unwritable": "directorul de validare nu a putut fi scris"
   }
 }
