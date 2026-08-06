@@ -1060,8 +1060,25 @@ func (h *Handlers) BulkOwner(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "at least one domain ID is required")
 		return
 	}
+	clearing := req.CustomerID == nil || *req.CustomerID <= 0
+
+	// A reseller may move a domain between its OWN customers and nothing else.
+	if c := middleware.ClaimsFrom(r); c != nil && c.Role == middleware.RoleReseller {
+		if clearing {
+			// Detaching hands the domain to admin, which takes it out of the
+			// reseller's own scope permanently. That is a one-way loss the reseller
+			// could not undo, so it stays an administrator's decision.
+			httpx.WriteError(w, http.StatusForbidden, "a reseller cannot detach a domain from its customer")
+			return
+		}
+		if !middleware.ResellerOwnsCustomer(r, c.UserID, *req.CustomerID) {
+			httpx.WriteError(w, http.StatusForbidden, "no access to this customer")
+			return
+		}
+	}
+
 	// customer_id may be NULL or a positive value.
-	if req.CustomerID != nil && *req.CustomerID > 0 {
+	if !clearing {
 		var exists int
 		_ = h.DB.QueryRowContext(r.Context(),
 			`SELECT COUNT(*) FROM customers WHERE id=?`, *req.CustomerID).Scan(&exists)
@@ -1073,7 +1090,7 @@ func (h *Handlers) BulkOwner(w http.ResponseWriter, r *http.Request) {
 	// Build placeholders for the IN clause.
 	placeholders := make([]string, len(req.IDs))
 	args := []any{}
-	if req.CustomerID != nil && *req.CustomerID > 0 {
+	if !clearing {
 		args = append(args, *req.CustomerID)
 	} else {
 		args = append(args, nil)
@@ -1082,8 +1099,17 @@ func (h *Handlers) BulkOwner(w http.ResponseWriter, r *http.Request) {
 		placeholders[i] = "?"
 		args = append(args, id)
 	}
-	// #nosec G202 -- only literal "?" placeholders are joined into the IN clause; all IDs are bound via args.
-	sql := `UPDATE domains SET customer_id=? WHERE id IN (` + strings.Join(placeholders, ",") + `)`
+	// The SOURCE domains are narrowed by the query itself, not checked row by
+	// row: an id the caller does not own simply matches nothing, so a hand-built
+	// request body cannot move somebody else's domain. ScopeSQL returns a whole
+	// " WHERE ..." clause and this statement already has one, so its keyword is
+	// swapped for AND. Empty for an admin, which leaves the statement unchanged.
+	scope, scopeArgs := middleware.ScopeSQL(r, "d")
+	scope = strings.Replace(scope, " WHERE ", " AND ", 1)
+	args = append(args, scopeArgs...)
+	// #nosec G202 -- only literal "?" placeholders and the constant ScopeSQL fragment are joined; all values are bound via args.
+	sql := `UPDATE domains d SET d.customer_id=? WHERE d.id IN (` + strings.Join(placeholders, ",") + `)` + scope
+	// #nosec G701 G202 -- scope is a constant fragment from ScopeSQL with a literal alias and placeholders holds only literal "?"; every user value is bound via args.
 	res, err := h.DB.ExecContext(r.Context(), sql, args...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "bulk update failed")

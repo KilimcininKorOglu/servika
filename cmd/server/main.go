@@ -440,7 +440,11 @@ func main() {
 				// requires an administrator; a customer token must not delete its own
 				// domain, databases, Linux user, and service state without admin mediation.
 				r.With(middleware.AdminOnly).Delete("/domains/{id}", domainsH.Delete)
-				r.With(middleware.AdminOnly).Post("/domains/bulk/owner", domainsH.BulkOwner)
+				// A reseller may move a domain between its own customers. The
+				// authorization is in the handler, not here: it has to narrow the
+				// source domains by scope AND check the target customer, and only an
+				// admin may detach a domain entirely.
+				r.With(middleware.ResellerOrAbove).Post("/domains/bulk/owner", domainsH.BulkOwner)
 				r.With(middleware.AdminOnly).Post("/domains/bulk/status", domainsH.BulkStatus)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/php", domainsH.SetPHP)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/ssh", sshH.Show)
