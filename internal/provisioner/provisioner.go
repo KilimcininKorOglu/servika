@@ -1645,7 +1645,17 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 		}
 		return append(a, "--keylength", "2048")
 	}
-	sanHosts := certSANHosts(domainName)
+	// Measure each name before asking the CA for it. Resolving here does not mean
+	// a name can answer http-01: a CDN in front, a filtered port 80, or another
+	// vhost claiming the name all resolve perfectly well and still fail
+	// validation, and one failing name fails the WHOLE order.
+	sanHosts, droppedHosts := validatedSANHosts(certSANHosts(domainName))
+	if reason, apexFailed := droppedHosts[domainName]; apexFailed {
+		// Ordering anyway would spend one of the five validation failures Let's
+		// Encrypt allows per hostname per hour and leave the same result.
+		return sslFailSafe(domainName, systemUser, phpVersion, backend,
+			string(reason)+": "+domainName+" does not answer the ACME challenge path from the public internet")
+	}
 	out, e := RunACMEIssue(buildIssueArgs(sanHosts)...)
 	// RENEW_SKIP means the store already holds a valid certificate for these hosts, so
 	// there is nothing to retry and nothing to fail over: fall through to install-cert and
