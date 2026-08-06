@@ -30,6 +30,11 @@ var serviceAllowlist = []serviceDefinition{
 	{Unit: "php-fpm", Label: "PHP-FPM 8.3", Group: "PHP-FPM", Reloadable: true},
 	{Unit: "php82-php-fpm", Label: "PHP-FPM 8.2", Group: "PHP-FPM", Reloadable: true},
 	{Unit: "php74-php-fpm", Label: "PHP-FPM 7.4", Group: "PHP-FPM", Reloadable: true},
+	// The mail stack an administrator may turn off entirely once the last mail
+	// customer leaves. Without these rows its state was invisible here, and a
+	// domain whose mail had simply stopped looked healthy.
+	{Unit: "postfix", Label: "Postfix (SMTP)", Group: "Mail", Reloadable: true},
+	{Unit: "dovecot", Label: "Dovecot (IMAP/POP)", Group: "Mail", Reloadable: true},
 	{Unit: "pure-ftpd", Label: "Pure-FTPd (FTP)", Group: "Other"},
 	{Unit: "crond", Label: "Cron (Scheduler)", Group: "Other"},
 }

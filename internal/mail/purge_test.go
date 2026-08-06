@@ -6,6 +6,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
@@ -76,6 +77,37 @@ func (c *purgeConn) ExecContext(_ context.Context, query string, _ []driver.Name
 		return nil, errPurgeExec
 	}
 	return driver.RowsAffected(1), nil
+}
+
+// QueryContext records the statement and answers the one lookup a handler needs
+// before it can act, so a test can assert on which queries a refusal did NOT
+// reach. Anything else comes back empty, which surfaces as sql.ErrNoRows.
+func (c *purgeConn) QueryContext(_ context.Context, query string, _ []driver.NamedValue) (driver.Rows, error) {
+	c.recorder.record(query)
+	if strings.Contains(query, "system_user") && strings.Contains(query, "FROM domains WHERE id=?") {
+		return &recorderRows{
+			columns: []string{"system_user", "is_demo"},
+			values:  [][]driver.Value{{"c_example", int64(0)}},
+		}, nil
+	}
+	return &recorderRows{}, nil
+}
+
+type recorderRows struct {
+	columns []string
+	values  [][]driver.Value
+	next    int
+}
+
+func (r *recorderRows) Columns() []string { return r.columns }
+func (r *recorderRows) Close() error      { return nil }
+func (r *recorderRows) Next(dest []driver.Value) error {
+	if r.next >= len(r.values) {
+		return io.EOF
+	}
+	copy(dest, r.values[r.next])
+	r.next++
+	return nil
 }
 
 type purgeTx struct{ recorder *purgeRecorder }

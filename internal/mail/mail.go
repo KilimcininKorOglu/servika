@@ -38,6 +38,11 @@ type Mailbox struct {
 type Status struct {
 	Enabled      bool   `json:"enabled"`
 	DKIMSelector string `json:"dkim_selector,omitempty"`
+	// InfrastructureMissing names the mail services that are not running on this
+	// server, empty when the stack is ready. It is data rather than a sentence so
+	// the interface can disable the enable button and explain why in its own
+	// language, instead of letting the customer click and collect an error.
+	InfrastructureMissing []string `json:"infrastructure_missing,omitempty"`
 }
 
 var localPartPattern = regexp.MustCompile(`^[a-z0-9]([a-z0-9._-]{0,62}[a-z0-9])?$`)
@@ -71,7 +76,14 @@ func (h *Handlers) MailStatus(w http.ResponseWriter, r *http.Request) {
 	var status, selector string
 	err := h.DB.QueryRowContext(r.Context(),
 		`SELECT status, dkim_selector FROM mail_domains WHERE domain_id=?`, id).Scan(&status, &selector)
-	httpx.WriteJSON(w, http.StatusOK, Status{Enabled: err == nil && status == "active", DKIMSelector: selector})
+	// Reported in both states. A domain that has never enabled mail needs it to
+	// know the button will not work; a domain that already has mailboxes needs it
+	// more, because there the stack going down means delivery has stopped.
+	httpx.WriteJSON(w, http.StatusOK, Status{
+		Enabled:               err == nil && status == "active",
+		DKIMSelector:          selector,
+		InfrastructureMissing: MissingMailServices(r.Context()),
+	})
 }
 
 // Enable enables native mail hosting for a domain.
@@ -83,6 +95,20 @@ func (h *Handlers) Enable(w http.ResponseWriter, r *http.Request) {
 	}
 	if demo {
 		httpx.WriteError(w, http.StatusForbidden, "mail is unavailable for demo subscriptions")
+		return
+	}
+	// Stop here rather than after the fact. EnableDomain publishes MX, SPF, DKIM
+	// and DMARC, so letting it run against a dead stack tells the world this
+	// server accepts the domain's mail while nothing is listening.
+	//
+	// The interface disables the button from the status response, so a customer
+	// should never reach this; it is the backstop for a stale tab. The names go to
+	// the log rather than the response because the response is English and the
+	// interface ships twelve languages.
+	if missing := MissingMailServices(r.Context()); len(missing) > 0 {
+		// #nosec G706 -- missing is a subset of the requiredMailServices literals ("postfix", "dovecot"); no request data reaches this line.
+		log.Printf("enable mail domain=%d: refused, services not running: %s", id, strings.Join(missing, ", "))
+		httpx.WriteError(w, http.StatusServiceUnavailable, "mail infrastructure is not running on this server")
 		return
 	}
 	if err := EnableDomain(r.Context(), h.DB, id); err != nil {

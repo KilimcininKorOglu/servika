@@ -126,3 +126,32 @@ func TestServiceStatusesMapsUnknownUnitToAbsent(t *testing.T) {
 		t.Fatalf("ServiceStatuses() first status = %q, want absent", statuses[0].Status)
 	}
 }
+
+// The mail stack is the one an administrator turns off outright once the last
+// mail customer leaves. Without it on the list its state was invisible here, so
+// a server whose mail had simply stopped looked entirely healthy.
+func TestServiceAllowlistCoversTheMailStack(t *testing.T) {
+	withSystemctlRunner(t, func(...string) string { return "active\n" })
+
+	response := httptest.NewRecorder()
+	ServiceStatuses(response, httptest.NewRequest(http.MethodGet, "/system/services", nil))
+
+	var statuses []serviceStatus
+	if err := json.Unmarshal(response.Body.Bytes(), &statuses); err != nil {
+		t.Fatalf("decode the response: %v", err)
+	}
+	for _, unit := range []string{"postfix", "dovecot"} {
+		found := false
+		for _, status := range statuses {
+			if status.Unit == unit {
+				found = true
+				if status.Group != "Mail" {
+					t.Errorf("%s is grouped under %q, want Mail", unit, status.Group)
+				}
+			}
+		}
+		if !found {
+			t.Errorf("%s is missing from the service list", unit)
+		}
+	}
+}

@@ -7,13 +7,55 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"servika/internal/dns"
 	"servika/internal/files"
 )
+
+// requiredMailServices must be running before mail can be enabled for a domain.
+//
+// Dovecot is on the list because it is on the DELIVERY path, not merely serving
+// IMAP: assets/mail/postfix/main.cf.append sets
+// `virtual_transport = lmtp:unix:private/dovecot-lmtp`, so with Dovecot down
+// Postfix has nowhere to hand a message.
+//
+// Rspamd and OpenDKIM are deliberately absent. The same file sets
+// `milter_default_action = accept`, so Postfix still accepts a message when the
+// milters are unreachable; without them mail flows, it just loses spam filtering
+// and DKIM signing. Requiring them would refuse a server that works.
+var requiredMailServices = []string{"postfix", "dovecot"}
+
+// mailServiceActive is a variable because a check that shells out to systemd
+// would answer differently on every machine a unit test runs on.
+var mailServiceActive = func(ctx context.Context, unit string) bool {
+	// #nosec G204 G702 -- fixed binary with separate args (no shell); the unit comes from requiredMailServices, never from a request.
+	output, err := exec.CommandContext(ctx, "systemctl", "is-active", unit).Output()
+	return err == nil && strings.TrimSpace(string(output)) == "active"
+}
+
+// MissingMailServices names the mail services that are not running, in the order
+// they are required. An empty result means the stack is ready.
+//
+// EnableDomain writes a database row, a Maildir and the MX, SPF, DKIM and DMARC
+// records, but it installs nothing and starts nothing. An administrator who
+// turned the stack off (a fair choice once the last mail customer leaves) would
+// otherwise see the panel accept the request, publish MX to the world, and
+// report success for a service that never runs. The first sign of that is
+// messages disappearing.
+func MissingMailServices(ctx context.Context) []string {
+	var missing []string
+	for _, unit := range requiredMailServices {
+		if !mailServiceActive(ctx, unit) {
+			missing = append(missing, unit)
+		}
+	}
+	return missing
+}
 
 // EnableDomain enables mail for a domain and prepares its Maildir root.
 func EnableDomain(ctx context.Context, db *sql.DB, domainID int64) error {
