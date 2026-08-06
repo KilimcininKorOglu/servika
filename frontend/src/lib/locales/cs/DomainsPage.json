@@ -68,6 +68,17 @@
     "domainNameHintMid": " nebo ",
     "domainNameHintExample1": "site.com",
     "domainNameHintExample2": "panel.site.com",
+    "siteType": "Typ webu",
+    "siteTypes": {
+      "php": "Aplikace PHP",
+      "wordpress": "WordPress",
+      "static": "Statický web"
+    },
+    "siteTypeHints": {
+      "php": "Vytvoří se databáze MySQL. Pro Laravel, Symfony a další aplikace PHP.",
+      "wordpress": "Vytvoří se databáze MySQL. Instalaci dokončíte v dalším kroku.",
+      "static": "Žádná databáze se nevytvoří. Pouze pro HTML, CSS a JavaScript."
+    },
     "phpVersion": "Verze PHP",
     "phpDefault": "PHP 8.3 (výchozí)",
     "servicePlan": "Tarif služby",
@@ -89,6 +100,9 @@
     "username": "Uživatelské jméno",
     "password": "Heslo",
     "database": "Databáze",
+    "wordpress": "WORDPRESS",
+    "wordpressNote": "Instalace vyžaduje název webu, jméno správce a e-mailovou adresu, proto se nespouští automaticky.",
+    "wordpressAction": "Dokončit instalaci WordPressu",
     "systemUser": "Systémový uživatel: ",
     "ok": "OK",
     "copyAll": "Kopírovat vše",

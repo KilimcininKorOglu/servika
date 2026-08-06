@@ -68,6 +68,17 @@
     "domainNameHintMid": " o ",
     "domainNameHintExample1": "sitio.com",
     "domainNameHintExample2": "panel.sitio.com",
+    "siteType": "Tipo de sitio",
+    "siteTypes": {
+      "php": "Aplicación PHP",
+      "wordpress": "WordPress",
+      "static": "Sitio estático"
+    },
+    "siteTypeHints": {
+      "php": "Se crea una base de datos MySQL. Para Laravel, Symfony y otras aplicaciones PHP.",
+      "wordpress": "Se crea una base de datos MySQL. La instalación se completa en el siguiente paso.",
+      "static": "No se crea ninguna base de datos. Solo para HTML, CSS y JavaScript."
+    },
     "phpVersion": "Versión PHP",
     "phpDefault": "PHP 8.3 (predeterminado)",
     "servicePlan": "Plan de servicio",
@@ -89,6 +100,9 @@
     "username": "Usuario",
     "password": "Contraseña",
     "database": "Base de datos",
+    "wordpress": "WORDPRESS",
+    "wordpressNote": "La instalación necesita un título de sitio, un nombre de administrador y una dirección de correo, por lo que no se ejecuta automáticamente.",
+    "wordpressAction": "Completar la instalación de WordPress",
     "systemUser": "Usuario del sistema: ",
     "ok": "OK",
     "copyAll": "Copiar todo",

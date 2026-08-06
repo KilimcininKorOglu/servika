@@ -68,6 +68,17 @@
     "domainNameHintMid": " sau ",
     "domainNameHintExample1": "site.com",
     "domainNameHintExample2": "panel.site.com",
+    "siteType": "Tip de site",
+    "siteTypes": {
+      "php": "Aplicație PHP",
+      "wordpress": "WordPress",
+      "static": "Site static"
+    },
+    "siteTypeHints": {
+      "php": "Se creează o bază de date MySQL. Pentru Laravel, Symfony și alte aplicații PHP.",
+      "wordpress": "Se creează o bază de date MySQL. Finalizați instalarea la pasul următor.",
+      "static": "Nu se creează nicio bază de date. Doar pentru HTML, CSS și JavaScript."
+    },
     "phpVersion": "Versiune PHP",
     "phpDefault": "PHP 8.3 (implicit)",
     "servicePlan": "Plan de servicii",
@@ -89,6 +100,9 @@
     "username": "Nume de utilizator",
     "password": "Parolă",
     "database": "Bază de date",
+    "wordpress": "WORDPRESS",
+    "wordpressNote": "Instalarea necesită un titlu de site, un nume de administrator și o adresă de e-mail, deci nu rulează automat.",
+    "wordpressAction": "Finalizați instalarea WordPress",
     "systemUser": "Utilizator de sistem: ",
     "ok": "OK",
     "copyAll": "Copiază tot",

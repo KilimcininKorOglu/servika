@@ -68,6 +68,17 @@
     "domainNameHintMid": " ou ",
     "domainNameHintExample1": "site.com",
     "domainNameHintExample2": "panel.site.com",
+    "siteType": "Type de site",
+    "siteTypes": {
+      "php": "Application PHP",
+      "wordpress": "WordPress",
+      "static": "Site statique"
+    },
+    "siteTypeHints": {
+      "php": "Une base de données MySQL est créée. Pour Laravel, Symfony et les autres applications PHP.",
+      "wordpress": "Une base de données MySQL est créée. Vous terminez l'installation à l'étape suivante.",
+      "static": "Aucune base de données n'est créée. Pour HTML, CSS et JavaScript uniquement."
+    },
     "phpVersion": "Version PHP",
     "phpDefault": "PHP 8.3 (par défaut)",
     "servicePlan": "Forfait de service",
@@ -89,6 +100,9 @@
     "username": "Nom d'utilisateur",
     "password": "Mot de passe",
     "database": "Base de données",
+    "wordpress": "WORDPRESS",
+    "wordpressNote": "L'installation demande un titre de site, un nom d'administrateur et une adresse e-mail, elle ne s'exécute donc pas automatiquement.",
+    "wordpressAction": "Terminer l'installation de WordPress",
     "systemUser": "Utilisateur système : ",
     "ok": "OK",
     "copyAll": "Tout copier",

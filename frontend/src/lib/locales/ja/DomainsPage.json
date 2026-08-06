@@ -68,6 +68,17 @@
     "domainNameHintMid": " または ",
     "domainNameHintExample1": "site.com",
     "domainNameHintExample2": "panel.site.com",
+    "siteType": "サイトの種類",
+    "siteTypes": {
+      "php": "PHP アプリケーション",
+      "wordpress": "WordPress",
+      "static": "静的サイト"
+    },
+    "siteTypeHints": {
+      "php": "MySQL データベースを作成します。Laravel、Symfony などの PHP アプリケーション向けです。",
+      "wordpress": "MySQL データベースを作成します。インストールは次の手順で完了します。",
+      "static": "データベースは作成しません。HTML、CSS、JavaScript のみです。"
+    },
     "phpVersion": "PHP バージョン",
     "phpDefault": "PHP 8.3 (デフォルト)",
     "servicePlan": "サービスプラン",
@@ -89,6 +100,9 @@
     "username": "ユーザー名",
     "password": "パスワード",
     "database": "データベース",
+    "wordpress": "WORDPRESS",
+    "wordpressNote": "インストールにはサイトタイトル、管理者名、メールアドレスが必要なため、自動では実行されません。",
+    "wordpressAction": "WordPress のインストールを完了する",
     "systemUser": "システムユーザー: ",
     "ok": "OK",
     "copyAll": "すべてコピー",

@@ -68,6 +68,17 @@
     "domainNameHintMid": " veya ",
     "domainNameHintExample1": "site.com",
     "domainNameHintExample2": "panel.site.com",
+    "siteType": "Site Tipi",
+    "siteTypes": {
+      "php": "PHP uygulaması",
+      "wordpress": "WordPress",
+      "static": "Statik site"
+    },
+    "siteTypeHints": {
+      "php": "MySQL veritabanı açılır. Laravel, Symfony ve diğer PHP uygulamaları için.",
+      "wordpress": "MySQL veritabanı açılır. Kurulumu sonraki adımda tamamlarsınız.",
+      "static": "Veritabanı açılmaz. Yalnız HTML, CSS ve JavaScript için."
+    },
     "phpVersion": "PHP Sürümü",
     "phpDefault": "PHP 8.3 (varsayılan)",
     "servicePlan": "Hizmet Planı",
@@ -89,6 +100,9 @@
     "username": "Kullanıcı Adı",
     "password": "Parola",
     "database": "Veritabanı",
+    "wordpress": "WORDPRESS",
+    "wordpressNote": "Kurulum site başlığı, yönetici adı ve e-posta adresi ister, bu yüzden kendiliğinden çalıştırılmaz.",
+    "wordpressAction": "WordPress kurulumunu tamamla",
     "systemUser": "Sistem kullanıcısı: ",
     "ok": "Tamam",
     "copyAll": "Tümünü kopyala",

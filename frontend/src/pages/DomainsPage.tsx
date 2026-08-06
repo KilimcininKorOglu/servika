@@ -31,10 +31,12 @@ type Subdomain = {
 }
 type Plan = { id: number; name: string; disk_quota_mb?: number }
 type PHPVer = { version: string; description?: string }
+type SiteType = 'php' | 'wordpress' | 'static'
 type CreateResult = {
   id: number
   domain_name: string; system_user: string; ftp_user: string; ftp_host: string
   db_host: string; db_user: string; db_name: string
+  site_type: SiteType
   created_passwords: { ftp: string; db: string }
   // Omitted by the backend when the server has no shared nameservers, because
   // the vanity values it would fall back to cannot be given to a customer; the
@@ -79,6 +81,7 @@ export default function DomainsPage() {
   const [resultCopied, setResultCopied] = useState(false)
   const [formDomainName, setFormDomainName] = useState('')
   const [formPhpVersion, setFormPhpVersion] = useState('8.3')
+  const [formSiteType, setFormSiteType] = useState<SiteType>('php')
   const [formPlanId, setFormPlanId] = useState<number | ''>('')
   const [formIssueSSL, setFormIssueSSL] = useState(false)
   const [formWWWRedirect, setFormWWWRedirect] = useState<'off' | 'to_www' | 'to_apex'>('off')
@@ -135,7 +138,7 @@ export default function DomainsPage() {
     // Default plan = "Starter" (if data has already arrived, pick it now; otherwise
     // loadModalData sets it once the fetch completes).
     const defaultPlan = plans.find(plan => plan.name === 'Starter') || plans[0]
-    setFormDomainName(''); setFormPhpVersion('8.3'); setFormPlanId(defaultPlan ? defaultPlan.id : ''); setFormIssueSSL(false); setFormWWWRedirect('off')
+    setFormDomainName(''); setFormPhpVersion('8.3'); setFormSiteType('php'); setFormPlanId(defaultPlan ? defaultPlan.id : ''); setFormIssueSSL(false); setFormWWWRedirect('off')
     setCreateOpen(true)
     loadModalData() // lazy: fetch plans/php versions if they haven't been loaded yet
   }
@@ -150,7 +153,7 @@ export default function DomainsPage() {
     }
     setCreating(true)
     try {
-      const request: { domain_name: string; php_version: string; plan_id?: number } = { domain_name: domainName, php_version: formPhpVersion }
+      const request: { domain_name: string; php_version: string; site_type: SiteType; plan_id?: number } = { domain_name: domainName, php_version: formPhpVersion, site_type: formSiteType }
       if (formPlanId !== '') request.plan_id = formPlanId
       const response = await api.post<CreateResult>('/domains', request)
       setCreateOpen(false)
@@ -222,12 +225,16 @@ export default function DomainsPage() {
       `  ${t('resultModal.username')}: ${result.ftp_user}`,
       `  ${t('resultModal.password')}: ${result.created_passwords.ftp}`,
       '',
-      t('resultModal.mysql'),
-      `  ${t('resultModal.host')}: ${result.db_host || 'localhost'}`,
-      `  ${t('resultModal.database')}: ${result.db_name}`,
-      `  ${t('resultModal.username')}: ${result.db_user}`,
-      `  ${t('resultModal.password')}: ${result.created_passwords.db}`,
-      '',
+      // Mirrors the modal: a static site was given no database, and listing an
+      // empty one here would contradict what the screen showed.
+      ...(result.site_type !== 'static' ? [
+        t('resultModal.mysql'),
+        `  ${t('resultModal.host')}: ${result.db_host || 'localhost'}`,
+        `  ${t('resultModal.database')}: ${result.db_name}`,
+        `  ${t('resultModal.username')}: ${result.db_user}`,
+        `  ${t('resultModal.password')}: ${result.created_passwords.db}`,
+        '',
+      ] : []),
       ...(result.nameservers ? [
         t('resultModal.nameservers'),
         `  NS1: ${result.nameservers.ns1}`,
@@ -573,6 +580,34 @@ export default function DomainsPage() {
                 <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{t('createModal.domainNameHintPre')}<span className="font-mono">{t('createModal.domainNameHintExample1')}</span>{t('createModal.domainNameHintMid')}<span className="font-mono">{t('createModal.domainNameHintExample2')}</span>.</div>
               </div>
 
+              {/* Placed before the PHP version because it decides whether a
+                  database is opened at all, and that choice is easy to regret
+                  quietly: nothing fails until the site first tries to connect. */}
+              <div>
+                <span className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">{t('createModal.siteType')}</span>
+                <div className="space-y-1.5">
+                  {(['php', 'wordpress', 'static'] as const).map(type => (
+                    <label key={type} className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="site-type"
+                        value={type}
+                        checked={formSiteType === type}
+                        onChange={() => setFormSiteType(type)}
+                        disabled={creating}
+                        className="mt-0.5"
+                      />
+                      <span>
+                        <span className="block text-sm text-slate-700 dark:text-slate-300">{t(`createModal.siteTypes.${type}`)}</span>
+                        <span className={`block text-[11px] ${type === 'static' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                          {t(`createModal.siteTypeHints.${type}`)}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">
                   {t('createModal.phpVersion')}
@@ -671,13 +706,33 @@ export default function DomainsPage() {
                 <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.ftp} copy={copyToClipboard} password />
               </div>
 
-              <div className="border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-slate-50 dark:bg-slate-900">
-                <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold mb-2">{t('resultModal.mysql')}</div>
-                <CopyRow label={t('resultModal.host')} value={creationResult.db_host || 'localhost'} copy={copyToClipboard} />
-                <CopyRow label={t('resultModal.database')} value={creationResult.db_name} copy={copyToClipboard} />
-                <CopyRow label={t('resultModal.username')} value={creationResult.db_user} copy={copyToClipboard} />
-                <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.db} copy={copyToClipboard} password />
-              </div>
+              {/* A static site was given no database, so there is nothing to show.
+                  Rendering the block with empty rows would read as a failure. */}
+              {creationResult.site_type !== 'static' && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-slate-50 dark:bg-slate-900">
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold mb-2">{t('resultModal.mysql')}</div>
+                  <CopyRow label={t('resultModal.host')} value={creationResult.db_host || 'localhost'} copy={copyToClipboard} />
+                  <CopyRow label={t('resultModal.database')} value={creationResult.db_name} copy={copyToClipboard} />
+                  <CopyRow label={t('resultModal.username')} value={creationResult.db_user} copy={copyToClipboard} />
+                  <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.db} copy={copyToClipboard} password />
+                </div>
+              )}
+
+              {/* WordPress needs a site title, an administrator name and an email
+                  address, so the install cannot run from here. Point at the screen
+                  that asks for them instead of leaving it to be found. */}
+              {creationResult.site_type === 'wordpress' && (
+                <div className="border border-sky-200 dark:border-sky-800 rounded-md p-3 bg-sky-50 dark:bg-sky-900/20">
+                  <div className="text-[10px] uppercase tracking-wider text-sky-700 dark:text-sky-300 font-semibold mb-2">{t('resultModal.wordpress')}</div>
+                  <p className="text-[11px] text-sky-800 dark:text-sky-300 mb-2">{t('resultModal.wordpressNote')}</p>
+                  <Link
+                    to={`/subscriptions/${creationResult.id}/wordpress`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-sm rounded font-medium"
+                  >
+                    {t('resultModal.wordpressAction')}
+                  </Link>
+                </div>
+              )}
 
               {creationResult.nameservers && (
                 <div className="border border-emerald-200 dark:border-emerald-800 rounded-md p-3 bg-emerald-50 dark:bg-emerald-900/20">

@@ -68,6 +68,17 @@
     "domainNameHintMid": " 或 ",
     "domainNameHintExample1": "site.com",
     "domainNameHintExample2": "panel.site.com",
+    "siteType": "站点类型",
+    "siteTypes": {
+      "php": "PHP 应用",
+      "wordpress": "WordPress",
+      "static": "静态站点"
+    },
+    "siteTypeHints": {
+      "php": "将创建 MySQL 数据库。适用于 Laravel、Symfony 等 PHP 应用。",
+      "wordpress": "将创建 MySQL 数据库。您将在下一步完成安装。",
+      "static": "不创建数据库。仅适用于 HTML、CSS 和 JavaScript。"
+    },
     "phpVersion": "PHP 版本",
     "phpDefault": "PHP 8.3 (默认)",
     "servicePlan": "服务套餐",
@@ -89,6 +100,9 @@
     "username": "用户名",
     "password": "密码",
     "database": "数据库",
+    "wordpress": "WORDPRESS",
+    "wordpressNote": "安装需要站点标题、管理员名称和电子邮件地址，因此不会自动运行。",
+    "wordpressAction": "完成 WordPress 安装",
     "systemUser": "系统用户：",
     "ok": "确定",
     "copyAll": "全部复制",

@@ -68,6 +68,17 @@
     "domainNameHintMid": " oder ",
     "domainNameHintExample1": "site.com",
     "domainNameHintExample2": "panel.site.com",
+    "siteType": "Site-Typ",
+    "siteTypes": {
+      "php": "PHP-Anwendung",
+      "wordpress": "WordPress",
+      "static": "Statische Site"
+    },
+    "siteTypeHints": {
+      "php": "Eine MySQL-Datenbank wird angelegt. Für Laravel, Symfony und andere PHP-Anwendungen.",
+      "wordpress": "Eine MySQL-Datenbank wird angelegt. Die Installation schließen Sie im nächsten Schritt ab.",
+      "static": "Es wird keine Datenbank angelegt. Nur für HTML, CSS und JavaScript."
+    },
     "phpVersion": "PHP-Version",
     "phpDefault": "PHP 8.3 (Standard)",
     "servicePlan": "Serviceplan",
@@ -89,6 +100,9 @@
     "username": "Benutzername",
     "password": "Passwort",
     "database": "Datenbank",
+    "wordpress": "WORDPRESS",
+    "wordpressNote": "Die Installation benötigt einen Site-Titel, einen Administratornamen und eine E-Mail-Adresse und läuft daher nicht automatisch.",
+    "wordpressAction": "WordPress-Installation abschließen",
     "systemUser": "Systembenutzer: ",
     "ok": "OK",
     "copyAll": "Alles kopieren",
