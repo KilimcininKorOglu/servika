@@ -10,6 +10,8 @@ import (
 	"context"
 	"database/sql"
 	"log"
+
+	"servika/internal/tenantaccount"
 )
 
 // BackfillCustomerAccounts moves existing domains onto the multi-user account
@@ -75,55 +77,21 @@ func BackfillCustomerAccounts(ctx context.Context, db *sql.DB) {
 		created, skipped)
 }
 
-// migrateTenant creates the customers+users links for one tenant inside a
-// single transaction, so a half-finished migration is retried whole on the next
-// boot. Every step reuses an existing row when found, which is what makes the
-// whole migration idempotent.
+// migrateTenant links one tenant's existing domains to an account.
+//
+// Building the account itself belongs to internal/tenantaccount, which is also
+// what domain creation calls, so an old tenant and a new one end up with the
+// same chain rather than two definitions of it that can drift apart.
 func migrateTenant(ctx context.Context, db *sql.DB, systemUser, domainName string) error {
-	tx, err := db.BeginTx(ctx, nil)
+	customerID, err := tenantaccount.Ensure(ctx, db, systemUser, domainName)
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback() //nolint:errcheck // no-op once the commit succeeds
-
-	// users: reuse the row when the username already exists (a prior run may
-	// have been interrupted). The empty password_hash means the account cannot
-	// log in until a password is assigned.
-	var userID int64
-	err = tx.QueryRowContext(ctx, `SELECT id FROM users WHERE username=?`, systemUser).Scan(&userID)
-	if err == sql.ErrNoRows {
-		res, iErr := tx.ExecContext(ctx, `
-			INSERT INTO users(username, email, password_hash, role, full_name, status)
-			VALUES(?, '', '', 'user', ?, 'active')`, systemUser, domainName)
-		if iErr != nil {
-			return iErr
-		}
-		userID, _ = res.LastInsertId()
-	} else if err != nil {
-		return err
+	if customerID == 0 {
+		return nil // no tenant to attach anything to
 	}
-
-	// customers: reuse the record already bound to this panel account.
-	var customerID int64
-	err = tx.QueryRowContext(ctx, `SELECT id FROM customers WHERE user_id=?`, userID).Scan(&customerID)
-	if err == sql.ErrNoRows {
-		res, iErr := tx.ExecContext(ctx, `
-			INSERT INTO customers(name, email, status, notes, user_id)
-			VALUES(?, '', 'active', 'auto-created by panel account migration', ?)`, domainName, userID)
-		if iErr != nil {
-			return iErr
-		}
-		customerID, _ = res.LastInsertId()
-	} else if err != nil {
-		return err
-	}
-
-	// Link this tenant's unowned domains to the customer.
-	if _, err := tx.ExecContext(ctx, `
+	_, err = db.ExecContext(ctx, `
 		UPDATE domains SET customer_id=?
-		WHERE system_user=? AND customer_id IS NULL`, customerID, systemUser); err != nil {
-		return err
-	}
-
-	return tx.Commit()
+		WHERE system_user=? AND customer_id IS NULL`, customerID, systemUser)
+	return err
 }

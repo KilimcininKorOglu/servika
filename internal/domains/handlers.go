@@ -23,6 +23,7 @@ import (
 	"servika/internal/quota"
 	"servika/internal/redis"
 	"servika/internal/resourcelimit"
+	"servika/internal/tenantaccount"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -282,6 +283,28 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		_, _ = h.DB.ExecContext(r.Context(),
 			`UPDATE domains SET customer_id=?, plan_id=? WHERE id=?`,
 			req.CustomerID, req.PlanID, id)
+	}
+	if req.CustomerID == nil {
+		// Nobody was named, so build the ownership chain now rather than leaving
+		// it to the next restart. Until this existed, the account for a freshly
+		// added domain appeared only after the startup backfill ran, so the
+		// Customer Accounts screen stayed empty in the meantime.
+		//
+		// Reachable on an administrator's authority alone: a reseller is refused
+		// above unless it names one of its own customers, so the record this
+		// creates is correctly left unowned by any reseller.
+		//
+		// Not fatal. The domain is already provisioned and serving; a failure here
+		// is logged and the startup backfill picks the tenant up.
+		if customerID, err := tenantaccount.Ensure(r.Context(), h.DB, pr.SystemUser, req.DomainName); err != nil {
+			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
+			log.Printf("customer account for %q: %v", pr.SystemUser, err)
+		} else if customerID > 0 {
+			if _, err := h.DB.ExecContext(r.Context(),
+				`UPDATE domains SET customer_id=? WHERE id=?`, customerID, id); err != nil {
+				log.Printf("link domain %d to customer %d: %v", id, customerID, err)
+			}
+		}
 	}
 	// If a plan is selected, seed the nginx web-server defaults to the domain + refresh vhost
 	if req.PlanID != nil {
