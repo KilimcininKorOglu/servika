@@ -203,6 +203,7 @@ func Init(db *sql.DB) {
 	Ensure404Page()     // brand 404 page (root-owned; a tenant cannot modify it)
 	EnsureBrandAssets() // Lottie animations + player (shared, served at /_srv/)
 	healCacheZoneOnStartup()
+	HealDefaultVhostsOnStartup() // port 80/443 catch-all vhosts, install-only until now
 	healPanelVhostHeadersOnStartup()
 	healPanelLoginRateLimitOnStartup()
 	HealPanelProxyTrustOnStartup() // :8080 proxy secret + pma-redeem deny + slowloris/limit_conn
