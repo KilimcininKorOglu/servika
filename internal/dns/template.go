@@ -86,16 +86,22 @@ func builtinDefaults() []TemplateRow {
 // is no POP3 service and no implicit-TLS listener to point a client at, and
 // _imap._tcp/143 with STARTTLS is what a client can actually reach.
 //
-// autoconfig and autodiscover are deliberately NOT here even though the panel
-// answers both. They are served on the domain's own vhost, which is the first
-// place each client looks, so a subdomain would only add an A record and a
-// certificate name per domain; and _autodiscover._tcp exists solely to point
-// Outlook at a DIFFERENT host, which makes it show a redirect warning for a host
-// it was already going to try.
+// autoconfig and autodiscover are here because each client looks there FIRST or
+// SECOND depending on which one it is: Thunderbird probes autoconfig.<domain>
+// before the domain's own /.well-known path, and Outlook probes the domain
+// before autodiscover.<domain>. Covering both means either client succeeds on
+// its first attempt, and it is the only route that works at all when the apex
+// resolves to another server while mail is hosted here.
+//
+// _autodiscover._tcp is still deliberately absent: it exists solely to point
+// Outlook at a DIFFERENT host, which makes it show a redirect warning, and the
+// host it would name is one Outlook now reaches directly.
 func MailDiscoveryRows() []TemplateRow {
 	return []TemplateRow{
 		{Name: "smtp", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 31, Enabled: true},
 		{Name: "imap", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 32, Enabled: true},
+		{Name: "autoconfig", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 33, Enabled: true},
+		{Name: "autodiscover", Type: "A", Value: "{IP}", TTL: 3600, SortOrder: 34, Enabled: true},
 		// SRV value is "weight port target"; the priority lives in its own column.
 		{Name: "_imap._tcp", Type: "SRV", Value: "1 143 mail.{DOMAIN}", TTL: 3600, Priority: 10, SortOrder: 120, Enabled: true},
 		{Name: "_submission._tcp", Type: "SRV", Value: "1 587 mail.{DOMAIN}", TTL: 3600, Priority: 10, SortOrder: 122, Enabled: true},

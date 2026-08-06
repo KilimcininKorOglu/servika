@@ -35,17 +35,33 @@ func TestTemplateCarriesTheMailClientNames(t *testing.T) {
 	}
 }
 
-// The autoconfig and autodiscover endpoints ARE served now, but on the domain's
-// own vhost, and both clients try that before any subdomain. An autoconfig. or
-// autodiscover. A record would need an extra name on the certificate for every
-// domain, and _autodiscover._tcp exists only to send Outlook to a DIFFERENT
-// host, which makes it show a redirect warning for a host it was already going
-// to reach. So none of them belong in the zone.
-func TestTemplateDoesNotAdvertiseUnservedEndpoints(t *testing.T) {
+// The two discovery hostnames are published because a vhost now answers them,
+// and their A records point at this server like every other host record.
+func TestTemplatePublishesTheDiscoveryHostnames(t *testing.T) {
+	found := map[string]bool{}
 	for _, row := range builtinDefaults() {
-		if strings.HasPrefix(row.Name, "autoconfig") || strings.HasPrefix(row.Name, "autodiscover") ||
-			strings.Contains(row.Name, "_autodiscover") {
-			t.Errorf("the template advertises %s, which nothing serves yet", row.Name)
+		if row.Name != "autoconfig" && row.Name != "autodiscover" {
+			continue
+		}
+		found[row.Name] = true
+		if row.Type != "A" || row.Value != "{IP}" {
+			t.Errorf("%s = %s %q, want an A record pointing at this server", row.Name, row.Type, row.Value)
+		}
+	}
+	for _, name := range []string{"autoconfig", "autodiscover"} {
+		if !found[name] {
+			t.Errorf("the template does not publish %s", name)
+		}
+	}
+}
+
+// _autodiscover._tcp stays out. It exists only to send Outlook to a DIFFERENT
+// host, which makes it show a redirect warning, and the host it would name is
+// one Outlook now reaches directly.
+func TestTemplateDoesNotAdvertiseTheAutodiscoverSRV(t *testing.T) {
+	for _, row := range builtinDefaults() {
+		if strings.Contains(row.Name, "_autodiscover") {
+			t.Errorf("the template advertises %s, which only produces a redirect warning", row.Name)
 		}
 	}
 }
