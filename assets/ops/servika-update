@@ -47,6 +47,11 @@ SVC="${SERVIKA_SVC:-servika}"
 HEALTH="${SERVIKA_HEALTH:-http://127.0.0.1:8080/healthz}"
 DB_BACKUP="${SERVIKA_DBBK:-$OPSBIN/servika-db-backup}"
 DB_BACKUP_DIR="${SERVIKA_DBDIR:-/var/backups/servika/db}"
+# Durable home for the panel vhost this update replaces. The rollback snapshot is
+# discarded once the update succeeds, so operator edits need somewhere that
+# outlives it. The file carries the X-Servika-Proxy secret, hence 0700/0600.
+VHOST_KEEP_DIR="${SERVIKA_VHOSTDIR:-/var/backups/servika/nginx}"
+VHOST_KEEP_MAX=5
 PRE_UPDATE_DUMP=""
 
 # Detect host architecture for binary selection.
@@ -172,6 +177,7 @@ validate_paths() {
   require_abs_path SERVIKA_OPSBIN "$OPSBIN"
   require_abs_path SERVIKA_DBBK "$DB_BACKUP"
   require_abs_path SERVIKA_DBDIR "$DB_BACKUP_DIR"
+  require_abs_path SERVIKA_VHOSTDIR "$VHOST_KEEP_DIR"
   require_url SERVIKA_HEALTH "$HEALTH"
 }
 
@@ -260,6 +266,7 @@ if [ "$DRY" = 1 ]; then
   echo "  • $OPSBIN operations tools and $SCRIPTS"
   echo "  • mail templates under $PREFIX/src/mail-templates"
   echo "  • nginx and PHP-FPM panel integration files"
+  echo "  • the replaced panel vhost kept under $VHOST_KEEP_DIR (last $VHOST_KEEP_MAX)"
   echo "  • $DB_BACKUP and /etc/systemd/system/servika-db-backup.{service,timer}"
   echo "  • full panel database dump before migrations: $DB_BACKUP_DIR (not created during dry run)"
   echo "  • systemctl restart servika"
@@ -358,8 +365,46 @@ if [ -d "$A/mail" ]; then
 fi
 if [ -f "$A/nginx/_panel.conf" ]; then
   [ -f /etc/nginx/conf.d/_panel.conf ] && cp -a /etc/nginx/conf.d/_panel.conf "$ROLLBACK_DIR/_panel.conf" 2>/dev/null || true
+
+  # The replacement is unconditional, so any hand edit in the installed file is
+  # gone the moment the rollback snapshot is discarded. Keep the outgoing copy
+  # somewhere durable, root-only because it carries the X-Servika-Proxy secret,
+  # and prune to the last few so the directory cannot grow without bound.
+  KEPT_VHOST=""
+  if [ -f /etc/nginx/conf.d/_panel.conf ]; then
+    if mkdir -p "$VHOST_KEEP_DIR" && chmod 700 "$VHOST_KEEP_DIR"; then
+      KEPT_VHOST="$VHOST_KEEP_DIR/_panel.conf.$(date +%Y%m%d-%H%M%S)"
+      if cp -a /etc/nginx/conf.d/_panel.conf "$KEPT_VHOST" && chmod 600 "$KEPT_VHOST"; then
+        # shellcheck disable=SC2012 # names are generated above and contain no newlines
+        ls -1t "$VHOST_KEEP_DIR"/_panel.conf.* 2>/dev/null | tail -n +$((VHOST_KEEP_MAX + 1)) \
+          | while read -r old; do rm -f "$old"; done
+      else
+        KEPT_VHOST=""
+        warn "could not keep a copy of the current panel vhost"
+      fi
+    fi
+  fi
+
+  # Only attribute a syntax failure to this copy when the configuration was sound
+  # beforehand; a host already failing nginx -t is broken for another reason and
+  # reverting would hide that instead of fixing it.
+  NGINX_WAS_OK=0
+  nginx -t >/dev/null 2>&1 && NGINX_WAS_OK=1
+
   cp "$A/nginx/_panel.conf" /etc/nginx/conf.d/_panel.conf
-  ok "panel nginx vhost updated"
+
+  if [ "$NGINX_WAS_OK" = 1 ] && ! nginx -t >/dev/null 2>&1; then
+    if [ -f "$ROLLBACK_DIR/_panel.conf" ]; then
+      cp -a "$ROLLBACK_DIR/_panel.conf" /etc/nginx/conf.d/_panel.conf
+      warn "the new panel nginx vhost fails nginx -t; the previous one was restored"
+    else
+      rm -f /etc/nginx/conf.d/_panel.conf
+      warn "the new panel nginx vhost fails nginx -t; it was removed"
+    fi
+  else
+    ok "panel nginx vhost updated"
+    [ -n "$KEPT_VHOST" ] && echo "    previous vhost kept at $KEPT_VHOST"
+  fi
 fi
 if [ -f "$A/php-fpm/roundcube.conf" ]; then
   [ -f /etc/php-fpm.d/roundcube.conf ] && cp -a /etc/php-fpm.d/roundcube.conf "$ROLLBACK_DIR/roundcube.conf" 2>/dev/null || true
