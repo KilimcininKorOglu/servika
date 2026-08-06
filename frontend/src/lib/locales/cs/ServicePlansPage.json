@@ -55,6 +55,8 @@
     "maxFtp": "Max. účtů FTP",
     "maxEmail": "Maximum poštovních schránek",
     "mailboxQuotaMb": "Kvóta poštovní schránky (MB)",
+    "mailSendLimitHour": "Limit odesílání na schránku / hodina",
+    "mailSendLimitDay": "Limit odesílání na schránku / den",
     "isDefault": "Výchozí tarif pro nové domény",
     "wafHeading": "Výchozí WAF (ModSecurity + OWASP CRS)",
     "wafEnabled": "Povoleno v tomto tarifu",

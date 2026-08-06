@@ -224,14 +224,21 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	cmd.Env = subprocessEnv
 	_ = cmd.Run()
 
-	// The plan's mailbox quota is applied at creation. Dovecot reads the value
-	// through its userdb query, so a mailbox created without it is genuinely
-	// unlimited no matter what the plan says.
-	quotaBytes := planMailboxQuotaBytes(r.Context(), h.DB, id)
+	// The plan's mail limits are applied at creation. Dovecot reads the quota
+	// through its userdb query and the policy server reads the send limits from
+	// the same row, so a mailbox created without them is genuinely unlimited no
+	// matter what the plan says. A send limit the plan leaves at zero keeps the
+	// column default rather than becoming unlimited.
+	limits := planLimitsOrDefault(r.Context(), h.DB, id)
 	res, err := h.DB.ExecContext(r.Context(),
-		`INSERT INTO mailboxes(domain_id, mail_domain_id, local_part, email, password_hash, maildir, quota_bytes)
-		 VALUES(?,?,?,?,?,?,?)`,
-		id, mailDomainID, localPart, email, hash, maildir, quotaBytes)
+		`INSERT INTO mailboxes(domain_id, mail_domain_id, local_part, email, password_hash, maildir, quota_bytes,
+		   send_limit_hour, send_limit_day)
+		 VALUES(?,?,?,?,?,?,?,
+		   IF(? > 0, ?, DEFAULT(send_limit_hour)),
+		   IF(? > 0, ?, DEFAULT(send_limit_day)))`,
+		id, mailDomainID, localPart, email, hash, maildir, limits.QuotaBytes,
+		limits.SendLimitHour, limits.SendLimitHour,
+		limits.SendLimitDay, limits.SendLimitDay)
 	if err != nil {
 		httpx.WriteError(w, http.StatusConflict, "mailbox already exists or could not be created")
 		return
@@ -350,26 +357,22 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
-// planMailboxQuotaBytes returns the per-mailbox storage limit the domain's plan
-// imposes, in bytes, or 0 for no limit.
+// planLimitsOrDefault reads the domain plan's mail limits for a mailbox that is
+// about to be created.
 //
-// A plan value that nothing writes into the mailbox row enforces nothing: the
-// panel would display a quota while Dovecot accepted mail until the disk filled.
-// A read failure yields 0 rather than an arbitrary limit, because inventing a
-// quota is worse than the plan not being applied, and the caller logs it.
-func planMailboxQuotaBytes(ctx context.Context, db *sql.DB, domainID int64) int64 {
-	var quotaMB int64
-	err := db.QueryRowContext(ctx,
-		`SELECT COALESCE(p.mailbox_quota_mb, 0)
-		   FROM domains d LEFT JOIN service_plans p ON p.id = d.plan_id
-		  WHERE d.id = ?`, domainID).Scan(&quotaMB)
+// A read failure yields the zero value rather than an arbitrary limit: inventing
+// a quota is worse than the plan not being applied, and a zero send limit leaves
+// the column default in place instead of removing the spam protection. The
+// failure is logged, so it is not lost.
+func planLimitsOrDefault(ctx context.Context, db *sql.DB, domainID int64) PlanMailLimits {
+	limits, err := planLimitsFor(ctx, db, domainID)
 	if err != nil {
 		// #nosec G706 -- the operands are an integer domain ID and a database
 		// driver error; no client-controlled string reaches the log line.
-		log.Printf("mailbox quota lookup for domain %d: %v", domainID, err)
-		return 0
+		log.Printf("mail plan limit lookup for domain %d: %v", domainID, err)
+		return PlanMailLimits{}
 	}
-	return quotaBytesFromMB(quotaMB)
+	return limits
 }
 
 // quotaBytesFromMB converts the plan's megabyte figure into the byte count the

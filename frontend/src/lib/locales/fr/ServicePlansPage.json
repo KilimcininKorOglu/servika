@@ -55,6 +55,8 @@
     "maxFtp": "Comptes FTP max",
     "maxEmail": "Boîtes aux lettres max.",
     "mailboxQuotaMb": "Quota de boîte aux lettres (Mo)",
+    "mailSendLimitHour": "Limite d'envoi par boîte / heure",
+    "mailSendLimitDay": "Limite d'envoi par boîte / jour",
     "isDefault": "Forfait par défaut pour les nouveaux domaines",
     "wafHeading": "WAF par défaut (ModSecurity + OWASP CRS)",
     "wafEnabled": "Activé dans ce forfait",

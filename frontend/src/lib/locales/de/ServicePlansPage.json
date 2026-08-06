@@ -55,6 +55,8 @@
     "maxFtp": "Max. FTP-Konten",
     "maxEmail": "Max. Postfächer",
     "mailboxQuotaMb": "Postfach-Kontingent (MB)",
+    "mailSendLimitHour": "Postfach-Sendelimit / Stunde",
+    "mailSendLimitDay": "Postfach-Sendelimit / Tag",
     "isDefault": "Standardplan für neue Domains",
     "wafHeading": "WAF-Standard (ModSecurity + OWASP CRS)",
     "wafEnabled": "In diesem Plan aktiviert",

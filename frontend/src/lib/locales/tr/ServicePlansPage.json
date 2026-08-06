@@ -55,6 +55,8 @@
     "maxFtp": "Maksimum FTP Hesabı",
     "maxEmail": "Azami Posta Kutusu",
     "mailboxQuotaMb": "Posta Kutusu Kotası (MB)",
+    "mailSendLimitHour": "Posta Kutusu Gönderim Limiti / Saat",
+    "mailSendLimitDay": "Posta Kutusu Gönderim Limiti / Gün",
     "isDefault": "Yeni alan adları için varsayılan plan",
     "wafHeading": "WAF Varsayılanı (ModSecurity + OWASP CRS)",
     "wafEnabled": "Bu planda etkin",

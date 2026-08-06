@@ -55,6 +55,8 @@
     "maxFtp": "最大 FTP アカウント数",
     "maxEmail": "最大メールボックス数",
     "mailboxQuotaMb": "メールボックス容量 (MB)",
+    "mailSendLimitHour": "メールボックス送信上限 / 時間",
+    "mailSendLimitDay": "メールボックス送信上限 / 日",
     "isDefault": "新しいドメインのデフォルトプラン",
     "wafHeading": "WAF デフォルト (ModSecurity + OWASP CRS)",
     "wafEnabled": "このプランで有効",

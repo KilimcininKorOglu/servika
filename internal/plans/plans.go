@@ -10,9 +10,11 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"servika/internal/config"
 	"servika/internal/httpx"
+	"servika/internal/mail"
 	"servika/internal/provisioner"
 
 	"github.com/go-chi/chi/v5"
@@ -28,7 +30,9 @@ type Plan struct {
 	MaxDomain            int    `json:"max_domain"`
 	MaxDB                int    `json:"max_db"`
 	MaxEmail             int    `json:"max_email"`
-	MailboxQuotaMB       int    `json:"mailbox_quota_mb"` // storage per mailbox, 0 = unlimited
+	MailboxQuotaMB       int    `json:"mailbox_quota_mb"`     // storage per mailbox, 0 = unlimited
+	MailSendLimitHour    int    `json:"mail_send_limit_hour"` // 0 keeps the built-in per-mailbox default
+	MailSendLimitDay     int    `json:"mail_send_limit_day"`  // 0 keeps the built-in per-mailbox default
 	MaxFTP               int    `json:"max_ftp"`
 	CPUPercent           int    `json:"cpu_percent"` // 100 equals one CPU core.
 	RAMMB                int    `json:"ram_mb"`      // Hard limit in MB.
@@ -62,7 +66,8 @@ type Handlers struct {
 }
 
 const selectAll = `SELECT id, name, description, disk_quota_mb, traffic_quota_mb,
-  max_domain, max_db, max_email, COALESCE(mailbox_quota_mb,0), max_ftp,
+  max_domain, max_db, max_email, COALESCE(mailbox_quota_mb,0),
+  COALESCE(mail_send_limit_hour,0), COALESCE(mail_send_limit_day,0), max_ftp,
   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
   COALESCE(pm_max_children,0),
   COALESCE(io_read_mbps,0), COALESCE(io_write_mbps,0),
@@ -84,7 +89,8 @@ func scan(rs interface{ Scan(...any) error }) (Plan, error) {
 	var p Plan
 	var vars, fc, wafEn int
 	err := rs.Scan(&p.ID, &p.Name, &p.Description, &p.DiskQuotaMB, &p.TrafficQuotaMB,
-		&p.MaxDomain, &p.MaxDB, &p.MaxEmail, &p.MailboxQuotaMB, &p.MaxFTP,
+		&p.MaxDomain, &p.MaxDB, &p.MaxEmail, &p.MailboxQuotaMB,
+		&p.MailSendLimitHour, &p.MailSendLimitDay, &p.MaxFTP,
 		&p.CPUPercent, &p.RAMMB, &p.MaxProcess, &p.InodeQuota, &p.IOWeight, &p.MySQLMaxConnections,
 		&p.PMMaxChildren,
 		&p.IOReadMBps, &p.IOWriteMBps, &p.IOReadIOPS, &p.IOWriteIOPS,
@@ -206,15 +212,15 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := h.DB.ExecContext(r.Context(),
 		`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
-		   max_domain, max_db, max_email, mailbox_quota_mb, max_ftp,
+		   max_domain, max_db, max_email, mailbox_quota_mb, mail_send_limit_hour, mail_send_limit_day, max_ftp,
 		   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
 		   pm_max_children, io_read_mbps, io_write_mbps, io_read_iops, io_write_iops,
 		   db_max_queries_per_hour, db_max_updates_per_hour, db_max_query_seconds,
 		   php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives,
 		   waf_enabled, waf_mode, waf_paranoia, is_default)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
-		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MailboxQuotaMB, p.MaxFTP,
+		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MailboxQuotaMB, p.MailSendLimitHour, p.MailSendLimitDay, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
 		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
 		p.DBMaxQueriesPerHour, p.DBMaxUpdatesPerHour, p.DBMaxQuerySeconds,
@@ -263,14 +269,15 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE service_plans SET name=?, description=?, disk_quota_mb=?, traffic_quota_mb=?,
-		   max_domain=?, max_db=?, max_email=?, mailbox_quota_mb=?, max_ftp=?,
+		   max_domain=?, max_db=?, max_email=?, mailbox_quota_mb=?,
+		   mail_send_limit_hour=?, mail_send_limit_day=?, max_ftp=?,
 		   cpu_percent=?, ram_mb=?, max_process=?, inode_quota=?, io_weight=?, mysql_max_connections=?,
 		   pm_max_children=?, io_read_mbps=?, io_write_mbps=?, io_read_iops=?, io_write_iops=?,
 		   db_max_queries_per_hour=?, db_max_updates_per_hour=?, db_max_query_seconds=?,
 		   php_version=?, fastcgi_cache=?, client_max_body_mb=?, nginx_extra_directives=?, waf_enabled=?, waf_mode=?, waf_paranoia=?, is_default=?
 		 WHERE id=?`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
-		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MailboxQuotaMB, p.MaxFTP,
+		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MailboxQuotaMB, p.MailSendLimitHour, p.MailSendLimitDay, p.MaxFTP,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
 		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
 		p.DBMaxQueriesPerHour, p.DBMaxUpdatesPerHour, p.DBMaxQuerySeconds,
@@ -282,9 +289,30 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 	// WAF plan default may have changed — re-render vhosts for domains in this plan
 	// whose WAF override is set to inherit. Runs in the background.
 	go h.wafPlanReapply(id)
+	// The mail limits may have changed too. Without this the new values would
+	// apply only to mailboxes created from now on, so the same plan would mean
+	// two different things depending on when a customer signed up.
+	// #nosec G118 -- the goroutine deliberately builds its own context; the request context dies with the response and would abort the realignment half way through.
+	go h.mailLimitReapply(id)
 
 	saved, _ := scan(row)
 	httpx.WriteJSON(w, http.StatusOK, saved)
+}
+
+// mailLimitReapply pushes the plan's mail limits onto the mailboxes of every
+// domain on it. Runs in a background goroutine with its own context, because the
+// request context is cancelled as soon as the response is written.
+func (h *Handlers) mailLimitReapply(planID int64) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	changed, err := mail.ApplyPlanLimitsToPlan(ctx, h.DB, planID)
+	if err != nil {
+		log.Printf("mail limit reapply for plan %d: %v", planID, err)
+		return
+	}
+	if changed > 0 {
+		log.Printf("mail limit reapply for plan %d: %d mailbox rows updated", planID, changed)
+	}
 }
 
 // wafPlanReapply re-applies the WAF settings (including plan-default inheritors)

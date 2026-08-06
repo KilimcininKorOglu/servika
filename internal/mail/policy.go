@@ -219,8 +219,11 @@ func (h *Handlers) SendLimitsPut(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "mailbox not found")
 		return
 	}
+	// send_limits_manual is what stops the next plan change from undoing this.
+	// The plan realignment skips a mailbox somebody has tuned by hand, so the
+	// flag has to be set in the same statement as the values it protects.
 	if _, err := h.DB.ExecContext(r.Context(), `UPDATE mailboxes
-		SET send_limit_hour=?,send_limit_day=? WHERE id=? AND domain_id=?`,
+		SET send_limit_hour=?,send_limit_day=?,send_limits_manual=1 WHERE id=? AND domain_id=?`,
 		req.HourLimit, req.DayLimit, mid, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not save send limits")
 		return

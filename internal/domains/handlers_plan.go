@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"servika/internal/httpx"
+	"servika/internal/mail"
 	"servika/internal/provisioner"
 	"servika/internal/resourcelimit"
 
@@ -73,6 +74,13 @@ func (h *Handlers) SetPlan(w http.ResponseWriter, r *http.Request) {
 		// (domain override takes precedence, plan default is the fallback).
 		if err := provisioner.WAFApply(h.DB, did); err != nil {
 			log.Printf("waf apply (plan change) domain=%d: %v", did, err)
+		}
+		// Mail limits follow the plan as well. A mailbox whose limits were set by
+		// hand keeps them; everything else moves to the new plan's values, so the
+		// plan on the screen and the limits Dovecot and the policy server enforce
+		// describe the same thing.
+		if _, err := mail.ApplyPlanLimitsToDomain(ctx, h.DB, did); err != nil {
+			log.Printf("mail limit apply (plan change) domain=%d: %v", did, err)
 		}
 	}(id)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "plan_id": req.PlanID})

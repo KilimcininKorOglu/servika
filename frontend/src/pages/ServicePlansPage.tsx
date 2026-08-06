@@ -20,6 +20,8 @@ type Plan = {
   max_db: number
   max_email: number
   mailbox_quota_mb: number
+  mail_send_limit_hour: number
+  mail_send_limit_day: number
   max_ftp: number
   php_version: string
   fastcgi_cache: boolean
@@ -185,6 +187,8 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
     max_db: plan.max_db || 1,
     max_email: plan.max_email || 0,
     mailbox_quota_mb: plan.mailbox_quota_mb || 0,
+    mail_send_limit_hour: plan.mail_send_limit_hour || 0,
+    mail_send_limit_day: plan.mail_send_limit_day || 0,
     max_ftp: plan.max_ftp || 2,
     php_version: plan.php_version || '8.3',
     fastcgi_cache: plan.fastcgi_cache || false,
@@ -243,6 +247,10 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
           <Count label={t('modal.maxEmail')} value={form.max_email} setValue={value => setForm({ ...form, max_email: value })} />
           {/* Enforced by Dovecot through the mailbox row, not just displayed. */}
           <Count label={t('modal.mailboxQuotaMb')} value={form.mailbox_quota_mb} setValue={value => setForm({ ...form, mailbox_quota_mb: value })} />
+          {/* 0 keeps the built-in per-mailbox default rather than removing the
+              limit, because 0 on a mailbox row already means unlimited. */}
+          <Count label={t('modal.mailSendLimitHour')} value={form.mail_send_limit_hour} setValue={value => setForm({ ...form, mail_send_limit_hour: value })} />
+          <Count label={t('modal.mailSendLimitDay')} value={form.mail_send_limit_day} setValue={value => setForm({ ...form, mail_send_limit_day: value })} />
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
           <input type="checkbox" checked={form.is_default} onChange={e => setForm({ ...form, is_default: e.target.checked })} className="rounded" />

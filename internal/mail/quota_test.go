@@ -45,16 +45,18 @@ func (quotaFailingConnector) Open(string) (driver.Conn, error) { return nil, err
 func init() { sql.Register("mail_quota_failing_db", quotaFailingConnector{}) }
 
 // A lookup that cannot reach the database must not invent a limit. Returning a
-// non-zero guess would cap a mailbox the operator never capped; returning 0
-// leaves the plan unapplied, which the caller logs and an operator can fix.
-func TestPlanMailboxQuotaBytesFallsBackToUnlimitedOnReadFailure(t *testing.T) {
+// non-zero guess would cap a mailbox the operator never capped; returning zeros
+// leaves the plan unapplied, which the caller logs and an operator can fix, and
+// a zero send limit keeps the column default rather than removing it.
+func TestPlanLimitsFallBackToNothingOnReadFailure(t *testing.T) {
 	db, err := sql.Open("mail_quota_failing_db", "")
 	if err != nil {
 		t.Fatalf("open the failing database: %v", err)
 	}
 	t.Cleanup(func() { _ = db.Close() })
 
-	if got := planMailboxQuotaBytes(context.Background(), db, 1); got != 0 {
-		t.Errorf("planMailboxQuotaBytes with an unreachable database = %d, want 0", got)
+	got := planLimitsOrDefault(context.Background(), db, 1)
+	if got != (PlanMailLimits{}) {
+		t.Errorf("planLimitsOrDefault with an unreachable database = %+v, want the zero value", got)
 	}
 }

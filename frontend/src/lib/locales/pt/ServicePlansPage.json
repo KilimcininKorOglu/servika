@@ -55,6 +55,8 @@
     "maxFtp": "Máximo de Contas FTP",
     "maxEmail": "Máx. de caixas de correio",
     "mailboxQuotaMb": "Quota da caixa de correio (MB)",
+    "mailSendLimitHour": "Limite de envio por caixa / hora",
+    "mailSendLimitDay": "Limite de envio por caixa / dia",
     "isDefault": "Plano predefinido para novos domínios",
     "wafHeading": "WAF Predefinido (ModSecurity + OWASP CRS)",
     "wafEnabled": "Ativado neste plano",

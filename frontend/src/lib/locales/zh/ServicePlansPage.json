@@ -55,6 +55,8 @@
     "maxFtp": "最大 FTP 账户数",
     "maxEmail": "最大邮箱数",
     "mailboxQuotaMb": "邮箱配额 (MB)",
+    "mailSendLimitHour": "每个邮箱发送上限 / 小时",
+    "mailSendLimitDay": "每个邮箱发送上限 / 天",
     "isDefault": "新域名的默认套餐",
     "wafHeading": "WAF 默认设置 (ModSecurity + OWASP CRS)",
     "wafEnabled": "在此套餐中启用",

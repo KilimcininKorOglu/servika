@@ -55,6 +55,8 @@
     "maxFtp": "Conturi FTP maxime",
     "maxEmail": "Număr maxim de căsuțe poștale",
     "mailboxQuotaMb": "Cotă căsuță poștală (MB)",
+    "mailSendLimitHour": "Limită de trimitere per căsuță / oră",
+    "mailSendLimitDay": "Limită de trimitere per căsuță / zi",
     "isDefault": "Plan implicit pentru domeniile noi",
     "wafHeading": "Valoare implicită WAF (ModSecurity + OWASP CRS)",
     "wafEnabled": "Activat în acest plan",
