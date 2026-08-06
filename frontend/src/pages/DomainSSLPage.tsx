@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
@@ -12,6 +12,13 @@ type SSLStatus = {
   expires_at?: string
   cert_path?: string
   key_path?: string
+}
+type SSLStep = { name: string; state: string; reason?: string; seconds: number }
+type SSLProgress = {
+  state: string
+  reason?: string
+  steps: SSLStep[]
+  result?: Record<string, unknown>
 }
 
 export default function DomainSSLPage() {
@@ -29,6 +36,11 @@ export default function DomainSSLPage() {
   // nothing on this page would have told them why.
   const [alsoSecureMail, setAlsoSecureMail] = useState(true)
   const [mailNote, setMailNote] = useState<string | null>(null)
+  // The installation runs on the server, not on this request, so the page shows
+  // where it got to and survives being closed and reopened.
+  const [steps, setSteps] = useState<SSLStep[]>([])
+  const [jobState, setJobState] = useState('idle')
+  const [pollToken, setPollToken] = useState(0)
 
   function load() {
     if (!id) return
@@ -37,62 +49,113 @@ export default function DomainSSLPage() {
   }
   useEffect(load, [id, report])
 
+  // applyResult renders the outcome the installation recorded. It reads the
+  // same fields the synchronous response used to carry, so what the customer is
+  // told did not change when the work moved off the request.
+  const applyResult = useCallback((progress: SSLProgress) => {
+    const result = (progress.result ?? {}) as Record<string, string | undefined> &
+      { web_ssl_skipped?: Record<string, string>; mail_ssl_skipped?: Record<string, string>; mail_ssl?: { hosts?: string[] } }
+
+    if (progress.state === 'failed') {
+      setError(t(`reasons.${progress.reason}`, { defaultValue: t('errors.installFailed') }))
+      return
+    }
+
+    // A name left out of the certificate is not a failure, so it is reported
+    // whether the issuance succeeded or fell back. Without it the only symptom
+    // is a mail client that keeps asking for a password.
+    const webSkipped = Object.entries(result.web_ssl_skipped ?? {})
+      .map(([host, code]) => `${host} (${t(`reasons.${code}`, { defaultValue: code })})`)
+      .join(', ')
+    const skippedNote = webSkipped ? ` ${t('warning.namesSkipped', { skipped: webSkipped })}` : ''
+
+    // result.type is what was ACTUALLY installed, which is not always what was
+    // asked for: a Let's Encrypt request that fails falls back to a self-signed
+    // certificate so port 443 keeps serving. Reporting the requested type here
+    // is what let the panel say "Let's Encrypt installed" while the browser said
+    // the site was not secure.
+    const installed = result.type ?? result.requested_type ?? ''
+    if (result.warning) {
+      const reason = result.reason
+        ? t(`reasons.${result.reason}`, { defaultValue: result.reason })
+        : ''
+      const fallback = t('warning.letsencryptFallback')
+      setWarning((reason ? `${fallback} ${reason}` : fallback) + skippedNote)
+    } else {
+      setSuccess(t('success.installed', { type: installed, expires: result.expires_at }))
+      if (skippedNote) setWarning(skippedNote.trim())
+    }
+
+    // The mail certificate is a separate order, so it is reported separately.
+    // The backend returns reason CODES, never sentences: the API is English and
+    // this interface ships twelve languages.
+    if (result.mail_ssl_error) {
+      setMailNote(t(`mailSSL.errors.${result.mail_ssl_error}`, { defaultValue: t('mailSSL.errors.generic') }))
+    } else if (result.mail_ssl) {
+      const skipped = Object.entries(result.mail_ssl_skipped ?? {})
+      setMailNote(skipped.length === 0
+        ? t('mailSSL.secured', { hosts: (result.mail_ssl.hosts ?? []).join(', ') })
+        : t('mailSSL.securedPartly', {
+            hosts: (result.mail_ssl.hosts ?? []).join(', '),
+            skipped: skipped.map(([host, code]) =>
+              `${host} (${t(`mailSSL.reasons.${code}`, { defaultValue: code })})`).join(', '),
+          }))
+    }
+  }, [t])
+
+  // Polling replaces waiting on the request. It also runs on mount, so opening
+  // the page while an installation is under way shows it rather than an idle
+  // form. The banner is only raised for a finish this page actually watched: an
+  // installation that ended before the page opened is history, not news.
+  useEffect(() => {
+    if (!id) return
+    let cancelled = false
+    let timer: number | undefined
+    let watched = false
+
+    async function tick() {
+      try {
+        const { data } = await api.get<SSLProgress>(`/domains/${id}/ssl/progress`)
+        if (cancelled) return
+        setSteps(data.steps ?? [])
+        setJobState(data.state)
+        if (data.state === 'running') {
+          watched = true
+          setIsProcessing(true)
+          timer = window.setTimeout(tick, 1500)
+          return
+        }
+        setIsProcessing(false)
+        if (watched && data.state !== 'idle') {
+          applyResult(data)
+          load()
+        }
+      } catch {
+        // A failed poll is not a failed installation. Stop polling and let the
+        // status card below report what the server actually holds.
+        if (!cancelled) setIsProcessing(false)
+      }
+    }
+    void tick()
+    return () => { cancelled = true; if (timer) window.clearTimeout(timer) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, pollToken, applyResult])
+
   async function issue(type: 'self-signed' | 'letsencrypt') {
     if (type === 'letsencrypt' && !confirm(t('confirm.letsencrypt'))) return
     setIsProcessing(true); setError(null); setSuccess(null); setWarning(null); setMailNote(null)
+    setSteps([])
     try {
       const body: { type: string; mail_ssl?: boolean } = { type }
       if (type === 'letsencrypt' && alsoSecureMail) body.mail_ssl = true
-      // Issuance outlives the client's default patience: an ACME order plus the
-      // mail certificate probes several names and waits on the CA. The global
-      // 30s timeout aborted the request while the work continued on the server,
-      // so the user was told it failed and then found the site already secured.
-      const { data } = await api.post(`/domains/${id}/ssl/issue`, body, { timeout: 180_000 })
-      // data.type is what was ACTUALLY installed, which is not always what was
-      // asked for: a Let's Encrypt request that fails falls back to a
-      // self-signed certificate so port 443 keeps serving. Reporting the
-      // requested type here is what let the panel say "Let's Encrypt installed"
-      // while the browser said the site was not secure.
-      // A name left out of the certificate is not a failure, so it is reported
-      // whether the issuance succeeded or fell back. Without it the only symptom
-      // is a mail client that keeps asking for a password.
-      const webSkipped = Object.entries((data.web_ssl_skipped ?? {}) as Record<string, string>)
-        .map(([host, code]) => `${host} (${t(`reasons.${code}`, { defaultValue: code })})`)
-        .join(', ')
-      const skippedNote = webSkipped ? ` ${t('warning.namesSkipped', { skipped: webSkipped })}` : ''
-
-      if (data.warning) {
-        const reason = data.reason
-          ? t(`reasons.${data.reason}`, { defaultValue: data.reason })
-          : ''
-        const fallback = t('warning.letsencryptFallback')
-        setWarning((reason ? `${fallback} ${reason}` : fallback) + skippedNote)
-      } else if (skippedNote) {
-        setSuccess(t('success.installed', { type: data.type ?? type, expires: data.expires_at }))
-        setWarning(skippedNote.trim())
-      } else {
-        setSuccess(t('success.installed', { type: data.type ?? type, expires: data.expires_at }))
-      }
-      // The mail certificate is a separate order, so it is reported separately.
-      // The backend returns reason CODES, never sentences: the API is English and
-      // this interface ships twelve languages.
-      if (data.mail_ssl_error) {
-        setMailNote(t(`mailSSL.errors.${data.mail_ssl_error}`, { defaultValue: t('mailSSL.errors.generic') }))
-      } else if (data.mail_ssl) {
-        const skipped = Object.entries((data.mail_ssl_skipped ?? {}) as Record<string, string>)
-        setMailNote(skipped.length === 0
-          ? t('mailSSL.secured', { hosts: (data.mail_ssl.hosts ?? []).join(', ') })
-          : t('mailSSL.securedPartly', {
-              hosts: (data.mail_ssl.hosts ?? []).join(', '),
-              skipped: skipped.map(([host, code]) =>
-                `${host} (${t(`mailSSL.reasons.${code}`, { defaultValue: code })})`).join(', '),
-            }))
-      }
-      load()
+      // The server answers as soon as the work is under way. Holding the request
+      // meant the browser gave up before the installation did, and closing the
+      // tab cancelled it while the certificate was already half in place.
+      await api.post(`/domains/${id}/ssl/issue`, body)
+      setPollToken(token => token + 1)
     } catch (e) {
-      setError(apiError(e, t('errors.installFailed')))
-    } finally {
       setIsProcessing(false)
+      setError(apiError(e, t('errors.installFailed')))
     }
   }
 
@@ -131,9 +194,45 @@ export default function DomainSSLPage() {
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
       {warning && <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-800 dark:text-amber-300">{warning}</div>}
-      {isProcessing && (
+      {jobState === 'running' && (
         <div className="mb-3 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-sm text-blue-700 dark:text-blue-300">
           {t('status.issuingNotice')}
+        </div>
+      )}
+
+      {/* What the installation is doing. It runs on the server, so this survives
+          the page being closed and reopened. */}
+      {steps.length > 0 && (
+        <div className="mb-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">{t('steps.title')}</h2>
+          <ol className="space-y-2">
+            {steps.map((step, index) => (
+              <li key={`${step.name}-${index}`} className="flex items-start gap-2.5 text-sm">
+                <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${
+                  step.state === 'done' ? 'bg-emerald-500'
+                  : step.state === 'warning' ? 'bg-amber-400'
+                  : step.state === 'failed' ? 'bg-red-500'
+                  : 'bg-blue-500 animate-pulse'
+                }`}></span>
+                <div className="min-w-0">
+                  <div className="text-slate-800 dark:text-slate-200">
+                    {t(`steps.names.${step.name}`, { defaultValue: step.name })}
+                    <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">
+                      {t(`steps.states.${step.state}`, { defaultValue: step.state })}
+                      {step.seconds >= 1 ? ` · ${Math.round(step.seconds)}s` : ''}
+                    </span>
+                  </div>
+                  {step.reason && (
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      {t(`reasons.${step.reason}`, {
+                        defaultValue: t(`mailSSL.errors.${step.reason}`, { defaultValue: step.reason }),
+                      })}
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       )}
       {mailNote && <div className="mb-3 px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-md text-sm text-sky-800 dark:text-sky-300">{mailNote}</div>}

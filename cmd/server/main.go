@@ -616,6 +616,7 @@ func main() {
 				r.With(middleware.CustomerScope, fileHeavy).Get("/domains/{id}/files/search", filesH.Search)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/ssl", domainsH.SSLStatus)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/ssl/issue", domainsH.SSLIssue)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/ssl/progress", domainsH.SSLProgress)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/ssl", domainsH.SSLDisable)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/cron", cronH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/cron", cronH.Create)

@@ -83,6 +83,23 @@
     "challenge_unreachable": "le chemin de validation n’est pas accessible en HTTP",
     "challenge_status": "le chemin de validation a répondu avec un statut inattendu",
     "challenge_mismatch": "un autre serveur répond pour ce nom",
-    "challenge_webroot_unwritable": "le répertoire de validation n’a pas pu être écrit"
+    "challenge_webroot_unwritable": "le répertoire de validation n’a pas pu être écrit",
+    "ssl_install_failed": "le certificat n'a pas pu être installé",
+    "database_update_failed": "le certificat est installé mais le panneau n'a pas pu l'enregistrer"
+  },
+  "steps": {
+    "title": "Progression de l'installation",
+    "names": {
+      "certificate": "Obtention du certificat",
+      "record": "Enregistrement du certificat",
+      "mail_certificate": "Commande du certificat de messagerie",
+      "mail_sni": "Mise en service du certificat de messagerie"
+    },
+    "states": {
+      "running": "en cours",
+      "done": "terminé",
+      "warning": "avertissement",
+      "failed": "échec"
+    }
   }
 }

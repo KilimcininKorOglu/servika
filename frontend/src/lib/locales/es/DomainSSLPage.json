@@ -83,6 +83,23 @@
     "challenge_unreachable": "la ruta de validación no es accesible por HTTP",
     "challenge_status": "la ruta de validación respondió con un estado inesperado",
     "challenge_mismatch": "otro servidor responde por este nombre",
-    "challenge_webroot_unwritable": "no se pudo escribir en el directorio de validación"
+    "challenge_webroot_unwritable": "no se pudo escribir en el directorio de validación",
+    "ssl_install_failed": "no se pudo instalar el certificado",
+    "database_update_failed": "el certificado está instalado pero el panel no pudo registrarlo"
+  },
+  "steps": {
+    "title": "Progreso de la instalación",
+    "names": {
+      "certificate": "Obteniendo el certificado",
+      "record": "Registrando el certificado",
+      "mail_certificate": "Solicitando el certificado de correo",
+      "mail_sni": "Sirviendo el certificado de correo"
+    },
+    "states": {
+      "running": "en curso",
+      "done": "completado",
+      "warning": "aviso",
+      "failed": "fallido"
+    }
   }
 }

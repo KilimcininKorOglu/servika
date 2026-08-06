@@ -83,6 +83,23 @@
     "challenge_unreachable": "チャレンジパスに HTTP で到達できません",
     "challenge_status": "チャレンジパスが予期しないステータスを返しました",
     "challenge_mismatch": "この名前には別のサーバーが応答しています",
-    "challenge_webroot_unwritable": "チャレンジディレクトリに書き込めませんでした"
+    "challenge_webroot_unwritable": "チャレンジディレクトリに書き込めませんでした",
+    "ssl_install_failed": "証明書をインストールできませんでした",
+    "database_update_failed": "証明書はインストールされましたが、パネルに記録できませんでした"
+  },
+  "steps": {
+    "title": "インストールの進行状況",
+    "names": {
+      "certificate": "証明書を取得中",
+      "record": "証明書を記録中",
+      "mail_certificate": "メール証明書を発行中",
+      "mail_sni": "メール証明書を配信設定中"
+    },
+    "states": {
+      "running": "実行中",
+      "done": "完了",
+      "warning": "警告",
+      "failed": "失敗"
+    }
   }
 }

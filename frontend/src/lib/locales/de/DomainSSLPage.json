@@ -83,6 +83,23 @@
     "challenge_unreachable": "der Challenge-Pfad ist über HTTP nicht erreichbar",
     "challenge_status": "der Challenge-Pfad antwortete mit einem unerwarteten Status",
     "challenge_mismatch": "ein anderer Server antwortet auf diesen Namen",
-    "challenge_webroot_unwritable": "das Challenge-Verzeichnis konnte nicht beschrieben werden"
+    "challenge_webroot_unwritable": "das Challenge-Verzeichnis konnte nicht beschrieben werden",
+    "ssl_install_failed": "das Zertifikat konnte nicht installiert werden",
+    "database_update_failed": "das Zertifikat ist installiert, das Panel konnte es aber nicht speichern"
+  },
+  "steps": {
+    "title": "Installationsfortschritt",
+    "names": {
+      "certificate": "Zertifikat wird bezogen",
+      "record": "Zertifikat wird gespeichert",
+      "mail_certificate": "Mail-Zertifikat wird bestellt",
+      "mail_sni": "Mail-Zertifikat wird ausgeliefert"
+    },
+    "states": {
+      "running": "läuft",
+      "done": "fertig",
+      "warning": "Warnung",
+      "failed": "fehlgeschlagen"
+    }
   }
 }

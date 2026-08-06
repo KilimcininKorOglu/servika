@@ -83,6 +83,23 @@
     "challenge_unreachable": "the challenge path is not reachable over HTTP",
     "challenge_status": "the challenge path answered with an unexpected status",
     "challenge_mismatch": "another server answers this name",
-    "challenge_webroot_unwritable": "the challenge directory could not be written"
+    "challenge_webroot_unwritable": "the challenge directory could not be written",
+    "ssl_install_failed": "the certificate could not be installed",
+    "database_update_failed": "the certificate is installed but the panel could not record it"
+  },
+  "steps": {
+    "title": "Installation progress",
+    "names": {
+      "certificate": "Obtaining the certificate",
+      "record": "Recording the certificate",
+      "mail_certificate": "Ordering the mail certificate",
+      "mail_sni": "Serving the mail certificate"
+    },
+    "states": {
+      "running": "running",
+      "done": "done",
+      "warning": "warning",
+      "failed": "failed"
+    }
   }
 }

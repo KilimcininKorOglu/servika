@@ -83,6 +83,23 @@
     "challenge_unreachable": "o caminho de validação não está acessível por HTTP",
     "challenge_status": "o caminho de validação respondeu com um estado inesperado",
     "challenge_mismatch": "outro servidor responde por este nome",
-    "challenge_webroot_unwritable": "não foi possível escrever no diretório de validação"
+    "challenge_webroot_unwritable": "não foi possível escrever no diretório de validação",
+    "ssl_install_failed": "não foi possível instalar o certificado",
+    "database_update_failed": "o certificado está instalado mas o painel não conseguiu registá-lo"
+  },
+  "steps": {
+    "title": "Progresso da instalação",
+    "names": {
+      "certificate": "A obter o certificado",
+      "record": "A registar o certificado",
+      "mail_certificate": "A encomendar o certificado de correio",
+      "mail_sni": "A servir o certificado de correio"
+    },
+    "states": {
+      "running": "em curso",
+      "done": "concluído",
+      "warning": "aviso",
+      "failed": "falhou"
+    }
   }
 }

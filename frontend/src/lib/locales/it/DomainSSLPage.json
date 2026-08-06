@@ -83,6 +83,23 @@
     "challenge_unreachable": "il percorso di verifica non è raggiungibile via HTTP",
     "challenge_status": "il percorso di verifica ha risposto con uno stato inatteso",
     "challenge_mismatch": "un altro server risponde per questo nome",
-    "challenge_webroot_unwritable": "la directory di verifica non è scrivibile"
+    "challenge_webroot_unwritable": "la directory di verifica non è scrivibile",
+    "ssl_install_failed": "il certificato non è stato installato",
+    "database_update_failed": "il certificato è installato ma il pannello non è riuscito a registrarlo"
+  },
+  "steps": {
+    "title": "Avanzamento dell'installazione",
+    "names": {
+      "certificate": "Ottenimento del certificato",
+      "record": "Registrazione del certificato",
+      "mail_certificate": "Ordine del certificato di posta",
+      "mail_sni": "Attivazione del certificato di posta"
+    },
+    "states": {
+      "running": "in corso",
+      "done": "completato",
+      "warning": "avviso",
+      "failed": "non riuscito"
+    }
   }
 }

@@ -83,6 +83,23 @@
     "challenge_unreachable": "doğrulama yoluna HTTP üzerinden erişilemiyor",
     "challenge_status": "doğrulama yolu beklenmeyen bir durum kodu döndü",
     "challenge_mismatch": "bu adı başka bir sunucu yanıtlıyor",
-    "challenge_webroot_unwritable": "doğrulama dizini yazılamadı"
+    "challenge_webroot_unwritable": "doğrulama dizini yazılamadı",
+    "ssl_install_failed": "sertifika kurulamadı",
+    "database_update_failed": "sertifika kuruldu ama panel bunu kaydedemedi"
+  },
+  "steps": {
+    "title": "Kurulum ilerlemesi",
+    "names": {
+      "certificate": "Sertifika alınıyor",
+      "record": "Sertifika kaydediliyor",
+      "mail_certificate": "Posta sertifikası sipariş ediliyor",
+      "mail_sni": "Posta sertifikası sunuma alınıyor"
+    },
+    "states": {
+      "running": "sürüyor",
+      "done": "tamam",
+      "warning": "uyarı",
+      "failed": "başarısız"
+    }
   }
 }

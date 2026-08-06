@@ -83,6 +83,23 @@
     "challenge_unreachable": "calea de validare nu este accesibilă prin HTTP",
     "challenge_status": "calea de validare a răspuns cu un status neașteptat",
     "challenge_mismatch": "alt server răspunde pentru acest nume",
-    "challenge_webroot_unwritable": "directorul de validare nu a putut fi scris"
+    "challenge_webroot_unwritable": "directorul de validare nu a putut fi scris",
+    "ssl_install_failed": "certificatul nu a putut fi instalat",
+    "database_update_failed": "certificatul este instalat, dar panoul nu l-a putut înregistra"
+  },
+  "steps": {
+    "title": "Progresul instalării",
+    "names": {
+      "certificate": "Se obține certificatul",
+      "record": "Se înregistrează certificatul",
+      "mail_certificate": "Se comandă certificatul de e-mail",
+      "mail_sni": "Se pune în funcțiune certificatul de e-mail"
+    },
+    "states": {
+      "running": "în curs",
+      "done": "gata",
+      "warning": "avertisment",
+      "failed": "eșuat"
+    }
   }
 }

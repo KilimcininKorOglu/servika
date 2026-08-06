@@ -5,13 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"servika/internal/httpx"
-	"servika/internal/mail"
 	"servika/internal/provisioner"
 
 	"github.com/go-chi/chi/v5"
@@ -100,100 +98,27 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var certPath, keyPath string
-	var outcome provisioner.IssueOutcome
-	actualType := req.Type
-	switch req.Type {
-	case "self-signed":
-		certPath, keyPath, err = provisioner.EnableSelfSigned(domainName, systemUser, phpVersion, backend)
-	case "letsencrypt":
-		certPath, keyPath, outcome, err = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
-		if !outcome.Real {
-			actualType = "self-signed"
-		}
-	}
-	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "SSL installation failed")
-		return
-	}
-
-	expiresAt := time.Now().Add(365 * 24 * time.Hour)
-	if actualType == "letsencrypt" {
-		expiresAt = time.Now().Add(90 * 24 * time.Hour)
-	}
-
-	// Written on a context of its own, not the request's.
+	// The installation runs on a context of its own from here.
 	//
-	// Issuance can outlast the client: an ACME order plus the mail certificate
-	// takes longer than a browser is willing to wait, and an abandoned request
-	// cancels r.Context(). The certificate is already installed and nginx is
-	// already serving it at this point, so losing this write would leave the
-	// panel reporting a domain as unprotected while the disk says otherwise, and
-	// nothing would correct it until the next startup heal.
-	writeCtx, cancelWrite := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancelWrite()
-	if _, err := h.DB.ExecContext(writeCtx,
-		`UPDATE domains SET ssl_enabled=1, ssl_source=?, cert_path=?, key_path=?, ssl_expiry=?
-		 WHERE id=?`, actualType, certPath, keyPath, expiresAt, id); err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
+	// An ACME order measures every SAN name before asking the CA for it, and the
+	// mail certificate is a second order on top, so this takes minutes. Held on
+	// the request, the browser gave up before the work did and closing the tab
+	// cancelled it mid-install. The caller polls SSLProgress instead.
+	job, started := claimSSLJob(id, domainName)
+	if !started {
+		// A second order for the same name would spend the CA's per-domain
+		// allowance and could overwrite the first one's files while it runs.
+		httpx.WriteError(w, http.StatusConflict, "an SSL installation is already running for this domain")
 		return
 	}
+	// #nosec G118 -- outliving the request is the point: the work must finish even when the tab is closed, and it carries its own bounded context.
+	go h.runSSLInstall(job, id, req, domainName, systemUser, phpVersion, backend)
 
-	response := map[string]any{
-		"ok":         true,
-		"id":         id,
-		"type":       actualType,
-		"cert":       certPath,
-		"key":        keyPath,
-		"expires_at": expiresAt.Format("2006-01-02"),
-	}
-	// The mail certificate is a SEPARATE order, so it cannot regress the web
-	// certificate that was just installed. A failure here is reported as its own
-	// field rather than failing the request: the site is already secured, and
-	// saying otherwise would be a lie about work that succeeded.
-	if req.MailSSL && actualType == "letsencrypt" {
-		mailCert, mailErr := provisioner.IssueMailCertificate(domainName)
-		switch {
-		case mailErr != nil:
-			response["mail_ssl_error"] = "mail_certificate_failed"
-			if len(mailCert.Skipped) > 0 {
-				response["mail_ssl_skipped"] = mailCert.Skipped
-			}
-			log.Printf("mail certificate for %s: %v", domainName, mailErr)
-		default:
-			response["mail_ssl"] = map[string]any{
-				"hosts":      mailCert.Hosts,
-				"expires_at": mailCert.ExpiresAt,
-			}
-			if len(mailCert.Skipped) > 0 {
-				response["mail_ssl_skipped"] = mailCert.Skipped
-			}
-			if e := mail.ApplySNI(); e != nil {
-				// The certificate exists but nothing serves it yet, which is a
-				// different situation from not having one, so it gets its own code.
-				response["mail_ssl_error"] = "mail_sni_apply_failed"
-				log.Printf("applying the mail SNI configuration for %s: %v", domainName, e)
-			}
-		}
-	}
-
-	// A name left out of the SAN is not a failure, so it is reported alongside a
-	// successful issuance too: the certificate is real and the site is secured,
-	// but the coverage the customer expected is not all there, and without this
-	// the only symptom is a mail client that keeps asking for a password.
-	if len(outcome.Skipped) > 0 {
-		response["web_ssl_skipped"] = outcome.Skipped
-	}
-	if req.Type == "letsencrypt" && actualType != "letsencrypt" {
-		response["warning"] = "letsencrypt_fallback"
-		// The reason is what makes the warning actionable. Without it the panel
-		// reports a certificate was installed while the browser reports the site
-		// is not secure, and nothing on screen connects the two.
-		if outcome.Reason != "" {
-			response["reason"] = outcome.Reason
-		}
-	}
-	httpx.WriteJSON(w, http.StatusOK, response)
+	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{
+		"ok":    true,
+		"id":    id,
+		"state": sslJobRunning,
+	})
 }
 
 func (h *Handlers) SSLDisable(w http.ResponseWriter, r *http.Request) {

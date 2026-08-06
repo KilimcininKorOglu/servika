@@ -83,6 +83,23 @@
     "challenge_unreachable": "ověřovací cesta není dostupná přes HTTP",
     "challenge_status": "ověřovací cesta odpověděla neočekávaným stavem",
     "challenge_mismatch": "na toto jméno odpovídá jiný server",
-    "challenge_webroot_unwritable": "do ověřovacího adresáře nelze zapisovat"
+    "challenge_webroot_unwritable": "do ověřovacího adresáře nelze zapisovat",
+    "ssl_install_failed": "certifikát se nepodařilo nainstalovat",
+    "database_update_failed": "certifikát je nainstalován, ale panel jej nedokázal zaznamenat"
+  },
+  "steps": {
+    "title": "Průběh instalace",
+    "names": {
+      "certificate": "Získávání certifikátu",
+      "record": "Ukládání certifikátu",
+      "mail_certificate": "Objednávání poštovního certifikátu",
+      "mail_sni": "Nasazení poštovního certifikátu"
+    },
+    "states": {
+      "running": "probíhá",
+      "done": "hotovo",
+      "warning": "varování",
+      "failed": "selhalo"
+    }
   }
 }
