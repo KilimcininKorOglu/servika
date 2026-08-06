@@ -26,6 +26,8 @@
     "sourceLabel": "Quelle",
     "sourceLetsencrypt": "Let's Encrypt",
     "sourceSelfSigned": "Selbstsigniert",
+    "sourceImported": "Importiert",
+    "sourceUnknown": "Unbekannt",
     "expiryLabel": "Ablauf",
     "certPathLabel": "Zertifikatpfad",
     "keyPathLabel": "Schlüsselpfad",

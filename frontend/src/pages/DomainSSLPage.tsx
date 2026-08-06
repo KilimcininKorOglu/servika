@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { sslState, SSL_SOURCE_LETSENCRYPT, SSL_SOURCE_SELF_SIGNED, SSL_SOURCE_IMPORTED } from '@/lib/ssl'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -19,6 +20,19 @@ type SSLProgress = {
   reason?: string
   steps: SSLStep[]
   result?: Record<string, unknown>
+}
+
+// Names the certificate's origin. An unrecognised source is reported as unknown
+// rather than folded into self-signed: a row written before the column existed
+// carries an empty value, and calling that self-signed states a defect that was
+// never observed.
+function sourceLabel(source: string, t: (key: string) => string) {
+  switch (source) {
+    case SSL_SOURCE_LETSENCRYPT: return t('status.sourceLetsencrypt')
+    case SSL_SOURCE_SELF_SIGNED: return t('status.sourceSelfSigned')
+    case SSL_SOURCE_IMPORTED: return t('status.sourceImported')
+    default: return t('status.sourceUnknown')
+  }
 }
 
 export default function DomainSSLPage() {
@@ -245,8 +259,11 @@ export default function DomainSSLPage() {
             // Only a real CA is trusted by a browser. A self-signed certificate
             // encrypts the connection and still shows the visitor a warning
             // page, so a green "protected" badge would report the fail-safe as
-            // the outcome the customer asked for.
-            status.active && status.source === 'letsencrypt' ? (
+            // the outcome the customer asked for. The test is which SOURCE it
+            // came from, not whether it is Let's Encrypt: a certificate carried
+            // over from a cPanel migration is as real as one ordered here, and
+            // calling it self-signed was the same false report in reverse.
+            sslState(status.active, status.source) === 'trusted' ? (
               <span className="text-xs px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded uppercase font-semibold tracking-wider flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 {t('status.protected')}
@@ -268,7 +285,7 @@ export default function DomainSSLPage() {
           <div className="text-sm text-slate-400 dark:text-slate-500">{t('status.loading')}</div>
         ) : status.active ? (
           <div className="space-y-2 text-sm">
-            <DetailRow label={t('status.sourceLabel')} value={status.source === 'letsencrypt' ? t('status.sourceLetsencrypt') : t('status.sourceSelfSigned')} />
+            <DetailRow label={t('status.sourceLabel')} value={sourceLabel(status.source, t)} />
             {status.expires_at && <DetailRow label={t('status.expiryLabel')} value={new Date(status.expires_at).toLocaleDateString('en-US', { dateStyle: 'long' })} />}
             <DetailRow label={t('status.certPathLabel')} value={status.cert_path || t('status.empty')} mono />
             <DetailRow label={t('status.keyPathLabel')} value={status.key_path || t('status.empty')} mono />

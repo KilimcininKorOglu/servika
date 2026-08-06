@@ -26,6 +26,8 @@
     "sourceLabel": "ソース",
     "sourceLetsencrypt": "Let's Encrypt",
     "sourceSelfSigned": "自己署名",
+    "sourceImported": "インポート済み",
+    "sourceUnknown": "不明",
     "expiryLabel": "有効期限",
     "certPathLabel": "証明書パス",
     "keyPathLabel": "キーパス",

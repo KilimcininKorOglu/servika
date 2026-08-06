@@ -26,6 +26,8 @@
     "sourceLabel": "Sursă",
     "sourceLetsencrypt": "Let's Encrypt",
     "sourceSelfSigned": "Autosemnat",
+    "sourceImported": "Importat",
+    "sourceUnknown": "Necunoscută",
     "expiryLabel": "Expirare",
     "certPathLabel": "Cale certificat",
     "keyPathLabel": "Cale cheie",

@@ -26,6 +26,8 @@
     "sourceLabel": "Zdroj",
     "sourceLetsencrypt": "Let's Encrypt",
     "sourceSelfSigned": "Podepsáno svým vlastníkem",
+    "sourceImported": "Importovaný",
+    "sourceUnknown": "Neznámý",
     "expiryLabel": "Vypršení",
     "certPathLabel": "Cesta k certifikátu",
     "keyPathLabel": "Cesta ke klíči",

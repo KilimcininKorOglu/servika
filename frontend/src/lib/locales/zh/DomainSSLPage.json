@@ -26,6 +26,8 @@
     "sourceLabel": "来源",
     "sourceLetsencrypt": "Let's Encrypt",
     "sourceSelfSigned": "自签名",
+    "sourceImported": "已导入",
+    "sourceUnknown": "未知",
     "expiryLabel": "到期时间",
     "certPathLabel": "证书路径",
     "keyPathLabel": "密钥路径",

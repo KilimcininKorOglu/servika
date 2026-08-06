@@ -26,6 +26,8 @@
     "sourceLabel": "Kaynak",
     "sourceLetsencrypt": "Let's Encrypt",
     "sourceSelfSigned": "Kendinden imzalı",
+    "sourceImported": "İçe aktarılmış",
+    "sourceUnknown": "Bilinmiyor",
     "expiryLabel": "Son kullanma",
     "certPathLabel": "Sertifika yolu",
     "keyPathLabel": "Anahtar yolu",
