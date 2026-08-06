@@ -23,6 +23,7 @@
     "spamSettings": "setările antispam",
     "languagePreference": "preferința de limbă",
     "updateStatus": "starea actualizării panoului",
-    "optimizeStatus": "starea optimizării"
+    "optimizeStatus": "starea optimizării",
+    "deliveryLog": "istoricul livrărilor"
   }
 }

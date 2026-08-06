@@ -194,6 +194,9 @@ func main() {
 	// already had them and drops one whose certificate has expired.
 	mail.HealMailSNI(context.Background())
 	mail.StartPolicyServer(d, "127.0.0.1:10040")
+	// Postfix writes one log for the whole server, so it cannot be shown to a
+	// tenant as it stands. This drains it into per-domain rows in the background.
+	mail.StartDeliveryLogCollector(d)
 	// Called synchronously: this publishes the running version to internal/system,
 	// which /system/usage reports as panel_version. Only local file work happens
 	// here; the 24-hour manifest poll starts its own goroutine.
@@ -464,6 +467,7 @@ func main() {
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/{mid}", mailH.Delete)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/password", mailH.ResetPassword)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/status", mailH.SetStatus)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/delivery-log", mailH.DeliveryLog)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/spam", mailH.SpamGet)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/spam", mailH.SpamPut)
 				r.With(middleware.AdminOnly).Get("/admin/mail/queue", mailH.QueueList)

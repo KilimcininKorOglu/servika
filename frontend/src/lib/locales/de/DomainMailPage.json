@@ -139,5 +139,29 @@
     "copy": "Adresse kopieren",
     "copied": "Webmail-Adresse kopiert.",
     "copyUnavailable": "Die Adresse konnte nicht kopiert werden; kopieren Sie sie von Hand aus dem Feld."
+  },
+  "delivery": {
+    "title": "Zustellverlauf",
+    "description": "Was mit Nachrichten von und an diese Domain tatsächlich geschehen ist. Die Warteschlange oben zeigt nur, was noch nicht versendet wurde.",
+    "anyDirection": "Alle Richtungen",
+    "outgoing": "Ausgehend",
+    "incoming": "Eingehend",
+    "anyStatus": "Alle Ergebnisse",
+    "searchPlaceholder": "Nach Absender oder Empfänger suchen",
+    "loading": "Wird geladen ...",
+    "empty": "Noch keine Zustellungen erfasst.",
+    "status": {
+      "sent": "Zugestellt",
+      "deferred": "Wird wiederholt",
+      "bounced": "Unzustellbar",
+      "expired": "Aufgegeben",
+      "rejected": "Abgelehnt"
+    },
+    "column": {
+      "time": "Zeit",
+      "from": "Von",
+      "to": "An",
+      "result": "Ergebnis"
+    }
   }
 }

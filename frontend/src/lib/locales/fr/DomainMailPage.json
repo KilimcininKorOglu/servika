@@ -139,5 +139,29 @@
     "copy": "Copier l'adresse",
     "copied": "Adresse du webmail copiée.",
     "copyUnavailable": "L'adresse n'a pas pu être copiée ; copiez-la à la main depuis le champ."
+  },
+  "delivery": {
+    "title": "Historique de distribution",
+    "description": "Ce qui est réellement arrivé aux messages envoyés depuis et vers ce domaine. La file d'attente ci-dessus ne montre que ce qui n'est pas encore parti.",
+    "anyDirection": "Toutes les directions",
+    "outgoing": "Sortant",
+    "incoming": "Entrant",
+    "anyStatus": "Tous les résultats",
+    "searchPlaceholder": "Rechercher par expéditeur ou destinataire",
+    "loading": "Chargement...",
+    "empty": "Aucune distribution enregistrée pour l'instant.",
+    "status": {
+      "sent": "Distribué",
+      "deferred": "Nouvelle tentative",
+      "bounced": "Rejeté par le destinataire",
+      "expired": "Abandonné",
+      "rejected": "Refusé"
+    },
+    "column": {
+      "time": "Heure",
+      "from": "De",
+      "to": "À",
+      "result": "Résultat"
+    }
   }
 }

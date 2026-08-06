@@ -139,5 +139,29 @@
     "copy": "Copy address",
     "copied": "Webmail address copied.",
     "copyUnavailable": "The address could not be copied; copy it from the field by hand."
+  },
+  "delivery": {
+    "title": "Delivery history",
+    "description": "What actually happened to messages sent from and to this domain. The queue above only lists what has not gone out yet.",
+    "anyDirection": "All directions",
+    "outgoing": "Outgoing",
+    "incoming": "Incoming",
+    "anyStatus": "All results",
+    "searchPlaceholder": "Search by sender or recipient",
+    "loading": "Loading...",
+    "empty": "No deliveries recorded yet.",
+    "status": {
+      "sent": "Delivered",
+      "deferred": "Retrying",
+      "bounced": "Bounced",
+      "expired": "Gave up",
+      "rejected": "Rejected"
+    },
+    "column": {
+      "time": "Time",
+      "from": "From",
+      "to": "To",
+      "result": "Result"
+    }
   }
 }

@@ -139,5 +139,29 @@
     "copy": "Copia l'indirizzo",
     "copied": "Indirizzo della webmail copiato.",
     "copyUnavailable": "Non è stato possibile copiare l'indirizzo; copialo a mano dal campo."
+  },
+  "delivery": {
+    "title": "Cronologia delle consegne",
+    "description": "Che cosa è successo davvero ai messaggi inviati da e verso questo dominio. La coda qui sopra elenca solo ciò che non è ancora partito.",
+    "anyDirection": "Tutte le direzioni",
+    "outgoing": "In uscita",
+    "incoming": "In entrata",
+    "anyStatus": "Tutti i risultati",
+    "searchPlaceholder": "Cerca per mittente o destinatario",
+    "loading": "Caricamento...",
+    "empty": "Nessuna consegna registrata finora.",
+    "status": {
+      "sent": "Consegnato",
+      "deferred": "Nuovo tentativo",
+      "bounced": "Respinto",
+      "expired": "Abbandonato",
+      "rejected": "Rifiutato"
+    },
+    "column": {
+      "time": "Ora",
+      "from": "Da",
+      "to": "A",
+      "result": "Risultato"
+    }
   }
 }

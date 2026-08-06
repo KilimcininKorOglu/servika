@@ -23,6 +23,7 @@
     "spamSettings": "spam settings",
     "languagePreference": "language preference",
     "updateStatus": "panel update status",
-    "optimizeStatus": "optimization status"
+    "optimizeStatus": "optimization status",
+    "deliveryLog": "delivery history"
   }
 }

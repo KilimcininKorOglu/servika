@@ -23,6 +23,7 @@
     "spamSettings": "definições de spam",
     "languagePreference": "preferência de idioma",
     "updateStatus": "estado de atualização do painel",
-    "optimizeStatus": "estado da otimização"
+    "optimizeStatus": "estado da otimização",
+    "deliveryLog": "histórico de entrega"
   }
 }

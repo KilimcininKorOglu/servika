@@ -23,6 +23,7 @@
     "spamSettings": "spam ayarları",
     "languagePreference": "dil tercihi",
     "updateStatus": "panel güncelleme durumu",
-    "optimizeStatus": "eniyileme durumu"
+    "optimizeStatus": "eniyileme durumu",
+    "deliveryLog": "teslimat geçmişi"
   }
 }

@@ -139,5 +139,29 @@
     "copy": "Copiar endereço",
     "copied": "Endereço do webmail copiado.",
     "copyUnavailable": "Não foi possível copiar o endereço; copie-o manualmente do campo."
+  },
+  "delivery": {
+    "title": "Histórico de entrega",
+    "description": "O que realmente aconteceu com as mensagens enviadas deste domínio e para ele. A fila acima só lista o que ainda não saiu.",
+    "anyDirection": "Todas as direções",
+    "outgoing": "Saindo",
+    "incoming": "Entrando",
+    "anyStatus": "Todos os resultados",
+    "searchPlaceholder": "Buscar por remetente ou destinatário",
+    "loading": "Carregando...",
+    "empty": "Nenhuma entrega registrada ainda.",
+    "status": {
+      "sent": "Entregue",
+      "deferred": "Tentando de novo",
+      "bounced": "Devolvida",
+      "expired": "Desistiu",
+      "rejected": "Recusada"
+    },
+    "column": {
+      "time": "Hora",
+      "from": "De",
+      "to": "Para",
+      "result": "Resultado"
+    }
   }
 }

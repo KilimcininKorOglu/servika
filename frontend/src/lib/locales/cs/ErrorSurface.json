@@ -23,6 +23,7 @@
     "spamSettings": "nastavení spamu",
     "languagePreference": "předvolba jazyka",
     "updateStatus": "stav aktualizace panelu",
-    "optimizeStatus": "stav optimalizace"
+    "optimizeStatus": "stav optimalizace",
+    "deliveryLog": "historie doručení"
   }
 }

@@ -26,6 +26,7 @@ const (
 	DefaultKernelCareLog      = "/opt/servika/logs/kernelcare-update.log"
 	DefaultKernelCareWrapper  = "/opt/servika/kernelcare-update.sh"
 	DefaultCVELog             = "/opt/servika/logs/cve-update.log"
+	DefaultMailLog            = "/var/log/maillog"
 	DefaultInstallationID     = "/etc/servika/installation-id"
 	DefaultVersionCache       = "/opt/servika/version-cache.json"
 	DefaultPMAToken           = "/etc/servika/pma-internal.token" // #nosec G101 -- filesystem path, not a credential
@@ -116,6 +117,10 @@ func KernelCareWrapper() string {
 	return mustAbsPath("SERVIKA_KERNELCARE_WRAPPER", DefaultKernelCareWrapper)
 }
 func CVELog() string { return mustAbsPath("SERVIKA_CVE_LOG", DefaultCVELog) }
+
+// MailLog is where Postfix and Dovecot write. AlmaLinux keeps it at
+// /var/log/maillog; a host that sends mail logging elsewhere overrides it.
+func MailLog() string { return mustAbsPath("SERVIKA_MAIL_LOG", DefaultMailLog) }
 func InstallationIDPath() string {
 	return mustAbsPath("SERVIKA_INSTALLATION_ID", DefaultInstallationID)
 }
@@ -191,6 +196,7 @@ func ValidateRuntimePaths() error {
 		{"SERVIKA_KERNELCARE_LOG", DefaultKernelCareLog, false},
 		{"SERVIKA_KERNELCARE_WRAPPER", DefaultKernelCareWrapper, false},
 		{"SERVIKA_CVE_LOG", DefaultCVELog, false},
+		{"SERVIKA_MAIL_LOG", DefaultMailLog, false},
 		{"SERVIKA_INSTALLATION_ID", DefaultInstallationID, false},
 		{"SERVIKA_VERSION_CACHE", DefaultVersionCache, false},
 		{"SERVIKA_PMA_TOKEN", DefaultPMAToken, false},

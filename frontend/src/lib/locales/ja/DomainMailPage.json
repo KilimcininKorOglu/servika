@@ -139,5 +139,29 @@
     "copy": "アドレスをコピー",
     "copied": "ウェブメールのアドレスをコピーしました。",
     "copyUnavailable": "アドレスをコピーできませんでした。欄から手動でコピーしてください。"
+  },
+  "delivery": {
+    "title": "配信履歴",
+    "description": "このドメインから送信されたメールと届いたメールに実際に何が起きたか。上のキューはまだ送信されていないものだけを表示します。",
+    "anyDirection": "すべての方向",
+    "outgoing": "送信",
+    "incoming": "受信",
+    "anyStatus": "すべての結果",
+    "searchPlaceholder": "送信者または宛先で検索",
+    "loading": "読み込み中...",
+    "empty": "まだ配信の記録はありません。",
+    "status": {
+      "sent": "配信済み",
+      "deferred": "再試行中",
+      "bounced": "バウンス",
+      "expired": "断念",
+      "rejected": "拒否"
+    },
+    "column": {
+      "time": "時刻",
+      "from": "送信者",
+      "to": "宛先",
+      "result": "結果"
+    }
   }
 }

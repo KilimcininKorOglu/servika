@@ -23,6 +23,7 @@
     "spamSettings": "垃圾邮件设置",
     "languagePreference": "语言偏好",
     "updateStatus": "面板更新状态",
-    "optimizeStatus": "优化状态"
+    "optimizeStatus": "优化状态",
+    "deliveryLog": "投递历史"
   }
 }

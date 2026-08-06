@@ -23,6 +23,7 @@
     "spamSettings": "スパム設定",
     "languagePreference": "言語設定",
     "updateStatus": "パネル更新の状態",
-    "optimizeStatus": "最適化の状態"
+    "optimizeStatus": "最適化の状態",
+    "deliveryLog": "配信履歴"
   }
 }

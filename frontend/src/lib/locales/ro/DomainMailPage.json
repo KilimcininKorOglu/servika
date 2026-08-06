@@ -139,5 +139,29 @@
     "copy": "Copiază adresa",
     "copied": "Adresa webmail a fost copiată.",
     "copyUnavailable": "Adresa nu a putut fi copiată; copiați-o manual din câmp."
+  },
+  "delivery": {
+    "title": "Istoricul livrărilor",
+    "description": "Ce s-a întâmplat de fapt cu mesajele trimise de la acest domeniu și către el. Coada de mai sus arată doar ce nu a plecat încă.",
+    "anyDirection": "Toate direcțiile",
+    "outgoing": "Ieșire",
+    "incoming": "Intrare",
+    "anyStatus": "Toate rezultatele",
+    "searchPlaceholder": "Caută după expeditor sau destinatar",
+    "loading": "Se încarcă...",
+    "empty": "Încă nu este înregistrată nicio livrare.",
+    "status": {
+      "sent": "Livrat",
+      "deferred": "Se reîncearcă",
+      "bounced": "Returnat",
+      "expired": "Renunțat",
+      "rejected": "Respins"
+    },
+    "column": {
+      "time": "Oră",
+      "from": "De la",
+      "to": "Către",
+      "result": "Rezultat"
+    }
   }
 }

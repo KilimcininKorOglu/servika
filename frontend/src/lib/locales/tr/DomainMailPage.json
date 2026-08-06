@@ -139,5 +139,29 @@
     "copy": "Adresi kopyala",
     "copied": "Webmail adresi kopyalandı.",
     "copyUnavailable": "Adres kopyalanamadı; alandan elle kopyalayın."
+  },
+  "delivery": {
+    "title": "Teslimat geçmişi",
+    "description": "Bu alan adından gönderilen ve bu alan adına gelen iletilere gerçekte ne olduğu. Yukarıdaki kuyruk yalnızca henüz çıkmamış olanları listeler.",
+    "anyDirection": "Tüm yönler",
+    "outgoing": "Giden",
+    "incoming": "Gelen",
+    "anyStatus": "Tüm sonuçlar",
+    "searchPlaceholder": "Gönderen veya alıcıya göre ara",
+    "loading": "Yükleniyor...",
+    "empty": "Henüz kayıtlı teslimat yok.",
+    "status": {
+      "sent": "Teslim edildi",
+      "deferred": "Yeniden deneniyor",
+      "bounced": "Geri döndü",
+      "expired": "Vazgeçildi",
+      "rejected": "Reddedildi"
+    },
+    "column": {
+      "time": "Zaman",
+      "from": "Gönderen",
+      "to": "Alıcı",
+      "result": "Sonuç"
+    }
   }
 }

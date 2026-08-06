@@ -139,5 +139,29 @@
     "copy": "Kopírovat adresu",
     "copied": "Adresa webmailu byla zkopírována.",
     "copyUnavailable": "Adresu se nepodařilo zkopírovat; zkopírujte ji ručně z pole."
+  },
+  "delivery": {
+    "title": "Historie doručení",
+    "description": "Co se se zprávami z této domény a do ní skutečně stalo. Fronta výše ukazuje jen to, co ještě neodešlo.",
+    "anyDirection": "Všechny směry",
+    "outgoing": "Odchozí",
+    "incoming": "Příchozí",
+    "anyStatus": "Všechny výsledky",
+    "searchPlaceholder": "Hledat podle odesílatele nebo příjemce",
+    "loading": "Načítání...",
+    "empty": "Zatím nejsou zaznamenána žádná doručení.",
+    "status": {
+      "sent": "Doručeno",
+      "deferred": "Opakuje se",
+      "bounced": "Vráceno",
+      "expired": "Vzdáno",
+      "rejected": "Odmítnuto"
+    },
+    "column": {
+      "time": "Čas",
+      "from": "Od",
+      "to": "Komu",
+      "result": "Výsledek"
+    }
   }
 }

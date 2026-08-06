@@ -18,6 +18,17 @@ type MailFilter = {
   match_value: string; action_type: 'move' | 'redirect' | 'discard'; action_value: string; priority: number; enabled: boolean
 }
 type SendLimits = { mailbox_id: number; email: string; hour_limit: number; day_limit: number; sent_hour: number; sent_day: number; spam_suspended_at?: string }
+type DeliveryEntry = { timestamp: string; direction: 'in' | 'out'; sender: string; recipient: string; status: string; reason?: string }
+
+// Colour carries the same meaning as the label, so a glance down the column
+// separates delivered from stuck from rejected without reading every row.
+function deliveryBadge(status: string): string {
+  switch (status) {
+    case 'sent': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+    case 'deferred': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+    default: return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+  }
+}
 
 export default function DomainMailPage() {
   const { t } = useTranslation('DomainMailPage')
@@ -38,6 +49,11 @@ export default function DomainMailPage() {
   const [aliasDestination, setAliasDestination] = useState('')
   const [aliasCatchAll, setAliasCatchAll] = useState(false)
   const [isSavingAlias, setIsSavingAlias] = useState(false)
+  const [deliveries, setDeliveries] = useState<DeliveryEntry[]>([])
+  const [deliveryLoading, setDeliveryLoading] = useState(false)
+  const [deliveryDirection, setDeliveryDirection] = useState('')
+  const [deliveryStatus, setDeliveryStatus] = useState('')
+  const [deliverySearch, setDeliverySearch] = useState('')
   const [spam, setSpam] = useState<SpamSettings>({ enabled: true, greylist_score: 4, add_header_score: 6, reject_score: 15 })
   const [rspamd, setRspamd] = useState(false)
   const [isSavingSpam, setIsSavingSpam] = useState(false)
@@ -125,6 +141,23 @@ export default function DomainMailPage() {
     if (!autoresponderMailbox) loadAutoresponder(firstMailboxID)
     if (!limitsMailbox) loadSendLimits(firstMailboxID)
   }, [firstMailboxID, autoresponderMailbox, limitsMailbox, loadAutoresponder, loadSendLimits])
+
+  // Debounced so typing in the search box does not issue one query per keystroke.
+  useEffect(() => {
+    if (!id || !status?.enabled) return
+    const timer = setTimeout(() => {
+      setDeliveryLoading(true)
+      const params = new URLSearchParams()
+      if (deliveryDirection) params.set('direction', deliveryDirection)
+      if (deliveryStatus) params.set('status', deliveryStatus)
+      if (deliverySearch.trim()) params.set('search', deliverySearch.trim())
+      api.get<DeliveryEntry[]>(`/domains/${id}/mail/delivery-log?${params.toString()}`)
+        .then(response => setDeliveries(response.data || []))
+        .catch(report('deliveryLog'))
+        .finally(() => setDeliveryLoading(false))
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [id, status?.enabled, deliveryDirection, deliveryStatus, deliverySearch, report])
 
   async function enableMail() {
     setIsSaving(true)
@@ -670,6 +703,65 @@ export default function DomainMailPage() {
               </button>
             </form>
             )}
+
+            {/* Delivery history. The Postfix queue above only shows what has not
+                gone out yet; this answers "did it arrive?" after the fact. */}
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm mt-5">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{t('delivery.title')}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('delivery.description')}</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <select value={deliveryDirection} onChange={event => setDeliveryDirection(event.target.value)}
+                  className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
+                  <option value="">{t('delivery.anyDirection')}</option>
+                  <option value="out">{t('delivery.outgoing')}</option>
+                  <option value="in">{t('delivery.incoming')}</option>
+                </select>
+                <select value={deliveryStatus} onChange={event => setDeliveryStatus(event.target.value)}
+                  className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
+                  <option value="">{t('delivery.anyStatus')}</option>
+                  <option value="sent">{t('delivery.status.sent')}</option>
+                  <option value="deferred">{t('delivery.status.deferred')}</option>
+                  <option value="bounced">{t('delivery.status.bounced')}</option>
+                  <option value="expired">{t('delivery.status.expired')}</option>
+                </select>
+                <input value={deliverySearch} onChange={event => setDeliverySearch(event.target.value)}
+                  placeholder={t('delivery.searchPlaceholder')}
+                  className="flex-1 min-w-[12rem] px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
+              </div>
+              {deliveryLoading ? (
+                <p className="text-xs text-slate-400 dark:text-slate-500">{t('delivery.loading')}</p>
+              ) : deliveries.length === 0 ? (
+                <p className="text-xs text-slate-400 dark:text-slate-500">{t('delivery.empty')}</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                        <th className="py-1.5 pr-3 font-medium">{t('delivery.column.time')}</th>
+                        <th className="py-1.5 pr-3 font-medium">{t('delivery.column.from')}</th>
+                        <th className="py-1.5 pr-3 font-medium">{t('delivery.column.to')}</th>
+                        <th className="py-1.5 font-medium">{t('delivery.column.result')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {deliveries.map((entry, index) => (
+                        <tr key={`${entry.timestamp}-${index}`} className="border-b border-slate-100 dark:border-slate-700/60 last:border-0">
+                          <td className="py-1.5 pr-3 font-mono text-xs whitespace-nowrap text-slate-600 dark:text-slate-300">{entry.timestamp}</td>
+                          <td className="py-1.5 pr-3 break-all text-slate-700 dark:text-slate-200">{entry.sender || '-'}</td>
+                          <td className="py-1.5 pr-3 break-all text-slate-700 dark:text-slate-200">{entry.recipient}</td>
+                          <td className="py-1.5">
+                            <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${deliveryBadge(entry.status)}`}>
+                              {t(`delivery.status.${entry.status}`)}
+                            </span>
+                            {entry.reason && <span className="ml-2 text-xs text-slate-400 dark:text-slate-500 break-all">{entry.reason}</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </>
         )}
 
