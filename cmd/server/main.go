@@ -350,6 +350,9 @@ func main() {
 
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAuth(cfg.JWTSecret))
+			// Mounted after RequireAuth because the ceiling is per ACCOUNT: an
+			// address can be changed to get a fresh allowance, an identity cannot.
+			r.Use(middleware.UploadSlot)
 			r.Get("/me", usersH.Me)
 			// Language preference — open to EVERY authenticated role (including
 			// role=user customers) so anyone can persist their own pref_lang. The
