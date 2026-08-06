@@ -116,6 +116,45 @@ func (h *Handlers) Disable(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
+// Purge removes mail hosting for a domain outright, mailboxes and stored
+// messages included. Unlike Disable this cannot be undone, which is why it has a
+// route of its own instead of a flag on that one: an accidental call must not be
+// reachable from the reversible path.
+func (h *Handlers) Purge(w http.ResponseWriter, r *http.Request) {
+	id, systemUser, demo, ok := h.domain(r)
+	if !ok {
+		httpx.WriteError(w, http.StatusNotFound, "domain not found")
+		return
+	}
+	if demo {
+		httpx.WriteError(w, http.StatusForbidden, "mail is unavailable for demo subscriptions")
+		return
+	}
+	if systemUser == "" {
+		// Without it the Maildir root cannot be located, and deleting the database
+		// rows alone would strand the files with nothing left pointing at them.
+		httpx.WriteError(w, http.StatusInternalServerError, "domain record is incomplete")
+		return
+	}
+	diskFailed, err := PurgeDomain(r.Context(), h.DB, id, systemUser)
+	if err != nil {
+		// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
+		log.Printf("purge mail domain=%d: %v", id, err)
+		h.audit(r, "mail.purge", strconv.FormatInt(id, 10), false)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not remove mail hosting")
+		return
+	}
+	h.audit(r, "mail.purge", strconv.FormatInt(id, 10), true)
+	if diskFailed {
+		// 200 because the service really is gone; the warning is a stable CODE the
+		// interface translates, not a sentence, and it is not hidden: the files
+		// still occupy the customer's disk.
+		httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "warning": "mail_files_not_removed"})
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
 // List returns mailboxes for a domain.
 func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	id, _, _, ok := h.domain(r)

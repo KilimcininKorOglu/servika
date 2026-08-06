@@ -476,6 +476,11 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/status", mailH.MailStatus)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/enable", mailH.Enable)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/enable", mailH.Disable)
+				// Irreversible removal, mailboxes and stored messages included. A route of
+				// its own, not a flag on the reversible one, so it cannot be reached by
+				// accident. The static segment wins over /mail/{mid} below, exactly as
+				// /mail/enable already does.
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/service", mailH.Purge)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail", mailH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail", mailH.Create)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/aliases", mailH.ListAliases)
