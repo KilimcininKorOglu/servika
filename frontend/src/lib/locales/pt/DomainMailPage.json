@@ -109,12 +109,14 @@
     "autoresponderSaved": "A resposta automática e o seu script Sieve foram aplicados.",
     "autoresponderRemoved": "A resposta automática foi removida.",
     "filterAdded": "O filtro de correio foi compilado e ativado.",
-    "sendLimitsSaved": "Os limites de envio foram guardados."
+    "sendLimitsSaved": "Os limites de envio foram guardados.",
+    "disabled": "O alojamento de e-mail foi desativado. As caixas e as mensagens guardadas foram mantidas."
   },
   "confirm": {
     "deleteMailbox": "Eliminar a caixa de correio \"{{email}}\"? O Maildir permanecerá no disco e apenas o registo da conta será removido.",
     "deleteForwarder": "Eliminar o reencaminhamento \"{{source}}\"?",
-    "deleteFilter": "Eliminar o filtro \"{{name}}\"?"
+    "deleteFilter": "Eliminar o filtro \"{{name}}\"?",
+    "disableMail": "Desativar o alojamento de e-mail de {{domain}}? As mensagens recebidas deixarão de ser entregues e ninguém poderá iniciar sessão. As caixas e as mensagens guardadas são mantidas e regressam ao reativar."
   },
   "errors": {
     "loadDomainFailed": "Não foi possível carregar o domínio",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Não foi possível adicionar o filtro de correio",
     "readSendLimitsFailed": "Não foi possível ler os limites de envio",
     "saveSendLimitsFailed": "Não foi possível guardar os limites de envio",
-    "webmail": "Não foi possível abrir o webmail"
+    "webmail": "Não foi possível abrir o webmail",
+    "disableFailed": "Não foi possível desativar o alojamento de e-mail"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "Para",
       "result": "Resultado"
     }
+  },
+  "disable": {
+    "title": "Desativar o alojamento de e-mail",
+    "description": "Para a entrega neste domínio e bloqueia todos os inícios de sessão nas caixas. Nada é eliminado: caixas, reencaminhamentos e mensagens guardadas permanecem, e ao reativar voltam exatamente como estavam.",
+    "button": "Desativar e-mail",
+    "working": "A desativar…"
   }
 }

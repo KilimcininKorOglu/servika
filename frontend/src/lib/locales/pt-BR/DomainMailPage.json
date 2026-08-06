@@ -109,12 +109,14 @@
     "autoresponderSaved": "A resposta automática e seu script Sieve foram aplicados.",
     "autoresponderRemoved": "A resposta automática foi removida.",
     "filterAdded": "O filtro de e-mail foi compilado e ativado.",
-    "sendLimitsSaved": "Os limites de envio foram salvos."
+    "sendLimitsSaved": "Os limites de envio foram salvos.",
+    "disabled": "A hospedagem de e-mail foi desativada. As caixas e as mensagens armazenadas foram mantidas."
   },
   "confirm": {
     "deleteMailbox": "Excluir a caixa \"{{email}}\"? O Maildir permanecerá no disco e somente o registro da conta será removido.",
     "deleteForwarder": "Excluir o encaminhamento \"{{source}}\"?",
-    "deleteFilter": "Excluir o filtro \"{{name}}\"?"
+    "deleteFilter": "Excluir o filtro \"{{name}}\"?",
+    "disableMail": "Desativar a hospedagem de e-mail de {{domain}}? As mensagens recebidas não serão mais entregues e ninguém poderá fazer login. As caixas e as mensagens armazenadas são mantidas e voltam ao reativar."
   },
   "errors": {
     "loadDomainFailed": "Não foi possível carregar o domínio",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Não foi possível adicionar o filtro de e-mail",
     "readSendLimitsFailed": "Não foi possível ler os limites de envio",
     "saveSendLimitsFailed": "Não foi possível salvar os limites de envio",
-    "webmail": "Não foi possível abrir o webmail"
+    "webmail": "Não foi possível abrir o webmail",
+    "disableFailed": "Não foi possível desativar a hospedagem de e-mail"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "Para",
       "result": "Resultado"
     }
+  },
+  "disable": {
+    "title": "Desativar a hospedagem de e-mail",
+    "description": "Interrompe a entrega neste domínio e bloqueia todos os logins nas caixas. Nada é excluído: caixas, encaminhamentos e mensagens armazenadas permanecem, e ao reativar voltam exatamente como estavam.",
+    "button": "Desativar e-mail",
+    "working": "Desativando…"
   }
 }

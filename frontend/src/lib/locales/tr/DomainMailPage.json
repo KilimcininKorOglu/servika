@@ -109,12 +109,14 @@
     "autoresponderSaved": "Otomatik yanıt ve Sieve betiği uygulandı.",
     "autoresponderRemoved": "Otomatik yanıt kaldırıldı.",
     "filterAdded": "Posta filtresi derlendi ve etkinleştirildi.",
-    "sendLimitsSaved": "Gönderim limitleri kaydedildi."
+    "sendLimitsSaved": "Gönderim limitleri kaydedildi.",
+    "disabled": "E-posta hizmeti kapatıldı. Posta kutuları ve saklanan iletiler korundu."
   },
   "confirm": {
     "deleteMailbox": "\"{{email}}\" posta kutusu silinsin mi? Maildir diskte kalır ve yalnızca hesap satırı kaldırılır.",
     "deleteForwarder": "\"{{source}}\" yönlendiricisi silinsin mi?",
-    "deleteFilter": "\"{{name}}\" filtresi silinsin mi?"
+    "deleteFilter": "\"{{name}}\" filtresi silinsin mi?",
+    "disableMail": "{{domain}} için e-posta hizmeti kapatılsın mı? Gelen iletiler artık teslim edilmez ve kimse giriş yapamaz. Posta kutuları ve saklanan iletiler korunur, tekrar açınca geri gelir."
   },
   "errors": {
     "loadDomainFailed": "Alan adı yüklenemedi",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Posta filtresi eklenemedi",
     "readSendLimitsFailed": "Gönderim limitleri okunamadı",
     "saveSendLimitsFailed": "Gönderim limitleri kaydedilemedi",
-    "webmail": "Webmail açılamadı"
+    "webmail": "Webmail açılamadı",
+    "disableFailed": "E-posta hizmeti kapatılamadı"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "Alıcı",
       "result": "Sonuç"
     }
+  },
+  "disable": {
+    "title": "E-posta hizmetini kapat",
+    "description": "Bu alan adına teslimatı durdurur ve her posta kutusu girişini engeller. Hiçbir şey silinmez: posta kutuları, yönlendiriciler ve saklanan iletiler kalır, tekrar açtığınızda hepsi olduğu gibi geri gelir.",
+    "button": "E-postayı kapat",
+    "working": "Kapatılıyor…"
   }
 }

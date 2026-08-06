@@ -109,12 +109,14 @@
     "autoresponderSaved": "La réponse automatique et son script Sieve ont été appliqués.",
     "autoresponderRemoved": "La réponse automatique a été supprimée.",
     "filterAdded": "Le filtre de courrier a été compilé et activé.",
-    "sendLimitsSaved": "Les limites d'envoi ont été enregistrées."
+    "sendLimitsSaved": "Les limites d'envoi ont été enregistrées.",
+    "disabled": "L'hébergement e-mail a été désactivé. Les boîtes et les messages stockés ont été conservés."
   },
   "confirm": {
     "deleteMailbox": "Supprimer la boîte aux lettres « {{email}} » ? Le Maildir restera sur le disque, et seule la fiche du compte sera supprimée.",
     "deleteForwarder": "Supprimer le redirecteur « {{source}} » ?",
-    "deleteFilter": "Supprimer le filtre « {{name}} » ?"
+    "deleteFilter": "Supprimer le filtre « {{name}} » ?",
+    "disableMail": "Désactiver l'hébergement e-mail pour {{domain}} ? Les messages entrants ne seront plus distribués et personne ne pourra se connecter. Les boîtes et les messages stockés sont conservés et reviennent à la réactivation."
   },
   "errors": {
     "loadDomainFailed": "Impossible de charger le domaine",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Impossible d'ajouter le filtre de courrier",
     "readSendLimitsFailed": "Impossible de lire les limites d'envoi",
     "saveSendLimitsFailed": "Impossible d'enregistrer les limites d'envoi",
-    "webmail": "Impossible d'ouvrir le webmail"
+    "webmail": "Impossible d'ouvrir le webmail",
+    "disableFailed": "Impossible de désactiver l'hébergement e-mail"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "À",
       "result": "Résultat"
     }
+  },
+  "disable": {
+    "title": "Désactiver l'hébergement e-mail",
+    "description": "Arrête la distribution pour ce domaine et bloque toute connexion aux boîtes. Rien n'est supprimé : les boîtes, les redirections et les messages stockés sont conservés, et la réactivation les rétablit à l'identique.",
+    "button": "Désactiver l'e-mail",
+    "working": "Désactivation…"
   }
 }

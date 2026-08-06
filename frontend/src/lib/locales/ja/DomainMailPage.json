@@ -109,12 +109,14 @@
     "autoresponderSaved": "自動返信とその Sieve スクリプトを適用しました。",
     "autoresponderRemoved": "自動返信を削除しました。",
     "filterAdded": "メールフィルターをコンパイルして有効にしました。",
-    "sendLimitsSaved": "送信制限を保存しました。"
+    "sendLimitsSaved": "送信制限を保存しました。",
+    "disabled": "メールホスティングを停止しました。メールボックスと保存済みメッセージは保持されています。"
   },
   "confirm": {
     "deleteMailbox": "メールボックス「{{email}}」を削除しますか? Maildir はディスク上に残り、アカウントの行のみが削除されます。",
     "deleteForwarder": "転送設定「{{source}}」を削除しますか?",
-    "deleteFilter": "フィルター「{{name}}」を削除しますか?"
+    "deleteFilter": "フィルター「{{name}}」を削除しますか?",
+    "disableMail": "{{domain}} のメールホスティングを停止しますか。受信メッセージは配送されなくなり、誰もサインインできなくなります。メールボックスと保存済みメッセージは保持され、再度有効にすると戻ります。"
   },
   "errors": {
     "loadDomainFailed": "ドメインを読み込めませんでした",
@@ -132,7 +134,8 @@
     "addFilterFailed": "メールフィルターを追加できませんでした",
     "readSendLimitsFailed": "送信制限を読み込めませんでした",
     "saveSendLimitsFailed": "送信制限を保存できませんでした",
-    "webmail": "ウェブメールを開けませんでした"
+    "webmail": "ウェブメールを開けませんでした",
+    "disableFailed": "メールホスティングを停止できませんでした"
   },
   "webmail": {
     "title": "ウェブメール",
@@ -165,5 +168,11 @@
       "to": "宛先",
       "result": "結果"
     }
+  },
+  "disable": {
+    "title": "メールホスティングを停止",
+    "description": "このドメインへの配送を停止し、すべてのメールボックスへのサインインを遮断します。削除は行いません。メールボックス、転送設定、保存済みメッセージはそのまま残り、再度有効にすると元どおりに戻ります。",
+    "button": "メールを停止",
+    "working": "停止しています…"
   }
 }

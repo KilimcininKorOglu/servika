@@ -109,12 +109,14 @@
     "autoresponderSaved": "The autoresponder and its Sieve script have been applied.",
     "autoresponderRemoved": "The autoresponder has been removed.",
     "filterAdded": "The mail filter has been compiled and enabled.",
-    "sendLimitsSaved": "The send limits have been saved."
+    "sendLimitsSaved": "The send limits have been saved.",
+    "disabled": "Email hosting has been turned off. Mailboxes and stored messages were kept."
   },
   "confirm": {
     "deleteMailbox": "Delete the mailbox \"{{email}}\"? The Maildir will remain on disk, and only the account row will be removed.",
     "deleteForwarder": "Delete the forwarder \"{{source}}\"?",
-    "deleteFilter": "Delete the filter \"{{name}}\"?"
+    "deleteFilter": "Delete the filter \"{{name}}\"?",
+    "disableMail": "Turn off email hosting for {{domain}}? Incoming messages will no longer be delivered and nobody will be able to sign in. Mailboxes and stored messages are kept, so turning it back on restores them."
   },
   "errors": {
     "loadDomainFailed": "Could not load the domain",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Could not add the mail filter",
     "readSendLimitsFailed": "Could not read the send limits",
     "saveSendLimitsFailed": "Could not save the send limits",
-    "webmail": "Could not open webmail"
+    "webmail": "Could not open webmail",
+    "disableFailed": "Could not turn off email hosting"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "To",
       "result": "Result"
     }
+  },
+  "disable": {
+    "title": "Turn off email hosting",
+    "description": "Stops delivery for this domain and blocks every mailbox sign-in. Nothing is deleted: mailboxes, forwarders and the stored messages all stay, and turning it back on restores them exactly as they were.",
+    "button": "Turn off email",
+    "working": "Turning off…"
   }
 }

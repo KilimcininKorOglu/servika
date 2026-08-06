@@ -109,12 +109,14 @@
     "autoresponderSaved": "Automatická odpověď a její skript Sieve byly použity.",
     "autoresponderRemoved": "Automatická odpověď byla odebrána.",
     "filterAdded": "Filtr pošty byl zkompilován a povolen.",
-    "sendLimitsSaved": "Limity odesílání byly uloženy."
+    "sendLimitsSaved": "Limity odesílání byly uloženy.",
+    "disabled": "E-mailová služba byla vypnuta. Schránky a uložené zprávy zůstaly zachovány."
   },
   "confirm": {
     "deleteMailbox": "Smazat schránku „{{email}}“? Maildir zůstane na disku, odebere se pouze záznam účtu.",
     "deleteForwarder": "Smazat přesměrování „{{source}}“?",
-    "deleteFilter": "Smazat filtr „{{name}}“?"
+    "deleteFilter": "Smazat filtr „{{name}}“?",
+    "disableMail": "Vypnout e-mailovou službu pro {{domain}}? Příchozí zprávy se přestanou doručovat a nikdo se nebude moci přihlásit. Schránky a uložené zprávy zůstanou zachovány a po zapnutí se vrátí."
   },
   "errors": {
     "loadDomainFailed": "Doménu nelze načíst",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Filtr pošty nelze přidat",
     "readSendLimitsFailed": "Limity odesílání nelze načíst",
     "saveSendLimitsFailed": "Limity odesílání nelze uložit",
-    "webmail": "Webmail se nepodařilo otevřít"
+    "webmail": "Webmail se nepodařilo otevřít",
+    "disableFailed": "E-mailovou službu se nepodařilo vypnout"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "Komu",
       "result": "Výsledek"
     }
+  },
+  "disable": {
+    "title": "Vypnout e-mailovou službu",
+    "description": "Zastaví doručování pro tuto doménu a zablokuje přihlášení do všech schránek. Nic se nemaže: schránky, přesměrování i uložené zprávy zůstávají a po opětovném zapnutí se vrátí přesně tak, jak byly.",
+    "button": "Vypnout e-mail",
+    "working": "Vypínání…"
   }
 }

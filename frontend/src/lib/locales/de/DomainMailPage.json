@@ -109,12 +109,14 @@
     "autoresponderSaved": "Der Autoresponder und sein Sieve-Skript wurden angewendet.",
     "autoresponderRemoved": "Der Autoresponder wurde entfernt.",
     "filterAdded": "Der Mail-Filter wurde kompiliert und aktiviert.",
-    "sendLimitsSaved": "Die Sendelimits wurden gespeichert."
+    "sendLimitsSaved": "Die Sendelimits wurden gespeichert.",
+    "disabled": "Der E-Mail-Dienst wurde deaktiviert. Postfächer und gespeicherte Nachrichten wurden beibehalten."
   },
   "confirm": {
     "deleteMailbox": "Das Postfach \"{{email}}\" löschen? Das Maildir bleibt auf der Festplatte, nur die Kontozeile wird entfernt.",
     "deleteForwarder": "Die Weiterleitung \"{{source}}\" löschen?",
-    "deleteFilter": "Den Filter \"{{name}}\" löschen?"
+    "deleteFilter": "Den Filter \"{{name}}\" löschen?",
+    "disableMail": "E-Mail-Dienst für {{domain}} deaktivieren? Eingehende Nachrichten werden nicht mehr zugestellt und niemand kann sich anmelden. Postfächer und gespeicherte Nachrichten bleiben erhalten und kehren beim Wiedereinschalten zurück."
   },
   "errors": {
     "loadDomainFailed": "Die Domain konnte nicht geladen werden",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Der Mail-Filter konnte nicht hinzugefügt werden",
     "readSendLimitsFailed": "Die Sendelimits konnten nicht gelesen werden",
     "saveSendLimitsFailed": "Die Sendelimits konnten nicht gespeichert werden",
-    "webmail": "Webmail konnte nicht geöffnet werden"
+    "webmail": "Webmail konnte nicht geöffnet werden",
+    "disableFailed": "E-Mail-Dienst konnte nicht deaktiviert werden"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "An",
       "result": "Ergebnis"
     }
+  },
+  "disable": {
+    "title": "E-Mail-Dienst deaktivieren",
+    "description": "Stoppt die Zustellung für diese Domain und sperrt jede Postfach-Anmeldung. Es wird nichts gelöscht: Postfächer, Weiterleitungen und gespeicherte Nachrichten bleiben erhalten, und beim Wiedereinschalten sind sie genau wie zuvor.",
+    "button": "E-Mail deaktivieren",
+    "working": "Wird deaktiviert…"
   }
 }

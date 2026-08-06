@@ -109,12 +109,14 @@
     "autoresponderSaved": "自动回复及其 Sieve 脚本已应用。",
     "autoresponderRemoved": "自动回复已移除。",
     "filterAdded": "邮件过滤器已编译并启用。",
-    "sendLimitsSaved": "发送限制已保存。"
+    "sendLimitsSaved": "发送限制已保存。",
+    "disabled": "邮件服务已关闭。邮箱和已存储的邮件均已保留。"
   },
   "confirm": {
     "deleteMailbox": "删除邮箱“{{email}}”？Maildir 将保留在磁盘上，仅移除账户记录。",
     "deleteForwarder": "删除转发“{{source}}”？",
-    "deleteFilter": "删除过滤器“{{name}}”？"
+    "deleteFilter": "删除过滤器“{{name}}”？",
+    "disableMail": "要关闭 {{domain}} 的邮件服务吗？收到的邮件将不再投递，任何人都无法登录。邮箱和已存储的邮件会保留，重新开启后即可恢复。"
   },
   "errors": {
     "loadDomainFailed": "无法加载域名",
@@ -132,7 +134,8 @@
     "addFilterFailed": "无法添加邮件过滤器",
     "readSendLimitsFailed": "无法读取发送限制",
     "saveSendLimitsFailed": "无法保存发送限制",
-    "webmail": "无法打开网页邮箱"
+    "webmail": "无法打开网页邮箱",
+    "disableFailed": "无法关闭邮件服务"
   },
   "webmail": {
     "title": "网页邮箱",
@@ -165,5 +168,11 @@
       "to": "收件人",
       "result": "结果"
     }
+  },
+  "disable": {
+    "title": "关闭邮件服务",
+    "description": "停止向该域名投递邮件，并阻止所有邮箱登录。不会删除任何内容：邮箱、转发规则和已存储的邮件都会保留，重新开启后完全恢复原状。",
+    "button": "关闭邮件",
+    "working": "正在关闭…"
   }
 }

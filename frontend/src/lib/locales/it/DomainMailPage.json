@@ -109,12 +109,14 @@
     "autoresponderSaved": "Il risponditore automatico e il suo script Sieve sono stati applicati.",
     "autoresponderRemoved": "Il risponditore automatico è stato rimosso.",
     "filterAdded": "Il filtro di posta è stato compilato e abilitato.",
-    "sendLimitsSaved": "I limiti di invio sono stati salvati."
+    "sendLimitsSaved": "I limiti di invio sono stati salvati.",
+    "disabled": "Il servizio e-mail è stato disattivato. Caselle e messaggi archiviati sono stati conservati."
   },
   "confirm": {
     "deleteMailbox": "Eliminare la casella di posta \"{{email}}\"? La Maildir rimarrà sul disco e verrà rimossa solo la riga dell'account.",
     "deleteForwarder": "Eliminare l'inoltro \"{{source}}\"?",
-    "deleteFilter": "Eliminare il filtro \"{{name}}\"?"
+    "deleteFilter": "Eliminare il filtro \"{{name}}\"?",
+    "disableMail": "Disattivare il servizio e-mail per {{domain}}? I messaggi in arrivo non saranno più consegnati e nessuno potrà accedere. Le caselle e i messaggi archiviati vengono conservati e tornano alla riattivazione."
   },
   "errors": {
     "loadDomainFailed": "Impossibile caricare il dominio",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Impossibile aggiungere il filtro di posta",
     "readSendLimitsFailed": "Impossibile leggere i limiti di invio",
     "saveSendLimitsFailed": "Impossibile salvare i limiti di invio",
-    "webmail": "Impossibile aprire la webmail"
+    "webmail": "Impossibile aprire la webmail",
+    "disableFailed": "Impossibile disattivare il servizio e-mail"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "A",
       "result": "Risultato"
     }
+  },
+  "disable": {
+    "title": "Disattiva il servizio e-mail",
+    "description": "Interrompe la consegna per questo dominio e blocca ogni accesso alle caselle. Non viene eliminato nulla: caselle, inoltri e messaggi archiviati restano, e riattivandolo tornano esattamente come prima.",
+    "button": "Disattiva e-mail",
+    "working": "Disattivazione…"
   }
 }

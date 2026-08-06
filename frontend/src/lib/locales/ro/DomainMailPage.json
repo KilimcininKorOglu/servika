@@ -109,12 +109,14 @@
     "autoresponderSaved": "Răspunsul automat și scriptul său Sieve au fost aplicate.",
     "autoresponderRemoved": "Răspunsul automat a fost eliminat.",
     "filterAdded": "Filtrul de mail a fost compilat și activat.",
-    "sendLimitsSaved": "Limitele de trimitere au fost salvate."
+    "sendLimitsSaved": "Limitele de trimitere au fost salvate.",
+    "disabled": "Serviciul de e-mail a fost dezactivat. Căsuțele și mesajele stocate au fost păstrate."
   },
   "confirm": {
     "deleteMailbox": "Ștergeți cutia poștală „{{email}}”? Maildir-ul va rămâne pe disc și doar rândul contului va fi eliminat.",
     "deleteForwarder": "Ștergeți redirecționarea „{{source}}”?",
-    "deleteFilter": "Ștergeți filtrul „{{name}}”?"
+    "deleteFilter": "Ștergeți filtrul „{{name}}”?",
+    "disableMail": "Dezactivați serviciul de e-mail pentru {{domain}}? Mesajele primite nu vor mai fi livrate și nimeni nu se va putea autentifica. Căsuțele și mesajele stocate sunt păstrate și revin la reactivare."
   },
   "errors": {
     "loadDomainFailed": "Nu s-a putut încărca domeniul",
@@ -132,7 +134,8 @@
     "addFilterFailed": "Nu s-a putut adăuga filtrul de mail",
     "readSendLimitsFailed": "Nu s-au putut citi limitele de trimitere",
     "saveSendLimitsFailed": "Nu s-au putut salva limitele de trimitere",
-    "webmail": "Webmail nu a putut fi deschis"
+    "webmail": "Webmail nu a putut fi deschis",
+    "disableFailed": "Serviciul de e-mail nu a putut fi dezactivat"
   },
   "webmail": {
     "title": "Webmail",
@@ -165,5 +168,11 @@
       "to": "Către",
       "result": "Rezultat"
     }
+  },
+  "disable": {
+    "title": "Dezactivează serviciul de e-mail",
+    "description": "Oprește livrarea pentru acest domeniu și blochează autentificarea în toate căsuțele. Nu se șterge nimic: căsuțele, redirecționările și mesajele stocate rămân, iar la reactivare revin exact cum erau.",
+    "button": "Dezactivează e-mailul",
+    "working": "Se dezactivează…"
   }
 }

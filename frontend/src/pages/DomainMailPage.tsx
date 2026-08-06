@@ -174,6 +174,28 @@ export default function DomainMailPage() {
     }
   }
 
+  // Turning the service off is NOT a deletion. DisableDomain only sets
+  // mail_domains.status='suspended'; mailboxes, forwarders and the Maildir on
+  // disk all stay, and enabling again restores them untouched. What the
+  // suspended status does change is real: the Postfix virtual-domain lookup and
+  // both Dovecot queries require status='active', so delivery stops and nobody
+  // can sign in. The confirmation has to state both halves.
+  async function disableMail() {
+    if (!confirm(t('confirm.disableMail', { domain: domain?.domain_name }))) return
+    setIsSaving(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      await api.delete(`/domains/${id}/mail/enable`)
+      setSuccess(t('messages.disabled'))
+      loadMail()
+    } catch (cause) {
+      setError(apiError(cause, t('errors.disableFailed')))
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   async function addMailbox(event: React.FormEvent) {
     event.preventDefault()
     setError(null)
@@ -794,6 +816,18 @@ export default function DomainMailPage() {
                   </table>
                 </div>
               )}
+            </div>
+
+            {/* Last and full width, outside the settings grid: it acts on the
+                whole service rather than one setting. Bordered red because it
+                stops delivery, but it is not the delete button it resembles. */}
+            <div className="mt-5 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 rounded-2xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('disable.title')}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">{t('disable.description')}</p>
+              <button type="button" onClick={disableMail} disabled={isSaving}
+                className="mt-3 px-4 py-2 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 text-sm font-medium rounded-lg">
+                {isSaving ? t('disable.working') : t('disable.button')}
+              </button>
             </div>
           </>
         )}
