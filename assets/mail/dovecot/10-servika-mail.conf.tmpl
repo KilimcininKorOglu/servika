@@ -41,11 +41,20 @@ service lmtp {
   }
 }
 
+# Quota. The plan's per-mailbox storage limit is stored on the mailbox row and
+# handed to Dovecot by the userdb query as quota_rule; WITHOUT this plugin that
+# number is decorative and mail is accepted until the disk fills.
+mail_plugins = $mail_plugins quota
+protocol imap {
+  mail_plugins = $mail_plugins imap_quota
+}
+
 # Pigeonhole/Sieve: the panel-generated per-mailbox filters and vacation script.
 protocol lmtp {
-  mail_plugins = $mail_plugins sieve
+  mail_plugins = $mail_plugins sieve quota
 }
 plugin {
+  quota = maildir:User quota
   sieve = file:~/sieve;active=~/.dovecot.sieve
   sieve_vacation_min_period = 1d
   sieve_vacation_default_period = 7d

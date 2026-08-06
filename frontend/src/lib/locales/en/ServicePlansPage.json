@@ -53,6 +53,8 @@
     "maxDomains": "Max Domains",
     "maxDatabases": "Max Databases",
     "maxFtp": "Max FTP Accounts",
+    "maxEmail": "Max Mailboxes",
+    "mailboxQuotaMb": "Mailbox Quota (MB)",
     "isDefault": "Default plan for new domains",
     "wafHeading": "WAF Default (ModSecurity + OWASP CRS)",
     "wafEnabled": "Enabled in this plan",

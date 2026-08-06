@@ -53,6 +53,8 @@
     "maxDomains": "Max. domén",
     "maxDatabases": "Max. databází",
     "maxFtp": "Max. účtů FTP",
+    "maxEmail": "Maximum poštovních schránek",
+    "mailboxQuotaMb": "Kvóta poštovní schránky (MB)",
     "isDefault": "Výchozí tarif pro nové domény",
     "wafHeading": "Výchozí WAF (ModSecurity + OWASP CRS)",
     "wafEnabled": "Povoleno v tomto tarifu",

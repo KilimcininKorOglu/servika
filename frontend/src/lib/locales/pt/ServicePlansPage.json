@@ -53,6 +53,8 @@
     "maxDomains": "Máximo de Domínios",
     "maxDatabases": "Máximo de Bases de Dados",
     "maxFtp": "Máximo de Contas FTP",
+    "maxEmail": "Máx. de caixas de correio",
+    "mailboxQuotaMb": "Quota da caixa de correio (MB)",
     "isDefault": "Plano predefinido para novos domínios",
     "wafHeading": "WAF Predefinido (ModSecurity + OWASP CRS)",
     "wafEnabled": "Ativado neste plano",

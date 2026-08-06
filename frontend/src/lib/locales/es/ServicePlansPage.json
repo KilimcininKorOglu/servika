@@ -53,6 +53,8 @@
     "maxDomains": "Máx. dominios",
     "maxDatabases": "Máx. bases de datos",
     "maxFtp": "Máx. cuentas FTP",
+    "maxEmail": "Buzones máximos",
+    "mailboxQuotaMb": "Cuota de buzón (MB)",
     "isDefault": "Plan predeterminado para nuevos dominios",
     "wafHeading": "WAF predeterminado (ModSecurity + OWASP CRS)",
     "wafEnabled": "Activado en este plan",

@@ -53,6 +53,8 @@
     "maxDomains": "Domenii maxime",
     "maxDatabases": "Baze de date maxime",
     "maxFtp": "Conturi FTP maxime",
+    "maxEmail": "Număr maxim de căsuțe poștale",
+    "mailboxQuotaMb": "Cotă căsuță poștală (MB)",
     "isDefault": "Plan implicit pentru domeniile noi",
     "wafHeading": "Valoare implicită WAF (ModSecurity + OWASP CRS)",
     "wafEnabled": "Activat în acest plan",

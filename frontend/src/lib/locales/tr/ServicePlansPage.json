@@ -53,6 +53,8 @@
     "maxDomains": "Maksimum Alan Adı",
     "maxDatabases": "Maksimum Veritabanı",
     "maxFtp": "Maksimum FTP Hesabı",
+    "maxEmail": "Azami Posta Kutusu",
+    "mailboxQuotaMb": "Posta Kutusu Kotası (MB)",
     "isDefault": "Yeni alan adları için varsayılan plan",
     "wafHeading": "WAF Varsayılanı (ModSecurity + OWASP CRS)",
     "wafEnabled": "Bu planda etkin",

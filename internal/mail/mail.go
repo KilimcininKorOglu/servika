@@ -1,6 +1,7 @@
 package mail
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -223,10 +224,14 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	cmd.Env = subprocessEnv
 	_ = cmd.Run()
 
+	// The plan's mailbox quota is applied at creation. Dovecot reads the value
+	// through its userdb query, so a mailbox created without it is genuinely
+	// unlimited no matter what the plan says.
+	quotaBytes := planMailboxQuotaBytes(r.Context(), h.DB, id)
 	res, err := h.DB.ExecContext(r.Context(),
-		`INSERT INTO mailboxes(domain_id, mail_domain_id, local_part, email, password_hash, maildir)
-		 VALUES(?,?,?,?,?,?)`,
-		id, mailDomainID, localPart, email, hash, maildir)
+		`INSERT INTO mailboxes(domain_id, mail_domain_id, local_part, email, password_hash, maildir, quota_bytes)
+		 VALUES(?,?,?,?,?,?,?)`,
+		id, mailDomainID, localPart, email, hash, maildir, quotaBytes)
 	if err != nil {
 		httpx.WriteError(w, http.StatusConflict, "mailbox already exists or could not be created")
 		return
@@ -343,4 +348,37 @@ func (h *Handlers) SetStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	h.audit(r, "mail.status", strconv.FormatInt(mailboxID, 10), true)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+// planMailboxQuotaBytes returns the per-mailbox storage limit the domain's plan
+// imposes, in bytes, or 0 for no limit.
+//
+// A plan value that nothing writes into the mailbox row enforces nothing: the
+// panel would display a quota while Dovecot accepted mail until the disk filled.
+// A read failure yields 0 rather than an arbitrary limit, because inventing a
+// quota is worse than the plan not being applied, and the caller logs it.
+func planMailboxQuotaBytes(ctx context.Context, db *sql.DB, domainID int64) int64 {
+	var quotaMB int64
+	err := db.QueryRowContext(ctx,
+		`SELECT COALESCE(p.mailbox_quota_mb, 0)
+		   FROM domains d LEFT JOIN service_plans p ON p.id = d.plan_id
+		  WHERE d.id = ?`, domainID).Scan(&quotaMB)
+	if err != nil {
+		// #nosec G706 -- the operands are an integer domain ID and a database
+		// driver error; no client-controlled string reaches the log line.
+		log.Printf("mailbox quota lookup for domain %d: %v", domainID, err)
+		return 0
+	}
+	return quotaBytesFromMB(quotaMB)
+}
+
+// quotaBytesFromMB converts the plan's megabyte figure into the byte count the
+// mailbox row and Dovecot's quota_rule both speak. A plan value of 0 (or a
+// negative one an operator managed to store) means no limit, and Dovecot reads
+// that as "no quota_rule", not as "zero bytes allowed".
+func quotaBytesFromMB(quotaMB int64) int64 {
+	if quotaMB <= 0 {
+		return 0
+	}
+	return quotaMB * 1024 * 1024
 }

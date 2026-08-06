@@ -53,6 +53,8 @@
     "maxDomains": "最大域名数",
     "maxDatabases": "最大数据库数",
     "maxFtp": "最大 FTP 账户数",
+    "maxEmail": "最大邮箱数",
+    "mailboxQuotaMb": "邮箱配额 (MB)",
     "isDefault": "新域名的默认套餐",
     "wafHeading": "WAF 默认设置 (ModSecurity + OWASP CRS)",
     "wafEnabled": "在此套餐中启用",

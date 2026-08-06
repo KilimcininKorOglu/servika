@@ -18,6 +18,7 @@ type Plan = {
   max_domain: number
   max_db: number
   max_email: number
+  mailbox_quota_mb: number
   max_ftp: number
   php_version: string
   fastcgi_cache: boolean
@@ -181,6 +182,7 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
     max_domain: plan.max_domain || 1,
     max_db: plan.max_db || 1,
     max_email: plan.max_email || 0,
+    mailbox_quota_mb: plan.mailbox_quota_mb || 0,
     max_ftp: plan.max_ftp || 2,
     php_version: plan.php_version || '8.3',
     fastcgi_cache: plan.fastcgi_cache || false,
@@ -236,6 +238,9 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
           <Count label={t('modal.maxDomains')} value={form.max_domain} setValue={value => setForm({ ...form, max_domain: value })} />
           <Count label={t('modal.maxDatabases')} value={form.max_db} setValue={value => setForm({ ...form, max_db: value })} />
           <Count label={t('modal.maxFtp')} value={form.max_ftp} setValue={value => setForm({ ...form, max_ftp: value })} />
+          <Count label={t('modal.maxEmail')} value={form.max_email} setValue={value => setForm({ ...form, max_email: value })} />
+          {/* Enforced by Dovecot through the mailbox row, not just displayed. */}
+          <Count label={t('modal.mailboxQuotaMb')} value={form.mailbox_quota_mb} setValue={value => setForm({ ...form, mailbox_quota_mb: value })} />
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
           <input type="checkbox" checked={form.is_default} onChange={e => setForm({ ...form, is_default: e.target.checked })} className="rounded" />

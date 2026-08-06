@@ -53,6 +53,8 @@
     "maxDomains": "最大ドメイン数",
     "maxDatabases": "最大データベース数",
     "maxFtp": "最大 FTP アカウント数",
+    "maxEmail": "最大メールボックス数",
+    "mailboxQuotaMb": "メールボックス容量 (MB)",
     "isDefault": "新しいドメインのデフォルトプラン",
     "wafHeading": "WAF デフォルト (ModSecurity + OWASP CRS)",
     "wafEnabled": "このプランで有効",

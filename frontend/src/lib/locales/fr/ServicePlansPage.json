@@ -53,6 +53,8 @@
     "maxDomains": "Domaines max",
     "maxDatabases": "Bases de données max",
     "maxFtp": "Comptes FTP max",
+    "maxEmail": "Boîtes aux lettres max.",
+    "mailboxQuotaMb": "Quota de boîte aux lettres (Mo)",
     "isDefault": "Forfait par défaut pour les nouveaux domaines",
     "wafHeading": "WAF par défaut (ModSecurity + OWASP CRS)",
     "wafEnabled": "Activé dans ce forfait",
