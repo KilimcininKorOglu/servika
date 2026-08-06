@@ -174,6 +174,51 @@ type createReq struct {
 	SiteType   string `json:"site_type,omitempty"`
 }
 
+// Reason codes a create request can be refused with. They are CODES rather than
+// sentences because the interface ships twelve languages and wording produced
+// here could not be translated.
+const (
+	reasonCustomerNotFound = "customer_not_found"
+	reasonPlanNotFound     = "plan_not_found"
+)
+
+// referencedAccountsExist checks that the rows a create request points at are
+// real, and returns a reason code when one is not.
+//
+// It has to exist because `domains.customer_id` carries no foreign key, so an id
+// matching nothing is written verbatim. The domain then hangs off a customer
+// `middleware.ScopeSQL` can never find: an administrator still sees it, because
+// that branch adds no condition, while the reseller and the customer it was
+// meant for never do, and it is missing from the Customer Accounts screen. The
+// reseller path was already safe, `ResellerOwnsCustomer` reads the row, but an
+// administrator's id went straight through.
+//
+// A database failure is reported as an error, not as "not found", so the caller
+// refuses instead of provisioning against an unchecked id.
+func (h *Handlers) referencedAccountsExist(ctx context.Context, customerID, planID *int64) (string, error) {
+	if customerID != nil && *customerID > 0 {
+		var found int64
+		switch err := h.DB.QueryRowContext(ctx,
+			`SELECT id FROM customers WHERE id=?`, *customerID).Scan(&found); {
+		case errors.Is(err, sql.ErrNoRows):
+			return reasonCustomerNotFound, nil
+		case err != nil:
+			return "", err
+		}
+	}
+	if planID != nil && *planID > 0 {
+		var found int64
+		switch err := h.DB.QueryRowContext(ctx,
+			`SELECT id FROM service_plans WHERE id=?`, *planID).Scan(&found); {
+		case errors.Is(err, sql.ErrNoRows):
+			return reasonPlanNotFound, nil
+		case err != nil:
+			return "", err
+		}
+	}
+	return "", nil
+}
+
 // The site types a domain may be created as. Only siteTypeStatic changes what
 // gets provisioned; siteTypePHP and siteTypeWordPress are provisioned alike and
 // differ only in where the client sends the customer afterwards.
@@ -347,6 +392,19 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Check the ids the request points at BEFORE provisioning. Provision creates
+	// the Linux user, the nginx vhost and the FPM pool, so refusing after it ran
+	// would leave a half-provisioned domain behind for a request that was never
+	// going to be accepted.
+	if reason, err := h.referencedAccountsExist(r.Context(), req.CustomerID, req.PlanID); err != nil {
+		log.Printf("verify referenced accounts for %q: %v", req.DomainName, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not verify the selected account")
+		return
+	} else if reason != "" {
+		httpx.WriteError(w, http.StatusBadRequest, reason)
+		return
+	}
+
 	pr, err := provisioner.Provision(req.DomainName, req.PHPVersion)
 	if err != nil {
 		log.Printf("provision %q failed: %v", req.DomainName, err)
@@ -376,9 +434,17 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	id, _ := res.LastInsertId()
 
 	if req.CustomerID != nil || req.PlanID != nil {
-		_, _ = h.DB.ExecContext(r.Context(),
+		// Not silently discarded: the domain is provisioned and serving, so a lost
+		// write here leaves it attached to nobody while the caller was told which
+		// customer it went to. Both ids were checked above, so a failure now is
+		// the database itself.
+		if _, err := h.DB.ExecContext(r.Context(),
 			`UPDATE domains SET customer_id=?, plan_id=? WHERE id=?`,
-			req.CustomerID, req.PlanID, id)
+			req.CustomerID, req.PlanID, id); err != nil {
+			log.Printf("attach domain %d to customer/plan: %v", id, err)
+			httpx.WriteError(w, http.StatusInternalServerError, "the domain was created but could not be attached to the selected account")
+			return
+		}
 	}
 	if req.CustomerID == nil {
 		// Nobody was named, so build the ownership chain now rather than leaving
