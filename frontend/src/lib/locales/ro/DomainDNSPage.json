@@ -174,7 +174,9 @@
       "mx": "Înregistrare MX",
       "spf": "SPF",
       "dkim": "DKIM",
-      "dmarc": "DMARC"
+      "dmarc": "DMARC",
+      "ptr": "DNS invers (PTR)",
+      "mail_ports": "Porturi de e-mail"
     },
     "reasons": {
       "unreadable": "Interogarea a eșuat, înregistrarea nu a putut fi citită.",
@@ -209,6 +211,16 @@
       "dmarc": {
         "missing": "Nu există înregistrare DMARC. Nu este obligatorie, dar îmbunătățește livrabilitatea.",
         "malformed": "Există o înregistrare TXT, dar nu începe cu v=DMARC1."
+      },
+      "ptr": {
+        "ptr_missing": "Adresa de expediere nu are înregistrare PTR. Majoritatea furnizorilor mari refuză mesajele de la o adresă fără PTR; cereți-i furnizorului serverului să o seteze.",
+        "ptr_no_forward_match": "PTR indică o gazdă care nu se rezolvă înapoi la această adresă. Un server destinatar tratează acest lucru ca pe lipsa PTR.",
+        "no_server_address": "Serverul nu are o adresă IPv4 publică înregistrată, așa că DNS-ul invers nu a putut fi verificat."
+      },
+      "mail_ports": {
+        "ports_closed": "Unele porturi de e-mail nu au putut fi atinse chiar de pe server: serviciul este oprit sau o regulă locală de firewall le-a închis.",
+        "all_ports_closed": "Niciun port de e-mail nu a putut fi atins chiar de pe server. E-mailul nu este deservit deloc.",
+        "no_server_address": "Serverul nu are o adresă IPv4 publică înregistrată, așa că porturile nu au putut fi verificate."
       }
     }
   }

@@ -174,7 +174,9 @@
       "mx": "MX kaydı",
       "spf": "SPF",
       "dkim": "DKIM",
-      "dmarc": "DMARC"
+      "dmarc": "DMARC",
+      "ptr": "Ters DNS (PTR)",
+      "mail_ports": "Posta portları"
     },
     "reasons": {
       "unreadable": "Sorgu başarısız oldu, kayıt okunamadı.",
@@ -209,6 +211,16 @@
       "dmarc": {
         "missing": "DMARC kaydı yok. Zorunlu değil ama teslim edilebilirliği artırır.",
         "malformed": "TXT kaydı var ama v=DMARC1 ile başlamıyor."
+      },
+      "ptr": {
+        "ptr_missing": "Gönderim adresinin PTR kaydı yok. Büyük sağlayıcıların çoğu PTR kaydı olmayan adresten gelen postayı reddeder; sunucuyu sağlayan tarafla ayarlatın.",
+        "ptr_no_forward_match": "PTR, bu adrese geri çözülmeyen bir host adı veriyor. Alıcı sunucu bunu PTR hiç yokmuş gibi değerlendirir.",
+        "no_server_address": "Sunucunun kayıtlı genel IPv4 adresi yok, bu yüzden ters DNS kontrol edilemedi."
+      },
+      "mail_ports": {
+        "ports_closed": "Bazı posta portlarına sunucunun kendisinden ulaşılamadı; servis durmuş ya da yerel bir güvenlik duvarı kuralı portları kapatmış demektir.",
+        "all_ports_closed": "Sunucunun kendisinden hiçbir posta portuna ulaşılamadı. Posta hizmeti hiç verilmiyor.",
+        "no_server_address": "Sunucunun kayıtlı genel IPv4 adresi yok, bu yüzden portlar kontrol edilemedi."
       }
     }
   }

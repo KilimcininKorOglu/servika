@@ -174,7 +174,9 @@
       "mx": "Enregistrement MX",
       "spf": "SPF",
       "dkim": "DKIM",
-      "dmarc": "DMARC"
+      "dmarc": "DMARC",
+      "ptr": "DNS inverse (PTR)",
+      "mail_ports": "Ports de messagerie"
     },
     "reasons": {
       "unreadable": "La requête a échoué, l'enregistrement n'a pas pu être lu.",
@@ -209,6 +211,16 @@
       "dmarc": {
         "missing": "Il n'y a pas d'enregistrement DMARC. Ce n'est pas obligatoire, mais cela améliore la délivrabilité.",
         "malformed": "Un enregistrement TXT existe mais ne commence pas par v=DMARC1."
+      },
+      "ptr": {
+        "ptr_missing": "L'adresse d'envoi n'a pas d'enregistrement PTR. La plupart des grands fournisseurs refusent le courrier venant d'une adresse sans PTR ; demandez-le à l'hébergeur du serveur.",
+        "ptr_no_forward_match": "Le PTR nomme un hôte qui ne résout pas vers cette adresse. Un serveur destinataire traite cela comme une absence de PTR.",
+        "no_server_address": "Aucune adresse IPv4 publique n'est enregistrée pour le serveur, le DNS inverse n'a donc pas pu être vérifié."
+      },
+      "mail_ports": {
+        "ports_closed": "Certains ports de messagerie sont injoignables depuis le serveur lui-même : le service est arrêté ou une règle de pare-feu locale les a fermés.",
+        "all_ports_closed": "Aucun port de messagerie n'est joignable depuis le serveur lui-même. Le courrier n'est pas servi du tout.",
+        "no_server_address": "Aucune adresse IPv4 publique n'est enregistrée pour le serveur, les ports n'ont donc pas pu être vérifiés."
       }
     }
   }

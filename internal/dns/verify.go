@@ -29,8 +29,9 @@ import (
 )
 
 // verifyTimeout bounds all checks together so a dead resolver cannot leave the
-// panel request hanging.
-const verifyTimeout = 12 * time.Second
+// panel request hanging. It allows for the mail port dials as well, which each
+// wait out a filtered port rather than being refused at once.
+const verifyTimeout = 20 * time.Second
 
 // Check status values; the frontend colours the rows from these.
 const (
@@ -42,7 +43,7 @@ const (
 // Check is the result of one DNS check. Key names the check, Reason names the
 // outcome; the frontend turns both into localized text.
 type Check struct {
-	Key      string `json:"key"` // ns | a | mail_a | mx | spf | dkim | dmarc
+	Key      string `json:"key"` // ns | a | mail_a | mx | spf | dkim | dmarc | ptr | mail_ports
 	Host     string `json:"host,omitempty"`
 	Status   string `json:"status"`
 	Reason   string `json:"reason,omitempty"`
@@ -102,6 +103,13 @@ func RunVerification(ctx context.Context, db *sql.DB, resolver *net.Resolver, do
 		checkSPF(ctx, resolver, domainName, ipv4),
 		checkDKIM(ctx, resolver, db, domainID, domainName),
 		checkDMARC(ctx, resolver, domainName),
+		// Neither of these is a record in the domain's own zone, which is why
+		// they were missing: reverse DNS belongs to whoever owns the address, and
+		// a listening port is not DNS at all. Both decide whether mail this
+		// server sends is accepted, so a screen that says "your mail DNS is fine"
+		// without them is answering a narrower question than the one being asked.
+		checkPTR(ctx, resolver, ipv4),
+		checkMailPorts(ctx, ipv4),
 	)
 	for _, check := range result.Checks {
 		switch check.Status {

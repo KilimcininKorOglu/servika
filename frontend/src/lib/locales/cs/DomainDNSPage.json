@@ -174,7 +174,9 @@
       "mx": "Záznam MX",
       "spf": "SPF",
       "dkim": "DKIM",
-      "dmarc": "DMARC"
+      "dmarc": "DMARC",
+      "ptr": "Reverzní DNS (PTR)",
+      "mail_ports": "Poštovní porty"
     },
     "reasons": {
       "unreadable": "Dotaz selhal, záznam nebylo možné přečíst.",
@@ -209,6 +211,16 @@
       "dmarc": {
         "missing": "Neexistuje záznam DMARC. Není povinný, ale zlepšuje doručitelnost.",
         "malformed": "Záznam TXT existuje, ale nezačíná na v=DMARC1."
+      },
+      "ptr": {
+        "ptr_missing": "Odesílací adresa nemá záznam PTR. Většina velkých poskytovatelů poštu z adresy bez PTR odmítá; požádejte o jeho nastavení poskytovatele serveru.",
+        "ptr_no_forward_match": "PTR uvádí hostitele, který se nepřekládá zpět na tuto adresu. Přijímající server to bere stejně jako chybějící PTR.",
+        "no_server_address": "Server nemá evidovanou veřejnou adresu IPv4, reverzní DNS proto nebylo možné zkontrolovat."
+      },
+      "mail_ports": {
+        "ports_closed": "Některé poštovní porty nebyly ze samotného serveru dostupné: služba je zastavená, nebo je uzavřelo místní pravidlo brány firewall.",
+        "all_ports_closed": "Ze samotného serveru nebyl dostupný žádný poštovní port. Pošta se vůbec neobsluhuje.",
+        "no_server_address": "Server nemá evidovanou veřejnou adresu IPv4, porty proto nebylo možné zkontrolovat."
       }
     }
   }

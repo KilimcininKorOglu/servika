@@ -174,7 +174,9 @@
       "mx": "MX-Eintrag",
       "spf": "SPF",
       "dkim": "DKIM",
-      "dmarc": "DMARC"
+      "dmarc": "DMARC",
+      "ptr": "Reverse DNS (PTR)",
+      "mail_ports": "Mail-Ports"
     },
     "reasons": {
       "unreadable": "Die Abfrage ist fehlgeschlagen, der Eintrag konnte nicht gelesen werden.",
@@ -209,6 +211,16 @@
       "dmarc": {
         "missing": "Es gibt keinen DMARC-Eintrag. Er ist nicht erforderlich, verbessert aber die Zustellbarkeit.",
         "malformed": "Ein TXT-Eintrag existiert, beginnt aber nicht mit v=DMARC1."
+      },
+      "ptr": {
+        "ptr_missing": "Die sendende Adresse hat keinen PTR-Eintrag. Die meisten großen Anbieter lehnen Mail von einer Adresse ohne PTR ab; lassen Sie ihn beim Serveranbieter setzen.",
+        "ptr_no_forward_match": "Der PTR nennt einen Host, der nicht auf diese Adresse zurück auflöst. Ein empfangender Server behandelt das wie einen fehlenden PTR.",
+        "no_server_address": "Für den Server ist keine öffentliche IPv4-Adresse hinterlegt, daher konnte Reverse DNS nicht geprüft werden."
+      },
+      "mail_ports": {
+        "ports_closed": "Einige Mail-Ports waren vom Server selbst nicht erreichbar: der Dienst ist gestoppt oder eine lokale Firewall-Regel hat sie geschlossen.",
+        "all_ports_closed": "Kein Mail-Port war vom Server selbst erreichbar. Es wird überhaupt keine Mail bereitgestellt.",
+        "no_server_address": "Für den Server ist keine öffentliche IPv4-Adresse hinterlegt, daher konnten die Ports nicht geprüft werden."
       }
     }
   }

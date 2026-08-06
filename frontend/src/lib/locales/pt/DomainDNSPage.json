@@ -174,7 +174,9 @@
       "mx": "Registo MX",
       "spf": "SPF",
       "dkim": "DKIM",
-      "dmarc": "DMARC"
+      "dmarc": "DMARC",
+      "ptr": "DNS inverso (PTR)",
+      "mail_ports": "Portas de correio"
     },
     "reasons": {
       "unreadable": "A consulta falhou, o registo não pôde ser lido.",
@@ -209,6 +211,16 @@
       "dmarc": {
         "missing": "Não há registo DMARC. Não é obrigatório, mas melhora a entregabilidade.",
         "malformed": "Existe um registo TXT mas não começa por v=DMARC1."
+      },
+      "ptr": {
+        "ptr_missing": "O endereço de envio não tem registo PTR. A maioria dos grandes fornecedores recusa correio de um endereço sem PTR; peça a quem fornece o servidor para o definir.",
+        "ptr_no_forward_match": "O PTR indica um host que não resolve de volta para este endereço. Um servidor recetor trata isso como se não houvesse PTR.",
+        "no_server_address": "O servidor não tem endereço IPv4 público registado, por isso o DNS inverso não foi verificado."
+      },
+      "mail_ports": {
+        "ports_closed": "Algumas portas de correio não foram alcançadas a partir do próprio servidor: o serviço está parado ou uma regra local de firewall fechou-as.",
+        "all_ports_closed": "Nenhuma porta de correio foi alcançada a partir do próprio servidor. O correio não está a ser servido.",
+        "no_server_address": "O servidor não tem endereço IPv4 público registado, por isso as portas não foram verificadas."
       }
     }
   }

@@ -174,7 +174,9 @@
       "mx": "MX record",
       "spf": "SPF",
       "dkim": "DKIM",
-      "dmarc": "DMARC"
+      "dmarc": "DMARC",
+      "ptr": "Reverse DNS (PTR)",
+      "mail_ports": "Mail ports"
     },
     "reasons": {
       "unreadable": "The lookup failed, so the record could not be read.",
@@ -209,6 +211,16 @@
       "dmarc": {
         "missing": "There is no DMARC record. It is not required, but it improves deliverability.",
         "malformed": "A TXT record exists but it does not start with v=DMARC1."
+      },
+      "ptr": {
+        "ptr_missing": "The sending address has no PTR record. Most large providers refuse mail from an address without one; ask whoever provides the server to set it.",
+        "ptr_no_forward_match": "The PTR names a host that does not resolve back to this address. A receiving server treats that the same as having no PTR at all.",
+        "no_server_address": "The server has no public IPv4 address on record, so reverse DNS could not be checked."
+      },
+      "mail_ports": {
+        "ports_closed": "Some mail ports could not be reached from the server itself, which means the service is stopped or a local firewall rule closed them.",
+        "all_ports_closed": "No mail port could be reached from the server itself. Mail is not being served at all.",
+        "no_server_address": "The server has no public IPv4 address on record, so the ports could not be checked."
       }
     }
   }

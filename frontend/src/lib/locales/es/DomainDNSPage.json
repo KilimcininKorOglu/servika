@@ -1,8 +1,18 @@
 {
-  "breadcrumb": { "home": "Inicio", "domains": "Dominios", "dnsSettings": "Configuración DNS" },
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "dnsSettings": "Configuración DNS"
+  },
   "title": "Configuración DNS",
   "ipLabel": "IP:",
-  "authoritative": { "label": "DNS autoritativo:", "pre": " BIND publica estos registros. Apunte el dominio a ", "mid": " y ", "post": "." ,"unconfigured":"El servidor no tiene servidores de nombres compartidos definidos, por lo que estos valores son solo provisionales y no deben darse a un cliente."},
+  "authoritative": {
+    "label": "DNS autoritativo:",
+    "pre": " BIND publica estos registros. Apunte el dominio a ",
+    "mid": " y ",
+    "post": ".",
+    "unconfigured": "El servidor no tiene servidores de nombres compartidos definidos, por lo que estos valores son solo provisionales y no deben darse a un cliente."
+  },
   "loading": "Cargando...",
   "recordCount": "{{count}} registros",
   "valueHint": {
@@ -27,7 +37,13 @@
     "edit": "▼ Editar",
     "primaryNs": "NS primario",
     "hostmasterEmail": "Correo del hostmaster",
-    "fields": { "refresh": "actualización", "retry": "reintento", "expire": "expiración", "minimum": "mínimo", "ttl": "ttl" },
+    "fields": {
+      "refresh": "actualización",
+      "retry": "reintento",
+      "expire": "expiración",
+      "minimum": "mínimo",
+      "ttl": "ttl"
+    },
     "save": "Guardar SOA",
     "saved": "Configuración SOA guardada",
     "saveFailed": "No se pudo guardar la configuración SOA"
@@ -52,7 +68,16 @@
     "updateFailed": "No se pudo actualizar DNSSEC",
     "refreshFailed": "No se pudo actualizar el estado de DNSSEC"
   },
-  "actions": { "newRecord": "Nuevo registro", "applyTemplate": "📋 Aplicar plantilla predeterminada", "applyTemplateTitle": "Añade los registros A/MX/TXT/NS predeterminados (idempotente)", "refresh": "↻ Actualizar", "export": "⬇ Exportar", "exportTitle": "Descargar los registros DNS como archivo de zona BIND", "import": "⬆ Importar", "importTitle": "Cargar un archivo de zona BIND" },
+  "actions": {
+    "newRecord": "Nuevo registro",
+    "applyTemplate": "📋 Aplicar plantilla predeterminada",
+    "applyTemplateTitle": "Añade los registros A/MX/TXT/NS predeterminados (idempotente)",
+    "refresh": "↻ Actualizar",
+    "export": "⬇ Exportar",
+    "exportTitle": "Descargar los registros DNS como archivo de zona BIND",
+    "import": "⬆ Importar",
+    "importTitle": "Cargar un archivo de zona BIND"
+  },
   "import": {
     "title": "Importar archivo de zona",
     "description": "Cargue un archivo de zona BIND estándar (.zone / .txt). Los registros se importan en este dominio, luego la zona se valida y reescribe.",
@@ -66,15 +91,72 @@
     "failed": "La importación falló"
   },
   "exportFailed": "La exportación falló",
-  "bulk": { "selected": "{{count}} registros seleccionados", "enable": "Activar", "disable": "Desactivar", "deleteSelected": "Eliminar seleccionados ({{count}})", "clearSelection": "Borrar selección", "deleted": "{{count}} registros eliminados", "updated": "{{count}} registros actualizados", "deleteFailed": "La eliminación masiva falló", "updateFailed": "La actualización masiva falló" },
-  "table": { "selectAll": "Seleccionar todos", "select": "Seleccionar {{name}} {{type}}", "name": "Nombre", "type": "Tipo", "value": "Valor", "ttl": "TTL", "priority": "Prioridad", "status": "Estado", "actions": "Acciones", "selectLabel": "Seleccionar", "noPriority": "Ninguno", "active": "Activo", "disabled": "Desactivado", "edit": "Editar", "delete": "Eliminar" },
-  "empty": { "text": "Aún no hay registros DNS.", "applyTemplate": "Aplicar plantilla predeterminada" },
+  "bulk": {
+    "selected": "{{count}} registros seleccionados",
+    "enable": "Activar",
+    "disable": "Desactivar",
+    "deleteSelected": "Eliminar seleccionados ({{count}})",
+    "clearSelection": "Borrar selección",
+    "deleted": "{{count}} registros eliminados",
+    "updated": "{{count}} registros actualizados",
+    "deleteFailed": "La eliminación masiva falló",
+    "updateFailed": "La actualización masiva falló"
+  },
+  "table": {
+    "selectAll": "Seleccionar todos",
+    "select": "Seleccionar {{name}} {{type}}",
+    "name": "Nombre",
+    "type": "Tipo",
+    "value": "Valor",
+    "ttl": "TTL",
+    "priority": "Prioridad",
+    "status": "Estado",
+    "actions": "Acciones",
+    "selectLabel": "Seleccionar",
+    "noPriority": "Ninguno",
+    "active": "Activo",
+    "disabled": "Desactivado",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "empty": {
+    "text": "Aún no hay registros DNS.",
+    "applyTemplate": "Aplicar plantilla predeterminada"
+  },
   "templateAdded": "{{count}} registros predeterminados añadidos",
   "templateFailed": "No se pudo aplicar la plantilla",
-  "delete": { "title": "Eliminar registro DNS", "message": "¿Eliminar «{{name}} {{type}} {{value}}»?", "confirm": "Sí, eliminar", "failed": "La eliminación falló" },
-  "bulkDelete": { "title": "Eliminar registros DNS seleccionados", "message": "Se eliminarán permanentemente {{count}} registros DNS. Esta acción no puede deshacerse. ¿Continuar?", "confirm": "Sí, eliminar {{count}} registros" },
-  "dnssecDisable": { "title": "Desactivar DNSSEC", "message": "Elimine el registro DS en su registrador y espere su TTL antes de desactivar DNSSEC. De lo contrario, el dominio puede dejar de resolver con SERVFAIL. Continúe solo después de haber eliminado el registro DS.", "confirm": "DS eliminado, desactivar DNSSEC" },
-  "modal": { "newTitle": "Nuevo registro DNS", "editTitle": "Editar registro DNS", "nameLabel": "Nombre (subdominio)", "nameHint": "«@» es el dominio raíz. Otros ejemplos: «www» y «correo».", "typeLabel": "Tipo", "valueLabel": "Valor", "ttlLabel": "TTL (seg)", "priorityLabel": "Prioridad", "active": "Activo", "cancel": "Cancelar", "saving": "Guardando...", "create": "Crear", "update": "Actualizar", "saveFailed": "No se pudo guardar el registro" },
+  "delete": {
+    "title": "Eliminar registro DNS",
+    "message": "¿Eliminar «{{name}} {{type}} {{value}}»?",
+    "confirm": "Sí, eliminar",
+    "failed": "La eliminación falló"
+  },
+  "bulkDelete": {
+    "title": "Eliminar registros DNS seleccionados",
+    "message": "Se eliminarán permanentemente {{count}} registros DNS. Esta acción no puede deshacerse. ¿Continuar?",
+    "confirm": "Sí, eliminar {{count}} registros"
+  },
+  "dnssecDisable": {
+    "title": "Desactivar DNSSEC",
+    "message": "Elimine el registro DS en su registrador y espere su TTL antes de desactivar DNSSEC. De lo contrario, el dominio puede dejar de resolver con SERVFAIL. Continúe solo después de haber eliminado el registro DS.",
+    "confirm": "DS eliminado, desactivar DNSSEC"
+  },
+  "modal": {
+    "newTitle": "Nuevo registro DNS",
+    "editTitle": "Editar registro DNS",
+    "nameLabel": "Nombre (subdominio)",
+    "nameHint": "«@» es el dominio raíz. Otros ejemplos: «www» y «correo».",
+    "typeLabel": "Tipo",
+    "valueLabel": "Valor",
+    "ttlLabel": "TTL (seg)",
+    "priorityLabel": "Prioridad",
+    "active": "Activo",
+    "cancel": "Cancelar",
+    "saving": "Guardando...",
+    "create": "Crear",
+    "update": "Actualizar",
+    "saveFailed": "No se pudo guardar el registro"
+  },
   "verify": {
     "title": "Verificación de DNS",
     "hint": "pregunta a un resolvedor público qué está realmente publicado",
@@ -92,7 +174,9 @@
       "mx": "Registro MX",
       "spf": "SPF",
       "dkim": "DKIM",
-      "dmarc": "DMARC"
+      "dmarc": "DMARC",
+      "ptr": "DNS inverso (PTR)",
+      "mail_ports": "Puertos de correo"
     },
     "reasons": {
       "unreadable": "La consulta falló, no se pudo leer el registro.",
@@ -127,6 +211,16 @@
       "dmarc": {
         "missing": "No hay registro DMARC. No es obligatorio, pero mejora la entregabilidad.",
         "malformed": "Existe un registro TXT pero no empieza por v=DMARC1."
+      },
+      "ptr": {
+        "ptr_missing": "La dirección de envío no tiene registro PTR. La mayoría de los grandes proveedores rechaza el correo de una dirección sin PTR; pídaselo a quien proporciona el servidor.",
+        "ptr_no_forward_match": "El PTR nombra un host que no resuelve de vuelta a esta dirección. Un servidor receptor lo trata igual que si no hubiera PTR.",
+        "no_server_address": "El servidor no tiene registrada una dirección IPv4 pública, así que no se pudo comprobar el DNS inverso."
+      },
+      "mail_ports": {
+        "ports_closed": "Algunos puertos de correo no se alcanzaron desde el propio servidor: el servicio está detenido o una regla local del cortafuegos los cerró.",
+        "all_ports_closed": "No se alcanzó ningún puerto de correo desde el propio servidor. El correo no se está sirviendo en absoluto.",
+        "no_server_address": "El servidor no tiene registrada una dirección IPv4 pública, así que no se pudieron comprobar los puertos."
       }
     }
   }
