@@ -24,6 +24,7 @@
     "languagePreference": "preferenza di lingua",
     "updateStatus": "stato di aggiornamento del pannello",
     "optimizeStatus": "stato dell'ottimizzazione",
-    "deliveryLog": "cronologia delle consegne"
+    "deliveryLog": "cronologia delle consegne",
+    "mailServerSettings": "impostazioni di posta del server"
   }
 }

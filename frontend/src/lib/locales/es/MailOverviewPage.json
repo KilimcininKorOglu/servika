@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "No se pudo leer la cola Postfix",
     "actionFailed": "La operación de cola falló"
+  },
+  "serverSettings": {
+    "title": "Ajustes de correo del servidor",
+    "subtitle": "Se aplican a todos los dominios de este servidor, por encima de lo que fije un plan o un buzón.",
+    "loading": "Cargando...",
+    "maxMessageSize": "Tamaño máximo del mensaje (MB)",
+    "domainLimit": "Límite de envío por dominio / hora",
+    "clientLimit": "Límite de envío por conexión / hora",
+    "dnsbl": "Zonas de listas de bloqueo (separadas por espacios)",
+    "zeroNote": "0 significa sin límite. Un tamaño vacío deja el ajuste actual de Postfix.",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "saved": "Guardado y aplicado a Postfix.",
+    "saveFailed": "No se pudieron guardar los ajustes."
   }
 }

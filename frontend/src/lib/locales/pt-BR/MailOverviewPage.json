@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Não foi possível ler a fila do Postfix",
     "actionFailed": "A operação na fila falhou"
+  },
+  "serverSettings": {
+    "title": "Configurações de e-mail do servidor",
+    "subtitle": "Valem para todos os domínios deste servidor, acima do que um plano ou uma caixa definem.",
+    "loading": "Carregando...",
+    "maxMessageSize": "Tamanho máximo da mensagem (MB)",
+    "domainLimit": "Limite de envio por domínio / hora",
+    "clientLimit": "Limite de envio por conexão / hora",
+    "dnsbl": "Zonas de listas de bloqueio (separadas por espaços)",
+    "zeroNote": "0 significa sem limite. Um tamanho vazio mantém a configuração atual do Postfix.",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "saved": "Salvo e aplicado ao Postfix.",
+    "saveFailed": "Não foi possível salvar as configurações."
   }
 }

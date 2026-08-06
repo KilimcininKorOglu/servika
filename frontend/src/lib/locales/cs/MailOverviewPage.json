@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Frontu Postfix nelze načíst",
     "actionFailed": "Operace fronty se nezdařila"
+  },
+  "serverSettings": {
+    "title": "Nastavení pošty pro celý server",
+    "subtitle": "Platí pro každou doménu na tomto serveru, nad rámec toho, co nastaví tarif nebo schránka.",
+    "loading": "Načítání...",
+    "maxMessageSize": "Maximální velikost zprávy (MB)",
+    "domainLimit": "Limit odesílání na doménu / hodina",
+    "clientLimit": "Limit odesílání na spojení / hodina",
+    "dnsbl": "Zóny blokovacích seznamů (oddělené mezerami)",
+    "zeroNote": "0 znamená bez limitu. Prázdná velikost ponechá stávající nastavení Postfixu.",
+    "save": "Uložit",
+    "saving": "Ukládání...",
+    "saved": "Uloženo a aplikováno na Postfix.",
+    "saveFailed": "Nastavení se nepodařilo uložit."
   }
 }

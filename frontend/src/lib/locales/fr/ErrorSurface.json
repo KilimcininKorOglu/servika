@@ -24,6 +24,7 @@
     "languagePreference": "préférence de langue",
     "updateStatus": "état de mise à jour du panneau",
     "optimizeStatus": "état de l'optimisation",
-    "deliveryLog": "historique de distribution"
+    "deliveryLog": "historique de distribution",
+    "mailServerSettings": "paramètres de messagerie du serveur"
   }
 }

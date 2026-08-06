@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "无法读取 Postfix 队列",
     "actionFailed": "队列操作失败"
+  },
+  "serverSettings": {
+    "title": "服务器级邮件设置",
+    "subtitle": "对本服务器上的所有域名生效，优先于套餐或邮箱的设置。",
+    "loading": "加载中...",
+    "maxMessageSize": "最大邮件大小 (MB)",
+    "domainLimit": "每个域名每小时发送上限",
+    "clientLimit": "每个连接每小时发送上限",
+    "dnsbl": "黑名单区域（空格分隔）",
+    "zeroNote": "0 表示不限制。大小留空则保留 Postfix 现有配置。",
+    "save": "保存",
+    "saving": "保存中...",
+    "saved": "已保存并应用到 Postfix。",
+    "saveFailed": "无法保存设置。"
   }
 }

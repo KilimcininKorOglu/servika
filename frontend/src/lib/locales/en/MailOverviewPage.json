@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Could not read the Postfix queue",
     "actionFailed": "The queue operation failed"
+  },
+  "serverSettings": {
+    "title": "Server-wide mail settings",
+    "subtitle": "These apply to every domain on this server, above whatever a plan or a mailbox sets.",
+    "loading": "Loading...",
+    "maxMessageSize": "Max message size (MB)",
+    "domainLimit": "Domain send limit / hour",
+    "clientLimit": "Send limit per connection / hour",
+    "dnsbl": "Blocklist zones (space separated)",
+    "zeroNote": "0 means no limit. An empty size leaves whatever Postfix is already configured with.",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Saved and applied to Postfix.",
+    "saveFailed": "The settings could not be saved."
   }
 }

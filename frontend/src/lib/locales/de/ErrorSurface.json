@@ -24,6 +24,7 @@
     "languagePreference": "Spracheinstellung",
     "updateStatus": "Panel-Aktualisierungsstatus",
     "optimizeStatus": "Optimierungsstatus",
-    "deliveryLog": "Zustellverlauf"
+    "deliveryLog": "Zustellverlauf",
+    "mailServerSettings": "serverweite Mail-Einstellungen"
   }
 }

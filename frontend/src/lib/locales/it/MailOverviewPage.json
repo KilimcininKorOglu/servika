@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Impossibile leggere la coda Postfix",
     "actionFailed": "L'operazione sulla coda non è riuscita"
+  },
+  "serverSettings": {
+    "title": "Impostazioni di posta a livello di server",
+    "subtitle": "Valgono per ogni dominio su questo server, al di sopra di quanto imposta un piano o una casella.",
+    "loading": "Caricamento...",
+    "maxMessageSize": "Dimensione massima del messaggio (MB)",
+    "domainLimit": "Limite di invio per dominio / ora",
+    "clientLimit": "Limite di invio per connessione / ora",
+    "dnsbl": "Zone delle liste di blocco (separate da spazi)",
+    "zeroNote": "0 significa nessun limite. Una dimensione vuota lascia l'impostazione attuale di Postfix.",
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "saved": "Salvato e applicato a Postfix.",
+    "saveFailed": "Non è stato possibile salvare le impostazioni."
   }
 }

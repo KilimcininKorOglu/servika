@@ -24,6 +24,7 @@
     "languagePreference": "语言偏好",
     "updateStatus": "面板更新状态",
     "optimizeStatus": "优化状态",
-    "deliveryLog": "投递历史"
+    "deliveryLog": "投递历史",
+    "mailServerSettings": "服务器邮件设置"
   }
 }

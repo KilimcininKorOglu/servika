@@ -24,6 +24,7 @@
     "languagePreference": "dil tercihi",
     "updateStatus": "panel güncelleme durumu",
     "optimizeStatus": "eniyileme durumu",
-    "deliveryLog": "teslimat geçmişi"
+    "deliveryLog": "teslimat geçmişi",
+    "mailServerSettings": "sunucu posta ayarları"
   }
 }

@@ -24,6 +24,7 @@
     "languagePreference": "language preference",
     "updateStatus": "panel update status",
     "optimizeStatus": "optimization status",
-    "deliveryLog": "delivery history"
+    "deliveryLog": "delivery history",
+    "mailServerSettings": "server mail settings"
   }
 }

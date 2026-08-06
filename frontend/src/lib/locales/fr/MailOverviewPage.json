@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Impossible de lire la file Postfix",
     "actionFailed": "L'opération sur la file a échoué"
+  },
+  "serverSettings": {
+    "title": "Paramètres de messagerie du serveur",
+    "subtitle": "Ils s'appliquent à toutes les domaines de ce serveur, au-dessus de ce que définit un forfait ou une boîte.",
+    "loading": "Chargement...",
+    "maxMessageSize": "Taille maximale d'un message (Mo)",
+    "domainLimit": "Limite d'envoi par domaine / heure",
+    "clientLimit": "Limite d'envoi par connexion / heure",
+    "dnsbl": "Zones de listes de blocage (séparées par des espaces)",
+    "zeroNote": "0 signifie aucune limite. Une taille vide conserve le réglage actuel de Postfix.",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "saved": "Enregistré et appliqué à Postfix.",
+    "saveFailed": "Les paramètres n'ont pas pu être enregistrés."
   }
 }

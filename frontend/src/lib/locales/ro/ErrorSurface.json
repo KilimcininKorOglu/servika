@@ -24,6 +24,7 @@
     "languagePreference": "preferința de limbă",
     "updateStatus": "starea actualizării panoului",
     "optimizeStatus": "starea optimizării",
-    "deliveryLog": "istoricul livrărilor"
+    "deliveryLog": "istoricul livrărilor",
+    "mailServerSettings": "setările de e-mail ale serverului"
   }
 }

@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Nu s-a putut citi coada Postfix",
     "actionFailed": "Operațiunea pe coadă a eșuat"
+  },
+  "serverSettings": {
+    "title": "Setări de e-mail pentru întregul server",
+    "subtitle": "Se aplică fiecărui domeniu de pe acest server, peste ce stabilesc un plan sau o căsuță.",
+    "loading": "Se încarcă...",
+    "maxMessageSize": "Dimensiunea maximă a mesajului (MB)",
+    "domainLimit": "Limită de trimitere per domeniu / oră",
+    "clientLimit": "Limită de trimitere per conexiune / oră",
+    "dnsbl": "Zone de liste de blocare (separate prin spații)",
+    "zeroNote": "0 înseamnă fără limită. O dimensiune goală păstrează setarea actuală a Postfix.",
+    "save": "Salvează",
+    "saving": "Se salvează...",
+    "saved": "Salvat și aplicat pe Postfix.",
+    "saveFailed": "Setările nu au putut fi salvate."
   }
 }

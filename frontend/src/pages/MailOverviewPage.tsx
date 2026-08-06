@@ -7,6 +7,14 @@ import type { TFunction } from 'i18next'
 import { Link } from 'react-router'
 import OverviewList, { type Column, type Badge } from '@/components/OverviewList'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
+
+type ServerSettings = {
+  max_message_size_mb: number
+  domain_send_limit_hour: number
+  client_send_limit_hour: number
+  dnsbl_zones: string
+}
 
 type Row = {
   domain_id: number
@@ -58,11 +66,16 @@ function formatSize(bytes: number) {
 
 export default function MailOverviewPage() {
   const { t } = useTranslation('MailOverviewPage')
+  const report = useReportError()
   const columns = buildColumns(t)
   const [queue, setQueue] = useState<QueueMessage[]>([])
   const [queueError, setQueueError] = useState<string | null>(null)
   const [queueLoading, setQueueLoading] = useState(true)
   const [queueBusy, setQueueBusy] = useState('')
+  const [settings, setSettings] = useState<ServerSettings | null>(null)
+  const [settingsError, setSettingsError] = useState<string | null>(null)
+  const [settingsSaved, setSettingsSaved] = useState(false)
+  const [settingsSaving, setSettingsSaving] = useState(false)
 
   // Split so the mount effect never writes state synchronously: fetchQueue
   // settles only through promise callbacks, and loadQueue() adds the spinner for
@@ -81,6 +94,32 @@ export default function MailOverviewPage() {
   }, [fetchQueue])
 
   useEffect(() => { fetchQueue() }, [fetchQueue])
+
+  useEffect(() => {
+    api.get<ServerSettings>('/admin/mail/settings')
+      .then(response => setSettings(response.data))
+      .catch(report('mailServerSettings'))
+  }, [report])
+
+  async function saveSettings(event: React.FormEvent) {
+    event.preventDefault()
+    if (!settings) return
+    setSettingsSaving(true)
+    setSettingsError(null)
+    setSettingsSaved(false)
+    try {
+      // The response is the normalised form of what was sent (the zone list is
+      // lower-cased and re-joined), so the screen shows what Postfix is running
+      // rather than what was typed.
+      const response = await api.put<ServerSettings>('/admin/mail/settings', settings)
+      setSettings(response.data)
+      setSettingsSaved(true)
+    } catch (cause) {
+      setSettingsError(apiError(cause, t('serverSettings.saveFailed')))
+    } finally {
+      setSettingsSaving(false)
+    }
+  }
 
   async function queueAction(action: 'flush' | 'delete' | 'hold' | 'release' | 'requeue', queueID = '') {
     if (action === 'delete' && !confirm(t('confirmDelete', { queueID }))) return
@@ -116,6 +155,47 @@ export default function MailOverviewPage() {
           ]
         }}
       />
+
+      <div className="w-full px-6 pb-8">
+        <form onSubmit={saveSettings} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('serverSettings.title')}</h2>
+          <p className="text-xs text-slate-500 mt-1 mb-4">{t('serverSettings.subtitle')}</p>
+          {settings === null ? (
+            <p className="text-xs text-slate-400 dark:text-slate-500">{t('serverSettings.loading')}</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <label className="text-xs text-slate-600 dark:text-slate-300">{t('serverSettings.maxMessageSize')}
+                  <input type="number" min="0" max="512" value={settings.max_message_size_mb}
+                    onChange={event => setSettings({ ...settings, max_message_size_mb: Number(event.target.value) })}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
+                </label>
+                <label className="text-xs text-slate-600 dark:text-slate-300">{t('serverSettings.domainLimit')}
+                  <input type="number" min="0" value={settings.domain_send_limit_hour}
+                    onChange={event => setSettings({ ...settings, domain_send_limit_hour: Number(event.target.value) })}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
+                </label>
+                <label className="text-xs text-slate-600 dark:text-slate-300">{t('serverSettings.clientLimit')}
+                  <input type="number" min="0" value={settings.client_send_limit_hour}
+                    onChange={event => setSettings({ ...settings, client_send_limit_hour: Number(event.target.value) })}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
+                </label>
+              </div>
+              <label className="block mt-3 text-xs text-slate-600 dark:text-slate-300">{t('serverSettings.dnsbl')}
+                <input value={settings.dnsbl_zones} placeholder="zen.spamhaus.org bl.spamcop.net"
+                  onChange={event => setSettings({ ...settings, dnsbl_zones: event.target.value })}
+                  className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono" />
+              </label>
+              <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{t('serverSettings.zeroNote')}</p>
+              {settingsError && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{settingsError}</p>}
+              {settingsSaved && <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">{t('serverSettings.saved')}</p>}
+              <button disabled={settingsSaving} className="mt-3 px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
+                {settingsSaving ? t('serverSettings.saving') : t('serverSettings.save')}
+              </button>
+            </>
+          )}
+        </form>
+      </div>
       <div className="w-full px-6 pb-8">
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
           <div className="p-5 flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700">

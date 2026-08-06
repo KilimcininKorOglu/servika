@@ -24,6 +24,7 @@
     "languagePreference": "předvolba jazyka",
     "updateStatus": "stav aktualizace panelu",
     "optimizeStatus": "stav optimalizace",
-    "deliveryLog": "historie doručení"
+    "deliveryLog": "historie doručení",
+    "mailServerSettings": "nastavení pošty serveru"
   }
 }

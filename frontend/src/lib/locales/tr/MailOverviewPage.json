@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Postfix kuyruğu okunamadı",
     "actionFailed": "Kuyruk işlemi başarısız oldu"
+  },
+  "serverSettings": {
+    "title": "Sunucu geneli posta ayarları",
+    "subtitle": "Bunlar sunucudaki her alan adı için geçerlidir ve paketin ya da posta kutusunun ayarının üstündedir.",
+    "loading": "Yükleniyor...",
+    "maxMessageSize": "Azami ileti boyutu (MB)",
+    "domainLimit": "Alan adı gönderim limiti / saat",
+    "clientLimit": "Bağlantı başına gönderim limiti / saat",
+    "dnsbl": "Kara liste bölgeleri (boşlukla ayrılmış)",
+    "zeroNote": "0 limit yok demektir. Boyut boş bırakılırsa Postfix'in mevcut ayarı korunur.",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "saved": "Kaydedildi ve Postfix'e uygulandı.",
+    "saveFailed": "Ayarlar kaydedilemedi."
   }
 }

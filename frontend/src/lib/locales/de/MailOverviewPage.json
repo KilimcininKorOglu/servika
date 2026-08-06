@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Die Postfix-Warteschlange konnte nicht gelesen werden",
     "actionFailed": "Der Warteschlangenvorgang ist fehlgeschlagen"
+  },
+  "serverSettings": {
+    "title": "Serverweite Mail-Einstellungen",
+    "subtitle": "Diese gelten für jede Domain auf diesem Server, oberhalb dessen, was ein Plan oder ein Postfach setzt.",
+    "loading": "Wird geladen ...",
+    "maxMessageSize": "Maximale Nachrichtengröße (MB)",
+    "domainLimit": "Domain-Sendelimit / Stunde",
+    "clientLimit": "Sendelimit pro Verbindung / Stunde",
+    "dnsbl": "Blocklist-Zonen (durch Leerzeichen getrennt)",
+    "zeroNote": "0 bedeutet kein Limit. Eine leere Größe belässt die vorhandene Postfix-Einstellung.",
+    "save": "Speichern",
+    "saving": "Wird gespeichert ...",
+    "saved": "Gespeichert und auf Postfix angewendet.",
+    "saveFailed": "Die Einstellungen konnten nicht gespeichert werden."
   }
 }

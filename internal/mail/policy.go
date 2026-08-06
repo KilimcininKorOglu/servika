@@ -122,6 +122,13 @@ func evaluateSendPolicy(db *sql.DB, attrs map[string]string) string {
 	if recipients < 1 {
 		recipients = 1
 	}
+	// Postfix gives the address the mail came from. It is recorded so the
+	// per-client ceiling has something to count, and bounded because it is
+	// written into a column and read back into a query.
+	clientIP := strings.TrimSpace(attrs["client_address"])
+	if len(clientIP) > 45 || net.ParseIP(clientIP) == nil {
+		clientIP = ""
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	tx, err := db.BeginTx(ctx, nil)
@@ -146,20 +153,51 @@ func evaluateSendPolicy(db *sql.DB, attrs map[string]string) string {
 		WHERE mailbox_id=? AND ok=1 AND ts >= NOW()-INTERVAL 1 HOUR`, mailboxID).Scan(&sentHour)
 	_ = tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(recipient_count),0) FROM mail_send_log
 		WHERE mailbox_id=? AND ok=1 AND ts >= NOW()-INTERVAL 1 DAY`, mailboxID).Scan(&sentDay)
+	// Server-wide ceilings sit above the per-mailbox ones. They are read inside
+	// the same transaction as the counts, so a limit an operator has just lowered
+	// takes effect on the very next message rather than after a restart.
+	server, serverErr := ReadServerSettings(ctx, db)
+	if serverErr != nil {
+		// Failing open here would let a compromised account through exactly when
+		// the database is unhealthy, which is not when to relax a ceiling.
+		log.Printf("mail policy could not read the server settings: %v", serverErr)
+		return "DEFER_IF_PERMIT 4.7.1 Send policy is temporarily unavailable"
+	}
+	domainSent := ceilingCount(ctx, tx,
+		`SELECT COALESCE(SUM(recipient_count),0) FROM mail_send_log
+		  WHERE domain_id=? AND ok=1 AND ts >= NOW()-INTERVAL 1 HOUR`,
+		server.DomainSendLimitHour, domainID)
+	clientSent := 0
+	if clientIP != "" {
+		clientSent = ceilingCount(ctx, tx,
+			`SELECT COALESCE(SUM(recipient_count),0) FROM mail_send_log
+			  WHERE client_ip=? AND ok=1 AND ts >= NOW()-INTERVAL 1 HOUR`,
+			server.ClientSendLimitHour, clientIP)
+	}
+	if server.DomainSendLimitHour > 0 && domainSent+recipients > server.DomainSendLimitHour {
+		// The domain ceiling is a rate limit on the whole domain, not a signal
+		// that one mailbox was taken over, so nothing is suspended: the sender is
+		// told to come back rather than locked out.
+		return "DEFER_IF_PERMIT 4.7.1 Domain hourly send limit reached; try again later"
+	}
+	if server.ClientSendLimitHour > 0 && clientSent+recipients > server.ClientSendLimitHour {
+		return "DEFER_IF_PERMIT 4.7.1 Hourly send limit for this connection reached; try again later"
+	}
+
 	exceeded := (hourLimit > 0 && sentHour+recipients > hourLimit) ||
 		(dayLimit > 0 && sentDay+recipients > dayLimit)
 	if exceeded {
 		_, _ = tx.ExecContext(ctx, `UPDATE mailboxes
 			SET status='suspended', spam_suspended_at=NOW() WHERE id=?`, mailboxID)
-		_, _ = tx.ExecContext(ctx, `INSERT INTO mail_send_log(mailbox_id,domain_id,ok,recipient_count)
-			VALUES(?,?,0,?)`, mailboxID, domainID, recipients)
+		_, _ = tx.ExecContext(ctx, `INSERT INTO mail_send_log(mailbox_id,domain_id,ok,recipient_count,client_ip)
+			VALUES(?,?,0,?,?)`, mailboxID, domainID, recipients, clientIP)
 		_ = tx.Commit()
 		log.Printf("mail spam protection: %s auto-suspended (hour=%d/%d day=%d/%d)",
 			email, sentHour, hourLimit, sentDay, dayLimit)
 		return "REJECT 5.7.1 Send limit exceeded; account suspended for security"
 	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO mail_send_log(mailbox_id,domain_id,ok,recipient_count)
-		VALUES(?,?,1,?)`, mailboxID, domainID, recipients); err != nil {
+	if _, err := tx.ExecContext(ctx, `INSERT INTO mail_send_log(mailbox_id,domain_id,ok,recipient_count,client_ip)
+		VALUES(?,?,1,?,?)`, mailboxID, domainID, recipients, clientIP); err != nil {
 		return "DUNNO"
 	}
 	if err := tx.Commit(); err != nil {
@@ -230,4 +268,23 @@ func (h *Handlers) SendLimitsPut(w http.ResponseWriter, r *http.Request) {
 	}
 	h.audit(r, "mail.send_limits.update", strconv.FormatInt(mid, 10), true)
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+// ceilingCount runs a counting query only when the ceiling it feeds is actually
+// set. Every outgoing message goes through here, so a query for a limit nobody
+// configured is pure latency on the send path.
+//
+// A failed count returns the ceiling itself, which trips the limit. Returning 0
+// would let mail through precisely when the database cannot be read, and a
+// deferral an operator can see beats a ceiling that quietly stops applying.
+func ceilingCount(ctx context.Context, tx *sql.Tx, query string, ceiling int, arg any) int {
+	if ceiling <= 0 {
+		return 0
+	}
+	var count int
+	if err := tx.QueryRowContext(ctx, query, arg).Scan(&count); err != nil {
+		log.Printf("mail policy ceiling count: %v", err)
+		return ceiling
+	}
+	return count
 }

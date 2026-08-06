@@ -470,6 +470,8 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/delivery-log", mailH.DeliveryLog)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/spam", mailH.SpamGet)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/spam", mailH.SpamPut)
+				r.With(middleware.AdminOnly).Get("/admin/mail/settings", mailH.ServerSettingsGet)
+				r.With(middleware.AdminOnly).Put("/admin/mail/settings", mailH.ServerSettingsPut)
 				r.With(middleware.AdminOnly).Get("/admin/mail/queue", mailH.QueueList)
 				r.With(middleware.AdminOnly).Post("/admin/mail/queue", mailH.QueueAction)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/autoresponder", mailH.AutoresponderGet)

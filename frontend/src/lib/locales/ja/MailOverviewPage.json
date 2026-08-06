@@ -36,5 +36,19 @@
   "errors": {
     "readFailed": "Postfix キューを読み込めませんでした",
     "actionFailed": "キュー操作に失敗しました"
+  },
+  "serverSettings": {
+    "title": "サーバー全体のメール設定",
+    "subtitle": "このサーバー上のすべてのドメインに適用され、プランやメールボックスの設定より上位に働きます。",
+    "loading": "読み込み中...",
+    "maxMessageSize": "最大メッセージサイズ (MB)",
+    "domainLimit": "ドメイン送信上限 / 時間",
+    "clientLimit": "接続ごとの送信上限 / 時間",
+    "dnsbl": "ブロックリストのゾーン (空白区切り)",
+    "zeroNote": "0 は上限なしです。サイズを空にすると Postfix の現在の設定をそのまま使います。",
+    "save": "保存",
+    "saving": "保存中...",
+    "saved": "保存して Postfix に適用しました。",
+    "saveFailed": "設定を保存できませんでした。"
   }
 }
