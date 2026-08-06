@@ -12,12 +12,12 @@ func TestTemplateCarriesTheMailClientNames(t *testing.T) {
 	for _, row := range builtinDefaults() {
 		have[row.Name+"/"+row.Type] = row
 	}
-	for _, key := range []string{"smtp/A", "imap/A", "pop/A", "mail/A"} {
+	for _, key := range []string{"smtp/A", "imap/A", "mail/A"} {
 		if _, ok := have[key]; !ok {
 			t.Errorf("the built-in template has no %s record", key)
 		}
 	}
-	for _, key := range []string{"_imaps._tcp/SRV", "_submission._tcp/SRV", "_pop3s._tcp/SRV"} {
+	for _, key := range []string{"_imap._tcp/SRV", "_submission._tcp/SRV"} {
 		row, ok := have[key]
 		if !ok {
 			t.Errorf("the built-in template has no %s record", key)
@@ -48,12 +48,13 @@ func TestTemplateDoesNotAdvertiseUnservedEndpoints(t *testing.T) {
 }
 
 // The port numbers are the contract with the client: the wrong one produces a
-// mail account that is configured automatically and then cannot connect.
-func TestDiscoveryRecordsUseTheImplicitTLSPorts(t *testing.T) {
+// mail account that is configured automatically and then cannot connect. These
+// are the ports the Dovecot drop-in and servika-mail-setup actually serve, not
+// the implicit-TLS ports a panel usually advertises.
+func TestDiscoveryRecordsUseThePortsTheServerServes(t *testing.T) {
 	want := map[string]string{
-		"_imaps._tcp":      "993",
+		"_imap._tcp":       "143",
 		"_submission._tcp": "587",
-		"_pop3s._tcp":      "995",
 	}
 	for _, row := range MailDiscoveryRows() {
 		expected, ok := want[row.Name]
@@ -62,6 +63,16 @@ func TestDiscoveryRecordsUseTheImplicitTLSPorts(t *testing.T) {
 		}
 		if fields := strings.Fields(row.Value); len(fields) < 2 || fields[1] != expected {
 			t.Errorf("%s advertises port %q, want %s", row.Name, row.Value, expected)
+		}
+	}
+}
+
+// POP3 is not among Dovecot's enabled protocols and its ports are not opened by
+// servika-mail-setup, so a record naming it sends the client at a closed port.
+func TestDiscoveryRecordsDoNotAdvertisePOP3(t *testing.T) {
+	for _, row := range MailDiscoveryRows() {
+		if strings.Contains(row.Name, "pop") {
+			t.Errorf("the discovery records advertise %s, but no POP3 service runs", row.Name)
 		}
 	}
 }

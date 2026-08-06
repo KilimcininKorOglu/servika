@@ -29,15 +29,19 @@ const (
 )
 
 // MailHostNames returns the names a mail certificate should cover. mail. is the
-// MX target; the other three are the names clients are told to use by habit, and
-// a client configured with one of them checks the certificate against it.
+// MX target; the other two are the names clients are told to use by habit, and a
+// client configured with one of them checks the certificate against it.
+//
+// pop. is left out because this server does not run POP3 (assets/mail/dovecot
+// sets `protocols = imap lmtp`). Every extra name is another host the ACME
+// pre-flight has to reach, and a name that fails takes the whole order with it,
+// so covering a service that does not exist only costs issuance reliability.
 func MailHostNames(domain string) []string {
 	domain = strings.ToLower(strings.TrimSpace(domain))
 	return []string{
 		"mail." + domain,
 		"smtp." + domain,
 		"imap." + domain,
-		"pop." + domain,
 	}
 }
 

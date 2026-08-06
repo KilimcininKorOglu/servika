@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 )
@@ -57,14 +58,20 @@ func certRoot(t *testing.T) string {
 	return root
 }
 
-// mail. is the MX target; the other three are the names people type into a mail
+// mail. is the MX target; the other two are the names people type into a mail
 // client out of habit, and a client checks the certificate against whichever it
-// was given.
+// was given. pop. is absent on purpose: no POP3 service runs, and an
+// unreachable name in the order fails the whole certificate.
 func TestMailHostNamesCoverTheNamesClientsUse(t *testing.T) {
 	got := MailHostNames("Example.COM ")
-	want := []string{"mail.example.com", "smtp.example.com", "imap.example.com", "pop.example.com"}
+	want := []string{"mail.example.com", "smtp.example.com", "imap.example.com"}
 	if !slices.Equal(got, want) {
 		t.Errorf("MailHostNames = %v, want %v", got, want)
+	}
+	for _, host := range got {
+		if strings.HasPrefix(host, "pop.") {
+			t.Errorf("the mail certificate covers %s, but no POP3 service runs", host)
+		}
 	}
 }
 
