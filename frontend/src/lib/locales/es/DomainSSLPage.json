@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt no pudo emitir un certificado, así que el sitio está protegido temporalmente con uno autofirmado y los navegadores avisarán a los visitantes. Corrija la causa indicada abajo e inténtelo de nuevo."
+  },
+  "mailSSL": {
+    "option": "Proteger también el servidor de correo",
+    "optionHint": "Solicita un certificado aparte para mail.{{domain}}, smtp., imap. y pop., para que los clientes de correo dejen de advertir sobre el nombre. Cada uno de esos nombres necesita un registro DNS que apunte a este servidor.",
+    "secured": "El servidor de correo también está protegido ({{hosts}}).",
+    "securedPartly": "El servidor de correo está protegido para {{hosts}}. Excluidos: {{skipped}}.",
+    "reasons": {
+      "challenge_unreachable": "no accesible por HTTP",
+      "challenge_status": "respondió con un estado inesperado",
+      "challenge_mismatch": "otro servidor responde a este nombre",
+      "challenge_webroot_unwritable": "no se pudo escribir en el directorio de validación"
+    },
+    "errors": {
+      "mail_certificate_failed": "No se pudo emitir el certificado de correo. El certificado del sitio web no se ve afectado.",
+      "mail_sni_apply_failed": "El certificado de correo se emitió, pero el servidor de correo aún no lo ha adoptado.",
+      "generic": "El paso del certificado de correo no se completó."
+    }
   }
 }

@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt sertifika veremedi, bu yüzden site geçici olarak kendinden imzalı bir sertifikayla korunuyor ve tarayıcılar ziyaretçileri uyaracak. Aşağıdaki sebebi giderip tekrar deneyin."
+  },
+  "mailSSL": {
+    "option": "Posta sunucusunu da güvenceye al",
+    "optionHint": "mail.{{domain}}, smtp., imap. ve pop. adları için ayrı bir sertifika alır; böylece posta istemcileri ad uyarısı vermez. Bu adların her biri için bu sunucuyu gösteren bir DNS kaydı gerekir.",
+    "secured": "Posta sunucusu da güvenceye alındı ({{hosts}}).",
+    "securedPartly": "Posta sunucusu şu adlar için güvenceye alındı: {{hosts}}. Dışarıda kalanlar: {{skipped}}.",
+    "reasons": {
+      "challenge_unreachable": "HTTP üzerinden erişilemiyor",
+      "challenge_status": "beklenmeyen bir durum kodu döndü",
+      "challenge_mismatch": "bu ada başka bir sunucu cevap veriyor",
+      "challenge_webroot_unwritable": "doğrulama dizini yazılamadı"
+    },
+    "errors": {
+      "mail_certificate_failed": "Posta sertifikası alınamadı. Web sitesi sertifikası bundan etkilenmedi.",
+      "mail_sni_apply_failed": "Posta sertifikası alındı ama posta sunucusu henüz devreye almadı.",
+      "generic": "Posta sertifikası adımı tamamlanmadı."
+    }
   }
 }

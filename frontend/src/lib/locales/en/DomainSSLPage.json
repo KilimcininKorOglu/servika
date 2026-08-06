@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt could not issue a certificate, so the site is temporarily protected with a self-signed one and browsers will warn visitors. Fix the cause below and try again."
+  },
+  "mailSSL": {
+    "option": "Also secure the mail server",
+    "optionHint": "Orders a separate certificate for mail.{{domain}}, smtp., imap. and pop., so mail clients stop warning about the name. Each of those names needs a DNS record pointing to this server.",
+    "secured": "The mail server is secured as well ({{hosts}}).",
+    "securedPartly": "The mail server is secured for {{hosts}}. Left out: {{skipped}}.",
+    "reasons": {
+      "challenge_unreachable": "not reachable over HTTP",
+      "challenge_status": "answered with an unexpected status",
+      "challenge_mismatch": "another server answers this name",
+      "challenge_webroot_unwritable": "the challenge directory could not be written"
+    },
+    "errors": {
+      "mail_certificate_failed": "The mail certificate could not be issued. The website certificate is unaffected.",
+      "mail_sni_apply_failed": "The mail certificate was issued, but the mail server has not picked it up yet.",
+      "generic": "The mail certificate step did not finish."
+    }
   }
 }

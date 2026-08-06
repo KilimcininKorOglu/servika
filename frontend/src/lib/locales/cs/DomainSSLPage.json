@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt nemohl vydat certifikát, web je proto dočasně chráněn certifikátem podepsaným sám sebou a prohlížeče budou návštěvníky varovat. Odstraňte níže uvedenou příčinu a zkuste to znovu."
+  },
+  "mailSSL": {
+    "option": "Zabezpečit i poštovní server",
+    "optionHint": "Vyžádá samostatný certifikát pro mail.{{domain}}, smtp., imap. a pop., aby poštovní klienti přestali varovat před názvem. Každý z těchto názvů potřebuje DNS záznam směřující na tento server.",
+    "secured": "Poštovní server je rovněž zabezpečen ({{hosts}}).",
+    "securedPartly": "Poštovní server je zabezpečen pro {{hosts}}. Vynecháno: {{skipped}}.",
+    "reasons": {
+      "challenge_unreachable": "nedostupné přes HTTP",
+      "challenge_status": "odpovědělo neočekávaným stavem",
+      "challenge_mismatch": "na tento název odpovídá jiný server",
+      "challenge_webroot_unwritable": "do ověřovacího adresáře nelze zapisovat"
+    },
+    "errors": {
+      "mail_certificate_failed": "Poštovní certifikát se nepodařilo vydat. Certifikát webu to neovlivnilo.",
+      "mail_sni_apply_failed": "Poštovní certifikát byl vydán, ale poštovní server jej zatím nepřevzal.",
+      "generic": "Krok s poštovním certifikátem se nedokončil."
+    }
   }
 }

@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt konnte kein Zertifikat ausstellen, daher ist die Website vorübergehend mit einem selbstsignierten Zertifikat geschützt und Browser warnen Besucher. Beheben Sie die untenstehende Ursache und versuchen Sie es erneut."
+  },
+  "mailSSL": {
+    "option": "Auch den Mailserver absichern",
+    "optionHint": "Fordert ein separates Zertifikat für mail.{{domain}}, smtp., imap. und pop. an, damit Mailprogramme nicht mehr vor dem Namen warnen. Jeder dieser Namen braucht einen DNS-Eintrag auf diesen Server.",
+    "secured": "Der Mailserver ist ebenfalls abgesichert ({{hosts}}).",
+    "securedPartly": "Der Mailserver ist für {{hosts}} abgesichert. Ausgelassen: {{skipped}}.",
+    "reasons": {
+      "challenge_unreachable": "über HTTP nicht erreichbar",
+      "challenge_status": "antwortete mit einem unerwarteten Status",
+      "challenge_mismatch": "ein anderer Server antwortet auf diesen Namen",
+      "challenge_webroot_unwritable": "das Challenge-Verzeichnis war nicht beschreibbar"
+    },
+    "errors": {
+      "mail_certificate_failed": "Das Mailzertifikat konnte nicht ausgestellt werden. Das Website-Zertifikat ist davon nicht betroffen.",
+      "mail_sni_apply_failed": "Das Mailzertifikat wurde ausgestellt, der Mailserver hat es aber noch nicht übernommen.",
+      "generic": "Der Schritt für das Mailzertifikat wurde nicht abgeschlossen."
+    }
   }
 }

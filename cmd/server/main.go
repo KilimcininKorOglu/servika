@@ -188,6 +188,10 @@ func main() {
 	// too, but it can exit before that step and this repair also has to reach
 	// hosts that were installed before it existed.
 	mail.HealDovecotAuth(context.Background())
+	// Mail hostnames are served their own certificate through SNI. The map is
+	// generated from the installed certificates, so this picks up a host that
+	// already had them and drops one whose certificate has expired.
+	mail.HealMailSNI(context.Background())
 	mail.StartPolicyServer(d, "127.0.0.1:10040")
 	// Called synchronously: this publishes the running version to internal/system,
 	// which /system/usage reports as panel_version. Only local file work happens

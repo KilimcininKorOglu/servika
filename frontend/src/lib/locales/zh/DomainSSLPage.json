@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt 未能签发证书，站点暂时使用自签名证书保护，浏览器会向访客发出警告。请解决下面显示的原因后重试。"
+  },
+  "mailSSL": {
+    "option": "同时保护邮件服务器",
+    "optionHint": "为 mail.{{domain}}、smtp.、imap. 和 pop. 单独申请证书，使邮件客户端不再对名称发出警告。这些名称都需要指向本服务器的 DNS 记录。",
+    "secured": "邮件服务器也已受到保护（{{hosts}}）。",
+    "securedPartly": "邮件服务器已为 {{hosts}} 提供保护。已排除：{{skipped}}。",
+    "reasons": {
+      "challenge_unreachable": "无法通过 HTTP 访问",
+      "challenge_status": "返回了意外的状态",
+      "challenge_mismatch": "该名称由其他服务器应答",
+      "challenge_webroot_unwritable": "无法写入验证目录"
+    },
+    "errors": {
+      "mail_certificate_failed": "邮件证书签发失败。网站证书不受影响。",
+      "mail_sni_apply_failed": "邮件证书已签发，但邮件服务器尚未启用。",
+      "generic": "邮件证书步骤未完成。"
+    }
   }
 }

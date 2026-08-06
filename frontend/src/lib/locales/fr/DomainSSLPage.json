@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt n'a pas pu délivrer de certificat, le site est donc temporairement protégé par un certificat auto-signé et les navigateurs avertiront les visiteurs. Corrigez la cause ci-dessous puis réessayez."
+  },
+  "mailSSL": {
+    "option": "Sécuriser aussi le serveur de messagerie",
+    "optionHint": "Demande un certificat distinct pour mail.{{domain}}, smtp., imap. et pop., afin que les clients de messagerie cessent d'avertir sur le nom. Chacun de ces noms a besoin d'un enregistrement DNS pointant vers ce serveur.",
+    "secured": "Le serveur de messagerie est également sécurisé ({{hosts}}).",
+    "securedPartly": "Le serveur de messagerie est sécurisé pour {{hosts}}. Exclus : {{skipped}}.",
+    "reasons": {
+      "challenge_unreachable": "injoignable en HTTP",
+      "challenge_status": "a répondu avec un statut inattendu",
+      "challenge_mismatch": "un autre serveur répond à ce nom",
+      "challenge_webroot_unwritable": "le répertoire de validation n'a pas pu être écrit"
+    },
+    "errors": {
+      "mail_certificate_failed": "Le certificat de messagerie n'a pas pu être émis. Le certificat du site web n'est pas affecté.",
+      "mail_sni_apply_failed": "Le certificat de messagerie a été émis, mais le serveur de messagerie ne l'a pas encore pris en compte.",
+      "generic": "L'étape du certificat de messagerie ne s'est pas terminée."
+    }
   }
 }

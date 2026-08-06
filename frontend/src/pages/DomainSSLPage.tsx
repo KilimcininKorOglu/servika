@@ -22,6 +22,11 @@ export default function DomainSSLPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
+  // Ordering the mail certificate as well is the default: a mailbox owner who
+  // connects to mail.<domain> otherwise gets a name that does not match, and
+  // nothing on this page would have told them why.
+  const [alsoSecureMail, setAlsoSecureMail] = useState(true)
+  const [mailNote, setMailNote] = useState<string | null>(null)
 
   function load() {
     if (!id) return
@@ -32,9 +37,11 @@ export default function DomainSSLPage() {
 
   async function issue(type: 'self-signed' | 'letsencrypt') {
     if (type === 'letsencrypt' && !confirm(t('confirm.letsencrypt'))) return
-    setIsProcessing(true); setError(null); setSuccess(null); setWarning(null)
+    setIsProcessing(true); setError(null); setSuccess(null); setWarning(null); setMailNote(null)
     try {
-      const { data } = await api.post(`/domains/${id}/ssl/issue`, { type })
+      const body: { type: string; mail_ssl?: boolean } = { type }
+      if (type === 'letsencrypt' && alsoSecureMail) body.mail_ssl = true
+      const { data } = await api.post(`/domains/${id}/ssl/issue`, body)
       // data.type is what was ACTUALLY installed, which is not always what was
       // asked for: a Let's Encrypt request that fails falls back to a
       // self-signed certificate so port 443 keeps serving. Reporting the
@@ -44,6 +51,21 @@ export default function DomainSSLPage() {
         setWarning(data.reason ? `${t('warning.letsencryptFallback')} ${data.reason}` : t('warning.letsencryptFallback'))
       } else {
         setSuccess(t('success.installed', { type: data.type ?? type, expires: data.expires_at }))
+      }
+      // The mail certificate is a separate order, so it is reported separately.
+      // The backend returns reason CODES, never sentences: the API is English and
+      // this interface ships twelve languages.
+      if (data.mail_ssl_error) {
+        setMailNote(t(`mailSSL.errors.${data.mail_ssl_error}`, { defaultValue: t('mailSSL.errors.generic') }))
+      } else if (data.mail_ssl) {
+        const skipped = Object.entries((data.mail_ssl_skipped ?? {}) as Record<string, string>)
+        setMailNote(skipped.length === 0
+          ? t('mailSSL.secured', { hosts: (data.mail_ssl.hosts ?? []).join(', ') })
+          : t('mailSSL.securedPartly', {
+              hosts: (data.mail_ssl.hosts ?? []).join(', '),
+              skipped: skipped.map(([host, code]) =>
+                `${host} (${t(`mailSSL.reasons.${code}`, { defaultValue: code })})`).join(', '),
+            }))
       }
       load()
     } catch (e) {
@@ -88,6 +110,7 @@ export default function DomainSSLPage() {
       {error && <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">{error}</div>}
       {success && <div className="mb-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm text-emerald-700 dark:text-emerald-300">{success}</div>}
       {warning && <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-800 dark:text-amber-300">{warning}</div>}
+      {mailNote && <div className="mb-3 px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-md text-sm text-sky-800 dark:text-sky-300">{mailNote}</div>}
 
       {/* Status card */}
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 mb-5">
@@ -172,6 +195,20 @@ export default function DomainSSLPage() {
               <li>{t('letsencrypt.bullet2')}</li>
               <li>{t('letsencrypt.bullet3')}</li>
             </ul>
+            <label className="flex items-start gap-2 mb-4 p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={alsoSecureMail}
+                onChange={e => setAlsoSecureMail(e.target.checked)}
+                className="mt-0.5 cursor-pointer"
+              />
+              <span className="text-xs text-slate-700 dark:text-slate-300">
+                <b>{t('mailSSL.option')}</b>
+                <span className="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  {t('mailSSL.optionHint', { domain: domain?.domain_name ?? '' })}
+                </span>
+              </span>
+            </label>
             <button
               onClick={() => issue('letsencrypt')}
               disabled={isProcessing}

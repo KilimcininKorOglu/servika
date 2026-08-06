@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt nu a putut emite un certificat, așa că site-ul este protejat temporar cu unul autosemnat, iar browserele vor avertiza vizitatorii. Remediați cauza de mai jos și încercați din nou."
+  },
+  "mailSSL": {
+    "option": "Securizează și serverul de e-mail",
+    "optionHint": "Solicită un certificat separat pentru mail.{{domain}}, smtp., imap. și pop., astfel încât clienții de e-mail să nu mai avertizeze despre nume. Fiecare dintre aceste nume are nevoie de o înregistrare DNS către acest server.",
+    "secured": "Serverul de e-mail este de asemenea securizat ({{hosts}}).",
+    "securedPartly": "Serverul de e-mail este securizat pentru {{hosts}}. Excluse: {{skipped}}.",
+    "reasons": {
+      "challenge_unreachable": "inaccesibil prin HTTP",
+      "challenge_status": "a răspuns cu un stare neașteptată",
+      "challenge_mismatch": "alt server răspunde pentru acest nume",
+      "challenge_webroot_unwritable": "directorul de validare nu a putut fi scris"
+    },
+    "errors": {
+      "mail_certificate_failed": "Certificatul de e-mail nu a putut fi emis. Certificatul site-ului nu este afectat.",
+      "mail_sni_apply_failed": "Certificatul de e-mail a fost emis, dar serverul de e-mail nu l-a preluat încă.",
+      "generic": "Pasul certificatului de e-mail nu s-a încheiat."
+    }
   }
 }

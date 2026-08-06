@@ -53,5 +53,22 @@
   },
   "warning": {
     "letsencryptFallback": "Let's Encrypt が証明書を発行できなかったため、サイトは一時的に自己署名証明書で保護されており、ブラウザーは訪問者に警告を表示します。下記の原因を解消してから再試行してください。"
+  },
+  "mailSSL": {
+    "option": "メールサーバーも保護する",
+    "optionHint": "mail.{{domain}}、smtp.、imap.、pop. 用に別の証明書を取得し、メールクライアントが名前の警告を出さないようにします。これらの名前にはそれぞれ、このサーバーを指す DNS レコードが必要です。",
+    "secured": "メールサーバーも保護されました（{{hosts}}）。",
+    "securedPartly": "メールサーバーは {{hosts}} について保護されました。除外: {{skipped}}。",
+    "reasons": {
+      "challenge_unreachable": "HTTP で到達できません",
+      "challenge_status": "予期しないステータスが返されました",
+      "challenge_mismatch": "この名前には別のサーバーが応答しています",
+      "challenge_webroot_unwritable": "検証用ディレクトリに書き込めませんでした"
+    },
+    "errors": {
+      "mail_certificate_failed": "メール証明書を発行できませんでした。ウェブサイトの証明書には影響ありません。",
+      "mail_sni_apply_failed": "メール証明書は発行されましたが、メールサーバーがまだ反映していません。",
+      "generic": "メール証明書の手順が完了しませんでした。"
+    }
   }
 }

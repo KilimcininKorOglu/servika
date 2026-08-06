@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"servika/internal/httpx"
+	"servika/internal/mail"
 	"servika/internal/provisioner"
 
 	"github.com/go-chi/chi/v5"
@@ -16,6 +18,10 @@ import (
 
 type sslIssueReq struct {
 	Type string `json:"type"` // "self-signed" | "letsencrypt"
+	// MailSSL also orders a certificate for the domain's mail hostnames and
+	// serves it to mail clients through SNI. Only meaningful with letsencrypt: a
+	// self-signed mail certificate warns exactly as the shared one already does.
+	MailSSL bool `json:"mail_ssl,omitempty"`
 }
 
 type sslStatusResp struct {
@@ -130,6 +136,36 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		"key":        keyPath,
 		"expires_at": expiresAt.Format("2006-01-02"),
 	}
+	// The mail certificate is a SEPARATE order, so it cannot regress the web
+	// certificate that was just installed. A failure here is reported as its own
+	// field rather than failing the request: the site is already secured, and
+	// saying otherwise would be a lie about work that succeeded.
+	if req.MailSSL && actualType == "letsencrypt" {
+		mailCert, mailErr := provisioner.IssueMailCertificate(domainName)
+		switch {
+		case mailErr != nil:
+			response["mail_ssl_error"] = "mail_certificate_failed"
+			if len(mailCert.Skipped) > 0 {
+				response["mail_ssl_skipped"] = mailCert.Skipped
+			}
+			log.Printf("mail certificate for %s: %v", domainName, mailErr)
+		default:
+			response["mail_ssl"] = map[string]any{
+				"hosts":      mailCert.Hosts,
+				"expires_at": mailCert.ExpiresAt,
+			}
+			if len(mailCert.Skipped) > 0 {
+				response["mail_ssl_skipped"] = mailCert.Skipped
+			}
+			if e := mail.ApplySNI(); e != nil {
+				// The certificate exists but nothing serves it yet, which is a
+				// different situation from not having one, so it gets its own code.
+				response["mail_ssl_error"] = "mail_sni_apply_failed"
+				log.Printf("applying the mail SNI configuration for %s: %v", domainName, e)
+			}
+		}
+	}
+
 	if req.Type == "letsencrypt" && actualType != "letsencrypt" {
 		response["warning"] = "Let's Encrypt certificate issuance failed; the site is temporarily protected with a self-signed certificate. Fix DNS and try again."
 		// The reason is what makes the warning actionable. Without it the panel
