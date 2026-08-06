@@ -59,6 +59,34 @@ type Domain struct {
 	// a MySQL database, and lets the client point a fresh WordPress domain at the
 	// screen that finishes the install.
 	SiteType string `json:"site_type"`
+	// SSLSource is which kind of certificate is installed, so a list can tell a
+	// browser-trusted one from the self-signed fail-safe instead of showing both
+	// as simply "SSL". Empty means unknown, which is not the same as bad.
+	SSLSource string `json:"ssl_source,omitempty"`
+}
+
+// The values domains.ssl_source can hold. Every writer is in this package
+// (ssl_progress.go) or in internal/transfers; the column is VARCHAR, not an
+// ENUM, so these are the contract.
+//
+// An empty value is deliberately NOT an error case: it is what a domain with no
+// certificate carries, and what rows written before the column existed still
+// hold. Treating unknown as untrusted would raise a false alarm on both.
+const (
+	SSLSourceLetsEncrypt = "letsencrypt"
+	SSLSourceSelfSigned  = "self-signed"
+	SSLSourceImported    = "imported"
+)
+
+// SSLSourceIsTrusted reports whether a browser will accept the certificate
+// without warning the visitor.
+//
+// Only the self-signed fail-safe is untrusted. An imported certificate arrives
+// from a cPanel migration and is as real as one Servika ordered, and an unknown
+// value is left trusted so a source added later cannot start raising alarms on
+// its own.
+func SSLSourceIsTrusted(source string) bool {
+	return source != SSLSourceSelfSigned
 }
 
 type Handlers struct {
@@ -71,7 +99,7 @@ const selectAll = `SELECT d.id, d.domain_name, d.system_user, d.php_version, d.s
   d.db_host, d.db_user, d.db_name, d.web_root, d.size_kb, d.traffic_kb, d.is_demo,
   COALESCE(d.notes,''), DATE_FORMAT(d.created_at,'%Y-%m-%d'),
   d.plan_id, COALESCE(p.name,''), d.ssh_access, COALESCE(d.suspended,0),
-  COALESCE(ru.username,''), d.site_type
+  COALESCE(ru.username,''), d.site_type, COALESCE(d.ssl_source,'')
   FROM domains d
   LEFT JOIN service_plans p ON p.id=d.plan_id
   LEFT JOIN customers cu ON cu.id=d.customer_id
@@ -86,7 +114,7 @@ func scan(rs interface{ Scan(...any) error }) (Domain, error) {
 		&d.DBHost, &d.DBUser, &d.DBName, &d.WebRoot, &d.SizeKB, &d.TrafficKB, &demo,
 		&d.Notes, &d.CreatedAt,
 		&planID, &d.PlanName, &sshE, &suspended,
-		&d.ResellerName, &d.SiteType)
+		&d.ResellerName, &d.SiteType, &d.SSLSource)
 	d.SSL = ssl == 1
 	d.IsDemo = demo == 1
 	d.SshAccess = sshE == 1

@@ -246,12 +246,12 @@ func (h *Handlers) runSSLInstall(job *sslJob, id int64, req sslIssueReq, domainN
 	err := job.step(sslStepCertificate, func() (string, bool, error) {
 		var e error
 		switch req.Type {
-		case "self-signed":
+		case SSLSourceSelfSigned:
 			certPath, keyPath, e = provisioner.EnableSelfSigned(domainName, systemUser, phpVersion, backend)
 		default:
 			certPath, keyPath, outcome, e = provisioner.EnableLetsEncrypt(domainName, systemUser, phpVersion, backend)
 			if !outcome.Real {
-				actualType = "self-signed"
+				actualType = SSLSourceSelfSigned
 			}
 		}
 		if e != nil {
@@ -261,7 +261,7 @@ func (h *Handlers) runSSLInstall(job *sslJob, id int64, req sslIssueReq, domainN
 		// port 443 serving, so it is not a failure; it is also not what was
 		// asked for, and saying nothing here is what used to let the panel
 		// report a certificate the browser refuses.
-		if req.Type == "letsencrypt" && !outcome.Real {
+		if req.Type == SSLSourceLetsEncrypt && !outcome.Real {
 			return outcome.Reason, true, nil
 		}
 		return "", false, nil
@@ -272,7 +272,7 @@ func (h *Handlers) runSSLInstall(job *sslJob, id int64, req sslIssueReq, domainN
 	}
 
 	expiresAt := time.Now().Add(365 * 24 * time.Hour)
-	if actualType == "letsencrypt" {
+	if actualType == SSLSourceLetsEncrypt {
 		expiresAt = time.Now().Add(90 * 24 * time.Hour)
 	}
 
@@ -301,7 +301,7 @@ func (h *Handlers) runSSLInstall(job *sslJob, id int64, req sslIssueReq, domainN
 	if len(outcome.Skipped) > 0 {
 		job.set("web_ssl_skipped", outcome.Skipped)
 	}
-	if req.Type == "letsencrypt" && actualType != "letsencrypt" {
+	if req.Type == SSLSourceLetsEncrypt && actualType != SSLSourceLetsEncrypt {
 		job.set("warning", "letsencrypt_fallback")
 		if outcome.Reason != "" {
 			job.set("reason", outcome.Reason)
@@ -312,7 +312,7 @@ func (h *Handlers) runSSLInstall(job *sslJob, id int64, req sslIssueReq, domainN
 	// certificate that was just installed. A failure here is reported as its own
 	// step rather than failing the installation: the site is already secured, and
 	// saying otherwise would be a lie about work that succeeded.
-	if req.MailSSL && actualType == "letsencrypt" {
+	if req.MailSSL && actualType == SSLSourceLetsEncrypt {
 		var mailCert provisioner.MailCertificate
 		mailIssued := job.step(sslStepMailCertificate, func() (string, bool, error) {
 			var mailErr error

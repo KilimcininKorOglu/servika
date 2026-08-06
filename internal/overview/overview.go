@@ -85,30 +85,66 @@ ORDER BY d.domain_name`
 // ---------- SSL ----------
 
 type SSLRow struct {
-	DomainID      int64  `json:"domain_id"`
-	DomainName    string `json:"domain_name"`
-	Status        string `json:"status"`
-	Enabled       bool   `json:"ssl_enabled"`
-	Expiry        string `json:"ssl_expiry"` // YYYY-MM-DD, "" if unknown
+	DomainID   int64  `json:"domain_id"`
+	DomainName string `json:"domain_name"`
+	Status     string `json:"status"`
+	Enabled    bool   `json:"ssl_enabled"`
+	Expiry     string `json:"ssl_expiry"` // YYYY-MM-DD, "" if unknown
+	// Source is which kind of certificate is installed. Without it this screen
+	// cannot tell a browser-trusted certificate from the self-signed fail-safe,
+	// and showed both as plain "enabled".
+	Source        string `json:"ssl_source,omitempty"`
 	RemainingDays *int   `json:"remaining_days"`
 }
 
-func (h *Handlers) SSL(w http.ResponseWriter, r *http.Request) {
-	// Ordered for the screen's real job: expired/expiring certificates first,
-	// then future-dated ones, and domains with no SSL at all last.
-	q := `
+// selfSignedSortDays is how soon a self-signed certificate is treated as
+// expiring for ordering purposes.
+//
+// A self-signed certificate is stamped a year out, so by remaining days it sorts
+// below every real one and lands at the bottom of a screen whose whole job is
+// catching the ones that need attention. It is not expiring, but the site is
+// already showing every visitor a warning page, so it belongs with the urgent
+// ones. Fourteen days is the threshold the screen itself already treats as
+// urgent, which is why it is the value used here rather than an invented one.
+const selfSignedSortDays = 14
+
+// sslUrgencyExpr is the date the SSL list sorts by: a certificate's own expiry,
+// except that a self-signed one sorts as if it expired selfSignedSortDays out.
+//
+// Both sides are computed in SQL (CURDATE/DATE_ADD) so the comparison never
+// mixes a Go clock with the MySQL session one. The interval comes from the Go
+// constant rather than a second literal, so the ordering and the threshold it
+// is named after cannot drift apart. The source value is spelled inline because
+// it goes into SQL text; internal/domains owns the constants and writes it.
+var sslUrgencyExpr = `CASE WHEN d.ssl_enabled = 1 AND d.ssl_source = 'self-signed'
+              THEN DATE_ADD(CURDATE(), INTERVAL ` + strconv.Itoa(selfSignedSortDays) + ` DAY)
+              ELSE d.ssl_expiry END`
+
+// sslListQuery assembles the SSL overview statement around a scope condition.
+//
+// Split out so the assembly is testable: cond is a WHERE clause, so it has to
+// land between the FROM and the ORDER BY, and the urgency expression has to be
+// in the ORDER BY rather than only in the projection.
+//
+// Ordered for the screen's real job: expired, expiring and self-signed
+// certificates first, then the rest by expiry, and domains with no SSL at all
+// last.
+func sslListQuery(cond string) string {
+	// #nosec G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; user values are bound via placeholders by the caller.
+	return `
 SELECT d.id, d.domain_name, d.status, d.ssl_enabled,
        COALESCE(DATE_FORMAT(d.ssl_expiry, '%Y-%m-%d'), ''),
+       COALESCE(d.ssl_source, ''),
        CASE WHEN d.ssl_expiry IS NULL THEN NULL ELSE DATEDIFF(d.ssl_expiry, CURDATE()) END
-FROM domains d`
+FROM domains d` + cond + `
+ORDER BY (d.ssl_expiry IS NULL), ` + sslUrgencyExpr + ` ASC, d.domain_name`
+}
 
+func (h *Handlers) SSL(w http.ResponseWriter, r *http.Request) {
 	cond, arg := middleware.ScopeSQL(r, "d")
-	// #nosec G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; user values are bound via arg placeholders.
-	q += cond + `
-ORDER BY (d.ssl_expiry IS NULL), d.ssl_expiry ASC, d.domain_name`
 
-	// #nosec G701 G202 -- cond is a constant scope fragment from ScopeSQL with a literal alias; all user values are bound via arg placeholders.
-	rows, err := h.DB.QueryContext(r.Context(), q, arg...)
+	// #nosec G701 G202 -- the statement is assembled from package constants and a ScopeSQL fragment with a literal alias; all user values are bound via arg placeholders.
+	rows, err := h.DB.QueryContext(r.Context(), sslListQuery(cond), arg...)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "ssl overview failed")
 		return
@@ -120,7 +156,7 @@ ORDER BY (d.ssl_expiry IS NULL), d.ssl_expiry ASC, d.domain_name`
 		var s SSLRow
 		var enabled int
 		var remaining sql.NullInt64
-		if err := rows.Scan(&s.DomainID, &s.DomainName, &s.Status, &enabled, &s.Expiry, &remaining); err != nil {
+		if err := rows.Scan(&s.DomainID, &s.DomainName, &s.Status, &enabled, &s.Expiry, &s.Source, &remaining); err != nil {
 			continue
 		}
 		s.Enabled = enabled == 1
