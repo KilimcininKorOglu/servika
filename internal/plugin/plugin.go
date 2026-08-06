@@ -169,6 +169,7 @@ func (h *Handlers) Proxy(w http.ResponseWriter, r *http.Request) {
 			// The panel stays up when a plugin does not. The real error goes to the
 			// log; the caller gets a code it can act on, plus the header that tells
 			// a client this is worth retrying rather than a permanent gateway fault.
+			// #nosec G706 -- name passed validName above, an allowlist of [a-z0-9-] bounded to 64 characters, so it cannot carry CR/LF or control characters; err is a dial error.
 			log.Printf("plugin proxy %s: %v", name, err)
 			w.Header().Set("Retry-After", "3")
 			httpx.WriteError(w, http.StatusServiceUnavailable, "plugin is restarting")
