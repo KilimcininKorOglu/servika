@@ -25,6 +25,7 @@
     "updateStatus": "パネル更新の状態",
     "optimizeStatus": "最適化の状態",
     "deliveryLog": "配信履歴",
-    "mailServerSettings": "サーバーのメール設定"
+    "mailServerSettings": "サーバーのメール設定",
+    "mailFilterLists": "送信者フィルターリスト"
   }
 }

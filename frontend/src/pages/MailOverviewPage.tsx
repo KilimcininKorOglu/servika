@@ -9,6 +9,15 @@ import OverviewList, { type Column, type Badge } from '@/components/OverviewList
 import { api, apiError } from '@/lib/api'
 import { useReportError } from '@/lib/errors'
 
+type FilterEntry = {
+  id: number
+  kind: 'allow' | 'block'
+  match_type: 'address' | 'domain' | 'ip'
+  value: string
+  note?: string
+  created_at?: string
+}
+
 type ServerSettings = {
   max_message_size_mb: number
   domain_send_limit_hour: number
@@ -76,6 +85,13 @@ export default function MailOverviewPage() {
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [settingsSaved, setSettingsSaved] = useState(false)
   const [settingsSaving, setSettingsSaving] = useState(false)
+  const [filters, setFilters] = useState<FilterEntry[]>([])
+  const [filterError, setFilterError] = useState<string | null>(null)
+  const [filterBusy, setFilterBusy] = useState(false)
+  const [filterKind, setFilterKind] = useState<'allow' | 'block'>('block')
+  const [filterMatchType, setFilterMatchType] = useState<'address' | 'domain' | 'ip'>('domain')
+  const [filterValue, setFilterValue] = useState('')
+  const [filterNote, setFilterNote] = useState('')
 
   // Split so the mount effect never writes state synchronously: fetchQueue
   // settles only through promise callbacks, and loadQueue() adds the spinner for
@@ -100,6 +116,43 @@ export default function MailOverviewPage() {
       .then(response => setSettings(response.data))
       .catch(report('mailServerSettings'))
   }, [report])
+
+  const loadFilters = useCallback(() => {
+    api.get<FilterEntry[]>('/admin/mail/filters')
+      .then(response => setFilters(response.data || []))
+      .catch(report('mailFilterLists'))
+  }, [report])
+
+  useEffect(() => { loadFilters() }, [loadFilters])
+
+  async function addFilter(event: React.FormEvent) {
+    event.preventDefault()
+    setFilterBusy(true)
+    setFilterError(null)
+    try {
+      await api.post('/admin/mail/filters', {
+        kind: filterKind, match_type: filterMatchType, value: filterValue, note: filterNote,
+      })
+      setFilterValue('')
+      setFilterNote('')
+      loadFilters()
+    } catch (cause) {
+      setFilterError(apiError(cause, t('filters.addFailed')))
+    } finally {
+      setFilterBusy(false)
+    }
+  }
+
+  async function removeFilter(entry: FilterEntry) {
+    if (!confirm(t('filters.confirmDelete', { value: entry.value }))) return
+    setFilterError(null)
+    try {
+      await api.delete(`/admin/mail/filters/${entry.id}`)
+      loadFilters()
+    } catch (cause) {
+      setFilterError(apiError(cause, t('filters.deleteFailed')))
+    }
+  }
 
   async function saveSettings(event: React.FormEvent) {
     event.preventDefault()
@@ -195,6 +248,57 @@ export default function MailOverviewPage() {
             </>
           )}
         </form>
+      </div>
+
+      <div className="w-full px-6 pb-8">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('filters.title')}</h2>
+          <p className="text-xs text-slate-500 mt-1 mb-4">{t('filters.subtitle')}</p>
+          <form onSubmit={addFilter} className="flex flex-wrap gap-2 mb-4">
+            <select value={filterKind} onChange={event => setFilterKind(event.target.value as 'allow' | 'block')}
+              className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
+              <option value="block">{t('filters.kind.block')}</option>
+              <option value="allow">{t('filters.kind.allow')}</option>
+            </select>
+            <select value={filterMatchType} onChange={event => setFilterMatchType(event.target.value as 'address' | 'domain' | 'ip')}
+              className="px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm">
+              <option value="domain">{t('filters.matchType.domain')}</option>
+              <option value="address">{t('filters.matchType.address')}</option>
+              <option value="ip">{t('filters.matchType.ip')}</option>
+            </select>
+            <input value={filterValue} onChange={event => setFilterValue(event.target.value)} required
+              placeholder={t('filters.valuePlaceholder')}
+              className="flex-1 min-w-[12rem] px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono" />
+            <input value={filterNote} onChange={event => setFilterNote(event.target.value)}
+              placeholder={t('filters.notePlaceholder')}
+              className="flex-1 min-w-[10rem] px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
+            <button disabled={filterBusy} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
+              {filterBusy ? t('filters.adding') : t('filters.add')}
+            </button>
+          </form>
+          {filterError && <p className="mb-3 text-xs text-red-600 dark:text-red-400">{filterError}</p>}
+          {filters.length === 0 ? (
+            <p className="text-xs text-slate-400 dark:text-slate-500">{t('filters.empty')}</p>
+          ) : (
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
+              {filters.map(entry => (
+                <li key={entry.id} className="py-2 flex items-center gap-3">
+                  <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded shrink-0 ${entry.kind === 'allow'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
+                    {t(`filters.kind.${entry.kind}`)}
+                  </span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 shrink-0">{t(`filters.matchType.${entry.match_type}`)}</span>
+                  <span className="font-mono text-sm text-slate-800 dark:text-slate-200 break-all flex-1">{entry.value}</span>
+                  {entry.note && <span className="text-xs text-slate-400 dark:text-slate-500 break-all">{entry.note}</span>}
+                  <button onClick={() => removeFilter(entry)} className="shrink-0 text-xs px-2 py-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
+                    {t('filters.delete')}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
       <div className="w-full px-6 pb-8">
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">

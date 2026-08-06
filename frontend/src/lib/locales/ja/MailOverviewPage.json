@@ -50,5 +50,27 @@
     "saving": "保存中...",
     "saved": "保存して Postfix に適用しました。",
     "saveFailed": "設定を保存できませんでした。"
+  },
+  "filters": {
+    "title": "送信者の許可リストとブロックリスト",
+    "subtitle": "スコアリングでほとんどの判断は付きますが、これは指示として与えるものです。1 件の登録はこのサーバー上のすべてのドメインに適用されます。",
+    "kind": {
+      "allow": "許可",
+      "block": "ブロック"
+    },
+    "matchType": {
+      "address": "アドレス",
+      "domain": "ドメイン",
+      "ip": "IP または範囲"
+    },
+    "valuePlaceholder": "example.com、someone@example.com、203.0.113.0/24 など",
+    "notePlaceholder": "メモ (任意)",
+    "add": "追加",
+    "adding": "追加中...",
+    "addFailed": "登録を追加できませんでした。",
+    "delete": "削除",
+    "deleteFailed": "登録を削除できませんでした。",
+    "confirmDelete": "{{value}} をリストから削除しますか？",
+    "empty": "登録はありません。Rspamd が自動で判断します。"
   }
 }

@@ -50,5 +50,27 @@
     "saving": "Se salvează...",
     "saved": "Salvat și aplicat pe Postfix.",
     "saveFailed": "Setările nu au putut fi salvate."
+  },
+  "filters": {
+    "title": "Liste de expeditori permiși și blocați",
+    "subtitle": "Scorul rezolvă majoritatea cazurilor; acestea sunt instrucțiunile pe care nu le poate primi. O intrare se aplică fiecărui domeniu de pe acest server.",
+    "kind": {
+      "allow": "Permite",
+      "block": "Blochează"
+    },
+    "matchType": {
+      "address": "Adresă",
+      "domain": "Domeniu",
+      "ip": "IP sau interval"
+    },
+    "valuePlaceholder": "example.com, cineva@example.com sau 203.0.113.0/24",
+    "notePlaceholder": "Notă (opțional)",
+    "add": "Adaugă",
+    "adding": "Se adaugă...",
+    "addFailed": "Intrarea nu a putut fi adăugată.",
+    "delete": "Elimină",
+    "deleteFailed": "Intrarea nu a putut fi eliminată.",
+    "confirmDelete": "Eliminați {{value}} din listă?",
+    "empty": "Nicio intrare. Rspamd decide singur."
   }
 }

@@ -50,5 +50,27 @@
     "saving": "Saving...",
     "saved": "Saved and applied to Postfix.",
     "saveFailed": "The settings could not be saved."
+  },
+  "filters": {
+    "title": "Sender allow and block lists",
+    "subtitle": "Scoring answers most cases; these are the instructions it cannot take. An entry applies to every domain on this server.",
+    "kind": {
+      "allow": "Allow",
+      "block": "Block"
+    },
+    "matchType": {
+      "address": "Address",
+      "domain": "Domain",
+      "ip": "IP or range"
+    },
+    "valuePlaceholder": "example.com, someone@example.com or 203.0.113.0/24",
+    "notePlaceholder": "Note (optional)",
+    "add": "Add",
+    "adding": "Adding...",
+    "addFailed": "The entry could not be added.",
+    "delete": "Remove",
+    "deleteFailed": "The entry could not be removed.",
+    "confirmDelete": "Remove {{value}} from the list?",
+    "empty": "No entries. Rspamd decides on its own."
   }
 }

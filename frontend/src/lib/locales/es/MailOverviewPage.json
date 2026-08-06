@@ -50,5 +50,27 @@
     "saving": "Guardando...",
     "saved": "Guardado y aplicado a Postfix.",
     "saveFailed": "No se pudieron guardar los ajustes."
+  },
+  "filters": {
+    "title": "Listas de remitentes permitidos y bloqueados",
+    "subtitle": "La puntuación resuelve casi todos los casos; estas son las instrucciones que no puede recibir. Una entrada se aplica a todos los dominios de este servidor.",
+    "kind": {
+      "allow": "Permitir",
+      "block": "Bloquear"
+    },
+    "matchType": {
+      "address": "Dirección",
+      "domain": "Dominio",
+      "ip": "IP o rango"
+    },
+    "valuePlaceholder": "example.com, alguien@example.com o 203.0.113.0/24",
+    "notePlaceholder": "Nota (opcional)",
+    "add": "Añadir",
+    "adding": "Añadiendo...",
+    "addFailed": "No se pudo añadir la entrada.",
+    "delete": "Quitar",
+    "deleteFailed": "No se pudo quitar la entrada.",
+    "confirmDelete": "¿Quitar {{value}} de la lista?",
+    "empty": "Sin entradas. Rspamd decide por su cuenta."
   }
 }

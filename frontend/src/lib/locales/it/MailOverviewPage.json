@@ -50,5 +50,27 @@
     "saving": "Salvataggio...",
     "saved": "Salvato e applicato a Postfix.",
     "saveFailed": "Non è stato possibile salvare le impostazioni."
+  },
+  "filters": {
+    "title": "Elenchi di mittenti consentiti e bloccati",
+    "subtitle": "Il punteggio risolve quasi tutti i casi; queste sono le istruzioni che non può ricevere. Una voce vale per ogni dominio su questo server.",
+    "kind": {
+      "allow": "Consenti",
+      "block": "Blocca"
+    },
+    "matchType": {
+      "address": "Indirizzo",
+      "domain": "Dominio",
+      "ip": "IP o intervallo"
+    },
+    "valuePlaceholder": "example.com, qualcuno@example.com oppure 203.0.113.0/24",
+    "notePlaceholder": "Nota (facoltativa)",
+    "add": "Aggiungi",
+    "adding": "Aggiunta...",
+    "addFailed": "Non è stato possibile aggiungere la voce.",
+    "delete": "Rimuovi",
+    "deleteFailed": "Non è stato possibile rimuovere la voce.",
+    "confirmDelete": "Rimuovere {{value}} dall'elenco?",
+    "empty": "Nessuna voce. Decide Rspamd da solo."
   }
 }

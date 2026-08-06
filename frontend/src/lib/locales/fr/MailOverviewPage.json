@@ -50,5 +50,27 @@
     "saving": "Enregistrement...",
     "saved": "Enregistré et appliqué à Postfix.",
     "saveFailed": "Les paramètres n'ont pas pu être enregistrés."
+  },
+  "filters": {
+    "title": "Listes d'autorisation et de blocage des expéditeurs",
+    "subtitle": "Le score répond à la plupart des cas ; voici les instructions qu'il ne peut pas recevoir. Une entrée s'applique à tous les domaines de ce serveur.",
+    "kind": {
+      "allow": "Autoriser",
+      "block": "Bloquer"
+    },
+    "matchType": {
+      "address": "Adresse",
+      "domain": "Domaine",
+      "ip": "IP ou plage"
+    },
+    "valuePlaceholder": "example.com, quelquun@example.com ou 203.0.113.0/24",
+    "notePlaceholder": "Note (facultative)",
+    "add": "Ajouter",
+    "adding": "Ajout...",
+    "addFailed": "L'entrée n'a pas pu être ajoutée.",
+    "delete": "Retirer",
+    "deleteFailed": "L'entrée n'a pas pu être retirée.",
+    "confirmDelete": "Retirer {{value}} de la liste ?",
+    "empty": "Aucune entrée. Rspamd décide seul."
   }
 }

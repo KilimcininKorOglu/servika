@@ -25,6 +25,7 @@
     "updateStatus": "stav aktualizace panelu",
     "optimizeStatus": "stav optimalizace",
     "deliveryLog": "historie doručení",
-    "mailServerSettings": "nastavení pošty serveru"
+    "mailServerSettings": "nastavení pošty serveru",
+    "mailFilterLists": "seznamy filtrů odesílatelů"
   }
 }

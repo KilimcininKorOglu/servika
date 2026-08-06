@@ -50,5 +50,27 @@
     "saving": "Wird gespeichert ...",
     "saved": "Gespeichert und auf Postfix angewendet.",
     "saveFailed": "Die Einstellungen konnten nicht gespeichert werden."
+  },
+  "filters": {
+    "title": "Absender-Freigabe- und Sperrlisten",
+    "subtitle": "Die Bewertung löst die meisten Fälle; dies sind die Anweisungen, die sie nicht entgegennehmen kann. Ein Eintrag gilt für jede Domain auf diesem Server.",
+    "kind": {
+      "allow": "Zulassen",
+      "block": "Sperren"
+    },
+    "matchType": {
+      "address": "Adresse",
+      "domain": "Domain",
+      "ip": "IP oder Bereich"
+    },
+    "valuePlaceholder": "example.com, jemand@example.com oder 203.0.113.0/24",
+    "notePlaceholder": "Notiz (optional)",
+    "add": "Hinzufügen",
+    "adding": "Wird hinzugefügt ...",
+    "addFailed": "Der Eintrag konnte nicht hinzugefügt werden.",
+    "delete": "Entfernen",
+    "deleteFailed": "Der Eintrag konnte nicht entfernt werden.",
+    "confirmDelete": "{{value}} aus der Liste entfernen?",
+    "empty": "Keine Einträge. Rspamd entscheidet selbst."
   }
 }

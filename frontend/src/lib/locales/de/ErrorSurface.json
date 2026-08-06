@@ -25,6 +25,7 @@
     "updateStatus": "Panel-Aktualisierungsstatus",
     "optimizeStatus": "Optimierungsstatus",
     "deliveryLog": "Zustellverlauf",
-    "mailServerSettings": "serverweite Mail-Einstellungen"
+    "mailServerSettings": "serverweite Mail-Einstellungen",
+    "mailFilterLists": "Absender-Filterlisten"
   }
 }

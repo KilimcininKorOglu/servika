@@ -50,5 +50,27 @@
     "saving": "保存中...",
     "saved": "已保存并应用到 Postfix。",
     "saveFailed": "无法保存设置。"
+  },
+  "filters": {
+    "title": "发件人允许与阻止列表",
+    "subtitle": "评分能处理大多数情况；这里是评分无法接受的明确指令。一条记录对本服务器上的所有域名生效。",
+    "kind": {
+      "allow": "允许",
+      "block": "阻止"
+    },
+    "matchType": {
+      "address": "地址",
+      "domain": "域名",
+      "ip": "IP 或网段"
+    },
+    "valuePlaceholder": "example.com、someone@example.com 或 203.0.113.0/24",
+    "notePlaceholder": "备注（可选）",
+    "add": "添加",
+    "adding": "添加中...",
+    "addFailed": "无法添加记录。",
+    "delete": "移除",
+    "deleteFailed": "无法移除记录。",
+    "confirmDelete": "要将 {{value}} 从列表中移除吗？",
+    "empty": "没有记录。由 Rspamd 自行判断。"
   }
 }

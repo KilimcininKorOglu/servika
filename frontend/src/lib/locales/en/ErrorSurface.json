@@ -25,6 +25,7 @@
     "updateStatus": "panel update status",
     "optimizeStatus": "optimization status",
     "deliveryLog": "delivery history",
-    "mailServerSettings": "server mail settings"
+    "mailServerSettings": "server mail settings",
+    "mailFilterLists": "sender filter lists"
   }
 }

@@ -50,5 +50,27 @@
     "saving": "Kaydediliyor...",
     "saved": "Kaydedildi ve Postfix'e uygulandı.",
     "saveFailed": "Ayarlar kaydedilemedi."
+  },
+  "filters": {
+    "title": "Gönderen izin ve engel listeleri",
+    "subtitle": "Puanlama çoğu durumu çözer; bunlar ise puanlamanın alamayacağı talimatlardır. Bir kayıt sunucudaki her alan adı için geçerlidir.",
+    "kind": {
+      "allow": "İzin ver",
+      "block": "Engelle"
+    },
+    "matchType": {
+      "address": "Adres",
+      "domain": "Alan adı",
+      "ip": "IP veya aralık"
+    },
+    "valuePlaceholder": "example.com, biri@example.com veya 203.0.113.0/24",
+    "notePlaceholder": "Not (isteğe bağlı)",
+    "add": "Ekle",
+    "adding": "Ekleniyor...",
+    "addFailed": "Kayıt eklenemedi.",
+    "delete": "Kaldır",
+    "deleteFailed": "Kayıt kaldırılamadı.",
+    "confirmDelete": "{{value}} listeden kaldırılsın mı?",
+    "empty": "Kayıt yok. Kararı Rspamd kendi veriyor."
   }
 }

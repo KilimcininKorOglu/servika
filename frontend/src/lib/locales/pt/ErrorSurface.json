@@ -25,6 +25,7 @@
     "updateStatus": "estado de atualização do painel",
     "optimizeStatus": "estado da otimização",
     "deliveryLog": "histórico de entrega",
-    "mailServerSettings": "definições de correio do servidor"
+    "mailServerSettings": "definições de correio do servidor",
+    "mailFilterLists": "listas de filtro de remetentes"
   }
 }

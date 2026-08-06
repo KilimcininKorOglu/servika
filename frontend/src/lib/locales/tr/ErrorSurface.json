@@ -25,6 +25,7 @@
     "updateStatus": "panel güncelleme durumu",
     "optimizeStatus": "eniyileme durumu",
     "deliveryLog": "teslimat geçmişi",
-    "mailServerSettings": "sunucu posta ayarları"
+    "mailServerSettings": "sunucu posta ayarları",
+    "mailFilterLists": "gönderen filtre listeleri"
   }
 }

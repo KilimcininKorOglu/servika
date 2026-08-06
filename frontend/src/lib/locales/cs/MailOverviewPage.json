@@ -50,5 +50,27 @@
     "saving": "Ukládání...",
     "saved": "Uloženo a aplikováno na Postfix.",
     "saveFailed": "Nastavení se nepodařilo uložit."
+  },
+  "filters": {
+    "title": "Seznamy povolených a blokovaných odesílatelů",
+    "subtitle": "Skóre vyřeší většinu případů; toto jsou pokyny, které přijmout nemůže. Položka platí pro každou doménu na tomto serveru.",
+    "kind": {
+      "allow": "Povolit",
+      "block": "Blokovat"
+    },
+    "matchType": {
+      "address": "Adresa",
+      "domain": "Doména",
+      "ip": "IP nebo rozsah"
+    },
+    "valuePlaceholder": "example.com, nekdo@example.com nebo 203.0.113.0/24",
+    "notePlaceholder": "Poznámka (nepovinná)",
+    "add": "Přidat",
+    "adding": "Přidávání...",
+    "addFailed": "Položku se nepodařilo přidat.",
+    "delete": "Odebrat",
+    "deleteFailed": "Položku se nepodařilo odebrat.",
+    "confirmDelete": "Odebrat {{value}} ze seznamu?",
+    "empty": "Žádné položky. Rspamd rozhoduje sám."
   }
 }
