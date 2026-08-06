@@ -42,6 +42,9 @@ func StartDeliveryLogCollector(db *sql.DB) {
 			if err := CollectDeliveryLog(ctx, db); err != nil {
 				log.Printf("mail delivery log: %v", err)
 			}
+			// An unopened signon token would otherwise sit in the table until the
+			// next signon happened to clean it up.
+			pruneWebmailTokens(ctx, db)
 			cancel()
 			time.Sleep(deliveryLogInterval)
 		}

@@ -365,6 +365,21 @@ if [ -f /opt/roundcube/index.php ]; then
     log "roundcube database password generated and added to the environment file"
   fi
 
+  # The panel signs a mailbox in to webmail as a Dovecot master user, because it
+  # keeps only a hash of the mailbox password. The credential is a full
+  # authentication bypass for every mailbox on this server, so it lives only in
+  # the environment file, which is 0600 and root-owned.
+  MAILMASTER=${SERVIKA_MAIL_MASTER_PASS:-}
+  if [ -n "$MAILMASTER" ] && ! [[ "$MAILMASTER" =~ ^[A-Za-z0-9._%+=-]{16,128}$ ]]; then
+    fail "SERVIKA_MAIL_MASTER_PASS contains unsupported characters or has an invalid length"
+  fi
+  if [ -z "$MAILMASTER" ]; then
+    MAILMASTER=$(openssl rand -hex 24)
+    set_env_value SERVIKA_MAIL_MASTER_PASS "$MAILMASTER"
+    export SERVIKA_MAIL_MASTER_PASS="$MAILMASTER"
+    log "webmail master password generated and added to the environment file"
+  fi
+
   RCDESKEY=${SERVIKA_ROUNDCUBE_DES_KEY:-}
   if [ -n "$RCDESKEY" ] && ! [[ "$RCDESKEY" =~ ^[A-Za-z0-9._%+=:@-]{16,128}$ ]]; then
     fail "SERVIKA_ROUNDCUBE_DES_KEY contains unsupported characters or has an invalid length"

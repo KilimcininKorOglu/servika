@@ -193,6 +193,14 @@ func main() {
 	// generated from the installed certificates, so this picks up a host that
 	// already had them and drops one whose certificate has expired.
 	mail.HealMailSNI(context.Background())
+	// Panel-initiated webmail sessions authenticate as a Dovecot master user,
+	// because the panel keeps only a hash of the mailbox password. Clearing the
+	// master password withdraws the bypass, so this removes it as well as writes it.
+	mail.HealMasterUser(context.Background())
+	// Roundcube has no panel session, so the sign-in is carried by a plugin that
+	// redeems the panel's token over the loopback. It is installed here rather
+	// than by the updater, which runs as its own previous copy.
+	mail.HealWebmailPlugin(context.Background())
 	mail.StartPolicyServer(d, "127.0.0.1:10040")
 	// Postfix writes one log for the whole server, so it cannot be shown to a
 	// tenant as it stands. This drains it into per-domain rows in the background.
@@ -295,6 +303,10 @@ func main() {
 	r.With(middleware.RateLimit("git-webhook", 30, time.Minute)).
 		Post("/api/v1/git-webhook/{secret}", gitH.Webhook)
 	r.Post("/api/v1/internal/pma-redeem", pmaH.Redeem)
+	// Roundcube exchanges a signon token for the master credential over the
+	// loopback. It has no panel session either, so the shared secret file and the
+	// single-use token are what stand in for one.
+	r.Post("/api/v1/internal/webmail-redeem", mailH.WebmailRedeem)
 
 	// Mail client auto-configuration. These cannot sit behind RequireAuth: a mail
 	// client has no panel session, which is the whole point of the endpoints. They
@@ -495,6 +507,7 @@ func main() {
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/filters/{fid}", mailH.FilterDelete)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/send-limits", mailH.SendLimitsGet)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/send-limits", mailH.SendLimitsPut)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/webmail-token", mailH.WebmailToken)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/protection", protectionH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/protection", protectionH.Add)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/protection/{kid}", protectionH.Delete)

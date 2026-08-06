@@ -34,7 +34,8 @@
     "suspend": "Sperren",
     "activate": "Aktivieren",
     "resetPassword": "Passwort zurücksetzen",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "openWebmail": "Webmail öffnen"
   },
   "forwarders": {
     "title": "Weiterleitungen und Catch-All",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "Der Autoresponder konnte nicht gespeichert werden",
     "addFilterFailed": "Der Mail-Filter konnte nicht hinzugefügt werden",
     "readSendLimitsFailed": "Die Sendelimits konnten nicht gelesen werden",
-    "saveSendLimitsFailed": "Die Sendelimits konnten nicht gespeichert werden"
+    "saveSendLimitsFailed": "Die Sendelimits konnten nicht gespeichert werden",
+    "webmail": "Webmail konnte nicht geöffnet werden"
   },
   "webmail": {
     "title": "Webmail",

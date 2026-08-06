@@ -34,7 +34,8 @@
     "suspend": "Suspender",
     "activate": "Activar",
     "resetPassword": "Restablecer contraseña",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "openWebmail": "Abrir el webmail"
   },
   "forwarders": {
     "title": "Redirecciones y comodín",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "No se pudo guardar la respuesta automática",
     "addFilterFailed": "No se pudo añadir el filtro de correo",
     "readSendLimitsFailed": "No se pudieron leer los límites de envío",
-    "saveSendLimitsFailed": "No se pudieron guardar los límites de envío"
+    "saveSendLimitsFailed": "No se pudieron guardar los límites de envío",
+    "webmail": "No se pudo abrir el webmail"
   },
   "webmail": {
     "title": "Webmail",

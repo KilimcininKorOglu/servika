@@ -34,7 +34,8 @@
     "suspend": "Suspendre",
     "activate": "Activer",
     "resetPassword": "Réinitialiser le mot de passe",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "openWebmail": "Ouvrir le webmail"
   },
   "forwarders": {
     "title": "Redirecteurs et catch-all",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "Impossible d'enregistrer la réponse automatique",
     "addFilterFailed": "Impossible d'ajouter le filtre de courrier",
     "readSendLimitsFailed": "Impossible de lire les limites d'envoi",
-    "saveSendLimitsFailed": "Impossible d'enregistrer les limites d'envoi"
+    "saveSendLimitsFailed": "Impossible d'enregistrer les limites d'envoi",
+    "webmail": "Impossible d'ouvrir le webmail"
   },
   "webmail": {
     "title": "Webmail",

@@ -262,6 +262,34 @@ export default function DomainMailPage() {
     }
   }
 
+  // Opening webmail without asking for the mailbox password again.
+  //
+  // The panel holds only a hash of that password, so the sign-in is carried by a
+  // single-use token the webmail side redeems over the loopback. The token goes
+  // in a POST body rather than the URL, so it cannot reach browser history, a
+  // proxy log, or a Referer header.
+  async function openWebmail(mailbox: Mailbox) {
+    try {
+      const { data } = await api.post<{ token: string }>(`/domains/${id}/mail/${mailbox.id}/webmail-token`)
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = '/webmail/index.php'
+      form.target = '_blank'
+      for (const [name, value] of [['_task', 'login'], ['_action', 'login'], ['_servika_token', data.token]]) {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = name
+        input.value = value
+        form.appendChild(input)
+      }
+      document.body.appendChild(form)
+      form.submit()
+      form.remove()
+    } catch (e) {
+      alert(apiError(e, t('errors.webmail')))
+    }
+  }
+
   async function toggleMailboxStatus(mailbox: Mailbox) {
     setError(null)
     setSuccess(null)
@@ -494,6 +522,9 @@ export default function DomainMailPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-3">
+                        {mailbox.status === 'active' && (
+                          <button type="button" onClick={() => openWebmail(mailbox)} className="text-xs text-brand-600 dark:text-brand-400 hover:underline">{t('mailboxes.openWebmail')}</button>
+                        )}
                         <button type="button" onClick={() => toggleMailboxStatus(mailbox)} className="text-xs text-slate-600 dark:text-slate-300 hover:underline">
                           {mailbox.status === 'active' ? t('mailboxes.suspend') : t('mailboxes.activate')}
                         </button>

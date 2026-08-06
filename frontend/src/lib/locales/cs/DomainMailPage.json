@@ -34,7 +34,8 @@
     "suspend": "Pozastavit",
     "activate": "Aktivovat",
     "resetPassword": "Obnovit heslo",
-    "delete": "Smazat"
+    "delete": "Smazat",
+    "openWebmail": "Otevřít webmail"
   },
   "forwarders": {
     "title": "Přesměrování a catch-all",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "Automatickou odpověď nelze uložit",
     "addFilterFailed": "Filtr pošty nelze přidat",
     "readSendLimitsFailed": "Limity odesílání nelze načíst",
-    "saveSendLimitsFailed": "Limity odesílání nelze uložit"
+    "saveSendLimitsFailed": "Limity odesílání nelze uložit",
+    "webmail": "Webmail se nepodařilo otevřít"
   },
   "webmail": {
     "title": "Webmail",

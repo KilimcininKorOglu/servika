@@ -34,7 +34,8 @@
     "suspend": "Suspendare",
     "activate": "Activare",
     "resetPassword": "Resetare parolă",
-    "delete": "Ștergere"
+    "delete": "Ștergere",
+    "openWebmail": "Deschide webmail"
   },
   "forwarders": {
     "title": "Redirecționări și catch-all",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "Nu s-a putut salva răspunsul automat",
     "addFilterFailed": "Nu s-a putut adăuga filtrul de mail",
     "readSendLimitsFailed": "Nu s-au putut citi limitele de trimitere",
-    "saveSendLimitsFailed": "Nu s-au putut salva limitele de trimitere"
+    "saveSendLimitsFailed": "Nu s-au putut salva limitele de trimitere",
+    "webmail": "Webmail nu a putut fi deschis"
   },
   "webmail": {
     "title": "Webmail",

@@ -43,7 +43,9 @@ $config['smtp_conn_options'] = [
 $config['support_url']  = '';
 $config['product_name'] = 'Servika Webmail';
 $config['des_key']      = '__SERVIKA_ROUNDCUBE_DES_KEY__';
-$config['plugins']      = ['archive'];
+// servika_signon carries the panel's one-click sign-in. It acts only on a POST
+// that presents a single-use token, so it changes nothing about a normal login.
+$config['plugins']      = ['archive', 'servika_signon'];
 $config['skin']         = 'elastic';
 // Left unset on purpose. Roundcube documents null as "leave empty for
 // auto-detection" and then follows the browser's own language, which gives each

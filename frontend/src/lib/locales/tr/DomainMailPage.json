@@ -34,7 +34,8 @@
     "suspend": "Askıya Al",
     "activate": "Etkinleştir",
     "resetPassword": "Parolayı sıfırla",
-    "delete": "Sil"
+    "delete": "Sil",
+    "openWebmail": "Webmail'i aç"
   },
   "forwarders": {
     "title": "Yönlendiriciler ve Tümünü Yakala",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "Otomatik yanıt kaydedilemedi",
     "addFilterFailed": "Posta filtresi eklenemedi",
     "readSendLimitsFailed": "Gönderim limitleri okunamadı",
-    "saveSendLimitsFailed": "Gönderim limitleri kaydedilemedi"
+    "saveSendLimitsFailed": "Gönderim limitleri kaydedilemedi",
+    "webmail": "Webmail açılamadı"
   },
   "webmail": {
     "title": "Webmail",

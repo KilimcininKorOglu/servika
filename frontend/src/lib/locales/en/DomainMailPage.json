@@ -34,7 +34,8 @@
     "suspend": "Suspend",
     "activate": "Activate",
     "resetPassword": "Reset password",
-    "delete": "Delete"
+    "delete": "Delete",
+    "openWebmail": "Open webmail"
   },
   "forwarders": {
     "title": "Forwarders and Catch-All",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "Could not save the autoresponder",
     "addFilterFailed": "Could not add the mail filter",
     "readSendLimitsFailed": "Could not read the send limits",
-    "saveSendLimitsFailed": "Could not save the send limits"
+    "saveSendLimitsFailed": "Could not save the send limits",
+    "webmail": "Could not open webmail"
   },
   "webmail": {
     "title": "Webmail",

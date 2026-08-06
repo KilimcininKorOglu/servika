@@ -34,7 +34,8 @@
     "suspend": "暂停",
     "activate": "启用",
     "resetPassword": "重置密码",
-    "delete": "删除"
+    "delete": "删除",
+    "openWebmail": "打开网页邮箱"
   },
   "forwarders": {
     "title": "转发和全部接收",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "无法保存自动回复",
     "addFilterFailed": "无法添加邮件过滤器",
     "readSendLimitsFailed": "无法读取发送限制",
-    "saveSendLimitsFailed": "无法保存发送限制"
+    "saveSendLimitsFailed": "无法保存发送限制",
+    "webmail": "无法打开网页邮箱"
   },
   "webmail": {
     "title": "网页邮箱",

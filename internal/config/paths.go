@@ -33,6 +33,7 @@ const (
 	DefaultPMASignonDir       = "/opt/servika/pma-signon"
 	DefaultPHPMyAdminRoot     = "/opt/phpmyadmin"
 	DefaultRoundcubeConfig    = "/opt/roundcube/config/config.inc.php"
+	DefaultRoundcubePlugins   = "/opt/roundcube/plugins"
 	DefaultPHPMyAdminConfig   = "/opt/phpmyadmin/config.inc.php"
 	DefaultCertRoot           = "/etc/pki/servika"
 	DefaultNginxCacheDir      = "/var/cache/nginx/servikacache"
@@ -133,6 +134,10 @@ func PHPMyAdminConfig() string {
 func RoundcubeConfig() string {
 	return mustAbsPath("SERVIKA_ROUNDCUBE_CONFIG", DefaultRoundcubeConfig)
 }
+
+func RoundcubePlugins() string {
+	return mustAbsPath("SERVIKA_ROUNDCUBE_PLUGINS", DefaultRoundcubePlugins)
+}
 func CertRoot() string       { return mustAbsPath("SERVIKA_CERT_ROOT", DefaultCertRoot) }
 func NginxCacheDir() string  { return mustAbsPath("SERVIKA_NGINX_CACHE_DIR", DefaultNginxCacheDir) }
 func NginxCacheConf() string { return mustAbsPath("SERVIKA_NGINX_CACHE_CONF", DefaultNginxCacheConf) }
@@ -199,6 +204,7 @@ func ValidateRuntimePaths() error {
 		{"SERVIKA_MAIL_LOG", DefaultMailLog, false},
 		{"SERVIKA_INSTALLATION_ID", DefaultInstallationID, false},
 		{"SERVIKA_VERSION_CACHE", DefaultVersionCache, false},
+		{"SERVIKA_ROUNDCUBE_PLUGINS", DefaultRoundcubePlugins, false},
 		{"SERVIKA_PMA_TOKEN", DefaultPMAToken, false},
 		{"SERVIKA_PMA_SIGNON_DIR", DefaultPMASignonDir, false},
 		{"SERVIKA_PHPMYADMIN_ROOT", DefaultPHPMyAdminRoot, false},

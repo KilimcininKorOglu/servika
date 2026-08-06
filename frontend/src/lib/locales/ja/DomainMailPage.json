@@ -34,7 +34,8 @@
     "suspend": "停止",
     "activate": "有効化",
     "resetPassword": "パスワードをリセット",
-    "delete": "削除"
+    "delete": "削除",
+    "openWebmail": "ウェブメールを開く"
   },
   "forwarders": {
     "title": "転送とキャッチオール",
@@ -130,7 +131,8 @@
     "saveAutoresponderFailed": "自動返信を保存できませんでした",
     "addFilterFailed": "メールフィルターを追加できませんでした",
     "readSendLimitsFailed": "送信制限を読み込めませんでした",
-    "saveSendLimitsFailed": "送信制限を保存できませんでした"
+    "saveSendLimitsFailed": "送信制限を保存できませんでした",
+    "webmail": "ウェブメールを開けませんでした"
   },
   "webmail": {
     "title": "ウェブメール",
