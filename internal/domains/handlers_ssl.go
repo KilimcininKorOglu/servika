@@ -1,6 +1,7 @@
 package domains
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -121,7 +122,17 @@ func (h *Handlers) SSLIssue(w http.ResponseWriter, r *http.Request) {
 		expiresAt = time.Now().Add(90 * 24 * time.Hour)
 	}
 
-	if _, err := h.DB.ExecContext(r.Context(),
+	// Written on a context of its own, not the request's.
+	//
+	// Issuance can outlast the client: an ACME order plus the mail certificate
+	// takes longer than a browser is willing to wait, and an abandoned request
+	// cancels r.Context(). The certificate is already installed and nginx is
+	// already serving it at this point, so losing this write would leave the
+	// panel reporting a domain as unprotected while the disk says otherwise, and
+	// nothing would correct it until the next startup heal.
+	writeCtx, cancelWrite := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancelWrite()
+	if _, err := h.DB.ExecContext(writeCtx,
 		`UPDATE domains SET ssl_enabled=1, ssl_source=?, cert_path=?, key_path=?, ssl_expiry=?
 		 WHERE id=?`, actualType, certPath, keyPath, expiresAt, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
@@ -207,7 +218,12 @@ func (h *Handlers) SSLDisable(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusInternalServerError, "SSL disable failed")
 		return
 	}
-	if _, err := h.DB.ExecContext(r.Context(),
+	// Detached for the same reason as the issue path: the vhost has already been
+	// rewritten and nginx reloaded, so a lost write would leave the panel
+	// claiming SSL is on for a site now serving plain HTTP.
+	writeCtx, cancelWrite := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancelWrite()
+	if _, err := h.DB.ExecContext(writeCtx,
 		`UPDATE domains SET ssl_enabled=0, ssl_source='', cert_path='', key_path='', ssl_expiry=NULL
 		 WHERE id=?`, id); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "database update failed")
