@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { useAuth } from '@/store/auth'
 import LoginPage from '@/pages/LoginPage'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -76,7 +76,15 @@ function GuardedRoute({ children }: { children: React.ReactNode }) {
   // user (set at login) is the synchronous "authenticated" signal. If the cookie
   // is actually gone, the first API call 401s and the interceptor logs out.
   const username = useAuth((s) => s.username)
-  if (!username) return <Navigate to="/login" replace />
+  const location = useLocation()
+  if (!username) {
+    // Carry the page that was asked for, so signing in lands there instead of on
+    // the dashboard. A bookmark or a shared deep link is otherwise lost the
+    // moment the session is gone.
+    const wanted = location.pathname + location.search
+    const next = wanted && wanted !== '/' ? `?next=${encodeURIComponent(wanted)}` : ''
+    return <Navigate to={`/login${next}`} replace />
+  }
   return <>{children}</>
 }
 

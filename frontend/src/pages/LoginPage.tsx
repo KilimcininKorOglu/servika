@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
@@ -11,6 +11,18 @@ type LoginResponse = {
   two_factor_required?: boolean
 }
 
+// internalPath keeps the post-login redirect inside this panel.
+//
+// The value arrives from the query string, so it is attacker-supplied: anything
+// that is not a single-slash absolute path could send someone who just typed
+// their password to another site. `//host` and `/\host` are both read as
+// protocol-relative by browsers, so neither counts as internal.
+function internalPath(next: string | null): string {
+  if (!next || !next.startsWith('/')) return '/'
+  if (next.startsWith('//') || next.startsWith('/\\')) return '/'
+  return next
+}
+
 export default function LoginPage() {
   const { t } = useTranslation('LoginPage')
   const [username, setUsername] = useState('')
@@ -20,6 +32,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const login = useAuth((state) => state.login)
   const [version, setVersion] = useState('')
 
@@ -45,7 +58,7 @@ export default function LoginPage() {
         return
       }
       login(data.user!, data.expires_at!)
-      navigate('/', { replace: true })
+      navigate(internalPath(searchParams.get('next')), { replace: true })
     } catch (caughtError) {
       setError(apiError(caughtError, t('error.loginFailed')))
     } finally {
