@@ -32,8 +32,14 @@ jobs:
       - name: go vet (linux/arm64)
         run: GOOS=linux GOARCH=arm64 go vet ./...
 
+      # The vhost tests shell out to `nginx -t` and skip themselves when no nginx
+      # is on PATH, so without this the configuration gates pass by not running.
+      - name: nginx (for the configuration syntax tests)
+        run: sudo apt-get update && sudo apt-get install -y nginx
+
+      # -count=1 because a cached PASS is not a test run.
       - name: go test
-        run: go test ./...
+        run: go test -count=1 ./...
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
