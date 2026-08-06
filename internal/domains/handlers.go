@@ -172,15 +172,35 @@ type createReq struct {
 	CustomerID *int64 `json:"customer_id,omitempty"`
 	PlanID     *int64 `json:"plan_id,omitempty"`
 	SiteType   string `json:"site_type,omitempty"`
+	// OwnerUserID names the reseller a NEW customer record is opened under, for
+	// the case where no existing customer is named. It is the only way an
+	// administrator can hand a domain to a reseller at creation time; until it
+	// existed the auto-created record was always unowned and the reseller could
+	// not see the domain at all.
+	//
+	// It is mutually exclusive with CustomerID: an existing customer already has
+	// an owner, and changing it is a transfer with its own endpoint.
+	OwnerUserID *int64 `json:"owner_user_id,omitempty"`
 }
 
 // Reason codes a create request can be refused with. They are CODES rather than
 // sentences because the interface ships twelve languages and wording produced
 // here could not be translated.
 const (
-	reasonCustomerNotFound = "customer_not_found"
-	reasonPlanNotFound     = "plan_not_found"
+	reasonCustomerNotFound  = "customer_not_found"
+	reasonPlanNotFound      = "plan_not_found"
+	reasonOwnerNotReseller  = "owner_not_reseller"
+	reasonOwnerWithCustomer = "owner_with_customer"
+	reasonOwnerNotAllowed   = "owner_not_allowed"
 )
+
+// warningOwnerNotApplied rides on a SUCCESSFUL create: the domain exists, but
+// the reseller the caller asked for was not applied because the tenant already
+// had a customer record and an existing record keeps the owner it had.
+//
+// Reachable because provisioner.SlugFromDomain truncates the system user at 26
+// characters, so two long domain names can resolve to the same tenant.
+const warningOwnerNotApplied = "owner_not_applied"
 
 // referencedAccountsExist checks that the rows a create request points at are
 // real, and returns a reason code when one is not.
@@ -193,9 +213,33 @@ const (
 // reseller path was already safe, `ResellerOwnsCustomer` reads the row, but an
 // administrator's id went straight through.
 //
+// The owner is held to a stricter rule than the other two: it must not merely
+// exist but be an ACTIVE RESELLER, because it is written to
+// `customers.owner_user_id`, which is one half of the ownership chain. Pointing
+// it at an administrator or a customer would build a chain no role resolves.
+//
 // A database failure is reported as an error, not as "not found", so the caller
 // refuses instead of provisioning against an unchecked id.
-func (h *Handlers) referencedAccountsExist(ctx context.Context, customerID, planID *int64) (string, error) {
+func (h *Handlers) referencedAccountsExist(ctx context.Context, customerID, planID, ownerUserID *int64) (string, error) {
+	if ownerUserID != nil && *ownerUserID > 0 {
+		if customerID != nil && *customerID > 0 {
+			// Two different intents in one request. Applying one and dropping the
+			// other would report a placement that did not happen.
+			return reasonOwnerWithCustomer, nil
+		}
+		// The role and the status are both part of the check: a suspended account
+		// is one an operator deliberately took out of service, and handing it a
+		// fresh domain would quietly put it back to work.
+		var found int64
+		switch err := h.DB.QueryRowContext(ctx,
+			`SELECT id FROM users WHERE id=? AND role='reseller' AND status='active'`,
+			*ownerUserID).Scan(&found); {
+		case errors.Is(err, sql.ErrNoRows):
+			return reasonOwnerNotReseller, nil
+		case err != nil:
+			return "", err
+		}
+	}
 	if customerID != nil && *customerID > 0 {
 		var found int64
 		switch err := h.DB.QueryRowContext(ctx,
@@ -291,6 +335,9 @@ type createResp struct {
 	// domain, so a client cannot work it out on its own. It is omitted when no
 	// real pair is configured.
 	Nameservers *nameserverPair `json:"nameservers,omitempty"`
+	// Warning names something the create could not do, as a stable CODE the
+	// interface translates. The domain itself was created; this is not an error.
+	Warning string `json:"warning,omitempty"`
 }
 
 type nameserverPair struct {
@@ -349,6 +396,18 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Choosing which reseller a new customer belongs to is an administrator's
+	// decision. A reseller cannot reach the auto-creation path at all, it is
+	// refused just below unless it names one of its own customers, so accepting
+	// the field from one would let it ask for something that silently does
+	// nothing.
+	if req.OwnerUserID != nil {
+		if c := middleware.ClaimsFrom(r); c == nil || c.Role != middleware.RoleAdmin {
+			httpx.WriteError(w, http.StatusForbidden, reasonOwnerNotAllowed)
+			return
+		}
+	}
+
 	// Reseller guard: a reseller may only attach a domain to its own customer,
 	// and the reseller's total domain quota applies (a ceiling separate from the
 	// customer plan's max_domain).
@@ -396,7 +455,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	// the Linux user, the nginx vhost and the FPM pool, so refusing after it ran
 	// would leave a half-provisioned domain behind for a request that was never
 	// going to be accepted.
-	if reason, err := h.referencedAccountsExist(r.Context(), req.CustomerID, req.PlanID); err != nil {
+	if reason, err := h.referencedAccountsExist(r.Context(), req.CustomerID, req.PlanID, req.OwnerUserID); err != nil {
 		log.Printf("verify referenced accounts for %q: %v", req.DomainName, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "could not verify the selected account")
 		return
@@ -446,6 +505,10 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	// Set when the caller asked for a reseller owner that could not be applied.
+	// Carried to the response so a placement that did not happen is never
+	// reported as one that did.
+	var createWarning string
 	if req.CustomerID == nil {
 		// Nobody was named, so build the ownership chain now rather than leaving
 		// it to the next restart. Until this existed, the account for a freshly
@@ -453,18 +516,23 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		// Customer Accounts screen stayed empty in the meantime.
 		//
 		// Reachable on an administrator's authority alone: a reseller is refused
-		// above unless it names one of its own customers, so the record this
-		// creates is correctly left unowned by any reseller.
+		// above unless it names one of its own customers, so the owner written
+		// here is one an administrator chose, or none at all.
 		//
 		// Not fatal. The domain is already provisioned and serving; a failure here
 		// is logged and the startup backfill picks the tenant up.
-		if customerID, err := tenantaccount.Ensure(r.Context(), h.DB, pr.SystemUser, req.DomainName); err != nil {
+		account, err := tenantaccount.Ensure(r.Context(), h.DB, pr.SystemUser, req.DomainName, req.OwnerUserID)
+		switch {
+		case err != nil:
 			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("customer account for %q: %v", pr.SystemUser, err)
-		} else if customerID > 0 {
+		case account.CustomerID > 0:
 			if _, err := h.DB.ExecContext(r.Context(),
-				`UPDATE domains SET customer_id=? WHERE id=?`, customerID, id); err != nil {
-				log.Printf("link domain %d to customer %d: %v", id, customerID, err)
+				`UPDATE domains SET customer_id=? WHERE id=?`, account.CustomerID, id); err != nil {
+				log.Printf("link domain %d to customer %d: %v", id, account.CustomerID, err)
+			}
+			if req.OwnerUserID != nil && account.Reused {
+				createWarning = warningOwnerNotApplied
 			}
 		}
 	}
@@ -503,7 +571,7 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	row := h.DB.QueryRowContext(r.Context(), selectAll+" WHERE d.id=?", id)
 	d, _ := scan(row)
 
-	resp := createResp{Domain: d}
+	resp := createResp{Domain: d, Warning: createWarning}
 	resp.CreatedPasswords.FTP = ftpPass
 	resp.CreatedPasswords.DB = dbPass
 	// Only shown when a REAL pair is configured. The vanity values returned

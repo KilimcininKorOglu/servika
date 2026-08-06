@@ -166,12 +166,12 @@ func harness(t *testing.T, existingUser, existingCustomer int64) (*sql.DB, *reco
 func TestNoTenantMeansNoDatabaseWork(t *testing.T) {
 	db, rec := harness(t, 0, 0)
 
-	customerID, err := Ensure(context.Background(), db, "", "example.com")
+	account, err := Ensure(context.Background(), db, "", "example.com", nil)
 	if err != nil {
 		t.Fatalf("Ensure: %v", err)
 	}
-	if customerID != 0 {
-		t.Errorf("customerID = %d, want 0", customerID)
+	if account.CustomerID != 0 {
+		t.Errorf("CustomerID = %d, want 0", account.CustomerID)
 	}
 	if steps := rec.recorded(); len(steps) > 0 {
 		t.Errorf("the database was touched for an empty tenant: %v", steps)
@@ -183,12 +183,15 @@ func TestNoTenantMeansNoDatabaseWork(t *testing.T) {
 func TestExistingRowsAreReusedRatherThanDuplicated(t *testing.T) {
 	db, rec := harness(t, 42, 7)
 
-	customerID, err := Ensure(context.Background(), db, "c_example", "example.com")
+	account, err := Ensure(context.Background(), db, "c_example", "example.com", nil)
 	if err != nil {
 		t.Fatalf("Ensure: %v", err)
 	}
-	if customerID != 7 {
-		t.Errorf("customerID = %d, want the existing 7", customerID)
+	if account.CustomerID != 7 {
+		t.Errorf("CustomerID = %d, want the existing 7", account.CustomerID)
+	}
+	if !account.Reused {
+		t.Error("an existing customer was not reported as reused")
 	}
 	if rec.ran("INSERT INTO users") {
 		t.Error("a second panel account was created for a tenant that already had one")
@@ -203,7 +206,7 @@ func TestExistingRowsAreReusedRatherThanDuplicated(t *testing.T) {
 func TestOnlyTheMissingHalfIsCreated(t *testing.T) {
 	db, rec := harness(t, 42, 0)
 
-	if _, err := Ensure(context.Background(), db, "c_example", "example.com"); err != nil {
+	if _, err := Ensure(context.Background(), db, "c_example", "example.com", nil); err != nil {
 		t.Fatalf("Ensure: %v", err)
 	}
 	if rec.ran("INSERT INTO users") {
@@ -223,7 +226,7 @@ func TestOnlyTheMissingHalfIsCreated(t *testing.T) {
 func TestTheCreatedAccountHasNoUsablePassword(t *testing.T) {
 	db, rec := harness(t, 0, 0)
 
-	if _, err := Ensure(context.Background(), db, "c_example", "example.com"); err != nil {
+	if _, err := Ensure(context.Background(), db, "c_example", "example.com", nil); err != nil {
 		t.Fatalf("Ensure: %v", err)
 	}
 	if !rec.ran("INSERT INTO users") {
@@ -242,5 +245,69 @@ func TestTheCreatedAccountHasNoUsablePassword(t *testing.T) {
 	// password can never arrive through an argument either.
 	if got := rec.argsFor("INSERT INTO users"); len(got) != 2 {
 		t.Errorf("INSERT INTO users bound %d values, want 2 (tenant, display name)", len(got))
+	}
+}
+
+func owner(v int64) *int64 { return &v }
+
+// The owner is half of the ownership chain middleware.ScopeSQL walks. Written on
+// creation, the reseller sees the domain; dropped, the record is unowned and the
+// reseller it was meant for sees nothing.
+func TestTheOwnerIsWrittenWhenTheCustomerIsCreated(t *testing.T) {
+	db, rec := harness(t, 0, 0)
+
+	account, err := Ensure(context.Background(), db, "c_example", "Example", owner(9))
+	if err != nil {
+		t.Fatalf("Ensure: %v", err)
+	}
+	if account.Reused {
+		t.Error("a freshly created customer was reported as reused")
+	}
+	got := rec.argsFor("INSERT INTO customers")
+	if len(got) != 3 {
+		t.Fatalf("INSERT INTO customers bound %d values, want 3 (name, user, owner)", len(got))
+	}
+	if got[2] != int64(9) {
+		t.Errorf("owner_user_id bound as %#v, want 9", got[2])
+	}
+}
+
+// A customer with no reseller belongs directly to an administrator, which is
+// what the startup backfill and every unattributed create produce. Binding
+// anything but NULL there would invent an owner.
+func TestNoOwnerBindsNull(t *testing.T) {
+	db, rec := harness(t, 0, 0)
+
+	if _, err := Ensure(context.Background(), db, "c_example", "Example", nil); err != nil {
+		t.Fatalf("Ensure: %v", err)
+	}
+	got := rec.argsFor("INSERT INTO customers")
+	if len(got) != 3 {
+		t.Fatalf("INSERT INTO customers bound %d values, want 3 (name, user, owner)", len(got))
+	}
+	if got[2] != nil {
+		t.Errorf("owner_user_id bound as %#v, want NULL", got[2])
+	}
+}
+
+// Two long domain names truncate to the same 26-character system user, so a
+// second create can land on a tenant that already has a customer. Rewriting the
+// owner there would move an account in use, so the row is left alone and the
+// caller is told the owner it asked for was not applied.
+func TestAnExistingCustomerKeepsItsOwner(t *testing.T) {
+	db, rec := harness(t, 42, 7)
+
+	account, err := Ensure(context.Background(), db, "c_example", "Example", owner(9))
+	if err != nil {
+		t.Fatalf("Ensure: %v", err)
+	}
+	if !account.Reused {
+		t.Error("the caller was not told the existing customer was reused")
+	}
+	if rec.ran("UPDATE customers") {
+		t.Error("the owner of a customer already in use was rewritten")
+	}
+	if rec.ran("INSERT INTO customers") {
+		t.Error("a second customer record was created")
 	}
 }

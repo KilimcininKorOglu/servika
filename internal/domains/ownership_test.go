@@ -19,6 +19,16 @@ type refRecorder struct {
 	// present decides which ids the database claims to hold.
 	customerExists bool
 	planExists     bool
+	// ownerRole and ownerStatus describe the users row the owner id points at.
+	// An empty ownerRole means no such user.
+	//
+	// They are modelled as a ROW rather than as a "does the lookup succeed"
+	// boolean so the query text decides the answer. A test that answered
+	// regardless of the conditions would keep passing if `role='reseller'` or
+	// `status='active'` were dropped from the SQL, which is exactly the mistake
+	// it is there to catch.
+	ownerRole   string
+	ownerStatus string
 	// failOn makes the matching lookup return a driver error instead of rows.
 	failOn     string
 	statements []string
@@ -71,6 +81,7 @@ func (c *refConn) QueryContext(_ context.Context, query string, _ []driver.Named
 	c.rec.statements = append(c.rec.statements, query)
 	failOn := c.rec.failOn
 	customer, plan := c.rec.customerExists, c.rec.planExists
+	ownerRole, ownerStatus := c.rec.ownerRole, c.rec.ownerStatus
 	c.rec.mu.Unlock()
 
 	if failOn != "" && strings.Contains(query, failOn) {
@@ -81,8 +92,25 @@ func (c *refConn) QueryContext(_ context.Context, query string, _ []driver.Named
 		return &idRow{found: customer}, nil
 	case strings.Contains(query, "FROM service_plans WHERE id=?"):
 		return &idRow{found: plan}, nil
+	case strings.Contains(query, "FROM users WHERE id=?"):
+		return &idRow{found: ownerRowMatches(query, ownerRole, ownerStatus)}, nil
 	}
 	return &idRow{}, nil
+}
+
+// ownerRowMatches applies the query's own conditions to the row the recorder
+// holds, so dropping a condition from the SQL changes what the test sees.
+func ownerRowMatches(query, role, status string) bool {
+	if role == "" {
+		return false // no such user
+	}
+	if strings.Contains(query, "role='reseller'") && role != "reseller" {
+		return false
+	}
+	if strings.Contains(query, "status='active'") && status != "active" {
+		return false
+	}
+	return true
 }
 
 type idRow struct {
@@ -129,7 +157,7 @@ func id(v int64) *int64 { return &v }
 // for never do.
 func TestACustomerThatDoesNotExistIsRefused(t *testing.T) {
 	handlers := refHarness(t, &refRecorder{customerExists: false, planExists: true})
-	reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(1))
+	reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(1), nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -140,7 +168,7 @@ func TestACustomerThatDoesNotExistIsRefused(t *testing.T) {
 
 func TestAPlanThatDoesNotExistIsRefused(t *testing.T) {
 	handlers := refHarness(t, &refRecorder{customerExists: true, planExists: false})
-	reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(99))
+	reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(99), nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -151,7 +179,7 @@ func TestAPlanThatDoesNotExistIsRefused(t *testing.T) {
 
 func TestRealIdsAreAccepted(t *testing.T) {
 	handlers := refHarness(t, &refRecorder{customerExists: true, planExists: true})
-	reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(1))
+	reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(1), nil)
 	if err != nil || reason != "" {
 		t.Errorf("reason = %q, err = %v, want both empty", reason, err)
 	}
@@ -174,7 +202,7 @@ func TestOmittedIdsAreNotLookedUp(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			recorder := &refRecorder{customerExists: true, planExists: true}
 			handlers := refHarness(t, recorder)
-			reason, err := handlers.referencedAccountsExist(context.Background(), tc.customerID, tc.planID)
+			reason, err := handlers.referencedAccountsExist(context.Background(), tc.customerID, tc.planID, nil)
 			if err != nil || reason != "" {
 				t.Fatalf("reason = %q, err = %v, want both empty", reason, err)
 			}
@@ -196,7 +224,7 @@ func TestAFailedLookupIsAnErrorAndNotAVerdict(t *testing.T) {
 	for _, failOn := range []string{"FROM customers WHERE id=?", "FROM service_plans WHERE id=?"} {
 		t.Run(failOn, func(t *testing.T) {
 			handlers := refHarness(t, &refRecorder{customerExists: true, planExists: true, failOn: failOn})
-			reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(1))
+			reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(1), nil)
 			if err == nil {
 				t.Fatalf("a failed lookup returned reason %q and no error", reason)
 			}
@@ -204,5 +232,102 @@ func TestAFailedLookupIsAnErrorAndNotAVerdict(t *testing.T) {
 				t.Errorf("reason = %q, want empty so the caller cannot mistake it for a verdict", reason)
 			}
 		})
+	}
+}
+
+// customers.owner_user_id is one half of the ownership chain. Only an active
+// reseller belongs there: an administrator or a customer would build a chain no
+// role resolves, and a suspended reseller is one an operator deliberately took
+// out of service, so handing it a fresh domain would quietly put it back to
+// work.
+func TestOnlyAnActiveResellerMayOwnANewCustomer(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		role       string
+		status     string
+		wantReason string
+	}{
+		{name: "no such user", wantReason: reasonOwnerNotReseller},
+		{name: "an administrator", role: "admin", status: "active", wantReason: reasonOwnerNotReseller},
+		{name: "a customer", role: "user", status: "active", wantReason: reasonOwnerNotReseller},
+		{name: "a suspended reseller", role: "reseller", status: "suspended", wantReason: reasonOwnerNotReseller},
+		{name: "an active reseller", role: "reseller", status: "active"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			handlers := refHarness(t, &refRecorder{
+				planExists:  true,
+				ownerRole:   tc.role,
+				ownerStatus: tc.status,
+			})
+			reason, err := handlers.referencedAccountsExist(context.Background(), nil, id(1), id(9))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if reason != tc.wantReason {
+				t.Errorf("reason = %q, want %q", reason, tc.wantReason)
+			}
+		})
+	}
+}
+
+// The two fields express different intents: "attach to this existing customer"
+// and "open a new customer under this reseller". An existing customer already
+// has an owner, and moving it is a transfer with its own endpoint, so honouring
+// one and dropping the other would report a placement that never happened.
+func TestAnOwnerAndACustomerTogetherAreRefused(t *testing.T) {
+	recorder := &refRecorder{customerExists: true, planExists: true, ownerRole: "reseller", ownerStatus: "active"}
+	handlers := refHarness(t, recorder)
+	reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(1), id(9))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if reason != reasonOwnerWithCustomer {
+		t.Errorf("reason = %q, want %q", reason, reasonOwnerWithCustomer)
+	}
+	if recorder.saw("FROM users WHERE id=?") {
+		t.Error("the owner was looked up for a request that was refused on its shape alone")
+	}
+}
+
+// No owner is the ordinary case: every create before this field existed, and
+// every one the interface sends unless an administrator picks a reseller.
+func TestAnOmittedOwnerIsNotLookedUp(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		ownerID *int64
+	}{
+		{name: "omitted"},
+		{name: "zero is treated as absent", ownerID: id(0)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			recorder := &refRecorder{customerExists: true, planExists: true}
+			handlers := refHarness(t, recorder)
+			reason, err := handlers.referencedAccountsExist(context.Background(), id(42), id(1), tc.ownerID)
+			if err != nil || reason != "" {
+				t.Fatalf("reason = %q, err = %v, want both empty", reason, err)
+			}
+			if recorder.saw("FROM users WHERE id=?") {
+				t.Error("an owner nobody asked for was looked up")
+			}
+		})
+	}
+}
+
+// Same rule as the other two lookups: a failed query is not evidence the
+// reseller is wrong, and answering "not a reseller" would turn a database
+// hiccup into a refusal the caller cannot tell apart from a genuinely bad id.
+func TestAFailedOwnerLookupIsAnErrorAndNotAVerdict(t *testing.T) {
+	handlers := refHarness(t, &refRecorder{
+		planExists:  true,
+		ownerRole:   "reseller",
+		ownerStatus: "active",
+		failOn:      "FROM users WHERE id=?",
+	})
+	reason, err := handlers.referencedAccountsExist(context.Background(), nil, id(1), id(9))
+	if err == nil {
+		t.Fatalf("a failed lookup returned reason %q and no error", reason)
+	}
+	if reason != "" {
+		t.Errorf("reason = %q, want empty so the caller cannot mistake it for a verdict", reason)
 	}
 }

@@ -83,15 +83,19 @@ func BackfillCustomerAccounts(ctx context.Context, db *sql.DB) {
 // what domain creation calls, so an old tenant and a new one end up with the
 // same chain rather than two definitions of it that can drift apart.
 func migrateTenant(ctx context.Context, db *sql.DB, systemUser, domainName string) error {
-	customerID, err := tenantaccount.Ensure(ctx, db, systemUser, domainName)
+	// A nil owner is what these rows already carry: this backfill repairs tenants
+	// that predate the account model, and nothing in that history names a reseller
+	// to attribute them to. Guessing one would hand old domains to an account that
+	// never had them.
+	account, err := tenantaccount.Ensure(ctx, db, systemUser, domainName, nil)
 	if err != nil {
 		return err
 	}
-	if customerID == 0 {
+	if account.CustomerID == 0 {
 		return nil // no tenant to attach anything to
 	}
 	_, err = db.ExecContext(ctx, `
 		UPDATE domains SET customer_id=?
-		WHERE system_user=? AND customer_id IS NULL`, customerID, systemUser)
+		WHERE system_user=? AND customer_id IS NULL`, account.CustomerID, systemUser)
 	return err
 }

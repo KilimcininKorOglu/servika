@@ -26,6 +26,20 @@ type Customer struct {
 	Created string `json:"created_at"`
 }
 
+// customerListItem is what the list returns: a Customer plus the reseller that
+// owns it.
+//
+// It is a separate type rather than a field on Customer because Customer is the
+// DECODE target of create and update, where the owner is derived from the
+// caller's own identity. A field there would be one a request body could set and
+// the handler would silently drop.
+type customerListItem struct {
+	Customer
+	// OwnerUserID is null for a customer that sits directly under an
+	// administrator. The domain create form groups the list by this value.
+	OwnerUserID *int64 `json:"owner_user_id"`
+}
+
 // Handlers provides customer account HTTP handlers.
 type Handlers struct {
 	DB *sql.DB
@@ -34,7 +48,7 @@ type Handlers struct {
 // ListCustomers returns all customer accounts.
 func (h *Handlers) ListCustomers(w http.ResponseWriter, r *http.Request) {
 	// A reseller sees only its own customers (customers.owner_user_id).
-	q := `SELECT id, name, email, plan_id, status, notes, DATE_FORMAT(created_at,'%Y-%m-%d')
+	q := `SELECT id, name, email, plan_id, status, notes, DATE_FORMAT(created_at,'%Y-%m-%d'), owner_user_id
 	      FROM customers`
 	var arg []any
 	if c := middleware.ClaimsFrom(r); c != nil && c.Role == middleware.RoleReseller {
@@ -49,10 +63,10 @@ func (h *Handlers) ListCustomers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer func() { _ = rows.Close() }()
-	out := make([]Customer, 0)
+	out := make([]customerListItem, 0)
 	for rows.Next() {
-		var cs Customer
-		if err := rows.Scan(&cs.ID, &cs.Name, &cs.Email, &cs.PlanID, &cs.Status, &cs.Notes, &cs.Created); err == nil {
+		var cs customerListItem
+		if err := rows.Scan(&cs.ID, &cs.Name, &cs.Email, &cs.PlanID, &cs.Status, &cs.Notes, &cs.Created, &cs.OwnerUserID); err == nil {
 			out = append(out, cs)
 		}
 	}
