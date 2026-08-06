@@ -103,6 +103,7 @@
     "ssl": "SSL",
     "empty": "暂无域名",
     "noSsl": "无 SSL",
+    "selfSignedSsl": "self-signed",
     "badgeActive": "活动",
     "more_other": "+还有 {{count}} 个域名 →"
   },

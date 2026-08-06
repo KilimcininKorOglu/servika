@@ -13,6 +13,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { restrictToWindowEdges } from '@dnd-kit/modifiers'
 import { api } from '@/lib/api'
+import { sslState } from '@/lib/ssl'
 import { useReportError } from '@/lib/errors'
 import { getCookie, setCookie } from '@/lib/cookies'
 import { useAuth } from '@/store/auth'
@@ -36,7 +37,7 @@ type SystemUsage = {
   quota_reboot_required?: boolean
   quota_fs_unsupported?: boolean
 }
-type Domain = { id: number; domain_name: string; ssl: boolean; status: string }
+type Domain = { id: number; domain_name: string; ssl: boolean; ssl_source?: string; status: string }
 
 // The subset of GET /system/version-check this page renders. The backend polls
 // the release manifest once a day and caches the result; nothing here reaches out.
@@ -519,8 +520,11 @@ export default function HomePage() {
               <Link key={d.id} to={`/subscriptions/${d.id}`}
                 className="-mx-2 flex items-center justify-between rounded-xl px-2 py-2.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <span className="flex min-w-0 items-center gap-2.5">
+                  {/* Amber for the self-signed fail-safe: the padlock is shut,
+                      but the visitor still meets a full-page browser warning. */}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}
-                    className={`h-4 w-4 shrink-0 ${d.ssl ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}`}>
+                    className={`h-4 w-4 shrink-0 ${sslState(d.ssl, d.ssl_source) === 'trusted' ? 'text-emerald-500'
+                      : sslState(d.ssl, d.ssl_source) === 'selfSigned' ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}>
                     {d.ssl
                       ? <><rect x="5" y="11" width="14" height="9" rx="2" /><path strokeLinecap="round" d="M8 11V8a4 4 0 0 1 8 0v3" /></>
                       : <><rect x="5" y="11" width="14" height="9" rx="2" /><path strokeLinecap="round" d="M8 11V6a4 4 0 0 1 7-2.6" /></>}
@@ -528,7 +532,8 @@ export default function HomePage() {
                   <span className="truncate font-mono text-[13px] text-slate-700 dark:text-slate-200">{d.domain_name}</span>
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
-                  {!d.ssl && <Badge color="amber" text={t('domains.noSsl')} />}
+                  {sslState(d.ssl, d.ssl_source) === 'none' && <Badge color="amber" text={t('domains.noSsl')} />}
+                  {sslState(d.ssl, d.ssl_source) === 'selfSigned' && <Badge color="amber" text={t('domains.selfSignedSsl')} />}
                   <Badge color={d.status === 'active' ? 'emerald' : 'slate'} text={d.status === 'active' ? t('domains.badgeActive') : d.status} />
                 </span>
               </Link>

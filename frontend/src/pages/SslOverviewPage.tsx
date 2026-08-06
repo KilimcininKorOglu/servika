@@ -3,6 +3,7 @@
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import OverviewList, { type Column, type Badge } from '@/components/OverviewList'
+import { sslState } from '@/lib/ssl'
 
 type Row = {
   domain_id: number
@@ -10,6 +11,7 @@ type Row = {
   status: string
   ssl_enabled: boolean
   ssl_expiry: string
+  ssl_source?: string
   remaining_days: number | null
 }
 
@@ -39,9 +41,19 @@ export default function SslOverviewPage() {
     },
     {
       title: t('column.ssl'),
-      cell: (s) => (s.ssl_enabled
-        ? <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">{t('ssl.enabled')}</span>
-        : <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">{t('ssl.none')}</span>),
+      // A self-signed certificate is not a lesser kind of protected: the visitor
+      // meets a full-page browser warning, so the site is effectively shut. It
+      // also sorts here as if it expired in 14 days, since by its own dates it
+      // is a year out and would otherwise sit at the bottom of this screen.
+      cell: (s) => {
+        const state = sslState(s.ssl_enabled, s.ssl_source)
+        if (state === 'selfSigned') {
+          return <span title={t('ssl.selfSignedHint')} className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">{t('ssl.selfSigned')}</span>
+        }
+        return state === 'trusted'
+          ? <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">{t('ssl.enabled')}</span>
+          : <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">{t('ssl.none')}</span>
+      },
     },
     { title: t('column.expiry'), cell: (s) => (s.ssl_expiry || <span className="text-slate-400">—</span>) },
     { title: t('column.remaining'), cell: (s) => <RemainingBadge days={s.remaining_days} /> },

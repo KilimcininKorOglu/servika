@@ -111,6 +111,7 @@
     "ssl": "SSL",
     "empty": "Zatím žádné domény",
     "noSsl": "Bez SSL",
+    "selfSignedSsl": "Self-signed",
     "badgeActive": "Aktivní",
     "more_one": "+{{count}} další doména →",
     "more_few": "+{{count}} další domény →",

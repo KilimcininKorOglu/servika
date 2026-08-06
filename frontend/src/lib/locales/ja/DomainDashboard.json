@@ -30,6 +30,8 @@
     "label": "SSL/TLS 証明書",
     "expires": "有効期限: {{expiry}}",
     "letsEncrypt": "Let's Encrypt",
+    "selfSigned": "self-signed 証明書",
+    "selfSignedWarning": "訪問者にセキュリティ警告が表示されます",
     "warning": "ドメインは保護されていません"
   },
   "passwordProtection": { "label": "パスワード保護ディレクトリ", "desc": ".htpasswd" },

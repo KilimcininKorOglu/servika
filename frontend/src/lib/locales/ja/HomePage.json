@@ -103,6 +103,7 @@
     "ssl": "SSL",
     "empty": "まだドメインがありません",
     "noSsl": "SSL なし",
+    "selfSignedSsl": "self-signed",
     "badgeActive": "有効",
     "more_other": "他 {{count}} 件のドメイン →"
   },

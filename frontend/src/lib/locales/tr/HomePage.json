@@ -107,6 +107,7 @@
     "ssl": "SSL",
     "empty": "Henüz alan adı yok",
     "noSsl": "SSL yok",
+    "selfSignedSsl": "Self-signed",
     "badgeActive": "Etkin",
     "more_one": "+{{count}} alan adı daha →",
     "more_other": "+{{count}} alan adı daha →"

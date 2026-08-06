@@ -30,6 +30,8 @@
     "label": "Certifikáty SSL/TLS",
     "expires": "Vyprší: {{expiry}}",
     "letsEncrypt": "Let's Encrypt",
+    "selfSigned": "Self-signed certifikát",
+    "selfSignedWarning": "Návštěvníci vidí bezpečnostní varování",
     "warning": "Doména není chráněna"
   },
   "passwordProtection": { "label": "Heslem chráněné adresáře", "desc": ".htpasswd" },

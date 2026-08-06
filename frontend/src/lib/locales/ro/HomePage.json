@@ -111,6 +111,7 @@
     "ssl": "SSL",
     "empty": "Încă nu există domenii",
     "noSsl": "Fără SSL",
+    "selfSignedSsl": "Self-signed",
     "badgeActive": "Activ",
     "more_one": "+{{count}} domeniu în plus →",
     "more_few": "+{{count}} domenii în plus →",

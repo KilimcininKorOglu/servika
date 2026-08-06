@@ -11,6 +11,8 @@
   },
   "ssl": {
     "enabled": "Etkin",
+    "selfSigned": "Self-signed",
+    "selfSignedHint": "Self-signed sertifika: ziyaretçiler tarayıcıda güvenlik uyarısı görür. SSL sayfasından Let's Encrypt alın.",
     "none": "Yok"
   },
   "status": {

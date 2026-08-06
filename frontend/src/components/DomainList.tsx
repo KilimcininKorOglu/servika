@@ -8,6 +8,7 @@ export type Domain = {
   php_version: string
   ssl: boolean
   ssl_expiry?: string
+  ssl_source?: string
   status: 'active' | 'passive' | string
   suspended?: boolean
   system_user: string

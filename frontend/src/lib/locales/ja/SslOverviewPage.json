@@ -11,6 +11,8 @@
   },
   "ssl": {
     "enabled": "有効",
+    "selfSigned": "self-signed",
+    "selfSignedHint": "self-signed 証明書です。訪問者にはブラウザのセキュリティ警告が表示されます。SSL ページから Let's Encrypt を発行してください。",
     "none": "なし"
   },
   "status": {

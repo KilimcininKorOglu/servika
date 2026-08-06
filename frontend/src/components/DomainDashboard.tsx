@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import type { Domain } from './DomainList'
+import { sslState } from '@/lib/ssl'
 import ToolCard from './ToolCard'
 
 const ICONS = {
@@ -81,13 +82,22 @@ export default function DomainDashboard({ domain }: { domain: Domain }) {
       </Group>
 
       <Group title={t('groups.security')}>
+        {/* The self-signed fail-safe gets its own state rather than the green
+            a real CA earns: it encrypts and still leaves every visitor on a
+            browser warning page, so it carries a warning of its own here. */}
         <ToolCard
           label={t('ssl.label')}
-          description={domain.ssl ? t('ssl.expires', { expiry: domain.ssl_expiry || '—' }) : t('ssl.letsEncrypt')}
+          description={sslState(domain.ssl, domain.ssl_source) === 'trusted'
+            ? t('ssl.expires', { expiry: domain.ssl_expiry || '—' })
+            : sslState(domain.ssl, domain.ssl_source) === 'selfSigned'
+              ? t('ssl.selfSigned')
+              : t('ssl.letsEncrypt')}
           icon={ICONS.ssl}
-          color={domain.ssl ? 'emerald' : 'rose'}
+          color={sslState(domain.ssl, domain.ssl_source) === 'trusted' ? 'emerald'
+            : sslState(domain.ssl, domain.ssl_source) === 'selfSigned' ? 'amber' : 'rose'}
           phase="F7"
-          warning={!domain.ssl ? t('ssl.warning') : undefined}
+          warning={sslState(domain.ssl, domain.ssl_source) === 'none' ? t('ssl.warning')
+            : sslState(domain.ssl, domain.ssl_source) === 'selfSigned' ? t('ssl.selfSignedWarning') : undefined}
           onClick={navigateTo('ssl')}
         />
         <ToolCard label={t('passwordProtection.label')} description={t('passwordProtection.desc')}       icon={ICONS.lock}      color="amber" phase="F7" onClick={navigateTo('password-protection')} />

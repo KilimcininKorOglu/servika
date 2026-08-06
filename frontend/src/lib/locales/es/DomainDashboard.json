@@ -30,6 +30,8 @@
     "label": "Certificados SSL/TLS",
     "expires": "Vence: {{expiry}}",
     "letsEncrypt": "Let's Encrypt",
+    "selfSigned": "Certificado autofirmado",
+    "selfSignedWarning": "Los visitantes ven una advertencia de seguridad",
     "warning": "El dominio no está protegido"
   },
   "passwordProtection": { "label": "Directorios con contraseña", "desc": ".htpasswd" },

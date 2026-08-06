@@ -107,6 +107,7 @@
     "ssl": "SSL",
     "empty": "Nenhum domínio ainda",
     "noSsl": "Sem SSL",
+    "selfSignedSsl": "Self-signed",
     "badgeActive": "Ativo",
     "more_one": "+{{count}} domínio a mais →",
     "more_other": "+{{count}} domínios a mais →"

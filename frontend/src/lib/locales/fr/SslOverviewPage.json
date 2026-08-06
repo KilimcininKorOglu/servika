@@ -11,6 +11,8 @@
   },
   "ssl": {
     "enabled": "Activé",
+    "selfSigned": "Auto-signé",
+    "selfSignedHint": "Certificat auto-signé : les visiteurs reçoivent un avertissement de sécurité du navigateur. Émettez un certificat Let's Encrypt depuis la page SSL.",
     "none": "Aucun"
   },
   "status": {

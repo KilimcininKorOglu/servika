@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
+import { sslState } from '@/lib/ssl'
 import Breadcrumb from '@/components/Breadcrumb'
 import EmptyState from '@/components/EmptyState'
 import {
@@ -21,7 +22,7 @@ type Domain = {
   size_kb: number; traffic_kb: number; status: string; suspended?: boolean
   php_version?: string; is_demo?: boolean
   created_at?: string; plan_id?: number; plan_name?: string
-  ssl?: boolean; ssl_expiry?: string; reseller_name?: string
+  ssl?: boolean; ssl_expiry?: string; ssl_source?: string; reseller_name?: string
 }
 type Customer = { id: number; name: string }
 type Subdomain = {
@@ -522,7 +523,11 @@ export default function DomainsPage() {
                         </Link>
                         {' '}
                         <a href={`https://${d.domain_name}`} target="_blank" rel="noopener noreferrer" title={t('openInNewTab')} className="text-slate-400 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 text-xs">↗</a>
-                        {d.ssl && <span className="ml-1.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded" title={d.ssl_expiry ? t('sslExpires', { date: d.ssl_expiry }) : t('sslActive')}>SSL</span>}
+                        {/* Amber, not green, for the self-signed fail-safe: it
+                            encrypts and still leaves the visitor on a full-page
+                            browser warning, so the site is effectively shut. */}
+                        {sslState(d.ssl, d.ssl_source) === 'trusted' && <span className="ml-1.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded" title={d.ssl_expiry ? t('sslExpires', { date: d.ssl_expiry }) : t('sslActive')}>SSL</span>}
+                        {sslState(d.ssl, d.ssl_source) === 'selfSigned' && <span className="ml-1.5 text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded" title={t('sslSelfSigned')}>SSL</span>}
                         {d.is_demo && <span className="ml-1.5 text-[10px] uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">{t('demoBadge')}</span>}
                       </div>
                     </td>

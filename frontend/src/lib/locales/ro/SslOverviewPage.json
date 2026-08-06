@@ -11,6 +11,8 @@
   },
   "ssl": {
     "enabled": "Activat",
+    "selfSigned": "Self-signed",
+    "selfSignedHint": "Certificat self-signed: vizitatorii primesc un avertisment de securitate în browser. Emiteți unul Let's Encrypt din pagina SSL.",
     "none": "Niciunul"
   },
   "status": {

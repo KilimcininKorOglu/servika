@@ -30,6 +30,8 @@
     "label": "SSL/TLS Sertifikaları",
     "expires": "Bitiş: {{expiry}}",
     "letsEncrypt": "Let's Encrypt",
+    "selfSigned": "Self-signed sertifika",
+    "selfSignedWarning": "Ziyaretçiler güvenlik uyarısı görüyor",
     "warning": "Alan adı korumalı değil"
   },
   "passwordProtection": { "label": "Parola Korumalı Dizinler", "desc": ".htpasswd" },

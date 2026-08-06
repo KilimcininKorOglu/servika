@@ -11,6 +11,8 @@
   },
   "ssl": {
     "enabled": "Povoleno",
+    "selfSigned": "Self-signed",
+    "selfSignedHint": "Self-signed certifikát: návštěvníci dostanou v prohlížeči bezpečnostní varování. Vydejte certifikát Let's Encrypt na stránce SSL.",
     "none": "Žádné"
   },
   "status": {

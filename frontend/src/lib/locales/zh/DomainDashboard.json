@@ -30,6 +30,8 @@
     "label": "SSL/TLS 证书",
     "expires": "到期时间：{{expiry}}",
     "letsEncrypt": "Let's Encrypt",
+    "selfSigned": "self-signed 证书",
+    "selfSignedWarning": "访问者会看到安全警告",
     "warning": "域名未受保护"
   },
   "passwordProtection": { "label": "密码保护目录", "desc": ".htpasswd" },

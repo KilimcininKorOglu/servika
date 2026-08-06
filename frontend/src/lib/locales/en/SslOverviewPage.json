@@ -11,6 +11,8 @@
   },
   "ssl": {
     "enabled": "Enabled",
+    "selfSigned": "Self-signed",
+    "selfSignedHint": "Self-signed certificate: visitors get a browser security warning. Issue a Let's Encrypt one from the SSL page.",
     "none": "None"
   },
   "status": {

@@ -30,6 +30,8 @@
     "label": "Certificate SSL/TLS",
     "expires": "Expiră: {{expiry}}",
     "letsEncrypt": "Let's Encrypt",
+    "selfSigned": "Certificat self-signed",
+    "selfSignedWarning": "Vizitatorii văd un avertisment de securitate",
     "warning": "Domeniul nu este protejat"
   },
   "passwordProtection": { "label": "Directoare protejate cu parolă", "desc": ".htpasswd" },
