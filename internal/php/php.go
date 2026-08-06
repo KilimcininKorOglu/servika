@@ -37,11 +37,12 @@ type Version struct {
 	Description string `json:"description"`
 }
 
-// InstalledVersions lists the statically supported PHP runtimes.
+// InstalledVersions lists the statically supported PHP runtimes. They carry no
+// description for the same reason Versions no longer builds one.
 var InstalledVersions = []Version{
-	{Version: "8.3", PoolDir: "/etc/php-fpm.d", SockDir: "/run/php-fpm", Service: "php-fpm", Description: "AppStream · OPcache"},
-	{Version: "8.2", PoolDir: "/etc/opt/remi/php82/php-fpm.d", SockDir: "/var/opt/remi/php82/run/php-fpm", Service: "php82-php-fpm", Description: "Remi · Stable"},
-	{Version: "7.4", PoolDir: "/etc/opt/remi/php74/php-fpm.d", SockDir: "/var/opt/remi/php74/run/php-fpm", Service: "php74-php-fpm", Description: "Remi · Legacy"},
+	{Version: "8.3", PoolDir: "/etc/php-fpm.d", SockDir: "/run/php-fpm", Service: "php-fpm"},
+	{Version: "8.2", PoolDir: "/etc/opt/remi/php82/php-fpm.d", SockDir: "/var/opt/remi/php82/run/php-fpm", Service: "php82-php-fpm"},
+	{Version: "7.4", PoolDir: "/etc/opt/remi/php74/php-fpm.d", SockDir: "/var/opt/remi/php74/run/php-fpm", Service: "php74-php-fpm"},
 }
 
 func versionInfo(version string) (Version, bool) {
@@ -396,31 +397,71 @@ type Handlers struct {
 }
 
 // Versions returns dynamically discovered installed versions.
-func (h *Handlers) Versions(w http.ResponseWriter, r *http.Request) {
-	all := phpversion.AllVersions()
-	installed := []Version{}
+// loadedRuntimes returns the runtimes that are actually installed, one entry per
+// version number. Discovery reports the same version once per repository, so
+// without the dedupe a version installed from two sources would be offered twice.
+func loadedRuntimes(all []phpversion.Version) []phpversion.Version {
+	unique := []phpversion.Version{}
 	seen := map[string]bool{}
-	for _, s := range all {
-		if !s.Loaded {
+	for _, discovered := range all {
+		if !discovered.Loaded || seen[discovered.Version] {
 			continue
 		}
-		if seen[s.Version] {
-			continue
-		}
-		seen[s.Version] = true
-		description := "Remi · " + s.Description
-		if s.Resource == "appstream" {
-			description = "AppStream · OPcache"
-		}
-		installed = append(installed, Version{
-			Version:     s.Version,
-			PoolDir:     s.PoolDir,
-			SockDir:     s.SockDir,
-			Service:     s.Service,
-			Description: description,
+		seen[discovered.Version] = true
+		unique = append(unique, discovered)
+	}
+	return unique
+}
+
+// sourceLabel names the repository a runtime came from, and nothing else.
+//
+// It is deliberately this short. The label it replaced on the create form read
+// "Remi · Remi modular, development/test/legacy", which repeated the word Remi
+// and described current 8.4 and 8.5 as legacy, while the AppStream one promised
+// OPcache that the base package set does not install.
+func sourceLabel(resource string) string {
+	if resource == "appstream" {
+		return "AppStream"
+	}
+	return "Remi"
+}
+
+// runtimeChoices lists the installed runtimes WITHOUT a source label. It feeds
+// the domain create form, where the version number is the whole decision and any
+// label can only mislead. The source is shown on the PHP Versions screen, which
+// already renders it as its own badge.
+func runtimeChoices(all []phpversion.Version) []Version {
+	choices := []Version{}
+	for _, runtime := range loadedRuntimes(all) {
+		choices = append(choices, Version{
+			Version: runtime.Version,
+			PoolDir: runtime.PoolDir,
+			SockDir: runtime.SockDir,
+			Service: runtime.Service,
 		})
 	}
-	httpx.WriteJSON(w, http.StatusOK, installed)
+	return choices
+}
+
+// runtimeChoicesWithSource lists the installed runtimes WITH their source. It
+// feeds the per-domain PHP screen, where the label is the only thing that says
+// where a version came from.
+func runtimeChoicesWithSource(all []phpversion.Version) []Version {
+	choices := []Version{}
+	for _, runtime := range loadedRuntimes(all) {
+		choices = append(choices, Version{
+			Version:     runtime.Version,
+			PoolDir:     runtime.PoolDir,
+			SockDir:     runtime.SockDir,
+			Service:     runtime.Service,
+			Description: sourceLabel(runtime.Resource),
+		})
+	}
+	return choices
+}
+
+func (h *Handlers) Versions(w http.ResponseWriter, r *http.Request) {
+	httpx.WriteJSON(w, http.StatusOK, runtimeChoices(phpversion.AllVersions()))
 }
 
 // scope resolves the target of a settings request. The route carries an optional
@@ -468,23 +509,7 @@ func (h *Handlers) GetSettings(w http.ResponseWriter, r *http.Request) {
 		"subdomain_id": sid,
 		"settings":     s,
 		"modules":      modules,
-		"versions": func() []Version {
-			all := phpversion.AllVersions()
-			installed := []Version{}
-			seen := map[string]bool{}
-			for _, discoveredVersion := range all {
-				if !discoveredVersion.Loaded || seen[discoveredVersion.Version] {
-					continue
-				}
-				seen[discoveredVersion.Version] = true
-				description := "Remi"
-				if discoveredVersion.Resource == "appstream" {
-					description = "AppStream"
-				}
-				installed = append(installed, Version{Version: discoveredVersion.Version, PoolDir: discoveredVersion.PoolDir, SockDir: discoveredVersion.SockDir, Service: discoveredVersion.Service, Description: description})
-			}
-			return installed
-		}(),
+		"versions":     runtimeChoicesWithSource(phpversion.AllVersions()),
 	})
 }
 

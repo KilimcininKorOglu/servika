@@ -30,7 +30,7 @@ type Subdomain = {
   php_version: string; docroot: string; created_at: string
 }
 type Plan = { id: number; name: string; disk_quota_mb?: number }
-type PHPVer = { version: string; description?: string }
+type PHPVer = { version: string }
 type SiteType = 'php' | 'wordpress' | 'static'
 type CreateResult = {
   id: number
@@ -622,7 +622,7 @@ export default function DomainsPage() {
                   {phpVersions.length === 0
                     ? <option value="8.3">{t('createModal.phpDefault')}</option>
                     : phpVersions.map(p => (
-                        <option key={p.version} value={p.version}>PHP {p.version}{p.description ? `, ${p.description}` : ''}</option>
+                        <option key={p.version} value={p.version}>PHP {p.version}</option>
                       ))
                   }
                 </select>
