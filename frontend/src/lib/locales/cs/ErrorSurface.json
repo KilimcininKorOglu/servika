@@ -1,0 +1,28 @@
+{
+  "title": "Nepodařilo se načíst: {{context}}",
+  "dismiss": "Zavřít",
+  "contexts": {
+    "subscription": "podrobnosti předplatného",
+    "domains": "seznam domén",
+    "plans": "servisní plány",
+    "customers": "zákazníci",
+    "phpVersions": "verze PHP",
+    "diskUsage": "využití disku",
+    "soa": "záznam SOA v DNS",
+    "dnssec": "stav DNSSEC",
+    "nameservers": "jmenné servery",
+    "auditActions": "akce auditního protokolu",
+    "backupJobs": "úlohy zálohování",
+    "backupSummary": "souhrn záloh",
+    "serverUsage": "využití serveru",
+    "processes": "seznam procesů",
+    "versionInfo": "informace o verzi",
+    "errorLog": "protokol chyb",
+    "gitRepository": "repozitář Git",
+    "githubConnection": "připojení k GitHubu",
+    "spamSettings": "nastavení spamu",
+    "languagePreference": "předvolba jazyka",
+    "updateStatus": "stav aktualizace panelu",
+    "optimizeStatus": "stav optimalizace"
+  }
+}

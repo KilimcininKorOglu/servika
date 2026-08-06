@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
 import ListToolbar from '@/components/ListToolbar'
@@ -34,6 +35,7 @@ type Version = { version: string; description?: string }
 
 export default function ServicePlansPage() {
   const { t } = useTranslation('ServicePlansPage')
+  const report = useReportError()
   const isAdmin = useAuth((s) => s.username?.role) === 'admin'
   const [items, setItems] = useState<Plan[]>([])
   const [versions, setVersions] = useState<Version[]>([])
@@ -60,8 +62,8 @@ export default function ServicePlansPage() {
 
   useEffect(() => { fetchPlans() }, [fetchPlans])
   useEffect(() => {
-    api.get<Version[]>('/php/versions').then(response => setVersions(response.data || [])).catch(() => {})
-  }, [])
+    api.get<Version[]>('/php/versions').then(response => setVersions(response.data || [])).catch(report('phpVersions'))
+  }, [report])
 
   async function remove() {
     if (!planToDelete) return

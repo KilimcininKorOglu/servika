@@ -98,6 +98,8 @@ function normalize(s: string): string {
 
 function copyToClipboard(text: string): boolean {
   if (navigator.clipboard && window.isSecureContext) {
+    // Silent on purpose: the caller falls back to a manual copy prompt when
+    // this returns false, so a rejected clipboard write is already handled.
     navigator.clipboard.writeText(text).catch(() => {})
     return true
   }
@@ -259,6 +261,8 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
     if (isCustomer) return
     api.get<{ server_ipv4: string }>('/system/panel-domain')
       .then((response) => setServerIp(response.data.server_ipv4 || null))
+      // Silent on purpose: a reseller still gets a 403 here, and the server IP
+      // is a convenience line in the menu, not something the user asked to see.
       .catch(() => {})
   }, [isCustomer])
 

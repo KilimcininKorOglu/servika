@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import EmptyState from '@/components/EmptyState'
 
@@ -78,6 +79,7 @@ function actionStyle(action: string): ActionStyle {
 
 export default function AuditLogPage() {
   const { t } = useTranslation('AuditLogPage')
+  const report = useReportError()
   const [list, setList] = useState<Entry[]>([])
   const [actions, setActions] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -110,8 +112,8 @@ export default function AuditLogPage() {
   useEffect(() => {
     api.get<string[]>('/audit/actions')
       .then((r) => setActions(Array.isArray(r.data) ? r.data : []))
-      .catch(() => {})
-  }, [])
+      .catch(report('auditActions'))
+  }, [report])
 
   // Search is client-side: the server filters by action/result, free text (IP,
   // target, username) is matched over the already-fetched page.

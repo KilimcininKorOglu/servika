@@ -1,0 +1,28 @@
+{
+  "title": "Could not load: {{context}}",
+  "dismiss": "Dismiss",
+  "contexts": {
+    "subscription": "subscription details",
+    "domains": "domain list",
+    "plans": "service plans",
+    "customers": "customers",
+    "phpVersions": "PHP versions",
+    "diskUsage": "disk usage",
+    "soa": "DNS SOA record",
+    "dnssec": "DNSSEC status",
+    "nameservers": "nameservers",
+    "auditActions": "audit log actions",
+    "backupJobs": "backup jobs",
+    "backupSummary": "backup summary",
+    "serverUsage": "server usage",
+    "processes": "process list",
+    "versionInfo": "version information",
+    "errorLog": "error log",
+    "gitRepository": "Git repository",
+    "githubConnection": "GitHub connection",
+    "spamSettings": "spam settings",
+    "languagePreference": "language preference",
+    "updateStatus": "panel update status",
+    "optimizeStatus": "optimization status"
+  }
+}

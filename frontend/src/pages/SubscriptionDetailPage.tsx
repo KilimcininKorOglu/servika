@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import DomainResourceCard from '@/components/DomainResourceCard'
 import DomainDashboard from "@/components/DomainDashboard"
@@ -34,6 +35,7 @@ const ICONS = {
 
 export default function SubscriptionDetailPage() {
   const { t } = useTranslation('SubscriptionDetailPage')
+  const report = useReportError()
   const { id } = useParams()
   const navigate = useNavigate()
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -57,8 +59,8 @@ export default function SubscriptionDetailPage() {
     loadDomain()
     api.get<{ disk_mb: { usage: number } }>(`/domains/${id}/resources`)
       .then(r => setDiskMB(r.data.disk_mb.usage))
-      .catch(() => {})
-  }, [id, loadDomain])
+      .catch(report('diskUsage'))
+  }, [id, loadDomain, report])
 
   async function toggleSuspension() {
     if (!id || !domain) return
@@ -177,7 +179,7 @@ export default function SubscriptionDetailPage() {
                 if (!id) return;
                 api.get<{ disk_mb: { usage: number } }>(`/domains/${id}/resources`)
                   .then(r => setDiskMB(r.data.disk_mb.usage))
-                  .catch(() => {});
+                  .catch(report('diskUsage'));
                 loadDomain();
               }} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300" title={t('stats.refresh')}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>

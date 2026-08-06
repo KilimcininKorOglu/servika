@@ -1,0 +1,28 @@
+{
+  "title": "Nu s-a putut încărca: {{context}}",
+  "dismiss": "Închide",
+  "contexts": {
+    "subscription": "detaliile abonamentului",
+    "domains": "lista de domenii",
+    "plans": "planurile de servicii",
+    "customers": "clienți",
+    "phpVersions": "versiunile PHP",
+    "diskUsage": "utilizarea discului",
+    "soa": "înregistrarea SOA din DNS",
+    "dnssec": "starea DNSSEC",
+    "nameservers": "servere de nume",
+    "auditActions": "acțiunile din jurnalul de audit",
+    "backupJobs": "sarcinile de backup",
+    "backupSummary": "rezumatul backupurilor",
+    "serverUsage": "utilizarea serverului",
+    "processes": "lista de procese",
+    "versionInfo": "informațiile despre versiune",
+    "errorLog": "jurnalul de erori",
+    "gitRepository": "depozitul Git",
+    "githubConnection": "conexiunea GitHub",
+    "spamSettings": "setările antispam",
+    "languagePreference": "preferința de limbă",
+    "updateStatus": "starea actualizării panoului",
+    "optimizeStatus": "starea optimizării"
+  }
+}

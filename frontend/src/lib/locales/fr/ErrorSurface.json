@@ -1,0 +1,28 @@
+{
+  "title": "Chargement impossible : {{context}}",
+  "dismiss": "Fermer",
+  "contexts": {
+    "subscription": "détails de l'abonnement",
+    "domains": "liste des domaines",
+    "plans": "forfaits de service",
+    "customers": "clients",
+    "phpVersions": "versions de PHP",
+    "diskUsage": "utilisation du disque",
+    "soa": "enregistrement SOA DNS",
+    "dnssec": "état DNSSEC",
+    "nameservers": "serveurs de noms",
+    "auditActions": "actions du journal d'audit",
+    "backupJobs": "tâches de sauvegarde",
+    "backupSummary": "résumé des sauvegardes",
+    "serverUsage": "utilisation du serveur",
+    "processes": "liste des processus",
+    "versionInfo": "informations de version",
+    "errorLog": "journal d'erreurs",
+    "gitRepository": "dépôt Git",
+    "githubConnection": "connexion GitHub",
+    "spamSettings": "paramètres antispam",
+    "languagePreference": "préférence de langue",
+    "updateStatus": "état de mise à jour du panneau",
+    "optimizeStatus": "état de l'optimisation"
+  }
+}

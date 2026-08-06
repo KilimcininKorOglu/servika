@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import Modal from '@/components/Modal'
@@ -24,6 +25,7 @@ type DB = {
 
 export default function DomainDatabasesPage() {
   const { t } = useTranslation('DomainDatabasesPage')
+  const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [databases, setDatabases] = useState<DB[]>([])
@@ -74,9 +76,9 @@ export default function DomainDatabasesPage() {
   }
 
   useEffect(() => {
-    if (id) api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
+    if (id) api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(report('subscription'))
     fetchDatabases()
-  }, [id, fetchDatabases])
+  }, [id, fetchDatabases, report])
 
   async function remove() {
     if (!databaseToDelete) return

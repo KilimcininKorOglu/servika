@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 
 type DomainSummary = { id: number; domain_name: string }
 
@@ -14,6 +15,7 @@ type DomainSummary = { id: number; domain_name: string }
  */
 export default function DomainPicker({ activeID }: { activeID: string }) {
   const { t } = useTranslation('DomainPicker')
+  const report = useReportError()
   const [domains, setDomains] = useState<DomainSummary[]>([])
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -25,8 +27,8 @@ export default function DomainPicker({ activeID }: { activeID: string }) {
   useEffect(() => {
     api.get<DomainSummary[]>('/domains')
       .then((r) => setDomains(Array.isArray(r.data) ? r.data : []))
-      .catch(() => {})
-  }, [])
+      .catch(report('domains'))
+  }, [report])
 
   // Close on outside click and Escape.
   useEffect(() => {

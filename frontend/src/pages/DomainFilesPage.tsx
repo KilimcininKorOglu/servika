@@ -3,6 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
 import { api, apiError as apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import DirTree from '@/components/DirTree'
 import CodeEditor from '@/components/CodeEditor'
@@ -41,6 +42,7 @@ const ARCHIVE_RX = /\.(zip|rar|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|gz)$/i
 
 export default function DomainFilesPage() {
   const { t } = useTranslation('DomainFilesPage')
+  const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [path, setPath] = useState<string>('/public_html')
@@ -79,8 +81,8 @@ export default function DomainFilesPage() {
 
   useEffect(() => {
     if (!id) return
-    api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
-  }, [id])
+    api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(report('subscription'))
+  }, [id, report])
 
   // Split so the directory effect never writes state synchronously: fetchEntries
   // settles only through promise callbacks, and scan() adds the spinner for the

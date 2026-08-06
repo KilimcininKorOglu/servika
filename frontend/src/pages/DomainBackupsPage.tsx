@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import RestoreDialog, { type RestorePayload } from '@/components/RestoreDialog'
@@ -30,6 +31,7 @@ type Destination = {
 
 export default function DomainBackupsPage() {
   const { t } = useTranslation('DomainBackupsPage')
+  const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [backups, setBackups] = useState<Backup[]>([])
@@ -132,9 +134,9 @@ export default function DomainBackupsPage() {
     }
   }
   useEffect(() => {
-    if (id) api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
+    if (id) api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(report('subscription'))
     fetchBackups()
-  }, [id, fetchBackups])
+  }, [id, fetchBackups, report])
 
   async function saveSchedule(newSchedule: Schedule) {
     setScheduleSaving(true); setError(null); setSuccess(null)

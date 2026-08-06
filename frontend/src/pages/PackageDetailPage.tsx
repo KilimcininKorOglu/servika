@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
   responsiveTableActionCellClass,
@@ -33,6 +34,7 @@ type Version = { version: string; description?: string }
 
 export default function PackageDetailPage() {
   const { t } = useTranslation('PackageDetailPage')
+  const report = useReportError()
   const { id } = useParams()
   const [plan, setPlan] = useState<Plan | null>(null)
   const [domainCount, setDomainCount] = useState(0)
@@ -69,8 +71,8 @@ export default function PackageDetailPage() {
 
   useEffect(() => { fetchPlan() }, [fetchPlan])
   useEffect(() => {
-    api.get<Version[]>('/php/versions').then(response => setVersions(response.data || [])).catch(() => {})
-  }, [])
+    api.get<Version[]>('/php/versions').then(response => setVersions(response.data || [])).catch(report('phpVersions'))
+  }, [report])
 
   async function save() {
     if (!plan) return

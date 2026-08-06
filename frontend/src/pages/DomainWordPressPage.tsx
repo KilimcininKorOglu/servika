@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useResourceScope } from '@/lib/scope'
 
@@ -13,6 +14,7 @@ type User = { ID: number; user_login: string; user_email: string; display_name: 
 
 export default function DomainWordPressPage() {
   const { t } = useTranslation('DomainWordPressPage')
+  const report = useReportError()
   const { id, base, isSubdomain, backHref, backLabel } = useResourceScope()
   const [items, setItems] = useState<Install[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,8 +33,8 @@ export default function DomainWordPressPage() {
     if (!id) return
     // A subdomain scope names itself by FQDN so the header does not show the parent domain.
     api.get<{ domain_name?: string; fqdn?: string }>(isSubdomain ? base : `/domains/${id}`)
-      .then(r => setDomainName(r.data.fqdn || r.data.domain_name || '')).catch(() => {})
-  }, [id, base, isSubdomain])
+      .then(r => setDomainName(r.data.fqdn || r.data.domain_name || '')).catch(report('subscription'))
+  }, [id, base, isSubdomain, report])
 
   // Split so the mount effect never writes state synchronously: fetchInstalls
   // settles only through promise callbacks, and list() adds the spinner for the

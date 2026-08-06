@@ -1,0 +1,28 @@
+{
+  "title": "読み込めませんでした: {{context}}",
+  "dismiss": "閉じる",
+  "contexts": {
+    "subscription": "サブスクリプションの詳細",
+    "domains": "ドメイン一覧",
+    "plans": "サービスプラン",
+    "customers": "顧客",
+    "phpVersions": "PHP バージョン",
+    "diskUsage": "ディスク使用量",
+    "soa": "DNS SOA レコード",
+    "dnssec": "DNSSEC の状態",
+    "nameservers": "ネームサーバー",
+    "auditActions": "監査ログの操作",
+    "backupJobs": "バックアップジョブ",
+    "backupSummary": "バックアップの概要",
+    "serverUsage": "サーバー使用状況",
+    "processes": "プロセス一覧",
+    "versionInfo": "バージョン情報",
+    "errorLog": "エラーログ",
+    "gitRepository": "Git リポジトリ",
+    "githubConnection": "GitHub 接続",
+    "spamSettings": "スパム設定",
+    "languagePreference": "言語設定",
+    "updateStatus": "パネル更新の状態",
+    "optimizeStatus": "最適化の状態"
+  }
+}

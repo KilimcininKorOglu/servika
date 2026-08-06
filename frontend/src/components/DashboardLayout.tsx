@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import MobileNavBar from './MobileNavBar'
+import ErrorSurface from './ErrorSurface'
 import TopBar from './TopBar'
 import DomainPicker from './DomainPicker'
 import { api } from '@/lib/api'
@@ -222,6 +223,9 @@ export default function DashboardLayout() {
     if (role !== 'admin' && role !== 'reseller') return
     api.get<VersionFooter>('/system/version-check')
       .then((response) => setFooter(response.data))
+      // Silent on purpose: the footer version string is decorative. HomePage
+      // reports the same endpoint, where its failure actually costs the user
+      // the update notice.
       .catch(() => {})
   }, [role])
 
@@ -357,6 +361,7 @@ export default function DashboardLayout() {
       </div>
 
       <MobileNavBar items={mobileItems} />
+      <ErrorSurface />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
   responsiveTableBodyClass,
@@ -79,6 +80,7 @@ function TabButton({ enabled, onClick, children }: { enabled: boolean; onClick: 
 // ============================================================================
 function ServerMonitoring() {
   const { t } = useTranslation('MonitoringPage')
+  const report = useReportError()
   const [u, setU] = useState<Usage | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
@@ -111,12 +113,12 @@ function ServerMonitoring() {
 
   useEffect(() => {
     function loadProcs() {
-      api.get<Process[]>(`/system/processes?n=15&sort=${procSort}`).then(r => setProcs(r.data)).catch(() => {})
+      api.get<Process[]>(`/system/processes?n=15&sort=${procSort}`).then(r => setProcs(r.data)).catch(report('processes'))
     }
     loadProcs()
     const t = setInterval(loadProcs, POLL_MS * 2)
     return () => clearInterval(t)
-  }, [procSort])
+  }, [procSort, report])
 
   return (
     <>
@@ -242,6 +244,7 @@ function ServerMonitoring() {
 // ============================================================================
 function DomainMonitoring() {
   const { t } = useTranslation('MonitoringPage')
+  const report = useReportError()
   const [domains, setDomains] = useState<Domain[]>([])
   const [selected, setSelected] = useState<number | null>(null)
   const [health, setHealth] = useState<Health | null>(null)
@@ -259,8 +262,8 @@ function DomainMonitoring() {
       // Functional so the current selection stays out of this closure: the
       // effect must run once, not on every selection change.
       setSelected(current => current === null && enabled.length > 0 ? enabled[0].id : current)
-    }).catch(() => {})
-  }, [])
+    }).catch(report('domains'))
+  }, [report])
 
   const probe = useCallback((domainID: number) => {
     api.get<Health>(`/domains/${domainID}/health`).then(r => setHealth(r.data))
@@ -291,12 +294,12 @@ function DomainMonitoring() {
         .catch(e => setLogError(apiError(e)))
       api.get<{ lines: string[]; current: boolean }>(`/domains/${selected}/logs/read?file=error&last=40`)
         .then(response => setErrorLog(response.data.lines || []))
-        .catch(() => {})
+        .catch(report('errorLog'))
     }
     fetchLogs()
     const t = setInterval(fetchLogs, POLL_MS)
     return () => clearInterval(t)
-  }, [selected, probe])
+  }, [selected, probe, report])
 
   // Auto-scroll to bottom on log update
   useEffect(() => { if (accessRef.current) accessRef.current.scrollTop = accessRef.current.scrollHeight }, [accessLog])

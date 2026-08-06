@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Domain = { id: number; domain_name: string; system_user: string; ipv4: string; ssl: boolean; ssl_expiry?: string }
@@ -15,6 +16,7 @@ type SSLStatus = {
 
 export default function DomainSSLPage() {
   const { t } = useTranslation('DomainSSLPage')
+  const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [status, setStatus] = useState<SSLStatus | null>(null)
@@ -30,10 +32,10 @@ export default function DomainSSLPage() {
 
   function load() {
     if (!id) return
-    api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
+    api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(report('subscription'))
     api.get<SSLStatus>(`/domains/${id}/ssl`).then(r => setStatus(r.data)).catch(e => setError(apiError(e)))
   }
-  useEffect(load, [id])
+  useEffect(load, [id, report])
 
   async function issue(type: 'self-signed' | 'letsencrypt') {
     if (type === 'letsencrypt' && !confirm(t('confirm.letsencrypt'))) return

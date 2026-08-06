@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import Modal from '@/components/Modal'
 import ConfirmDialog from '@/components/ConfirmDialog'
@@ -73,6 +74,7 @@ const VALUE_HINT: Record<string, string> = {
 
 export default function DomainDNSPage() {
   const { t } = useTranslation('DomainDNSPage')
+  const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [records, setRecords] = useState<RecordItem[]>([])
@@ -172,13 +174,13 @@ export default function DomainDNSPage() {
   }
   useEffect(() => {
     if (id) {
-      api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
-      api.get<SOA>(`/domains/${id}/dns/soa`).then(r => setSOA(r.data)).catch(() => {})
-      api.get<DNSSECStatus>(`/domains/${id}/dns/dnssec`).then(r => setDNSSEC(r.data)).catch(() => {})
-      api.get<Nameservers>(`/domains/${id}/nameservers`).then(r => setNameservers(r.data)).catch(() => {})
+      api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(report('subscription'))
+      api.get<SOA>(`/domains/${id}/dns/soa`).then(r => setSOA(r.data)).catch(report('soa'))
+      api.get<DNSSECStatus>(`/domains/${id}/dns/dnssec`).then(r => setDNSSEC(r.data)).catch(report('dnssec'))
+      api.get<Nameservers>(`/domains/${id}/nameservers`).then(r => setNameservers(r.data)).catch(report('nameservers'))
     }
     fetchRecords()
-  }, [id, fetchRecords])
+  }, [id, fetchRecords, report])
 
   // Verification is on demand rather than on load: it makes seven live DNS
   // lookups, which is not something to spend on every visit to the page.

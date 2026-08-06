@@ -1,0 +1,28 @@
+{
+  "title": "无法加载：{{context}}",
+  "dismiss": "关闭",
+  "contexts": {
+    "subscription": "订阅详情",
+    "domains": "域名列表",
+    "plans": "服务套餐",
+    "customers": "客户",
+    "phpVersions": "PHP 版本",
+    "diskUsage": "磁盘使用量",
+    "soa": "DNS SOA 记录",
+    "dnssec": "DNSSEC 状态",
+    "nameservers": "名称服务器",
+    "auditActions": "审计日志操作",
+    "backupJobs": "备份任务",
+    "backupSummary": "备份摘要",
+    "serverUsage": "服务器使用情况",
+    "processes": "进程列表",
+    "versionInfo": "版本信息",
+    "errorLog": "错误日志",
+    "gitRepository": "Git 仓库",
+    "githubConnection": "GitHub 连接",
+    "spamSettings": "垃圾邮件设置",
+    "languagePreference": "语言偏好",
+    "updateStatus": "面板更新状态",
+    "optimizeStatus": "优化状态"
+  }
+}

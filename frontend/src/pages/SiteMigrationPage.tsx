@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useTranslation } from 'react-i18next'
 import Breadcrumb from '@/components/Breadcrumb'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import { getCookie, setCookie } from '@/lib/cookies'
 import {
   responsiveTableBodyClass, responsiveTableCellClass, responsiveTableClass,
@@ -107,6 +108,7 @@ function Card({ children }: { children: ReactNode }) {
 
 export default function SiteMigrationPage() {
   const { t } = useTranslation('SiteMigrationPage')
+  const report = useReportError()
   const stored = useMemo(() => readStoredSource(), [])
 
   // --- source server ---
@@ -194,9 +196,9 @@ export default function SiteMigrationPage() {
   }, [type, host, port, user, authMode])
 
   useEffect(() => {
-    api.get<Plan[]>('/plans').then(r => setPlans(r.data || [])).catch(() => {})
-    api.get<Customer[]>('/customers').then(r => setCustomers(r.data || [])).catch(() => {})
-  }, [])
+    api.get<Plan[]>('/plans').then(r => setPlans(r.data || [])).catch(report('plans'))
+    api.get<Customer[]>('/customers').then(r => setCustomers(r.data || [])).catch(report('customers'))
+  }, [report])
 
   // Follow the running job (2 s polling).
   useEffect(() => {

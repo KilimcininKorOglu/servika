@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
   responsiveTableActionCellClass,
@@ -25,6 +26,7 @@ type Job = {
 
 export default function BackupManagementPage() {
   const { t } = useTranslation('BackupManagementPage')
+  const report = useReportError()
   const [o, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -48,10 +50,12 @@ export default function BackupManagementPage() {
   }
   useEffect(fetchSummary, [])
 
-  function loadJobs() {
-    api.get<Job[]>('/admin/backups/jobs').then(r => setJobs(r.data)).catch(() => {})
-  }
-  useEffect(loadJobs, [])
+  // Memoised because the polling effect below holds it across renders: a fresh
+  // identity every render would tear down and rebuild the interval each time.
+  const loadJobs = useCallback(() => {
+    api.get<Job[]>('/admin/backups/jobs').then(r => setJobs(r.data)).catch(report('backupJobs'))
+  }, [report])
+  useEffect(loadJobs, [loadJobs])
 
   // Poll only while a job is running, so an idle page makes no requests.
   const running = jobs.some(j => j.status === 'running')
@@ -59,7 +63,7 @@ export default function BackupManagementPage() {
     if (!running) return
     const timer = setInterval(loadJobs, 3000)
     return () => clearInterval(timer)
-  }, [running])
+  }, [running, loadJobs])
 
   function toggle(domainID: number) {
     setSelected(prev => prev.includes(domainID) ? prev.filter(x => x !== domainID) : [...prev, domainID])

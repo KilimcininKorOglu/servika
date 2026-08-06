@@ -7,6 +7,8 @@ import Breadcrumb from '@/components/Breadcrumb'
 function writeToClipboard(text: string, promptMsg: string): boolean {
   // 1) Modern API (HTTPS or localhost only), works asynchronously when called from a user gesture
   if (navigator.clipboard && window.isSecureContext) {
+    // Silent on purpose: the caller falls back to a manual copy prompt when
+    // this returns false, so a rejected clipboard write is already handled.
     navigator.clipboard.writeText(text).catch(() => {})
     return true
   }

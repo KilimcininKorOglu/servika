@@ -10,6 +10,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Usage = {
@@ -43,6 +44,7 @@ const gb = (bytes?: number) => (bytes != null ? (bytes / 1024 ** 3).toFixed(1) :
 
 export default function ServerStatusPage() {
   const { t } = useTranslation('ServerStatusPage')
+  const report = useReportError()
   const [usage, setUsage] = useState<Usage | null>(null)
   const [services, setServices] = useState<Service[]>([])
   const [version, setVersion] = useState<VersionCheck | null>(null)
@@ -54,12 +56,12 @@ export default function ServerStatusPage() {
     Promise.all([
       api.get<Usage>('/system/usage').then((r) => { if (!cancelled) setUsage(r.data) }),
       api.get<Service[]>('/system/services').then((r) => { if (!cancelled) setServices(Array.isArray(r.data) ? r.data : []) }),
-      api.get<VersionCheck>('/system/version-check').then((r) => { if (!cancelled) setVersion(r.data) }).catch(() => {}),
+      api.get<VersionCheck>('/system/version-check').then((r) => { if (!cancelled) setVersion(r.data) }).catch(report('versionInfo')),
     ])
       .catch((e) => { if (!cancelled) setError(apiError(e, t('errorLoad'))) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [t])
+  }, [t, report])
 
   const load = usage?.cpu
   const loadText = load ? t('loadText', { values: [load.load_1m, load.load_5m, load.load_15m].map((y) => (y ?? 0).toFixed(2)).join(' · ') }) : undefined

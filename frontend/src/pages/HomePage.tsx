@@ -13,6 +13,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { restrictToWindowEdges } from '@dnd-kit/modifiers'
 import { api } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import { getCookie, setCookie } from '@/lib/cookies'
 import { useAuth } from '@/store/auth'
 import LoadHistoryChart from '@/components/LoadHistoryChart'
@@ -124,6 +125,7 @@ function usePrefersReducedMotion(): boolean {
 
 export default function HomePage() {
   const { t } = useTranslation('HomePage')
+  const report = useReportError()
   const user = useAuth((s) => s.username)
   const role = user?.role
   const [s, setS] = useState<SystemUsage | null>(null)
@@ -194,23 +196,23 @@ export default function HomePage() {
   // ResellerOrAbove, so a customer session must not fire it at all.
   useEffect(() => {
     if (role !== 'admin' && role !== 'reseller') return
-    api.get<VersionCheck>('/system/version-check').then((r) => setVersionCheck(r.data)).catch(() => {})
-  }, [role])
+    api.get<VersionCheck>('/system/version-check').then((r) => setVersionCheck(r.data)).catch(report('versionInfo'))
+  }, [role, report])
 
   useEffect(() => {
     const fetchUsage = () => {
       if (typeof document !== 'undefined' && document.hidden) return
-      api.get<SystemUsage>('/system/usage').then((r) => setS(r.data)).catch(() => {})
+      api.get<SystemUsage>('/system/usage').then((r) => setS(r.data)).catch(report('serverUsage'))
     }
     const fetchMaint = () => {
       if (typeof document !== 'undefined' && document.hidden) return
-      api.get<UpdateStatus>('/system/update').then((r) => setUpdate(r.data)).catch(() => {})
-      api.get<OptimizeStatus>('/system/optimize').then((r) => setOptimize(r.data)).catch(() => {})
+      api.get<UpdateStatus>('/system/update').then((r) => setUpdate(r.data)).catch(report('updateStatus'))
+      api.get<OptimizeStatus>('/system/optimize').then((r) => setOptimize(r.data)).catch(report('optimizeStatus'))
     }
     fetchUsage()
     fetchMaint()
-    api.get<Domain[]>('/domains').then((r) => setDomains(r.data || [])).catch(() => {})
-    api.get<BackupSummary>('/admin/backups/summary').then((r) => setBackup(r.data)).catch(() => {})
+    api.get<Domain[]>('/domains').then((r) => setDomains(r.data || [])).catch(report('domains'))
+    api.get<BackupSummary>('/admin/backups/summary').then((r) => setBackup(r.data)).catch(report('backupSummary'))
     api.get<WpInstall[]>('/wordpress/all').then((r) => setWp(r.data || [])).catch(() => setWp([]))
 
     const idU = setInterval(fetchUsage, 5000)
@@ -218,7 +220,7 @@ export default function HomePage() {
     const onVis = () => { if (!document.hidden) { fetchUsage(); fetchMaint() } }
     document.addEventListener('visibilitychange', onVis)
     return () => { clearInterval(idU); clearInterval(idM); document.removeEventListener('visibilitychange', onVis) }
-  }, [])
+  }, [report])
 
   const active = domains.filter((d) => d.status === 'active').length
   const sslCount = domains.filter((d) => d.ssl).length

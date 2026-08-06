@@ -1,0 +1,28 @@
+{
+  "title": "Konnte nicht geladen werden: {{context}}",
+  "dismiss": "Schließen",
+  "contexts": {
+    "subscription": "Abonnementdetails",
+    "domains": "Domainliste",
+    "plans": "Servicepläne",
+    "customers": "Kunden",
+    "phpVersions": "PHP-Versionen",
+    "diskUsage": "Speicherbelegung",
+    "soa": "DNS-SOA-Eintrag",
+    "dnssec": "DNSSEC-Status",
+    "nameservers": "Nameserver",
+    "auditActions": "Audit-Log-Aktionen",
+    "backupJobs": "Backup-Aufträge",
+    "backupSummary": "Backup-Übersicht",
+    "serverUsage": "Serverauslastung",
+    "processes": "Prozessliste",
+    "versionInfo": "Versionsinformationen",
+    "errorLog": "Fehlerprotokoll",
+    "gitRepository": "Git-Repository",
+    "githubConnection": "GitHub-Verbindung",
+    "spamSettings": "Spam-Einstellungen",
+    "languagePreference": "Spracheinstellung",
+    "updateStatus": "Panel-Aktualisierungsstatus",
+    "optimizeStatus": "Optimierungsstatus"
+  }
+}

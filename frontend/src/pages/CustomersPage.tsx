@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import EmptyState from '@/components/EmptyState'
 import ListToolbar from '@/components/ListToolbar'
@@ -32,6 +33,7 @@ const EMPTY: Customer = { id: 0, name: '', email: '', plan_id: null, status: 'ac
 
 export default function CustomersPage() {
   const { t } = useTranslation('CustomersPage')
+  const report = useReportError()
   // Global search (TopBar) deep-links here with ?q=<email|name>; seed the filter
   // from it and keep it in sync when the param changes without a remount.
   const [searchParams] = useSearchParams()
@@ -71,8 +73,8 @@ export default function CustomersPage() {
     fetchList()
     api.get<Plan[]>('/plans')
       .then((r) => setPlans(Array.isArray(r.data) ? r.data : []))
-      .catch(() => {})
-  }, [fetchList])
+      .catch(report('plans'))
+  }, [fetchList, report])
 
   const filtered = useMemo(() => {
     const t = query.trim().toLowerCase()

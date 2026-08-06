@@ -1,0 +1,28 @@
+{
+  "title": "No se pudo cargar: {{context}}",
+  "dismiss": "Cerrar",
+  "contexts": {
+    "subscription": "detalles de la suscripción",
+    "domains": "lista de dominios",
+    "plans": "planes de servicio",
+    "customers": "clientes",
+    "phpVersions": "versiones de PHP",
+    "diskUsage": "uso del disco",
+    "soa": "registro SOA de DNS",
+    "dnssec": "estado de DNSSEC",
+    "nameservers": "servidores de nombres",
+    "auditActions": "acciones del registro de auditoría",
+    "backupJobs": "trabajos de copia de seguridad",
+    "backupSummary": "resumen de copias de seguridad",
+    "serverUsage": "uso del servidor",
+    "processes": "lista de procesos",
+    "versionInfo": "información de versión",
+    "errorLog": "registro de errores",
+    "gitRepository": "repositorio Git",
+    "githubConnection": "conexión con GitHub",
+    "spamSettings": "ajustes de spam",
+    "languagePreference": "preferencia de idioma",
+    "updateStatus": "estado de actualización del panel",
+    "optimizeStatus": "estado de la optimización"
+  }
+}

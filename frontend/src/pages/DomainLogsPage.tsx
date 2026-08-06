@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useResourceScope } from '@/lib/scope'
 import {
@@ -21,6 +22,7 @@ const MAX_WINDOW = 1000
 
 export default function DomainLogsPage() {
   const { t } = useTranslation('DomainLogsPage')
+  const report = useReportError()
   const { id, base, isSubdomain, backHref } = useResourceScope()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [files, setFiles] = useState<LogFile[]>([])
@@ -50,9 +52,9 @@ export default function DomainLogsPage() {
     const detail = isSubdomain
       ? api.get<{ fqdn: string }>(base).then(r => ({ data: { domain_name: r.data.fqdn } }))
       : api.get<Domain>(`/domains/${id}`)
-    detail.then(r => setDomain(r.data as Domain)).catch(() => {})
+    detail.then(r => setDomain(r.data as Domain)).catch(report('subscription'))
     api.get<LogFile[]>(`${base}/logs`).then(r => setFiles(r.data)).catch(e => setError(apiError(e)))
-  }, [id, base, isSubdomain])
+  }, [id, base, isSubdomain, report])
 
   // Load the last N lines when the active file changes. Promise callbacks rather
   // than await/try: this is what the effect below calls, and writes in an awaited

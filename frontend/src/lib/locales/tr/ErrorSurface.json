@@ -1,0 +1,28 @@
+{
+  "title": "Yüklenemedi: {{context}}",
+  "dismiss": "Kapat",
+  "contexts": {
+    "subscription": "abonelik ayrıntıları",
+    "domains": "alan adı listesi",
+    "plans": "hizmet paketleri",
+    "customers": "müşteriler",
+    "phpVersions": "PHP sürümleri",
+    "diskUsage": "disk kullanımı",
+    "soa": "DNS SOA kaydı",
+    "dnssec": "DNSSEC durumu",
+    "nameservers": "ad sunucuları",
+    "auditActions": "denetim günlüğü işlemleri",
+    "backupJobs": "yedekleme işleri",
+    "backupSummary": "yedekleme özeti",
+    "serverUsage": "sunucu kullanımı",
+    "processes": "süreç listesi",
+    "versionInfo": "sürüm bilgisi",
+    "errorLog": "hata günlüğü",
+    "gitRepository": "Git deposu",
+    "githubConnection": "GitHub bağlantısı",
+    "spamSettings": "spam ayarları",
+    "languagePreference": "dil tercihi",
+    "updateStatus": "panel güncelleme durumu",
+    "optimizeStatus": "eniyileme durumu"
+  }
+}

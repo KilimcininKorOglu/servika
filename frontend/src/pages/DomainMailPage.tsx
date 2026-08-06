@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import ResourceNotice from '@/components/ResourceNotice'
 
@@ -20,6 +21,7 @@ type SendLimits = { mailbox_id: number; email: string; hour_limit: number; day_l
 
 export default function DomainMailPage() {
   const { t } = useTranslation('DomainMailPage')
+  const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [status, setStatus] = useState<MailStatus | null>(null)
@@ -80,7 +82,8 @@ export default function DomainMailPage() {
       api.get<Alias[]>(`/domains/${id}/mail/aliases`),
       // Null rather than the current settings on failure: keeping the existing
       // spam state out of this closure is what lets the fetch depend on id alone.
-      api.get<SpamResponse>(`/domains/${id}/mail/spam`).then(r => r.data).catch(() => null),
+      api.get<SpamResponse>(`/domains/${id}/mail/spam`).then(r => r.data)
+        .catch(err => { report('spamSettings')(err); return null }),
       api.get<MailFilter[]>(`/domains/${id}/mail/filters`).catch(() => ({ data: [] as MailFilter[] })),
     ])
       .then(([statusResponse, mailboxesResponse, aliasesResponse, spamResponse, filtersResponse]) => {
@@ -97,7 +100,7 @@ export default function DomainMailPage() {
       })
       .catch(cause => setError(apiError(cause)))
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, report])
 
   const loadMail = useCallback(() => {
     setLoading(true)

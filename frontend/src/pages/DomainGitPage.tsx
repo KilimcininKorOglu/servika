@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
 import { api, apiError as apiError } from '@/lib/api'
+import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
 
@@ -20,6 +21,7 @@ type GHRepo = { full_name: string; name: string; description?: string; private: 
 
 export default function DomainGitPage() {
   const { t } = useTranslation('DomainGitPage')
+  const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [repo, setRepo] = useState<Repo | null>(null)
@@ -62,7 +64,7 @@ export default function DomainGitPage() {
   // refreshes that follow a write.
   const fetchRepo = useCallback(() => {
     if (!id) return
-    api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(() => {})
+    api.get<Domain>(`/domains/${id}`).then(r => setDomain(r.data)).catch(report('subscription'))
     api.get<Repo | null>(`/domains/${id}/git`)
       .then(r => { setRepo(r.data); if (r.data) { setRepoUrl(r.data.repo_url); setBranch(r.data.branch); setTargetDir(r.data.target_dir) } })
       .catch(e => setError(apiError(e)))
@@ -74,8 +76,8 @@ export default function DomainGitPage() {
         if (r.data.selected_branch) setGhSelectedBranch(r.data.selected_branch)
         ghLoadRepos()
       }
-    }).catch(() => {})
-  }, [id, ghLoadRepos])
+    }).catch(report('githubConnection'))
+  }, [id, ghLoadRepos, report])
 
   const load = useCallback(() => {
     setLoading(true)
