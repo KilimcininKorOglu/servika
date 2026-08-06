@@ -257,7 +257,45 @@ func writeSSLVhost(domainName, systemUser, phpVersion, backend, certPath, keyPat
 // the vhost to HTTP-only. When a valid certificate (acme store or /etc/pki, not expired,
 // matching the required hostnames and key) exists it deploys it; when none exists it generates a
 // self-signed one. In both cases the vhost is rendered with SSL (443 listens).
-func sslFailSafe(domainName, systemUser, phpVersion, backend, reason string) (certPath, keyPath string, real bool, note string, err error) {
+// sslReason names a stable failure code and the transcript line behind it.
+//
+// The code is what leaves the process: the panel ships twelve languages and
+// cannot translate a sentence the CA wrote in English, nor should it print raw
+// acme.sh output on a customer screen. The detail stays for the panel log, which
+// is where an operator looks when the code is not enough.
+type sslReason struct {
+	Code   string
+	Detail string
+}
+
+// Failure codes the SSL screen renders. Adding one here means adding its
+// translation to the SSL page namespace in every language.
+const (
+	sslReasonDNSUnresolved = "dns_unresolved"
+	sslReasonRateLimited   = "rate_limited"
+	sslReasonDNSProblem    = "dns_problem"
+	sslReasonACMEFailed    = "acme_failed"
+	sslReasonInstallFailed = "acme_install_failed"
+)
+
+// classifySSLFailure turns an acme.sh transcript into one of the codes above.
+//
+// Only the distinctions a domain owner can act on are drawn. A rate limit means
+// wait; a DNS problem means fix the record; anything else means read the log.
+func classifySSLFailure(transcript string) sslReason {
+	detail := summarizeSSLReason(transcript)
+	lower := strings.ToLower(transcript)
+	switch {
+	case strings.Contains(lower, "rate limit") || strings.Contains(lower, "too many"):
+		return sslReason{Code: sslReasonRateLimited, Detail: detail}
+	case strings.Contains(lower, "dns problem"):
+		return sslReason{Code: sslReasonDNSProblem, Detail: detail}
+	default:
+		return sslReason{Code: sslReasonACMEFailed, Detail: detail}
+	}
+}
+
+func sslFailSafe(domainName, systemUser, phpVersion, backend string, reason sslReason) (certPath, keyPath string, real bool, note string, err error) {
 	if src, srcKey, real := bestCertificate(domainName, 0); src != "" {
 		if cp, kp, e := installToPKI(domainName, src, srcKey); e == nil {
 			source := "self-signed"
@@ -267,20 +305,20 @@ func sslFailSafe(domainName, systemUser, phpVersion, backend, reason string) (ce
 			if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, source); e != nil {
 				return "", "", false, "", e
 			}
-			log.Printf("ssl fail-safe: %s LE issuance failed (%s); 443 kept alive with existing %s certificate", domainName, reason, source)
-			return cp, kp, real, summarizeSSLReason(reason), nil
+			log.Printf("ssl fail-safe: %s LE issuance failed (%s: %s); 443 kept alive with existing %s certificate", domainName, reason.Code, reason.Detail, source)
+			return cp, kp, real, reason.Code, nil
 		}
 	}
 	// No valid certificate -> self-signed fallback (443 still listens, no teardown).
 	cp, kp, e := generateSelfSigned(domainName)
 	if e != nil {
-		return "", "", false, "", fmt.Errorf("%s + self-signed fallback: %w", reason, e)
+		return "", "", false, "", fmt.Errorf("%s + self-signed fallback: %w", reason.Code, e)
 	}
 	if e := writeSSLVhost(domainName, systemUser, phpVersion, backend, cp, kp, "self-signed"); e != nil {
 		return "", "", false, "", e
 	}
-	log.Printf("ssl fail-safe: %s LE issuance failed (%s); self-signed generated, 443 kept alive", domainName, reason)
-	return cp, kp, false, summarizeSSLReason(reason), nil
+	log.Printf("ssl fail-safe: %s LE issuance failed (%s: %s); self-signed generated, 443 kept alive", domainName, reason.Code, reason.Detail)
+	return cp, kp, false, reason.Code, nil
 }
 
 // summarizeSSLReason reduces an acme.sh transcript to the part that tells the

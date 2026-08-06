@@ -1627,8 +1627,10 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	// instead, keep 443 alive, and say what to fix. certSANHosts drops www when
 	// DNS does not support it, so www alone never reaches this point.
 	if !domainResolves(domainName) {
-		return sslFailSafe(domainName, systemUser, phpVersion, backend,
-			"DNS problem: "+domainName+" does not resolve, so Let's Encrypt cannot reach it for validation")
+		return sslFailSafe(domainName, systemUser, phpVersion, backend, sslReason{
+			Code:   sslReasonDNSUnresolved,
+			Detail: domainName + " does not resolve, so Let's Encrypt cannot reach it for validation",
+		})
 	}
 
 	// (2) Real issuance/renewal (only reached when <30 days remain or no cert exists).
@@ -1658,8 +1660,12 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	if reason, apexFailed := droppedHosts[domainName]; apexFailed {
 		// Ordering anyway would spend one of the five validation failures Let's
 		// Encrypt allows per hostname per hour and leave the same result.
-		return sslFailSafe(domainName, systemUser, phpVersion, backend,
-			string(reason)+": "+domainName+" does not answer the ACME challenge path from the public internet")
+		// The probe already produced a code; passing it through keeps the screen
+		// telling the owner which of the challenge failures they are looking at.
+		return sslFailSafe(domainName, systemUser, phpVersion, backend, sslReason{
+			Code:   string(reason),
+			Detail: domainName + " does not answer the ACME challenge path from the public internet",
+		})
 	}
 	out, e := RunACMEIssue(buildIssueArgs(sanHosts)...)
 	// RENEW_SKIP means the store already holds a valid certificate for these hosts, so
@@ -1672,7 +1678,7 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 	}
 	if e != nil && !IsACMERenewSkip(e) {
 		// FAIL-SAFE (no teardown): keep 443 alive with the existing/self-signed cert.
-		return sslFailSafe(domainName, systemUser, phpVersion, backend, strings.TrimSpace(string(out)))
+		return sslFailSafe(domainName, systemUser, phpVersion, backend, classifySSLFailure(string(out)))
 	}
 
 	// Install the certificate into the target paths with acme.sh install-cert.
@@ -1685,7 +1691,10 @@ func EnableLetsEncrypt(domainName, systemUser, phpVersion, backend string) (cert
 		"--reloadcmd", "systemctl reload nginx",
 	}
 	if out, e := acmeCommand(insArgs...).CombinedOutput(); e != nil {
-		return sslFailSafe(domainName, systemUser, phpVersion, backend, "acme install-cert: "+strings.TrimSpace(string(out)))
+		return sslFailSafe(domainName, systemUser, phpVersion, backend, sslReason{
+			Code:   sslReasonInstallFailed,
+			Detail: summarizeSSLReason(string(out)),
+		})
 	}
 	if err := applyCertificatePermissions(sslDir, certPath, keyPath); err != nil {
 		return "", "", false, "", err

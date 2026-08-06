@@ -69,3 +69,63 @@ func TestDomainResolvesRefusesAReservedInvalidName(t *testing.T) {
 		t.Error("domainResolves() accepted a reserved .invalid name")
 	}
 }
+
+// The screen gets a code, never the CA's English sentence.
+//
+// This is what lets the twelve interface languages say something useful about a
+// failure. It also keeps raw acme.sh output off a customer's screen: the
+// transcript still reaches the panel log, which is where an operator reads it.
+func TestSSLFailureIsClassifiedIntoAStableCode(t *testing.T) {
+	cases := []struct {
+		name       string
+		transcript string
+		want       string
+	}{
+		{
+			name:       "rate limit",
+			transcript: "[Wed] Create new order error. Le_OrderFinalize not found. too many certificates already issued for exact set of domains",
+			want:       sslReasonRateLimited,
+		},
+		{
+			name:       "explicit rate limit wording",
+			transcript: "Error creating new order :: too many failed authorizations recently: see https://letsencrypt.org/docs/rate-limits/",
+			want:       sslReasonRateLimited,
+		},
+		{
+			name:       "dns problem",
+			transcript: "Detail: DNS problem: NXDOMAIN looking up A for example.com - check that a DNS record exists",
+			want:       sslReasonDNSProblem,
+		},
+		{
+			name:       "anything else",
+			transcript: "Please add '--debug' or '--log' to check more details.",
+			want:       sslReasonACMEFailed,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := classifySSLFailure(tc.transcript)
+			if got.Code != tc.want {
+				t.Errorf("code = %q, want %q", got.Code, tc.want)
+			}
+			// The detail is the operator's half. Losing it would leave the log
+			// with a code and no way to tell two orders apart.
+			if got.Detail == "" {
+				t.Error("the transcript detail was dropped")
+			}
+		})
+	}
+}
+
+// A code is an identifier, not a sentence. Anything with a space in it would be
+// looked up as a translation key and rendered raw by the fallback.
+func TestSSLFailureCodesAreLookupKeys(t *testing.T) {
+	for _, code := range []string{
+		sslReasonDNSUnresolved, sslReasonRateLimited, sslReasonDNSProblem,
+		sslReasonACMEFailed, sslReasonInstallFailed,
+	} {
+		if code == "" || strings.ContainsAny(code, " :\n") {
+			t.Errorf("%q is not usable as a translation key", code)
+		}
+	}
+}
