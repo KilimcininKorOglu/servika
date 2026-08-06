@@ -72,5 +72,28 @@
     "deleteFailed": "Der Eintrag konnte nicht entfernt werden.",
     "confirmDelete": "{{value}} aus der Liste entfernen?",
     "empty": "Keine Einträge. Rspamd entscheidet selbst."
+  },
+  "pool": {
+    "title": "Ausgehende Adressen",
+    "subtitle": "Jede Domain sendet über die eigene Adresse des Servers, sofern ihr keine hiervon zugewiesen wird. Einen auffälligen Kunden auf eine eigene Adresse zu legen hält dessen Reputation von der Mail aller anderen fern.",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "Notiz (optional)",
+    "add": "Hinzufügen",
+    "adding": "Wird hinzugefügt ...",
+    "addFailed": "Die Adresse konnte nicht hinzugefügt werden.",
+    "empty": "Keine Adressen. Alles sendet über den Serverstandard.",
+    "disabled": "Deaktiviert",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "updateFailed": "Die Adresse konnte nicht aktualisiert werden.",
+    "delete": "Entfernen",
+    "deleteFailed": "Die Adresse konnte nicht entfernt werden.",
+    "confirmDelete": "{{ip}} entfernen? {{count}} Domain(s) fallen auf den Serverstandard zurück.",
+    "ptrOk": "Reverse DNS bestätigt",
+    "ptrBad": "Reverse DNS nicht bestätigt",
+    "notScanned": "Noch nicht geprüft",
+    "clean": "Auf keiner Blockliste",
+    "listed": "Gelistet: {{zones}}",
+    "domainCount": "{{count}} Domain(s)"
   }
 }

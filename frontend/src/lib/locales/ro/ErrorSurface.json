@@ -26,6 +26,7 @@
     "optimizeStatus": "starea optimizării",
     "deliveryLog": "istoricul livrărilor",
     "mailServerSettings": "setările de e-mail ale serverului",
-    "mailFilterLists": "listele de filtrare a expeditorilor"
+    "mailFilterLists": "listele de filtrare a expeditorilor",
+    "mailAddressPool": "grupul de adrese de trimitere"
   }
 }

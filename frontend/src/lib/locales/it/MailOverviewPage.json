@@ -72,5 +72,28 @@
     "deleteFailed": "Non è stato possibile rimuovere la voce.",
     "confirmDelete": "Rimuovere {{value}} dall'elenco?",
     "empty": "Nessuna voce. Decide Rspamd da solo."
+  },
+  "pool": {
+    "title": "Indirizzi di uscita",
+    "subtitle": "Ogni dominio invia dall'indirizzo del server finché non gliene viene assegnato uno di questi. Spostare un cliente rumoroso su un indirizzo separato tiene la sua reputazione lontana dalla posta di tutti gli altri.",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "Nota (facoltativa)",
+    "add": "Aggiungi",
+    "adding": "Aggiunta...",
+    "addFailed": "Non è stato possibile aggiungere l'indirizzo.",
+    "empty": "Nessun indirizzo. Tutto parte dall'indirizzo predefinito del server.",
+    "disabled": "Disattivato",
+    "enable": "Attiva",
+    "disable": "Disattiva",
+    "updateFailed": "Non è stato possibile aggiornare l'indirizzo.",
+    "delete": "Rimuovi",
+    "deleteFailed": "Non è stato possibile rimuovere l'indirizzo.",
+    "confirmDelete": "Rimuovere {{ip}}? {{count}} dominio/i torneranno all'indirizzo predefinito.",
+    "ptrOk": "DNS inverso confermato",
+    "ptrBad": "DNS inverso non confermato",
+    "notScanned": "Non ancora analizzato",
+    "clean": "Su nessuna lista di blocco",
+    "listed": "In elenco: {{zones}}",
+    "domainCount": "{{count}} dominio/i"
   }
 }

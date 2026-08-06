@@ -18,6 +18,19 @@ type FilterEntry = {
   created_at?: string
 }
 
+type PoolAddress = {
+  id: number
+  ip: string
+  enabled: boolean
+  note?: string
+  ptr_name?: string
+  ptr_ok: boolean
+  dnsbl_listed: boolean
+  dnsbl_zones?: string
+  last_scan_at?: string
+  domains: number
+}
+
 type ServerSettings = {
   max_message_size_mb: number
   domain_send_limit_hour: number
@@ -92,6 +105,11 @@ export default function MailOverviewPage() {
   const [filterMatchType, setFilterMatchType] = useState<'address' | 'domain' | 'ip'>('domain')
   const [filterValue, setFilterValue] = useState('')
   const [filterNote, setFilterNote] = useState('')
+  const [pool, setPool] = useState<PoolAddress[]>([])
+  const [poolError, setPoolError] = useState<string | null>(null)
+  const [poolBusy, setPoolBusy] = useState(false)
+  const [poolIP, setPoolIP] = useState('')
+  const [poolNote, setPoolNote] = useState('')
 
   // Split so the mount effect never writes state synchronously: fetchQueue
   // settles only through promise callbacks, and loadQueue() adds the spinner for
@@ -124,6 +142,54 @@ export default function MailOverviewPage() {
   }, [report])
 
   useEffect(() => { loadFilters() }, [loadFilters])
+
+  const loadPool = useCallback(() => {
+    api.get<PoolAddress[]>('/admin/mail/ip-pool')
+      .then(response => setPool(response.data || []))
+      .catch(report('mailAddressPool'))
+  }, [report])
+
+  useEffect(() => { loadPool() }, [loadPool])
+
+  async function addPoolAddress(event: React.FormEvent) {
+    event.preventDefault()
+    setPoolBusy(true)
+    setPoolError(null)
+    try {
+      await api.post('/admin/mail/ip-pool', { ip: poolIP, note: poolNote })
+      setPoolIP('')
+      setPoolNote('')
+      loadPool()
+    } catch (cause) {
+      setPoolError(apiError(cause, t('pool.addFailed')))
+    } finally {
+      setPoolBusy(false)
+    }
+  }
+
+  async function togglePoolAddress(address: PoolAddress) {
+    setPoolError(null)
+    try {
+      await api.put(`/admin/mail/ip-pool/${address.id}`,
+        { enabled: !address.enabled, note: address.note || '' })
+      loadPool()
+    } catch (cause) {
+      setPoolError(apiError(cause, t('pool.updateFailed')))
+    }
+  }
+
+  async function removePoolAddress(address: PoolAddress) {
+    // The domains sending from it are moved back to the server default, which
+    // changes where their mail comes from; that is worth confirming.
+    if (!confirm(t('pool.confirmDelete', { ip: address.ip, count: address.domains }))) return
+    setPoolError(null)
+    try {
+      await api.delete(`/admin/mail/ip-pool/${address.id}`)
+      loadPool()
+    } catch (cause) {
+      setPoolError(apiError(cause, t('pool.deleteFailed')))
+    }
+  }
 
   async function addFilter(event: React.FormEvent) {
     event.preventDefault()
@@ -294,6 +360,68 @@ export default function MailOverviewPage() {
                   <button onClick={() => removeFilter(entry)} className="shrink-0 text-xs px-2 py-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
                     {t('filters.delete')}
                   </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div className="w-full px-6 pb-8">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('pool.title')}</h2>
+          <p className="text-xs text-slate-500 mt-1 mb-4">{t('pool.subtitle')}</p>
+          <form onSubmit={addPoolAddress} className="flex flex-wrap gap-2 mb-4">
+            <input value={poolIP} onChange={event => setPoolIP(event.target.value)} required
+              placeholder={t('pool.ipPlaceholder')}
+              className="flex-1 min-w-[10rem] px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm font-mono" />
+            <input value={poolNote} onChange={event => setPoolNote(event.target.value)}
+              placeholder={t('pool.notePlaceholder')}
+              className="flex-1 min-w-[10rem] px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm" />
+            <button disabled={poolBusy} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
+              {poolBusy ? t('pool.adding') : t('pool.add')}
+            </button>
+          </form>
+          {poolError && <p className="mb-3 text-xs text-red-600 dark:text-red-400">{poolError}</p>}
+          {pool.length === 0 ? (
+            <p className="text-xs text-slate-400 dark:text-slate-500">{t('pool.empty')}</p>
+          ) : (
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
+              {pool.map(address => (
+                <li key={address.id} className="py-2 flex flex-wrap items-center gap-3">
+                  <span className="font-mono text-sm text-slate-800 dark:text-slate-200">{address.ip}</span>
+                  {!address.enabled && (
+                    <span className="text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                      {t('pool.disabled')}
+                    </span>
+                  )}
+                  <span className={`text-[11px] px-1.5 py-0.5 rounded ${address.ptr_ok
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'}`}>
+                    {address.ptr_ok ? t('pool.ptrOk') : t('pool.ptrBad')}
+                  </span>
+                  {/* An address that has never been scanned is not the same as
+                      one that was scanned and found clean. */}
+                  <span className={`text-[11px] px-1.5 py-0.5 rounded ${!address.last_scan_at
+                    ? 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                    : address.dnsbl_listed
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                      : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'}`}>
+                    {!address.last_scan_at ? t('pool.notScanned')
+                      : address.dnsbl_listed ? t('pool.listed', { zones: address.dnsbl_zones })
+                        : t('pool.clean')}
+                  </span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">{t('pool.domainCount', { count: address.domains })}</span>
+                  {address.ptr_name && <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500 break-all">{address.ptr_name}</span>}
+                  {address.note && <span className="text-xs text-slate-400 dark:text-slate-500 break-all flex-1">{address.note}</span>}
+                  <div className="ml-auto flex gap-2">
+                    <button onClick={() => togglePoolAddress(address)} className="text-xs px-2 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
+                      {address.enabled ? t('pool.disable') : t('pool.enable')}
+                    </button>
+                    <button onClick={() => removePoolAddress(address)} className="text-xs px-2 py-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
+                      {t('pool.delete')}
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

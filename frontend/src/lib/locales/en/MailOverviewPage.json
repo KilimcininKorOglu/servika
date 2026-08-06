@@ -72,5 +72,28 @@
     "deleteFailed": "The entry could not be removed.",
     "confirmDelete": "Remove {{value}} from the list?",
     "empty": "No entries. Rspamd decides on its own."
+  },
+  "pool": {
+    "title": "Outbound addresses",
+    "subtitle": "Every domain sends from the server's own address unless it is given one of these. Moving a noisy customer onto a separate address keeps their reputation off everyone else's mail.",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "Note (optional)",
+    "add": "Add",
+    "adding": "Adding...",
+    "addFailed": "The address could not be added.",
+    "empty": "No addresses. Everything sends from the server default.",
+    "disabled": "Disabled",
+    "enable": "Enable",
+    "disable": "Disable",
+    "updateFailed": "The address could not be updated.",
+    "delete": "Remove",
+    "deleteFailed": "The address could not be removed.",
+    "confirmDelete": "Remove {{ip}}? {{count}} domain(s) will go back to the server default.",
+    "ptrOk": "Reverse DNS confirmed",
+    "ptrBad": "Reverse DNS not confirmed",
+    "notScanned": "Not scanned yet",
+    "clean": "Not on any blocklist",
+    "listed": "Listed: {{zones}}",
+    "domainCount": "{{count}} domain(s)"
   }
 }

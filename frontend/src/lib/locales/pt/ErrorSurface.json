@@ -26,6 +26,7 @@
     "optimizeStatus": "estado da otimização",
     "deliveryLog": "histórico de entrega",
     "mailServerSettings": "definições de correio do servidor",
-    "mailFilterLists": "listas de filtro de remetentes"
+    "mailFilterLists": "listas de filtro de remetentes",
+    "mailAddressPool": "conjunto de endereços de saída"
   }
 }

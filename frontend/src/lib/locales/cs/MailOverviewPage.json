@@ -72,5 +72,28 @@
     "deleteFailed": "Položku se nepodařilo odebrat.",
     "confirmDelete": "Odebrat {{value}} ze seznamu?",
     "empty": "Žádné položky. Rspamd rozhoduje sám."
+  },
+  "pool": {
+    "title": "Odchozí adresy",
+    "subtitle": "Každá doména odesílá z vlastní adresy serveru, dokud jí není přidělena některá z těchto. Přesun hlučného zákazníka na samostatnou adresu drží jeho pověst mimo poštu všech ostatních.",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "Poznámka (nepovinná)",
+    "add": "Přidat",
+    "adding": "Přidávání...",
+    "addFailed": "Adresu se nepodařilo přidat.",
+    "empty": "Žádné adresy. Vše odchází z výchozí adresy serveru.",
+    "disabled": "Vypnuto",
+    "enable": "Zapnout",
+    "disable": "Vypnout",
+    "updateFailed": "Adresu se nepodařilo aktualizovat.",
+    "delete": "Odebrat",
+    "deleteFailed": "Adresu se nepodařilo odebrat.",
+    "confirmDelete": "Odebrat {{ip}}? {{count}} domén se vrátí na výchozí adresu serveru.",
+    "ptrOk": "Reverzní DNS potvrzeno",
+    "ptrBad": "Reverzní DNS nepotvrzeno",
+    "notScanned": "Zatím neprověřeno",
+    "clean": "Na žádném blokovacím seznamu",
+    "listed": "Na seznamu: {{zones}}",
+    "domainCount": "{{count}} domén"
   }
 }

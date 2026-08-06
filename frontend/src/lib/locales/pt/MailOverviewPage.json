@@ -72,5 +72,28 @@
     "deleteFailed": "Não foi possível remover a entrada.",
     "confirmDelete": "Remover {{value}} da lista?",
     "empty": "Sem entradas. O Rspamd decide sozinho."
+  },
+  "pool": {
+    "title": "Endereços de saída",
+    "subtitle": "Cada domínio envia pelo endereço do próprio servidor enquanto não lhe for atribuído um destes. Mover um cliente ruidoso para um endereço separado mantém a reputação dele longe do correio dos restantes.",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "Nota (opcional)",
+    "add": "Adicionar",
+    "adding": "A adicionar...",
+    "addFailed": "Não foi possível adicionar o endereço.",
+    "empty": "Sem endereços. Tudo sai pelo predefinido do servidor.",
+    "disabled": "Desativado",
+    "enable": "Ativar",
+    "disable": "Desativar",
+    "updateFailed": "Não foi possível atualizar o endereço.",
+    "delete": "Remover",
+    "deleteFailed": "Não foi possível remover o endereço.",
+    "confirmDelete": "Remover {{ip}}? {{count}} domínio(s) voltam ao predefinido do servidor.",
+    "ptrOk": "DNS inverso confirmado",
+    "ptrBad": "DNS inverso não confirmado",
+    "notScanned": "Ainda não analisado",
+    "clean": "Em nenhuma lista de bloqueio",
+    "listed": "Listado: {{zones}}",
+    "domainCount": "{{count}} domínio(s)"
   }
 }

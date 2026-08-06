@@ -72,5 +72,28 @@
     "deleteFailed": "Intrarea nu a putut fi eliminată.",
     "confirmDelete": "Eliminați {{value}} din listă?",
     "empty": "Nicio intrare. Rspamd decide singur."
+  },
+  "pool": {
+    "title": "Adrese de trimitere",
+    "subtitle": "Fiecare domeniu trimite de la adresa proprie a serverului cât timp nu i se atribuie una dintre acestea. Mutarea unui client gălăgios pe o adresă separată ține reputația lui departe de e-mailul celorlalți.",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "Notă (opțional)",
+    "add": "Adaugă",
+    "adding": "Se adaugă...",
+    "addFailed": "Adresa nu a putut fi adăugată.",
+    "empty": "Nicio adresă. Totul pleacă de la adresa implicită a serverului.",
+    "disabled": "Dezactivată",
+    "enable": "Activează",
+    "disable": "Dezactivează",
+    "updateFailed": "Adresa nu a putut fi actualizată.",
+    "delete": "Elimină",
+    "deleteFailed": "Adresa nu a putut fi eliminată.",
+    "confirmDelete": "Eliminați {{ip}}? {{count}} domeniu(ri) revin la adresa implicită a serverului.",
+    "ptrOk": "DNS invers confirmat",
+    "ptrBad": "DNS invers neconfirmat",
+    "notScanned": "Încă nescanată",
+    "clean": "Pe nicio listă de blocare",
+    "listed": "Pe listă: {{zones}}",
+    "domainCount": "{{count}} domeniu(ri)"
   }
 }

@@ -72,5 +72,28 @@
     "deleteFailed": "无法移除记录。",
     "confirmDelete": "要将 {{value}} 从列表中移除吗？",
     "empty": "没有记录。由 Rspamd 自行判断。"
+  },
+  "pool": {
+    "title": "发信地址",
+    "subtitle": "未分配这些地址之一时，每个域名都使用服务器自身的地址发信。把发信量大的客户移到独立地址，可使其信誉不影响其他人的邮件。",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "备注（可选）",
+    "add": "添加",
+    "adding": "添加中...",
+    "addFailed": "无法添加地址。",
+    "empty": "没有地址。全部使用服务器默认地址发送。",
+    "disabled": "已停用",
+    "enable": "启用",
+    "disable": "停用",
+    "updateFailed": "无法更新地址。",
+    "delete": "移除",
+    "deleteFailed": "无法移除地址。",
+    "confirmDelete": "要移除 {{ip}} 吗？{{count}} 个域名将回到服务器默认地址。",
+    "ptrOk": "反向 DNS 已确认",
+    "ptrBad": "反向 DNS 未确认",
+    "notScanned": "尚未扫描",
+    "clean": "不在任何黑名单",
+    "listed": "已列入：{{zones}}",
+    "domainCount": "{{count}} 个域名"
   }
 }

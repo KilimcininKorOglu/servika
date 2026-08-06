@@ -26,6 +26,7 @@
     "optimizeStatus": "Optimierungsstatus",
     "deliveryLog": "Zustellverlauf",
     "mailServerSettings": "serverweite Mail-Einstellungen",
-    "mailFilterLists": "Absender-Filterlisten"
+    "mailFilterLists": "Absender-Filterlisten",
+    "mailAddressPool": "Pool ausgehender Adressen"
   }
 }

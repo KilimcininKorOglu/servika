@@ -72,5 +72,28 @@
     "deleteFailed": "Kayıt kaldırılamadı.",
     "confirmDelete": "{{value}} listeden kaldırılsın mı?",
     "empty": "Kayıt yok. Kararı Rspamd kendi veriyor."
+  },
+  "pool": {
+    "title": "Giden adresler",
+    "subtitle": "Bir alan adına bunlardan biri verilmedikçe sunucunun kendi adresinden gönderir. Yoğun bir müşteriyi ayrı bir adrese almak, itibarını diğerlerinin postasından uzak tutar.",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "Not (isteğe bağlı)",
+    "add": "Ekle",
+    "adding": "Ekleniyor...",
+    "addFailed": "Adres eklenemedi.",
+    "empty": "Adres yok. Her şey sunucu varsayılanından gönderiyor.",
+    "disabled": "Devre dışı",
+    "enable": "Etkinleştir",
+    "disable": "Devre dışı bırak",
+    "updateFailed": "Adres güncellenemedi.",
+    "delete": "Kaldır",
+    "deleteFailed": "Adres kaldırılamadı.",
+    "confirmDelete": "{{ip}} kaldırılsın mı? {{count}} alan adı sunucu varsayılanına döner.",
+    "ptrOk": "Ters DNS doğrulandı",
+    "ptrBad": "Ters DNS doğrulanmadı",
+    "notScanned": "Henüz taranmadı",
+    "clean": "Hiçbir kara listede değil",
+    "listed": "Listelenmiş: {{zones}}",
+    "domainCount": "{{count}} alan adı"
   }
 }

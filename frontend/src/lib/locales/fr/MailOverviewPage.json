@@ -72,5 +72,28 @@
     "deleteFailed": "L'entrée n'a pas pu être retirée.",
     "confirmDelete": "Retirer {{value}} de la liste ?",
     "empty": "Aucune entrée. Rspamd décide seul."
+  },
+  "pool": {
+    "title": "Adresses d'envoi",
+    "subtitle": "Chaque domaine envoie depuis l'adresse du serveur tant qu'aucune de celles-ci ne lui est attribuée. Placer un client bruyant sur une adresse distincte garde sa réputation à l'écart du courrier des autres.",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "Note (facultative)",
+    "add": "Ajouter",
+    "adding": "Ajout...",
+    "addFailed": "L'adresse n'a pas pu être ajoutée.",
+    "empty": "Aucune adresse. Tout part de l'adresse par défaut du serveur.",
+    "disabled": "Désactivée",
+    "enable": "Activer",
+    "disable": "Désactiver",
+    "updateFailed": "L'adresse n'a pas pu être mise à jour.",
+    "delete": "Retirer",
+    "deleteFailed": "L'adresse n'a pas pu être retirée.",
+    "confirmDelete": "Retirer {{ip}} ? {{count}} domaine(s) reviendront à l'adresse par défaut.",
+    "ptrOk": "DNS inverse confirmé",
+    "ptrBad": "DNS inverse non confirmé",
+    "notScanned": "Pas encore analysée",
+    "clean": "Sur aucune liste de blocage",
+    "listed": "Listée : {{zones}}",
+    "domainCount": "{{count}} domaine(s)"
   }
 }

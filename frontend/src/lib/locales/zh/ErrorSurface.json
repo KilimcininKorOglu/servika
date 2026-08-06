@@ -26,6 +26,7 @@
     "optimizeStatus": "优化状态",
     "deliveryLog": "投递历史",
     "mailServerSettings": "服务器邮件设置",
-    "mailFilterLists": "发件人过滤列表"
+    "mailFilterLists": "发件人过滤列表",
+    "mailAddressPool": "发信地址池"
   }
 }

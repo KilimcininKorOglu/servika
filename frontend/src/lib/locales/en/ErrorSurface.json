@@ -26,6 +26,7 @@
     "optimizeStatus": "optimization status",
     "deliveryLog": "delivery history",
     "mailServerSettings": "server mail settings",
-    "mailFilterLists": "sender filter lists"
+    "mailFilterLists": "sender filter lists",
+    "mailAddressPool": "outbound address pool"
   }
 }

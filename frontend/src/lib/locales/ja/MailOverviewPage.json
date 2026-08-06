@@ -72,5 +72,28 @@
     "deleteFailed": "登録を削除できませんでした。",
     "confirmDelete": "{{value}} をリストから削除しますか？",
     "empty": "登録はありません。Rspamd が自動で判断します。"
+  },
+  "pool": {
+    "title": "送信元アドレス",
+    "subtitle": "いずれかを割り当てるまで、各ドメインはサーバー自身のアドレスから送信します。問題のある顧客を別アドレスに移すと、その評判が他の利用者のメールに及びません。",
+    "ipPlaceholder": "203.0.113.5",
+    "notePlaceholder": "メモ (任意)",
+    "add": "追加",
+    "adding": "追加中...",
+    "addFailed": "アドレスを追加できませんでした。",
+    "empty": "アドレスがありません。すべてサーバー既定のアドレスから送信されます。",
+    "disabled": "無効",
+    "enable": "有効にする",
+    "disable": "無効にする",
+    "updateFailed": "アドレスを更新できませんでした。",
+    "delete": "削除",
+    "deleteFailed": "アドレスを削除できませんでした。",
+    "confirmDelete": "{{ip}} を削除しますか？ {{count}} 件のドメインがサーバー既定に戻ります。",
+    "ptrOk": "逆引き DNS 確認済み",
+    "ptrBad": "逆引き DNS 未確認",
+    "notScanned": "未スキャン",
+    "clean": "どのブロックリストにもなし",
+    "listed": "掲載: {{zones}}",
+    "domainCount": "{{count}} 件のドメイン"
   }
 }

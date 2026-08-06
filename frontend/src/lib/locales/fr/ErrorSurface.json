@@ -26,6 +26,7 @@
     "optimizeStatus": "état de l'optimisation",
     "deliveryLog": "historique de distribution",
     "mailServerSettings": "paramètres de messagerie du serveur",
-    "mailFilterLists": "listes de filtrage des expéditeurs"
+    "mailFilterLists": "listes de filtrage des expéditeurs",
+    "mailAddressPool": "pool d'adresses d'envoi"
   }
 }

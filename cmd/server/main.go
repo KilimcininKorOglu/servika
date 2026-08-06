@@ -197,6 +197,9 @@ func main() {
 	// Postfix writes one log for the whole server, so it cannot be shown to a
 	// tenant as it stands. This drains it into per-domain rows in the background.
 	mail.StartDeliveryLogCollector(d)
+	// Blocklist state changes on the scale of hours and answers over someone
+	// else's DNS, so it is measured in the background rather than per request.
+	mail.StartPoolScanner(d)
 	// Called synchronously: this publishes the running version to internal/system,
 	// which /system/usage reports as panel_version. Only local file work happens
 	// here; the 24-hour manifest poll starts its own goroutine.
@@ -472,6 +475,13 @@ func main() {
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/spam", mailH.SpamPut)
 				r.With(middleware.AdminOnly).Get("/admin/mail/settings", mailH.ServerSettingsGet)
 				r.With(middleware.AdminOnly).Put("/admin/mail/settings", mailH.ServerSettingsPut)
+				r.With(middleware.AdminOnly).Get("/admin/mail/ip-pool", mailH.PoolList)
+				r.With(middleware.AdminOnly).Post("/admin/mail/ip-pool", mailH.PoolAdd)
+				r.With(middleware.AdminOnly).Put("/admin/mail/ip-pool/{pid}", mailH.PoolUpdate)
+				r.With(middleware.AdminOnly).Delete("/admin/mail/ip-pool/{pid}", mailH.PoolDelete)
+				// Which address a domain sends from is an operator decision, not a
+				// customer one: it moves reputation between tenants.
+				r.With(middleware.AdminOnly).Put("/domains/{id}/mail/outbound-ip", mailH.DomainOutboundPut)
 				r.With(middleware.AdminOnly).Get("/admin/mail/filters", mailH.FilterListGet)
 				r.With(middleware.AdminOnly).Post("/admin/mail/filters", mailH.FilterListCreate)
 				r.With(middleware.AdminOnly).Delete("/admin/mail/filters/{fid}", mailH.FilterListDelete)

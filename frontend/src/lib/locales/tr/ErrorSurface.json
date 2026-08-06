@@ -26,6 +26,7 @@
     "optimizeStatus": "eniyileme durumu",
     "deliveryLog": "teslimat geçmişi",
     "mailServerSettings": "sunucu posta ayarları",
-    "mailFilterLists": "gönderen filtre listeleri"
+    "mailFilterLists": "gönderen filtre listeleri",
+    "mailAddressPool": "giden adres havuzu"
   }
 }
