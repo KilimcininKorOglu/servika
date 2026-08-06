@@ -55,6 +55,10 @@ type Domain struct {
 	// ResellerName is the username of the reseller who owns the domain's customer.
 	// Empty means the customer is directly under admin (no reseller).
 	ResellerName string `json:"reseller_name,omitempty"`
+	// SiteType records what the domain is for. It decides whether creation opens
+	// a MySQL database, and lets the client point a fresh WordPress domain at the
+	// screen that finishes the install.
+	SiteType string `json:"site_type"`
 }
 
 type Handlers struct {
@@ -67,7 +71,7 @@ const selectAll = `SELECT d.id, d.domain_name, d.system_user, d.php_version, d.s
   d.db_host, d.db_user, d.db_name, d.web_root, d.size_kb, d.traffic_kb, d.is_demo,
   COALESCE(d.notes,''), DATE_FORMAT(d.created_at,'%Y-%m-%d'),
   d.plan_id, COALESCE(p.name,''), d.ssh_access, COALESCE(d.suspended,0),
-  COALESCE(ru.username,'')
+  COALESCE(ru.username,''), d.site_type
   FROM domains d
   LEFT JOIN service_plans p ON p.id=d.plan_id
   LEFT JOIN customers cu ON cu.id=d.customer_id
@@ -82,7 +86,7 @@ func scan(rs interface{ Scan(...any) error }) (Domain, error) {
 		&d.DBHost, &d.DBUser, &d.DBName, &d.WebRoot, &d.SizeKB, &d.TrafficKB, &demo,
 		&d.Notes, &d.CreatedAt,
 		&planID, &d.PlanName, &sshE, &suspended,
-		&d.ResellerName)
+		&d.ResellerName, &d.SiteType)
 	d.SSL = ssl == 1
 	d.IsDemo = demo == 1
 	d.SshAccess = sshE == 1
@@ -139,6 +143,66 @@ type createReq struct {
 	PHPVersion string `json:"php_version"`
 	CustomerID *int64 `json:"customer_id,omitempty"`
 	PlanID     *int64 `json:"plan_id,omitempty"`
+	SiteType   string `json:"site_type,omitempty"`
+}
+
+// The site types a domain may be created as. Only siteTypeStatic changes what
+// gets provisioned; siteTypePHP and siteTypeWordPress are provisioned alike and
+// differ only in where the client sends the customer afterwards.
+const (
+	siteTypePHP       = "php"
+	siteTypeWordPress = "wordpress"
+	siteTypeStatic    = "static"
+)
+
+// normalizeSiteType coerces a requested site type to one the column accepts.
+//
+// An unrecognised value falls back to PHP rather than being refused, so a client
+// that predates the field, or an API caller that omits it, keeps working. The
+// fallback deliberately runs TOWARDS the type that provisions everything: the
+// opposite default would silently withhold a database the caller expected.
+func normalizeSiteType(requested string) string {
+	switch strings.ToLower(strings.TrimSpace(requested)) {
+	case siteTypeWordPress:
+		return siteTypeWordPress
+	case siteTypeStatic:
+		return siteTypeStatic
+	default:
+		return siteTypePHP
+	}
+}
+
+// databaseNamesFor returns the default database and user a site type is entitled
+// to, or an empty pair when it is entitled to neither.
+//
+// The names are what the connection-details screen reads off the domains row, so
+// an empty pair is also the signal that no database was opened. Deriving the
+// skip from these names rather than from the type again keeps the two decisions
+// from drifting apart.
+func databaseNamesFor(siteType, systemUser string) (dbName, dbUser string) {
+	if siteType == siteTypeStatic {
+		return "", ""
+	}
+	return systemUser + "_main", systemUser + "_db"
+}
+
+// mysqlCreateDB is a seam so provisionDatabase can be tested without a MariaDB
+// socket. Production always uses the real implementation.
+var mysqlCreateDB = credentials.MySQLCreateDB
+
+// provisionDatabase opens the default database for a freshly created domain and
+// returns the password it generated. An empty dbName means the site type is
+// entitled to no database, and the empty password that comes back keeps a
+// credential for a database nobody opened out of the create response.
+func (h *Handlers) provisionDatabase(domainID int64, dbName, dbUser string) string {
+	if dbName == "" {
+		return ""
+	}
+	dbPass := credentials.RandomPassword(24)
+	if err := mysqlCreateDB(h.DB, domainID, dbName, dbUser, dbPass); err != nil {
+		log.Printf("MySQL create %q error: %v", dbName, err)
+	}
+	return dbPass
 }
 
 type createResp struct {
@@ -262,16 +326,20 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUser := pr.SystemUser + "_db"
-	dbName := pr.SystemUser + "_main"
+	// A static site never connects to MySQL, so it gets no database and no user.
+	// The names stay EMPTY rather than being generated and left unbacked: the
+	// connection-details screen reads db_name/db_user straight off this row, so a
+	// generated name would advertise a database that does not exist.
+	siteType := normalizeSiteType(req.SiteType)
+	dbName, dbUser := databaseNamesFor(siteType, pr.SystemUser)
 
 	// 2) domains row
 	res, err := h.DB.ExecContext(r.Context(),
 		`INSERT INTO domains(domain_name, system_user, php_version, ssl_enabled, status, ipv4,
-		   ftp_host, ftp_user, db_host, db_user, db_name, web_root, is_demo)
-		 VALUES(?,?,?,0,'active',?,?,?, 'localhost',?,?,?, 0)`,
+		   ftp_host, ftp_user, db_host, db_user, db_name, web_root, is_demo, site_type)
+		 VALUES(?,?,?,0,'active',?,?,?, 'localhost',?,?,?, 0,?)`,
 		req.DomainName, pr.SystemUser, req.PHPVersion, h.IPv4,
-		h.IPv4, pr.SystemUser, dbUser, dbName, pr.WebRoot)
+		h.IPv4, pr.SystemUser, dbUser, dbName, pr.WebRoot, siteType)
 	if err != nil {
 		_ = provisioner.Deprovision(req.DomainName, pr.SystemUser)
 		httpx.WriteError(w, http.StatusInternalServerError, "domain record creation failed")
@@ -318,11 +386,8 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		log.Printf("FTP create %q error: %v", pr.SystemUser, err)
 	}
 
-	// 4) Default MySQL database + user
-	dbPass := credentials.RandomPassword(24)
-	if err := credentials.MySQLCreateDB(h.DB, id, dbName, dbUser, dbPass); err != nil {
-		log.Printf("MySQL create %q error: %v", dbName, err)
-	}
+	// 4) Default MySQL database + user, unless the site type is entitled to none.
+	dbPass := h.provisionDatabase(id, dbName, dbUser)
 
 	// 5) Auto-seed the DNS template + write BIND zone + reload
 	if _, err := dns.SeedDefaults(r.Context(), h.DB, id, req.DomainName, h.IPv4); err != nil {
