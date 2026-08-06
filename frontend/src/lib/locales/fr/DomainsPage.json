@@ -39,7 +39,8 @@
     "activate": "▶ Activer",
     "deactivate": "⏸ Désactiver",
     "delete": "🗑 Supprimer ({{count}})",
-    "clear": "Effacer la sélection"
+    "clear": "Effacer la sélection",
+    "changeOwner": "Changer de propriétaire"
   },
   "deleteConfirm": {
     "title": "⚠ Suppression groupée de domaines",
@@ -111,7 +112,8 @@
     "sslFailed": " (Le SSL Let's Encrypt n'a pas pu être émis — assurez-vous que l'enregistrement DNS A pointe ici, puis installez-le depuis la page SSL.)",
     "deleted": "✓ {{success}}/{{total}} domaines supprimés",
     "statusChanged": "✓ {{count}} domaines passés à « {{status}} »",
-    "subdomainsDeleted": "{{success}} sur {{total}} sous-domaine(s) supprimés"
+    "subdomainsDeleted": "{{success}} sur {{total}} sous-domaine(s) supprimés",
+    "ownerChanged": "Propriétaire modifié pour {{count}} domaine(s)"
   },
   "errors": {
     "invalidDomain": "Nom de domaine invalide. Par exemple : example.com ou panel.example.com",
@@ -129,5 +131,16 @@
     "cancel": "Annuler",
     "confirm": "Supprimer",
     "working": "Suppression..."
+  },
+  "owner": {
+    "title": "Changer le propriétaire",
+    "description": "{{count}} domaine(s) seront transférés au client choisi.",
+    "none": "Détacher de tout client",
+    "choose": "Choisir un client",
+    "noneWarning": "Laisser ce champ vide détache les domaines et les rend à l'administrateur.",
+    "cancel": "Annuler",
+    "confirm": "Changer de propriétaire",
+    "loadFailed": "Impossible de charger la liste des clients",
+    "failed": "Impossible de changer le propriétaire"
   }
 }

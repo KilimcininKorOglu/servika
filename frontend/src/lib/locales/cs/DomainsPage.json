@@ -39,7 +39,8 @@
     "activate": "▶ Aktivovat",
     "deactivate": "⏸ Deaktivovat",
     "delete": "🗑 Smazat ({{count}})",
-    "clear": "Zrušit výběr"
+    "clear": "Zrušit výběr",
+    "changeOwner": "Změnit vlastníka"
   },
   "deleteConfirm": {
     "title": "⚠ Hromadné smazání domén",
@@ -111,7 +112,8 @@
     "sslFailed": " (SSL Let's Encrypt nelze vydat — ujistěte se, že záznam DNS A směřuje sem, poté ho nainstalujte ze stránky SSL.)",
     "deleted": "✓ Smazáno {{success}}/{{total}} domén",
     "statusChanged": "✓ {{count}} domén změněno na „{{status}}“",
-    "subdomainsDeleted": "Smazáno {{success}} z {{total}} subdomén"
+    "subdomainsDeleted": "Smazáno {{success}} z {{total}} subdomén",
+    "ownerChanged": "Vlastník změněn u {{count}} domén"
   },
   "errors": {
     "invalidDomain": "Neplatný název domény. Například: example.com nebo panel.example.com",
@@ -129,5 +131,16 @@
     "cancel": "Zrušit",
     "confirm": "Smazat",
     "working": "Mazání..."
+  },
+  "owner": {
+    "title": "Změnit vlastníka",
+    "description": "{{count}} doména/domény budou přesunuty k vybranému zákazníkovi.",
+    "none": "Odpojit od všech zákazníků",
+    "choose": "Vyberte zákazníka",
+    "noneWarning": "Ponecháte-li pole prázdné, domény se odpojí od všech zákazníků a vrátí se správci.",
+    "cancel": "Zrušit",
+    "confirm": "Změnit vlastníka",
+    "loadFailed": "Seznam zákazníků se nepodařilo načíst",
+    "failed": "Vlastníka se nepodařilo změnit"
   }
 }

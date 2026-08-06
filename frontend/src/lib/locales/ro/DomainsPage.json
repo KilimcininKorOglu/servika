@@ -39,7 +39,8 @@
     "activate": "▶ Activare",
     "deactivate": "⏸ Dezactivare",
     "delete": "🗑 Ștergere ({{count}})",
-    "clear": "Golire selecție"
+    "clear": "Golire selecție",
+    "changeOwner": "Schimbă proprietarul"
   },
   "deleteConfirm": {
     "title": "⚠ Ștergere domenii în masă",
@@ -111,7 +112,8 @@
     "sslFailed": " (SSL Let's Encrypt nu a putut fi emis — asigurați-vă că înregistrarea DNS A indică aici, apoi instalați-l din pagina SSL.)",
     "deleted": "✓ {{success}}/{{total}} domenii șterse",
     "statusChanged": "✓ {{count}} domenii schimbate în „{{status}}”",
-    "subdomainsDeleted": "{{success}} din {{total}} subdomeniu(ri) șterse"
+    "subdomainsDeleted": "{{success}} din {{total}} subdomeniu(ri) șterse",
+    "ownerChanged": "Proprietar schimbat pentru {{count}} domeniu(ri)"
   },
   "errors": {
     "invalidDomain": "Nume de domeniu invalid. De exemplu: example.com sau panel.example.com",
@@ -129,5 +131,16 @@
     "cancel": "Anulează",
     "confirm": "Șterge",
     "working": "Se șterge..."
+  },
+  "owner": {
+    "title": "Schimbați proprietarul",
+    "description": "{{count}} domeniu(ri) vor fi mutate la clientul ales.",
+    "none": "Desprinde de toți clienții",
+    "choose": "Alegeți un client",
+    "noneWarning": "Dacă lăsați câmpul gol, domeniile sunt desprinse și revin administratorului.",
+    "cancel": "Anulează",
+    "confirm": "Schimbă proprietarul",
+    "loadFailed": "Lista de clienți nu a putut fi încărcată",
+    "failed": "Proprietarul nu a putut fi schimbat"
   }
 }

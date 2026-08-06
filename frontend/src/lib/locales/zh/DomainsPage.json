@@ -39,7 +39,8 @@
     "activate": "▶ 激活",
     "deactivate": "⏸ 停用",
     "delete": "🗑 删除 ({{count}})",
-    "clear": "清除选择"
+    "clear": "清除选择",
+    "changeOwner": "更改所有者"
   },
   "deleteConfirm": {
     "title": "⚠ 批量删除域名",
@@ -111,7 +112,8 @@
     "sslFailed": " (无法签发 Let's Encrypt SSL，请确认 DNS A 记录指向此处，然后在 SSL 页面安装。)",
     "deleted": "✓ 已删除 {{success}}/{{total}} 个域名",
     "statusChanged": "✓ {{count}} 个域名已更改为 \"{{status}}\"",
-    "subdomainsDeleted": "已删除 {{total}} 个子域中的 {{success}} 个"
+    "subdomainsDeleted": "已删除 {{total}} 个子域中的 {{success}} 个",
+    "ownerChanged": "已更改 {{count}} 个域名的所有者"
   },
   "errors": {
     "invalidDomain": "无效的域名。例如：example.com 或 panel.example.com",
@@ -129,5 +131,16 @@
     "cancel": "取消",
     "confirm": "删除",
     "working": "正在删除..."
+  },
+  "owner": {
+    "title": "更改所有者",
+    "description": "{{count}} 个域名将转移给所选客户。",
+    "none": "从所有客户中分离",
+    "choose": "选择客户",
+    "noneWarning": "留空会将域名从所有客户中分离并归还给管理员。",
+    "cancel": "取消",
+    "confirm": "更改所有者",
+    "loadFailed": "无法加载客户列表",
+    "failed": "无法更改所有者"
   }
 }

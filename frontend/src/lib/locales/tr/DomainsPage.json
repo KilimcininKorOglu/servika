@@ -39,7 +39,8 @@
     "activate": "▶ Etkinleştir",
     "deactivate": "⏸ Devre Dışı Bırak",
     "delete": "🗑 Sil ({{count}})",
-    "clear": "Seçimi temizle"
+    "clear": "Seçimi temizle",
+    "changeOwner": "Sahip değiştir"
   },
   "deleteConfirm": {
     "title": "⚠ Toplu Alan Adı Silme",
@@ -111,7 +112,8 @@
     "sslFailed": " (Let's Encrypt SSL alınamadı — DNS A kaydının buraya işaret ettiğinden emin olun, sonra SSL sayfasından kurun.)",
     "deleted": "✓ {{success}}/{{total}} alan adı silindi",
     "statusChanged": "✓ {{count}} alan adı \"{{status}}\" durumuna değiştirildi",
-    "subdomainsDeleted": "{{total}} alt alanın {{success}} tanesi silindi"
+    "subdomainsDeleted": "{{total}} alt alanın {{success}} tanesi silindi",
+    "ownerChanged": "{{count}} alan adının sahibi değiştirildi"
   },
   "errors": {
     "invalidDomain": "Geçersiz alan adı. Örneğin: example.com veya panel.example.com",
@@ -129,5 +131,16 @@
     "cancel": "Vazgeç",
     "confirm": "Sil",
     "working": "Siliniyor..."
+  },
+  "owner": {
+    "title": "Sahibi değiştir",
+    "description": "{{count}} alan adı seçtiğiniz müşteriye taşınacak.",
+    "none": "Her müşteriden ayır",
+    "choose": "Bir müşteri seçin",
+    "noneWarning": "Boş bırakırsanız alan adları her müşteriden ayrılır ve yöneticiye döner.",
+    "cancel": "Vazgeç",
+    "confirm": "Sahibi değiştir",
+    "loadFailed": "Müşteri listesi yüklenemedi",
+    "failed": "Sahip değiştirilemedi"
   }
 }

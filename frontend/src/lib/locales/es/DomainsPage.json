@@ -39,7 +39,8 @@
     "activate": "▶ Activar",
     "deactivate": "⏸ Desactivar",
     "delete": "🗑 Eliminar ({{count}})",
-    "clear": "Borrar selección"
+    "clear": "Borrar selección",
+    "changeOwner": "Cambiar propietario"
   },
   "deleteConfirm": {
     "title": "⚠ Eliminación masiva de dominios",
@@ -111,7 +112,8 @@
     "sslFailed": " (No se pudo emitir SSL Let's Encrypt. Asegúrese de que el registro DNS A apunta aquí e instálelo desde la página SSL.)",
     "deleted": "✓ {{success}}/{{total}} dominios eliminados",
     "statusChanged": "✓ {{count}} dominios cambiados a «{{status}}»",
-    "subdomainsDeleted": "{{success}} de {{total}} subdominio(s) eliminados"
+    "subdomainsDeleted": "{{success}} de {{total}} subdominio(s) eliminados",
+    "ownerChanged": "Propietario cambiado en {{count}} dominio(s)"
   },
   "errors": {
     "invalidDomain": "Nombre de dominio no válido. Por ejemplo: ejemplo.com o panel.ejemplo.com",
@@ -129,5 +131,16 @@
     "cancel": "Cancelar",
     "confirm": "Eliminar",
     "working": "Eliminando..."
+  },
+  "owner": {
+    "title": "Cambiar el propietario",
+    "description": "{{count}} dominio(s) se moverán al cliente que elija.",
+    "none": "Desvincular de todos los clientes",
+    "choose": "Elija un cliente",
+    "noneWarning": "Dejar este campo vacío desvincula los dominios y los devuelve al administrador.",
+    "cancel": "Cancelar",
+    "confirm": "Cambiar propietario",
+    "loadFailed": "No se pudo cargar la lista de clientes",
+    "failed": "No se pudo cambiar el propietario"
   }
 }

@@ -39,7 +39,8 @@
     "activate": "▶ 有効化",
     "deactivate": "⏸ 無効化",
     "delete": "🗑 削除 ({{count}})",
-    "clear": "選択を解除"
+    "clear": "選択を解除",
+    "changeOwner": "所有者を変更"
   },
   "deleteConfirm": {
     "title": "⚠ ドメインの一括削除",
@@ -111,7 +112,8 @@
     "sslFailed": " (Let's Encrypt SSL を発行できませんでした — DNS A レコードがここを指していることを確認してから、SSL ページでインストールしてください。)",
     "deleted": "✓ {{success}}/{{total}} 個のドメインを削除しました",
     "statusChanged": "✓ {{count}} 個のドメインを「{{status}}」に変更しました",
-    "subdomainsDeleted": "{{total}} 件中 {{success}} 件のサブドメインを削除しました"
+    "subdomainsDeleted": "{{total}} 件中 {{success}} 件のサブドメインを削除しました",
+    "ownerChanged": "{{count}} 件のドメインの所有者を変更しました"
   },
   "errors": {
     "invalidDomain": "無効なドメイン名です。例: example.com または panel.example.com",
@@ -129,5 +131,16 @@
     "cancel": "キャンセル",
     "confirm": "削除",
     "working": "削除中..."
+  },
+  "owner": {
+    "title": "所有者を変更",
+    "description": "{{count}} 件のドメインを選択した顧客へ移します。",
+    "none": "すべての顧客から切り離す",
+    "choose": "顧客を選択",
+    "noneWarning": "空のままにすると、ドメインはすべての顧客から切り離され、管理者に戻ります。",
+    "cancel": "キャンセル",
+    "confirm": "所有者を変更",
+    "loadFailed": "顧客一覧を読み込めませんでした",
+    "failed": "所有者を変更できませんでした"
   }
 }

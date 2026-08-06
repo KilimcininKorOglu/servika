@@ -39,7 +39,8 @@
     "activate": "▶ Aktivieren",
     "deactivate": "⏸ Deaktivieren",
     "delete": "🗑 Löschen ({{count}})",
-    "clear": "Auswahl aufheben"
+    "clear": "Auswahl aufheben",
+    "changeOwner": "Besitzer ändern"
   },
   "deleteConfirm": {
     "title": "⚠ Massenlöschung von Domains",
@@ -111,7 +112,8 @@
     "sslFailed": " (Let's-Encrypt-SSL konnte nicht ausgestellt werden — stellen Sie sicher, dass der DNS-A-Eintrag hierher verweist, und installieren Sie es dann auf der SSL-Seite.)",
     "deleted": "✓ {{success}}/{{total}} Domains gelöscht",
     "statusChanged": "✓ {{count}} Domains geändert auf \"{{status}}\"",
-    "subdomainsDeleted": "{{success}} von {{total}} Subdomain(s) gelöscht"
+    "subdomainsDeleted": "{{success}} von {{total}} Subdomain(s) gelöscht",
+    "ownerChanged": "Besitzer von {{count}} Domain(s) geändert"
   },
   "errors": {
     "invalidDomain": "Ungültiger Domainname. Zum Beispiel: example.com oder panel.example.com",
@@ -129,5 +131,16 @@
     "cancel": "Abbrechen",
     "confirm": "Löschen",
     "working": "Wird gelöscht..."
+  },
+  "owner": {
+    "title": "Besitzer ändern",
+    "description": "{{count}} Domain(s) werden dem gewählten Kunden zugeordnet.",
+    "none": "Von jedem Kunden lösen",
+    "choose": "Kunden auswählen",
+    "noneWarning": "Wenn Sie dies leer lassen, werden die Domains von jedem Kunden gelöst und dem Administrator zugeordnet.",
+    "cancel": "Abbrechen",
+    "confirm": "Besitzer ändern",
+    "loadFailed": "Kundenliste konnte nicht geladen werden",
+    "failed": "Besitzer konnte nicht geändert werden"
   }
 }

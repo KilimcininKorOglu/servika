@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
 import EmptyState from '@/components/EmptyState'
 import {
@@ -22,6 +23,7 @@ type Domain = {
   created_at?: string; plan_id?: number; plan_name?: string
   ssl?: boolean; ssl_expiry?: string; reseller_name?: string
 }
+type Customer = { id: number; name: string }
 type Subdomain = {
   id: number; subdomain: string; fqdn: string
   parent_id: number; parent_name: string; system_user: string
@@ -62,6 +64,10 @@ export default function DomainsPage() {
   const [processing, setProcessing] = useState(false)
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
+  const [ownerOpen, setOwnerOpen] = useState(false)
+  const [ownerCustomers, setOwnerCustomers] = useState<Customer[]>([])
+  const [ownerTarget, setOwnerTarget] = useState('')
+  const isAdmin = useAuth((state) => state.username?.role) === 'admin'
 
   const [plans, setPlans] = useState<Plan[]>([])
   const [phpVersions, setPhpVersions] = useState<PHPVer[]>([])
@@ -284,6 +290,36 @@ export default function DomainsPage() {
     else setSelected(new Set())
   }
 
+  // The customer list is already scoped by the server: GET /customers returns a
+  // reseller only its own, so the picker cannot offer a customer the transfer
+  // would be refused for.
+  function openOwnerDialog() {
+    setOwnerTarget('')
+    setOwnerOpen(true)
+    api.get<Customer[]>('/customers')
+      .then(response => setOwnerCustomers(response.data || []))
+      .catch(cause => setError(apiError(cause, t('owner.loadFailed'))))
+  }
+
+  async function changeOwner() {
+    setOwnerOpen(false); setProcessing(true); setError(null)
+    const ids = Array.from(selected)
+    try {
+      // An empty selection detaches the domains, which the server allows only for
+      // an administrator; the option is hidden from anyone else.
+      const response = await api.post<{ updated: number }>('/domains/bulk/owner', {
+        ids, customer_id: ownerTarget === '' ? null : Number(ownerTarget),
+      })
+      setSelected(new Set())
+      setSuccess(t('toast.ownerChanged', { count: response.data.updated }))
+      setTimeout(() => setSuccess(null), 4000)
+    } catch (cause) {
+      setError(apiError(cause, t('owner.failed')))
+    } finally {
+      setProcessing(false); load()
+    }
+  }
+
   async function bulkDelete() {
     setDeleteConfirmationOpen(false); setDeleteConfirmationText(''); setProcessing(true); setError(null)
     const ids = Array.from(selected); let successCount = 0
@@ -375,6 +411,10 @@ export default function DomainsPage() {
           <button onClick={() => { setDeleteConfirmationText(''); setDeleteConfirmationOpen(true) }} disabled={processing}
             className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-medium">
             {t('bulk.delete', { count: selected.size })}
+          </button>
+          <button onClick={openOwnerDialog} disabled={processing}
+            className="text-xs px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded">
+            {t('bulk.changeOwner')}
           </button>
           <button onClick={() => setSelected(new Set())} disabled={processing}
             className="text-xs px-3 py-1.5 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:bg-amber-900/30 rounded">
@@ -700,6 +740,33 @@ export default function DomainsPage() {
               <button onClick={bulkDeleteSubdomains} disabled={processing}
                 className="px-3 py-1.5 text-sm rounded bg-red-600 hover:bg-red-700 text-white font-medium disabled:opacity-50">
                 {processing ? t('subDeleteConfirm.working') : t('subDeleteConfirm.confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {ownerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setOwnerOpen(false)}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-2">{t('owner.title')}</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('owner.description', { count: selected.size })}</p>
+            <select value={ownerTarget} onChange={e => setOwnerTarget(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm mb-2">
+              <option value="">{isAdmin ? t('owner.none') : t('owner.choose')}</option>
+              {ownerCustomers.map(customer => (
+                <option key={customer.id} value={customer.id}>{customer.name}</option>
+              ))}
+            </select>
+            {/* Leaving the picker empty is a real action, not a cancel: it takes
+                the domain out of every customer's hands and back to admin. */}
+            {isAdmin && <p className="text-xs text-amber-700 dark:text-amber-400 mb-4">{t('owner.noneWarning')}</p>}
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setOwnerOpen(false)}
+                className="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-sm rounded">{t('owner.cancel')}</button>
+              <button onClick={changeOwner} disabled={processing || (!isAdmin && ownerTarget === '')}
+                className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded font-medium">
+                {t('owner.confirm')}
               </button>
             </div>
           </div>

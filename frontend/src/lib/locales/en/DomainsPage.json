@@ -39,7 +39,8 @@
     "activate": "▶ Activate",
     "deactivate": "⏸ Deactivate",
     "delete": "🗑 Delete ({{count}})",
-    "clear": "Clear selection"
+    "clear": "Clear selection",
+    "changeOwner": "Change owner"
   },
   "deleteConfirm": {
     "title": "⚠ Bulk Domain Deletion",
@@ -111,7 +112,8 @@
     "sslFailed": " (Let's Encrypt SSL could not be issued — make sure the DNS A record points here, then install it from the SSL page.)",
     "deleted": "✓ {{success}}/{{total}} domains deleted",
     "statusChanged": "✓ {{count}} domains changed to \"{{status}}\"",
-    "subdomainsDeleted": "{{success}} of {{total}} subdomain(s) deleted"
+    "subdomainsDeleted": "{{success}} of {{total}} subdomain(s) deleted",
+    "ownerChanged": "Owner changed for {{count}} domain(s)"
   },
   "errors": {
     "invalidDomain": "Invalid domain name. For example: example.com or panel.example.com",
@@ -129,5 +131,16 @@
     "cancel": "Cancel",
     "confirm": "Delete",
     "working": "Deleting..."
+  },
+  "owner": {
+    "title": "Change the owner",
+    "description": "{{count}} domain(s) will be moved to the customer you pick.",
+    "none": "Detach from every customer",
+    "choose": "Pick a customer",
+    "noneWarning": "Leaving this empty detaches the domains and returns them to the administrator.",
+    "cancel": "Cancel",
+    "confirm": "Change owner",
+    "loadFailed": "Could not load the customer list",
+    "failed": "Could not change the owner"
   }
 }
