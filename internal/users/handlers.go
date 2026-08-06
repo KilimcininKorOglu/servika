@@ -249,20 +249,31 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	id, _ := res.LastInsertId()
 
-	// When a reseller opens a customer account, mirror it into a customers row
-	// owned by the reseller. The reseller's customer list and quota are counted
-	// over customers.owner_user_id, so without this the new login would not
-	// appear there and the quota would drift. Non-fatal: the login already
-	// exists, so a failure here is logged, not surfaced.
-	if c.Role == middleware.RoleReseller {
+	// Every customer account gets a customers row, whoever opened it. The row is
+	// the middle link of the ownership chain, so without it the account signs in
+	// and sees nothing (ScopeSQL's RoleUser branch matches on customers.user_id),
+	// and no domain can be attached to it either, because the domain form lists
+	// customers. This used to run only on the reseller path, which left every
+	// administrator-created customer account stranded that way.
+	//
+	// owner_user_id is the reseller's only when a reseller opened the account:
+	// its customer list and quota are counted over that column. An administrator
+	// leaves it NULL, which means the customer sits directly under admin.
+	//
+	// Non-fatal: the login already exists, so a failure here is logged.
+	if b.Role == middleware.RoleUser {
 		displayName := strings.TrimSpace(b.FullName)
 		if displayName == "" {
 			displayName = b.Username
 		}
+		var owner any
+		if c.Role == middleware.RoleReseller {
+			owner = c.UserID
+		}
 		if _, e := h.DB.ExecContext(r.Context(),
 			`INSERT INTO customers(name, email, status, notes, user_id, owner_user_id)
 			 VALUES(?,?, 'active', '', ?, ?)`,
-			displayName, strings.TrimSpace(b.Email), id, c.UserID); e != nil {
+			displayName, strings.TrimSpace(b.Email), id, owner); e != nil {
 			// #nosec G706 -- logged values are integer IDs, validated identifiers (^c_[A-Za-z0-9_]+$), template-derived names, or error/command output; no raw tenant string with CR/LF reaches the log.
 			log.Printf("auto customer record for user %d failed: %v", id, e)
 		}
