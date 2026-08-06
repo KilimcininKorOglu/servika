@@ -1105,6 +1105,41 @@ func (o VhostOpts) RedirectToHost() string {
 	return o.DomainName
 }
 
+// withCertifiableCanonicalRedirect drops a canonical redirect the installed
+// certificate cannot carry.
+//
+// The redirect is checked against the certificate when the SETTING is stored,
+// but it is stored once and re-applied by every later render (a PHP version
+// change, an SSL renewal, a WAF toggle), so the certificate it was checked
+// against is not the one that ends up serving it. Two ways they diverge: SSL
+// installation is asynchronous, so cert_path is still empty while the setting is
+// being stored and the check cannot run at all; and a renewal can come back
+// without a name the previous certificate had.
+//
+// Once a certificate exists the template turns the 301 into an https one, so
+// emitting it against a certificate that does not name the target replaces a
+// working site with a browser certificate error. Dropping it leaves both
+// hostnames serving the site directly, which is a lost preference rather than an
+// outage. The setting stays stored, so the next render after the certificate
+// covers the target picks it back up on its own.
+//
+// covers is a parameter so the decision can be tested without a certificate on
+// disk; production always passes CertificateCoversHost.
+func withCertifiableCanonicalRedirect(opts VhostOpts, covers func(certPath, keyPath, host string) bool) VhostOpts {
+	target := opts.RedirectToHost()
+	// Nothing to emit, or the target stays http and no certificate is involved.
+	if target == "" || !opts.SSL() {
+		return opts
+	}
+	if covers(opts.CertPath, opts.KeyPath, target) {
+		return opts
+	}
+	// #nosec G706 -- both values are validated hostnames (ValidateDomain) or template-derived, so no raw tenant string with CR/LF reaches the log.
+	log.Printf("canonical redirect for %q dropped from this render: the installed certificate does not cover %q", opts.DomainName, target)
+	opts.WWWRedirect = ""
+	return opts
+}
+
 // RedirectFromHost returns the hostname that answers with a 301, or "" when no
 // canonical redirect applies. Exported for the vhost templates.
 func (o VhostOpts) RedirectFromHost() string {
@@ -1400,6 +1435,7 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 	if opts.Suspended || opts.RedirectTarget != "" || opts.CustomVhostContent != "" {
 		opts.WWWRedirect = ""
 	}
+	opts = withCertifiableCanonicalRedirect(opts, CertificateCoversHost)
 	var buf bytes.Buffer
 	if opts.CustomVhostContent != "" && !opts.Suspended {
 		buf.WriteString(strings.TrimSpace(opts.CustomVhostContent))
