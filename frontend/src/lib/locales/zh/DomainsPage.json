@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (默认)",
     "servicePlan": "服务套餐",
     "planNone": "(无)",
+    "owner": "所有者",
+    "ownerAdmin": "管理员（本人）",
+    "customerNew": "创建新客户",
+    "ownerHint": "选择域名所属的分销商，然后选择该分销商的一个客户。两者均保持不变时，域名归管理员所有。",
     "issueSsl": "创建后安装 Let's Encrypt SSL 证书",
     "sslWarning": "⚠️ 域名的 DNS A 记录必须已指向此服务器，否则签发将失败，稍后您可以在 SSL 页面重试。",
     "cancel": "取消",
@@ -98,6 +102,7 @@
     "readyPre": " 已就绪。以下密码",
     "readyBold": "仅显示一次",
     "readyPost": "。请妥善保管。",
+    "ownerNotApplied": "域名已创建，但所选分销商未生效：该系统用户已有客户记录，现有记录会保留原有所有者。请使用所有者变更功能进行转移。",
     "ftp": "FTP",
     "mysql": "MySQL 数据库",
     "host": "主机",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "无效的域名。例如：example.com 或 panel.example.com",
     "createFailed": "无法创建域名",
+    "customerNotFound": "所选客户已不存在。",
+    "planNotFound": "所选服务套餐已不存在。",
+    "ownerNotReseller": "所选所有者不是有效的分销商。",
+    "ownerWithCustomer": "请选择现有客户，或为新客户选择分销商，不能同时选择。",
+    "ownerNotAllowed": "只有管理员才能选择所有者。",
     "statusFailed": "无法更改状态"
   },
   "bulkSub": {

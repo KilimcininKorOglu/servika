@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (par défaut)",
     "servicePlan": "Forfait de service",
     "planNone": "(aucun)",
+    "owner": "Propriétaire",
+    "ownerAdmin": "Administrateur (le mien)",
+    "customerNew": "Créer un nouveau client",
+    "ownerHint": "Choisissez le revendeur auquel appartient le domaine, puis l'un de ses clients. Laissez les deux tels quels pour garder le domaine sous l'administrateur.",
     "issueSsl": "Installer un certificat SSL Let's Encrypt après la création",
     "sslWarning": "⚠️ L'enregistrement DNS A du domaine doit déjà pointer vers ce serveur, sinon l'émission échoue et vous pourrez réessayer plus tard depuis la page SSL.",
     "cancel": "Annuler",
@@ -98,6 +102,7 @@
     "readyPre": " est prêt. Les mots de passe ci-dessous ne sont affichés ",
     "readyBold": "qu'une seule fois",
     "readyPost": ". Conservez-les en lieu sûr.",
+    "ownerNotApplied": "Le domaine a été créé, mais le revendeur choisi n'a pas été appliqué : cet utilisateur système possède déjà une fiche client, et une fiche existante conserve son propriétaire. Utilisez le changement de propriétaire pour la déplacer.",
     "ftp": "FTP",
     "mysql": "Base de données MySQL",
     "host": "Hôte",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "Nom de domaine invalide. Par exemple : example.com ou panel.example.com",
     "createFailed": "Impossible de créer le domaine",
+    "customerNotFound": "Le client sélectionné n'existe plus.",
+    "planNotFound": "Le plan de service sélectionné n'existe plus.",
+    "ownerNotReseller": "Le propriétaire sélectionné n'est pas un revendeur actif.",
+    "ownerWithCustomer": "Choisissez soit un client existant, soit un revendeur pour un nouveau, pas les deux.",
+    "ownerNotAllowed": "Seul un administrateur peut choisir le propriétaire.",
     "statusFailed": "Impossible de changer le statut"
   },
   "bulkSub": {

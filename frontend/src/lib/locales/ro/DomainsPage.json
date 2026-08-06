@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (implicit)",
     "servicePlan": "Plan de servicii",
     "planNone": "(niciunul)",
+    "owner": "Proprietar",
+    "ownerAdmin": "Administrator (al meu)",
+    "customerNew": "Creează un client nou",
+    "ownerHint": "Alegeți resellerul căruia îi aparține domeniul, apoi unul dintre clienții săi. Lăsați ambele neschimbate pentru a păstra domeniul la administrator.",
     "issueSsl": "Instalare certificat SSL Let's Encrypt după creare",
     "sslWarning": "⚠️ Înregistrarea DNS A a domeniului trebuie să indice deja către acest server, altfel emiterea eșuează și puteți reîncerca ulterior din pagina SSL.",
     "cancel": "Anulare",
@@ -98,6 +102,7 @@
     "readyPre": " este gata. Parolele de mai jos sunt afișate ",
     "readyBold": "o singură dată",
     "readyPost": ". Stocați-le în siguranță.",
+    "ownerNotApplied": "Domeniul a fost creat, dar resellerul ales nu a fost aplicat: acest utilizator de sistem are deja o fișă de client, iar o fișă existentă își păstrează proprietarul avut. Folosiți schimbarea proprietarului pentru a o muta.",
     "ftp": "FTP",
     "mysql": "Bază de date MySQL",
     "host": "Gazdă",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "Nume de domeniu invalid. De exemplu: example.com sau panel.example.com",
     "createFailed": "Nu s-a putut crea domeniul",
+    "customerNotFound": "Clientul selectat nu mai există.",
+    "planNotFound": "Planul de servicii selectat nu mai există.",
+    "ownerNotReseller": "Proprietarul selectat nu este un reseller activ.",
+    "ownerWithCustomer": "Alegeți fie un client existent, fie un reseller pentru unul nou, nu ambele.",
+    "ownerNotAllowed": "Doar un administrator poate alege proprietarul.",
     "statusFailed": "Nu s-a putut schimba starea"
   },
   "bulkSub": {

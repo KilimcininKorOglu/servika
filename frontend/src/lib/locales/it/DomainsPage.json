@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (predefinito)",
     "servicePlan": "Piano di servizio",
     "planNone": "(nessuno)",
+    "owner": "Proprietario",
+    "ownerAdmin": "Amministratore (mio)",
+    "customerNew": "Crea un nuovo cliente",
+    "ownerHint": "Scegli il reseller a cui appartiene il dominio, poi uno dei suoi clienti. Lascia entrambi invariati per mantenere il dominio sotto l'amministratore.",
     "issueSsl": "Installa un certificato SSL Let's Encrypt dopo la creazione",
     "sslWarning": "⚠️ Il record DNS A del dominio deve già puntare a questo server, altrimenti l'emissione non riesce e potrai riprovare in seguito dalla pagina SSL.",
     "cancel": "Annulla",
@@ -98,6 +102,7 @@
     "readyPre": " è pronto. Le password qui sotto vengono mostrate ",
     "readyBold": "solo una volta",
     "readyPost": ". Conservale in modo sicuro.",
+    "ownerNotApplied": "Il dominio è stato creato, ma il reseller scelto non è stato applicato: questo utente di sistema ha già una scheda cliente e una scheda esistente mantiene il proprietario che aveva. Usa il cambio di proprietario per spostarla.",
     "ftp": "FTP",
     "mysql": "Database MySQL",
     "host": "Host",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "Nome dominio non valido. Ad esempio: example.com o panel.example.com",
     "createFailed": "Impossibile creare il dominio",
+    "customerNotFound": "Il cliente selezionato non esiste più.",
+    "planNotFound": "Il piano di servizio selezionato non esiste più.",
+    "ownerNotReseller": "Il proprietario selezionato non è un reseller attivo.",
+    "ownerWithCustomer": "Scegli un cliente esistente oppure un reseller per uno nuovo, non entrambi.",
+    "ownerNotAllowed": "Solo un amministratore può scegliere il proprietario.",
     "statusFailed": "Impossibile cambiare lo stato"
   },
   "bulkSub": {

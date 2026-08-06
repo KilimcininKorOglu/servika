@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (varsayılan)",
     "servicePlan": "Hizmet Planı",
     "planNone": "(yok)",
+    "owner": "Sahip",
+    "ownerAdmin": "Yönetici (bana ait)",
+    "customerNew": "Yeni müşteri aç",
+    "ownerHint": "Alan adının ait olacağı bayiyi, ardından o bayinin müşterilerinden birini seçin. İkisini de olduğu gibi bırakırsanız alan adı yöneticide kalır.",
     "issueSsl": "Oluşturduktan sonra Let's Encrypt SSL sertifikası kur",
     "sslWarning": "⚠️ Alan adının DNS A kaydı bu sunucuyu göstermelidir, aksi halde sertifika alınamaz ve daha sonra SSL sayfasından yeniden deneyebilirsiniz.",
     "cancel": "İptal",
@@ -98,6 +102,7 @@
     "readyPre": " hazır. Aşağıdaki parolalar ",
     "readyBold": "yalnızca bir kez",
     "readyPost": " gösterilir. Güvenli bir şekilde saklayın.",
+    "ownerNotApplied": "Alan adı oluşturuldu, ancak seçtiğiniz bayi uygulanmadı: bu sistem kullanıcısının zaten bir müşteri kaydı var ve mevcut bir kayıt sahibini korur. Taşımak için sahibi değiştir işlemini kullanın.",
     "ftp": "FTP",
     "mysql": "MySQL Veritabanı",
     "host": "Sunucu",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "Geçersiz alan adı. Örneğin: example.com veya panel.example.com",
     "createFailed": "Alan adı oluşturulamadı",
+    "customerNotFound": "Seçilen müşteri artık yok.",
+    "planNotFound": "Seçilen hizmet planı artık yok.",
+    "ownerNotReseller": "Seçilen sahip etkin bir bayi değil.",
+    "ownerWithCustomer": "Ya mevcut bir müşteri ya da yeni müşteri için bir bayi seçin, ikisini birden değil.",
+    "ownerNotAllowed": "Sahibi yalnızca bir yönetici seçebilir.",
     "statusFailed": "Durum değiştirilemedi"
   },
   "bulkSub": {

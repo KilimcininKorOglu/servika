@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (Standard)",
     "servicePlan": "Serviceplan",
     "planNone": "(keiner)",
+    "owner": "Eigentümer",
+    "ownerAdmin": "Administrator (eigene)",
+    "customerNew": "Neuen Kunden anlegen",
+    "ownerHint": "Wählen Sie den Reseller, dem die Domain gehört, und danach einen seiner Kunden. Lassen Sie beides unverändert, bleibt die Domain beim Administrator.",
     "issueSsl": "Nach der Erstellung ein Let's-Encrypt-SSL-Zertifikat installieren",
     "sslWarning": "⚠️ Der DNS-A-Eintrag der Domain muss bereits auf diesen Server verweisen, andernfalls schlägt die Ausstellung fehl und Sie können es später auf der SSL-Seite erneut versuchen.",
     "cancel": "Abbrechen",
@@ -98,6 +102,7 @@
     "readyPre": " ist bereit. Die Passwörter unten werden ",
     "readyBold": "nur einmal",
     "readyPost": " angezeigt. Bewahren Sie sie sicher auf.",
+    "ownerNotApplied": "Die Domain wurde erstellt, der gewählte Reseller wurde jedoch nicht übernommen: Dieser Systembenutzer hat bereits einen Kundendatensatz, und ein vorhandener Datensatz behält seinen Eigentümer. Verwenden Sie den Eigentümerwechsel, um ihn zu verschieben.",
     "ftp": "FTP",
     "mysql": "MySQL-Datenbank",
     "host": "Host",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "Ungültiger Domainname. Zum Beispiel: example.com oder panel.example.com",
     "createFailed": "Domain konnte nicht erstellt werden",
+    "customerNotFound": "Der gewählte Kunde existiert nicht mehr.",
+    "planNotFound": "Der gewählte Servicetarif existiert nicht mehr.",
+    "ownerNotReseller": "Der gewählte Eigentümer ist kein aktiver Reseller.",
+    "ownerWithCustomer": "Wählen Sie entweder einen vorhandenen Kunden oder einen Reseller für einen neuen, nicht beides.",
+    "ownerNotAllowed": "Nur ein Administrator kann den Eigentümer wählen.",
     "statusFailed": "Status konnte nicht geändert werden"
   },
   "bulkSub": {

@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (predefinido)",
     "servicePlan": "Plano de Serviço",
     "planNone": "(nenhum)",
+    "owner": "Proprietário",
+    "ownerAdmin": "Administrador (meu)",
+    "customerNew": "Criar um novo cliente",
+    "ownerHint": "Escolha o revendedor a que o domínio pertence e depois um dos seus clientes. Deixe ambos como estão para manter o domínio no administrador.",
     "issueSsl": "Instalar um certificado SSL Let's Encrypt após a criação",
     "sslWarning": "⚠️ O registo DNS A do domínio já deve apontar para este servidor, caso contrário a emissão falha e pode tentar novamente mais tarde na página SSL.",
     "cancel": "Cancelar",
@@ -98,6 +102,7 @@
     "readyPre": " está pronto. As palavras-passe abaixo são mostradas ",
     "readyBold": "apenas uma vez",
     "readyPost": ". Guarde-as em segurança.",
+    "ownerNotApplied": "O domínio foi criado, mas o revendedor escolhido não foi aplicado: este utilizador de sistema já tem um registo de cliente, e um registo existente mantém o proprietário que tinha. Utilize a alteração de proprietário para o mover.",
     "ftp": "FTP",
     "mysql": "Base de Dados MySQL",
     "host": "Anfitrião",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "Nome de domínio inválido. Por exemplo: example.com ou panel.example.com",
     "createFailed": "Não foi possível criar o domínio",
+    "customerNotFound": "O cliente selecionado já não existe.",
+    "planNotFound": "O plano de serviço selecionado já não existe.",
+    "ownerNotReseller": "O proprietário selecionado não é um revendedor ativo.",
+    "ownerWithCustomer": "Escolha um cliente existente ou um revendedor para um novo, não ambos.",
+    "ownerNotAllowed": "Apenas um administrador pode escolher o proprietário.",
     "statusFailed": "Não foi possível alterar o estado"
   },
   "bulkSub": {

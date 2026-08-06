@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (デフォルト)",
     "servicePlan": "サービスプラン",
     "planNone": "(なし)",
+    "owner": "所有者",
+    "ownerAdmin": "管理者 (自分)",
+    "customerNew": "新しい顧客を作成",
+    "ownerHint": "ドメインが属するリセラーを選び、次にそのリセラーの顧客を選びます。両方をそのままにすると、ドメインは管理者のままになります。",
     "issueSsl": "作成後に Let's Encrypt SSL 証明書をインストール",
     "sslWarning": "⚠️ ドメインの DNS A レコードが既にこのサーバーを指している必要があります。そうでない場合、発行は失敗し、後で SSL ページから再試行できます。",
     "cancel": "キャンセル",
@@ -98,6 +102,7 @@
     "readyPre": " の準備が整いました。以下のパスワードは ",
     "readyBold": "一度だけ",
     "readyPost": " 表示されます。安全に保管してください。",
+    "ownerNotApplied": "ドメインは作成されましたが、選択したリセラーは適用されませんでした。このシステムユーザーにはすでに顧客レコードがあり、既存のレコードは元の所有者を保持します。移動するには所有者の変更を使用してください。",
     "ftp": "FTP",
     "mysql": "MySQL データベース",
     "host": "ホスト",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "無効なドメイン名です。例: example.com または panel.example.com",
     "createFailed": "ドメインを作成できませんでした",
+    "customerNotFound": "選択した顧客は存在しません。",
+    "planNotFound": "選択したサービスプランは存在しません。",
+    "ownerNotReseller": "選択した所有者は有効なリセラーではありません。",
+    "ownerWithCustomer": "既存の顧客か、新規顧客のためのリセラーのどちらかを選んでください。両方は選べません。",
+    "ownerNotAllowed": "所有者を選択できるのは管理者だけです。",
     "statusFailed": "ステータスを変更できませんでした"
   },
   "bulkSub": {

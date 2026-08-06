@@ -24,7 +24,9 @@ type Domain = {
   created_at?: string; plan_id?: number; plan_name?: string
   ssl?: boolean; ssl_expiry?: string; ssl_source?: string; reseller_name?: string
 }
-type Customer = { id: number; name: string }
+type Customer = { id: number; name: string; owner_user_id?: number | null }
+/** A row from GET /users, narrowed to what the owner picker needs. */
+type PanelUser = { id: number; username: string; full_name?: string; role: string; status: string }
 type Subdomain = {
   id: number; subdomain: string; fqdn: string
   parent_id: number; parent_name: string; system_user: string
@@ -43,6 +45,24 @@ type CreateResult = {
   // the vanity values it would fall back to cannot be given to a customer; the
   // section is then not shown at all.
   nameservers?: { ns1: string; ns2: string }
+  // A stable code naming something the create could not do. The domain itself
+  // was created, so this is not an error; it is shown so a placement that did
+  // not happen is never read as one that did.
+  warning?: string
+}
+
+/**
+ * The reason codes POST /domains refuses with, mapped to the key that words
+ * each one. The mapping is explicit rather than derived from the code because
+ * the codes are snake_case, which i18next reads as its plural and context
+ * separator, and every other key in these files is camelCase.
+ */
+const CREATE_REFUSAL_KEYS: Record<string, string> = {
+  customer_not_found: 'errors.customerNotFound',
+  plan_not_found: 'errors.planNotFound',
+  owner_not_reseller: 'errors.ownerNotReseller',
+  owner_with_customer: 'errors.ownerWithCustomer',
+  owner_not_allowed: 'errors.ownerNotAllowed',
 }
 
 function fmtKB(kb: number) {
@@ -89,6 +109,14 @@ export default function DomainsPage() {
   const [formPhpVersion, setFormPhpVersion] = useState('8.3')
   const [formSiteType, setFormSiteType] = useState<SiteType>('php')
   const [formPlanId, setFormPlanId] = useState<number | ''>('')
+  // Who the domain belongs to. '' on the first means the administrator itself,
+  // '' on the second means "open a new customer record". They are sent as
+  // owner_user_id and customer_id, which the backend refuses TOGETHER, so at
+  // most one of them ever leaves this form.
+  const [formOwnerUserID, setFormOwnerUserID] = useState<number | ''>('')
+  const [formCustomerID, setFormCustomerID] = useState<number | ''>('')
+  const [createResellers, setCreateResellers] = useState<PanelUser[]>([])
+  const [createCustomers, setCreateCustomers] = useState<Customer[]>([])
   const [formIssueSSL, setFormIssueSSL] = useState(false)
   const [formWWWRedirect, setFormWWWRedirect] = useState<'off' | 'to_www' | 'to_apex'>('off')
 
@@ -128,10 +156,19 @@ export default function DomainsPage() {
     Promise.all([
       api.get<Plan[]>('/plans').catch(() => ({ data: [] })),
       api.get<PHPVer[]>('/php/versions').catch(() => ({ data: [] })),
-    ]).then(([plansResponse, phpVersionsResponse]) => {
+      // Only an administrator can name an owner, so only an administrator pays
+      // for these two requests. A reseller is never offered the field: it must
+      // already name one of its own customers, and the server enforces that.
+      isAdmin ? api.get<PanelUser[]>('/users').catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
+      isAdmin ? api.get<Customer[]>('/customers').catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
+    ]).then(([plansResponse, phpVersionsResponse, usersResponse, customersResponse]) => {
       const pl = plansResponse.data as Plan[]
       setPlans(pl)
       setPhpVersions(phpVersionsResponse.data as PHPVer[])
+      // Only an ACTIVE reseller can own a customer; the server refuses anything
+      // else, so offering it here would only produce a rejected create.
+      setCreateResellers((usersResponse.data as PanelUser[]).filter(u => u.role === 'reseller' && u.status === 'active'))
+      setCreateCustomers(customersResponse.data as Customer[])
       setModalReady(true)
       // If no plan has been selected yet (modal opened before data arrived) pick the default.
       setFormPlanId(prev => {
@@ -148,6 +185,7 @@ export default function DomainsPage() {
     // loadModalData sets it once the fetch completes).
     const defaultPlan = plans.find(plan => plan.name === 'Starter') || plans[0]
     setFormDomainName(''); setFormPhpVersion('8.3'); setFormSiteType('php'); setFormPlanId(defaultPlan ? defaultPlan.id : ''); setFormIssueSSL(false); setFormWWWRedirect('off')
+    setFormOwnerUserID(''); setFormCustomerID('')
     setCreateOpen(true)
     loadModalData() // lazy: fetch plans/php versions if they haven't been loaded yet
   }
@@ -162,8 +200,15 @@ export default function DomainsPage() {
     }
     setCreating(true)
     try {
-      const request: { domain_name: string; php_version: string; site_type: SiteType; plan_id?: number } = { domain_name: domainName, php_version: formPhpVersion, site_type: formSiteType }
+      const request: {
+        domain_name: string; php_version: string; site_type: SiteType
+        plan_id?: number; customer_id?: number; owner_user_id?: number
+      } = { domain_name: domainName, php_version: formPhpVersion, site_type: formSiteType }
       if (formPlanId !== '') request.plan_id = formPlanId
+      // Never both: naming an existing customer already fixes the owner, and the
+      // server refuses the pair rather than guessing which one was meant.
+      if (formCustomerID !== '') request.customer_id = formCustomerID
+      else if (formOwnerUserID !== '') request.owner_user_id = formOwnerUserID
       const response = await api.post<CreateResult>('/domains', request)
       setCreateOpen(false)
       setCreationResult(response.data)
@@ -208,7 +253,12 @@ export default function DomainsPage() {
       // silent, for the same reason as above.
       if (formWWWRedirect !== 'off') fetchDomains()
     } catch (error) {
-      setError(apiError(error, t('errors.createFailed')))
+      // A refused create answers with a stable CODE rather than a sentence: the
+      // API is English and the interface ships twelve languages, so wording
+      // produced on the server could not be translated. Anything that is not one
+      // of these codes is passed through as the server wrote it.
+      const key = CREATE_REFUSAL_KEYS[apiError(error, '')]
+      setError(key ? t(key) : apiError(error, t('errors.createFailed')))
     } finally {
       setCreating(false)
     }
@@ -309,6 +359,16 @@ export default function DomainsPage() {
       || domain.system_user.toLowerCase().includes(normalizedQuery)
       || parentsWithMatchingSubdomain.has(domain.id))
   }, [items, subdomains, query])
+
+  // The customers the chosen owner already has. An unowned customer belongs
+  // directly to the administrator, which is what the default selection means, so
+  // the same filter serves both halves of the picker.
+  const ownerCustomerChoices = useMemo(
+    () => createCustomers.filter(customer => (formOwnerUserID === ''
+      ? customer.owner_user_id === null || customer.owner_user_id === undefined
+      : customer.owner_user_id === formOwnerUserID)),
+    [createCustomers, formOwnerUserID],
+  )
 
   function toggleSelection(id: number) {
     setSelected(prev => {
@@ -683,6 +743,47 @@ export default function DomainsPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Administrator only. A reseller must already name one of its own
+                  customers, which the server verifies, so the field would offer
+                  it nothing it is allowed to choose. */}
+              {isAdmin && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 dark:text-slate-500 mb-1">
+                    {t('createModal.owner')}
+                    {modalLoading && createResellers.length === 0 && <span className="ml-2 text-[11px] text-slate-400 dark:text-slate-500">{t('createModal.loading')}</span>}
+                  </label>
+                  <select
+                    value={formOwnerUserID}
+                    onChange={e => {
+                      setFormOwnerUserID(e.target.value === '' ? '' : Number(e.target.value))
+                      // The customer list below belongs to the previous owner, so
+                      // keeping the choice would send a customer the new owner
+                      // does not have.
+                      setFormCustomerID('')
+                    }}
+                    disabled={creating}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:border-brand-500 outline-none bg-white dark:bg-slate-800"
+                  >
+                    <option value="">{t('createModal.ownerAdmin')}</option>
+                    {createResellers.map(reseller => (
+                      <option key={reseller.id} value={reseller.id}>{reseller.full_name || reseller.username}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={formCustomerID}
+                    onChange={e => setFormCustomerID(e.target.value === '' ? '' : Number(e.target.value))}
+                    disabled={creating}
+                    className="mt-2 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:border-brand-500 outline-none bg-white dark:bg-slate-800"
+                  >
+                    <option value="">{t('createModal.customerNew')}</option>
+                    {ownerCustomerChoices.map(customer => (
+                      <option key={customer.id} value={customer.id}>{customer.name}</option>
+                    ))}
+                  </select>
+                  <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{t('createModal.ownerHint')}</div>
+                </div>
+              )}
             </div>
 
             <div className="mt-4">
@@ -735,6 +836,16 @@ export default function DomainsPage() {
             <p className="text-xs text-slate-500 dark:text-slate-500 mb-4">
               <span className="font-mono text-slate-700 dark:text-slate-300">{creationResult.domain_name}</span>{t('resultModal.readyPre')}<strong>{t('resultModal.readyBold')}</strong>{t('resultModal.readyPost')}
             </p>
+
+            {/* The domain was created, so this is not an error. It is shown
+                because the reseller the operator picked was NOT applied, and
+                leaving that silent would report a placement that never
+                happened. */}
+            {creationResult.warning === 'owner_not_applied' && (
+              <div className="mb-4 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-xs text-amber-800 dark:text-amber-300">
+                {t('resultModal.ownerNotApplied')}
+              </div>
+            )}
 
             <div className="space-y-3">
               <div className="border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-slate-50 dark:bg-slate-900">

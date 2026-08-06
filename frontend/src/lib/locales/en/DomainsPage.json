@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (default)",
     "servicePlan": "Service Plan",
     "planNone": "(none)",
+    "owner": "Owner",
+    "ownerAdmin": "Administrator (mine)",
+    "customerNew": "Open a new customer",
+    "ownerHint": "Pick the reseller the domain belongs to, then one of its customers. Leave both as they are to keep the domain under the administrator.",
     "issueSsl": "Install a Let's Encrypt SSL certificate after creation",
     "sslWarning": "⚠️ The domain's DNS A record must already point to this server, otherwise issuance fails and you can retry later from the SSL page.",
     "cancel": "Cancel",
@@ -98,6 +102,7 @@
     "readyPre": " is ready. The passwords below are shown ",
     "readyBold": "only once",
     "readyPost": ". Store them securely.",
+    "ownerNotApplied": "The domain was created, but the reseller you picked was not applied: this system user already has a customer record, and an existing record keeps the owner it had. Use the owner change action to move it.",
     "ftp": "FTP",
     "mysql": "MySQL Database",
     "host": "Host",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "Invalid domain name. For example: example.com or panel.example.com",
     "createFailed": "Could not create domain",
+    "customerNotFound": "The selected customer no longer exists.",
+    "planNotFound": "The selected service plan no longer exists.",
+    "ownerNotReseller": "The selected owner is not an active reseller.",
+    "ownerWithCustomer": "Pick either an existing customer or a reseller for a new one, not both.",
+    "ownerNotAllowed": "Only an administrator can pick the owner.",
     "statusFailed": "Could not change status"
   },
   "bulkSub": {

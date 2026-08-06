@@ -87,6 +87,10 @@
     "phpDefault": "PHP 8.3 (výchozí)",
     "servicePlan": "Tarif služby",
     "planNone": "(žádný)",
+    "owner": "Vlastník",
+    "ownerAdmin": "Správce (můj)",
+    "customerNew": "Vytvořit nového zákazníka",
+    "ownerHint": "Vyberte resellera, kterému doména patří, a poté jednoho z jeho zákazníků. Ponechte obojí beze změny, aby doména zůstala pod správcem.",
     "issueSsl": "Po vytvoření nainstalovat certifikát SSL Let's Encrypt",
     "sslWarning": "⚠️ Záznam DNS A domény musí již směřovat na tento server, jinak vydání selže a můžete to zkusit znovu později ze stránky SSL.",
     "cancel": "Zrušit",
@@ -98,6 +102,7 @@
     "readyPre": " je připravena. Hesla níže se zobrazují ",
     "readyBold": "pouze jednou",
     "readyPost": ". Uložte je bezpečně.",
+    "ownerNotApplied": "Doména byla vytvořena, ale zvolený reseller nebyl použit: tento systémový uživatel již má záznam zákazníka a existující záznam si ponechává svého vlastníka. K přesunu použijte změnu vlastníka.",
     "ftp": "FTP",
     "mysql": "Databáze MySQL",
     "host": "Host",
@@ -139,6 +144,11 @@
   "errors": {
     "invalidDomain": "Neplatný název domény. Například: example.com nebo panel.example.com",
     "createFailed": "Doménu nelze vytvořit",
+    "customerNotFound": "Vybraný zákazník již neexistuje.",
+    "planNotFound": "Vybraný tarif služby již neexistuje.",
+    "ownerNotReseller": "Vybraný vlastník není aktivní reseller.",
+    "ownerWithCustomer": "Vyberte buď existujícího zákazníka, nebo resellera pro nového, ne obojí.",
+    "ownerNotAllowed": "Vlastníka může zvolit pouze správce.",
     "statusFailed": "Stav nelze změnit"
   },
   "bulkSub": {
