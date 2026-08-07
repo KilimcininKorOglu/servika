@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"servika/internal/config"
+	"servika/internal/files"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
 )
@@ -224,11 +225,20 @@ func (h *Handlers) Import(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// #nosec G706 -- integer id and the unpack error.
 		log.Printf("import into mailbox=%d: %v", mailboxID, err)
+		// Everything this attempt wrote is taken out again. Keeping it would put
+		// the customer in a worse place than an empty mailbox: the only way to
+		// finish the import is to upload the whole archive again, and that writes
+		// a second copy of every message the failed attempt already delivered.
+		removed, rollbackErr := sink.rollback()
+		if rollbackErr != nil {
+			// #nosec G706 -- integer id and a filesystem error.
+			log.Printf("import into mailbox=%d: rollback left files behind: %v", mailboxID, rollbackErr)
+		}
 		httpx.WriteJSON(w, http.StatusBadRequest, map[string]any{
 			"error": "the upload could not be unpacked", "reason": reasonForImport(err),
-			// Whatever landed before the failure stays: deleting it would throw
-			// away a partial import the customer can finish by hand.
-			"messages": sink.messages, "bytes": sink.bytes,
+			// Reported rather than swallowed: a rollback that could not finish
+			// means a retry WILL duplicate, and the operator has to know.
+			"removed": removed, "rollback_incomplete": rollbackErr != nil,
 		})
 		return
 	}
@@ -253,6 +263,44 @@ type maildirSink struct {
 }
 
 func (s *maildirSink) folderCount() int { return len(s.folders) }
+
+// rollback removes every message this import wrote.
+//
+// A failed import used to leave its partial result in the mailbox, on the theory
+// that the customer could finish it by hand. There is no way to finish it: the
+// archive is re-uploaded whole, and the token is new on every attempt, so the
+// names never collide and the retry delivers a SECOND copy of everything the
+// first attempt landed. Removing the partial result is what makes a retry
+// produce exactly one copy.
+//
+// Entries are matched on this import's own token, so mail that was already in
+// the folder cannot be caught by it. Removal goes through safeio because the
+// panel is root and these directories belong to the tenant.
+func (s *maildirSink) rollback() (int, error) {
+	prefix := messageNamePrefix(s.token)
+	var (
+		removed  int
+		failures error
+	)
+	for _, curDir := range s.folders {
+		names, err := files.ListNamesBeneath(s.layout.home, curDir)
+		if err != nil {
+			failures = errors.Join(failures, fmt.Errorf("list %s: %w", curDir, err))
+			continue
+		}
+		for _, name := range names {
+			if !strings.HasPrefix(name, prefix) {
+				continue
+			}
+			if err := files.RemoveAllBeneath(s.layout.home, curDir+"/"+name); err != nil {
+				failures = errors.Join(failures, fmt.Errorf("remove %s: %w", name, err))
+				continue
+			}
+			removed++
+		}
+	}
+	return removed, failures
+}
 
 // write stores one message in a folder, creating the folder the first time.
 func (s *maildirSink) write(folder string, flags []string, body io.Reader) error {

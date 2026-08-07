@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"servika/internal/files"
 )
 
 // The archive names the folder and nothing else. A member is written under a
@@ -269,4 +271,82 @@ func TestImportLimitsAreSet(t *testing.T) {
 	if maxImportMessageBytes > maxImportBytes {
 		t.Error("a single message may exceed the whole upload, so the cap cannot bind")
 	}
+}
+
+// A failed import used to leave its partial result in the mailbox, on the theory
+// that the customer could finish it by hand. They cannot: the archive is
+// re-uploaded whole and every generated name is new, so the retry delivers a
+// SECOND copy of everything the failed attempt landed. Rollback is what makes a
+// retry produce exactly one copy.
+func TestAFailedImportRemovesWhatItWrote(t *testing.T) {
+	home := t.TempDir()
+	layout := maildirLayout{home: home, root: "Maildir", systemUser: "root"}
+
+	attempt := &maildirSink{layout: layout, token: "import-1"}
+	if err := attempt.write("INBOX", nil, strings.NewReader("first")); err != nil {
+		t.Skipf("the safe-write layer is unavailable here: %v", err)
+	}
+	for _, body := range []string{"second", "third"} {
+		if err := attempt.write("Sent", nil, strings.NewReader(body)); err != nil {
+			t.Fatalf("write %q: %v", body, err)
+		}
+	}
+
+	// Mail that was already in the mailbox, written by something that is not this
+	// import. Rollback matching on the token is the only thing keeping it.
+	neighbour := &maildirSink{layout: layout, token: "import-0"}
+	if err := neighbour.write("Sent", nil, strings.NewReader("older mail")); err != nil {
+		t.Fatalf("write the neighbouring message: %v", err)
+	}
+
+	removed, err := attempt.rollback()
+	if err != nil {
+		t.Fatalf("rollback: %v", err)
+	}
+	if removed != 3 {
+		t.Errorf("removed = %d, want the three messages this import wrote", removed)
+	}
+
+	left := maildirNames(t, home, "Maildir/cur")
+	left = append(left, maildirNames(t, home, "Maildir/.Sent/cur")...)
+	if len(left) != 1 {
+		t.Fatalf("names left = %v, want only the neighbouring message", left)
+	}
+	if !strings.Contains(left[0], "import-0-") {
+		t.Errorf("the surviving name is %q, which is not the neighbouring message", left[0])
+	}
+}
+
+// Rollback removes by this import's own token, so a second import running into
+// the same folder must be untouched by the first one's failure.
+func TestRollbackLeavesAnotherImportAlone(t *testing.T) {
+	home := t.TempDir()
+	layout := maildirLayout{home: home, root: "Maildir", systemUser: "root"}
+
+	failed := &maildirSink{layout: layout, token: "import-a"}
+	if err := failed.write("INBOX", nil, strings.NewReader("doomed")); err != nil {
+		t.Skipf("the safe-write layer is unavailable here: %v", err)
+	}
+	other := &maildirSink{layout: layout, token: "import-b"}
+	for range 2 {
+		if err := other.write("INBOX", nil, strings.NewReader("kept")); err != nil {
+			t.Fatalf("write the other import's message: %v", err)
+		}
+	}
+
+	if removed, err := failed.rollback(); err != nil || removed != 1 {
+		t.Fatalf("rollback = (%d, %v), want exactly its own one message", removed, err)
+	}
+	if left := maildirNames(t, home, "Maildir/cur"); len(left) != 2 {
+		t.Errorf("names left = %v, want the other import's two messages", left)
+	}
+}
+
+func maildirNames(t *testing.T, home, rel string) []string {
+	t.Helper()
+	names, err := files.ListNamesBeneath(home, rel)
+	if err != nil {
+		t.Fatalf("list %s: %v", rel, err)
+	}
+	return names
 }

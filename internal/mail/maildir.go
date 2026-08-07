@@ -146,3 +146,13 @@ func (layout maildirLayout) writeMessage(curDir, unique string, flags []string, 
 // unique part after it distinguishes messages here, so a fixed value keeps the
 // name reproducible for a re-run; Dovecot reads the date from the message.
 const stableStamp = 1000000000
+
+// messageNamePrefix is what every name writeMessage produces for a given token
+// begins with.
+//
+// It exists so the naming rule lives in ONE place: a caller that removes what it
+// wrote matches on this rather than rebuilding the format itself, and a message
+// that was already in the folder cannot begin with another writer's token.
+func messageNamePrefix(token string) string {
+	return fmt.Sprintf("%d.%s-", stableStamp, token)
+}
