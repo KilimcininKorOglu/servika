@@ -2,11 +2,17 @@
 // Adding a namespace only needs one JSON per language; the import.meta.glob below
 // collects every locale directory automatically, no manual registration.
 //
+// The glob is LAZY. Loading it eagerly put all twelve languages in the entry
+// chunk, where the translations were the large majority of its bytes and eleven
+// twelfths of them could never be read by the visitor who downloaded them. Each
+// JSON is its own chunk now and the backend below fetches one when a component
+// first asks for it.
+//
 // English is the default and fallback. The active language is mirrored in the
 // `servika.lang` cookie (never localStorage), exactly like the theme in
 // lib/theme.ts, so boot applies it before first paint.
 
-import i18n from 'i18next'
+import i18n, { type BackendModule, type TFunction } from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { getCookie, setCookie } from '@/lib/cookies'
 
@@ -45,33 +51,72 @@ export function getLang(): Lang {
   return isLang(c) ? c : 'en'
 }
 
-// Collect every locale JSON across all language directories in one glob.
-const allModules = import.meta.glob('./locales/*/*.json', { eager: true }) as Record<string, { default: Record<string, unknown> }>
+// Every locale JSON across all language directories, one dynamic import each.
+// The keys look like ./locales/pt-BR/TopBar.json.
+const localeModules = import.meta.glob<{ default: Record<string, unknown> }>('./locales/*/*.json')
 
-// Build { lang: { namespace: {...} } } from paths like ./locales/pt-BR/TopBar.json.
-function buildResources(modules: Record<string, { default: Record<string, unknown> }>) {
-  const out: Record<string, Record<string, Record<string, unknown>>> = {}
-  for (const path in modules) {
-    const match = path.match(/\.\/locales\/([^/]+)\/([^/]+)\.json$/)
-    if (!match) continue
-    const [, lang, ns] = match
-    ;(out[lang] ??= {})[ns] = modules[path].default
-  }
-  return out
+// Namespaces that must be in memory before the first render, because they are
+// used where nothing can catch a suspended component:
+//
+//   - common               the default namespace, plus DialogProvider and
+//                          lib/useCopyOrOffer, which are mounted app-wide
+//   - LoginPage,           statically imported routes in App.tsx that never
+//     CustomerLoginPage    reach DashboardLayout's boundary
+//   - DashboardLayout,     rendered by the layout ABOVE its own Suspense
+//     TopBar, MobileNavBar, boundary, which only wraps the Outlet
+//     DomainPicker
+//   - ErrorSurface         mounted through lib/errors.ts anywhere
+//
+// A new always-mounted component that calls useTranslation belongs here too.
+// Everything else is a page below the layout's boundary and loads on demand.
+const BOOT_NAMESPACES = [
+  'common',
+  'DashboardLayout',
+  'TopBar',
+  'MobileNavBar',
+  'ErrorSurface',
+  'DomainPicker',
+  'LoginPage',
+  'CustomerLoginPage',
+] as const
+
+// The backend resolves the EXACT language directory and never reduces a code to
+// its base: pt and pt-BR are separate languages here with different files, so
+// trimming the region (or setting load: 'languageOnly') would quietly serve
+// Iberian Portuguese to a Brazilian visitor.
+const localeBackend: BackendModule = {
+  type: 'backend',
+  init() { /* the glob is the whole configuration */ },
+  read(language, namespace, callback) {
+    const load = localeModules[`./locales/${language}/${namespace}.json`]
+    if (!load) {
+      // Report it rather than leaving the caller pending: i18next then falls
+      // back to English instead of suspending forever on a namespace that will
+      // never arrive.
+      callback(new Error(`missing locale bundle: ${language}/${namespace}`), false)
+      return
+    }
+    load()
+      .then((module) => callback(null, module.default))
+      .catch((err) => callback(err instanceof Error ? err : new Error(String(err)), false))
+  },
 }
 
-const resources = buildResources(allModules)
-const namespaces = Array.from(new Set(Object.values(resources).flatMap((r) => Object.keys(r))))
-
-i18n.use(initReactI18next).init({
-  resources,
-  lng: getLang(),
-  fallbackLng: 'en',
-  defaultNS: 'common',
-  ns: namespaces.length ? namespaces : ['common'],
-  interpolation: { escapeValue: false }, // React already escapes.
-  returnEmptyString: false,
-})
+// initI18n resolves once BOOT_NAMESPACES are loaded for lang, so main.tsx can
+// render knowing the always-mounted components have their text. Everything
+// after that suspends at the nearest boundary while its namespace arrives.
+export function initI18n(lang: Lang): Promise<TFunction> {
+  return i18n.use(localeBackend).use(initReactI18next).init({
+    lng: lang,
+    fallbackLng: 'en',
+    supportedLngs: LANGS as unknown as string[],
+    defaultNS: 'common',
+    ns: [...BOOT_NAMESPACES],
+    interpolation: { escapeValue: false }, // React already escapes.
+    returnEmptyString: false,
+    react: { useSuspense: true },
+  })
+}
 
 // setLang persists the choice (cookie), switches i18next live, updates <html lang>,
 // and notifies listeners (LanguageSwitcher instances) via a CustomEvent — the same
@@ -86,27 +131,39 @@ export function setLang(lang: Lang) {
 }
 
 // Call during boot from main.tsx before the initial render (sets <html lang>).
-export function bootLang() {
-  if (typeof document !== 'undefined') document.documentElement.lang = getLang()
+export function bootLang(lang: Lang) {
+  if (typeof document !== 'undefined') document.documentElement.lang = lang
 }
 
-// Server-default language for the pre-login screen. Only used when the visitor has
-// NO explicit choice yet (no servika.lang cookie): the login screen then opens in
-// whatever the admin set at install time (GET /api/v1/public/language). We switch
-// live but deliberately do NOT write the cookie — the cookie means "the user chose
-// this", and a signed-in user's own pref_lang always takes over afterwards. Runs
-// after first paint, so it never blocks rendering; failure silently keeps English.
-export function applyServerDefaultLang() {
-  if (typeof window === 'undefined') return
-  if (getCookie(KEY)) return // Explicit user choice already wins.
-  fetch('/api/v1/public/language', { headers: { Accept: 'application/json' } })
-    .then((res) => (res.ok ? res.json() : null))
-    .then((data) => {
-      const lang = isLang(data?.lang) ? data.lang : 'en'
-      if (lang !== i18n.language) {
-        void i18n.changeLanguage(lang)
-        if (typeof document !== 'undefined') document.documentElement.lang = lang
-      }
+// How long boot waits for the server-default language before giving up on it.
+// The screen behind this is the sign-in form, so a backend that stops answering
+// must cost a moment and then English, never a page that never appears.
+const BOOT_LANG_TIMEOUT_MS = 1500
+
+// resolveBootLang decides which language to initialise with, BEFORE the first
+// render. It used to switch the language after first paint, which was invisible
+// only while every language was already in memory; loading translations on
+// demand would have turned it into the sign-in screen painting in English and
+// then swapping.
+//
+// The cookie means "the visitor chose this" and wins outright without a request.
+// Without one the admin's install-time default applies (GET
+// /api/v1/public/language), and that choice is deliberately NOT written to the
+// cookie: a signed-in user's own pref_lang has to be able to take over.
+export async function resolveBootLang(): Promise<Lang> {
+  if (typeof window === 'undefined') return 'en'
+  const chosen = getCookie(KEY)
+  if (isLang(chosen)) return chosen
+  try {
+    const res = await fetch('/api/v1/public/language', {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(BOOT_LANG_TIMEOUT_MS),
     })
-    .catch(() => {}) // Login screen must never break over the default language.
+    if (!res.ok) return 'en'
+    const data: unknown = await res.json()
+    const lang = (data as { lang?: unknown })?.lang
+    return isLang(lang) ? lang : 'en'
+  } catch {
+    return 'en' // Sign-in must never break over the default language.
+  }
 }
