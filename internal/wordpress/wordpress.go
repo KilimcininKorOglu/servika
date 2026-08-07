@@ -24,6 +24,7 @@ import (
 
 	"servika/internal/config"
 	"servika/internal/credentials"
+	"servika/internal/files"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
 	"servika/internal/quota"
@@ -422,8 +423,10 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 	fail := func(stage string, out []byte) {
 		_ = credentials.MySQLDropDB(h.DB, dbName, dbUser)
 		if req.SubDir != "" { // Remove only the subdirectory created by this operation.
-			// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-			_ = os.RemoveAll(target)
+			// Best effort, and already logged inside: the install's own failure
+			// is what the caller is told, and a rollback that could not finish
+			// must not replace that message with its own.
+			_ = removeBeneathHome(systemUser, target, "wordpress install rollback")
 		}
 		msg := strings.TrimSpace(string(out))
 		if len(msg) > 600 {
@@ -557,8 +560,8 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 		}
 		// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
 	}
-	// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
-	if err := os.RemoveAll(dir); err != nil { // The root path was rejected above, so this is a subdirectory.
+	// The root path was rejected above, so this is a subdirectory.
+	if err := removeBeneathHome(systemUser, dir, "wordpress delete"); err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not delete record")
 		return
 	}
@@ -568,7 +571,40 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 // resolveDirectory converts a directory value into a safe absolute path under root
 // containing wp-config.php. The caller supplies root so a subdomain request is confined
 // to the subdomain's document root instead of the parent domain's public_html.
+// removeBeneathHome deletes an absolute path inside a tenant's home through
+// openat2, and reports what it could not do.
+//
+// The prefix check that used to stand alone here decided nothing about safety.
+// The panel runs as root and every directory on the way is the tenant's, so a
+// component swapped for a symlink sends the deletion outside the home while the
+// string still reads like a path inside it. resolveDirectory's own
+// `strings.HasPrefix(clean, root+"/")` has the same blind spot, and its
+// `os.Stat` for wp-config.php follows links as well, so a linked directory
+// holding one passes.
+//
+// The prefix is still computed, but only to turn the absolute path into the
+// relative one the primitive takes; the refusal comes from the kernel.
+func removeBeneathHome(systemUser, absolutePath, what string) error {
+	home := "/home/" + systemUser
+	rel, ok := strings.CutPrefix(filepath.Clean(absolutePath), home+"/")
+	if !ok {
+		return fmt.Errorf("%s: path is outside the tenant home", what)
+	}
+	if err := files.RemoveAllBeneath(home, rel); err != nil && !errors.Is(err, os.ErrNotExist) {
+		// #nosec G706 -- rel is derived from a filepath.Clean'ed path whose source is either the regex-validated sub_dir or resolveDirectory, which rejects CR/LF/NUL; `what` is a literal.
+		log.Printf("%s: could not remove %q: %v", what, rel, err)
+		return err
+	}
+	return nil
+}
+
 func resolveDirectory(root, directoryValue string) (string, error) {
+	// Refused before anything is built from it. A control character survives
+	// filepath.Clean, so without this it reaches a filesystem call and a log
+	// line, where CR/LF lets the caller forge entries.
+	if strings.ContainsAny(directoryValue, "\r\n\x00") {
+		return "", fmt.Errorf("directory name contains control characters")
+	}
 	d := strings.TrimPrefix(strings.TrimSpace(directoryValue), "/ (root)")
 	rel := strings.Trim(strings.TrimSpace(d), "/")
 	dir := root
