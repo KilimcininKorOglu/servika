@@ -77,23 +77,5 @@
   "resultRow": {
     "copied": "✓",
     "copy": "Copy"
-  },
-  "pwReset": {
-    "title": "Reset Password: {{name}}",
-    "introPre": " user's password is updated in MariaDB and the panel at the same time.",
-    "customLabel": "Custom password (leave blank to generate one)",
-    "customPlaceholder": "At least 6 characters",
-    "cancel": "Cancel",
-    "useThis": "Use This Password",
-    "resetting": "Resetting...",
-    "generateRandom": "Generate Random Password",
-    "updated": "✓ Password updated",
-    "saveHint": "Save this in a secure place. You cannot view it again later.",
-    "copy": "Copy",
-    "done": "Done",
-    "errors": {
-      "tooShort": "Password must be at least 6 characters",
-      "resetFailed": "Password reset failed"
-    }
   }
 }

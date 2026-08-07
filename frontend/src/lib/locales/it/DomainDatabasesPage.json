@@ -77,23 +77,5 @@
   "resultRow": {
     "copied": "✓",
     "copy": "Copia"
-  },
-  "pwReset": {
-    "title": "Reimposta password: {{name}}",
-    "introPre": " la password dell'utente viene aggiornata in MariaDB e nel pannello contemporaneamente.",
-    "customLabel": "Password personalizzata (lasciare vuoto per generarne una)",
-    "customPlaceholder": "Almeno 6 caratteri",
-    "cancel": "Annulla",
-    "useThis": "Usa questa password",
-    "resetting": "Reimpostazione...",
-    "generateRandom": "Genera password casuale",
-    "updated": "✓ Password aggiornata",
-    "saveHint": "Salvala in un luogo sicuro. Non potrai visualizzarla di nuovo in seguito.",
-    "copy": "Copia",
-    "done": "Fatto",
-    "errors": {
-      "tooShort": "La password deve contenere almeno 6 caratteri",
-      "resetFailed": "Reimpostazione della password non riuscita"
-    }
   }
 }

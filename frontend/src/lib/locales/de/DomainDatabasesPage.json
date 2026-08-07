@@ -77,23 +77,5 @@
   "resultRow": {
     "copied": "✓",
     "copy": "Kopieren"
-  },
-  "pwReset": {
-    "title": "Passwort zurücksetzen: {{name}}",
-    "introPre": " Das Passwort des Benutzers wird gleichzeitig in MariaDB und im Panel aktualisiert.",
-    "customLabel": "Eigenes Passwort (leer lassen, um eines zu generieren)",
-    "customPlaceholder": "Mindestens 6 Zeichen",
-    "cancel": "Abbrechen",
-    "useThis": "Dieses Passwort verwenden",
-    "resetting": "Wird zurückgesetzt...",
-    "generateRandom": "Zufälliges Passwort generieren",
-    "updated": "✓ Passwort aktualisiert",
-    "saveHint": "Bewahren Sie dies an einem sicheren Ort auf. Sie können es später nicht mehr anzeigen.",
-    "copy": "Kopieren",
-    "done": "Fertig",
-    "errors": {
-      "tooShort": "Das Passwort muss mindestens 6 Zeichen haben",
-      "resetFailed": "Passwort-Zurücksetzung fehlgeschlagen"
-    }
   }
 }

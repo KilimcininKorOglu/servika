@@ -77,23 +77,5 @@
   "resultRow": {
     "copied": "✓",
     "copy": "Kopírovat"
-  },
-  "pwReset": {
-    "title": "Obnovit heslo: {{name}}",
-    "introPre": " heslo uživatele se současně aktualizuje v MariaDB i v panelu.",
-    "customLabel": "Vlastní heslo (nechte prázdné pro vygenerování)",
-    "customPlaceholder": "Alespoň 6 znaků",
-    "cancel": "Zrušit",
-    "useThis": "Použít toto heslo",
-    "resetting": "Obnovování...",
-    "generateRandom": "Vygenerovat náhodné heslo",
-    "updated": "✓ Heslo aktualizováno",
-    "saveHint": "Uložte to na bezpečné místo. Později to již nebude možné zobrazit.",
-    "copy": "Kopírovat",
-    "done": "Hotovo",
-    "errors": {
-      "tooShort": "Heslo musí mít alespoň 6 znaků",
-      "resetFailed": "Obnovení hesla se nezdařilo"
-    }
   }
 }

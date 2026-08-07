@@ -77,23 +77,5 @@
   "resultRow": {
     "copied": "✓",
     "copy": "Kopyala"
-  },
-  "pwReset": {
-    "title": "Parola Sıfırla: {{name}}",
-    "introPre": " kullanıcısının parolası MariaDB ve panelde aynı anda güncellenir.",
-    "customLabel": "Özel parola (oluşturmak için boş bırakın)",
-    "customPlaceholder": "En az 6 karakter",
-    "cancel": "İptal",
-    "useThis": "Bu Parolayı Kullan",
-    "resetting": "Sıfırlanıyor...",
-    "generateRandom": "Rastgele Parola Oluştur",
-    "updated": "✓ Parola güncellendi",
-    "saveHint": "Bunu güvenli bir yerde saklayın. Sonradan tekrar göremezsiniz.",
-    "copy": "Kopyala",
-    "done": "Tamam",
-    "errors": {
-      "tooShort": "Parola en az 6 karakter olmalıdır",
-      "resetFailed": "Parola sıfırlama başarısız oldu"
-    }
   }
 }
