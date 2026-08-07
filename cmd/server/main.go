@@ -492,6 +492,9 @@ func main() {
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/service", mailH.Purge)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail", mailH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail", mailH.Create)
+				// Static segments again, so they win over /mail/{mid} below.
+				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/migration/discover", mailH.Discover)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/migration/verify", mailH.Verify)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/aliases", mailH.ListAliases)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/aliases", mailH.CreateAlias)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/aliases/{aid}", mailH.DeleteAlias)
