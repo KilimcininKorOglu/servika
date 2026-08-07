@@ -184,6 +184,16 @@ if ! dnf install -y redis >>/tmp/servika-rspamd-setup.log 2>&1; then
 fi
 log "rspamd + ${KV_SERVICE} installed"
 
+# libpst converts an Outlook .pst export so a mailbox can be imported from one.
+# It is not part of a minimal EL10 and may not be packaged at all, so a failure
+# here is not fatal: the panel checks for readpst and reports the format as
+# unsupported instead of accepting an upload it cannot convert.
+if dnf install -y libpst >>/tmp/servika-mail-setup.log 2>&1; then
+  log "libpst installed; .pst mailbox import is available"
+else
+  log "libpst is unavailable; .pst mailbox import stays disabled (Maildir and mbox import are unaffected)"
+fi
+
 echo "════ mailro database password ════"
 DBPASS=${SERVIKA_MAIL_DB_PASS:-}
 if [ -n "$DBPASS" ] && ! [[ "$DBPASS" =~ ^[A-Za-z0-9._%+=:@-]{16,128}$ ]]; then
