@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "email": "E-mail"
+  },
+  "title": "Caixa de correio",
+  "subtitle": "Tudo o que pertence a este único endereço",
+  "loading": "Carregando...",
+  "notFound": "Esta caixa de correio não existe mais.",
+  "save": "Salvar",
+  "saving": "Salvando...",
+  "tabs": {
+    "general": "Geral",
+    "autoresponder": "Resposta automática",
+    "forwarding": "Encaminhamento",
+    "transfer": "Importação e exportação"
+  },
+  "quota": {
+    "title": "Armazenamento",
+    "used": "{{used}} usados de {{quota}}",
+    "unlimited": "{{used}} usados, sem limite definido",
+    "checkedAt": "Última medição em {{when}}",
+    "neverChecked": "Nunca foi medida",
+    "recalculate": "Recalcular",
+    "recalculating": "Calculando...",
+    "recalculated": "A caixa foi medida e o servidor de e-mail vai recontar.",
+    "recalculatedPartly": "A caixa foi medida, mas o total do próprio servidor de e-mail não pôde ser zerado. Até lá ele pode continuar recusando entregas."
+  },
+  "connection": {
+    "title": "Configurações de conexão",
+    "description": "O que digitar em um programa de e-mail que não se configura sozinho.",
+    "server": "Servidor",
+    "username": "Nome de usuário",
+    "imap": "Porta IMAP",
+    "submission": "Porta de saída",
+    "copy": "Copiar",
+    "hostnamePending": "Ainda não é possível informar um nome de host, porque nenhum certificado cobre um. As portas já estão corretas; o nome vem quando o certificado for emitido."
+  },
+  "autoresponder": {
+    "enabled": "Responder automaticamente ao e-mail recebido",
+    "subject": "Assunto",
+    "body": "Mensagem",
+    "intervalDays": "Responder ao mesmo remetente no máximo a cada",
+    "intervalHint": "Contado em dias. Um remetente que escreve várias vezes nesse período recebe uma resposta, e não uma por mensagem.",
+    "saved": "A resposta automática foi salva."
+  },
+  "forwarding": {
+    "description": "O e-mail que chega aqui é enviado para os endereços abaixo.",
+    "enabled": "Encaminhar o e-mail recebido",
+    "destinationsPlaceholder": "um endereço por linha",
+    "keepCopy": "Manter uma cópia nesta caixa",
+    "needsADestination": "O encaminhamento precisa de pelo menos um endereço de destino.",
+    "confirmNoCopy": "Sem cópia, o e-mail que chega aqui é enviado e depois descartado. Nada ficará nesta caixa. Continuar?",
+    "saved": "O encaminhamento foi salvo.",
+    "savedNotApplied": "O encaminhamento foi salvo, mas o servidor de e-mail ainda não o assumiu, então nada está sendo encaminhado no momento."
+  },
+  "transfer": {
+    "exportTitle": "Exportação",
+    "exportDescription": "Baixa todas as mensagens e pastas em um único arquivo.",
+    "export": "Baixar a caixa",
+    "importTitle": "Importação",
+    "importFormats": "Aceita um arquivo Maildir ou um arquivo mbox.",
+    "importFormatsWithPst": "Aceita um arquivo Maildir, um arquivo mbox ou uma exportação Outlook .pst.",
+    "import": "Enviar e importar",
+    "importing": "Importando...",
+    "imported": "{{messages}} mensagens foram importadas para {{folders}} pastas."
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar a caixa de correio",
+    "recalculateFailed": "Não foi possível medir a caixa de correio",
+    "saveAutoresponderFailed": "Não foi possível salvar a resposta automática",
+    "saveForwardingFailed": "Não foi possível salvar o encaminhamento",
+    "importFailed": "Não foi possível importar o arquivo enviado",
+    "exportFailed": "Não foi possível baixar a caixa de correio"
+  }
+}

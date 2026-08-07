@@ -38,6 +38,7 @@
     "activate": "Aktivovat",
     "resetPassword": "Obnovit heslo",
     "delete": "Smazat",
+    "details": "Podrobnosti",
     "openWebmail": "Otevřít webmail"
   },
   "forwarders": {

@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "email": "E-mail"
+  },
+  "title": "Căsuță poștală",
+  "subtitle": "Tot ce ține de această singură adresă",
+  "loading": "Se încarcă...",
+  "notFound": "Această căsuță nu mai există.",
+  "save": "Salvează",
+  "saving": "Se salvează...",
+  "tabs": {
+    "general": "General",
+    "autoresponder": "Răspuns automat",
+    "forwarding": "Redirecționare",
+    "transfer": "Import și export"
+  },
+  "quota": {
+    "title": "Spațiu",
+    "used": "{{used}} folosiți din {{quota}}",
+    "unlimited": "{{used}} folosiți, fără limită stabilită",
+    "checkedAt": "Ultima măsurare: {{when}}",
+    "neverChecked": "Nu a fost măsurată niciodată",
+    "recalculate": "Recalculează",
+    "recalculating": "Se calculează...",
+    "recalculated": "Căsuța a fost măsurată, iar serverul de e-mail va număra din nou.",
+    "recalculatedPartly": "Căsuța a fost măsurată, dar totalul propriu al serverului de e-mail nu a putut fi resetat. Până atunci poate continua să refuze livrările."
+  },
+  "connection": {
+    "title": "Setări de conectare",
+    "description": "Ce trebuie introdus într-un program de e-mail care nu se configurează singur.",
+    "server": "Server",
+    "username": "Nume de utilizator",
+    "imap": "Port IMAP",
+    "submission": "Port pentru trimitere",
+    "copy": "Copiază",
+    "hostnamePending": "Încă nu se poate indica un nume de server, pentru că niciun certificat nu acoperă unul. Porturile sunt deja corecte; numele vine după emiterea certificatului."
+  },
+  "autoresponder": {
+    "enabled": "Răspunde automat la mesajele primite",
+    "subject": "Subiect",
+    "body": "Mesaj",
+    "intervalDays": "Răspunde aceluiași expeditor cel mult la fiecare",
+    "intervalHint": "Se numără în zile. Un expeditor care scrie de mai multe ori în acest interval primește un răspuns, nu câte unul pentru fiecare mesaj.",
+    "saved": "Răspunsul automat a fost salvat."
+  },
+  "forwarding": {
+    "description": "Mesajele care ajung aici sunt trimise mai departe la adresele de mai jos.",
+    "enabled": "Redirecționează mesajele primite",
+    "destinationsPlaceholder": "o adresă pe rând",
+    "keepCopy": "Păstrează o copie în această căsuță",
+    "needsADestination": "Redirecționarea are nevoie de cel puțin o adresă de destinație.",
+    "confirmNoCopy": "Fără copie, mesajele care ajung aici sunt trimise mai departe și apoi șterse. În această căsuță nu va rămâne nimic. Continuați?",
+    "saved": "Redirecționarea a fost salvată.",
+    "savedNotApplied": "Redirecționarea a fost salvată, dar serverul de e-mail nu a preluat-o încă, deci momentan nu redirecționează nimic."
+  },
+  "transfer": {
+    "exportTitle": "Export",
+    "exportDescription": "Descarcă toate mesajele și dosarele într-o singură arhivă.",
+    "export": "Descarcă căsuța",
+    "importTitle": "Import",
+    "importFormats": "Acceptă o arhivă Maildir sau un fișier mbox.",
+    "importFormatsWithPst": "Acceptă o arhivă Maildir, un fișier mbox sau un export Outlook .pst.",
+    "import": "Încarcă și importă",
+    "importing": "Se importă...",
+    "imported": "{{messages}} mesaje au fost importate în {{folders}} dosare."
+  },
+  "errors": {
+    "loadFailed": "Căsuța poștală nu a putut fi încărcată",
+    "recalculateFailed": "Căsuța poștală nu a putut fi măsurată",
+    "saveAutoresponderFailed": "Răspunsul automat nu a putut fi salvat",
+    "saveForwardingFailed": "Redirecționarea nu a putut fi salvată",
+    "importFailed": "Fișierul încărcat nu a putut fi importat",
+    "exportFailed": "Căsuța poștală nu a putut fi descărcată"
+  }
+}

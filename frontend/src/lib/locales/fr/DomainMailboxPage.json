@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "email": "E-mail"
+  },
+  "title": "Boîte aux lettres",
+  "subtitle": "Tout ce qui appartient à cette seule adresse",
+  "loading": "Chargement...",
+  "notFound": "Cette boîte aux lettres n'existe plus.",
+  "save": "Enregistrer",
+  "saving": "Enregistrement...",
+  "tabs": {
+    "general": "Général",
+    "autoresponder": "Réponse automatique",
+    "forwarding": "Redirection",
+    "transfer": "Import et export"
+  },
+  "quota": {
+    "title": "Stockage",
+    "used": "{{used}} utilisés sur {{quota}}",
+    "unlimited": "{{used}} utilisés, sans limite définie",
+    "checkedAt": "Dernière mesure le {{when}}",
+    "neverChecked": "Jamais mesurée",
+    "recalculate": "Recalculer",
+    "recalculating": "Calcul en cours...",
+    "recalculated": "La boîte a été mesurée et le serveur de messagerie va recompter.",
+    "recalculatedPartly": "La boîte a été mesurée, mais le total propre au serveur de messagerie n'a pas pu être réinitialisé. Il peut continuer à refuser les livraisons d'ici là."
+  },
+  "connection": {
+    "title": "Paramètres de connexion",
+    "description": "Ce qu'il faut saisir dans un logiciel de messagerie qui ne se configure pas seul.",
+    "server": "Serveur",
+    "username": "Nom d'utilisateur",
+    "imap": "Port IMAP",
+    "submission": "Port sortant",
+    "copy": "Copier",
+    "hostnamePending": "Aucun nom d'hôte ne peut encore être communiqué, car aucun certificat n'en couvre. Les ports sont déjà corrects ; le nom suivra une fois le certificat émis."
+  },
+  "autoresponder": {
+    "enabled": "Répondre automatiquement au courrier entrant",
+    "subject": "Objet",
+    "body": "Message",
+    "intervalDays": "Répondre au même expéditeur au plus tous les",
+    "intervalHint": "Compté en jours. Un expéditeur qui écrit plusieurs fois pendant cette période reçoit une réponse, et non une par message.",
+    "saved": "La réponse automatique a été enregistrée."
+  },
+  "forwarding": {
+    "description": "Le courrier arrivant ici est renvoyé vers les adresses ci-dessous.",
+    "enabled": "Rediriger le courrier entrant",
+    "destinationsPlaceholder": "une adresse par ligne",
+    "keepCopy": "Conserver une copie dans cette boîte",
+    "needsADestination": "Une redirection nécessite au moins une adresse de destination.",
+    "confirmNoCopy": "Sans copie, le courrier arrivant ici est renvoyé puis supprimé. Rien ne restera dans cette boîte. Continuer ?",
+    "saved": "La redirection a été enregistrée.",
+    "savedNotApplied": "La redirection a été enregistrée, mais le serveur de messagerie ne l'a pas encore prise en compte ; rien n'est donc redirigé pour le moment."
+  },
+  "transfer": {
+    "exportTitle": "Export",
+    "exportDescription": "Télécharge tous les messages et dossiers dans une seule archive.",
+    "export": "Télécharger la boîte",
+    "importTitle": "Import",
+    "importFormats": "Accepte une archive Maildir ou un fichier mbox.",
+    "importFormatsWithPst": "Accepte une archive Maildir, un fichier mbox ou un export Outlook .pst.",
+    "import": "Envoyer et importer",
+    "importing": "Import en cours...",
+    "imported": "{{messages}} messages ont été importés dans {{folders}} dossiers."
+  },
+  "errors": {
+    "loadFailed": "La boîte aux lettres n'a pas pu être chargée",
+    "recalculateFailed": "La boîte aux lettres n'a pas pu être mesurée",
+    "saveAutoresponderFailed": "La réponse automatique n'a pas pu être enregistrée",
+    "saveForwardingFailed": "La redirection n'a pas pu être enregistrée",
+    "importFailed": "Le fichier envoyé n'a pas pu être importé",
+    "exportFailed": "La boîte aux lettres n'a pas pu être téléchargée"
+  }
+}

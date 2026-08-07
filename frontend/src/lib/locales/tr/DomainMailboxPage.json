@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "email": "E-posta"
+  },
+  "title": "Posta Kutusu",
+  "subtitle": "Bu tek adrese ait olan her şey",
+  "loading": "Yükleniyor...",
+  "notFound": "Bu posta kutusu artık yok.",
+  "save": "Kaydet",
+  "saving": "Kaydediliyor...",
+  "tabs": {
+    "general": "Genel",
+    "autoresponder": "Otomatik Yanıt",
+    "forwarding": "İletim",
+    "transfer": "İçe ve Dışa Aktarma"
+  },
+  "quota": {
+    "title": "Depolama",
+    "used": "{{quota}} alanın {{used}} kadarı kullanıldı",
+    "unlimited": "{{used}} kullanıldı, sınır tanımlı değil",
+    "checkedAt": "Son ölçüm: {{when}}",
+    "neverChecked": "Henüz hiç ölçülmedi",
+    "recalculate": "Yeniden Hesapla",
+    "recalculating": "Hesaplanıyor...",
+    "recalculated": "Posta kutusu ölçüldü ve posta sunucusu kendi toplamını yeniden sayacak.",
+    "recalculatedPartly": "Posta kutusu ölçüldü, ancak posta sunucusunun kendi toplamı sıfırlanamadı. Sıfırlanana kadar teslimatı reddetmeyi sürdürebilir."
+  },
+  "connection": {
+    "title": "Bağlantı ayarları",
+    "description": "Kendini yapılandıramayan bir posta istemcisine yazılacak değerler.",
+    "server": "Sunucu",
+    "username": "Kullanıcı adı",
+    "imap": "IMAP portu",
+    "submission": "Giden posta portu",
+    "copy": "Kopyala",
+    "hostnamePending": "Henüz duyurulabilecek bir sunucu adı yok, çünkü hiçbir sertifika bir adı kapsamıyor. Portlar zaten doğru; ad, sertifika verildikten sonra gelir."
+  },
+  "autoresponder": {
+    "enabled": "Gelen postaya otomatik yanıt ver",
+    "subject": "Konu",
+    "body": "İleti",
+    "intervalDays": "Aynı göndericiye en fazla şu sıklıkta yanıt ver",
+    "intervalHint": "Gün olarak sayılır. Bu süre içinde birkaç kez yazan bir gönderici, ileti başına değil, bir kez yanıt alır.",
+    "saved": "Otomatik yanıt kaydedildi."
+  },
+  "forwarding": {
+    "description": "Buraya gelen posta aşağıdaki adreslere iletilir.",
+    "enabled": "Gelen postayı ilet",
+    "destinationsPlaceholder": "her satıra bir adres",
+    "keepCopy": "Bu posta kutusunda bir kopya sakla",
+    "needsADestination": "İletim için en az bir hedef adres gerekir.",
+    "confirmNoCopy": "Kopya olmadan, buraya gelen posta iletilir ve sonra silinir. Bu posta kutusunda dönülecek hiçbir şey kalmaz. Devam edilsin mi?",
+    "saved": "İletim kaydedildi.",
+    "savedNotApplied": "İletim kaydedildi, ancak posta sunucusu bunu henüz almadı, dolayısıyla şu anda hiçbir şey iletilmiyor."
+  },
+  "transfer": {
+    "exportTitle": "Dışa aktarma",
+    "exportDescription": "Tüm ileti ve klasörleri tek bir arşiv olarak indirir.",
+    "export": "Posta kutusunu indir",
+    "importTitle": "İçe aktarma",
+    "importFormats": "Maildir arşivi veya mbox dosyası kabul edilir.",
+    "importFormatsWithPst": "Maildir arşivi, mbox dosyası veya Outlook .pst dışa aktarımı kabul edilir.",
+    "import": "Yükle ve içe aktar",
+    "importing": "İçe aktarılıyor...",
+    "imported": "{{folders}} klasöre {{messages}} ileti aktarıldı."
+  },
+  "errors": {
+    "loadFailed": "Posta kutusu yüklenemedi",
+    "recalculateFailed": "Posta kutusu ölçülemedi",
+    "saveAutoresponderFailed": "Otomatik yanıt kaydedilemedi",
+    "saveForwardingFailed": "İletim kaydedilemedi",
+    "importFailed": "Yükleme içe aktarılamadı",
+    "exportFailed": "Posta kutusu indirilemedi"
+  }
+}

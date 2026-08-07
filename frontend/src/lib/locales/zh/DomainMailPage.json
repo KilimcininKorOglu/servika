@@ -38,6 +38,7 @@
     "activate": "启用",
     "resetPassword": "重置密码",
     "delete": "删除",
+    "details": "详情",
     "openWebmail": "打开网页邮箱"
   },
   "forwarders": {

@@ -38,6 +38,7 @@
     "activate": "Etkinleştir",
     "resetPassword": "Parolayı sıfırla",
     "delete": "Sil",
+    "details": "Detaylar",
     "openWebmail": "Webmail'i aç"
   },
   "forwarders": {

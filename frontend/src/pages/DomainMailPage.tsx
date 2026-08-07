@@ -601,6 +601,7 @@ export default function DomainMailPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-3">
+                        <Link to={`/subscriptions/${id}/mail/${mailbox.id}`} className="text-xs text-brand-600 dark:text-brand-400 hover:underline">{t('mailboxes.details')}</Link>
                         {mailbox.status === 'active' && (
                           <button type="button" onClick={() => openWebmail(mailbox)} className="text-xs text-brand-600 dark:text-brand-400 hover:underline">{t('mailboxes.openWebmail')}</button>
                         )}

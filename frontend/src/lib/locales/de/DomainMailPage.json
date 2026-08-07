@@ -38,6 +38,7 @@
     "activate": "Aktivieren",
     "resetPassword": "Passwort zurücksetzen",
     "delete": "Löschen",
+    "details": "Details",
     "openWebmail": "Webmail öffnen"
   },
   "forwarders": {

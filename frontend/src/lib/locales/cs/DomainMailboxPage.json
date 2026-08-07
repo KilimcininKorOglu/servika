@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "email": "E-mail"
+  },
+  "title": "Poštovní schránka",
+  "subtitle": "Vše, co patří k této jediné adrese",
+  "loading": "Načítá se...",
+  "notFound": "Tato schránka už neexistuje.",
+  "save": "Uložit",
+  "saving": "Ukládá se...",
+  "tabs": {
+    "general": "Obecné",
+    "autoresponder": "Automatická odpověď",
+    "forwarding": "Přeposílání",
+    "transfer": "Import a export"
+  },
+  "quota": {
+    "title": "Úložiště",
+    "used": "Využito {{used}} z {{quota}}",
+    "unlimited": "Využito {{used}}, bez nastaveného limitu",
+    "checkedAt": "Naposledy změřeno {{when}}",
+    "neverChecked": "Zatím nikdy neměřeno",
+    "recalculate": "Přepočítat",
+    "recalculating": "Počítá se...",
+    "recalculated": "Schránka byla změřena a poštovní server ji spočítá znovu.",
+    "recalculatedPartly": "Schránka byla změřena, ale vlastní součet poštovního serveru se nepodařilo vynulovat. Do té doby může doručování dál odmítat."
+  },
+  "connection": {
+    "title": "Nastavení připojení",
+    "description": "Co zadat do poštovního programu, který se nenastaví sám.",
+    "server": "Server",
+    "username": "Uživatelské jméno",
+    "imap": "Port IMAP",
+    "submission": "Port pro odchozí poštu",
+    "copy": "Kopírovat",
+    "hostnamePending": "Zatím nelze uvést název serveru, protože žádný certifikát jej nepokrývá. Porty už jsou správné; název přijde, jakmile bude certifikát vydán."
+  },
+  "autoresponder": {
+    "enabled": "Odpovídat na příchozí poštu automaticky",
+    "subject": "Předmět",
+    "body": "Zpráva",
+    "intervalDays": "Témuž odesílateli odpovědět nejvýše každých",
+    "intervalHint": "Počítáno ve dnech. Odesílatel, který v tomto období napíše několikrát, dostane jednu odpověď, ne jednu na každou zprávu.",
+    "saved": "Automatická odpověď byla uložena."
+  },
+  "forwarding": {
+    "description": "Pošta, která sem přijde, se posílá dál na adresy níže.",
+    "enabled": "Přeposílat příchozí poštu",
+    "destinationsPlaceholder": "jedna adresa na řádek",
+    "keepCopy": "Ponechat kopii v této schránce",
+    "needsADestination": "Přeposílání potřebuje alespoň jednu cílovou adresu.",
+    "confirmNoCopy": "Bez kopie se pošta, která sem přijde, přepošle a poté zahodí. V této schránce nezůstane nic. Pokračovat?",
+    "saved": "Přeposílání bylo uloženo.",
+    "savedNotApplied": "Přeposílání bylo uloženo, ale poštovní server je zatím nepřevzal, takže nyní nic nepřeposílá."
+  },
+  "transfer": {
+    "exportTitle": "Export",
+    "exportDescription": "Stáhne všechny zprávy a složky v jednom archivu.",
+    "export": "Stáhnout schránku",
+    "importTitle": "Import",
+    "importFormats": "Přijímá archiv Maildir nebo soubor mbox.",
+    "importFormatsWithPst": "Přijímá archiv Maildir, soubor mbox nebo export Outlook .pst.",
+    "import": "Nahrát a importovat",
+    "importing": "Importuje se...",
+    "imported": "Bylo importováno {{messages}} zpráv do {{folders}} složek."
+  },
+  "errors": {
+    "loadFailed": "Schránku se nepodařilo načíst",
+    "recalculateFailed": "Schránku se nepodařilo změřit",
+    "saveAutoresponderFailed": "Automatickou odpověď se nepodařilo uložit",
+    "saveForwardingFailed": "Přeposílání se nepodařilo uložit",
+    "importFailed": "Nahraný soubor se nepodařilo importovat",
+    "exportFailed": "Schránku se nepodařilo stáhnout"
+  }
+}

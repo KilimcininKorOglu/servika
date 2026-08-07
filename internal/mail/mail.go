@@ -33,6 +33,13 @@ type Mailbox struct {
 	Email     string `json:"email"`
 	Status    string `json:"status"`
 	CreatedAt string `json:"created_at"`
+	// QuotaBytes is the limit and UsedBytes the last measurement of it. Zero
+	// quota means no limit, not a full mailbox, so a screen has to read them
+	// together. UsageCheckedAt is empty until a measurement has ever run, which
+	// keeps "never measured" apart from "measured, and it was empty".
+	QuotaBytes     int64  `json:"quota_bytes"`
+	UsedBytes      int64  `json:"used_bytes"`
+	UsageCheckedAt string `json:"usage_checked_at,omitempty"`
 }
 
 type Status struct {
@@ -189,7 +196,10 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rows, err := h.DB.QueryContext(r.Context(),
-		`SELECT id, local_part, email, status, DATE_FORMAT(created_at,'%Y-%m-%d %H:%i') FROM mailboxes WHERE domain_id=? ORDER BY local_part`, id)
+		`SELECT id, local_part, email, status, DATE_FORMAT(created_at,'%Y-%m-%d %H:%i'),
+		        quota_bytes, used_bytes,
+		        COALESCE(DATE_FORMAT(usage_checked_at,'%Y-%m-%dT%H:%i:%sZ'),'')
+		   FROM mailboxes WHERE domain_id=? ORDER BY local_part`, id)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "could not list mailboxes")
 		return
@@ -198,7 +208,8 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 	out := make([]Mailbox, 0)
 	for rows.Next() {
 		var mailbox Mailbox
-		if err := rows.Scan(&mailbox.ID, &mailbox.LocalPart, &mailbox.Email, &mailbox.Status, &mailbox.CreatedAt); err == nil {
+		if err := rows.Scan(&mailbox.ID, &mailbox.LocalPart, &mailbox.Email, &mailbox.Status, &mailbox.CreatedAt,
+			&mailbox.QuotaBytes, &mailbox.UsedBytes, &mailbox.UsageCheckedAt); err == nil {
 			out = append(out, mailbox)
 		}
 	}

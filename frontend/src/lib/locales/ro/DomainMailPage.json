@@ -38,6 +38,7 @@
     "activate": "Activare",
     "resetPassword": "Resetare parolă",
     "delete": "Ștergere",
+    "details": "Detalii",
     "openWebmail": "Deschide webmail"
   },
   "forwarders": {

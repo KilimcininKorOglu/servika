@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "email": "邮件"
+  },
+  "title": "邮箱",
+  "subtitle": "与这一个地址相关的全部设置",
+  "loading": "加载中...",
+  "notFound": "该邮箱已不存在。",
+  "save": "保存",
+  "saving": "保存中...",
+  "tabs": {
+    "general": "常规",
+    "autoresponder": "自动回复",
+    "forwarding": "转发",
+    "transfer": "导入与导出"
+  },
+  "quota": {
+    "title": "存储空间",
+    "used": "已使用 {{used}}，共 {{quota}}",
+    "unlimited": "已使用 {{used}}，未设置上限",
+    "checkedAt": "上次测量：{{when}}",
+    "neverChecked": "尚未测量过",
+    "recalculate": "重新计算",
+    "recalculating": "计算中...",
+    "recalculated": "邮箱已测量，邮件服务器也会重新统计。",
+    "recalculatedPartly": "邮箱已测量，但邮件服务器自身的统计未能重置。在此之前它可能继续拒收邮件。"
+  },
+  "connection": {
+    "title": "连接设置",
+    "description": "填入无法自动配置的邮件客户端的值。",
+    "server": "服务器",
+    "username": "用户名",
+    "imap": "IMAP 端口",
+    "submission": "发信端口",
+    "copy": "复制",
+    "hostnamePending": "目前还无法给出主机名，因为没有证书覆盖任何一个名称。端口已经正确，名称将在证书签发后确定。"
+  },
+  "autoresponder": {
+    "enabled": "自动回复收到的邮件",
+    "subject": "主题",
+    "body": "正文",
+    "intervalDays": "对同一发件人最多每隔",
+    "intervalHint": "以天为单位。在该期间内多次来信的发件人只会收到一次回复，而不是每封一次。",
+    "saved": "自动回复已保存。"
+  },
+  "forwarding": {
+    "description": "到达这里的邮件会转发到下列地址。",
+    "enabled": "转发收到的邮件",
+    "destinationsPlaceholder": "每行一个地址",
+    "keepCopy": "在此邮箱中保留副本",
+    "needsADestination": "转发至少需要一个目标地址。",
+    "confirmNoCopy": "不保留副本时，到达这里的邮件转发后即被丢弃，此邮箱中不会留下任何内容。是否继续？",
+    "saved": "转发已保存。",
+    "savedNotApplied": "转发已保存，但邮件服务器尚未采用，因此目前没有转发任何邮件。"
+  },
+  "transfer": {
+    "exportTitle": "导出",
+    "exportDescription": "将全部邮件和文件夹下载为一个压缩包。",
+    "export": "下载邮箱",
+    "importTitle": "导入",
+    "importFormats": "支持 Maildir 压缩包或 mbox 文件。",
+    "importFormatsWithPst": "支持 Maildir 压缩包、mbox 文件或 Outlook 的 .pst 导出文件。",
+    "import": "上传并导入",
+    "importing": "导入中...",
+    "imported": "已将 {{messages}} 封邮件导入到 {{folders}} 个文件夹。"
+  },
+  "errors": {
+    "loadFailed": "无法加载邮箱",
+    "recalculateFailed": "无法测量邮箱",
+    "saveAutoresponderFailed": "无法保存自动回复",
+    "saveForwardingFailed": "无法保存转发",
+    "importFailed": "无法导入上传的文件",
+    "exportFailed": "无法下载邮箱"
+  }
+}

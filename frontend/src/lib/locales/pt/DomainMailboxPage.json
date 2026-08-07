@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "email": "E-mail"
+  },
+  "title": "Caixa de correio",
+  "subtitle": "Tudo o que pertence a este único endereço",
+  "loading": "A carregar...",
+  "notFound": "Esta caixa de correio já não existe.",
+  "save": "Guardar",
+  "saving": "A guardar...",
+  "tabs": {
+    "general": "Geral",
+    "autoresponder": "Resposta automática",
+    "forwarding": "Reencaminhamento",
+    "transfer": "Importação e exportação"
+  },
+  "quota": {
+    "title": "Armazenamento",
+    "used": "{{used}} usados de {{quota}}",
+    "unlimited": "{{used}} usados, sem limite definido",
+    "checkedAt": "Última medição em {{when}}",
+    "neverChecked": "Nunca foi medida",
+    "recalculate": "Recalcular",
+    "recalculating": "A calcular...",
+    "recalculated": "A caixa foi medida e o servidor de correio vai recontar.",
+    "recalculatedPartly": "A caixa foi medida, mas o total do próprio servidor de correio não pôde ser reposto. Até lá pode continuar a recusar entregas."
+  },
+  "connection": {
+    "title": "Definições de ligação",
+    "description": "O que escrever num programa de correio que não se configura sozinho.",
+    "server": "Servidor",
+    "username": "Nome de utilizador",
+    "imap": "Porta IMAP",
+    "submission": "Porta de saída",
+    "copy": "Copiar",
+    "hostnamePending": "Ainda não é possível indicar um nome de anfitrião, porque nenhum certificado cobre um. As portas já estão corretas; o nome segue quando o certificado for emitido."
+  },
+  "autoresponder": {
+    "enabled": "Responder automaticamente ao correio recebido",
+    "subject": "Assunto",
+    "body": "Mensagem",
+    "intervalDays": "Responder ao mesmo remetente no máximo a cada",
+    "intervalHint": "Contado em dias. Um remetente que escreva várias vezes nesse período recebe uma resposta, não uma por mensagem.",
+    "saved": "A resposta automática foi guardada."
+  },
+  "forwarding": {
+    "description": "O correio que chega aqui é enviado para os endereços abaixo.",
+    "enabled": "Reencaminhar o correio recebido",
+    "destinationsPlaceholder": "um endereço por linha",
+    "keepCopy": "Manter uma cópia nesta caixa",
+    "needsADestination": "O reencaminhamento precisa de pelo menos um endereço de destino.",
+    "confirmNoCopy": "Sem cópia, o correio que chega aqui é enviado e depois descartado. Nada ficará nesta caixa. Continuar?",
+    "saved": "O reencaminhamento foi guardado.",
+    "savedNotApplied": "O reencaminhamento foi guardado, mas o servidor de correio ainda não o assumiu, por isso neste momento não reencaminha nada."
+  },
+  "transfer": {
+    "exportTitle": "Exportação",
+    "exportDescription": "Descarrega todas as mensagens e pastas num único arquivo.",
+    "export": "Descarregar a caixa",
+    "importTitle": "Importação",
+    "importFormats": "Aceita um arquivo Maildir ou um ficheiro mbox.",
+    "importFormatsWithPst": "Aceita um arquivo Maildir, um ficheiro mbox ou uma exportação Outlook .pst.",
+    "import": "Carregar e importar",
+    "importing": "A importar...",
+    "imported": "{{messages}} mensagens foram importadas para {{folders}} pastas."
+  },
+  "errors": {
+    "loadFailed": "Não foi possível carregar a caixa de correio",
+    "recalculateFailed": "Não foi possível medir a caixa de correio",
+    "saveAutoresponderFailed": "Não foi possível guardar a resposta automática",
+    "saveForwardingFailed": "Não foi possível guardar o reencaminhamento",
+    "importFailed": "Não foi possível importar o ficheiro carregado",
+    "exportFailed": "Não foi possível descarregar a caixa de correio"
+  }
+}

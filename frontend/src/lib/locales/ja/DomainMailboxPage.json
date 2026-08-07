@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "email": "メール"
+  },
+  "title": "メールボックス",
+  "subtitle": "このアドレスに関するすべての設定",
+  "loading": "読み込み中...",
+  "notFound": "このメールボックスはすでに存在しません。",
+  "save": "保存",
+  "saving": "保存中...",
+  "tabs": {
+    "general": "一般",
+    "autoresponder": "自動返信",
+    "forwarding": "転送",
+    "transfer": "インポートとエクスポート"
+  },
+  "quota": {
+    "title": "ストレージ",
+    "used": "{{quota}} 中 {{used}} を使用",
+    "unlimited": "{{used}} を使用中、上限は未設定",
+    "checkedAt": "最終測定: {{when}}",
+    "neverChecked": "まだ測定されていません",
+    "recalculate": "再計算",
+    "recalculating": "計算中...",
+    "recalculated": "メールボックスを測定しました。メールサーバーも数え直します。",
+    "recalculatedPartly": "メールボックスは測定しましたが、メールサーバー自身の集計を初期化できませんでした。それまで配送を拒否し続ける場合があります。"
+  },
+  "connection": {
+    "title": "接続設定",
+    "description": "自動設定できないメールソフトに入力する値です。",
+    "server": "サーバー",
+    "username": "ユーザー名",
+    "imap": "IMAP ポート",
+    "submission": "送信ポート",
+    "copy": "コピー",
+    "hostnamePending": "証明書が対象としているホスト名がまだないため、サーバー名を提示できません。ポートはすでに正しく、名前は証明書の発行後に決まります。"
+  },
+  "autoresponder": {
+    "enabled": "受信したメールに自動で返信する",
+    "subject": "件名",
+    "body": "本文",
+    "intervalDays": "同じ差出人への返信間隔",
+    "intervalHint": "日数で数えます。この期間に何度も送ってきた差出人には、メールごとではなく 1 回だけ返信します。",
+    "saved": "自動返信を保存しました。"
+  },
+  "forwarding": {
+    "description": "ここに届いたメールを以下のアドレスへ転送します。",
+    "enabled": "受信メールを転送する",
+    "destinationsPlaceholder": "1 行に 1 アドレス",
+    "keepCopy": "このメールボックスに控えを残す",
+    "needsADestination": "転送には少なくとも 1 つの宛先が必要です。",
+    "confirmNoCopy": "控えを残さない場合、ここに届いたメールは転送された後に破棄されます。このメールボックスには何も残りません。続行しますか?",
+    "saved": "転送を保存しました。",
+    "savedNotApplied": "転送は保存しましたが、メールサーバーがまだ取り込んでいないため、現時点では何も転送されていません。"
+  },
+  "transfer": {
+    "exportTitle": "エクスポート",
+    "exportDescription": "すべてのメールとフォルダーを 1 つのアーカイブとしてダウンロードします。",
+    "export": "メールボックスをダウンロード",
+    "importTitle": "インポート",
+    "importFormats": "Maildir アーカイブまたは mbox ファイルに対応しています。",
+    "importFormatsWithPst": "Maildir アーカイブ、mbox ファイル、Outlook の .pst エクスポートに対応しています。",
+    "import": "アップロードしてインポート",
+    "importing": "インポート中...",
+    "imported": "{{folders}} 個のフォルダーに {{messages}} 通のメールをインポートしました。"
+  },
+  "errors": {
+    "loadFailed": "メールボックスを読み込めませんでした",
+    "recalculateFailed": "メールボックスを測定できませんでした",
+    "saveAutoresponderFailed": "自動返信を保存できませんでした",
+    "saveForwardingFailed": "転送を保存できませんでした",
+    "importFailed": "アップロードしたファイルをインポートできませんでした",
+    "exportFailed": "メールボックスをダウンロードできませんでした"
+  }
+}

@@ -38,6 +38,7 @@
     "activate": "有効化",
     "resetPassword": "パスワードをリセット",
     "delete": "削除",
+    "details": "詳細",
     "openWebmail": "ウェブメールを開く"
   },
   "forwarders": {

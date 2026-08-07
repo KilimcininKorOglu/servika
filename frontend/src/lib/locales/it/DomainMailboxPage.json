@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "email": "E-mail"
+  },
+  "title": "Casella di posta",
+  "subtitle": "Tutto ciò che appartiene a questo singolo indirizzo",
+  "loading": "Caricamento...",
+  "notFound": "Questa casella di posta non esiste più.",
+  "save": "Salva",
+  "saving": "Salvataggio...",
+  "tabs": {
+    "general": "Generale",
+    "autoresponder": "Risposta automatica",
+    "forwarding": "Inoltro",
+    "transfer": "Importazione ed esportazione"
+  },
+  "quota": {
+    "title": "Spazio",
+    "used": "{{used}} usati su {{quota}}",
+    "unlimited": "{{used}} usati, senza limite impostato",
+    "checkedAt": "Ultima misurazione {{when}}",
+    "neverChecked": "Mai misurata",
+    "recalculate": "Ricalcola",
+    "recalculating": "Calcolo in corso...",
+    "recalculated": "La casella è stata misurata e il server di posta ricalcolerà il proprio totale.",
+    "recalculatedPartly": "La casella è stata misurata, ma il totale del server di posta non è stato azzerato. Fino ad allora può continuare a rifiutare le consegne."
+  },
+  "connection": {
+    "title": "Impostazioni di connessione",
+    "description": "Cosa inserire in un programma di posta che non si configura da solo.",
+    "server": "Server",
+    "username": "Nome utente",
+    "imap": "Porta IMAP",
+    "submission": "Porta in uscita",
+    "copy": "Copia",
+    "hostnamePending": "Non è ancora possibile indicare un nome host, perché nessun certificato ne copre uno. Le porte sono già corrette; il nome arriva quando il certificato viene emesso."
+  },
+  "autoresponder": {
+    "enabled": "Rispondi automaticamente alla posta in arrivo",
+    "subject": "Oggetto",
+    "body": "Messaggio",
+    "intervalDays": "Rispondi allo stesso mittente al massimo ogni",
+    "intervalHint": "Contato in giorni. Un mittente che scrive più volte in quel periodo riceve una risposta, non una per messaggio.",
+    "saved": "La risposta automatica è stata salvata."
+  },
+  "forwarding": {
+    "description": "La posta che arriva qui viene inoltrata agli indirizzi sotto.",
+    "enabled": "Inoltra la posta in arrivo",
+    "destinationsPlaceholder": "un indirizzo per riga",
+    "keepCopy": "Conserva una copia in questa casella",
+    "needsADestination": "L'inoltro richiede almeno un indirizzo di destinazione.",
+    "confirmNoCopy": "Senza copia, la posta che arriva qui viene inoltrata e poi scartata. In questa casella non resterà nulla. Continuare?",
+    "saved": "L'inoltro è stato salvato.",
+    "savedNotApplied": "L'inoltro è stato salvato, ma il server di posta non lo ha ancora applicato, quindi al momento non inoltra nulla."
+  },
+  "transfer": {
+    "exportTitle": "Esportazione",
+    "exportDescription": "Scarica tutti i messaggi e le cartelle in un unico archivio.",
+    "export": "Scarica la casella",
+    "importTitle": "Importazione",
+    "importFormats": "Accetta un archivio Maildir o un file mbox.",
+    "importFormatsWithPst": "Accetta un archivio Maildir, un file mbox o un'esportazione Outlook .pst.",
+    "import": "Carica e importa",
+    "importing": "Importazione in corso...",
+    "imported": "{{messages}} messaggi sono stati importati in {{folders}} cartelle."
+  },
+  "errors": {
+    "loadFailed": "Non è stato possibile caricare la casella di posta",
+    "recalculateFailed": "Non è stato possibile misurare la casella di posta",
+    "saveAutoresponderFailed": "Non è stato possibile salvare la risposta automatica",
+    "saveForwardingFailed": "Non è stato possibile salvare l'inoltro",
+    "importFailed": "Non è stato possibile importare il file caricato",
+    "exportFailed": "Non è stato possibile scaricare la casella di posta"
+  }
+}

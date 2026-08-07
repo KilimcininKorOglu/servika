@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Inicio",
+    "domains": "Dominios",
+    "email": "Correo"
+  },
+  "title": "Buzón",
+  "subtitle": "Todo lo que pertenece a esta única dirección",
+  "loading": "Cargando...",
+  "notFound": "Este buzón ya no existe.",
+  "save": "Guardar",
+  "saving": "Guardando...",
+  "tabs": {
+    "general": "General",
+    "autoresponder": "Respuesta automática",
+    "forwarding": "Reenvío",
+    "transfer": "Importar y exportar"
+  },
+  "quota": {
+    "title": "Almacenamiento",
+    "used": "{{used}} usados de {{quota}}",
+    "unlimited": "{{used}} usados, sin límite definido",
+    "checkedAt": "Última medición: {{when}}",
+    "neverChecked": "Nunca se ha medido",
+    "recalculate": "Recalcular",
+    "recalculating": "Calculando...",
+    "recalculated": "El buzón se midió y el servidor de correo volverá a contar.",
+    "recalculatedPartly": "El buzón se midió, pero no se pudo restablecer el total propio del servidor de correo. Hasta entonces puede seguir rechazando entregas."
+  },
+  "connection": {
+    "title": "Ajustes de conexión",
+    "description": "Lo que hay que escribir en un programa de correo que no se configura solo.",
+    "server": "Servidor",
+    "username": "Nombre de usuario",
+    "imap": "Puerto IMAP",
+    "submission": "Puerto de salida",
+    "copy": "Copiar",
+    "hostnamePending": "Todavía no se puede indicar un nombre de servidor, porque ningún certificado cubre uno. Los puertos ya son correctos; el nombre llega cuando se emita el certificado."
+  },
+  "autoresponder": {
+    "enabled": "Responder automáticamente al correo entrante",
+    "subject": "Asunto",
+    "body": "Mensaje",
+    "intervalDays": "Responder al mismo remitente como mucho cada",
+    "intervalHint": "Se cuenta en días. Un remitente que escriba varias veces en ese periodo recibe una respuesta, no una por mensaje.",
+    "saved": "La respuesta automática se ha guardado."
+  },
+  "forwarding": {
+    "description": "El correo que llega aquí se envía a las direcciones de abajo.",
+    "enabled": "Reenviar el correo entrante",
+    "destinationsPlaceholder": "una dirección por línea",
+    "keepCopy": "Conservar una copia en este buzón",
+    "needsADestination": "El reenvío necesita al menos una dirección de destino.",
+    "confirmNoCopy": "Sin copia, el correo que llega aquí se reenvía y luego se descarta. No quedará nada en este buzón. ¿Continuar?",
+    "saved": "El reenvío se ha guardado.",
+    "savedNotApplied": "El reenvío se ha guardado, pero el servidor de correo aún no lo ha aplicado, así que ahora mismo no reenvía nada."
+  },
+  "transfer": {
+    "exportTitle": "Exportar",
+    "exportDescription": "Descarga todos los mensajes y carpetas en un solo archivo.",
+    "export": "Descargar el buzón",
+    "importTitle": "Importar",
+    "importFormats": "Acepta un archivo Maildir o un fichero mbox.",
+    "importFormatsWithPst": "Acepta un archivo Maildir, un fichero mbox o una exportación .pst de Outlook.",
+    "import": "Subir e importar",
+    "importing": "Importando...",
+    "imported": "Se han importado {{messages}} mensajes en {{folders}} carpetas."
+  },
+  "errors": {
+    "loadFailed": "No se pudo cargar el buzón",
+    "recalculateFailed": "No se pudo medir el buzón",
+    "saveAutoresponderFailed": "No se pudo guardar la respuesta automática",
+    "saveForwardingFailed": "No se pudo guardar el reenvío",
+    "importFailed": "No se pudo importar el archivo subido",
+    "exportFailed": "No se pudo descargar el buzón"
+  }
+}

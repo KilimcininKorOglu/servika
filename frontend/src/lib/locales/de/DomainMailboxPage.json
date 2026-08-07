@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "email": "E-Mail"
+  },
+  "title": "Postfach",
+  "subtitle": "Alles, was zu dieser einen Adresse gehört",
+  "loading": "Wird geladen...",
+  "notFound": "Dieses Postfach gibt es nicht mehr.",
+  "save": "Speichern",
+  "saving": "Wird gespeichert...",
+  "tabs": {
+    "general": "Allgemein",
+    "autoresponder": "Autoantwort",
+    "forwarding": "Weiterleitung",
+    "transfer": "Import und Export"
+  },
+  "quota": {
+    "title": "Speicher",
+    "used": "{{used}} von {{quota}} belegt",
+    "unlimited": "{{used}} belegt, ohne festgelegtes Limit",
+    "checkedAt": "Zuletzt gemessen am {{when}}",
+    "neverChecked": "Noch nie gemessen",
+    "recalculate": "Neu berechnen",
+    "recalculating": "Wird berechnet...",
+    "recalculated": "Das Postfach wurde gemessen und der Mailserver zählt neu.",
+    "recalculatedPartly": "Das Postfach wurde gemessen, aber der eigene Zähler des Mailservers ließ sich nicht zurücksetzen. Bis dahin kann er Zustellungen weiter ablehnen."
+  },
+  "connection": {
+    "title": "Verbindungseinstellungen",
+    "description": "Was in ein E-Mail-Programm einzutragen ist, das sich nicht selbst einrichten kann.",
+    "server": "Server",
+    "username": "Benutzername",
+    "imap": "IMAP-Port",
+    "submission": "Port für ausgehende Mail",
+    "copy": "Kopieren",
+    "hostnamePending": "Es kann noch kein Hostname genannt werden, weil kein Zertifikat einen abdeckt. Die Ports stimmen bereits; der Name folgt, sobald das Zertifikat ausgestellt ist."
+  },
+  "autoresponder": {
+    "enabled": "Eingehende Mail automatisch beantworten",
+    "subject": "Betreff",
+    "body": "Nachricht",
+    "intervalDays": "Demselben Absender höchstens antworten alle",
+    "intervalHint": "In Tagen gezählt. Ein Absender, der in diesem Zeitraum mehrmals schreibt, erhält eine Antwort, nicht eine pro Nachricht.",
+    "saved": "Die Autoantwort wurde gespeichert."
+  },
+  "forwarding": {
+    "description": "Hier eingehende Mail wird an die folgenden Adressen weitergeleitet.",
+    "enabled": "Eingehende Mail weiterleiten",
+    "destinationsPlaceholder": "eine Adresse pro Zeile",
+    "keepCopy": "Eine Kopie in diesem Postfach behalten",
+    "needsADestination": "Für eine Weiterleitung wird mindestens eine Zieladresse benötigt.",
+    "confirmNoCopy": "Ohne Kopie wird hier eingehende Mail weitergeleitet und danach verworfen. In diesem Postfach bleibt nichts zurück. Fortfahren?",
+    "saved": "Die Weiterleitung wurde gespeichert.",
+    "savedNotApplied": "Die Weiterleitung wurde gespeichert, aber der Mailserver hat sie noch nicht übernommen, es wird also derzeit nichts weitergeleitet."
+  },
+  "transfer": {
+    "exportTitle": "Export",
+    "exportDescription": "Lädt alle Nachrichten und Ordner als ein Archiv herunter.",
+    "export": "Postfach herunterladen",
+    "importTitle": "Import",
+    "importFormats": "Akzeptiert ein Maildir-Archiv oder eine mbox-Datei.",
+    "importFormatsWithPst": "Akzeptiert ein Maildir-Archiv, eine mbox-Datei oder einen Outlook-.pst-Export.",
+    "import": "Hochladen und importieren",
+    "importing": "Wird importiert...",
+    "imported": "{{messages}} Nachrichten wurden in {{folders}} Ordner importiert."
+  },
+  "errors": {
+    "loadFailed": "Das Postfach konnte nicht geladen werden",
+    "recalculateFailed": "Das Postfach konnte nicht gemessen werden",
+    "saveAutoresponderFailed": "Die Autoantwort konnte nicht gespeichert werden",
+    "saveForwardingFailed": "Die Weiterleitung konnte nicht gespeichert werden",
+    "importFailed": "Der Upload konnte nicht importiert werden",
+    "exportFailed": "Das Postfach konnte nicht heruntergeladen werden"
+  }
+}

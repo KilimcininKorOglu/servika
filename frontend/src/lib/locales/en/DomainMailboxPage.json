@@ -1,0 +1,77 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "email": "Email"
+  },
+  "title": "Mailbox",
+  "subtitle": "Everything that belongs to this one address",
+  "loading": "Loading...",
+  "notFound": "This mailbox no longer exists.",
+  "save": "Save",
+  "saving": "Saving...",
+  "tabs": {
+    "general": "General",
+    "autoresponder": "Auto-reply",
+    "forwarding": "Forwarding",
+    "transfer": "Import and export"
+  },
+  "quota": {
+    "title": "Storage",
+    "used": "{{used}} of {{quota}} used",
+    "unlimited": "{{used}} used, with no limit set",
+    "checkedAt": "Last measured {{when}}",
+    "neverChecked": "Never measured yet",
+    "recalculate": "Recalculate",
+    "recalculating": "Recalculating...",
+    "recalculated": "The mailbox was measured and the mail server will recount.",
+    "recalculatedPartly": "The mailbox was measured, but the mail server's own total could not be reset. It may still refuse deliveries until it is."
+  },
+  "connection": {
+    "title": "Connection settings",
+    "description": "What to type into a mail client that cannot configure itself.",
+    "server": "Server",
+    "username": "Username",
+    "imap": "IMAP port",
+    "submission": "Outgoing port",
+    "copy": "Copy",
+    "hostnamePending": "No hostname can be given out yet, because no certificate covers one. The ports are already correct; the name follows once the certificate is issued."
+  },
+  "autoresponder": {
+    "enabled": "Reply automatically to incoming mail",
+    "subject": "Subject",
+    "body": "Message",
+    "intervalDays": "Reply to the same sender at most every",
+    "intervalHint": "Counted in days. A sender who writes several times in that period gets one reply, not one per message.",
+    "saved": "The automatic reply was saved."
+  },
+  "forwarding": {
+    "description": "Mail arriving here is sent on to the addresses below.",
+    "enabled": "Forward incoming mail",
+    "destinationsPlaceholder": "one address per line",
+    "keepCopy": "Keep a copy in this mailbox",
+    "needsADestination": "Forwarding needs at least one address to send to.",
+    "confirmNoCopy": "Without a copy, mail arriving here is sent on and then dropped. Nothing will be left in this mailbox to go back to. Continue?",
+    "saved": "Forwarding was saved.",
+    "savedNotApplied": "Forwarding was saved, but the mail server has not picked it up yet, so it is not forwarding anything at the moment."
+  },
+  "transfer": {
+    "exportTitle": "Export",
+    "exportDescription": "Downloads every message and folder as one archive.",
+    "export": "Download the mailbox",
+    "importTitle": "Import",
+    "importFormats": "Accepts a Maildir archive or an mbox file.",
+    "importFormatsWithPst": "Accepts a Maildir archive, an mbox file, or an Outlook .pst export.",
+    "import": "Upload and import",
+    "importing": "Importing...",
+    "imported": "{{messages}} messages were imported into {{folders}} folders."
+  },
+  "errors": {
+    "loadFailed": "The mailbox could not be loaded",
+    "recalculateFailed": "The mailbox could not be measured",
+    "saveAutoresponderFailed": "The automatic reply could not be saved",
+    "saveForwardingFailed": "Forwarding could not be saved",
+    "importFailed": "The upload could not be imported",
+    "exportFailed": "The mailbox could not be downloaded"
+  }
+}
