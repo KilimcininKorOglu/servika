@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"servika/internal/config"
@@ -99,14 +101,14 @@ func CollectDeliveryLog(ctx context.Context, db *sql.DB) error {
 	senders := map[string]string{}
 	reference := time.Now()
 	consumed := start
-	var pending []storedDelivery
+	oversize := 0
+	pending := make([]storedDelivery, 0, maxPendingDeliveries)
 
 	for {
-		line, readErr := reader.ReadString('\n')
-		// A final line without a newline is still being written; leaving the
-		// cursor before it means the complete line is read on the next pass.
-		if len(line) > 0 && line[len(line)-1] == '\n' {
-			consumed += int64(len(line))
+		line, read, status, readErr := readLogLine(reader)
+		switch status {
+		case lineComplete:
+			consumed += read
 			if queueID, sender, ok := parseSender(line); ok {
 				if len(senders) < senderCacheMax {
 					senders[queueID] = sender
@@ -115,22 +117,137 @@ func CollectDeliveryLog(ctx context.Context, db *sql.DB) error {
 				record.Sender = senders[record.QueueID]
 				pending = append(pending, matchDomains(record, hosted)...)
 			}
+		case lineOversize:
+			consumed += read
+			oversize++
+		}
+		// Written in batches rather than once at the end, so the memory this
+		// holds is bounded by the batch and not by the length of the whole pass.
+		if len(pending) >= maxPendingDeliveries {
+			if err := flushDeliveries(ctx, db, pending, consumed, size); err != nil {
+				return err
+			}
+			pending = pending[:0]
 		}
 		if readErr != nil {
 			break
 		}
 	}
+	if oversize > 0 {
+		// Never silent: a skipped line is delivery history the panel will not
+		// show, and an operator has to be able to see that it happened.
+		log.Printf("mail delivery log: skipped %d line(s) longer than %d bytes", oversize, maxLogLineBytes)
+	}
 
-	if err := storeDeliveries(ctx, db, pending); err != nil {
+	// The final flush runs even with nothing pending, because the cursor still
+	// has to advance past the lines that matched no hosted domain.
+	if err := flushDeliveries(ctx, db, pending, consumed, size); err != nil {
 		return err
 	}
-	if _, err := db.ExecContext(ctx,
+	return pruneDeliveryLog(ctx, db)
+}
+
+// lineStatus says what readLogLine found.
+type lineStatus int
+
+const (
+	// lineIncomplete is a final line still being written. The cursor must not
+	// advance past it, so the next pass reads it whole.
+	lineIncomplete lineStatus = iota
+	// lineComplete is a whole line within the ceiling.
+	lineComplete
+	// lineOversize is a whole line past the ceiling. It is consumed and
+	// discarded: half a syslog line parses as a different record rather than as
+	// nothing, so returning part of it would be worse than skipping it.
+	lineOversize
+)
+
+// maxLogLineBytes bounds one line.
+//
+// rsyslog truncates a syslog message at 8 KiB by default, so this sits far above
+// anything Postfix or Dovecot can produce and no genuine line is ever cut. It
+// exists for the abnormal file: a corrupted log, or SERVIKA_MAIL_LOG pointed at
+// something that is not line-oriented at all. bufio's ReadString does not stop
+// at the buffer size, it grows until it finds the delimiter, so without a
+// ceiling a file with no newline in it is read into memory whole.
+const maxLogLineBytes = 64 << 10
+
+// maxPendingDeliveries bounds how many parsed rows are held before they are
+// written, so a collector catching up on a large log does not hold all of it.
+const maxPendingDeliveries = 5000
+
+// readLogLine returns the next line, how many bytes it consumed, and what kind
+// of line it was.
+func readLogLine(reader *bufio.Reader) (string, int64, lineStatus, error) {
+	var (
+		builder  strings.Builder
+		consumed int64
+		over     bool
+	)
+	for {
+		chunk, err := reader.ReadSlice('\n')
+		consumed += int64(len(chunk))
+		switch {
+		case over:
+			// Already past the ceiling: keep consuming to the newline so the
+			// next line starts where it should, but keep nothing.
+		case builder.Len()+len(chunk) > maxLogLineBytes:
+			over = true
+			builder.Reset()
+		default:
+			builder.Write(chunk)
+		}
+		if errors.Is(err, bufio.ErrBufferFull) {
+			continue
+		}
+		if err != nil {
+			// EOF or a read error. Whatever was gathered has no newline yet, so
+			// it is a line still being written.
+			return "", consumed, lineIncomplete, err
+		}
+		if over {
+			return "", consumed, lineOversize, nil
+		}
+		return builder.String(), consumed, lineComplete, nil
+	}
+}
+
+// flushDeliveries writes a batch and advances the cursor in ONE transaction.
+//
+// The two belong together: rows stored under an offset that is not advanced
+// would be read and stored a second time on the next pass, and an advanced
+// offset whose rows were not stored loses that delivery history for good.
+func flushDeliveries(ctx context.Context, db *sql.DB, pending []storedDelivery, consumed, size int64) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if len(pending) > 0 {
+		statement, err := tx.PrepareContext(ctx,
+			`INSERT INTO mail_delivery_log(domain_id, ts, direction, sender, recipient, status, reason, queue_id)
+			 VALUES(?,?,?,?,?,?,?,?)`)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = statement.Close() }()
+		for _, item := range pending {
+			if _, err := statement.ExecContext(ctx,
+				item.DomainID, item.Record.At, item.Direction,
+				item.Record.Sender, item.Record.Recipient,
+				item.Record.Status, item.Record.Reason, item.Record.QueueID); err != nil {
+				return err
+			}
+		}
+	}
+	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO mail_log_cursor(id, offset, size) VALUES(1,?,?)
 		 ON DUPLICATE KEY UPDATE offset=VALUES(offset), size=VALUES(size)`,
 		consumed, size); err != nil {
 		return err
 	}
-	return pruneDeliveryLog(ctx, db)
+	return tx.Commit()
 }
 
 // storedDelivery is a record already resolved to the domain that owns it.
@@ -174,33 +291,6 @@ func hostedMailDomains(ctx context.Context, db *sql.DB) (map[string]int64, error
 		hosted[name] = id
 	}
 	return hosted, rows.Err()
-}
-
-func storeDeliveries(ctx context.Context, db *sql.DB, pending []storedDelivery) error {
-	if len(pending) == 0 {
-		return nil
-	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = tx.Rollback() }()
-	statement, err := tx.PrepareContext(ctx,
-		`INSERT INTO mail_delivery_log(domain_id, ts, direction, sender, recipient, status, reason, queue_id)
-		 VALUES(?,?,?,?,?,?,?,?)`)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = statement.Close() }()
-	for _, item := range pending {
-		if _, err := statement.ExecContext(ctx,
-			item.DomainID, item.Record.At, item.Direction,
-			item.Record.Sender, item.Record.Recipient,
-			item.Record.Status, item.Record.Reason, item.Record.QueueID); err != nil {
-			return err
-		}
-	}
-	return tx.Commit()
 }
 
 func pruneDeliveryLog(ctx context.Context, db *sql.DB) error {

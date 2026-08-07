@@ -1,6 +1,7 @@
 package mail
 
 import (
+	"bufio"
 	"strings"
 	"testing"
 	"time"
@@ -158,5 +159,79 @@ func TestSearchWildcardsAreEscaped(t *testing.T) {
 	}
 	if got := escapeLike(`a\b`); got != `a\\b` {
 		t.Errorf("escapeLike = %q, want a\\\\b", got)
+	}
+}
+
+// bufio's ReadString does not stop at the buffer size: it grows until it finds
+// the delimiter. A file with no newline in it would therefore be read into
+// memory whole, so the reader carries its own ceiling.
+func TestAnOverlongLogLineIsSkippedWholeRatherThanReadIn(t *testing.T) {
+	giant := strings.Repeat("x", maxLogLineBytes+1024)
+	real := "Aug  6 07:12:33 host postfix/smtp[1234]: A1B2C3D4: to=<user@example.net>, status=sent (250 2.0.0 OK)"
+	reader := bufio.NewReaderSize(strings.NewReader(giant+"\n"+real+"\n"), 256*1024)
+
+	line, read, status, err := readLogLine(reader)
+	if err != nil {
+		t.Fatalf("readLogLine: %v", err)
+	}
+	if status != lineOversize {
+		t.Errorf("status = %v, want lineOversize", status)
+	}
+	if line != "" {
+		t.Errorf("an oversize line returned %d bytes of content", len(line))
+	}
+	// It is still CONSUMED: the cursor has to move past it or the next pass
+	// reads the same line again for ever.
+	if read != int64(len(giant)+1) {
+		t.Errorf("consumed = %d, want the whole oversize line (%d)", read, len(giant)+1)
+	}
+
+	// The other direction, and the point of skipping rather than failing: the
+	// ordinary line after it must still arrive intact.
+	line, _, status, err = readLogLine(reader)
+	if err != nil {
+		t.Fatalf("readLogLine after the oversize line: %v", err)
+	}
+	if status != lineComplete {
+		t.Errorf("status = %v, want lineComplete", status)
+	}
+	if strings.TrimRight(line, "\n") != real {
+		t.Errorf("the line after the oversize one was not read whole: %q", line)
+	}
+	if record, ok := parseDelivery(line, time.Now()); !ok || record.Status != "sent" {
+		t.Errorf("the recovered line no longer parses: %+v, ok=%v", record, ok)
+	}
+}
+
+// The ceiling must not touch a real line. rsyslog truncates at 8 KiB by
+// default, so anything Postfix writes is far below it.
+func TestAnOrdinaryLogLineIsNeverTruncated(t *testing.T) {
+	line := "Aug  6 07:12:33 host postfix/smtp[1234]: A1B2C3D4: to=<user@example.net>, " +
+		"relay=mx.example.net[1.2.3.4]:25, status=sent (" + strings.Repeat("z", 4096) + ")"
+	reader := bufio.NewReaderSize(strings.NewReader(line+"\n"), 256*1024)
+
+	got, read, status, err := readLogLine(reader)
+	if err != nil {
+		t.Fatalf("readLogLine: %v", err)
+	}
+	if status != lineComplete {
+		t.Fatalf("status = %v, want lineComplete", status)
+	}
+	if strings.TrimRight(got, "\n") != line {
+		t.Error("an ordinary line was altered")
+	}
+	if read != int64(len(line)+1) {
+		t.Errorf("consumed = %d, want %d", read, len(line)+1)
+	}
+}
+
+// A final line without a newline is still being written. Reporting it as
+// complete would parse half a record and move the cursor past it, so the rest
+// would never be read.
+func TestALineStillBeingWrittenIsNotConsumed(t *testing.T) {
+	reader := bufio.NewReaderSize(strings.NewReader("Aug  6 07:12:33 host postfix/smtp[1234]: A1B2"), 256*1024)
+
+	if _, _, status, _ := readLogLine(reader); status != lineIncomplete {
+		t.Errorf("status = %v, want lineIncomplete", status)
 	}
 }
