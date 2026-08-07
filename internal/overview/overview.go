@@ -16,12 +16,14 @@ package overview
 import (
 	"context"
 	"database/sql"
+	"log"
 	"net/http"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
+	"servika/internal/credentials"
 	"servika/internal/httpx"
 	"servika/internal/middleware"
 )
@@ -228,8 +230,30 @@ type DBRow struct {
 	DBName     string `json:"db_name"`
 	DBUser     string `json:"db_user"`
 	DBHost     string `json:"db_host"`
+	DBPass     string `json:"db_pass"`
 	SizeKB     int64  `json:"size_kb"`
 	CreatedAt  string `json:"created_at"`
+}
+
+// revealDBPass turns a stored db_accounts.db_pass_plain into the value the
+// response carries. The column holds ciphertext bound to the database user as
+// AEAD associated data (see internal/credentials), so the user has to be handed
+// back in for it to open.
+//
+// A value that will not decrypt is reported as EMPTY rather than passed
+// through. Echoing the stored form would put a base64 blob where the interface
+// prints a password: it is useless to whoever reads it, and it publishes the
+// ciphertext of a credential to anyone who can reach the list.
+//
+// This is the same rule the domain-scoped list already applies
+// (internal/domains.ListDatabases); both surfaces answer for the same column
+// and must not disagree about what an unreadable row looks like.
+func revealDBPass(dbUser, stored string) string {
+	pass, err := credentials.DecryptDBPass(dbUser, stored)
+	if err != nil {
+		return ""
+	}
+	return pass
 }
 
 // dbSizes: schema name -> KB.
@@ -276,7 +300,7 @@ func parseDBSizes(raw []byte) map[string]int64 {
 
 func (h *Handlers) Databases(w http.ResponseWriter, r *http.Request) {
 	q := `
-SELECT a.id, a.domain_id, d.domain_name, a.db_name, a.db_user, a.db_host,
+SELECT a.id, a.domain_id, d.domain_name, a.db_name, a.db_user, a.db_host, a.db_pass_plain,
        COALESCE(DATE_FORMAT(a.created_at, '%Y-%m-%d'), '')
 FROM db_accounts a
 JOIN domains d ON d.id = a.domain_id`
@@ -297,9 +321,15 @@ ORDER BY d.domain_name, a.db_name`
 	out := make([]DBRow, 0)
 	for rows.Next() {
 		var s DBRow
-		if err := rows.Scan(&s.ID, &s.DomainID, &s.DomainName, &s.DBName, &s.DBUser, &s.DBHost, &s.CreatedAt); err != nil {
+		// Scanning one row can fail without the rest of the list being wrong, so a
+		// bad row is dropped instead of failing the request; it is logged rather
+		// than discarded silently, because a list that is quietly short reads as
+		// "this database does not exist".
+		if err := rows.Scan(&s.ID, &s.DomainID, &s.DomainName, &s.DBName, &s.DBUser, &s.DBHost, &s.DBPass, &s.CreatedAt); err != nil {
+			log.Printf("overview: skipping unreadable db_accounts row: %v", err)
 			continue
 		}
+		s.DBPass = revealDBPass(s.DBUser, s.DBPass)
 		out = append(out, s)
 	}
 
