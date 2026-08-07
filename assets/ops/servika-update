@@ -200,7 +200,9 @@ mkdir -p "$ROLLBACK_DIR"
 
 # Source resolution: prefer the immutable tagged release bundle (same artifact as
 # install.sh). An explicit --branch opts into the mutable branch tarball; a failed
-# tag resolution or bundle download falls back to it with a warning.
+# tag resolution or bundle download falls back to it with a warning. A bundle that
+# fails its checksum does NOT: that is a fatal error, never a reason to reach for
+# a source with no checksum.
 A=""
 if [ "$BRANCH_EXPLICIT" = 0 ]; then
   TAG=$(resolve_release_tag)
@@ -211,17 +213,30 @@ if [ "$BRANCH_EXPLICIT" = 0 ]; then
     SUMS_URL="https://github.com/$REPO/releases/download/$TAG/SHA256SUMS"
     step "Servika update (release $TAG, $ARCH)"
     echo "  downloading release bundle..."
-    # Download + checksum-verify against the release SHA256SUMS before extracting;
-    # any failure falls back to the branch tarball, matching the download-fail path.
-    if curl -fsSL --retry 3 -o "$TMP/$BUNDLE" "$BUNDLE_URL" \
-       && curl -fsSL --retry 3 -o "$TMP/SHA256SUMS" "$SUMS_URL" \
-       && verify_release_bundle "$TMP/$BUNDLE" "$TMP/SHA256SUMS" "$BUNDLE" \
-       && tar xz -C "$TMP" -f "$TMP/$BUNDLE"; then
+    # A download that does not arrive and a bundle that does not match its
+    # checksum are NOT the same event, so they must not share an outcome.
+    #
+    # Not arriving is a network problem, and falling back to the branch tarball
+    # is a reasonable answer to it. Not matching is evidence that the bundle is
+    # not the one the release published. Falling back there would mean anyone
+    # able to serve a wrong bundle only has to make the checksum fail to move
+    # this script onto a source with no checksum at all, which it then installs
+    # from as root. install.sh has always treated a mismatch as fatal; this is
+    # the same rule in the two places that update an installed host.
+    if ! curl -fsSL --retry 3 -o "$TMP/$BUNDLE" "$BUNDLE_URL" \
+       || ! curl -fsSL --retry 3 -o "$TMP/SHA256SUMS" "$SUMS_URL"; then
+      warn "release bundle download failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
+      rm -rf "${TMP:?}/"* 2>/dev/null || true
+    elif ! verify_release_bundle "$TMP/$BUNDLE" "$TMP/SHA256SUMS" "$BUNDLE"; then
+      die "checksum mismatch for $BUNDLE against the $TAG release SHA256SUMS; refusing to continue. Re-run with --branch $BRANCH only if you accept an unverified source."
+    elif ! tar xz -C "$TMP" -f "$TMP/$BUNDLE"; then
+      # The checksum already passed, so this is a local unpack problem rather
+      # than a bad artifact: the branch tarball is a fair second attempt.
+      warn "the verified bundle could not be unpacked; falling back to branch '$BRANCH'"
+      rm -rf "${TMP:?}/"* 2>/dev/null || true
+    else
       ok "checksum verified"
       A="$TMP/assets"
-    else
-      warn "release bundle download or verification failed ($BUNDLE_URL); falling back to branch '$BRANCH'"
-      rm -rf "${TMP:?}/"* 2>/dev/null || true
     fi
   else
     warn "could not resolve a release tag; falling back to branch '$BRANCH'"
