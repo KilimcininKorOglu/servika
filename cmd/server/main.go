@@ -193,11 +193,13 @@ func main() {
 	// generated from the installed certificates, so this picks up a host that
 	// already had them and drops one whose certificate has expired.
 	mail.HealMailSNI(context.Background())
-	// A mailbox migration runs in a goroutine, so a restart leaves its row saying
-	// "running" for ever and the unique index keeps the mailbox's slot taken.
+	// A mailbox migration runs in a goroutine, so a restart would leave its row
+	// saying "running" for ever. The credential is sealed in the row, so the job
+	// is put back on the queue and finished rather than thrown away; only one
+	// whose credential will not open is closed as interrupted.
 	mail.HealMigrationJobs(d)
-	// Only after that heal: the workers claim queued rows, and a worker starting
-	// first could take a row the heal is about to close. Four run at a time,
+	// Only after that resume: the workers claim queued rows, and one starting
+	// first could take a row the resume is still moving. Four run at a time,
 	// because each copy holds an IMAP session and a disk writer for hours and a
 	// reseller can legitimately ask for hundreds at once.
 	mail.StartMigrationQueue(context.Background(), d)

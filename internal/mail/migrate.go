@@ -12,6 +12,8 @@ import (
 
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
+
+	"servika/internal/secret"
 )
 
 // migrationBudget is how long one copy may run before it is abandoned.
@@ -44,13 +46,14 @@ const maxConcurrentMigrations = 4
 
 // maxQueuedMigrations bounds the wait list.
 //
-// The queue is in memory because the remote password is deliberately never
-// stored: it travels with the waiting job and nowhere else. Every entry
-// therefore costs a held credential as well as a slot, and this is the point at
-// which the panel says no rather than accumulating them.
+// The queue is held in memory and rebuilt from the rows at startup. Every entry
+// costs a decrypted credential in memory as well as a slot, so it is bounded
+// rather than allowed to grow: this is the point at which the panel says no.
 const maxQueuedMigrations = 100
 
-// pendingMigration is one job waiting for a worker.
+// pendingMigration is one job waiting for a worker. It carries the OPENED
+// credential, so a worker does not have to unseal the row again on the common
+// path; the sealed copy in the row exists for the restart case.
 type pendingMigration struct {
 	id        int64
 	mailboxID int64
@@ -113,11 +116,21 @@ func cancelMigrationJob(id int64) bool {
 // that way until a worker claims it, so the screen shows "waiting to start"
 // rather than a copy that is not actually running.
 func startMigrationJob(db *sql.DB, mailboxID int64, remote RemoteAccount) (int64, error) {
+	// The credential is sealed before it reaches the row, bound to the host so a
+	// row edited to name another server stops decrypting rather than replaying
+	// the password at it. Only failing here loses the job; the alternative,
+	// starting a copy whose credential cannot be recovered after a restart, is
+	// what this whole column exists to avoid.
+	sealed, err := secret.EncryptWith(remote.Password, remote.Host)
+	if err != nil {
+		return 0, fmt.Errorf("seal the remote credential: %w", err)
+	}
+
 	result, err := db.Exec(
 		`INSERT INTO mail_migration_jobs
-		   (mailbox_id, remote_host, remote_port, remote_security, remote_user, status)
-		 VALUES (?,?,?,?,?, 'queued')`,
-		mailboxID, remote.Host, remote.Port, remote.Security, remote.Username)
+		   (mailbox_id, remote_host, remote_port, remote_security, remote_user, remote_password, status)
+		 VALUES (?,?,?,?,?,?, 'queued')`,
+		mailboxID, remote.Host, remote.Port, remote.Security, remote.Username, sealed)
 	if err != nil {
 		if isDuplicateKey(err) {
 			return 0, ErrMigrationRunning
@@ -139,7 +152,8 @@ func startMigrationJob(db *sql.DB, mailboxID int64, remote RemoteAccount) (int64
 		// immediately instead of holding it against a job that will never run.
 		if _, err := db.Exec(
 			`UPDATE mail_migration_jobs
-			    SET status='failed', error_code='too_many_migrations', finished_at=NOW()
+			    SET status='failed', error_code='too_many_migrations', finished_at=NOW(),
+			        remote_password=NULL, credentials_cleared=1
 			  WHERE id=?`, id); err != nil {
 			// #nosec G706 -- integer id and a database driver error.
 			log.Printf("mail migration job=%d: could not be closed after the queue refused it: %v", id, err)
@@ -150,10 +164,10 @@ func startMigrationJob(db *sql.DB, mailboxID int64, remote RemoteAccount) (int64
 
 // StartMigrationQueue runs the workers that drain the migration queue.
 //
-// It must be started AFTER HealMigrationJobs, which closes whatever a previous
-// process left behind: started first, a worker could claim a row that the heal
-// is about to mark failed, and the copy would run against a row saying it never
-// started.
+// It must be started AFTER HealMigrationJobs, which puts the previous process's
+// unfinished jobs back on the queue: started first, a worker could claim a row
+// while that requeue is still moving it, and the copy would run against a row
+// the resume then overwrites.
 func StartMigrationQueue(ctx context.Context, db *sql.DB) {
 	for range maxConcurrentMigrations {
 		go func() {
@@ -230,8 +244,14 @@ func finishJob(db *sql.DB, id int64, cause error) {
 		// #nosec G706 -- the job id is an integer and the reason is one of this package's own constants; the wrapped error is the library's or the kernel's, never a raw remote string.
 		log.Printf("mail migration job=%d failed: %v", id, cause)
 	}
+	// The credential is cleared in the SAME statement that closes the job, so the
+	// ciphertext exists only while a copy is actually pending or running and a
+	// finished row can never be a source of one.
 	if _, err := db.ExecContext(ctx,
-		`UPDATE mail_migration_jobs SET status=?, error_code=?, finished_at=NOW() WHERE id=?`,
+		`UPDATE mail_migration_jobs
+		    SET status=?, error_code=?, finished_at=NOW(),
+		        remote_password=NULL, credentials_cleared=1
+		  WHERE id=?`,
 		status, code, id); err != nil {
 		// #nosec G706 -- integer id and a fixed status word.
 		log.Printf("mail migration job=%d: could not record %s: %v", id, status, err)
@@ -485,23 +505,94 @@ func runProgress(ctx context.Context, db *sql.DB, jobID int64, column, statement
 	}
 }
 
-// HealMigrationJobs closes out jobs the previous process was running.
+// HealMigrationJobs puts the previous process's unfinished jobs back on the
+// queue.
 //
-// Their goroutines died with it, so the rows would otherwise say "running" for
-// ever and the unique index would keep the mailbox's slot occupied.
+// Their goroutines died with it, so without this the rows would say "running"
+// for ever and the unique index would keep each mailbox's slot occupied. They
+// used to be closed as interrupted, which threw away a copy that may have been
+// hours in; now the sealed credential in the row is what lets them be resumed
+// instead.
+//
+// A row that was already RUNNING is put back to queued and copied again from the
+// start. That is safe because writeMessage names every message after the job id
+// and the remote UID, so the second run of the SAME job overwrites its own
+// earlier attempt rather than delivering a duplicate.
+//
+// This runs before the workers start, so nothing can claim a row while it is
+// being requeued.
 func HealMigrationJobs(db *sql.DB) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	result, err := db.ExecContext(ctx,
-		`UPDATE mail_migration_jobs
-		    SET status='failed', error_code='interrupted', finished_at=NOW()
-		  WHERE status IN ('queued','running')`)
-	if err != nil {
-		log.Printf("mail migration heal: %v", err)
+	if _, err := db.ExecContext(ctx,
+		`UPDATE mail_migration_jobs SET status='queued', started_at=NULL WHERE status='running'`); err != nil {
+		log.Printf("mail migration resume: unfinished jobs could not be requeued: %v", err)
 		return
 	}
-	if affected, _ := result.RowsAffected(); affected > 0 {
-		log.Printf("mail migration heal: %d job(s) left running by a previous process were closed", affected)
+
+	rows, err := db.QueryContext(ctx,
+		`SELECT id, mailbox_id, remote_host, remote_port, remote_security, remote_user,
+		        COALESCE(remote_password, '')
+		   FROM mail_migration_jobs
+		  WHERE status='queued' ORDER BY id`)
+	if err != nil {
+		log.Printf("mail migration resume: the queue could not be read: %v", err)
+		return
+	}
+	defer func() { _ = rows.Close() }()
+
+	var resumed, abandoned int
+	for rows.Next() {
+		var (
+			job    pendingMigration
+			sealed string
+		)
+		if err := rows.Scan(&job.id, &job.mailboxID, &job.remote.Host, &job.remote.Port,
+			&job.remote.Security, &job.remote.Username, &sealed); err != nil {
+			log.Printf("mail migration resume: a row could not be read: %v", err)
+			continue
+		}
+		// A credential that will not open is the end of that job: the key was
+		// rotated, the row predates the column, or it was tampered with. It is
+		// closed rather than left queued for ever, and the reason code is the one
+		// the screen already renders.
+		password, err := secret.DecryptWith(sealed, job.remote.Host)
+		if sealed == "" || err != nil {
+			abandonMigration(ctx, db, job.id)
+			abandoned++
+			continue
+		}
+		job.remote.Password = password
+
+		select {
+		case migrationQueue <- job:
+			resumed++
+		default:
+			// More unfinished work than the wait list holds. The rest are closed
+			// rather than silently dropped, so nothing claims to be queued while
+			// no worker will ever reach it.
+			abandonMigration(ctx, db, job.id)
+			abandoned++
+		}
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("mail migration resume: reading the queue ended early: %v", err)
+	}
+	if resumed > 0 || abandoned > 0 {
+		log.Printf("mail migration resume: %d job(s) requeued, %d closed as interrupted", resumed, abandoned)
+	}
+}
+
+// abandonMigration closes a job that cannot be resumed and clears its
+// credential.
+func abandonMigration(ctx context.Context, db *sql.DB, id int64) {
+	if _, err := db.ExecContext(ctx,
+		`UPDATE mail_migration_jobs
+		    SET status='failed', error_code='interrupted', finished_at=NOW(),
+		        remote_password=NULL, credentials_cleared=1
+		  WHERE id=?`, id); err != nil {
+		// #nosec G706 -- integer id and a database driver error.
+		log.Printf("mail migration job=%d: could not be closed: %v", id, err)
 	}
 }

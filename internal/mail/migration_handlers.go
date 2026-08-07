@@ -271,7 +271,10 @@ func (h *Handlers) CancelMigration(w http.ResponseWriter, r *http.Request) {
 	// the row is closed here instead of being left running for ever.
 	if !cancelMigrationJob(jobID) {
 		if _, err := h.DB.ExecContext(r.Context(),
-			`UPDATE mail_migration_jobs SET status='cancelled', finished_at=NOW() WHERE id=?`, jobID); err != nil {
+			`UPDATE mail_migration_jobs
+			    SET status='cancelled', finished_at=NOW(),
+			        remote_password=NULL, credentials_cleared=1
+			  WHERE id=?`, jobID); err != nil {
 			// #nosec G706 -- integer id only.
 			log.Printf("cancel mail migration job=%d: %v", jobID, err)
 			httpx.WriteError(w, http.StatusInternalServerError, "could not cancel the migration")
