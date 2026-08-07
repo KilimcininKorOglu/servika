@@ -1,0 +1,148 @@
+package mail
+
+import (
+	"fmt"
+	"io"
+	"sort"
+	"strings"
+
+	"servika/internal/files"
+)
+
+// Maildir writing for migrated messages.
+//
+// Messages are written straight into the tenant's Maildir rather than appended
+// over IMAP, because the panel keeps only a hash of the mailbox password and so
+// cannot log in as its own customer. Writing the files is also what lets the
+// copy set ownership correctly.
+
+// maildirFlags maps IMAP flags onto the Maildir info suffix.
+//
+// The letters are defined by the Maildir specification and Dovecot reads them on
+// sight, so a copied message arrives already read, flagged or answered instead
+// of the whole mailbox coming back unread.
+var maildirFlags = map[string]string{
+	"\\Seen":     "S",
+	"\\Answered": "R",
+	"\\Flagged":  "F",
+	"\\Deleted":  "T",
+	"\\Draft":    "D",
+}
+
+// maildirInfo renders the ":2," suffix for a set of IMAP flags. The letters must
+// be in ASCII order, which is what the specification requires.
+func maildirInfo(flags []string) string {
+	var letters []string
+	seen := make(map[string]bool, len(flags))
+	for _, flag := range flags {
+		letter, known := maildirFlags[flag]
+		if !known || seen[letter] {
+			continue
+		}
+		seen[letter] = true
+		letters = append(letters, letter)
+	}
+	sort.Strings(letters)
+	return ":2," + strings.Join(letters, "")
+}
+
+// maildirSubdir returns the directory a remote folder maps onto, relative to the
+// Maildir root.
+//
+// Dovecot's Maildir++ layout puts every folder beside the root as a dot-prefixed
+// directory with the hierarchy flattened onto dots, and INBOX IS the root. A
+// remote server may use any delimiter, so the one it reported is what gets
+// translated.
+func maildirSubdir(folder string, delimiter rune) string {
+	if strings.EqualFold(folder, "INBOX") {
+		return ""
+	}
+	folder = strings.TrimPrefix(folder, "INBOX"+string(delimiter))
+	parts := strings.FieldsFunc(folder, func(r rune) bool { return r == delimiter })
+
+	clean := make([]string, 0, len(parts))
+	for _, part := range parts {
+		part = sanitizeFolderPart(part)
+		if part != "" {
+			clean = append(clean, part)
+		}
+	}
+	if len(clean) == 0 {
+		return ""
+	}
+	return "." + strings.Join(clean, ".")
+}
+
+// sanitizeFolderPart strips anything that would leave the Maildir or confuse it.
+//
+// The name comes from the remote server, so it is hostile input: a part
+// containing a slash or a dot would create a directory somewhere else entirely,
+// and the safeio layer would refuse the write rather than the panel noticing why.
+func sanitizeFolderPart(part string) string {
+	var out strings.Builder
+	for _, r := range part {
+		switch {
+		case r == '/', r == '.':
+			// Characters the server meant, which this layout gives its own
+			// meaning to. They become a letter rather than disappearing, so two
+			// folders that differ only there stay two folders.
+			out.WriteRune('_')
+		case r < 0x20 || r == 0x7f:
+			// Control characters, NUL and line breaks included, are dropped:
+			// they were never part of a name a person chose.
+		default:
+			out.WriteRune(r)
+		}
+	}
+	// Only an empty result is dropped. A folder the server calls "." or ".."
+	// becomes "_" or "__", which is a harmless directory name; refusing it would
+	// silently lose every message that folder holds.
+	name := strings.TrimSpace(out.String())
+	if name == "" {
+		return ""
+	}
+	if len(name) > 100 {
+		name = name[:100]
+	}
+	return name
+}
+
+// maildirLayout describes where one mailbox's files live.
+type maildirLayout struct {
+	// home is the safeio jail root, /home/<system_user>.
+	home string
+	// root is the Maildir directory relative to home.
+	root string
+	// systemUser owns everything written, so Dovecot can read it back.
+	systemUser string
+}
+
+// ensureFolder creates the three Maildir directories for a folder and returns
+// the relative path of its cur/ directory.
+func (layout maildirLayout) ensureFolder(subdir string) (string, error) {
+	base := layout.root
+	if subdir != "" {
+		base = layout.root + "/" + subdir
+	}
+	for _, name := range []string{"cur", "new", "tmp"} {
+		if err := files.MkdirAllBeneath(layout.home, base+"/"+name, layout.systemUser); err != nil {
+			return "", fmt.Errorf("create %s: %w", name, err)
+		}
+	}
+	return base + "/cur", nil
+}
+
+// writeMessage stores one message under cur/ with its flags in the name.
+//
+// The unique part is the job id plus the message's own UID, so a copy that is
+// run twice overwrites its earlier attempt instead of delivering every message
+// a second time.
+func (layout maildirLayout) writeMessage(curDir string, jobID int64, uid uint32, flags []string, body io.Reader) (int64, error) {
+	name := fmt.Sprintf("%d.servika-%d-%d%s", stableStamp, jobID, uid, maildirInfo(flags))
+	return files.StreamIntoBeneath(layout.home, curDir+"/"+name, body, layout.systemUser)
+}
+
+// stableStamp is the leading field of every generated Maildir name. Only the
+// unique part after it distinguishes messages here, so a fixed value keeps the
+// name reproducible for a re-run; Dovecot reads the date from the message.
+const stableStamp = 1000000000

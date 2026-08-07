@@ -193,6 +193,9 @@ func main() {
 	// generated from the installed certificates, so this picks up a host that
 	// already had them and drops one whose certificate has expired.
 	mail.HealMailSNI(context.Background())
+	// A mailbox migration runs in a goroutine, so a restart leaves its row saying
+	// "running" for ever and the unique index keeps the mailbox's slot taken.
+	mail.HealMigrationJobs(d)
 	// Panel-initiated webmail sessions authenticate as a Dovecot master user,
 	// because the panel keeps only a hash of the mailbox password. Clearing the
 	// master password withdraws the bypass, so this removes it as well as writes it.
@@ -528,6 +531,9 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/send-limits", mailH.SendLimitsGet)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/send-limits", mailH.SendLimitsPut)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/webmail-token", mailH.WebmailToken)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/migration", mailH.StartMigration)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/migration", mailH.MigrationStatus)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/{mid}/migration", mailH.CancelMigration)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/protection", protectionH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/protection", protectionH.Add)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/protection/{kid}", protectionH.Delete)
