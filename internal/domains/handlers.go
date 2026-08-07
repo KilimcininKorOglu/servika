@@ -263,6 +263,33 @@ func (h *Handlers) referencedAccountsExist(ctx context.Context, customerID, plan
 	return "", nil
 }
 
+// nameAlreadyServed reports whether a name already has an nginx server block, as
+// a domain or as somebody's subdomain.
+//
+// Both halves are needed because both produce a server block for the same
+// server_name, and nginx answers such a pair with whichever it loaded first. The
+// subdomain side has always checked both directions; this side checked only its
+// own table, so `blog.example.com` could be added as a domain while it was
+// already serving as a subdomain of `example.com`.
+//
+// A failed lookup is an ERROR, not "the name is free". Treating it as free is
+// how a database hiccup becomes a duplicate server block that nobody chose.
+func (h *Handlers) nameAlreadyServed(ctx context.Context, name string) (bool, error) {
+	for _, query := range []string{
+		`SELECT id FROM domains WHERE domain_name=?`,
+		`SELECT id FROM subdomains WHERE fqdn=?`,
+	} {
+		var found int64
+		switch err := h.DB.QueryRowContext(ctx, query, name).Scan(&found); {
+		case err == nil:
+			return true, nil
+		case !errors.Is(err, sql.ErrNoRows):
+			return false, err
+		}
+	}
+	return false, nil
+}
+
 // The site types a domain may be created as. Only siteTypeStatic changes what
 // gets provisioned; siteTypePHP and siteTypeWordPress are provisioned alike and
 // differ only in where the client sends the customer afterwards.
@@ -377,9 +404,13 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var existing int64
-	err := h.DB.QueryRowContext(r.Context(), `SELECT id FROM domains WHERE domain_name=?`, req.DomainName).Scan(&existing)
-	if err == nil {
+	switch taken, err := h.nameAlreadyServed(r.Context(), req.DomainName); {
+	case err != nil:
+		// #nosec G706 -- the logged name passed provisioner.ValidateDomain just above, so it carries no CR/LF.
+		log.Printf("check whether %q is already served: %v", req.DomainName, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not verify the domain name")
+		return
+	case taken:
 		httpx.WriteError(w, http.StatusConflict, "this domain name is already registered")
 		return
 	}

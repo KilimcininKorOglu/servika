@@ -29,6 +29,9 @@ type refRecorder struct {
 	// it is there to catch.
 	ownerRole   string
 	ownerStatus string
+	// nameHeldBy names the query fragment whose table already carries the name
+	// under test. Empty means the name is free everywhere.
+	nameHeldBy string
 	// failOn makes the matching lookup return a driver error instead of rows.
 	failOn     string
 	statements []string
@@ -82,10 +85,14 @@ func (c *refConn) QueryContext(_ context.Context, query string, _ []driver.Named
 	failOn := c.rec.failOn
 	customer, plan := c.rec.customerExists, c.rec.planExists
 	ownerRole, ownerStatus := c.rec.ownerRole, c.rec.ownerStatus
+	nameHeldBy := c.rec.nameHeldBy
 	c.rec.mu.Unlock()
 
 	if failOn != "" && strings.Contains(query, failOn) {
 		return nil, errRefLookup
+	}
+	if nameHeldBy != "" && strings.Contains(query, nameHeldBy) {
+		return &idRow{found: true}, nil
 	}
 	switch {
 	case strings.Contains(query, "FROM customers WHERE id=?"):
@@ -329,5 +336,56 @@ func TestAFailedOwnerLookupIsAnErrorAndNotAVerdict(t *testing.T) {
 	}
 	if reason != "" {
 		t.Errorf("reason = %q, want empty so the caller cannot mistake it for a verdict", reason)
+	}
+}
+
+// nginx answers two server blocks carrying the same server_name with whichever
+// it loaded first, so a name that is already serving as somebody's subdomain
+// cannot be handed out again as a domain. The subdomain side has always checked
+// both tables; this side checked only its own.
+func TestANameAlreadyServedIsRefused(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		holder     string
+		wantTaken  bool
+		wantLookup string
+	}{
+		{name: "free", wantLookup: "FROM subdomains WHERE fqdn=?"},
+		{name: "held by a domain", holder: "FROM domains WHERE domain_name=?", wantTaken: true},
+		{name: "held by a subdomain", holder: "FROM subdomains WHERE fqdn=?", wantTaken: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			recorder := &refRecorder{nameHeldBy: tc.holder}
+			handlers := refHarness(t, recorder)
+			taken, err := handlers.nameAlreadyServed(context.Background(), "blog.example.com")
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if taken != tc.wantTaken {
+				t.Errorf("taken = %v, want %v", taken, tc.wantTaken)
+			}
+			// A free name must have been looked for in BOTH tables. Stopping after
+			// the first is what let the second one through.
+			if tc.wantLookup != "" && !recorder.saw(tc.wantLookup) {
+				t.Errorf("%s was never queried", tc.wantLookup)
+			}
+		})
+	}
+}
+
+// A lookup that failed says nothing about whether the name is free, and
+// answering "free" turns a database hiccup into a duplicate server block.
+func TestAFailedNameLookupIsAnErrorAndNotAVerdict(t *testing.T) {
+	for _, failOn := range []string{"FROM domains WHERE domain_name=?", "FROM subdomains WHERE fqdn=?"} {
+		t.Run(failOn, func(t *testing.T) {
+			handlers := refHarness(t, &refRecorder{failOn: failOn})
+			taken, err := handlers.nameAlreadyServed(context.Background(), "blog.example.com")
+			if err == nil {
+				t.Fatalf("a failed lookup reported taken=%v and no error", taken)
+			}
+			if taken {
+				t.Error("taken = true, want false so the caller cannot mistake it for a verdict")
+			}
+		})
 	}
 }
