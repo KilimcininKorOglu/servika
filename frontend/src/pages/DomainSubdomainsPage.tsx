@@ -2,9 +2,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { sslState } from '@/lib/ssl'
 import Breadcrumb from '@/components/Breadcrumb'
 
-type Sub = { id: number; subdomain: string; fqdn: string; php_version: string; docroot: string; created_at: string }
+type Sub = {
+  id: number; subdomain: string; fqdn: string; php_version: string
+  docroot: string; created_at: string
+  ssl?: boolean; ssl_source?: string
+}
 
 export default function DomainSubdomainsPage() {
   const { t } = useTranslation('DomainSubdomainsPage')
@@ -104,7 +109,19 @@ export default function DomainSubdomainsPage() {
               {subdomains.map(subdomain => (
                 <li key={subdomain.id} className="flex items-center justify-between gap-3 py-2.5">
                   <div className="min-w-0">
-                    <a href={`http://${subdomain.fqdn}`} target="_blank" rel="noreferrer" className="font-mono text-sm text-brand-600 dark:text-brand-400 hover:underline">{subdomain.fqdn}</a>
+                    <a href={`${subdomain.ssl ? 'https' : 'http'}://${subdomain.fqdn}`} target="_blank" rel="noreferrer" className="font-mono text-sm text-brand-600 dark:text-brand-400 hover:underline">{subdomain.fqdn}</a>
+                    {/* This screen offers to install a certificate and never
+                        said whether one was already there, so the two buttons
+                        below read as available work on a site that is already
+                        served over HTTPS. Amber for the self-signed fail-safe:
+                        it encrypts and still leaves the visitor on a full-page
+                        browser warning. */}
+                    {sslState(subdomain.ssl, subdomain.ssl_source) === 'trusted' && (
+                      <span title={t('list.sslActive')} className="ml-1.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded">SSL</span>
+                    )}
+                    {sslState(subdomain.ssl, subdomain.ssl_source) === 'selfSigned' && (
+                      <span title={t('list.sslSelfSigned')} className="ml-1.5 text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">SSL</span>
+                    )}
                     <div className="text-[11px] text-slate-400 font-mono truncate">{subdomain.docroot} · {t('list.phpPrefix')} {subdomain.php_version}</div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">

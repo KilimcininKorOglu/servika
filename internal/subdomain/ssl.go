@@ -69,11 +69,10 @@ func (h *Handlers) SSLStatus(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusNotFound, "subdomain not found")
 		return
 	}
-	certPath, keyPath := certificatePaths(systemUser, fqdn)
-	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-	config, _ := os.ReadFile(confPath(systemUser, name))
-	active := fileExists(certPath) && fileExists(keyPath) && strings.Contains(string(config), "listen 443 ssl;")
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{"active": active})
+	// Through the shared helper so this endpoint and the lists cannot disagree
+	// about whether the same subdomain is serving HTTPS.
+	active, source := sslState(systemUser, name, fqdn)
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"active": active, "source": source})
 }
 
 // SSLIssue installs a self-signed or Let's Encrypt certificate for a subdomain.

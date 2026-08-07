@@ -33,6 +33,8 @@
     "phpPrefix": "PHP",
     "manage": "Gestionar",
     "manageTitle": "Gestionar este subdominio",
+    "sslActive": "Hay instalado un certificado que el navegador acepta.",
+    "sslSelfSigned": "Hay instalado un certificado autofirmado; los visitantes siguen viendo una advertencia del navegador.",
     "letsencryptTitle": "Instalar SSL Let's Encrypt",
     "letsencrypt": "🔒 Let's Encrypt",
     "selfSignedTitle": "Instalar SSL autofirmado",

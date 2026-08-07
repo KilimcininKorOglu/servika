@@ -6,6 +6,10 @@
 // component with four variants, so what is shared here is the DECISION instead:
 // every screen branches on the same answer and renders it in its own idiom.
 //
+// Within ONE screen the markup is still shared where it is identical: the domain
+// list draws the same pill for a domain and for the subdomains nested under it,
+// so that pill is a local component of that page.
+//
 // This mirrors `domains.SSLSourceIsTrusted` in the backend. Keep the two in step.
 
 /** The values `domains.ssl_source` can hold. */

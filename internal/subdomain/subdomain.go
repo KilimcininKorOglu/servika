@@ -44,6 +44,11 @@ type Sub struct {
 	// picker and say why, rather than letting a tenant choose a version and
 	// collect a refusal.
 	PHPLocked bool `json:"php_locked"`
+	// SSL and SSLSource carry the same three-state answer the domain rows carry:
+	// no certificate, a self-signed one a browser refuses, or one it accepts. An
+	// empty source with SSL set means trusted with an unrecorded origin.
+	SSL       bool   `json:"ssl"`
+	SSLSource string `json:"ssl_source"`
 }
 
 func (h *Handlers) parent(r *http.Request) (id int64, systemUser, domainName, phpVersion string, demo, ok bool) {
@@ -127,6 +132,7 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&s.ID, &s.Subdomain, &s.FQDN, &s.PHPVersion, &s.CreatedAt); err == nil {
 			s.DocRoot = docrootOf(systemUser, s.FQDN)
 			s.PHPLocked = phpLocked
+			s.SSL, s.SSLSource = sslState(systemUser, s.Subdomain, s.FQDN)
 			out = append(out, s)
 		}
 	}

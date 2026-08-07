@@ -31,6 +31,7 @@ type Subdomain = {
   id: number; subdomain: string; fqdn: string
   parent_id: number; parent_name: string; system_user: string
   php_version: string; docroot: string; created_at: string
+  ssl?: boolean; ssl_source?: string
 }
 type Plan = { id: number; name: string; disk_quota_mb?: number }
 type PHPVer = { version: string }
@@ -598,11 +599,12 @@ export default function DomainsPage() {
                         </Link>
                         {' '}
                         <a href={`https://${d.domain_name}`} target="_blank" rel="noopener noreferrer" title={t('openInNewTab')} className="text-slate-400 dark:text-slate-500 hover:text-brand-500 dark:hover:text-brand-400 text-xs">↗</a>
-                        {/* Amber, not green, for the self-signed fail-safe: it
-                            encrypts and still leaves the visitor on a full-page
-                            browser warning, so the site is effectively shut. */}
-                        {sslState(d.ssl, d.ssl_source) === 'trusted' && <span className="ml-1.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded" title={d.ssl_expiry ? t('sslExpires', { date: d.ssl_expiry }) : t('sslActive')}>SSL</span>}
-                        {sslState(d.ssl, d.ssl_source) === 'selfSigned' && <span className="ml-1.5 text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded" title={t('sslSelfSigned')}>SSL</span>}
+                        <SslPill
+                          enabled={d.ssl}
+                          source={d.ssl_source}
+                          trustedTitle={d.ssl_expiry ? t('sslExpires', { date: d.ssl_expiry }) : t('sslActive')}
+                          selfSignedTitle={t('sslSelfSigned')}
+                        />
                         {d.is_demo && <span className="ml-1.5 text-[10px] uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">{t('demoBadge')}</span>}
                       </div>
                     </td>
@@ -640,7 +642,17 @@ export default function DomainsPage() {
                           <Link to={`/domains/${d.id}/subdomain/${sub.id}`} className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300">
                             {sub.fqdn}
                           </Link>
+                          {/* The type badge stays. On the stacked mobile layout
+                              there is no indent to read the nesting from, so
+                              removing it to make room would cost the one thing
+                              that says what this row is. */}
                           <span className="ml-2 text-[10px] uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded">{t('subdomain')}</span>
+                          <SslPill
+                            enabled={sub.ssl}
+                            source={sub.ssl_source}
+                            trustedTitle={t('sslActive')}
+                            selfSignedTitle={t('sslSelfSigned')}
+                          />
                         </div>
                       </td>
                       <td data-label={t('columns.systemUser')} className={responsiveTableCodeCellClass}>{sub.system_user}</td>
@@ -1068,6 +1080,37 @@ export default function DomainsPage() {
         )
       })()}
     </div>
+  )
+}
+
+/**
+ * The certificate pill drawn beside a name in the domain table.
+ *
+ * Shared between the domain row and the subdomain row nested under it because
+ * they are the same pill in the same table, and two copies would let a
+ * correction reach one and miss the other. It is local to this page rather than
+ * a component of its own: the other screens that report SSL draw a lock icon, a
+ * tool card and a table cell instead, so they share the decision in lib/ssl.ts
+ * and nothing else.
+ *
+ * Amber, not green, for the self-signed fail-safe: it encrypts and still leaves
+ * the visitor on a full-page browser warning, so the site is effectively shut.
+ */
+function SslPill({ enabled, source, trustedTitle, selfSignedTitle }: {
+  enabled?: boolean; source?: string; trustedTitle: string; selfSignedTitle: string
+}) {
+  const state = sslState(enabled, source)
+  if (state === 'none') return null
+  const trusted = state === 'trusted'
+  return (
+    <span
+      title={trusted ? trustedTitle : selfSignedTitle}
+      className={`ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded ${trusted
+        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+        : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'}`}
+    >
+      SSL
+    </span>
   )
 }
 

@@ -18,6 +18,11 @@ type Overview struct {
 	PHPVersion string `json:"php_version"`
 	DocRoot    string `json:"docroot"`
 	CreatedAt  string `json:"created_at"`
+	// SSL and SSLSource let a subdomain row report its certificate the same way
+	// the domain row above it does, instead of a badge that only says what kind
+	// of record it is.
+	SSL       bool   `json:"ssl"`
+	SSLSource string `json:"ssl_source"`
 }
 
 // GET /subdomains lists the subdomains the caller may see, each with its parent domain, so
@@ -46,6 +51,7 @@ func (h *Handlers) ListAll(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&s.ID, &s.Subdomain, &s.FQDN, &s.ParentID, &s.ParentName,
 			&s.SystemUser, &s.PHPVersion, &s.CreatedAt); err == nil {
 			s.DocRoot = docrootOf(s.SystemUser, s.FQDN)
+			s.SSL, s.SSLSource = sslState(s.SystemUser, s.Subdomain, s.FQDN)
 			out = append(out, s)
 		}
 	}

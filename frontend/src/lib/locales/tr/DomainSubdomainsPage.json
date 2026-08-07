@@ -33,6 +33,8 @@
     "phpPrefix": "PHP",
     "manage": "Yönet",
     "manageTitle": "Bu alt alan adını yönet",
+    "sslActive": "Tarayıcının kabul ettiği bir sertifika kurulu.",
+    "sslSelfSigned": "Kendinden imzalı bir sertifika kurulu; ziyaretçiler yine de tarayıcı uyarısıyla karşılaşır.",
     "letsencryptTitle": "Let's Encrypt SSL kur",
     "letsencrypt": "🔒 Let's Encrypt",
     "selfSignedTitle": "Kendinden imzalı SSL kur",
