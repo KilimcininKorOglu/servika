@@ -6,11 +6,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"maps"
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -403,51 +403,30 @@ func (h *Handlers) Install(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Minute)
-	defer cancel()
-	args := append([]string{"install", "-y"}, PackageNames(m)...)
-	cmd := systemCommandContext(ctx, "dnf", args...)
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError,
-			"failed to install PHP packages with DNF")
+	// dnf holds the rpm lock for the whole transaction, so a second operation
+	// started now would wait on it and its output would interleave in one log.
+	if phpOpRunning() {
+		httpx.WriteError(w, http.StatusConflict,
+			"a PHP version operation is already running — try again when it finishes")
 		return
 	}
 
-	// Create the pool directory and default www.conf when absent.
-	pd, _, svc, _ := paths(m)
-	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
-	_ = os.MkdirAll(pd, 0755)
-	// Enable www.conf.disabled for Remi when present.
-	if m.Resource == "remi" {
-		dis := filepath.Join(pd, "www.conf.disabled")
-		main := filepath.Join(pd, "www.conf")
-		if _, err := os.Stat(dis); err == nil {
-			_, _ = os.Stat(main) // Skip when it already exists.
-			if _, err := os.Stat(main); err != nil {
-				_ = os.Rename(dis, main)
-			}
-		}
-	}
-	// Set max_input_vars for large phpMyAdmin and WordPress forms and imports.
-	phpdDir := "/etc/php.d"
-	if m.Resource == "remi" {
-		phpdDir = "/etc/opt/remi/php" + m.Code + "/php.d"
-	}
-	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
-	if err := os.MkdirAll(phpdDir, 0755); err == nil {
-		// #nosec G306 -- root-owned system integration file (nginx/php-fpm/named/systemd config, script, or web content) that its daemon must read/execute; no secret stored here (secrets use 0600/0640).
-		_ = os.WriteFile(filepath.Join(phpdDir, "99-servika-input.ini"),
-			[]byte("; Servika: supports large forms and imports (phpMyAdmin, WordPress)\nmax_input_vars = 10000\n"), 0644)
+	// From here the work is detached: pulling a PHP stack from a slow mirror
+	// outlasts the router's own ceiling, and an operator who starts an install
+	// and closes the tab must still get the install.
+	descriptor := opDescriptor{Version: m.Version, Resource: m.Resource, Action: "install"}
+	if err := startPHPOp(descriptor, installScript(m)); err != nil {
+		log.Printf("php install %s (%s): %v", m.Version, m.Resource, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start the installation")
+		return
 	}
 
-	// Enable and start the PHP-FPM service.
-	_, _ = systemCommandContext(context.Background(), "systemctl", "enable", "--now", svc).CombinedOutput()
-
-	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
-		"ok":      true,
-		"version": req.Version,
-		"source":  req.Resource,
+	// 202: the installation has STARTED. Its outcome belongs to the status and
+	// log endpoints the screen polls.
+	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{
+		"started": true,
+		"version": m.Version,
+		"source":  m.Resource,
 	})
 }
 
@@ -489,20 +468,23 @@ func (h *Handlers) Remove(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Stop PHP-FPM.
-	_, _, service, _ := paths(m)
-	_, _ = systemCommandContext(context.Background(), "systemctl", "disable", "--now", service).CombinedOutput()
-
-	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Minute)
-	defer cancel()
-	args := append([]string{"remove", "-y"}, "php"+m.Code+"-*")
-	cmd := systemCommandContext(ctx, "dnf", args...)
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError,
-			"failed to remove PHP packages with DNF")
+	if phpOpRunning() {
+		httpx.WriteError(w, http.StatusConflict,
+			"a PHP version operation is already running — try again when it finishes")
 		return
 	}
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{
-		"ok": true,
+
+	// Detached for the same reason an install is, and the wrapper stops the
+	// service before dnf so packages are not pulled from under a running pool.
+	descriptor := opDescriptor{Version: m.Version, Resource: m.Resource, Action: "remove"}
+	if err := startPHPOp(descriptor, removeScript(m)); err != nil {
+		log.Printf("php remove %s (%s): %v", m.Version, m.Resource, err)
+		httpx.WriteError(w, http.StatusInternalServerError, "could not start the removal")
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{
+		"started": true,
+		"version": m.Version,
 	})
 }

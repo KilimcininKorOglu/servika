@@ -30,6 +30,9 @@ const (
 	DefaultKernelCareLog      = "/opt/servika/logs/kernelcare-update.log"
 	DefaultKernelCareWrapper  = "/opt/servika/kernelcare-update.sh"
 	DefaultCVELog             = "/opt/servika/logs/cve-update.log"
+	DefaultPHPOpLog           = "/opt/servika/logs/php-op.log"
+	DefaultPHPOpState         = "/opt/servika/php-op.json"
+	DefaultPHPOpWrapper       = "/opt/servika/php-op.sh" // #nosec G101 -- filesystem path, not a credential
 	DefaultMailLog            = "/var/log/maillog"
 	DefaultInstallationID     = "/etc/servika/installation-id"
 	DefaultVersionCache       = "/opt/servika/version-cache.json"
@@ -124,6 +127,13 @@ func KernelCareWrapper() string {
 }
 func CVELog() string { return mustAbsPath("SERVIKA_CVE_LOG", DefaultCVELog) }
 
+// Installing or removing a PHP version runs detached, so its output, the
+// descriptor the screen resumes from and the script systemd executes all outlive
+// the request that started them.
+func PHPOpLog() string     { return mustAbsPath("SERVIKA_PHPOP_LOG", DefaultPHPOpLog) }
+func PHPOpState() string   { return mustAbsPath("SERVIKA_PHPOP_STATE", DefaultPHPOpState) }
+func PHPOpWrapper() string { return mustAbsPath("SERVIKA_PHPOP_WRAPPER", DefaultPHPOpWrapper) }
+
 // MailLog is where Postfix and Dovecot write. AlmaLinux keeps it at
 // /var/log/maillog; a host that sends mail logging elsewhere overrides it.
 func MailLog() string { return mustAbsPath("SERVIKA_MAIL_LOG", DefaultMailLog) }
@@ -207,6 +217,9 @@ func ValidateRuntimePaths() error {
 		{"SERVIKA_KERNELCARE_LOG", DefaultKernelCareLog, false},
 		{"SERVIKA_KERNELCARE_WRAPPER", DefaultKernelCareWrapper, false},
 		{"SERVIKA_CVE_LOG", DefaultCVELog, false},
+		{"SERVIKA_PHPOP_LOG", DefaultPHPOpLog, false},
+		{"SERVIKA_PHPOP_STATE", DefaultPHPOpState, false},
+		{"SERVIKA_PHPOP_WRAPPER", DefaultPHPOpWrapper, false},
 		{"SERVIKA_MAIL_LOG", DefaultMailLog, false},
 		{"SERVIKA_INSTALLATION_ID", DefaultInstallationID, false},
 		{"SERVIKA_VERSION_CACHE", DefaultVersionCache, false},

@@ -819,6 +819,10 @@ func main() {
 				r.With(middleware.ResellerOrAbove).Get("/php-versions", phpVersionH.List)
 				r.With(middleware.AdminOnly).Post("/php-versions/install", phpVersionH.Install)
 				r.With(middleware.AdminOnly).Post("/php-versions/remove", phpVersionH.Remove)
+				// An install or removal runs detached, so the screen resumes it on
+				// load and follows it here rather than holding the request open.
+				r.With(middleware.AdminOnly).Get("/php-versions/status", phpVersionH.Status)
+				r.With(middleware.AdminOnly).Get("/php-versions/log", phpVersionH.LogTail)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/git", gitH.Delete)
 			})
 		})

@@ -189,6 +189,9 @@ The installer writes every persistent production setting it owns into `/etc/serv
 | `SERVIKA_KERNELCARE_LOG`        | `/opt/servika/logs/kernelcare-update.log`          | KernelCare update log path.                             |
 | `SERVIKA_KERNELCARE_WRAPPER`    | `/opt/servika/kernelcare-update.sh`                | KernelCare systemd wrapper path.                        |
 | `SERVIKA_CVE_LOG`               | `/opt/servika/logs/cve-update.log`                 | Security update log path.                               |
+| `SERVIKA_PHPOP_LOG`             | `/opt/servika/logs/php-op.log`                     | PHP version install and removal log path.               |
+| `SERVIKA_PHPOP_STATE`           | `/opt/servika/php-op.json`                         | Descriptor of the PHP version operation in progress.    |
+| `SERVIKA_PHPOP_WRAPPER`         | `/opt/servika/php-op.sh`                           | PHP version operation systemd wrapper path.             |
 | `SERVIKA_INSTALLATION_ID`       | `/etc/servika/installation-id`                     | Random installation ID storage path for version checks. |
 | `SERVIKA_VERSION_CACHE`         | `/opt/servika/version-cache.json`                  | Cached version manifest path.                           |
 | `SERVIKA_PMA_TOKEN`             | `/etc/servika/pma-internal.token`                  | Internal phpMyAdmin signon token path.                  |
