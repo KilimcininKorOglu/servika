@@ -29,6 +29,41 @@ const migrationBatch = 200
 // ErrMigrationRunning reports that this mailbox already has an unfinished job.
 var ErrMigrationRunning = errors.New("a migration is already running for this mailbox")
 
+// ErrTooManyMigrations reports that the wait list is full.
+var ErrTooManyMigrations = errors.New("too many migrations are already waiting")
+
+// maxConcurrentMigrations is how many copies this node runs at once.
+//
+// Each one holds an IMAP session to another provider, fetches in batches of
+// migrationBatch and writes every message to disk, for up to migrationBudget.
+// The unique index over the active mailbox refuses a SECOND job for the same
+// mailbox and nothing more, so a reseller with three hundred mailboxes could
+// otherwise start three hundred copies, each of them for a different mailbox and
+// each of them legitimate on its own.
+const maxConcurrentMigrations = 4
+
+// maxQueuedMigrations bounds the wait list.
+//
+// The queue is in memory because the remote password is deliberately never
+// stored: it travels with the waiting job and nowhere else. Every entry
+// therefore costs a held credential as well as a slot, and this is the point at
+// which the panel says no rather than accumulating them.
+const maxQueuedMigrations = 100
+
+// pendingMigration is one job waiting for a worker.
+type pendingMigration struct {
+	id        int64
+	mailboxID int64
+	remote    RemoteAccount
+}
+
+var migrationQueue = make(chan pendingMigration, maxQueuedMigrations)
+
+// copyMailboxFn is the copy the workers run. It is a variable so a test can
+// observe WHETHER a queued job was started without an IMAP server, which is the
+// whole question the claim guard answers.
+var copyMailboxFn = copyMailbox
+
 // RemoteAccount is the source of a copy. The password is never stored; it lives
 // in this value for as long as the job runs and nowhere else.
 type RemoteAccount struct {
@@ -70,16 +105,18 @@ func cancelMigrationJob(id int64) bool {
 	return found
 }
 
-// startMigrationJob records the job and copies in the background.
+// startMigrationJob records the job and puts it on the queue.
 //
-// The insert is what refuses a second job: the unique index over the active
-// mailbox does it in the database, so two requests arriving together cannot both
-// decide they are the first.
+// The insert is what refuses a second job for one mailbox: the unique index over
+// the active mailbox does it in the database, so two requests arriving together
+// cannot both decide they are the first. The row is written as queued and stays
+// that way until a worker claims it, so the screen shows "waiting to start"
+// rather than a copy that is not actually running.
 func startMigrationJob(db *sql.DB, mailboxID int64, remote RemoteAccount) (int64, error) {
 	result, err := db.Exec(
 		`INSERT INTO mail_migration_jobs
-		   (mailbox_id, remote_host, remote_port, remote_security, remote_user, status, started_at)
-		 VALUES (?,?,?,?,?, 'running', NOW())`,
+		   (mailbox_id, remote_host, remote_port, remote_security, remote_user, status)
+		 VALUES (?,?,?,?,?, 'queued')`,
 		mailboxID, remote.Host, remote.Port, remote.Security, remote.Username)
 	if err != nil {
 		if isDuplicateKey(err) {
@@ -92,18 +129,79 @@ func startMigrationJob(db *sql.DB, mailboxID int64, remote RemoteAccount) (int64
 		return 0, err
 	}
 
-	// The work outlives the request that started it, so it gets its own context
-	// rather than the request's, which is cancelled the moment the tab closes.
-	ctx, cancel := context.WithTimeout(context.Background(), migrationBudget)
-	rememberJob(id, cancel)
+	select {
+	case migrationQueue <- pendingMigration{id: id, mailboxID: mailboxID, remote: remote}:
+		return id, nil
+	default:
+		// The wait list is full. The row is CLOSED rather than deleted: one
+		// statement, the attempt stays in the history the screen shows, and
+		// active_mailbox_id becomes NULL so the unique index releases the mailbox
+		// immediately instead of holding it against a job that will never run.
+		if _, err := db.Exec(
+			`UPDATE mail_migration_jobs
+			    SET status='failed', error_code='too_many_migrations', finished_at=NOW()
+			  WHERE id=?`, id); err != nil {
+			// #nosec G706 -- integer id and a database driver error.
+			log.Printf("mail migration job=%d: could not be closed after the queue refused it: %v", id, err)
+		}
+		return 0, ErrTooManyMigrations
+	}
+}
 
-	go func() {
-		defer cancel()
-		defer forgetJob(id)
-		err := copyMailbox(ctx, db, id, mailboxID, remote)
-		finishJob(db, id, err)
-	}()
-	return id, nil
+// StartMigrationQueue runs the workers that drain the migration queue.
+//
+// It must be started AFTER HealMigrationJobs, which closes whatever a previous
+// process left behind: started first, a worker could claim a row that the heal
+// is about to mark failed, and the copy would run against a row saying it never
+// started.
+func StartMigrationQueue(ctx context.Context, db *sql.DB) {
+	for range maxConcurrentMigrations {
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case job := <-migrationQueue:
+					runMigrationJob(ctx, db, job)
+				}
+			}
+		}()
+	}
+}
+
+// runMigrationJob claims a queued row and copies the mailbox.
+//
+// The claim is GUARDED on the row still being queued. A job cancelled while it
+// waited has no goroutine for CancelMigration to interrupt, so that endpoint
+// only writes the row; this guard is what makes the write bite, and the job is
+// dropped here instead of starting after the customer stopped it.
+func runMigrationJob(ctx context.Context, db *sql.DB, job pendingMigration) {
+	claimCtx, cancelClaim := context.WithTimeout(ctx, 15*time.Second)
+	result, err := db.ExecContext(claimCtx,
+		`UPDATE mail_migration_jobs SET status='running', started_at=NOW()
+		  WHERE id=? AND status='queued'`, job.id)
+	cancelClaim()
+	if err != nil {
+		// The row stays queued. Reporting it as failed would need a reason code,
+		// and every code this package has blames the REMOTE server, which did
+		// nothing wrong here. CancelMigration clears it now and the startup heal
+		// clears it on the next restart.
+		// #nosec G706 -- integer id and a database driver error.
+		log.Printf("mail migration job=%d: could not be claimed and stays queued: %v", job.id, err)
+		return
+	}
+	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
+		return // Cancelled while waiting, or already closed by the startup heal.
+	}
+
+	// The budget starts HERE rather than when the job was queued: time spent
+	// waiting for a free slot is not time the remote server was given.
+	runCtx, cancel := context.WithTimeout(ctx, migrationBudget)
+	defer cancel()
+	rememberJob(job.id, cancel)
+	defer forgetJob(job.id)
+
+	finishJob(db, job.id, copyMailboxFn(runCtx, db, job.id, job.mailboxID, job.remote))
 }
 
 func isDuplicateKey(err error) bool {

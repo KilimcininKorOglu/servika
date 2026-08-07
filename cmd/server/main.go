@@ -196,6 +196,11 @@ func main() {
 	// A mailbox migration runs in a goroutine, so a restart leaves its row saying
 	// "running" for ever and the unique index keeps the mailbox's slot taken.
 	mail.HealMigrationJobs(d)
+	// Only after that heal: the workers claim queued rows, and a worker starting
+	// first could take a row the heal is about to close. Four run at a time,
+	// because each copy holds an IMAP session and a disk writer for hours and a
+	// reseller can legitimately ask for hundreds at once.
+	mail.StartMigrationQueue(context.Background(), d)
 	// Panel-initiated webmail sessions authenticate as a Dovecot master user,
 	// because the panel keeps only a hash of the mailbox password. Clearing the
 	// master password withdraws the bypass, so this removes it as well as writes it.

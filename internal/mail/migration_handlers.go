@@ -178,6 +178,11 @@ func (h *Handlers) StartMigration(w http.ResponseWriter, r *http.Request) {
 			"error": "a migration is already running for this mailbox", "reason": "migration_already_running",
 		})
 		return
+	case errors.Is(err, ErrTooManyMigrations):
+		httpx.WriteJSON(w, http.StatusTooManyRequests, map[string]any{
+			"error": "too many migrations are already waiting", "reason": "too_many_migrations",
+		})
+		return
 	case err != nil:
 		// #nosec G706 -- integer ids only; the remote host is not logged here.
 		log.Printf("start mail migration mailbox=%d: %v", mailboxID, err)
@@ -186,8 +191,9 @@ func (h *Handlers) StartMigration(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.audit(r, "mail.migration.start", request.Username+" @ "+host, true)
-	// 202: the copy has STARTED. Its outcome belongs to the status endpoint.
-	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{"id": jobID, "status": "running"})
+	// 202: the copy has been ACCEPTED, not started. Only four run at a time, so
+	// saying "running" here would be a guess the status endpoint then contradicts.
+	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{"id": jobID, "status": "queued"})
 }
 
 // MigrationStatus reports the latest job for a mailbox.
