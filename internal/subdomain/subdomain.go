@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -306,12 +307,15 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	// #nosec G703 -- path built from a validated identifier / fixed system path / server-internal temp path; tenant paths use safeio (openat2).
 	_ = os.Remove(confPath(systemUser, subdomainName))
 	_ = exec.Command("systemctl", "reload", "nginx").Run()
-	// Remove the document root only when it remains under subdomains and matches the FQDN.
-	docroot := docrootOf(systemUser, fqdn)
-	base := "/home/" + systemUser + "/subdomains/"
-	// #nosec G703 -- path is built from a validated identifier (systemUser ^c_[A-Za-z0-9_]+$ / validated domainName), a fixed system path, or a server-internal temp path; tenant file-manager paths use safeio (openat2) instead.
-	if strings.HasPrefix(docroot, base) && filepath.Clean(docroot) != filepath.Clean(base) {
-		_ = os.RemoveAll(docroot)
+	// Remove the document root the same way it was created, through openat2.
+	//
+	// The guard here used to be a string prefix on the path, which cannot see
+	// what the path RESOLVES to. The panel runs as root and ~/subdomains belongs
+	// to the tenant: replace it with a symlink and os.RemoveAll follows it out of
+	// the jail while the string still reads /home/<user>/subdomains/... The mkdir
+	// a few lines up already refuses that; the removal did not.
+	if err := files.RemoveAllBeneath("/home/"+systemUser, "subdomains/"+fqdn); err != nil && !errors.Is(err, os.ErrNotExist) {
+		log.Printf("delete subdomain document root %s: %v", fqdn, err)
 	}
 	if err := dns.WriteZone(r.Context(), h.DB, id); err != nil {
 		log.Printf("write DNS zone after subdomain delete %s: %v", subdomainName, err)

@@ -192,3 +192,64 @@ func TestRealPathBeneathRefusesASymlink(t *testing.T) {
 		})
 	}
 }
+
+// RemoveAllBeneath is what a root-run cleanup uses instead of os.RemoveAll. The
+// difference only shows when a component RESOLVES somewhere else: a string check
+// on the path cannot see that, because the path still reads like a path inside
+// the home.
+func TestRemoveAllBeneathDeletesATreeItOwns(t *testing.T) {
+	home := t.TempDir()
+	writeUnder(t, home, docrootRel+"/index.html", "<h1>hello</h1>")
+	writeUnder(t, home, docrootRel+"/nested/deep.txt", "deep")
+
+	if err := RemoveAllBeneath(home, docrootRel); err != nil {
+		t.Fatalf("a legitimate tree could not be removed: %v", err)
+	}
+	if _, err := os.Lstat(filepath.Join(home, docrootRel)); !os.IsNotExist(err) {
+		t.Errorf("the document root survived: %v", err)
+	}
+	// Only the named tree goes. Removing its parent as well would take every
+	// other subdomain of the same tenant with it.
+	if _, err := os.Lstat(filepath.Join(home, "subdomains")); err != nil {
+		t.Errorf("the parent directory was removed too: %v", err)
+	}
+}
+
+func TestRemoveAllBeneathRefusesToDeleteThroughASymlink(t *testing.T) {
+	home := t.TempDir()
+	// Stands in for anything outside the jail. It is created inside the temp
+	// directory so a bug in the code under test cannot damage the machine
+	// running the test, and it is reached through a RELATIVE link so only
+	// RESOLVE_NO_SYMLINKS can refuse it.
+	writeUnder(t, home, "elsewhere/test.example.com/keep.txt", "keep")
+	if err := os.Symlink("elsewhere", filepath.Join(home, "subdomains")); err != nil {
+		t.Fatalf("create the redirecting symlink: %v", err)
+	}
+
+	if err := RemoveAllBeneath(home, docrootRel); err == nil {
+		t.Error("a removal was carried out through a symlinked parent")
+	}
+	if _, err := os.Lstat(filepath.Join(home, "elsewhere/test.example.com/keep.txt")); err != nil {
+		t.Errorf("the file behind the symlink was deleted: %v", err)
+	}
+}
+
+// A symlink named as the target is unlinked, not followed. Removing what it
+// points at would let a tenant nominate anything root can reach for deletion.
+func TestRemoveAllBeneathUnlinksALeafSymlinkWithoutFollowingIt(t *testing.T) {
+	home := t.TempDir()
+	writeUnder(t, home, "elsewhere/keep.txt", "keep")
+	if err := os.Symlink("elsewhere", filepath.Join(home, "link")); err != nil {
+		t.Fatalf("create the symlink: %v", err)
+	}
+
+	if err := RemoveAllBeneath(home, "link"); err != nil {
+		t.Fatalf("the symlink itself could not be removed: %v", err)
+	}
+	if _, err := os.Lstat(filepath.Join(home, "link")); !os.IsNotExist(err) {
+		t.Errorf("the symlink survived: %v", err)
+	}
+	if _, err := os.Lstat(filepath.Join(home, "elsewhere/keep.txt")); err != nil {
+		t.Errorf("the target of the symlink was deleted: %v", err)
+	}
+}
