@@ -259,6 +259,11 @@ func main() {
 	// neighbour key names; withdraw those two commands from every tenant ACL.
 	redis.HealScanACL()
 	subH := &subdomain.Handlers{DB: d, IPv4: ipv4}
+	// A subdomain on a per-tenant PHP-FPM account is served by the tenant's one
+	// master whatever version was recorded for it. Bring the record back to what
+	// is actually running, for rows written before the panel refused to record
+	// anything else and for tenants that move to their own service later.
+	subdomain.HealSubdomainPHPVersions(d)
 	addonH := &addondomains.Handlers{DB: d, IPv4: ipv4}
 	mailH := &mail.Handlers{DB: d}
 	transfersH := &transfers.Handlers{DB: d, Domains: domainsH, Mail: mailH, Cron: cronH}

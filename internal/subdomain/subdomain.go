@@ -39,6 +39,11 @@ type Sub struct {
 	PHPVersion string `json:"php_version"`
 	DocRoot    string `json:"docroot"`
 	CreatedAt  string `json:"created_at"`
+	// PHPLocked is true when this subdomain cannot be moved off its parent
+	// domain's PHP version. It rides on the list so the interface can disable the
+	// picker and say why, rather than letting a tenant choose a version and
+	// collect a refusal.
+	PHPLocked bool `json:"php_locked"`
 }
 
 func (h *Handlers) parent(r *http.Request) (id int64, systemUser, domainName, phpVersion string, demo, ok bool) {
@@ -113,11 +118,15 @@ func (h *Handlers) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer func() { _ = rows.Close() }()
+	// Read once per request: the answer is a property of the TENANT, not of any
+	// one subdomain, and it reaches the filesystem.
+	phpLocked := provisioner.TenantFPMActive(systemUser)
 	out := []Sub{}
 	for rows.Next() {
 		var s Sub
 		if err := rows.Scan(&s.ID, &s.Subdomain, &s.FQDN, &s.PHPVersion, &s.CreatedAt); err == nil {
 			s.DocRoot = docrootOf(systemUser, s.FQDN)
+			s.PHPLocked = phpLocked
 			out = append(out, s)
 		}
 	}
@@ -170,6 +179,13 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	if n > 0 {
 		httpx.WriteError(w, http.StatusConflict, "this domain name is already in use")
+		return
+	}
+	// Refused rather than quietly downgraded to the parent's version. PHPSocketFor
+	// answers a per-tenant FPM account with its one socket whatever version is
+	// asked for, so accepting this would record a version the server never serves.
+	if phpVersionLocked(provisioner.TenantFPMActive(systemUser), parentPHP, phpVersion) {
+		httpx.WriteError(w, http.StatusConflict, reasonPHPVersionLocked)
 		return
 	}
 	socket, err := provisioner.PHPSocketFor(systemUser, phpVersion)

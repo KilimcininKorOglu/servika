@@ -628,6 +628,18 @@ func normalizePHP(v string) string {
 	return v
 }
 
+// SamePHPVersion reports whether two version strings name the same runtime once
+// normalised, which includes both of them being unrecognised and therefore
+// resolving to the default.
+//
+// It is exported so a caller outside this package decides "same version" the way
+// the pool eligibility check does. Two comparisons of the same thing drift, and
+// a caller that disagreed with subdomainFPMEligible would refuse a change the
+// provisioner would have carried out, or allow one it would not.
+func SamePHPVersion(a, b string) bool {
+	return normalizePHP(a) == normalizePHP(b)
+}
+
 // vhostTmpl covers vhosts both with and without SSL.
 var vhostTmpl = template.Must(template.New("v").Parse(`{{- if .SSL -}}
 # {{.DomainName}} — port 80 remains open for the HTTP-01 challenge; all other traffic redirects to 443

@@ -39,6 +39,7 @@ func (h *Handlers) Detail(w http.ResponseWriter, r *http.Request) {
 		"subdomain":   s.Subdomain,
 		"fqdn":        s.FQDN,
 		"php_version": s.PHPVersion,
+		"php_locked":  provisioner.TenantFPMActive(systemUser),
 		"docroot":     s.DocRoot,
 		"created_at":  s.CreatedAt,
 		"parent_id":   id,
@@ -54,7 +55,7 @@ func (h *Handlers) Detail(w http.ResponseWriter, r *http.Request) {
 // the database untouched. The rewrite is TLS-aware: an existing certificate keeps
 // the HTTPS vhost, so switching PHP never drops the site to plain HTTP.
 func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
-	id, systemUser, _, _, demo, ok := h.parent(r)
+	id, systemUser, _, parentPHP, demo, ok := h.parent(r)
 	if !ok {
 		httpx.WriteError(w, http.StatusNotFound, "domain not found")
 		return
@@ -75,6 +76,15 @@ func (h *Handlers) SetPHP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	phpVersion := strings.TrimSpace(req.PHPVersion)
+	// The vhost would be rewritten and the record updated, and neither would
+	// change what runs: ApplySubdomainFPM falls back to PHPSocketFor, which hands
+	// a per-tenant FPM account its one socket regardless of the version. Saying
+	// so is the only honest answer; the parent domain's version is the lever that
+	// works.
+	if phpVersionLocked(provisioner.TenantFPMActive(systemUser), parentPHP, phpVersion) {
+		httpx.WriteError(w, http.StatusConflict, reasonPHPVersionLocked)
+		return
+	}
 	sid, _ := strconv.ParseInt(chi.URLParam(r, "sid"), 10, 64)
 	var subdomainName, fqdn string
 	if err := h.DB.QueryRowContext(r.Context(),

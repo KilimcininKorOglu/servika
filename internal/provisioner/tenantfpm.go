@@ -582,7 +582,7 @@ func subdomainFPMEligible(db *sql.DB, systemUser string, domainID int64, phpVers
 	if err := db.QueryRow(`SELECT COALESCE(php_version,'') FROM domains WHERE id=?`, domainID).Scan(&parentPHP); err != nil {
 		return false
 	}
-	return normalizePHP(parentPHP) == normalizePHP(phpVersion)
+	return SamePHPVersion(parentPHP, phpVersion)
 }
 
 // ApplySubdomainFPM installs (or removes) the subdomain's pool inside the parent
