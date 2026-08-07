@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useResourceScope } from '@/lib/scope'
@@ -124,6 +125,7 @@ const TAB_KEYS: ToolkitTab[] = ['overview', 'extensions', 'themes', 'users']
 
 function Toolkit({ base, installation, onChange }: { base: string; installation: Install; onChange: () => void }) {
   const { t } = useTranslation('DomainWordPressPage')
+  const { confirm, notify } = useDialog()
   const dir = installation.dir
   const isRoot = dir === '/ (root)'
   const [tab, setTab] = useState<ToolkitTab>('overview')
@@ -181,7 +183,7 @@ function Toolkit({ base, installation, onChange }: { base: string; installation:
   const activateTheme = (theme: Package) => run(`theme:${theme.name}`, async () => (await api.post(`${base}/wordpress/theme`, { dir, action: 'active', name: theme.name })).data, t('messages.activated', { name: theme.name }), () => setThemes(null))
 
   async function resetPassword(user: User) {
-    if (!confirm(t('confirm.resetPassword', { user: user.user_login }))) return
+    if (!(await confirm({ message: t('confirm.resetPassword', { user: user.user_login }), dangerous: true }))) return
     setBusy(`pw:${user.ID}`); setError(null); setSuccess(null)
     try {
       const { data } = await api.post<{ password: string; username: string }>(`${base}/wordpress/user-password`, { dir, user_id: user.ID })
@@ -191,8 +193,8 @@ function Toolkit({ base, installation, onChange }: { base: string; installation:
   }
 
   async function remove() {
-    if (isRoot) { alert(t('confirm.rootRemove')); return }
-    if (!confirm(t('confirm.remove', { dir }))) return
+    if (isRoot) { await notify({ message: t('confirm.rootRemove'), tone: 'error' }); return }
+    if (!(await confirm({ message: t('confirm.remove', { dir }), dangerous: true }))) return
     setBusy('remove'); setError(null)
     try { await api.delete(`${base}/wordpress`, { data: { dir, delete_db: true } }); onChange() }
     catch (err) { setError(apiError(err, t('errors.removeFailed'))) }

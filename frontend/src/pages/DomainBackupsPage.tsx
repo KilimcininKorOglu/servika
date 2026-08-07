@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
@@ -31,6 +32,7 @@ type Destination = {
 
 export default function DomainBackupsPage() {
   const { t } = useTranslation('DomainBackupsPage')
+  const { confirm, notify } = useDialog()
   const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -119,7 +121,7 @@ export default function DomainBackupsPage() {
   }
 
   async function destDelete() {
-    if (!confirm(t('toast.confirmDeleteDest'))) return
+    if (!(await confirm({ message: t('toast.confirmDeleteDest'), dangerous: true }))) return
     setDestinationSaving(true)
     try {
       await api.delete(`/domains/${id}/backup-destination`)
@@ -177,7 +179,7 @@ export default function DomainBackupsPage() {
       await api.delete(`/domains/${id}/backups/${backupToDelete.id}`)
       setBackupToDelete(null); load()
     } catch (e) {
-      alert(apiError(e))
+      await notify({ message: apiError(e), tone: 'error' })
     }
   }
 

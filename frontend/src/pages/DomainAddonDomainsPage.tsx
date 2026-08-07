@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type AddonDomain = {
@@ -30,6 +31,7 @@ type WWWRedirect = {
 
 export default function DomainAddonDomainsPage() {
   const { t } = useTranslation('DomainAddonDomainsPage')
+  const { confirm } = useDialog()
   const { id } = useParams()
   const [addons, setAddons] = useState<AddonDomain[]>([])
   const [redirect, setRedirect] = useState<RedirectStatus>({ active: false })
@@ -85,7 +87,7 @@ export default function DomainAddonDomainsPage() {
 
   async function remove(addon: AddonDomain) {
     const mode = addon.parked ? t('mode.parked') : t('mode.addon')
-    if (!confirm(t('confirmDelete', { domain: addon.domain_name, mode }))) return
+    if (!(await confirm({ message: t('confirmDelete', { domain: addon.domain_name, mode }), dangerous: true }))) return
     setError(null); setSuccess(null)
     try {
       await api.delete(`/domains/${id}/addon-domains/${addon.id}`)
@@ -116,7 +118,7 @@ export default function DomainAddonDomainsPage() {
   }
 
   async function deleteRedirect() {
-    if (!confirm(t('confirmRemoveRedirect'))) return
+    if (!(await confirm({ message: t('confirmRemoveRedirect'), dangerous: true }))) return
     setError(null); setSuccess(null); setRedirectSaving(true)
     try {
       await api.delete(`/domains/${id}/redirect`)

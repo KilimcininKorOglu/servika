@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
 import { api, apiError as apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
@@ -21,6 +22,7 @@ type GHRepo = { full_name: string; name: string; description?: string; private: 
 
 export default function DomainGitPage() {
   const { t } = useTranslation('DomainGitPage')
+  const { confirm, notify } = useDialog()
   const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -132,7 +134,7 @@ export default function DomainGitPage() {
   }
 
   async function ghDisconnect() {
-    if (!confirm(t('confirm.ghDisconnect'))) return
+    if (!(await confirm({ message: t('confirm.ghDisconnect'), dangerous: true }))) return
     try {
       await api.delete(`/domains/${id}/github`)
       setGhConn({ missing: true })
@@ -192,7 +194,7 @@ export default function DomainGitPage() {
       await api.delete(`/domains/${id}/git`)
       setRepo(null); setDeleteConfirmOpen(false); setSuccess(t('messages.repoRemoved'))
     } catch (e) {
-      alert(apiError(e))
+      await notify({ message: apiError(e), tone: 'error' })
     }
   }
 

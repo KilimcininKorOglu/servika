@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { sslState, SSL_SOURCE_LETSENCRYPT, SSL_SOURCE_SELF_SIGNED, SSL_SOURCE_IMPORTED } from '@/lib/ssl'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -37,6 +38,7 @@ function sourceLabel(source: string, t: (key: string) => string) {
 
 export default function DomainSSLPage() {
   const { t } = useTranslation('DomainSSLPage')
+  const { confirm } = useDialog()
   const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -156,7 +158,7 @@ export default function DomainSSLPage() {
   }, [id, pollToken, applyResult])
 
   async function issue(type: 'self-signed' | 'letsencrypt') {
-    if (type === 'letsencrypt' && !confirm(t('confirm.letsencrypt'))) return
+    if (type === 'letsencrypt' && !(await confirm({ message: t('confirm.letsencrypt') }))) return
     setIsProcessing(true); setError(null); setSuccess(null); setWarning(null); setMailNote(null)
     setSteps([])
     try {
@@ -174,7 +176,7 @@ export default function DomainSSLPage() {
   }
 
   async function disable() {
-    if (!confirm(t('confirm.disable'))) return
+    if (!(await confirm({ message: t('confirm.disable'), dangerous: true }))) return
     setIsProcessing(true); setError(null); setSuccess(null); setWarning(null)
     try {
       await api.delete(`/domains/${id}/ssl`)

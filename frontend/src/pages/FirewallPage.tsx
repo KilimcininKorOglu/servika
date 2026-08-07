@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
   responsiveTableActionCellClass,
@@ -36,6 +37,7 @@ const MODES = {
 
 export default function FirewallPage() {
   const { t } = useTranslation('FirewallPage')
+  const { confirm } = useDialog()
   const [rules, setRules] = useState<Rule[]>([])
   const [protectedPorts, setProtectedPorts] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,7 +70,7 @@ export default function FirewallPage() {
 
   async function applyTemplate(template: typeof TEMPLATES[number]) {
     const templateName = t(`templates.${template.key}.name`)
-    if (!confirm(t('confirm.applyTemplate', { name: templateName, ports: template.ports }))) return
+    if (!(await confirm({ message: t('confirm.applyTemplate', { name: templateName, ports: template.ports }) }))) return
     setError(null); setSuccess(null); setBusy('template:' + template.key)
     try {
       const { data } = await api.post('/firewall/template', { template: template.key })
@@ -102,7 +104,7 @@ export default function FirewallPage() {
       : rule.port
         ? t('confirm.removeOtherWithPort', { ip: rule.ip, port: rule.port, type: typeLabel })
         : t('confirm.removeOther', { ip: rule.ip, type: typeLabel })
-    if (!confirm(t('confirm.remove', { summary }))) return
+    if (!(await confirm({ message: t('confirm.remove', { summary }), dangerous: true }))) return
     setError(null); setSuccess(null); setBusy('remove:' + rule.id)
     try { await api.delete(`/firewall/${rule.id}`); load() }
     catch (caughtError) { setError(apiError(caughtError, t('error.deleteRule'))) }

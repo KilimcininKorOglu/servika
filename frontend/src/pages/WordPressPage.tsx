@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 import {
   responsiveTableActionCellClass,
@@ -35,6 +36,7 @@ function displayDirectory(directory: string): string {
 
 export default function WordPressPage() {
   const { t } = useTranslation('WordPressPage')
+  const { confirm, notify } = useDialog()
   const [domains, setDomains] = useState<Domain[]>([])
   const [domainId, setDomainId] = useState<number | null>(null)
   const [installations, setInstallations] = useState<Installation[]>([])
@@ -88,8 +90,8 @@ export default function WordPressPage() {
   }
 
   async function remove(installation: Installation) {
-    if (isRootDirectory(installation.dir)) { alert(t('errors.rootDelete')); return }
-    if (!confirm(t('confirmDelete', { domain: installation.domain_name, dir: installation.dir }))) return
+    if (isRootDirectory(installation.dir)) { await notify({ message: t('errors.rootDelete'), tone: 'error' }); return }
+    if (!(await confirm({ message: t('confirmDelete', { domain: installation.domain_name, dir: installation.dir }), dangerous: true }))) return
     const key = installation.domain_id + installation.dir
     setBusyKey(key); setError(null)
     try {

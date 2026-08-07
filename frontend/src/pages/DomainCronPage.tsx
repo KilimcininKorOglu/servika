@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import Modal from '@/components/Modal'
@@ -54,6 +55,7 @@ const PRESETS: Array<{ labelKey: string; selection: Omit<Task, 'idx' | 'command'
 
 export default function DomainCronPage() {
   const { t } = useTranslation('DomainCronPage')
+  const { confirm, notify } = useDialog()
   const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -94,12 +96,12 @@ export default function DomainCronPage() {
   }, [id, fetchTasks, report])
 
   async function remove(task: Task) {
-    if (!confirm(t('confirmDelete', { command: task.command.slice(0, 60) }))) return
+    if (!(await confirm({ message: t('confirmDelete', { command: task.command.slice(0, 60) }), dangerous: true }))) return
     try {
       await api.delete(`/domains/${id}/cron/${task.idx}`)
       load()
     } catch (e) {
-      alert(apiError(e, t('errors.deleteFailed')))
+      await notify({ message: apiError(e, t('errors.deleteFailed')), tone: 'error' })
     }
   }
 

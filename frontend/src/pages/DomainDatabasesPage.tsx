@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import ConfirmDialog from '@/components/ConfirmDialog'
@@ -25,6 +26,7 @@ type DB = {
 
 export default function DomainDatabasesPage() {
   const { t } = useTranslation('DomainDatabasesPage')
+  const { notify } = useDialog()
   const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -71,7 +73,7 @@ export default function DomainDatabasesPage() {
       form.submit()
       form.remove()
     } catch (e) {
-      alert(apiError(e, t('errors.pmaToken')))
+      await notify({ message: apiError(e, t('errors.pmaToken')), tone: 'error' })
     }
   }
 
@@ -83,7 +85,7 @@ export default function DomainDatabasesPage() {
   async function remove() {
     if (!databaseToDelete) return
     try { await api.delete(`/databases/${databaseToDelete.id}`); setDatabaseToDelete(null); load() }
-    catch (e) { alert(apiError(e, t('errors.deleteFailed'))) }
+    catch (e) { await notify({ message: apiError(e, t('errors.deleteFailed')), tone: 'error' }) }
   }
 
   function copy(d: DB) {
