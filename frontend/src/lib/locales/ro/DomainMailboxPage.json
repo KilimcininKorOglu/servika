@@ -14,6 +14,7 @@
     "general": "General",
     "autoresponder": "Răspuns automat",
     "forwarding": "Redirecționare",
+    "migration": "Migrare",
     "transfer": "Import și export"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "Se importă...",
     "imported": "{{messages}} mesaje au fost importate în {{folders}} dosare."
   },
+  "migration": {
+    "title": "Adu mesajele de pe alt server",
+    "description": "Copiază aici toate dosarele și mesajele dintr-o căsuță IMAP existentă. Pe celălalt server nu se modifică și nu se șterge nimic.",
+    "stepFind": "1. Găsește serverul",
+    "stepVerify": "2. Verifică autentificarea",
+    "stepStart": "3. Pornește copierea",
+    "search": "Caută",
+    "searching": "Se caută...",
+    "answers": "Răspunde",
+    "use": "Folosește-l",
+    "host": "Server",
+    "port": "Port",
+    "password": "Parola de pe celălalt server",
+    "passwordHint": "Parola este folosită pentru această singură autentificare și nu se păstrează nicăieri. Dispare când închideți pagina.",
+    "verify": "Verifică autentificarea",
+    "verifying": "Se verifică...",
+    "verified": "Autentificarea a fost acceptată.",
+    "startHint": "Copierea rulează în fundal. Puteți părăsi pagina; la revenire veți găsi aici progresul.",
+    "start": "Pornește copierea",
+    "starting": "Se pornește...",
+    "cancel": "Oprește copierea",
+    "confirmCancel": "Mesajele deja copiate rămân în această căsuță, restul nu se mai copiază. Opriți acum?",
+    "jobTitle": "Copiere în curs",
+    "progress": "{{messages}} din {{total}} mesaje, {{folders}} din {{folderTotal}} dosare",
+    "status": {
+      "queued": "Așteaptă să înceapă",
+      "running": "Se copiază",
+      "done": "Finalizată",
+      "failed": "Eșuată",
+      "cancelled": "Oprită"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Fără criptare"
+    },
+    "source": {
+      "autoconfig": "din setările furnizorului",
+      "ispdb": "din baza publică de setări",
+      "srv": "dintr-o înregistrare de serviciu DNS",
+      "mx": "de la serverul de e-mail",
+      "guess": "un nume obișnuit"
+    }
+  },
+  "reasons": {
+    "unreachable": "Serverul nu a răspuns.",
+    "tlsFailed": "Certificatul serverului nu a putut fi verificat, așa că parola nu a fost trimisă.",
+    "blockedHost": "Acea adresă se află în rețeaua acestui server și nu poate fi folosită ca sursă.",
+    "badSecurity": "Serverul nu oferă criptarea aleasă pe acel port.",
+    "authFailed": "Serverul a refuzat numele de utilizator sau parola.",
+    "basicAuthDisabled": "Acest furnizor nu mai acceptă nicio parolă pentru IMAP, deci căsuța nu poate fi copiată astfel.",
+    "appPasswordRequired": "Acest furnizor cere o parolă de aplicație creată în propriile sale setări, nu parola obișnuită a contului.",
+    "timedOut": "Copierea a durat mai mult decât este permis și a fost oprită.",
+    "interrupted": "Panoul a repornit în timpul copierii.",
+    "alreadyRunning": "Pentru această căsuță este deja o copiere în curs.",
+    "unknown": "Serverul a raportat: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "Căutarea serverului a eșuat",
+    "verifyFailed": "Autentificarea nu a putut fi verificată",
+    "startFailed": "Copierea nu a putut fi pornită",
+    "cancelFailed": "Copierea nu a putut fi oprită",
     "loadFailed": "Căsuța poștală nu a putut fi încărcată",
     "recalculateFailed": "Căsuța poștală nu a putut fi măsurată",
     "saveAutoresponderFailed": "Răspunsul automat nu a putut fi salvat",

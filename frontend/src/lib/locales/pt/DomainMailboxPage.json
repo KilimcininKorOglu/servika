@@ -14,6 +14,7 @@
     "general": "Geral",
     "autoresponder": "Resposta automática",
     "forwarding": "Reencaminhamento",
+    "migration": "Migração",
     "transfer": "Importação e exportação"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "A importar...",
     "imported": "{{messages}} mensagens foram importadas para {{folders}} pastas."
   },
+  "migration": {
+    "title": "Trazer correio de outro servidor",
+    "description": "Copia para aqui todas as pastas e mensagens de uma caixa IMAP existente. No outro servidor nada é alterado nem apagado.",
+    "stepFind": "1. Encontrar o servidor",
+    "stepVerify": "2. Verificar o início de sessão",
+    "stepStart": "3. Iniciar a cópia",
+    "search": "Procurar",
+    "searching": "A procurar...",
+    "answers": "Responde",
+    "use": "Usar este",
+    "host": "Servidor",
+    "port": "Porta",
+    "password": "Palavra-passe no outro servidor",
+    "passwordHint": "A palavra-passe serve apenas para este início de sessão e nunca é guardada. Desaparece ao fechar esta página.",
+    "verify": "Verificar o início de sessão",
+    "verifying": "A verificar...",
+    "verified": "O início de sessão foi aceite.",
+    "startHint": "A cópia corre em segundo plano. Pode sair desta página; o progresso estará aqui quando voltar.",
+    "start": "Iniciar a cópia",
+    "starting": "A iniciar...",
+    "cancel": "Parar a cópia",
+    "confirmCancel": "As mensagens já copiadas ficam nesta caixa e as restantes não serão copiadas. Parar agora?",
+    "jobTitle": "Cópia em curso",
+    "progress": "{{messages}} de {{total}} mensagens, {{folders}} de {{folderTotal}} pastas",
+    "status": {
+      "queued": "À espera de começar",
+      "running": "A copiar",
+      "done": "Concluída",
+      "failed": "Falhou",
+      "cancelled": "Parada"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Sem cifra"
+    },
+    "source": {
+      "autoconfig": "das definições do fornecedor",
+      "ispdb": "da base de dados pública de definições",
+      "srv": "de um registo de serviço DNS",
+      "mx": "do servidor de correio",
+      "guess": "um nome comum"
+    }
+  },
+  "reasons": {
+    "unreachable": "O servidor não respondeu.",
+    "tlsFailed": "Não foi possível verificar o certificado do servidor, por isso a palavra-passe não foi enviada.",
+    "blockedHost": "Esse endereço pertence à rede deste servidor e não pode ser usado como origem.",
+    "badSecurity": "O servidor não oferece a cifra escolhida nessa porta.",
+    "authFailed": "O servidor recusou o nome de utilizador ou a palavra-passe.",
+    "basicAuthDisabled": "Este fornecedor já não aceita qualquer palavra-passe para IMAP, por isso a caixa não pode ser copiada assim.",
+    "appPasswordRequired": "Este fornecedor exige uma palavra-passe de aplicação criada nas suas próprias definições, não a palavra-passe normal da conta.",
+    "timedOut": "A cópia demorou mais do que o permitido e foi interrompida.",
+    "interrupted": "O painel reiniciou enquanto a cópia decorria.",
+    "alreadyRunning": "Já está a decorrer uma cópia para esta caixa.",
+    "unknown": "O servidor comunicou: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "A procura de servidor falhou",
+    "verifyFailed": "Não foi possível verificar o início de sessão",
+    "startFailed": "Não foi possível iniciar a cópia",
+    "cancelFailed": "Não foi possível parar a cópia",
     "loadFailed": "Não foi possível carregar a caixa de correio",
     "recalculateFailed": "Não foi possível medir a caixa de correio",
     "saveAutoresponderFailed": "Não foi possível guardar a resposta automática",

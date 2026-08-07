@@ -14,6 +14,7 @@
     "general": "一般",
     "autoresponder": "自動返信",
     "forwarding": "転送",
+    "migration": "移行",
     "transfer": "インポートとエクスポート"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "インポート中...",
     "imported": "{{folders}} 個のフォルダーに {{messages}} 通のメールをインポートしました。"
   },
+  "migration": {
+    "title": "別のサーバーからメールを取り込む",
+    "description": "既存の IMAP メールボックスのフォルダーとメールをすべてここへコピーします。相手のサーバーは変更も削除もされません。",
+    "stepFind": "1. サーバーを探す",
+    "stepVerify": "2. サインインを確認する",
+    "stepStart": "3. コピーを開始する",
+    "search": "検索",
+    "searching": "検索中...",
+    "answers": "応答あり",
+    "use": "これを使う",
+    "host": "サーバー",
+    "port": "ポート",
+    "password": "相手のサーバーのパスワード",
+    "passwordHint": "パスワードはこの 1 回のサインインにだけ使われ、どこにも保存されません。このページを閉じると消えます。",
+    "verify": "サインインを確認",
+    "verifying": "確認中...",
+    "verified": "サインインが受け付けられました。",
+    "startHint": "コピーはバックグラウンドで実行されます。このページを離れても構いません。戻れば進行状況がここにあります。",
+    "start": "コピーを開始",
+    "starting": "開始中...",
+    "cancel": "コピーを停止",
+    "confirmCancel": "コピー済みのメールはこのメールボックスに残り、残りはコピーされません。今すぐ停止しますか?",
+    "jobTitle": "コピー中",
+    "progress": "{{total}} 通中 {{messages}} 通、{{folderTotal}} 個中 {{folders}} 個のフォルダー",
+    "status": {
+      "queued": "開始待ち",
+      "running": "コピー中",
+      "done": "完了",
+      "failed": "失敗",
+      "cancelled": "停止済み"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "暗号化なし"
+    },
+    "source": {
+      "autoconfig": "プロバイダーの設定から",
+      "ispdb": "公開設定データベースから",
+      "srv": "DNS のサービスレコードから",
+      "mx": "メール受信サーバーから",
+      "guess": "よくある名前"
+    }
+  },
+  "reasons": {
+    "unreachable": "サーバーが応答しませんでした。",
+    "tlsFailed": "サーバーの証明書を確認できなかったため、パスワードは送信されませんでした。",
+    "blockedHost": "そのアドレスはこのサーバー自身のネットワーク内にあり、取得元にはできません。",
+    "badSecurity": "サーバーはそのポートで選択した暗号化を提供していません。",
+    "authFailed": "サーバーがユーザー名またはパスワードを拒否しました。",
+    "basicAuthDisabled": "このプロバイダーは IMAP でパスワードを一切受け付けなくなったため、この方法ではコピーできません。",
+    "appPasswordRequired": "このプロバイダーでは、通常のアカウントのパスワードではなく、プロバイダーの設定で作成したアプリパスワードが必要です。",
+    "timedOut": "コピーが許容時間を超えたため停止されました。",
+    "interrupted": "コピー中にパネルが再起動しました。",
+    "alreadyRunning": "このメールボックスではすでにコピーが実行中です。",
+    "unknown": "サーバーからの報告: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "サーバーの検索に失敗しました",
+    "verifyFailed": "サインインを確認できませんでした",
+    "startFailed": "コピーを開始できませんでした",
+    "cancelFailed": "コピーを停止できませんでした",
     "loadFailed": "メールボックスを読み込めませんでした",
     "recalculateFailed": "メールボックスを測定できませんでした",
     "saveAutoresponderFailed": "自動返信を保存できませんでした",

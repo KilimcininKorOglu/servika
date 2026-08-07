@@ -14,6 +14,7 @@
     "general": "General",
     "autoresponder": "Respuesta automática",
     "forwarding": "Reenvío",
+    "migration": "Migración",
     "transfer": "Importar y exportar"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "Importando...",
     "imported": "Se han importado {{messages}} mensajes en {{folders}} carpetas."
   },
+  "migration": {
+    "title": "Traer el correo desde otro servidor",
+    "description": "Copia aquí todas las carpetas y mensajes de un buzón IMAP existente. En el otro servidor no se cambia ni se borra nada.",
+    "stepFind": "1. Encontrar el servidor",
+    "stepVerify": "2. Comprobar el acceso",
+    "stepStart": "3. Iniciar la copia",
+    "search": "Buscar",
+    "searching": "Buscando...",
+    "answers": "Responde",
+    "use": "Usar este",
+    "host": "Servidor",
+    "port": "Puerto",
+    "password": "Contraseña en el otro servidor",
+    "passwordHint": "La contraseña se usa para este único acceso y nunca se guarda. Desaparece al cerrar esta página.",
+    "verify": "Comprobar el acceso",
+    "verifying": "Comprobando...",
+    "verified": "El acceso se ha aceptado.",
+    "startHint": "La copia se ejecuta en segundo plano. Puedes salir de esta página; el progreso estará aquí al volver.",
+    "start": "Iniciar la copia",
+    "starting": "Iniciando...",
+    "cancel": "Detener la copia",
+    "confirmCancel": "Los mensajes ya copiados se quedan en este buzón y el resto no se copiará. ¿Detener ahora?",
+    "jobTitle": "Copia en curso",
+    "progress": "{{messages}} de {{total}} mensajes, {{folders}} de {{folderTotal}} carpetas",
+    "status": {
+      "queued": "Esperando para empezar",
+      "running": "Copiando",
+      "done": "Terminada",
+      "failed": "Fallida",
+      "cancelled": "Detenida"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Sin cifrado"
+    },
+    "source": {
+      "autoconfig": "de los ajustes del proveedor",
+      "ispdb": "de la base de datos pública de ajustes",
+      "srv": "de un registro de servicio DNS",
+      "mx": "del servidor de correo",
+      "guess": "un nombre habitual"
+    }
+  },
+  "reasons": {
+    "unreachable": "El servidor no respondió.",
+    "tlsFailed": "No se pudo comprobar el certificado del servidor, así que no se envió la contraseña.",
+    "blockedHost": "Esa dirección pertenece a la red de este servidor y no puede usarse como origen.",
+    "badSecurity": "El servidor no ofrece el cifrado elegido en ese puerto.",
+    "authFailed": "El servidor rechazó el nombre de usuario o la contraseña.",
+    "basicAuthDisabled": "Este proveedor ya no acepta ninguna contraseña para IMAP, así que el buzón no puede copiarse de esta forma.",
+    "appPasswordRequired": "Este proveedor exige una contraseña de aplicación creada en sus propios ajustes, no la contraseña normal de la cuenta.",
+    "timedOut": "La copia duró más de lo permitido y se detuvo.",
+    "interrupted": "El panel se reinició mientras la copia estaba en marcha.",
+    "alreadyRunning": "Ya hay una copia en marcha para este buzón.",
+    "unknown": "El servidor informó: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "La búsqueda de servidor ha fallado",
+    "verifyFailed": "No se pudo comprobar el acceso",
+    "startFailed": "No se pudo iniciar la copia",
+    "cancelFailed": "No se pudo detener la copia",
     "loadFailed": "No se pudo cargar el buzón",
     "recalculateFailed": "No se pudo medir el buzón",
     "saveAutoresponderFailed": "No se pudo guardar la respuesta automática",

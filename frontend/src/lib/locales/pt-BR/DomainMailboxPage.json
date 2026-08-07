@@ -14,6 +14,7 @@
     "general": "Geral",
     "autoresponder": "Resposta automática",
     "forwarding": "Encaminhamento",
+    "migration": "Migração",
     "transfer": "Importação e exportação"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "Importando...",
     "imported": "{{messages}} mensagens foram importadas para {{folders}} pastas."
   },
+  "migration": {
+    "title": "Trazer e-mails de outro servidor",
+    "description": "Copia para cá todas as pastas e mensagens de uma caixa IMAP existente. Nada é alterado ou excluído no outro servidor.",
+    "stepFind": "1. Encontrar o servidor",
+    "stepVerify": "2. Verificar o login",
+    "stepStart": "3. Iniciar a cópia",
+    "search": "Buscar",
+    "searching": "Buscando...",
+    "answers": "Responde",
+    "use": "Usar este",
+    "host": "Servidor",
+    "port": "Porta",
+    "password": "Senha no outro servidor",
+    "passwordHint": "A senha é usada apenas para este login e nunca é armazenada. Ela some ao fechar esta página.",
+    "verify": "Verificar o login",
+    "verifying": "Verificando...",
+    "verified": "O login foi aceito.",
+    "startHint": "A cópia roda em segundo plano. Você pode sair desta página; o progresso estará aqui quando voltar.",
+    "start": "Iniciar a cópia",
+    "starting": "Iniciando...",
+    "cancel": "Parar a cópia",
+    "confirmCancel": "As mensagens já copiadas continuam nesta caixa e o restante não será copiado. Parar agora?",
+    "jobTitle": "Cópia em andamento",
+    "progress": "{{messages}} de {{total}} mensagens, {{folders}} de {{folderTotal}} pastas",
+    "status": {
+      "queued": "Aguardando para começar",
+      "running": "Copiando",
+      "done": "Concluída",
+      "failed": "Falhou",
+      "cancelled": "Parada"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Sem criptografia"
+    },
+    "source": {
+      "autoconfig": "das configurações do provedor",
+      "ispdb": "do banco público de configurações",
+      "srv": "de um registro de serviço DNS",
+      "mx": "do servidor de e-mail",
+      "guess": "um nome comum"
+    }
+  },
+  "reasons": {
+    "unreachable": "O servidor não respondeu.",
+    "tlsFailed": "Não foi possível verificar o certificado do servidor, então a senha não foi enviada.",
+    "blockedHost": "Esse endereço pertence à rede deste servidor e não pode ser usado como origem.",
+    "badSecurity": "O servidor não oferece a criptografia escolhida nessa porta.",
+    "authFailed": "O servidor recusou o nome de usuário ou a senha.",
+    "basicAuthDisabled": "Este provedor não aceita mais nenhuma senha para IMAP, então a caixa não pode ser copiada assim.",
+    "appPasswordRequired": "Este provedor exige uma senha de aplicativo criada nas configurações dele, e não a senha comum da conta.",
+    "timedOut": "A cópia demorou mais do que o permitido e foi interrompida.",
+    "interrupted": "O painel reiniciou enquanto a cópia estava em andamento.",
+    "alreadyRunning": "Já existe uma cópia em andamento para esta caixa.",
+    "unknown": "O servidor informou: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "A busca de servidor falhou",
+    "verifyFailed": "Não foi possível verificar o login",
+    "startFailed": "Não foi possível iniciar a cópia",
+    "cancelFailed": "Não foi possível parar a cópia",
     "loadFailed": "Não foi possível carregar a caixa de correio",
     "recalculateFailed": "Não foi possível medir a caixa de correio",
     "saveAutoresponderFailed": "Não foi possível salvar a resposta automática",

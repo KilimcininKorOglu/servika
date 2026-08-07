@@ -14,6 +14,7 @@
     "general": "Obecné",
     "autoresponder": "Automatická odpověď",
     "forwarding": "Přeposílání",
+    "migration": "Migrace",
     "transfer": "Import a export"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "Importuje se...",
     "imported": "Bylo importováno {{messages}} zpráv do {{folders}} složek."
   },
+  "migration": {
+    "title": "Přenést poštu z jiného serveru",
+    "description": "Zkopíruje sem všechny složky a zprávy ze stávající schránky IMAP. Na druhém serveru se nic nemění ani nemaže.",
+    "stepFind": "1. Najít server",
+    "stepVerify": "2. Ověřit přihlášení",
+    "stepStart": "3. Spustit kopírování",
+    "search": "Hledat",
+    "searching": "Hledá se...",
+    "answers": "Odpovídá",
+    "use": "Použít tento",
+    "host": "Server",
+    "port": "Port",
+    "password": "Heslo na druhém serveru",
+    "passwordHint": "Heslo slouží jen k tomuto jednomu přihlášení a nikam se neukládá. Zavřením této stránky zmizí.",
+    "verify": "Ověřit přihlášení",
+    "verifying": "Ověřuje se...",
+    "verified": "Přihlášení bylo přijato.",
+    "startHint": "Kopírování běží na pozadí. Tuto stránku můžete opustit; po návratu tu najdete průběh.",
+    "start": "Spustit kopírování",
+    "starting": "Spouští se...",
+    "cancel": "Zastavit kopírování",
+    "confirmCancel": "Již zkopírované zprávy ve schránce zůstanou, zbytek se nezkopíruje. Zastavit nyní?",
+    "jobTitle": "Probíhá kopírování",
+    "progress": "{{messages}} z {{total}} zpráv, {{folders}} z {{folderTotal}} složek",
+    "status": {
+      "queued": "Čeká na spuštění",
+      "running": "Kopíruje se",
+      "done": "Dokončeno",
+      "failed": "Selhalo",
+      "cancelled": "Zastaveno"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Bez šifrování"
+    },
+    "source": {
+      "autoconfig": "z nastavení poskytovatele",
+      "ispdb": "z veřejné databáze nastavení",
+      "srv": "ze záznamu služby DNS",
+      "mx": "z poštovního serveru",
+      "guess": "obvyklý název"
+    }
+  },
+  "reasons": {
+    "unreachable": "Server neodpověděl.",
+    "tlsFailed": "Certifikát serveru se nepodařilo ověřit, heslo proto nebylo odesláno.",
+    "blockedHost": "Tato adresa patří do sítě tohoto serveru a nelze ji použít jako zdroj.",
+    "badSecurity": "Server na tomto portu zvolené šifrování nenabízí.",
+    "authFailed": "Server odmítl uživatelské jméno nebo heslo.",
+    "basicAuthDisabled": "Tento poskytovatel už pro IMAP žádné heslo nepřijímá, schránku tedy takto zkopírovat nelze.",
+    "appPasswordRequired": "Tento poskytovatel vyžaduje heslo aplikace vytvořené v jeho vlastním nastavení, nikoli běžné heslo účtu.",
+    "timedOut": "Kopírování trvalo déle, než je povoleno, a bylo ukončeno.",
+    "interrupted": "Během kopírování byl panel restartován.",
+    "alreadyRunning": "Pro tuto schránku už jedno kopírování běží.",
+    "unknown": "Server ohlásil: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "Hledání serveru selhalo",
+    "verifyFailed": "Přihlášení se nepodařilo ověřit",
+    "startFailed": "Kopírování se nepodařilo spustit",
+    "cancelFailed": "Kopírování se nepodařilo zastavit",
     "loadFailed": "Schránku se nepodařilo načíst",
     "recalculateFailed": "Schránku se nepodařilo změřit",
     "saveAutoresponderFailed": "Automatickou odpověď se nepodařilo uložit",

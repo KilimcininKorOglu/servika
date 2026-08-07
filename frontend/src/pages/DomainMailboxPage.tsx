@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useDialog } from '@/lib/dialog'
 import { useCopyOrOffer } from '@/lib/useCopyOrOffer'
+import { getCookie, setCookie, deleteCookie } from '@/lib/cookies'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Domain = { id: number; domain_name: string }
@@ -25,7 +26,65 @@ type ImportFormats = {
   pst_supported: boolean; max_bytes: number
 }
 
-type Tab = 'general' | 'autoresponder' | 'forwarding' | 'transfer'
+type Candidate = { host: string; port: number; security: string; source: string; responds: boolean }
+type MigrationJob = {
+  id: number; status: string; remote_host: string; remote_user: string
+  folders_total: number; folders_done: number
+  messages_total: number; messages_done: number; bytes_done: number
+  error_code: string; started_at: string; finished_at: string
+}
+
+type Tab = 'general' | 'autoresponder' | 'forwarding' | 'migration' | 'transfer'
+
+/**
+ * Maps a server reason code onto a translation key.
+ *
+ * The table is explicit rather than built by camel-casing whatever arrives: a
+ * code the server adds later would otherwise become a key that does not exist
+ * and render as its own name in every language. Anything unlisted falls back to
+ * one sentence that says what happened without pretending to know why.
+ */
+const MIGRATION_REASONS: Record<string, string> = {
+  unreachable: 'reasons.unreachable',
+  tls_failed: 'reasons.tlsFailed',
+  blocked_host: 'reasons.blockedHost',
+  bad_security: 'reasons.badSecurity',
+  auth_failed: 'reasons.authFailed',
+  basic_auth_disabled: 'reasons.basicAuthDisabled',
+  app_password_required: 'reasons.appPasswordRequired',
+  timed_out: 'reasons.timedOut',
+  interrupted: 'reasons.interrupted',
+  migration_already_running: 'reasons.alreadyRunning',
+}
+
+// The draft outlives a page reload so a long discovery is not repeated, and it
+// carries the server only. The password is never written anywhere: it goes from
+// the field into one request and is gone when the tab closes.
+const DRAFT_MAX_AGE_SEC = 24 * 60 * 60
+type MigrationDraft = { host: string; port: number; security: string; username: string }
+const EMPTY_DRAFT: MigrationDraft = { host: '', port: 143, security: 'starttls', username: '' }
+
+/**
+ * Reads the saved server half of a wizard draft.
+ *
+ * A cookie written by an older shape of this page no longer parses. Dropping it
+ * is better than leaving one that fails on every load, and there is nothing to
+ * lose: it holds a hostname, never a credential.
+ */
+function readDraft(name: string): MigrationDraft {
+  const stored = getCookie(name)
+  if (!stored) return EMPTY_DRAFT
+  try {
+    const draft = JSON.parse(stored) as Partial<MigrationDraft>
+    return {
+      host: draft.host || '', port: draft.port || 143,
+      security: draft.security || 'starttls', username: draft.username || '',
+    }
+  } catch {
+    deleteCookie(name)
+    return EMPTY_DRAFT
+  }
+}
 
 // A quota of zero is not a limit of zero; it is the absence of one, which the
 // userdb query turns into a NULL quota_rule. Drawing it as a full bar would tell
@@ -67,6 +126,32 @@ export default function DomainMailboxPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [isImporting, setIsImporting] = useState(false)
 
+  const draftCookie = `servika.mailmigration.${mid}`
+  // Read once at first render rather than in an effect: this is initial state
+  // taken from a store that is already there, not a synchronisation with one.
+  const [draft] = useState<MigrationDraft>(() => readDraft(draftCookie))
+
+  const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [providerNotice, setProviderNotice] = useState('')
+  const [isDiscovering, setIsDiscovering] = useState(false)
+  const [remoteHost, setRemoteHost] = useState(draft.host)
+  const [remotePort, setRemotePort] = useState(draft.port)
+  const [remoteSecurity, setRemoteSecurity] = useState(draft.security)
+  const [remoteUser, setRemoteUser] = useState(draft.username)
+  // Deliberately not persisted anywhere, not even in memory across a reload.
+  const [remotePassword, setRemotePassword] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [verified, setVerified] = useState(false)
+  const [verifyReason, setVerifyReason] = useState('')
+  const [isStarting, setIsStarting] = useState(false)
+  const [job, setJob] = useState<MigrationJob | null>(null)
+
+  // A code the panel does not know is still reported, just without a claim
+  // about the cause it cannot make.
+  const reasonText = useCallback((code: string) => (
+    code ? t(MIGRATION_REASONS[code] || 'reasons.unknown', { code }) : ''
+  ), [t])
+
   // Split so the mount effect never writes state synchronously: fetchMailbox
   // settles only through promise callbacks, and load() adds the spinner for the
   // refreshes that follow a write.
@@ -98,6 +183,103 @@ export default function DomainMailboxPage() {
   const load = useCallback(() => { setLoading(true); fetchMailbox() }, [fetchMailbox])
 
   useEffect(() => { fetchMailbox() }, [fetchMailbox])
+
+  // The server is the source of truth for what is running: a copy started in
+  // another tab, or before this page was closed, has to appear here too.
+  const fetchJob = useCallback(() => {
+    if (!id || !mid) return
+    api.get<{ job: MigrationJob | null }>(`/domains/${id}/mail/${mid}/migration`)
+      .then(response => setJob(response.data.job))
+      .catch(() => setJob(null))
+  }, [id, mid])
+
+  useEffect(() => { fetchJob() }, [fetchJob])
+
+  // While a copy runs the page asks again, so progress moves without a reload.
+  useEffect(() => {
+    if (job?.status !== 'running' && job?.status !== 'queued') return
+    const timer = setInterval(fetchJob, 5000)
+    return () => clearInterval(timer)
+  }, [job?.status, fetchJob])
+
+  function rememberDraft(next: Partial<MigrationDraft>) {
+    const draft: MigrationDraft = {
+      host: remoteHost, port: remotePort, security: remoteSecurity, username: remoteUser, ...next,
+    }
+    setCookie(draftCookie, JSON.stringify(draft), DRAFT_MAX_AGE_SEC)
+  }
+
+  async function discover() {
+    if (!mailbox) return
+    setIsDiscovering(true)
+    setCandidates([])
+    try {
+      const response = await api.post<{ candidates: Candidate[]; provider_notice: string }>(
+        `/domains/${id}/mail/migration/discover`, { email: remoteUser || mailbox.email })
+      setCandidates(response.data.candidates || [])
+      setProviderNotice(response.data.provider_notice || '')
+      const answering = (response.data.candidates || []).find(entry => entry.responds)
+      if (answering) chooseCandidate(answering)
+    } catch (cause) {
+      await notify({ message: apiError(cause, t('errors.discoverFailed')), tone: 'error' })
+    } finally {
+      setIsDiscovering(false)
+    }
+  }
+
+  function chooseCandidate(candidate: Candidate) {
+    setRemoteHost(candidate.host)
+    setRemotePort(candidate.port)
+    setRemoteSecurity(candidate.security)
+    // A different server means the previous approval no longer says anything.
+    setVerified(false)
+    setVerifyReason('')
+    rememberDraft({ host: candidate.host, port: candidate.port, security: candidate.security })
+  }
+
+  async function verify() {
+    setIsVerifying(true)
+    setVerifyReason('')
+    try {
+      const response = await api.post<{ ok: boolean; reason: string }>(
+        `/domains/${id}/mail/migration/verify`,
+        { host: remoteHost, port: remotePort, security: remoteSecurity, username: remoteUser, password: remotePassword })
+      setVerified(response.data.ok)
+      setVerifyReason(response.data.ok ? '' : response.data.reason)
+      if (response.data.ok) rememberDraft({ username: remoteUser })
+    } catch (cause) {
+      setVerified(false)
+      await notify({ message: apiError(cause, t('errors.verifyFailed')), tone: 'error' })
+    } finally {
+      setIsVerifying(false)
+    }
+  }
+
+  async function startMigration() {
+    setIsStarting(true)
+    try {
+      await api.post(`/domains/${id}/mail/${mid}/migration`,
+        { host: remoteHost, port: remotePort, security: remoteSecurity, username: remoteUser, password: remotePassword })
+      // The password has done its one job. Clearing it now means a page left
+      // open for the hours a copy takes is not also holding it.
+      setRemotePassword('')
+      fetchJob()
+    } catch (cause) {
+      await notify({ message: apiError(cause, t('errors.startFailed')), tone: 'error' })
+    } finally {
+      setIsStarting(false)
+    }
+  }
+
+  async function cancelMigration() {
+    if (!(await confirm({ message: t('migration.confirmCancel'), dangerous: true }))) return
+    try {
+      await api.delete(`/domains/${id}/mail/${mid}/migration`)
+      fetchJob()
+    } catch (cause) {
+      await notify({ message: apiError(cause, t('errors.cancelFailed')), tone: 'error' })
+    }
+  }
 
   async function recalculateQuota() {
     setIsRecalculating(true)
@@ -198,8 +380,10 @@ export default function DomainMailboxPage() {
     { key: 'general', label: t('tabs.general') },
     { key: 'autoresponder', label: t('tabs.autoresponder') },
     { key: 'forwarding', label: t('tabs.forwarding') },
+    { key: 'migration', label: t('tabs.migration') },
     { key: 'transfer', label: t('tabs.transfer') },
   ]
+  const jobRunning = job?.status === 'running' || job?.status === 'queued'
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -331,6 +515,119 @@ export default function DomainMailboxPage() {
                 {isSavingForwarding ? t('saving') : t('save')}
               </button>
             </form>
+          )}
+
+          {tab === 'migration' && (
+            <div className="mt-5 max-w-2xl space-y-5">
+              {job && (
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                  <h3 className="mb-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{t('migration.jobTitle')}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {t(`migration.status.${job.status}`, { defaultValue: job.status })} · {job.remote_user} @ {job.remote_host}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                    {t('migration.progress', {
+                      messages: job.messages_done, total: job.messages_total,
+                      folders: job.folders_done, folderTotal: job.folders_total,
+                    })}
+                  </p>
+                  {job.error_code && (
+                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">{reasonText(job.error_code)}</p>
+                  )}
+                  {jobRunning && (
+                    <button type="button" onClick={cancelMigration}
+                      className="mt-3 rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20">
+                      {t('migration.cancel')}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {!jobRunning && (
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                  <h3 className="mb-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{t('migration.title')}</h3>
+                  <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">{t('migration.description')}</p>
+
+                  <ol className="space-y-5">
+                    <li>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('migration.stepFind')}</p>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <input value={remoteUser} onChange={event => { setRemoteUser(event.target.value); setVerified(false) }}
+                          placeholder={mailbox.email} autoComplete="off"
+                          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-600 dark:bg-slate-900" />
+                        <button type="button" onClick={discover} disabled={isDiscovering}
+                          className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+                          {isDiscovering ? t('migration.searching') : t('migration.search')}
+                        </button>
+                      </div>
+                      {providerNotice && (
+                        <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+                          {reasonText(providerNotice)}
+                        </p>
+                      )}
+                      {candidates.length > 0 && (
+                        <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-700/50">
+                          {candidates.map(candidate => (
+                            <li key={`${candidate.host}:${candidate.port}:${candidate.security}`} className="flex items-center justify-between py-2">
+                              <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
+                                {candidate.host}:{candidate.port}
+                                <span className="ml-2 text-xs text-slate-400">{candidate.security} · {t(`migration.source.${candidate.source}`, { defaultValue: candidate.source })}</span>
+                                {/* A published record can outlive the server it names, so
+                                    whether it actually answered is worth its own mark. */}
+                                {candidate.responds && (
+                                  <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                    {t('migration.answers')}
+                                  </span>
+                                )}
+                              </span>
+                              <button type="button" onClick={() => chooseCandidate(candidate)}
+                                className="text-xs text-brand-600 hover:underline dark:text-brand-400">{t('migration.use')}</button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+
+                    <li>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('migration.stepVerify')}</p>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                        <input value={remoteHost} onChange={event => { setRemoteHost(event.target.value); setVerified(false) }}
+                          placeholder={t('migration.host')} autoComplete="off"
+                          className="rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-600 dark:bg-slate-900 sm:col-span-2" />
+                        <input value={remotePort} onChange={event => { setRemotePort(Number(event.target.value)); setVerified(false) }}
+                          type="number" min={1} max={65535} placeholder={t('migration.port')}
+                          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-600 dark:bg-slate-900" />
+                        <select value={remoteSecurity} onChange={event => { setRemoteSecurity(event.target.value); setVerified(false) }}
+                          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-900">
+                          <option value="ssl">{t('migration.security.ssl')}</option>
+                          <option value="starttls">{t('migration.security.starttls')}</option>
+                          <option value="plain">{t('migration.security.plain')}</option>
+                        </select>
+                        <input value={remotePassword} onChange={event => { setRemotePassword(event.target.value); setVerified(false) }}
+                          type="password" placeholder={t('migration.password')} autoComplete="new-password"
+                          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-600 dark:bg-slate-900 sm:col-span-2" />
+                      </div>
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{t('migration.passwordHint')}</p>
+                      <button type="button" onClick={verify} disabled={isVerifying || !remoteHost || !remoteUser || !remotePassword}
+                        className="mt-3 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 disabled:opacity-50 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700/50">
+                        {isVerifying ? t('migration.verifying') : t('migration.verify')}
+                      </button>
+                      {verified && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">{t('migration.verified')}</p>}
+                      {verifyReason && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{reasonText(verifyReason)}</p>}
+                    </li>
+
+                    <li>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('migration.stepStart')}</p>
+                      <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">{t('migration.startHint')}</p>
+                      <button type="button" onClick={startMigration} disabled={isStarting || !verified}
+                        className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+                        {isStarting ? t('migration.starting') : t('migration.start')}
+                      </button>
+                    </li>
+                  </ol>
+                </div>
+              )}
+            </div>
           )}
 
           {tab === 'transfer' && (

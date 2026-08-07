@@ -14,6 +14,7 @@
     "general": "General",
     "autoresponder": "Auto-reply",
     "forwarding": "Forwarding",
+    "migration": "Migration",
     "transfer": "Import and export"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "Importing...",
     "imported": "{{messages}} messages were imported into {{folders}} folders."
   },
+  "migration": {
+    "title": "Bring mail in from another server",
+    "description": "Copies every folder and message from an existing IMAP mailbox into this one. Nothing on the other server is changed or deleted.",
+    "stepFind": "1. Find the server",
+    "stepVerify": "2. Check the sign-in",
+    "stepStart": "3. Start the copy",
+    "search": "Search",
+    "searching": "Searching...",
+    "answers": "Answers",
+    "use": "Use this",
+    "host": "Server",
+    "port": "Port",
+    "password": "Password on the other server",
+    "passwordHint": "The password is used for this one sign-in and is never stored. It is gone when you close this page.",
+    "verify": "Check the sign-in",
+    "verifying": "Checking...",
+    "verified": "The sign-in was accepted.",
+    "startHint": "The copy runs in the background. You can leave this page; the progress is here when you come back.",
+    "start": "Start the copy",
+    "starting": "Starting...",
+    "cancel": "Stop the copy",
+    "confirmCancel": "The messages already copied stay in this mailbox, and the rest are not copied. Stop now?",
+    "jobTitle": "Copy in progress",
+    "progress": "{{messages}} of {{total}} messages, {{folders}} of {{folderTotal}} folders",
+    "status": {
+      "queued": "Waiting to start",
+      "running": "Copying",
+      "done": "Finished",
+      "failed": "Failed",
+      "cancelled": "Stopped"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "No encryption"
+    },
+    "source": {
+      "autoconfig": "from the provider's own settings",
+      "ispdb": "from the public settings database",
+      "srv": "from a DNS service record",
+      "mx": "from the mail exchanger",
+      "guess": "a common name"
+    }
+  },
+  "reasons": {
+    "unreachable": "The server did not answer.",
+    "tlsFailed": "The server's certificate could not be checked, so the password was not sent.",
+    "blockedHost": "That address is on this server's own network and cannot be used as a source.",
+    "badSecurity": "The server does not offer the selected encryption on that port.",
+    "authFailed": "The server refused the username or the password.",
+    "basicAuthDisabled": "This provider no longer accepts a password for IMAP at all, so the mailbox cannot be copied this way.",
+    "appPasswordRequired": "This provider needs an app password created in its own settings, not the ordinary account password.",
+    "timedOut": "The copy ran longer than allowed and was stopped.",
+    "interrupted": "The panel restarted while the copy was running.",
+    "alreadyRunning": "A copy is already running for this mailbox.",
+    "unknown": "The server reported: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "The server search failed",
+    "verifyFailed": "The sign-in could not be checked",
+    "startFailed": "The copy could not be started",
+    "cancelFailed": "The copy could not be stopped",
     "loadFailed": "The mailbox could not be loaded",
     "recalculateFailed": "The mailbox could not be measured",
     "saveAutoresponderFailed": "The automatic reply could not be saved",

@@ -14,6 +14,7 @@
     "general": "常规",
     "autoresponder": "自动回复",
     "forwarding": "转发",
+    "migration": "迁移",
     "transfer": "导入与导出"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "导入中...",
     "imported": "已将 {{messages}} 封邮件导入到 {{folders}} 个文件夹。"
   },
+  "migration": {
+    "title": "从其他服务器导入邮件",
+    "description": "把现有 IMAP 邮箱中的所有文件夹和邮件复制到这里。对方服务器上的内容不会被修改或删除。",
+    "stepFind": "1. 查找服务器",
+    "stepVerify": "2. 验证登录",
+    "stepStart": "3. 开始复制",
+    "search": "搜索",
+    "searching": "搜索中...",
+    "answers": "有响应",
+    "use": "使用此项",
+    "host": "服务器",
+    "port": "端口",
+    "password": "对方服务器上的密码",
+    "passwordHint": "密码仅用于这一次登录，不会保存在任何地方。关闭本页后即消失。",
+    "verify": "验证登录",
+    "verifying": "验证中...",
+    "verified": "登录已通过。",
+    "startHint": "复制在后台运行。可以离开本页；返回时进度仍在这里。",
+    "start": "开始复制",
+    "starting": "正在开始...",
+    "cancel": "停止复制",
+    "confirmCancel": "已复制的邮件会留在此邮箱中，其余的不再复制。现在停止吗？",
+    "jobTitle": "复制进行中",
+    "progress": "{{total}} 封邮件中的 {{messages}} 封，{{folderTotal}} 个文件夹中的 {{folders}} 个",
+    "status": {
+      "queued": "等待开始",
+      "running": "复制中",
+      "done": "已完成",
+      "failed": "失败",
+      "cancelled": "已停止"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "不加密"
+    },
+    "source": {
+      "autoconfig": "来自服务商自己的设置",
+      "ispdb": "来自公开设置数据库",
+      "srv": "来自 DNS 服务记录",
+      "mx": "来自邮件接收服务器",
+      "guess": "常见名称"
+    }
+  },
+  "reasons": {
+    "unreachable": "服务器没有响应。",
+    "tlsFailed": "无法验证服务器证书，因此没有发送密码。",
+    "blockedHost": "该地址位于本服务器自身的网络中，不能作为来源。",
+    "badSecurity": "服务器在该端口上不提供所选的加密方式。",
+    "authFailed": "服务器拒绝了用户名或密码。",
+    "basicAuthDisabled": "该服务商已完全不接受 IMAP 密码，因此无法用这种方式复制邮箱。",
+    "appPasswordRequired": "该服务商需要在其自身设置中创建的应用专用密码，而不是普通的账户密码。",
+    "timedOut": "复制超出了允许的时间，已被停止。",
+    "interrupted": "复制过程中面板重新启动了。",
+    "alreadyRunning": "该邮箱已有一个复制任务在运行。",
+    "unknown": "服务器报告：{{code}}"
+  },
   "errors": {
+    "discoverFailed": "搜索服务器失败",
+    "verifyFailed": "无法验证登录",
+    "startFailed": "无法开始复制",
+    "cancelFailed": "无法停止复制",
     "loadFailed": "无法加载邮箱",
     "recalculateFailed": "无法测量邮箱",
     "saveAutoresponderFailed": "无法保存自动回复",

@@ -14,6 +14,7 @@
     "general": "Général",
     "autoresponder": "Réponse automatique",
     "forwarding": "Redirection",
+    "migration": "Migration",
     "transfer": "Import et export"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "Import en cours...",
     "imported": "{{messages}} messages ont été importés dans {{folders}} dossiers."
   },
+  "migration": {
+    "title": "Importer le courrier depuis un autre serveur",
+    "description": "Copie ici tous les dossiers et messages d'une boîte IMAP existante. Rien n'est modifié ni supprimé sur l'autre serveur.",
+    "stepFind": "1. Trouver le serveur",
+    "stepVerify": "2. Vérifier la connexion",
+    "stepStart": "3. Lancer la copie",
+    "search": "Rechercher",
+    "searching": "Recherche...",
+    "answers": "Répond",
+    "use": "Utiliser celui-ci",
+    "host": "Serveur",
+    "port": "Port",
+    "password": "Mot de passe sur l'autre serveur",
+    "passwordHint": "Le mot de passe sert à cette seule connexion et n'est jamais conservé. Il disparaît à la fermeture de cette page.",
+    "verify": "Vérifier la connexion",
+    "verifying": "Vérification...",
+    "verified": "La connexion a été acceptée.",
+    "startHint": "La copie s'exécute en arrière-plan. Vous pouvez quitter cette page ; la progression sera là à votre retour.",
+    "start": "Lancer la copie",
+    "starting": "Démarrage...",
+    "cancel": "Arrêter la copie",
+    "confirmCancel": "Les messages déjà copiés restent dans cette boîte, le reste ne sera pas copié. Arrêter maintenant ?",
+    "jobTitle": "Copie en cours",
+    "progress": "{{messages}} messages sur {{total}}, {{folders}} dossiers sur {{folderTotal}}",
+    "status": {
+      "queued": "En attente de démarrage",
+      "running": "Copie en cours",
+      "done": "Terminée",
+      "failed": "Échouée",
+      "cancelled": "Arrêtée"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Aucun chiffrement"
+    },
+    "source": {
+      "autoconfig": "d'après les réglages du fournisseur",
+      "ispdb": "d'après la base publique de réglages",
+      "srv": "d'après un enregistrement de service DNS",
+      "mx": "d'après le serveur de messagerie",
+      "guess": "un nom courant"
+    }
+  },
+  "reasons": {
+    "unreachable": "Le serveur n'a pas répondu.",
+    "tlsFailed": "Le certificat du serveur n'a pas pu être vérifié, le mot de passe n'a donc pas été envoyé.",
+    "blockedHost": "Cette adresse appartient au réseau de ce serveur et ne peut pas servir de source.",
+    "badSecurity": "Le serveur ne propose pas le chiffrement choisi sur ce port.",
+    "authFailed": "Le serveur a refusé le nom d'utilisateur ou le mot de passe.",
+    "basicAuthDisabled": "Ce fournisseur n'accepte plus aucun mot de passe pour IMAP ; la boîte ne peut pas être copiée ainsi.",
+    "appPasswordRequired": "Ce fournisseur exige un mot de passe d'application créé dans ses propres réglages, et non le mot de passe habituel du compte.",
+    "timedOut": "La copie a duré plus longtemps qu'autorisé et a été arrêtée.",
+    "interrupted": "Le panneau a redémarré pendant la copie.",
+    "alreadyRunning": "Une copie est déjà en cours pour cette boîte.",
+    "unknown": "Le serveur a signalé : {{code}}"
+  },
   "errors": {
+    "discoverFailed": "La recherche de serveur a échoué",
+    "verifyFailed": "La connexion n'a pas pu être vérifiée",
+    "startFailed": "La copie n'a pas pu être démarrée",
+    "cancelFailed": "La copie n'a pas pu être arrêtée",
     "loadFailed": "La boîte aux lettres n'a pas pu être chargée",
     "recalculateFailed": "La boîte aux lettres n'a pas pu être mesurée",
     "saveAutoresponderFailed": "La réponse automatique n'a pas pu être enregistrée",

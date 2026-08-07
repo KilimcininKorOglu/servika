@@ -14,6 +14,7 @@
     "general": "Allgemein",
     "autoresponder": "Autoantwort",
     "forwarding": "Weiterleitung",
+    "migration": "Migration",
     "transfer": "Import und Export"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "Wird importiert...",
     "imported": "{{messages}} Nachrichten wurden in {{folders}} Ordner importiert."
   },
+  "migration": {
+    "title": "Mail von einem anderen Server holen",
+    "description": "Kopiert alle Ordner und Nachrichten aus einem vorhandenen IMAP-Postfach hierher. Auf dem anderen Server wird nichts geändert oder gelöscht.",
+    "stepFind": "1. Server finden",
+    "stepVerify": "2. Anmeldung prüfen",
+    "stepStart": "3. Kopieren starten",
+    "search": "Suchen",
+    "searching": "Wird gesucht...",
+    "answers": "Antwortet",
+    "use": "Diesen verwenden",
+    "host": "Server",
+    "port": "Port",
+    "password": "Passwort auf dem anderen Server",
+    "passwordHint": "Das Passwort wird für diese eine Anmeldung verwendet und nirgends gespeichert. Beim Schließen dieser Seite ist es weg.",
+    "verify": "Anmeldung prüfen",
+    "verifying": "Wird geprüft...",
+    "verified": "Die Anmeldung wurde akzeptiert.",
+    "startHint": "Das Kopieren läuft im Hintergrund. Sie können diese Seite verlassen; der Fortschritt ist bei der Rückkehr hier.",
+    "start": "Kopieren starten",
+    "starting": "Wird gestartet...",
+    "cancel": "Kopieren stoppen",
+    "confirmCancel": "Die bereits kopierten Nachrichten bleiben in diesem Postfach, der Rest wird nicht kopiert. Jetzt stoppen?",
+    "jobTitle": "Kopieren läuft",
+    "progress": "{{messages}} von {{total}} Nachrichten, {{folders}} von {{folderTotal}} Ordnern",
+    "status": {
+      "queued": "Wartet auf den Start",
+      "running": "Wird kopiert",
+      "done": "Abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "cancelled": "Gestoppt"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Keine Verschlüsselung"
+    },
+    "source": {
+      "autoconfig": "aus den Einstellungen des Anbieters",
+      "ispdb": "aus der öffentlichen Einstellungsdatenbank",
+      "srv": "aus einem DNS-Diensteintrag",
+      "mx": "vom Mail-Exchanger",
+      "guess": "ein gebräuchlicher Name"
+    }
+  },
+  "reasons": {
+    "unreachable": "Der Server hat nicht geantwortet.",
+    "tlsFailed": "Das Zertifikat des Servers ließ sich nicht prüfen, daher wurde das Passwort nicht gesendet.",
+    "blockedHost": "Diese Adresse liegt im eigenen Netz dieses Servers und kann nicht als Quelle dienen.",
+    "badSecurity": "Der Server bietet die gewählte Verschlüsselung auf diesem Port nicht an.",
+    "authFailed": "Der Server hat den Benutzernamen oder das Passwort abgelehnt.",
+    "basicAuthDisabled": "Dieser Anbieter akzeptiert für IMAP überhaupt kein Passwort mehr, das Postfach lässt sich so nicht kopieren.",
+    "appPasswordRequired": "Dieser Anbieter verlangt ein in seinen eigenen Einstellungen erzeugtes App-Passwort, nicht das gewöhnliche Kontopasswort.",
+    "timedOut": "Das Kopieren lief länger als erlaubt und wurde beendet.",
+    "interrupted": "Das Panel wurde während des Kopierens neu gestartet.",
+    "alreadyRunning": "Für dieses Postfach läuft bereits ein Kopiervorgang.",
+    "unknown": "Der Server meldete: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "Die Serversuche ist fehlgeschlagen",
+    "verifyFailed": "Die Anmeldung konnte nicht geprüft werden",
+    "startFailed": "Das Kopieren konnte nicht gestartet werden",
+    "cancelFailed": "Das Kopieren konnte nicht gestoppt werden",
     "loadFailed": "Das Postfach konnte nicht geladen werden",
     "recalculateFailed": "Das Postfach konnte nicht gemessen werden",
     "saveAutoresponderFailed": "Die Autoantwort konnte nicht gespeichert werden",

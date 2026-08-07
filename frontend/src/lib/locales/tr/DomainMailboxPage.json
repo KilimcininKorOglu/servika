@@ -14,6 +14,7 @@
     "general": "Genel",
     "autoresponder": "Otomatik Yanıt",
     "forwarding": "İletim",
+    "migration": "Taşıma",
     "transfer": "İçe ve Dışa Aktarma"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "İçe aktarılıyor...",
     "imported": "{{folders}} klasöre {{messages}} ileti aktarıldı."
   },
+  "migration": {
+    "title": "Başka bir sunucudan posta getir",
+    "description": "Var olan bir IMAP posta kutusundaki tüm klasör ve iletileri buraya kopyalar. Diğer sunucuda hiçbir şey değiştirilmez veya silinmez.",
+    "stepFind": "1. Sunucuyu bul",
+    "stepVerify": "2. Girişi denetle",
+    "stepStart": "3. Kopyalamayı başlat",
+    "search": "Ara",
+    "searching": "Aranıyor...",
+    "answers": "Yanıt veriyor",
+    "use": "Bunu kullan",
+    "host": "Sunucu",
+    "port": "Port",
+    "password": "Diğer sunucudaki parola",
+    "passwordHint": "Parola yalnızca bu tek giriş için kullanılır ve hiçbir yerde saklanmaz. Bu sayfayı kapattığınızda kaybolur.",
+    "verify": "Girişi denetle",
+    "verifying": "Denetleniyor...",
+    "verified": "Giriş kabul edildi.",
+    "startHint": "Kopyalama arka planda çalışır. Bu sayfadan ayrılabilirsiniz; geri döndüğünüzde ilerleme burada olur.",
+    "start": "Kopyalamayı başlat",
+    "starting": "Başlatılıyor...",
+    "cancel": "Kopyalamayı durdur",
+    "confirmCancel": "Kopyalanmış iletiler bu posta kutusunda kalır, kalanlar kopyalanmaz. Şimdi durdurulsun mu?",
+    "jobTitle": "Kopyalama sürüyor",
+    "progress": "{{total}} iletiden {{messages}} tanesi, {{folderTotal}} klasörden {{folders}} tanesi",
+    "status": {
+      "queued": "Başlaması bekleniyor",
+      "running": "Kopyalanıyor",
+      "done": "Tamamlandı",
+      "failed": "Başarısız",
+      "cancelled": "Durduruldu"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Şifreleme yok"
+    },
+    "source": {
+      "autoconfig": "sağlayıcının kendi ayarlarından",
+      "ispdb": "genel ayar veritabanından",
+      "srv": "bir DNS hizmet kaydından",
+      "mx": "posta sunucusu kaydından",
+      "guess": "yaygın bir ad"
+    }
+  },
+  "reasons": {
+    "unreachable": "Sunucu yanıt vermedi.",
+    "tlsFailed": "Sunucunun sertifikası denetlenemedi, bu yüzden parola gönderilmedi.",
+    "blockedHost": "Bu adres bu sunucunun kendi ağında yer alıyor ve kaynak olarak kullanılamaz.",
+    "badSecurity": "Sunucu, seçilen şifrelemeyi o portta sunmuyor.",
+    "authFailed": "Sunucu kullanıcı adını veya parolayı reddetti.",
+    "basicAuthDisabled": "Bu sağlayıcı IMAP için parolayı artık hiç kabul etmiyor, dolayısıyla posta kutusu bu yolla kopyalanamaz.",
+    "appPasswordRequired": "Bu sağlayıcı, olağan hesap parolasını değil, kendi ayarlarında oluşturulan bir uygulama parolasını gerektirir.",
+    "timedOut": "Kopyalama izin verilenden uzun sürdü ve durduruldu.",
+    "interrupted": "Kopyalama sürerken panel yeniden başlatıldı.",
+    "alreadyRunning": "Bu posta kutusu için zaten bir kopyalama sürüyor.",
+    "unknown": "Sunucunun bildirdiği: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "Sunucu araması başarısız oldu",
+    "verifyFailed": "Giriş denetlenemedi",
+    "startFailed": "Kopyalama başlatılamadı",
+    "cancelFailed": "Kopyalama durdurulamadı",
     "loadFailed": "Posta kutusu yüklenemedi",
     "recalculateFailed": "Posta kutusu ölçülemedi",
     "saveAutoresponderFailed": "Otomatik yanıt kaydedilemedi",

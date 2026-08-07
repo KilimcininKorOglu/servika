@@ -14,6 +14,7 @@
     "general": "Generale",
     "autoresponder": "Risposta automatica",
     "forwarding": "Inoltro",
+    "migration": "Migrazione",
     "transfer": "Importazione ed esportazione"
   },
   "quota": {
@@ -66,7 +67,68 @@
     "importing": "Importazione in corso...",
     "imported": "{{messages}} messaggi sono stati importati in {{folders}} cartelle."
   },
+  "migration": {
+    "title": "Porta la posta da un altro server",
+    "description": "Copia qui tutte le cartelle e i messaggi di una casella IMAP esistente. Sull'altro server non viene modificato né eliminato nulla.",
+    "stepFind": "1. Trova il server",
+    "stepVerify": "2. Verifica l'accesso",
+    "stepStart": "3. Avvia la copia",
+    "search": "Cerca",
+    "searching": "Ricerca in corso...",
+    "answers": "Risponde",
+    "use": "Usa questo",
+    "host": "Server",
+    "port": "Porta",
+    "password": "Password sull'altro server",
+    "passwordHint": "La password serve solo per questo accesso e non viene mai conservata. Chiudendo la pagina sparisce.",
+    "verify": "Verifica l'accesso",
+    "verifying": "Verifica in corso...",
+    "verified": "L'accesso è stato accettato.",
+    "startHint": "La copia procede in secondo piano. Puoi lasciare questa pagina; al ritorno troverai qui lo stato.",
+    "start": "Avvia la copia",
+    "starting": "Avvio in corso...",
+    "cancel": "Ferma la copia",
+    "confirmCancel": "I messaggi già copiati restano in questa casella, il resto non verrà copiato. Fermare adesso?",
+    "jobTitle": "Copia in corso",
+    "progress": "{{messages}} messaggi su {{total}}, {{folders}} cartelle su {{folderTotal}}",
+    "status": {
+      "queued": "In attesa di iniziare",
+      "running": "In copia",
+      "done": "Completata",
+      "failed": "Non riuscita",
+      "cancelled": "Fermata"
+    },
+    "security": {
+      "ssl": "SSL/TLS",
+      "starttls": "STARTTLS",
+      "plain": "Nessuna cifratura"
+    },
+    "source": {
+      "autoconfig": "dalle impostazioni del fornitore",
+      "ispdb": "dalla banca dati pubblica delle impostazioni",
+      "srv": "da un record di servizio DNS",
+      "mx": "dal server di posta",
+      "guess": "un nome comune"
+    }
+  },
+  "reasons": {
+    "unreachable": "Il server non ha risposto.",
+    "tlsFailed": "Non è stato possibile verificare il certificato del server, quindi la password non è stata inviata.",
+    "blockedHost": "Quell'indirizzo appartiene alla rete di questo server e non può essere usato come origine.",
+    "badSecurity": "Il server non offre la cifratura scelta su quella porta.",
+    "authFailed": "Il server ha rifiutato il nome utente o la password.",
+    "basicAuthDisabled": "Questo fornitore non accetta più alcuna password per IMAP, quindi la casella non può essere copiata in questo modo.",
+    "appPasswordRequired": "Questo fornitore richiede una password per app creata nelle sue impostazioni, non la normale password dell'account.",
+    "timedOut": "La copia è durata più del consentito ed è stata interrotta.",
+    "interrupted": "Il pannello è stato riavviato durante la copia.",
+    "alreadyRunning": "Per questa casella è già in corso una copia.",
+    "unknown": "Il server ha segnalato: {{code}}"
+  },
   "errors": {
+    "discoverFailed": "La ricerca del server non è riuscita",
+    "verifyFailed": "Non è stato possibile verificare l'accesso",
+    "startFailed": "Non è stato possibile avviare la copia",
+    "cancelFailed": "Non è stato possibile fermare la copia",
     "loadFailed": "Non è stato possibile caricare la casella di posta",
     "recalculateFailed": "Non è stato possibile misurare la casella di posta",
     "saveAutoresponderFailed": "Non è stato possibile salvare la risposta automatica",
