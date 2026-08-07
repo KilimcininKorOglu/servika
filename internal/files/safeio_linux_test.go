@@ -253,3 +253,71 @@ func TestRemoveAllBeneathUnlinksALeafSymlinkWithoutFollowingIt(t *testing.T) {
 		t.Errorf("the target of the symlink was deleted: %v", err)
 	}
 }
+
+// A new file has to be written, or the refusals below would be indistinguishable
+// from a helper that never writes anything at all.
+func TestStreamIntoBeneathWritesANewFile(t *testing.T) {
+	home := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(home, docrootRel), 0o755); err != nil {
+		t.Fatalf("create the docroot: %v", err)
+	}
+
+	const body = "the message body"
+	n, err := StreamIntoBeneath(home, docrootRel+"/new.txt", strings.NewReader(body), "")
+	if err != nil {
+		t.Fatalf("StreamIntoBeneath: %v", err)
+	}
+	if n != int64(len(body)) {
+		t.Errorf("wrote %d bytes, want %d", n, len(body))
+	}
+	got, err := os.ReadFile(filepath.Join(home, docrootRel, "new.txt"))
+	if err != nil {
+		t.Fatalf("read back: %v", err)
+	}
+	if string(got) != body {
+		t.Errorf("contents = %q, want %q", got, body)
+	}
+}
+
+// The refusal an import depends on: a destination that already exists is never
+// opened for writing, so an upload cannot replace a file that is already there.
+func TestStreamIntoBeneathRefusesAnExistingFile(t *testing.T) {
+	home := t.TempDir()
+	writeUnder(t, home, docrootRel+"/kept.txt", "real mail")
+
+	if _, err := StreamIntoBeneath(home, docrootRel+"/kept.txt",
+		strings.NewReader("replacement"), ""); err == nil {
+		t.Fatal("an existing file was written through")
+	}
+	got, err := os.ReadFile(filepath.Join(home, docrootRel, "kept.txt"))
+	if err != nil {
+		t.Fatalf("read back: %v", err)
+	}
+	if string(got) != "real mail" {
+		t.Errorf("the existing file was altered: %q", got)
+	}
+}
+
+// A hard link is not a symlink, so RESOLVE_NO_SYMLINKS does not refuse it. The
+// O_EXCL create is what stops it: the link is an existing name, so nothing is
+// opened and the file it points at keeps its contents.
+func TestStreamIntoBeneathWillNotWriteThroughAHardLink(t *testing.T) {
+	home := t.TempDir()
+	target := writeUnder(t, home, docrootRel+"/target.txt", "must survive")
+	link := filepath.Join(home, docrootRel, "planted.txt")
+	if err := os.Link(target, link); err != nil {
+		t.Skipf("hard links are unavailable here: %v", err)
+	}
+
+	if _, err := StreamIntoBeneath(home, docrootRel+"/planted.txt",
+		strings.NewReader("overwritten"), ""); err == nil {
+		t.Fatal("a hard link was written through")
+	}
+	got, err := os.ReadFile(target)
+	if err != nil {
+		t.Fatalf("read the link target: %v", err)
+	}
+	if string(got) != "must survive" {
+		t.Errorf("the link target was altered: %q", got)
+	}
+}

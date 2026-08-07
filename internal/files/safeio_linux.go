@@ -435,6 +435,35 @@ func copyStreamBeneath(home, rel string, src io.Reader, sk string) (n int64, err
 	return n, nil
 }
 
+// streamIntoExclBeneath creates a NEW file and streams src into that same
+// descriptor. Returns unix.EEXIST if the file already exists.
+//
+// Creating the file and then reopening it to write leaves a window between two
+// syscalls. RESOLVE_NO_SYMLINKS refuses a symlink planted there, but a HARD link
+// is not a symlink: the reopen would follow it and its O_TRUNC would empty
+// whatever it points at. Doing both through one descriptor removes the window,
+// and O_EXCL still means an existing file is refused rather than overwritten,
+// which is what stops an import from replacing mail that is already there.
+func streamIntoExclBeneath(home, rel string, src io.Reader, sk string) (n int64, err error) {
+	f, err := openAt2Beneath(home, rel, unix.O_WRONLY|unix.O_CREAT|unix.O_EXCL, 0644)
+	if err != nil {
+		return 0, err
+	}
+	// Write path: a Close error signals a failed flush (e.g. ENOSPC) — surface it
+	// instead of reporting a successful write for data that never reached disk.
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+	n, err = io.Copy(f, src)
+	if err != nil {
+		return n, err
+	}
+	fchownRestoreFd(home, f, sk)
+	return n, nil
+}
+
 // mkdirAllBeneath is a symlink-safe `mkdir -p`. Each component is created via
 // Mkdirat + O_NOFOLLOW openat; any symlink component is REJECTED by O_NOFOLLOW.
 // Newly created directories are chowned to the tenant when sk != "".
@@ -789,10 +818,7 @@ func WriteFileBeneath(home, rel string, data []byte, mode uint32, systemUser str
 // exists, so a caller staging an upload cannot be tricked into appending to
 // something the tenant put there first.
 func StreamIntoBeneath(home, rel string, src io.Reader, systemUser string) (int64, error) {
-	if err := createExclBeneath(home, rel, systemUser); err != nil {
-		return 0, err
-	}
-	return copyStreamBeneath(home, rel, src, systemUser)
+	return streamIntoExclBeneath(home, rel, src, systemUser)
 }
 
 // ListNamesBeneath returns the entry names directly under rel beneath home.
