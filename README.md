@@ -23,9 +23,10 @@ Installation takes about 15 to 20 minutes while packages download. When finished
 | Component       | Details                                                                                                     |
 |-----------------|-------------------------------------------------------------------------------------------------------------|
 | **Web**         | nginx (panel on :8443, customer sites on :80/:443)                                                          |
-| **PHP**         | 7.4 / 8.0 / 8.1 / 8.2 / 8.3 / 8.4 / 8.5 / 8.6 (Remi), per-domain version selection and FPM pool             |
-| **Database**    | MariaDB 10.11 (`panel` DB) with phpMyAdmin at `/pma/`                                                       |
+| **PHP**         | 7.4 / 8.0 / 8.1 / 8.2 / 8.4 / 8.5 / 8.6 (Remi) and 8.3 (AppStream or Remi), per-domain version selection and FPM pool |
+| **Database**    | MariaDB from the AlmaLinux 10 AppStream (`panel` DB) with phpMyAdmin at `/pma/`                              |
 | **Cache**       | Valkey (Redis 7.x compatible), isolated per-tenant object cache with automatic WordPress integration        |
+| **Mail**        | Optional, installed on demand by `servika-mail-setup`: Postfix + Dovecot with MySQL-backed virtual mailboxes, Sieve, OpenDKIM, Rspamd filtering, and Roundcube webmail |
 | **Security**    | nftables firewall, ModSecurity v3 + OWASP CRS WAF, SELinux enforcing support, ClamAV malware scanning       |
 | **Performance** | Automatic MariaDB, nginx, and OPcache tuning (`servika-optimize`), XFS user quota with per-plan disk limits |
 
@@ -42,6 +43,9 @@ Installation takes about 15 to 20 minutes while packages download. When finished
 - **Firewall** (nftables) with IP bans, allowlists, port blocking, and ready-made templates
 - **WAF** (ModSecurity + OWASP CRS) per-domain or plan-default, with Detection and Blocking modes
 - **Password-protected directories** via htpasswd with nginx integration
+- **Mail** per domain: mailboxes, aliases and catch-all forwarders, per-mailbox forwarding with a keep-a-copy choice, auto-reply, Sieve filters, send limits, spam thresholds, delivery log, and Roundcube webmail with one-click sign-on
+- **Mailbox migration and transfer**: live IMAP copy in from another provider with server discovery and a sign-in check before any copying starts, plus per-mailbox export and Maildir/mbox/`.pst` import
+- **Mail auto-configuration** so Thunderbird and Outlook configure an account from the address alone, served over the domain's own certificate
 - Backup manager with local retention, remote SFTP/FTP destinations, scheduling, and point-in-time restore
 - Service plans with resource limits (CPU, RAM, disk, I/O, inodes, MariaDB governor, process caps)
 - **Monitoring**, **statistics** (nginx traffic analysis), **system logs**, and **load history** charts
@@ -65,6 +69,7 @@ servika-optimize            # Retune MariaDB, nginx, and PHP-FPM for available s
 servika-redis-setup         # Install or repair the Valkey (Redis) infrastructure
 servika-wp-redis <domain>   # Connect or disconnect Redis cache for a domain's WordPress installations
 servika-ftp-setup           # Install or repair the Pure-FTPd MySQL backend
+servika-mail-setup          # Install or repair the mail stack: Postfix, Dovecot, OpenDKIM, Rspamd, Roundcube
 servika-jail <user>         # Create a per-user chroot SSH jail with sshd Match group isolation
 servika-repair              # Repair permissions, SELinux contexts, and ownership idempotently
 servika-restore             # Restore core panel files from the canonical release with integrity verification
@@ -170,6 +175,7 @@ The installer writes every persistent production setting it owns into `/etc/serv
 | `SERVIKA_REMI_PECL_ROOT` | `/opt/remi`               | Root used to resolve Remi per-version PECL binaries.             |
 | `SERVIKA_ACME_HOME`      | `/root/.acme.sh`          | acme.sh home directory used for certificate storage and renewal. |
 | `SERVIKA_ACME_BIN`       | `/root/.acme.sh/acme.sh`  | acme.sh binary used for certificate issuance and installation.   |
+| `SERVIKA_READPST_BIN`    | `/usr/bin/readpst`        | libpst converter used for `.pst` mailbox import. When it is absent the panel reports `.pst` as an unsupported format instead of failing an upload. |
 
 ### Application path variables
 
@@ -194,6 +200,9 @@ The installer writes every persistent production setting it owns into `/etc/serv
 | `SERVIKA_NGINX_CACHE_CONF`      | `/etc/nginx/conf.d/servikacache.conf`              | nginx FastCGI cache zone config path.                   |
 | `SERVIKA_NGINX_CACHE_TEMP_CONF` | `/etc/nginx/conf.d/00-servikacache-temporary.conf` | Temporary nginx cache bypass config path.               |
 | `SERVIKA_NGINX_CACHE_LOG_CONF`  | `/etc/nginx/conf.d/00-servika-cache-log.conf`      | nginx cache log format config path.                     |
+| `SERVIKA_MAIL_LOG`              | `/var/log/maillog`                                 | Postfix and Dovecot log file read by the delivery log.  |
+| `SERVIKA_ROUNDCUBE_CONFIG`      | `/opt/roundcube/config/config.inc.php`             | Roundcube webmail config file path.                     |
+| `SERVIKA_ROUNDCUBE_PLUGINS`     | `/opt/roundcube/plugins`                           | Roundcube plugin directory, used by the sign-on bridge. |
 
 ### External URL variables
 
@@ -203,6 +212,7 @@ The installer writes every persistent production setting it owns into `/etc/serv
 | `SERVIKA_IONCUBE_URL`          | ionCube Linux x86-64 loader archive URL | ionCube loader download URL.                                               |
 | `SERVIKA_UPDATE_BOOTSTRAP_URL` | public `servika-update` raw URL         | Update tool bootstrap URL used when the panel has to download the updater. |
 | `SERVIKA_VERSION_ENDPOINT`     | public version manifest URL             | Version manifest endpoint used by the update checker.                      |
+| `SERVIKA_DNS_VERIFY_RESOLVER`  | `1.1.1.1:53`                            | Recursive resolver used by the DNS verification screen. It is deliberately not the system resolver: this host runs an authoritative BIND for the domains it serves, so `/etc/resolv.conf` would answer from the local zone and hide the very mismatch the screen exists to find. |
 
 Disable external version checks:
 
@@ -331,7 +341,7 @@ VITE_API_PROXY=http://localhost:8080 npm run dev
 
 ```
 cmd/server/       Go entry point (main); central chi router and startup sequence
-internal/         Backend packages (domains, wordpress, dns, redis, firewall, files, provisioner, ...)
+internal/         Backend packages (domains, wordpress, dns, mail, redis, firewall, files, provisioner, ...)
 frontend/src/     React interface (pages/, components/, lib/, store/)
 migrations/       Numbered SQL schema migrations applied at startup
 scripts/          Build-time tools only (build-assets.sh, seed_admin.go)
