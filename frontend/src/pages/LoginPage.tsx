@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 type LoginResponse = {
   // No token here: it is delivered via the HttpOnly servika_session cookie.
@@ -89,7 +90,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50 dark:from-slate-950 dark:to-slate-900 px-4">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50 dark:from-slate-950 dark:to-slate-900 px-4">
+      {/* The panel opens in whatever the admin set as the server default, and
+          before signing in there is no account preference to override it. Without
+          a switcher here, someone whose language is not that default has to read
+          the sign-in form in a language they may not know in order to reach the
+          one inside. */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <div className="w-12 h-12 rounded-2xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-600/30">

@@ -2,14 +2,21 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 import { useReportError } from '@/lib/errors'
 import { getLang, setLang, LANGS, LANG_NAMES, type Lang } from '@/lib/i18n'
+import { useAuth } from '@/store/auth'
 
 // Language dropdown. Mirrors the TopBar theme button: local state stays in sync
 // via the servika:lang-change event so every mounted switcher agrees. On change it
 // applies the language (cookie + i18next via setLang) and persists it to the
 // user's pref_lang through PUT /me/language (open to all roles). The DB write is
 // best-effort — the cookie already makes the choice durable in the browser.
+//
+// It also mounts on the two sign-in screens, where there is no account to write
+// a preference to. The write is skipped there rather than sent and allowed to
+// fail: /me/language answers 401 without a session, and firing a request whose
+// only possible outcome is a rejection is not a fallback, it is noise.
 export default function LanguageSwitcher() {
   const report = useReportError()
+  const signedIn = useAuth((s) => s.username !== null)
   const [lang, setLangState] = useState<Lang>(getLang())
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -36,7 +43,7 @@ export default function LanguageSwitcher() {
     if (next === lang) return
     setLang(next)
     setLangState(next)
-    api.put('/me/language', { pref_lang: next }).catch(report('languagePreference'))
+    if (signedIn) api.put('/me/language', { pref_lang: next }).catch(report('languagePreference'))
   }
 
   // Short code shown on the button: the base subtag, uppercased (EN, PT, ZH).

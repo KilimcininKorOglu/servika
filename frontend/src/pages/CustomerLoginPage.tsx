@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { apiError as apiError } from '@/lib/api'
 import { useAuth } from '@/store/auth'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 import axios from 'axios'
 
 export default function CustomerLoginPage() {
@@ -32,7 +33,13 @@ export default function CustomerLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-brand-50 px-4">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-brand-50 px-4">
+      {/* Same reason as the panel sign-in: this is the last screen before any
+          account preference exists, so it is the only place the visitor can pick
+          a language they can read. */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-7">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-2xl mb-3">🌐</div>
