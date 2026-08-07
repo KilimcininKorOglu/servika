@@ -429,6 +429,11 @@ func main() {
 			r.With(middleware.AdminOnly).Get("/system/update/log", system.UpdateLog)
 			r.With(middleware.ResellerOrAbove).Get("/system/version-check", system.VersionCheckStatus)
 			r.With(middleware.AdminOnly).Post("/system/version-check/refresh", system.VersionCheckRefresh)
+			// Deliberately without a role: the footer names the panel version to
+			// every signed-in account, customers included. It carries only this
+			// installation's own version and build date, never the update or
+			// announcement data /system/version-check holds.
+			r.Get("/system/version", system.VersionInfo)
 			r.With(middleware.ResellerOrAbove).Get("/system/optimize", system.OptimizeStatus)
 			r.With(middleware.AdminOnly).Post("/system/optimize/start", system.OptimizeStart)
 			r.With(middleware.AdminOnly).Get("/system/optimize/log", system.OptimizeLog)

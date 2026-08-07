@@ -399,3 +399,54 @@ func TestVersionCheckStatusHidesAnUpdateThatPointsBackwards(t *testing.T) {
 		t.Error("critical is set for an update that does not exist, which paints the notice red")
 	}
 }
+
+// The footer names the panel to every signed-in account, so this endpoint has no
+// role guard. That is only safe because of what it leaves out: the update state
+// and the announcement stay behind ResellerOrAbove on /system/version-check.
+// Both halves are asserted, because carrying the version is useless if it also
+// carries the manifest, and refusing the manifest is useless if it refuses the
+// version too.
+func TestVersionInfoCarriesTheVersionAndNothingFromTheManifest(t *testing.T) {
+	versionMu.Lock()
+	previousManifest, previousCurrent := versionManifest, versionCurrent
+	previousBuild, previousEnabled := versionBuildDate, versionEnabled
+	versionManifest = VersionManifest{
+		Latest:       "9.9.9",
+		Critical:     true,
+		ReleaseDate:  "2026-01-01",
+		Announcement: map[string]string{"en": "an operator-facing announcement"},
+	}
+	versionCurrent, versionBuildDate, versionEnabled = "9.9.8", "2026-01-02", true
+	versionMu.Unlock()
+	t.Cleanup(func() {
+		versionMu.Lock()
+		versionManifest, versionCurrent = previousManifest, previousCurrent
+		versionBuildDate, versionEnabled = previousBuild, previousEnabled
+		versionMu.Unlock()
+	})
+
+	recorder := httptest.NewRecorder()
+	VersionInfo(recorder, httptest.NewRequest(http.MethodGet, "/system/version", nil))
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", recorder.Code)
+	}
+
+	var payload map[string]any
+	if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode the response: %v", err)
+	}
+	if payload["current"] != "9.9.8" || payload["build_date"] != "2026-01-02" {
+		t.Errorf("payload = %v, want this installation's version and build date", payload)
+	}
+	// The whole reason the endpoint is separate: an update notice and its text
+	// are the operator's business, not every customer's.
+	for _, leaked := range []string{"latest", "update_available", "announcement", "critical", "release_date", "error", "enabled", "last_check"} {
+		if _, present := payload[leaked]; present {
+			t.Errorf("the open endpoint carries %q, which belongs to /system/version-check", leaked)
+		}
+	}
+	// The announcement text must not reach the body under any key at all.
+	if strings.Contains(recorder.Body.String(), "operator-facing") {
+		t.Error("the announcement text reached the open endpoint")
+	}
+}

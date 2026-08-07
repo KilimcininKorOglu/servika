@@ -351,6 +351,29 @@ func parseReleaseVersion(value string) ([3]int, bool) {
 	return parts, true
 }
 
+// VersionInfo reports which panel this is, and nothing else.
+//
+// It exists so the footer can name the version to EVERY signed-in account.
+// VersionCheckStatus is ResellerOrAbove, so a customer only ever received a 403
+// there and the footer showed a product name with no version after it.
+//
+// Relaxing that guard instead would have been the wrong fix. Its response
+// carries latest, update_available, announcement, critical and release_date,
+// all of it read from an external manifest and all of it the operator's
+// business: opening it would tell every customer that their host is running an
+// out-of-date panel and what the newer one changed. This endpoint deliberately
+// carries neither, so widening the audience widens nothing else with it.
+func VersionInfo(w http.ResponseWriter, _ *http.Request) {
+	versionMu.RLock()
+	current, buildDate := versionCurrent, versionBuildDate
+	versionMu.RUnlock()
+
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"current":    current,
+		"build_date": buildDate,
+	})
+}
+
 // VersionCheckStatus returns the current version check state. The optional lang
 // parameter carries the language the panel is displaying, which selects the
 // announcement translation; the response itself always holds a single string.

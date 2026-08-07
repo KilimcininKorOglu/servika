@@ -216,18 +216,19 @@ export default function DashboardLayout() {
   const [footer, setFooter] = useState<VersionFooter | null>(null)
   const location = useLocation()
 
-  // The endpoint is ResellerOrAbove, so a customer session only ever received a
-  // 403 that the catch discarded, leaving the footer empty either way. Asking the
-  // role first drops a request that could never have succeeded.
+  // /system/version rather than /system/version-check: the latter is
+  // ResellerOrAbove, so a customer only ever received a 403 and the footer named
+  // the panel with no version after it. The open endpoint answers every signed-in
+  // account and carries only this installation's version and build date, never
+  // the update state or the announcement, which stay behind the guarded one.
   useEffect(() => {
-    if (role !== 'admin' && role !== 'reseller') return
-    api.get<VersionFooter>('/system/version-check')
+    api.get<VersionFooter>('/system/version')
       .then((response) => setFooter(response.data))
       // Silent on purpose: the footer version string is decorative. HomePage
-      // reports the same endpoint, where its failure actually costs the user
+      // reports the guarded endpoint, where a failure actually costs the user
       // the update notice.
       .catch(() => {})
-  }, [role])
+  }, [])
 
   // Keyed by the stable NavGroup.titleKey so collapse state survives a language
   // switch (the visible label changes, the key does not).
