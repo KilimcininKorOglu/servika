@@ -24,5 +24,10 @@
   "search": "Suchen...",
   "processing": "Wird verarbeitet…",
   "breadcrumb": "Brotkrümelnavigation",
-  "goBack": "Zurückgehen"
+  "goBack": "Zurückgehen",
+  "ok": "OK",
+  "error": "Fehler",
+  "notice": "Hinweis",
+  "areYouSure": "Sind Sie sicher?",
+  "enterValue": "Wert eingeben"
 }

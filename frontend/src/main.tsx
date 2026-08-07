@@ -6,6 +6,7 @@ import './styles.css'
 import { bootTheme } from '@/lib/theme'
 import '@/lib/i18n'
 import { bootLang, applyServerDefaultLang } from '@/lib/i18n'
+import DialogProvider from '@/components/DialogProvider'
 
 bootTheme()
 bootLang()
@@ -16,7 +17,11 @@ applyServerDefaultLang()
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      {/* Outside App so every route, including the pre-login screens, can ask
+          for a themed confirm/prompt/notice instead of a browser box. */}
+      <DialogProvider>
+        <App />
+      </DialogProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )

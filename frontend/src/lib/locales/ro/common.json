@@ -24,5 +24,10 @@
   "search": "Căutare...",
   "processing": "Se procesează…",
   "breadcrumb": "Fir de navigare",
-  "goBack": "Înapoi"
+  "goBack": "Înapoi",
+  "ok": "OK",
+  "error": "Eroare",
+  "notice": "Notificare",
+  "areYouSure": "Sigur doriți?",
+  "enterValue": "Introduceți o valoare"
 }

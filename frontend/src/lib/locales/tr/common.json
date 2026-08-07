@@ -24,5 +24,10 @@
   "search": "Ara...",
   "processing": "İşleniyor…",
   "breadcrumb": "Gezinti",
-  "goBack": "Geri dön"
+  "goBack": "Geri dön",
+  "ok": "Tamam",
+  "error": "Hata",
+  "notice": "Bildirim",
+  "areYouSure": "Emin misiniz?",
+  "enterValue": "Bir değer girin"
 }

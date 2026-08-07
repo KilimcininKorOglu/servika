@@ -24,5 +24,10 @@
   "search": "Hledat...",
   "processing": "Zpracování…",
   "breadcrumb": "Drobečková navigace",
-  "goBack": "Přejít zpět"
+  "goBack": "Přejít zpět",
+  "ok": "OK",
+  "error": "Chyba",
+  "notice": "Upozornění",
+  "areYouSure": "Jste si jisti?",
+  "enterValue": "Zadejte hodnotu"
 }

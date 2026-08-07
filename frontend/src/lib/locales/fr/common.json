@@ -24,5 +24,10 @@
   "search": "Rechercher…",
   "processing": "Traitement…",
   "breadcrumb": "Fil d'Ariane",
-  "goBack": "Retour"
+  "goBack": "Retour",
+  "ok": "OK",
+  "error": "Erreur",
+  "notice": "Avis",
+  "areYouSure": "Êtes-vous sûr ?",
+  "enterValue": "Saisir une valeur"
 }

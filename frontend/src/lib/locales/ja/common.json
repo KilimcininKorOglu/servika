@@ -24,5 +24,10 @@
   "search": "検索...",
   "processing": "処理中…",
   "breadcrumb": "パンくずリスト",
-  "goBack": "戻る"
+  "goBack": "戻る",
+  "ok": "OK",
+  "error": "エラー",
+  "notice": "お知らせ",
+  "areYouSure": "よろしいですか？",
+  "enterValue": "値を入力してください"
 }

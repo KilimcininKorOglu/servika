@@ -24,5 +24,10 @@
   "search": "Search...",
   "processing": "Processing…",
   "breadcrumb": "Breadcrumb",
-  "goBack": "Go back"
+  "goBack": "Go back",
+  "ok": "OK",
+  "error": "Error",
+  "notice": "Notice",
+  "areYouSure": "Are you sure?",
+  "enterValue": "Enter a value"
 }

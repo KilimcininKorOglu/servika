@@ -24,5 +24,10 @@
   "search": "Pesquisar...",
   "processing": "Processando…",
   "breadcrumb": "Navegação estrutural",
-  "goBack": "Voltar"
+  "goBack": "Voltar",
+  "ok": "OK",
+  "error": "Erro",
+  "notice": "Aviso",
+  "areYouSure": "Tem certeza?",
+  "enterValue": "Digite um valor"
 }

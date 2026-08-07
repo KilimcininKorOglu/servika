@@ -24,5 +24,10 @@
   "search": "搜索...",
   "processing": "处理中…",
   "breadcrumb": "面包屑导航",
-  "goBack": "返回"
+  "goBack": "返回",
+  "ok": "确定",
+  "error": "错误",
+  "notice": "提示",
+  "areYouSure": "确定吗？",
+  "enterValue": "请输入值"
 }
