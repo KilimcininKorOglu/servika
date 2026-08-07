@@ -7,10 +7,33 @@
     "database": "Banco de dados",
     "user": "Usuário",
     "size": "Tamanho",
-    "created": "Criado em"
+    "created": "Criado em",
+    "password": "Senha",
+    "actions": "Ações"
   },
   "summary": {
     "databases": "Bancos de dados",
     "totalSize": "Tamanho total"
+  },
+  "password": {
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "copy": "Copiar",
+    "unreadable": "Ilegível"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Abrir phpMyAdmin em uma nova guia",
+    "resetPassword": "🔑 Redefinir senha",
+    "delete": "Excluir"
+  },
+  "errors": {
+    "pmaToken": "Não foi possível obter o token do phpMyAdmin",
+    "deleteFailed": "Falha ao excluir"
+  },
+  "delete": {
+    "title": "Excluir banco de dados",
+    "message": "O banco de dados \"{{name}}\" e seu usuário serão excluídos permanentemente. Esta ação não pode ser desfeita.",
+    "confirm": "Sim, excluir"
   }
 }

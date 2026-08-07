@@ -7,10 +7,33 @@
     "database": "Base de Dados",
     "user": "Utilizador",
     "size": "Tamanho",
-    "created": "Criado"
+    "created": "Criado",
+    "password": "Palavra-passe",
+    "actions": "Ações"
   },
   "summary": {
     "databases": "Bases de dados",
     "totalSize": "Tamanho total"
+  },
+  "password": {
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "copy": "Copiar",
+    "unreadable": "Ilegível"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Abrir phpMyAdmin num novo separador",
+    "resetPassword": "🔑 Redefinir Palavra-passe",
+    "delete": "Eliminar"
+  },
+  "errors": {
+    "pmaToken": "Não foi possível obter o token phpMyAdmin",
+    "deleteFailed": "Falha na eliminação"
+  },
+  "delete": {
+    "title": "Eliminar base de dados",
+    "message": "A base de dados \"{{name}}\" e o seu utilizador serão eliminados permanentemente. Esta ação não pode ser desfeita.",
+    "confirm": "Sim, eliminar"
   }
 }

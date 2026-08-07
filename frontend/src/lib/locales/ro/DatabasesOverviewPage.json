@@ -7,10 +7,33 @@
     "database": "Bază de date",
     "user": "Utilizator",
     "size": "Dimensiune",
-    "created": "Creată"
+    "created": "Creată",
+    "password": "Parolă",
+    "actions": "Acțiuni"
   },
   "summary": {
     "databases": "Baze de date",
     "totalSize": "Dimensiune totală"
+  },
+  "password": {
+    "show": "Afișare",
+    "hide": "Ascundere",
+    "copy": "Copiere",
+    "unreadable": "Ilizibil"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Deschideți phpMyAdmin într-o filă nouă",
+    "resetPassword": "🔑 Resetare parolă",
+    "delete": "Ștergere"
+  },
+  "errors": {
+    "pmaToken": "Nu s-a putut obține tokenul phpMyAdmin",
+    "deleteFailed": "Ștergerea a eșuat"
+  },
+  "delete": {
+    "title": "Ștergere bază de date",
+    "message": "Baza de date „{{name}}” și utilizatorul acesteia vor fi șterse permanent. Această acțiune nu poate fi anulată.",
+    "confirm": "Da, ștergeți"
   }
 }

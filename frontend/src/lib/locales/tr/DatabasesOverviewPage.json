@@ -7,10 +7,33 @@
     "database": "Veritabanı",
     "user": "Kullanıcı",
     "size": "Boyut",
-    "created": "Oluşturulma"
+    "created": "Oluşturulma",
+    "password": "Parola",
+    "actions": "İşlemler"
   },
   "summary": {
     "databases": "Veritabanları",
     "totalSize": "Toplam boyut"
+  },
+  "password": {
+    "show": "Göster",
+    "hide": "Gizle",
+    "copy": "Kopyala",
+    "unreadable": "Okunamıyor"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "phpMyAdmin'i yeni sekmede aç",
+    "resetPassword": "🔑 Parola Sıfırla",
+    "delete": "Sil"
+  },
+  "errors": {
+    "pmaToken": "phpMyAdmin belirteci alınamadı",
+    "deleteFailed": "Silme başarısız oldu"
+  },
+  "delete": {
+    "title": "Veritabanını sil",
+    "message": "\"{{name}}\" veritabanı ve kullanıcısı kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+    "confirm": "Evet, sil"
   }
 }

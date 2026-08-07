@@ -7,10 +7,33 @@
     "database": "数据库",
     "user": "用户",
     "size": "大小",
-    "created": "创建时间"
+    "created": "创建时间",
+    "password": "密码",
+    "actions": "操作"
   },
   "summary": {
     "databases": "数据库",
     "totalSize": "总大小"
+  },
+  "password": {
+    "show": "显示",
+    "hide": "隐藏",
+    "copy": "复制",
+    "unreadable": "无法读取"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "在新标签页中打开 phpMyAdmin",
+    "resetPassword": "🔑 重置密码",
+    "delete": "删除"
+  },
+  "errors": {
+    "pmaToken": "无法获取 phpMyAdmin 令牌",
+    "deleteFailed": "删除失败"
+  },
+  "delete": {
+    "title": "删除数据库",
+    "message": "数据库“{{name}}”及其用户将被永久删除。此操作无法撤销。",
+    "confirm": "是，删除"
   }
 }

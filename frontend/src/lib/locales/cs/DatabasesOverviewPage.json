@@ -7,10 +7,33 @@
     "database": "Databáze",
     "user": "Uživatel",
     "size": "Velikost",
-    "created": "Vytvořeno"
+    "created": "Vytvořeno",
+    "password": "Heslo",
+    "actions": "Akce"
   },
   "summary": {
     "databases": "Databáze",
     "totalSize": "Celková velikost"
+  },
+  "password": {
+    "show": "Zobrazit",
+    "hide": "Skrýt",
+    "copy": "Kopírovat",
+    "unreadable": "Nečitelné"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Otevřít phpMyAdmin v nové kartě",
+    "resetPassword": "🔑 Obnovit heslo",
+    "delete": "Smazat"
+  },
+  "errors": {
+    "pmaToken": "Token phpMyAdmin nelze získat",
+    "deleteFailed": "Smazání se nezdařilo"
+  },
+  "delete": {
+    "title": "Smazat databázi",
+    "message": "Databáze „{{name}}“ a její uživatel budou trvale smazáni. Tuto akci nelze vrátit zpět.",
+    "confirm": "Ano, smazat"
   }
 }

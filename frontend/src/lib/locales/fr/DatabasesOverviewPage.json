@@ -7,10 +7,33 @@
     "database": "Base de données",
     "user": "Utilisateur",
     "size": "Taille",
-    "created": "Créé le"
+    "created": "Créé le",
+    "password": "Mot de passe",
+    "actions": "Actions"
   },
   "summary": {
     "databases": "Bases de données",
     "totalSize": "Taille totale"
+  },
+  "password": {
+    "show": "Afficher",
+    "hide": "Masquer",
+    "copy": "Copier",
+    "unreadable": "Illisible"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "Ouvrir phpMyAdmin dans un nouvel onglet",
+    "resetPassword": "🔑 Réinitialiser le mot de passe",
+    "delete": "Supprimer"
+  },
+  "errors": {
+    "pmaToken": "Impossible d'obtenir le jeton phpMyAdmin",
+    "deleteFailed": "Échec de la suppression"
+  },
+  "delete": {
+    "title": "Supprimer la base de données",
+    "message": "La base de données « {{name}} » et son utilisateur seront définitivement supprimés. Cette action est irréversible.",
+    "confirm": "Oui, supprimer"
   }
 }

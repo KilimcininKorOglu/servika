@@ -7,10 +7,33 @@
     "database": "Datenbank",
     "user": "Benutzer",
     "size": "Größe",
-    "created": "Erstellt"
+    "created": "Erstellt",
+    "password": "Passwort",
+    "actions": "Aktionen"
   },
   "summary": {
     "databases": "Datenbanken",
     "totalSize": "Gesamtgröße"
+  },
+  "password": {
+    "show": "Anzeigen",
+    "hide": "Ausblenden",
+    "copy": "Kopieren",
+    "unreadable": "Nicht lesbar"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "phpMyAdmin in einem neuen Tab öffnen",
+    "resetPassword": "🔑 Passwort zurücksetzen",
+    "delete": "Löschen"
+  },
+  "errors": {
+    "pmaToken": "phpMyAdmin-Token konnte nicht abgerufen werden",
+    "deleteFailed": "Löschen fehlgeschlagen"
+  },
+  "delete": {
+    "title": "Datenbank löschen",
+    "message": "Die Datenbank \"{{name}}\" und ihr Benutzer werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirm": "Ja, löschen"
   }
 }

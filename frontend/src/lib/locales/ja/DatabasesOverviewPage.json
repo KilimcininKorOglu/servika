@@ -7,10 +7,33 @@
     "database": "データベース",
     "user": "ユーザー",
     "size": "サイズ",
-    "created": "作成日"
+    "created": "作成日",
+    "password": "パスワード",
+    "actions": "操作"
   },
   "summary": {
     "databases": "データベース",
     "totalSize": "合計サイズ"
+  },
+  "password": {
+    "show": "表示",
+    "hide": "非表示",
+    "copy": "コピー",
+    "unreadable": "読み取り不可"
+  },
+  "row": {
+    "pma": "🔓 phpMyAdmin",
+    "pmaTitle": "新しいタブで phpMyAdmin を開く",
+    "resetPassword": "🔑 パスワードをリセット",
+    "delete": "削除"
+  },
+  "errors": {
+    "pmaToken": "phpMyAdmin のトークンを取得できませんでした",
+    "deleteFailed": "削除に失敗しました"
+  },
+  "delete": {
+    "title": "データベースを削除",
+    "message": "「{{name}}」データベースとそのユーザーが完全に削除されます。この操作は取り消せません。",
+    "confirm": "はい、削除します"
   }
 }

@@ -26,7 +26,7 @@ const toneClass: Record<NonNullable<Badge['tone']>, string> = {
 }
 
 export default function OverviewList<T>({
-  title, icon, description, endpoint, columns, searchField, rowKey, emptyMessage, summary,
+  title, icon, description, endpoint, columns, searchField, rowKey, emptyMessage, summary, refreshKey,
 }: {
   title: string
   icon: string
@@ -37,6 +37,12 @@ export default function OverviewList<T>({
   rowKey: (row: T) => string | number
   emptyMessage: string
   summary?: (list: T[]) => Badge[]
+  // Refetches when the value changes, for a page whose rows carry an action
+  // that rewrites them. Because loading is derived from the endpoint rather
+  // than stored, a refetch under the same endpoint replaces the rows in place
+  // instead of blanking the table behind a spinner. Omitting it keeps the
+  // read-only behaviour the other lists rely on.
+  refreshKey?: number
 }) {
   const { t } = useTranslation('OverviewList')
   const [list, setList] = useState<T[]>([])
@@ -55,7 +61,7 @@ export default function OverviewList<T>({
       .catch((e) => { if (!cancelled) setError(apiError(e, t('errorLoad'))) })
       .finally(() => { if (!cancelled) setLoadedFor(endpoint) })
     return () => { cancelled = true }
-  }, [endpoint, t])
+  }, [endpoint, refreshKey, t])
 
   const filtered = useMemo(() => {
     const t = query.trim().toLowerCase()
