@@ -22,6 +22,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"servika/internal/config"
@@ -518,18 +519,49 @@ func walkPSTOutput(root string, sink *maildirSink) error {
 		if folder == "" {
 			folder = "INBOX"
 		}
-		// #nosec G304 -- p comes from walking a directory this function created.
-		file, err := os.Open(p)
-		if err != nil {
-			return err
-		}
-		err = importMbox(folder, file, sink)
-		_ = file.Close()
-		if err != nil {
+		if err := importPSTFile(p, folder, sink); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// importPSTFile reads one file the converter produced, refusing to follow a
+// symbolic link.
+//
+// This directory is created by the panel but FILLED by a process running as the
+// tenant, so its contents are the tenant's, not this function's. The panel runs
+// as root, and `os.Open` follows a link: an entry pointing at /etc/servika/env
+// would deliver SERVIKA_JWT_SECRET and SERVIKA_SECRET_KEY into a mailbox the
+// tenant reads over IMAP. O_NOFOLLOW refuses the open outright, and the
+// regularity check runs on the FD rather than a separate path stat, so nothing
+// can be swapped in between the two.
+//
+// O_NONBLOCK is there for a second reason: opening a fifo BLOCKS until someone
+// writes to it, so without it a named pipe left in this directory would hang the
+// import for its whole budget and never reach the check below. It has no effect
+// on a regular file.
+//
+// A refused entry is SKIPPED rather than failing the whole import: one odd file
+// must not cost the customer the real mail beside it. It is logged, never
+// swallowed.
+func importPSTFile(path, folder string, sink *maildirSink) error {
+	// #nosec G304 -- path comes from walking a directory this function created, and O_NOFOLLOW plus the IsRegular check below refuse anything the tenant may have placed in it.
+	file, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		// #nosec G706 -- the path is one this process built under its own temp dir.
+		log.Printf("import: skipped %s, which could not be opened as a plain file: %v", path, err)
+		return nil
+	}
+	defer func() { _ = file.Close() }()
+
+	info, err := file.Stat()
+	if err != nil || !info.Mode().IsRegular() {
+		// #nosec G706 -- the path is one this process built under its own temp dir.
+		log.Printf("import: skipped %s, which is not a regular file", path)
+		return nil
+	}
+	return importMbox(folder, file, sink)
 }
 
 // maybeGunzip wraps the stream in a gzip reader when it starts with the gzip

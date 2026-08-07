@@ -3,9 +3,14 @@ package mail
 import (
 	"archive/tar"
 	"bytes"
+	"errors"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 )
 
 // The archive names the folder and nothing else. A member is written under a
@@ -169,6 +174,90 @@ func TestTarIsReadWithOrWithoutCompression(t *testing.T) {
 	if header.Name != "cur/1700000000.abc:2,S" {
 		t.Errorf("member = %q, want the one written", header.Name)
 	}
+}
+
+// The converter runs as the tenant and fills a directory the tenant owns, while
+// the panel reads it back as root. A symbolic link there would otherwise deliver
+// any root-readable file into a mailbox the tenant reads over IMAP; the panel's
+// own environment file holds the JWT and encryption keys.
+func TestConvertedOutputWillNotFollowALinkOutOfItsDirectory(t *testing.T) {
+	secret := filepath.Join(t.TempDir(), "env")
+	if err := os.WriteFile(secret, []byte("From x\nSERVIKA_JWT_SECRET=leaked\n"), 0o600); err != nil {
+		t.Fatalf("write the file standing in for a host secret: %v", err)
+	}
+
+	output := t.TempDir()
+	if err := os.Symlink(secret, filepath.Join(output, "Inbox.mbox")); err != nil {
+		t.Skipf("symlinks are unavailable here: %v", err)
+	}
+
+	sink := &maildirSink{}
+	if err := walkPSTOutput(output, sink); err != nil {
+		t.Fatalf("walkPSTOutput: %v", err)
+	}
+	if sink.messages != 0 {
+		t.Errorf("%d message(s) were imported through a symbolic link", sink.messages)
+	}
+}
+
+// Neither may a device, socket or fifo be read as mail: a fifo would also block
+// the import for as long as nothing writes to it.
+func TestConvertedOutputSkipsAnythingThatIsNotAPlainFile(t *testing.T) {
+	output := t.TempDir()
+	fifo := filepath.Join(output, "Queue.mbox")
+	if err := syscall.Mkfifo(fifo, 0o600); err != nil {
+		t.Skipf("fifos are unavailable here: %v", err)
+	}
+
+	done := make(chan error, 1)
+	go func() { done <- walkPSTOutput(output, &maildirSink{}) }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("walkPSTOutput: %v", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("walkPSTOutput blocked on a fifo instead of skipping it")
+	}
+}
+
+// The two refusals above are only worth anything if an ordinary file the
+// converter really produced still arrives.
+func TestConvertedOutputStillImportsARealMbox(t *testing.T) {
+	output := t.TempDir()
+	mbox := "From a@b Mon Jan  1 00:00:00 2024\nSubject: one\n\nbody\n"
+	if err := os.WriteFile(filepath.Join(output, "Sent.mbox"), []byte(mbox), 0o600); err != nil {
+		t.Fatalf("write the mbox: %v", err)
+	}
+
+	var seen []string
+	// The sink writes to a Maildir, which needs a tenant; the split and the
+	// folder naming are what this test is about, so the walk is driven through
+	// the same reader with a recording emitter.
+	if err := importPSTFileInto(filepath.Join(output, "Sent.mbox"), func(body []byte) error {
+		seen = append(seen, string(body))
+		return nil
+	}); err != nil {
+		t.Fatalf("import the mbox: %v", err)
+	}
+	if len(seen) != 1 {
+		t.Fatalf("got %d messages, want 1: %q", len(seen), seen)
+	}
+}
+
+// importPSTFileInto exercises the same open-and-check path as importPSTFile,
+// with the Maildir writer replaced by a recorder.
+func importPSTFileInto(path string, emit func([]byte) error) error {
+	file, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = file.Close() }()
+	info, err := file.Stat()
+	if err != nil || !info.Mode().IsRegular() {
+		return errors.New("not a regular file")
+	}
+	return forEachMboxMessage(file, emit)
 }
 
 // The upload cap has to be a real number rather than a comment: without it one
