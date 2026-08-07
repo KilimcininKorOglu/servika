@@ -20,6 +20,7 @@ package files
 // positive assertions below are what separate a working guard from a dead one.
 
 import (
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -72,6 +73,32 @@ func TestStatBeneathReadsALegitimateFileAndDirectory(t *testing.T) {
 	}
 	if !dirInfo.IsDir() {
 		t.Error("IsDir reported false for a directory")
+	}
+}
+
+// A tenant can put a unix socket in its own home, and Extract stats whatever
+// path it is handed before deciding the target is not a regular file. The stat
+// has to SUCCEED and report the type: an error here carries no information about
+// whose fault it is, so it gets reported as a server fault for a path the tenant
+// chose. O_RDONLY cannot open a socket at all, which is why statBeneath uses
+// O_PATH.
+func TestStatBeneathReadsAPathThatCannotBeOpenedForReading(t *testing.T) {
+	home := t.TempDir()
+	listener, err := net.Listen("unix", filepath.Join(home, "app.sock"))
+	if err != nil {
+		t.Fatalf("create the socket: %v", err)
+	}
+	defer func() { _ = listener.Close() }()
+
+	info, err := statBeneath(home, "app.sock")
+	if err != nil {
+		t.Fatalf("a socket could not be stat'd: %v", err)
+	}
+	if info.Mode().IsRegular() {
+		t.Error("a socket was reported as a regular file")
+	}
+	if info.Mode()&os.ModeSocket == 0 {
+		t.Errorf("mode = %v, want the socket bit set", info.Mode())
 	}
 }
 

@@ -78,8 +78,19 @@ func openAt2Beneath(home, rel string, flags int, mode uint32) (*os.File, error) 
 // statBeneath returns FileInfo for rel under home via a symlink-safe fd (openat2
 // rejects any symlink component), so a tenant cannot race a symlink swap between a
 // path check and the stat performed as root.
+//
+// O_PATH because a caller asks what a path IS, and the answer has to come back
+// for every file type. O_RDONLY cannot open a unix socket at all (ENXIO), and a
+// tenant can put one in its own home, so opening for reading turned "this is a
+// socket" into a failure the caller could not tell apart from a server fault.
+// Nothing is read through this descriptor; fstat is a defined operation on one.
+//
+// The flags stop there. openat2 rejects an invalid combination with EINVAL where
+// openat would have ignored the extra bit, and O_PATH admits only O_CLOEXEC,
+// O_DIRECTORY and O_NOFOLLOW beside it, so adding O_NONBLOCK or an access mode
+// here breaks EVERY call rather than the one case it was meant for.
 func statBeneath(home, rel string) (os.FileInfo, error) {
-	f, err := openAt2Beneath(home, rel, unix.O_RDONLY|unix.O_NONBLOCK, 0)
+	f, err := openAt2Beneath(home, rel, unix.O_PATH, 0)
 	if err != nil {
 		return nil, err
 	}

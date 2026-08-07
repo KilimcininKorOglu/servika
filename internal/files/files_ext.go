@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -236,9 +237,25 @@ func (h *Handlers) Extract(w http.ResponseWriter, r *http.Request) {
 	}
 	// Symlink-safe stat of the archive: reject non-regular files without a racy
 	// path-based os.Lstat that a tenant could redirect via an intermediate symlink.
+	//
+	// The three outcomes are kept apart. A path that is missing or refused is the
+	// caller's, and statusFromPathErr already words that; anything else is the
+	// server's and has to say 500 and leave a line behind, because a fault
+	// reported as bad input is one nobody goes looking for. Collapsing them into
+	// a single 400 is how a helper that failed on every call once passed for a
+	// missing file.
 	info, err := statBeneath(home, req.Path)
-	if err != nil || !info.Mode().IsRegular() {
-		httpx.WriteError(w, http.StatusBadRequest, "file not found or path is not a regular file")
+	if err != nil {
+		status := statusFromPathErr(err)
+		if status == http.StatusInternalServerError {
+			// #nosec G706 -- the logged path is relClean-normalised and the error is the kernel's; no raw tenant string with CR/LF reaches the log.
+			log.Printf("extract: could not stat %q: %v", relClean(req.Path), err)
+		}
+		httpx.WriteError(w, status, "operation failed")
+		return
+	}
+	if !info.Mode().IsRegular() {
+		httpx.WriteError(w, http.StatusBadRequest, "path is not a regular file")
 		return
 	}
 
