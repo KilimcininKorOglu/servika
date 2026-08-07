@@ -77,6 +77,13 @@ jobs:
         run: npx tsc --noEmit
         working-directory: frontend
 
+      # The config and the plugins were already installed, but nothing ran them,
+      # so the rules-of-hooks and no-restricted-globals gates only existed on
+      # paper.
+      - name: ESLint
+        run: npm run lint
+        working-directory: frontend
+
       - name: Frontend build
         run: npm run build
         working-directory: frontend

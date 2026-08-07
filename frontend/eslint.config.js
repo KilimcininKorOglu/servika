@@ -31,6 +31,25 @@ export default tseslint.config(
       // An unused function argument is often a signature the caller dictates, so
       // only flag it when it is not deliberately underscore-prefixed.
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // Every browser offers to suppress these after a few in one tab, and from
+      // then on alert() does nothing while confirm() always answers false, so a
+      // failure reported only through one of them disappears and a confirmed
+      // action silently cancels. useDialog draws the same three shapes in the
+      // panel's own theme, and a local binding of the same name is not the
+      // global, so a converted call site does not trip this.
+      'no-restricted-globals': ['error',
+        { name: 'alert', message: 'Use notify() from useDialog(): browsers suppress repeated native dialogs.' },
+        { name: 'confirm', message: 'Use confirm() from useDialog(): a suppressed native confirm always answers false.' },
+        { name: 'prompt', message: 'Use ask() from useDialog(): a suppressed native prompt always answers null.' },
+      ],
+      // The rule above sees only the bare global, and this codebase wrote
+      // `window.confirm(...)` as readily as `confirm(...)`, so the same three
+      // have to be barred through the window object as well.
+      'no-restricted-properties': ['error',
+        { object: 'window', property: 'alert', message: 'Use notify() from useDialog().' },
+        { object: 'window', property: 'confirm', message: 'Use confirm() from useDialog().' },
+        { object: 'window', property: 'prompt', message: 'Use ask() from useDialog().' },
+      ],
     },
   },
   {
