@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Version = { version: string; ini_dir: string; service: string }
@@ -13,6 +14,7 @@ const REQUIRED_EXTENSIONS = new Set([
 
 export default function PHPExtensionsPage() {
   const { t } = useTranslation('PHPExtensionsPage')
+  const { confirm, notify } = useDialog()
   const [versions, setVersions] = useState<Version[]>([])
   const [activeVersion, setActiveVersion] = useState('8.3')
   const [extensions, setExtensions] = useState<Extension[]>([])
@@ -45,7 +47,7 @@ export default function PHPExtensionsPage() {
 
   async function toggle(extension: Extension) {
     if (REQUIRED_EXTENSIONS.has(extension.name.toLowerCase())) {
-      alert(t('alerts.coreCannotDisable'))
+      await notify({ message: t('alerts.coreCannotDisable') })
       return
     }
     const active = !extension.active
@@ -66,7 +68,7 @@ export default function PHPExtensionsPage() {
   }
 
   async function installIonCube() {
-    if (!confirm(t('confirm.ionCubeInstall', { version: activeVersion }))) return
+    if (!(await confirm({ message: t('confirm.ionCubeInstall', { version: activeVersion }) }))) return
     setLoading(true); setError(null)
     try {
       const response = await api.post('/php-extensions/ioncube-install', { version: activeVersion })
@@ -81,7 +83,7 @@ export default function PHPExtensionsPage() {
   }
 
   async function removeIonCube() {
-    if (!confirm(t('confirm.ionCubeRemove', { version: activeVersion }))) return
+    if (!(await confirm({ message: t('confirm.ionCubeRemove', { version: activeVersion }), dangerous: true }))) return
     setLoading(true); setError(null)
     try {
       await api.post('/php-extensions/ioncube-remove', { version: activeVersion })
@@ -96,9 +98,9 @@ export default function PHPExtensionsPage() {
 
   async function installPecl(packageName: string) {
     if (!packageName.match(/^[a-zA-Z0-9_-]+$/)) {
-      alert(t('alerts.invalidPackage')); return
+      await notify({ message: t('alerts.invalidPackage'), tone: 'error' }); return
     }
-    if (!confirm(t('confirm.peclInstall', { package: packageName, version: activeVersion }))) return
+    if (!(await confirm({ message: t('confirm.peclInstall', { package: packageName, version: activeVersion }) }))) return
     setPeclModalOpen(false); setLoading(true)
     try {
       const response = await api.post('/php-extensions/pecl-install', { version: activeVersion, package: packageName })

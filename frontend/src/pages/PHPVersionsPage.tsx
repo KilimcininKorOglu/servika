@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Version = {
@@ -20,6 +21,7 @@ type Filter = 'all' | 'installed' | 'available'
 
 export default function PHPVersionsPage() {
   const { t } = useTranslation('PHPVersionsPage')
+  const { confirm, notify } = useDialog()
   const [versions, setVersions] = useState<Version[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -90,8 +92,8 @@ export default function PHPVersionsPage() {
   useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight }) }, [opLog])
 
   async function install(v: Version) {
-    if (activeOp) { alert(t('alerts.opInProgress')); return }
-    if (!confirm(t('confirm.install', { version: v.version, resource: v.resource }))) return
+    if (activeOp) { await notify({ message: t('alerts.opInProgress') }); return }
+    if (!(await confirm({ message: t('confirm.install', { version: v.version, resource: v.resource }) }))) return
     setError(null); setSuccess(null); setOpLog('')
     try {
       await api.post('/php-versions/install', { version: v.version, resource: v.resource })
@@ -102,11 +104,11 @@ export default function PHPVersionsPage() {
 
   async function remove(v: Version) {
     if (v.resource === 'appstream') {
-      alert(t('alerts.appstreamCannotRemove'))
+      await notify({ message: t('alerts.appstreamCannotRemove') })
       return
     }
-    if (activeOp) { alert(t('alerts.opInProgress')); return }
-    if (!confirm(t('confirm.remove', { version: v.version }))) return
+    if (activeOp) { await notify({ message: t('alerts.opInProgress') }); return }
+    if (!(await confirm({ message: t('confirm.remove', { version: v.version }), dangerous: true }))) return
     setError(null); setSuccess(null); setOpLog('')
     try {
       await api.post('/php-versions/remove', { version: v.version, resource: v.resource })

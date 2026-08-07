@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Package = {
@@ -64,6 +65,7 @@ const PRESET_GROUPS: Group[] = [
 
 export default function PackagesPage() {
   const { t } = useTranslation('PackagesPage')
+  const { confirm } = useDialog()
   const [tab, setTab] = useState<Tab>('search')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Package[]>([])
@@ -105,7 +107,7 @@ export default function PackagesPage() {
     const msg = currentlyInstalled
       ? t('confirm.remove', { pkg })
       : t('confirm.install', { pkg })
-    if (!confirm(msg)) return
+    if (!(await confirm({ message: msg, dangerous: currentlyInstalled }))) return
 
     setProcessing(pkg); setError(null); setSuccess(null)
     try {
@@ -125,7 +127,7 @@ export default function PackagesPage() {
   }
 
   async function installPackage(pkg: string) {
-    if (!confirm(t('confirm.install', { pkg }))) return
+    if (!(await confirm({ message: t('confirm.install', { pkg }) }))) return
     setProcessing(pkg); setError(null); setSuccess(null)
     try {
       const r = await api.post('/packages/install', { package: pkg })
@@ -137,7 +139,7 @@ export default function PackagesPage() {
     finally { setProcessing(null) }
   }
   async function removePackage(pkg: string) {
-    if (!confirm(t('confirm.remove', { pkg }))) return
+    if (!(await confirm({ message: t('confirm.remove', { pkg }), dangerous: true }))) return
     setProcessing(pkg); setError(null); setSuccess(null)
     try {
       const r = await api.post('/packages/remove', { package: pkg })
