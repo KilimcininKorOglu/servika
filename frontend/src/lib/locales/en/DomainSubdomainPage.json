@@ -62,6 +62,7 @@
   "php": {
     "title": "PHP Version",
     "note": "This subdomain runs on its own FPM pool, so changing it does not affect the parent domain.",
+    "locked": "This account runs its own PHP-FPM service, so every subdomain shares the parent domain's PHP version. Change the parent domain's version to move them all together, or use a separate domain to run a different one.",
     "versionLabel": "Version",
     "applying": "Applying…",
     "apply": "Apply",

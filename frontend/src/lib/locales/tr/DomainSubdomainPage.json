@@ -62,6 +62,7 @@
   "php": {
     "title": "PHP Sürümü",
     "note": "Bu alt alan adı kendi FPM havuzunda çalışır, bu yüzden değiştirilmesi ana alan adını etkilemez.",
+    "locked": "Bu hesap kendine ait bir PHP-FPM servisi kullanıyor, bu yüzden bütün alt alan adları ana domainin PHP sürümünü paylaşır. Hepsini birlikte taşımak için ana domainin sürümünü değiştirin; farklı bir sürüm için ayrı bir domain kullanın.",
     "versionLabel": "Sürüm",
     "applying": "Uygulanıyor…",
     "apply": "Uygula",

@@ -62,6 +62,7 @@
   "php": {
     "title": "Versión PHP",
     "note": "Este subdominio usa su propio pool FPM, por lo que cambiarlo no afecta al dominio principal.",
+    "locked": "Esta cuenta usa su propio servicio PHP-FPM, por lo que todos los subdominios comparten la versión de PHP del dominio principal. Cambie la versión del dominio principal para moverlos todos a la vez, o use un dominio aparte para una versión distinta.",
     "versionLabel": "Versión",
     "applying": "Aplicando…",
     "apply": "Aplicar",

@@ -62,6 +62,7 @@
   "php": {
     "title": "Verze PHP",
     "note": "Tato subdoména běží na vlastním poolu FPM, takže její změna neovlivní nadřazenou doménu.",
+    "locked": "Tento účet používá vlastní službu PHP-FPM, takže všechny subdomény sdílejí verzi PHP nadřazené domény. Chcete-li je přesunout společně, změňte verzi nadřazené domény, nebo pro jinou verzi použijte samostatnou doménu.",
     "versionLabel": "Verze",
     "applying": "Použití…",
     "apply": "Použít",

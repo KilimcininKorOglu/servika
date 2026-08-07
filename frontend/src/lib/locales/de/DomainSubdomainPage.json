@@ -62,6 +62,7 @@
   "php": {
     "title": "PHP-Version",
     "note": "Diese Subdomain läuft mit ihrem eigenen FPM-Pool, sodass eine Änderung die übergeordnete Domain nicht beeinflusst.",
+    "locked": "Dieses Konto betreibt einen eigenen PHP-FPM-Dienst, daher teilen sich alle Subdomains die PHP-Version der übergeordneten Domain. Ändern Sie die Version der übergeordneten Domain, um alle gemeinsam umzustellen, oder verwenden Sie eine separate Domain für eine andere Version.",
     "versionLabel": "Version",
     "applying": "Wird angewendet…",
     "apply": "Anwenden",

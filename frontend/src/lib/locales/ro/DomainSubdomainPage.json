@@ -62,6 +62,7 @@
   "php": {
     "title": "Versiune PHP",
     "note": "Acest subdomeniu rulează pe propriul pool FPM, așa că schimbarea lui nu afectează domeniul părinte.",
+    "locked": "Acest cont folosește propriul serviciu PHP-FPM, deci toate subdomeniile împart versiunea PHP a domeniului părinte. Schimbați versiunea domeniului părinte pentru a le muta împreună, sau folosiți un domeniu separat pentru o altă versiune.",
     "versionLabel": "Versiune",
     "applying": "Se aplică…",
     "apply": "Aplicare",

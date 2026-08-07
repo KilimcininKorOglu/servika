@@ -8,6 +8,10 @@ import ToolCard from '@/components/ToolCard'
 type Detail = {
   id: number; subdomain: string; fqdn: string; php_version: string; docroot: string
   created_at: string; parent_id: number; parent_name: string; disk_kb: number; ipv4: string
+  // True when the account runs its own PHP-FPM service. One master serves every
+  // domain it holds, so the version follows the parent domain and this screen
+  // must not offer a choice the server would refuse.
+  php_locked?: boolean
 }
 
 type Version = { version: string; description: string }
@@ -75,7 +79,14 @@ export default function DomainSubdomainPage() {
       const { data } = await api.put(`/domains/${id}/subdomain/${sid}/php`, { php_version: selectedVersion })
       setSuccess(t('toast.phpSaved', { version: data.php_version }))
       load()
-    } catch (error) { setError(apiError(error, t('toast.phpChangeFailed'))) }
+    } catch (error) {
+      // Reachable with the picker enabled only when the account moved to its own
+      // PHP-FPM service while this page was open. The server answers with a code
+      // because it cannot word it in the twelve languages the interface ships.
+      setError(apiError(error, '') === 'php_version_locked_to_parent'
+        ? t('php.locked')
+        : apiError(error, t('toast.phpChangeFailed')))
+    }
     finally { setSaving(false) }
   }
 
@@ -146,24 +157,30 @@ export default function DomainSubdomainPage() {
 
                 <div className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-4">
                   <h3 className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-3">{t('php.title')}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('php.note')}</p>
+                  {/* The standing note is only true of an account on the shared
+                      master. On its own service the subdomain shares the parent's
+                      interpreter, so the note is REPLACED rather than added to. */}
+                  {detail.php_locked
+                    ? <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">{t('php.locked')}</p>
+                    : <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('php.note')}</p>}
                   <div className="flex flex-wrap items-end gap-2">
                     <label className="block">
                       <span className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">{t('php.versionLabel')}</span>
                       <select value={selectedVersion} onChange={event => setSelectedVersion(event.target.value)}
-                        className="mt-1 w-56 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none">
+                        disabled={detail.php_locked}
+                        className="mt-1 w-56 px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none disabled:opacity-60">
                         {versions.length === 0 && <option value={detail.php_version}>{detail.php_version}</option>}
                         {versions.map(version => (
                           <option key={version.version} value={version.version}>{version.version}{version.description ? ` — ${version.description}` : ''}</option>
                         ))}
                       </select>
                     </label>
-                    <button onClick={savePHP} disabled={saving || !selectedVersion || selectedVersion === detail.php_version}
+                    <button onClick={savePHP} disabled={saving || detail.php_locked || !selectedVersion || selectedVersion === detail.php_version}
                       className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-medium rounded-lg disabled:opacity-50">
                       {saving ? t('php.applying') : t('php.apply')}
                     </button>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-2">{t('php.validationNote')}</p>
+                  {!detail.php_locked && <p className="text-[11px] text-slate-400 mt-2">{t('php.validationNote')}</p>}
                 </div>
               </div>
 
