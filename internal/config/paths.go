@@ -10,11 +10,15 @@ import (
 )
 
 const (
-	DefaultComposerBin        = "/usr/local/bin/composer"
-	DefaultWPCLIBin           = "/usr/local/bin/wp"
-	DefaultClamScanBin        = "/usr/bin/clamscan"
-	DefaultFreshclamBin       = "/usr/bin/freshclam"
-	DefaultPECLBin            = "/usr/bin/pecl"
+	DefaultComposerBin  = "/usr/local/bin/composer"
+	DefaultWPCLIBin     = "/usr/local/bin/wp"
+	DefaultClamScanBin  = "/usr/bin/clamscan"
+	DefaultFreshclamBin = "/usr/bin/freshclam"
+	DefaultPECLBin      = "/usr/bin/pecl"
+	// DefaultReadPSTBin converts an Outlook .pst export into Maildir folders. It
+	// comes from libpst, which EL10 may not package, so callers report its absence
+	// as a supported-format answer rather than failing an upload with it.
+	DefaultReadPSTBin         = "/usr/bin/readpst"
 	DefaultRemiPECLRoot       = "/opt/remi"
 	DefaultACMEHome           = "/root/.acme.sh"
 	DefaultACMEBin            = "/root/.acme.sh/acme.sh"
@@ -105,6 +109,7 @@ func WPCLIBin() string      { return mustAbsPath("SERVIKA_WPCLI_BIN", DefaultWPC
 func ClamScanBin() string   { return mustAbsPath("SERVIKA_CLAMSCAN_BIN", DefaultClamScanBin) }
 func FreshclamBin() string  { return mustAbsPath("SERVIKA_FRESHCLAM_BIN", DefaultFreshclamBin) }
 func PECLBin() string       { return mustAbsPath("SERVIKA_PECL_BIN", DefaultPECLBin) }
+func ReadPSTBin() string    { return mustAbsPath("SERVIKA_READPST_BIN", DefaultReadPSTBin) }
 func RemiPECLRoot() string  { return mustAbsPath("SERVIKA_REMI_PECL_ROOT", DefaultRemiPECLRoot) }
 func ACMEHome() string      { return mustAbsPath("SERVIKA_ACME_HOME", DefaultACMEHome) }
 func ACMEBin() string       { return mustAbsPath("SERVIKA_ACME_BIN", DefaultACMEBin) }
@@ -190,6 +195,7 @@ func ValidateRuntimePaths() error {
 		{"SERVIKA_CLAMSCAN_BIN", DefaultClamScanBin, false},
 		{"SERVIKA_FRESHCLAM_BIN", DefaultFreshclamBin, false},
 		{"SERVIKA_PECL_BIN", DefaultPECLBin, false},
+		{"SERVIKA_READPST_BIN", DefaultReadPSTBin, false},
 		{"SERVIKA_REMI_PECL_ROOT", DefaultRemiPECLRoot, false},
 		{"SERVIKA_ACME_HOME", DefaultACMEHome, false},
 		{"SERVIKA_ACME_BIN", DefaultACMEBin, false},

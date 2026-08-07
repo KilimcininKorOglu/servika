@@ -134,11 +134,11 @@ func (layout maildirLayout) ensureFolder(subdir string) (string, error) {
 
 // writeMessage stores one message under cur/ with its flags in the name.
 //
-// The unique part is the job id plus the message's own UID, so a copy that is
-// run twice overwrites its earlier attempt instead of delivering every message
-// a second time.
-func (layout maildirLayout) writeMessage(curDir string, jobID int64, uid uint32, flags []string, body io.Reader) (int64, error) {
-	name := fmt.Sprintf("%d.servika-%d-%d%s", stableStamp, jobID, uid, maildirInfo(flags))
+// unique identifies the message within whatever produced it. A copy names it
+// after the job and the message's own UID, so a run repeated after a failure
+// overwrites its earlier attempt instead of delivering everything a second time.
+func (layout maildirLayout) writeMessage(curDir, unique string, flags []string, body io.Reader) (int64, error) {
+	name := fmt.Sprintf("%d.%s%s", stableStamp, unique, maildirInfo(flags))
 	return files.StreamIntoBeneath(layout.home, curDir+"/"+name, body, layout.systemUser)
 }
 

@@ -281,7 +281,8 @@ func copyBatch(ctx context.Context, client *imapclient.Client, layout maildirLay
 			case imapclient.FetchItemDataBodySection:
 				// Streamed rather than buffered: a mailbox can hold messages
 				// larger than the panel's whole memory budget.
-				size, err := layout.writeMessage(curDir, jobID, uid, flags, data.Literal)
+				size, err := layout.writeMessage(curDir,
+					fmt.Sprintf("servika-%d-%d", jobID, uid), flags, data.Literal)
 				if err != nil {
 					return copied, written, err
 				}
