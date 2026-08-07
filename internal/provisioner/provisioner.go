@@ -1593,17 +1593,20 @@ func Provision(domainName, phpVersion string) (*Result, error) {
 	}, nil
 }
 
-func DeprovisionAddonDomain(domainName, systemUser, webRoot string, parked bool) error {
+// DeprovisionAddonDomain removes the host state an addon domain owns OUTSIDE the
+// tenant home: its vhost and its certificate directory, both root-owned.
+//
+// The document root is deliberately not its business. That path lives inside the
+// tenant's home, where a string prefix decides nothing, because every component
+// belongs to the tenant and one swapped for a symlink sends a root-run removal
+// outside the jail while the path still reads like one inside it. Removing it
+// safely needs internal/files, which imports THIS package, so it belongs to the
+// caller, next to the mkdir that created it (addondomains.removeDocRoot). Do not
+// restore an os.RemoveAll here.
+func DeprovisionAddonDomain(domainName, systemUser string) error {
 	if domainName != "" && ValidateDomain(domainName) == nil {
 		_ = os.Remove(addonVhostConfigPath(systemUser, domainName))
 		_ = os.RemoveAll(certSystemDir(strings.ToLower(strings.TrimSpace(domainName))))
-	}
-	if !parked {
-		docroot := safeAddonWebRoot(systemUser, domainName, webRoot)
-		base := filepath.Join("/home", systemUser, "domains")
-		if strings.HasPrefix(docroot, base+string(os.PathSeparator)) && filepath.Clean(docroot) != filepath.Clean(base) {
-			_ = os.RemoveAll(docroot)
-		}
 	}
 	_, _ = exec.Command("systemctl", "reload", "nginx").CombinedOutput()
 	purgeFastCGICache(systemUser)

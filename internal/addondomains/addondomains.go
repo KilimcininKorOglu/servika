@@ -263,8 +263,15 @@ func Cleanup(ctx context.Context, db *sql.DB, addonID int64) (string, error) {
 	}
 	if demo == 0 {
 		_ = credentials.MySQLDropAllForDomain(db, addonID)
-		if err := provisioner.DeprovisionAddonDomain(domainName, systemUser, webRoot, parked == 1); err != nil {
+		if err := provisioner.DeprovisionAddonDomain(domainName, systemUser); err != nil {
 			log.Printf("addon domain deprovision warn (%s): %v", domainName, err)
+		}
+		// The document root is removed HERE, beside prepareDocRoot, so the two
+		// halves of the same path cannot drift apart again: the mkdir has always
+		// gone through openat2 while the removal was a string check inside the
+		// provisioner, which cannot import internal/files.
+		if parked == 0 {
+			removeDocRoot(systemUser, domainName, webRoot)
 		}
 	}
 	if _, err := db.ExecContext(ctx, `DELETE FROM domain_traffic WHERE domain_id=?`, addonID); err != nil {
@@ -282,6 +289,32 @@ func Cleanup(ctx context.Context, db *sql.DB, addonID int64) (string, error) {
 		}
 	}
 	return domainName, nil
+}
+
+// removeDocRoot deletes an addon domain's document root through openat2.
+//
+// It mirrors prepareDocRoot exactly, and for the same reason: the panel runs as
+// root, ~/domains belongs to the tenant, and a component swapped for a symlink
+// sends the removal outside the jail while the path still reads like one inside
+// it. The stored web root is honoured only when it is under ~/domains, which is
+// what the vhost renderer accepts, and the base itself is never the target.
+//
+// Best effort: the domain row is being deleted either way, and a document root
+// left on disk is a leak to report, not a reason to abandon the deletion.
+func removeDocRoot(systemUser, domainName, webRoot string) {
+	home := "/home/" + systemUser
+	base := filepath.Join(home, "domains")
+	docroot := filepath.Clean(strings.TrimSpace(webRoot))
+	if docroot == "" || docroot == "." || !strings.HasPrefix(docroot, base+string(os.PathSeparator)) {
+		docroot = provisioner.AddonWebRoot(systemUser, domainName)
+	}
+	rel, ok := strings.CutPrefix(filepath.Clean(docroot), home+"/")
+	if !ok || rel == "domains" {
+		return
+	}
+	if err := files.RemoveAllBeneath(home, rel); err != nil && !errors.Is(err, os.ErrNotExist) {
+		log.Printf("addon domain document root %s: %v", domainName, err)
+	}
 }
 
 func prepareDocRoot(docroot, systemUser, domainName string) error {
