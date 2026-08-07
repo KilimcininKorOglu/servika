@@ -143,13 +143,22 @@ var postfixCommand = func(name string, args ...string) ([]byte, error) {
 	return exec.Command(name, args...).CombinedOutput()
 }
 
+// postfixInstalled is the other half of that seam. Without it the availability
+// check still reached the real PATH, so the apply tests passed only on a machine
+// that happened to ship Postfix and failed everywhere else, which is what they
+// did on CI.
+var postfixInstalled = func() bool {
+	_, err := exec.LookPath("postconf")
+	return err == nil
+}
+
 // applyPostfixSettings writes the two parameters and reloads.
 //
 // The previous values are read first and restored when Postfix refuses the
 // result, because a main.cf the daemon will not start with takes mail down for
 // every domain on the server, not just the one whose settings were being edited.
 func applyPostfixSettings(settings ServerSettings, zones []string) error {
-	if _, err := exec.LookPath("postconf"); err != nil {
+	if !postfixInstalled() {
 		return fmt.Errorf("postfix is not installed")
 	}
 

@@ -75,16 +75,44 @@ func TestNoZonesProducesNoRejectClause(t *testing.T) {
 	}
 }
 
+// stubPostfix stands in for the whole Postfix installation and returns the
+// recorded calls.
+//
+// It replaces the availability check as well as the command runner, because a
+// test that replaces only the runner is really asking whether the machine
+// running it happens to ship Postfix.
+func stubPostfix(t *testing.T, answer func(name string, args ...string) ([]byte, error)) *[]string {
+	t.Helper()
+	originalCommand, originalInstalled := postfixCommand, postfixInstalled
+	t.Cleanup(func() { postfixCommand, postfixInstalled = originalCommand, originalInstalled })
+
+	var calls []string
+	postfixInstalled = func() bool { return true }
+	postfixCommand = func(name string, args ...string) ([]byte, error) {
+		calls = append(calls, name+" "+strings.Join(args, " "))
+		return answer(name, args...)
+	}
+	return &calls
+}
+
+// Without Postfix the settings cannot reach a mail server, so saying nothing and
+// reporting success would leave the panel claiming a limit it never applied.
+func TestMissingPostfixIsRefused(t *testing.T) {
+	recorded := stubPostfix(t, func(string, ...string) ([]byte, error) { return nil, nil })
+	postfixInstalled = func() bool { return false }
+
+	if err := applyPostfixSettings(ServerSettings{MaxMessageSizeMB: 25}, nil); err == nil {
+		t.Fatal("a missing Postfix was reported as a successful apply")
+	}
+	if len(*recorded) != 0 {
+		t.Errorf("commands were run without Postfix: %v", *recorded)
+	}
+}
+
 // A configuration Postfix will not start with takes mail down for every domain
 // on the server, so a rejected change has to leave the previous one running.
 func TestRejectedSettingsAreRolledBack(t *testing.T) {
-	original := postfixCommand
-	t.Cleanup(func() { postfixCommand = original })
-
-	var calls []string
-	postfixCommand = func(name string, args ...string) ([]byte, error) {
-		call := name + " " + strings.Join(args, " ")
-		calls = append(calls, call)
+	recorded := stubPostfix(t, func(name string, args ...string) ([]byte, error) {
 		if name == "postfix" && len(args) > 0 && args[0] == "check" {
 			return []byte("bad parameter"), errors.New("exit status 1")
 		}
@@ -92,14 +120,14 @@ func TestRejectedSettingsAreRolledBack(t *testing.T) {
 			return []byte("10240000"), nil
 		}
 		return nil, nil
-	}
+	})
 
 	err := applyPostfixSettings(ServerSettings{MaxMessageSizeMB: 25}, nil)
 	if err == nil {
 		t.Fatal("a failing postfix check was reported as success")
 	}
 
-	joined := strings.Join(calls, "\n")
+	joined := strings.Join(*recorded, "\n")
 	if !strings.Contains(joined, "postconf -h message_size_limit") {
 		t.Error("the previous value was never read, so there was nothing to roll back to")
 	}
@@ -114,19 +142,12 @@ func TestRejectedSettingsAreRolledBack(t *testing.T) {
 // The whole point is that the change reaches the running server, not just
 // main.cf.
 func TestAcceptedSettingsAreReloaded(t *testing.T) {
-	original := postfixCommand
-	t.Cleanup(func() { postfixCommand = original })
-
-	var calls []string
-	postfixCommand = func(name string, args ...string) ([]byte, error) {
-		calls = append(calls, name+" "+strings.Join(args, " "))
-		return nil, nil
-	}
+	recorded := stubPostfix(t, func(string, ...string) ([]byte, error) { return nil, nil })
 
 	if err := applyPostfixSettings(ServerSettings{MaxMessageSizeMB: 25}, []string{"zen.spamhaus.org"}); err != nil {
 		t.Fatalf("applyPostfixSettings: %v", err)
 	}
-	joined := strings.Join(calls, "\n")
+	joined := strings.Join(*recorded, "\n")
 	if !strings.Contains(joined, "message_size_limit=26214400") {
 		t.Errorf("the size was not written in bytes:\n%s", joined)
 	}
@@ -141,19 +162,12 @@ func TestAcceptedSettingsAreReloaded(t *testing.T) {
 // 0 means the panel does not manage the size, so installing this release must
 // not change the limit a running server already has.
 func TestZeroMessageSizeLeavesPostfixAlone(t *testing.T) {
-	original := postfixCommand
-	t.Cleanup(func() { postfixCommand = original })
-
-	var calls []string
-	postfixCommand = func(name string, args ...string) ([]byte, error) {
-		calls = append(calls, name+" "+strings.Join(args, " "))
-		return nil, nil
-	}
+	recorded := stubPostfix(t, func(string, ...string) ([]byte, error) { return nil, nil })
 
 	if err := applyPostfixSettings(ServerSettings{}, nil); err != nil {
 		t.Fatalf("applyPostfixSettings: %v", err)
 	}
-	for _, call := range calls {
+	for _, call := range *recorded {
 		if strings.Contains(call, "-e message_size_limit") {
 			t.Errorf("the size limit was written even though the panel does not manage it: %q", call)
 		}
