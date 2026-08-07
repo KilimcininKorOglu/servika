@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
 import { api, apiError as apiError } from '@/lib/api'
 import { useReportError } from '@/lib/errors'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 import DirTree from '@/components/DirTree'
 import CodeEditor from '@/components/CodeEditor'
@@ -43,6 +44,11 @@ const ARCHIVE_RX = /\.(zip|rar|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|gz)$/i
 export default function DomainFilesPage() {
   const { t } = useTranslation('DomainFilesPage')
   const report = useReportError()
+  // An action the user just triggered reports through the dialog, not through
+  // `report`: that surface is throttled to one banner per context every 30s and
+  // caps at four, which is right for background loads and wrong here, where
+  // retrying a failing delete twice would drop the second failure on the floor.
+  const { confirm, ask, notify } = useDialog()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [path, setPath] = useState<string>('/public_html')
@@ -124,18 +130,18 @@ export default function DomainFilesPage() {
   }
 
   async function remove(e: Entry) {
-    if (!confirm(t('prompt.deleteConfirm', { name: e.name }))) return
+    if (!(await confirm({ message: t('prompt.deleteConfirm', { name: e.name }), dangerous: true }))) return
     try {
       await api.delete(`/domains/${id}/files`, { params: { path: e.path } })
       setTreeRefreshKey(x => x + 1)
       scan()
     } catch (err) {
-      alert(apiError(err, t('errors.deleteFailed')))
+      await notify({ message: apiError(err, t('errors.deleteFailed')), tone: 'error' })
     }
   }
 
   async function createFolder() {
-    const name = prompt(t('prompt.newFolderName'))
+    const name = await ask({ message: t('prompt.newFolderName') })
     if (!name) return
     const target = (path === '/' ? '' : path) + '/' + name
     try {
@@ -143,7 +149,7 @@ export default function DomainFilesPage() {
       setTreeRefreshKey(x => x + 1)
       scan()
     } catch (err) {
-      alert(apiError(err, t('errors.createFolderFailed')))
+      await notify({ message: apiError(err, t('errors.createFolderFailed')), tone: 'error' })
     }
   }
 
@@ -153,7 +159,7 @@ export default function DomainFilesPage() {
       const { data } = await api.get<{path: string; content: string}>(`/domains/${id}/files/read`, { params: { path: e.path } })
       setEditor({ path: e.path, content: data.content })
     } catch (err) {
-      alert(apiError(err, t('errors.openFailed')))
+      await notify({ message: apiError(err, t('errors.openFailed')), tone: 'error' })
     }
   }
 
@@ -163,7 +169,7 @@ export default function DomainFilesPage() {
       await api.post(`/domains/${id}/files/write`, { path: editor.path, content: editor.content })
       setEditor(null); scan()
     } catch (err) {
-      alert(apiError(err, t('errors.saveFailed')))
+      await notify({ message: apiError(err, t('errors.saveFailed')), tone: 'error' })
     }
   }
 
@@ -176,7 +182,7 @@ export default function DomainFilesPage() {
       await api.post(`/domains/${id}/files/rename`, { old: entry.path, new: newPath })
       setRenameFor(null); setTreeRefreshKey(x => x + 1); scan()
     } catch (err) {
-      alert(apiError(err, t('errors.renameFailed')))
+      await notify({ message: apiError(err, t('errors.renameFailed')), tone: 'error' })
     }
   }
 
@@ -185,7 +191,7 @@ export default function DomainFilesPage() {
       await api.post(`/domains/${id}/files/chmod`, { path: e.path, mode })
       setChmodFor(null); scan()
     } catch (err) {
-      alert(apiError(err, t('errors.chmodFailed')))
+      await notify({ message: apiError(err, t('errors.chmodFailed')), tone: 'error' })
     }
   }
 
@@ -256,7 +262,7 @@ export default function DomainFilesPage() {
     setTreeRefreshKey(x => x + 1)
     scan()
     if (successful < files.length) {
-      alert(t('toast.uploadPartial', { success: successful, total: files.length }))
+      await notify({ message: t('toast.uploadPartial', { success: successful, total: files.length }), tone: 'error' })
     }
   }
 
@@ -288,7 +294,9 @@ export default function DomainFilesPage() {
     setSelectedPaths(new Set())
     setTreeRefreshKey(x => x + 1)
     scan()
-    if (successful < paths.length) alert(t('toast.deletePartial', { success: successful, total: paths.length }))
+    if (successful < paths.length) {
+      await notify({ message: t('toast.deletePartial', { success: successful, total: paths.length }), tone: 'error' })
+    }
   }
 
   async function extract(e: Entry) {
@@ -297,7 +305,7 @@ export default function DomainFilesPage() {
       setTreeRefreshKey(x => x + 1)
       scan()
     } catch (err) {
-      alert(apiError(err, t('errors.extractFailed')))
+      await notify({ message: apiError(err, t('errors.extractFailed')), tone: 'error' })
     }
   }
 
@@ -307,7 +315,7 @@ export default function DomainFilesPage() {
       const { data } = await api.get(`/domains/${id}/files/search`, { params: { q: searchQuery, path } })
       setSearchResults(data.content)
     } catch (err) {
-      alert(apiError(err, t('errors.searchFailed')))
+      await notify({ message: apiError(err, t('errors.searchFailed')), tone: 'error' })
     }
   }
 
@@ -393,9 +401,14 @@ export default function DomainFilesPage() {
       })
       setCopyModal(null); setSelectedPaths(new Set())
       setTreeRefreshKey(x => x + 1); scan()
-      if (data.errors?.length) alert(t('toast.someErrors', { errors: data.errors.join('\n') }))
+      if (data.errors?.length) {
+        await notify({ message: t('toast.someErrors', { errors: data.errors.join('\n') }), tone: 'error' })
+      }
     } catch (err) {
-      alert(apiError(err, copyMoveModal.type === 'copy' ? t('errors.copyFailed') : t('errors.moveFailed')))
+      await notify({
+        message: apiError(err, copyMoveModal.type === 'copy' ? t('errors.copyFailed') : t('errors.moveFailed')),
+        tone: 'error',
+      })
     }
   }
 
@@ -408,7 +421,7 @@ export default function DomainFilesPage() {
       setArchiveModal(false); setSelectedPaths(new Set())
       setTreeRefreshKey(x => x + 1); scan()
     } catch (err) {
-      alert(apiError(err, t('errors.archiveFailed')))
+      await notify({ message: apiError(err, t('errors.archiveFailed')), tone: 'error' })
     }
   }
 
@@ -421,7 +434,7 @@ export default function DomainFilesPage() {
       const readResponse = await api.get(`/domains/${id}/files/read`, { params: { path: target } })
       setEditor({ path: target, content: readResponse.data.content })
     } catch (err) {
-      alert(apiError(err, t('errors.createFailed')))
+      await notify({ message: apiError(err, t('errors.createFailed')), tone: 'error' })
     }
   }
 
@@ -430,7 +443,7 @@ export default function DomainFilesPage() {
       const { data } = await api.get(`/domains/${id}/files/size`, { params: { path: itemPath } })
       setSizeResult({ path: itemPath, size: data.size_b })
     } catch (err) {
-      alert(apiError(err, t('errors.sizeFailed')))
+      await notify({ message: apiError(err, t('errors.sizeFailed')), tone: 'error' })
     }
   }
 
@@ -469,7 +482,7 @@ export default function DomainFilesPage() {
         a.click()
         setTimeout(() => URL.revokeObjectURL(a.href), 1000)
       })
-      .catch(err => alert(t('toast.downloadFailed', { message: err.message })))
+      .catch(err => notify({ message: t('toast.downloadFailed', { message: err.message }), tone: 'error' }))
   }
 
   function openInBrowser(entry: Entry) {
