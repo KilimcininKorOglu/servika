@@ -60,3 +60,32 @@ func TestPlanLimitsFallBackToNothingOnReadFailure(t *testing.T) {
 		t.Errorf("planLimitsOrDefault with an unreachable database = %+v, want the zero value", got)
 	}
 }
+
+// A measurement that could not be stored has to be reported as a failure. The du
+// run succeeded, so it is tempting to answer with the number anyway, but the
+// next page load reads the column and would show the old value while the caller
+// was told the repair worked.
+func TestStoreUsageReportsAWriteFailure(t *testing.T) {
+	db, err := sql.Open("mail_quota_failing_db", "")
+	if err != nil {
+		t.Fatalf("open the failing database: %v", err)
+	}
+	t.Cleanup(func() { _ = db.Close() })
+
+	quota, err := storeUsage(context.Background(), db, 1, 4096)
+	if err == nil {
+		t.Fatalf("storeUsage reported success with an unreachable database, quota=%d", quota)
+	}
+	if quota != 0 {
+		t.Errorf("storeUsage returned quota %d alongside an error", quota)
+	}
+}
+
+// The quota backend is `maildir:User quota`, so this file, and only this file, is
+// what Dovecot reads instead of counting. Renaming it here without renaming it in
+// the Dovecot drop-in would leave every recalculation silently doing nothing.
+func TestDovecotQuotaCacheIsTheFileDovecotReads(t *testing.T) {
+	if maildirsizeName != "maildirsize" {
+		t.Errorf("quota cache file = %q, but the maildir quota backend reads maildirsize", maildirsizeName)
+	}
+}

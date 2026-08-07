@@ -1,6 +1,7 @@
 package autoconfig
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -75,7 +76,7 @@ func TestAnnouncesTheMailHostWhenTheCertificateCoversIt(t *testing.T) {
 		"mail.example.com", "smtp.example.com", "imap.example.com")
 
 	h := &Handlers{DB: failingDB(t)}
-	host, err := h.announceableHost(httptest.NewRequest("GET", "/", nil), "example.com")
+	host, err := announceableHost(context.Background(), h.DB, "example.com")
 	if err != nil {
 		t.Fatalf("announceableHost: %v", err)
 	}
@@ -92,7 +93,7 @@ func TestExpiredCertificateDoesNotKeepAnnouncingTheMailHost(t *testing.T) {
 	writeMailCertificate(t, root, "example.com", time.Now().Add(-time.Hour), "mail.example.com")
 
 	h := &Handlers{DB: failingDB(t)}
-	if host, err := h.announceableHost(httptest.NewRequest("GET", "/", nil), "example.com"); err == nil {
+	if host, err := announceableHost(context.Background(), h.DB, "example.com"); err == nil {
 		t.Errorf("announceableHost returned %q for an expired certificate", host)
 	}
 }
@@ -105,7 +106,7 @@ func TestNoHostIsInventedWhenNothingCanBeMeasured(t *testing.T) {
 	t.Setenv("SERVIKA_CERT_ROOT", t.TempDir())
 
 	h := &Handlers{DB: failingDB(t)}
-	host, err := h.announceableHost(httptest.NewRequest("GET", "/", nil), "example.com")
+	host, err := announceableHost(context.Background(), h.DB, "example.com")
 	if err == nil {
 		t.Fatalf("announceableHost returned %q with no certificate and no database", host)
 	}

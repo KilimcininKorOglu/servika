@@ -21,6 +21,7 @@
 package autoconfig
 
 import (
+	"context"
 	"database/sql"
 	"encoding/xml"
 	"errors"
@@ -44,6 +45,10 @@ type Handlers struct{ DB *sql.DB }
 const (
 	imapPort       = 143
 	submissionPort = 587
+	// socketTypeSTARTTLS is the encryption both ports negotiate. Postfix runs
+	// submission with smtpd_tls_security_level=encrypt, so the upgrade is not
+	// optional even though the port is the plaintext one.
+	socketTypeSTARTTLS = "STARTTLS"
 	// Dovecot's userdb matches on the full address (`WHERE m.email='%u'`), so a
 	// bare local part cannot log in.
 	usernameIsFullAddress = "%EMAILADDRESS%"
@@ -53,7 +58,44 @@ const (
 // under a kilobyte; anything larger is not a mail client.
 const maxAutodiscoverBody = 8 << 10
 
-var errNoMailHost = errors.New("no mail hostname with a valid certificate")
+// ErrNoMailHost is returned when no hostname can be announced yet, because none
+// of the candidates is covered by an active certificate.
+var ErrNoMailHost = errors.New("no mail hostname with a valid certificate")
+
+// ClientSettings is everything a mail client needs to configure one account.
+//
+// It exists so the panel's own connection card and the two discovery endpoints
+// cannot disagree: a card that printed 993 while Dovecot listens on 143 would
+// produce an account that configures itself and then cannot connect, which is
+// the exact failure this package was written to avoid.
+type ClientSettings struct {
+	Hostname       string `json:"hostname"`
+	IMAPPort       int    `json:"imap_port"`
+	SubmissionPort int    `json:"submission_port"`
+	// Security is what both ports negotiate. Implicit TLS is not offered because
+	// neither 993 nor 465 is opened by servika-mail-setup.
+	Security string `json:"security"`
+}
+
+// SettingsFor returns the settings announced for a domain.
+//
+// The hostname is measured, never assumed, exactly as the discovery endpoints
+// measure it: a name no certificate covers walks the client into a warning at
+// the moment it is about to be handed a password. When there is no such name yet
+// it returns ErrNoMailHost, which is a state the caller can report rather than
+// an error to log.
+func SettingsFor(ctx context.Context, db *sql.DB, domain string) (ClientSettings, error) {
+	host, err := announceableHost(ctx, db, domain)
+	if err != nil {
+		return ClientSettings{}, err
+	}
+	return ClientSettings{
+		Hostname:       host,
+		IMAPPort:       imapPort,
+		SubmissionPort: submissionPort,
+		Security:       socketTypeSTARTTLS,
+	}, nil
+}
 
 // Thunderbird answers GET /.well-known/autoconfig/mail/config-v1.1.xml.
 //
@@ -169,7 +211,7 @@ func (h *Handlers) resolve(w http.ResponseWriter, r *http.Request) (domain, mail
 		httpx.WriteError(w, http.StatusNotFound, "this host does not serve mail")
 		return "", "", false
 	}
-	mailHost, err = h.announceableHost(r, domain)
+	mailHost, err = announceableHost(r.Context(), h.DB, domain)
 	if err != nil {
 		// Not an error the client can act on, and not one worth a 500: there is
 		// simply no name that would survive the client's certificate check yet.
@@ -234,7 +276,7 @@ func (h *Handlers) hostsMail(r *http.Request, domain string) (bool, error) {
 // is used, and only while its certificate is active. Announcing a name no
 // certificate covers would walk the client straight into a warning on its first
 // connection, which is the failure this whole endpoint exists to avoid.
-func (h *Handlers) announceableHost(r *http.Request, domain string) (string, error) {
+func announceableHost(ctx context.Context, db *sql.DB, domain string) (string, error) {
 	want := "mail." + domain
 	covered, _ := provisioner.MailCertificateStatus(domain)
 	for _, name := range covered {
@@ -245,7 +287,7 @@ func (h *Handlers) announceableHost(r *http.Request, domain string) (string, err
 
 	var panelDomain sql.NullString
 	var sslStatus string
-	err := h.DB.QueryRowContext(r.Context(),
+	err := db.QueryRowContext(ctx,
 		`SELECT custom_domain, ssl_status FROM panel_settings WHERE id = 1`).Scan(&panelDomain, &sslStatus)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return "", err
@@ -253,7 +295,7 @@ func (h *Handlers) announceableHost(r *http.Request, domain string) (string, err
 	if host := strings.TrimSpace(panelDomain.String); host != "" && sslStatus == "active" {
 		return strings.ToLower(host), nil
 	}
-	return "", errNoMailHost
+	return "", ErrNoMailHost
 }
 
 // normalizeHost turns the Host header into the domain the vhost serves: no port,
