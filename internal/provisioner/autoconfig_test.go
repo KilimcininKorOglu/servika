@@ -2,9 +2,6 @@ package provisioner
 
 import (
 	"bytes"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -12,21 +9,10 @@ import (
 // The block goes into every TLS vhost on the host, so a syntax error in it takes
 // every hosted site down at the next reload.
 func TestAutoconfigBlockIsValidNginxSyntax(t *testing.T) {
-	nginx, err := exec.LookPath("nginx")
-	if err != nil {
-		t.Skip("nginx is unavailable")
-	}
 	prefix := t.TempDir()
-	config := filepath.Join(prefix, "nginx.conf")
 	body := "events {}\nhttp {\n    server {\n        listen 8080;\n        server_name example.com;\n" +
 		autoconfigNginx + "    }\n}\n"
-	if err := os.WriteFile(config, []byte(body), 0o600); err != nil {
-		t.Fatalf("write the configuration: %v", err)
-	}
-	out, err := exec.Command(nginx, "-t", "-p", prefix, "-c", config, "-e", "stderr").CombinedOutput()
-	if err != nil {
-		t.Fatalf("the autoconfig block is not valid nginx syntax: %v\n%s\n%s", err, out, body)
-	}
+	checkNginxSyntax(t, prefix, body, "the autoconfig block is not valid nginx syntax")
 }
 
 // Defining add_header in a location replaces the whole inherited set, so a

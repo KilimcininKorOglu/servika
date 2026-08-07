@@ -34,8 +34,19 @@ jobs:
 
       # The vhost tests shell out to `nginx -t` and skip themselves when no nginx
       # is on PATH, so without this the configuration gates pass by not running.
+      #
+      # It comes from nginx.org rather than from Ubuntu: 24.04 packages 1.24,
+      # which predates `http2 on;` and so rejects the configuration Servika ships
+      # for AlmaLinux 10 (nginx 1.26) as an unknown directive. The tests refuse to
+      # run against a version that old rather than report that as a defect.
       - name: nginx (for the configuration syntax tests)
-        run: sudo apt-get update && sudo apt-get install -y nginx
+        run: |
+          curl -fsSL https://nginx.org/keys/nginx_signing.key \
+            | sudo gpg --dearmor -o /usr/share/keyrings/nginx-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
+            | sudo tee /etc/apt/sources.list.d/nginx.list
+          sudo apt-get update && sudo apt-get install -y nginx
+          nginx -v
 
       # -count=1 because a cached PASS is not a test run.
       - name: go test

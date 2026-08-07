@@ -9,7 +9,6 @@ import (
 	"encoding/pem"
 	"math/big"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -134,17 +133,12 @@ func TestDiscoveryVhostServesOnlyTheAutoConfigurationPaths(t *testing.T) {
 // The block is appended to a live vhost file, so a syntax error in it takes the
 // whole host down at the next reload.
 func TestDiscoveryVhostIsValidNginxSyntax(t *testing.T) {
-	nginx, err := exec.LookPath("nginx")
-	if err != nil {
-		t.Skip("nginx is unavailable")
-	}
 	opts := discoveryOpts(t, "example.com", "autoconfig.example.com", "autodiscover.example.com")
 	var rendered bytes.Buffer
 	if err := discoveryVhostTmpl.Execute(&rendered, opts); err != nil {
 		t.Fatalf("render the auto-configuration vhost: %v", err)
 	}
 	prefix := t.TempDir()
-	config := filepath.Join(prefix, "nginx.conf")
 	// The ssl directives need a real pair, which the rendered block already
 	// points at; only the listen port is lowered so the test needs no privilege.
 	body := "events {}\nhttp {\n" +
@@ -153,13 +147,7 @@ func TestDiscoveryVhostIsValidNginxSyntax(t *testing.T) {
 	// The log paths belong to a live host; point them at the sandbox so the check
 	// measures the block's syntax rather than the test machine's filesystem.
 	body = strings.ReplaceAll(body, "/var/log/nginx/", prefix+"/")
-	if err := os.WriteFile(config, []byte(body), 0o600); err != nil {
-		t.Fatalf("write the configuration: %v", err)
-	}
-	out, err := exec.Command(nginx, "-t", "-p", prefix, "-c", config, "-e", "stderr").CombinedOutput()
-	if err != nil {
-		t.Fatalf("the auto-configuration vhost is not valid nginx syntax: %v\n%s\n%s", err, out, body)
-	}
+	checkNginxSyntax(t, prefix, body, "the auto-configuration vhost is not valid nginx syntax")
 }
 
 // The repair recognises its own work through this marker; a rename that left it

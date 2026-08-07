@@ -2,7 +2,6 @@ package provisioner
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -21,10 +20,6 @@ var shippedNginxConfs = []string{"_panel.conf", "_default80.conf", "_default443.
 // All three are loaded together, which also proves they can coexist: each one
 // claims default_server, and two claiming it on the same port would be rejected.
 func TestShippedNginxConfsAreValidSyntax(t *testing.T) {
-	nginx, err := exec.LookPath("nginx")
-	if err != nil {
-		t.Skip("nginx is unavailable")
-	}
 	prefix := t.TempDir()
 
 	// nginx -t opens the certificate for real, so the vhosts need one that
@@ -59,12 +54,5 @@ func TestShippedNginxConfsAreValidSyntax(t *testing.T) {
 	}
 	body.WriteString("}\n")
 
-	config := filepath.Join(prefix, "nginx.conf")
-	if err := os.WriteFile(config, []byte(body.String()), 0o600); err != nil {
-		t.Fatalf("write the configuration: %v", err)
-	}
-	out, err := exec.Command(nginx, "-t", "-p", prefix, "-c", config, "-e", "stderr").CombinedOutput()
-	if err != nil {
-		t.Fatalf("the shipped nginx configuration is not valid: %v\n%s\n%s", err, out, body.String())
-	}
+	checkNginxSyntax(t, prefix, body.String(), "the shipped nginx configuration is not valid")
 }

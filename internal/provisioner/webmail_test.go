@@ -3,7 +3,6 @@ package provisioner
 import (
 	"bytes"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -60,25 +59,14 @@ func TestWebmailBlockCarriesTheRoundcubeDirectives(t *testing.T) {
 // The block is written into every TLS vhost on the host, so a syntax error in it
 // takes every hosted site down at the next reload.
 func TestWebmailBlockIsValidNginxSyntax(t *testing.T) {
-	nginx, err := exec.LookPath("nginx")
-	if err != nil {
-		t.Skip("nginx is unavailable")
-	}
 	prefix := t.TempDir()
 	if err := os.WriteFile(filepath.Join(prefix, "fastcgi_params"),
 		[]byte("fastcgi_param SCRIPT_NAME $fastcgi_script_name;\n"), 0o600); err != nil {
 		t.Fatalf("write the fastcgi_params stand-in: %v", err)
 	}
-	config := filepath.Join(prefix, "nginx.conf")
 	body := "events {}\nhttp {\n    server {\n        listen 8080;\n        server_name example.com;\n" +
 		webmailNginx + "    }\n}\n"
-	if err := os.WriteFile(config, []byte(body), 0o600); err != nil {
-		t.Fatalf("write the configuration: %v", err)
-	}
-	out, err := exec.Command(nginx, "-t", "-p", prefix, "-c", config, "-e", "stderr").CombinedOutput()
-	if err != nil {
-		t.Fatalf("the webmail block is not valid nginx syntax: %v\n%s\n%s", err, out, body)
-	}
+	checkNginxSyntax(t, prefix, body, "the webmail block is not valid nginx syntax")
 }
 
 // The repair recognises its own work through these two markers; a rename that
