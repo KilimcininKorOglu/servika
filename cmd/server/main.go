@@ -496,8 +496,18 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail", mailH.List)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail", mailH.Create)
 				// Static segments again, so they win over /mail/{mid} below.
-				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/migration/discover", mailH.Discover)
-				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/migration/verify", mailH.Verify)
+				//
+				// Both reach a server the CALLER names. Discovery fans out into DNS
+				// lookups, four HTTPS fetches and a round of TCP probes, and
+				// verification performs a full IMAP sign-in with a username and
+				// password the caller supplies. Without a cap the panel is a mail
+				// password guesser that answers from the server's own address, which
+				// is how that address ends up on a blocklist. A real migration needs
+				// one verification, so these bounds are invisible to honest use.
+				migrationProbe := middleware.RateLimit("mail-migration-discover", 20, time.Minute)
+				migrationLogin := middleware.RateLimit("mail-migration-verify", 10, time.Minute)
+				r.With(middleware.CustomerScope, migrationProbe).Post("/domains/{id}/mail/migration/discover", mailH.Discover)
+				r.With(middleware.CustomerScope, migrationLogin).Post("/domains/{id}/mail/migration/verify", mailH.Verify)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/aliases", mailH.ListAliases)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/aliases", mailH.CreateAlias)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/aliases/{aid}", mailH.DeleteAlias)
@@ -538,7 +548,11 @@ func main() {
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/quota-recalc", mailH.QuotaRecalc)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/forwarding", mailH.ForwardingGet)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/forwarding", mailH.ForwardingPut)
-				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/migration", mailH.StartMigration)
+				// Starting a copy signs in to the remote server before it records
+				// anything, so a refused password here costs nothing and leaves no
+				// row: the same guessing channel as /migration/verify, and it shares
+				// that counter rather than getting a separate allowance.
+				r.With(middleware.CustomerScope, migrationLogin).Post("/domains/{id}/mail/{mid}/migration", mailH.StartMigration)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/migration", mailH.MigrationStatus)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/{mid}/migration", mailH.CancelMigration)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/protection", protectionH.List)
