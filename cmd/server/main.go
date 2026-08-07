@@ -531,6 +531,8 @@ func main() {
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/send-limits", mailH.SendLimitsGet)
 				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/send-limits", mailH.SendLimitsPut)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/webmail-token", mailH.WebmailToken)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/forwarding", mailH.ForwardingGet)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/mail/{mid}/forwarding", mailH.ForwardingPut)
 				r.With(middleware.CustomerScope).Post("/domains/{id}/mail/{mid}/migration", mailH.StartMigration)
 				r.With(middleware.CustomerScope).Get("/domains/{id}/mail/{mid}/migration", mailH.MigrationStatus)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/mail/{mid}/migration", mailH.CancelMigration)

@@ -359,6 +359,24 @@ if header :contains "X-Spam" "Yes" {
 	}
 	_ = rows.Close()
 
+	// Forwarding comes after the filters, so a filter that files a message and
+	// stops still wins, and before the vacation reply, which is not a delivery.
+	forwarding, err := readForwarding(ctx, db, mailboxID)
+	if err != nil {
+		return err
+	}
+	if forwarding.Enabled {
+		out.WriteString("\n# Forwarding.\n")
+		for _, destination := range forwarding.Destinations {
+			fmt.Fprintf(&out, "redirect %s;\n", sieveQuote(destination))
+		}
+		if !forwarding.KeepCopy {
+			// Without this Sieve still delivers locally, so "do not keep a copy"
+			// has to be said explicitly or the mailbox keeps filling up.
+			out.WriteString("discard;\n")
+		}
+	}
+
 	var enabled int
 	var subject, body string
 	var days int
