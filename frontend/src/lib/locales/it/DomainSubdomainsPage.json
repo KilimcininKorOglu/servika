@@ -18,7 +18,7 @@
     "letsencrypt": "Let's Encrypt",
     "selfSigned": "un certificato autofirmato"
   },
-  "confirmDelete": "Eliminare {{fqdn}}?\nIl vhost, i file (root del documento) e il record DNS verranno rimossi. Questa azione non può essere annullata.",
+  "confirmDelete": "Eliminare {{fqdn}}?\nIl vhost, i file (root del documento), il certificato SSL e il record DNS verranno rimossi. Questa azione non può essere annullata.",
   "form": {
     "title": "Nuovo sottodominio",
     "label": "Sottodominio",

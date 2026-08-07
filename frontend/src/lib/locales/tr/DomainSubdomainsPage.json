@@ -18,7 +18,7 @@
     "letsencrypt": "Let's Encrypt",
     "selfSigned": "kendinden imzalı bir sertifika"
   },
-  "confirmDelete": "{{fqdn}} silinsin mi?\nVhost, dosyalar (belge kökü) ve DNS kaydı kaldırılacak. Bu geri alınamaz.",
+  "confirmDelete": "{{fqdn}} silinsin mi?\nVhost, dosyalar (belge kökü), SSL sertifikası ve DNS kaydı kaldırılacak. Bu geri alınamaz.",
   "form": {
     "title": "Yeni Alt Alan Adı",
     "label": "Alt Alan Adı",

@@ -18,7 +18,7 @@
     "letsencrypt": "Let's Encrypt",
     "selfSigned": "certifikátu podepsaného svým vlastníkem"
   },
-  "confirmDelete": "Smazat {{fqdn}}?\nBudou odebrány vhost, soubory (kořen dokumentů) a záznam DNS. Toto nelze vrátit zpět.",
+  "confirmDelete": "Smazat {{fqdn}}?\nBudou odebrány vhost, soubory (kořen dokumentů), certifikát SSL a záznam DNS. Toto nelze vrátit zpět.",
   "form": {
     "title": "Nová subdoména",
     "label": "Subdoména",

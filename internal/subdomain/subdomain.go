@@ -317,6 +317,17 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 	if err := files.RemoveAllBeneath("/home/"+systemUser, "subdomains/"+fqdn); err != nil && !errors.Is(err, os.ErrNotExist) {
 		log.Printf("delete subdomain document root %s: %v", fqdn, err)
 	}
+	// The certificate goes with it. Left behind, ~/ssl/<fqdn>.crt and .key
+	// outlive everything that referred to them, and creating the same name again
+	// finds them: SSLStatus reads the files, so the new subdomain would come up
+	// reporting a certificate that was issued for a site somebody deleted.
+	//
+	// Same removal as above, for the same reason: ~/ssl is the tenant's too.
+	for _, extension := range []string{".crt", ".key"} {
+		if err := files.RemoveAllBeneath("/home/"+systemUser, "ssl/"+fqdn+extension); err != nil && !errors.Is(err, os.ErrNotExist) {
+			log.Printf("delete subdomain certificate %s%s: %v", fqdn, extension, err)
+		}
+	}
 	if err := dns.WriteZone(r.Context(), h.DB, id); err != nil {
 		log.Printf("write DNS zone after subdomain delete %s: %v", subdomainName, err)
 	}

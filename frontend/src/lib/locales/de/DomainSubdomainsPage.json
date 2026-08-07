@@ -18,7 +18,7 @@
     "letsencrypt": "Let's Encrypt",
     "selfSigned": "einem selbstsignierten Zertifikat"
   },
-  "confirmDelete": "{{fqdn}} löschen?\nDer vhost, die Dateien (Dokumentenstamm) und der DNS-Eintrag werden entfernt. Dies kann nicht rückgängig gemacht werden.",
+  "confirmDelete": "{{fqdn}} löschen?\nDer vhost, die Dateien (Dokumentenstamm), das SSL-Zertifikat und der DNS-Eintrag werden entfernt. Dies kann nicht rückgängig gemacht werden.",
   "form": {
     "title": "Neue Subdomain",
     "label": "Subdomain",

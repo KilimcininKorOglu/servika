@@ -18,7 +18,7 @@
     "letsencrypt": "Let's Encrypt",
     "selfSigned": "un certificat autosemnat"
   },
-  "confirmDelete": "Ștergeți {{fqdn}}?\nVhost-ul, fișierele (rădăcina de documente) și înregistrarea DNS vor fi eliminate. Acest lucru nu poate fi anulat.",
+  "confirmDelete": "Ștergeți {{fqdn}}?\nVhost-ul, fișierele (rădăcina de documente), certificatul SSL și înregistrarea DNS vor fi eliminate. Acest lucru nu poate fi anulat.",
   "form": {
     "title": "Subdomeniu nou",
     "label": "Subdomeniu",

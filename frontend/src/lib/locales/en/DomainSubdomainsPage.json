@@ -18,7 +18,7 @@
     "letsencrypt": "Let's Encrypt",
     "selfSigned": "a self-signed certificate"
   },
-  "confirmDelete": "Delete {{fqdn}}?\nThe vhost, files (document root), and DNS record will be removed. This cannot be undone.",
+  "confirmDelete": "Delete {{fqdn}}?\nThe vhost, files (document root), SSL certificate, and DNS record will be removed. This cannot be undone.",
   "form": {
     "title": "New Subdomain",
     "label": "Subdomain",

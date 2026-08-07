@@ -18,7 +18,7 @@
     "letsencrypt": "Let's Encrypt",
     "selfSigned": "自签名证书"
   },
-  "confirmDelete": "删除 {{fqdn}}？\nvhost、文件（文档根目录）和 DNS 记录将被移除。此操作无法撤销。",
+  "confirmDelete": "删除 {{fqdn}}？\nvhost、文件（文档根目录）、SSL 证书和 DNS 记录将被移除。此操作无法撤销。",
   "form": {
     "title": "新建子域名",
     "label": "子域名",

@@ -18,7 +18,7 @@
     "letsencrypt": "Let's Encrypt",
     "selfSigned": "自己署名証明書"
   },
-  "confirmDelete": "{{fqdn}} を削除しますか?\nvhost、ファイル (ドキュメントルート)、DNS レコードが削除されます。この操作は取り消せません。",
+  "confirmDelete": "{{fqdn}} を削除しますか?\nvhost、ファイル (ドキュメントルート)、SSL 証明書、DNS レコードが削除されます。この操作は取り消せません。",
   "form": {
     "title": "新規サブドメイン",
     "label": "サブドメイン",
