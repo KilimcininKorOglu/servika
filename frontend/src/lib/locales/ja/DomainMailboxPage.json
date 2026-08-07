@@ -36,6 +36,9 @@
     "imap": "IMAP ポート",
     "submission": "送信ポート",
     "copy": "コピー",
+    "covered": "証明書が対象とする名前: {{names}}",
+    "coveredNone": "まだ名前がありません",
+    "coveredLabel": "証明書の対象",
     "hostnamePending": "証明書が対象としているホスト名がまだないため、サーバー名を提示できません。ポートはすでに正しく、名前は証明書の発行後に決まります。"
   },
   "autoresponder": {
@@ -122,6 +125,7 @@
     "timedOut": "コピーが許容時間を超えたため停止されました。",
     "interrupted": "コピー中にパネルが再起動しました。",
     "alreadyRunning": "このメールボックスではすでにコピーが実行中です。",
+    "tooManyMigrations": "このサーバーではすでに待機中のコピーが多すぎます。しばらくしてからもう一度お試しください。",
     "unknown": "サーバーからの報告: {{code}}"
   },
   "errors": {

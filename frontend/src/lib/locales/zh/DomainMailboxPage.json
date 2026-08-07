@@ -36,6 +36,9 @@
     "imap": "IMAP 端口",
     "submission": "发信端口",
     "copy": "复制",
+    "covered": "证书覆盖的名称：{{names}}",
+    "coveredNone": "尚无名称",
+    "coveredLabel": "证书覆盖",
     "hostnamePending": "目前还无法给出主机名，因为没有证书覆盖任何一个名称。端口已经正确，名称将在证书签发后确定。"
   },
   "autoresponder": {
@@ -122,6 +125,7 @@
     "timedOut": "复制超出了允许的时间，已被停止。",
     "interrupted": "复制过程中面板重新启动了。",
     "alreadyRunning": "该邮箱已有一个复制任务在运行。",
+    "tooManyMigrations": "此服务器上等待中的复制任务已过多。请稍后再试。",
     "unknown": "服务器报告：{{code}}"
   },
   "errors": {

@@ -36,6 +36,9 @@
     "imap": "IMAP portu",
     "submission": "Giden posta portu",
     "copy": "Kopyala",
+    "covered": "Sertifikanın kapsadığı adlar: {{names}}",
+    "coveredNone": "henüz ad yok",
+    "coveredLabel": "Sertifika kapsamı",
     "hostnamePending": "Henüz duyurulabilecek bir sunucu adı yok, çünkü hiçbir sertifika bir adı kapsamıyor. Portlar zaten doğru; ad, sertifika verildikten sonra gelir."
   },
   "autoresponder": {
@@ -122,6 +125,7 @@
     "timedOut": "Kopyalama izin verilenden uzun sürdü ve durduruldu.",
     "interrupted": "Kopyalama sürerken panel yeniden başlatıldı.",
     "alreadyRunning": "Bu posta kutusu için zaten bir kopyalama sürüyor.",
+    "tooManyMigrations": "Bu sunucuda zaten çok fazla kopyalama bekliyor. Kısa süre sonra tekrar deneyin.",
     "unknown": "Sunucunun bildirdiği: {{code}}"
   },
   "errors": {

@@ -36,6 +36,9 @@
     "imap": "Porta IMAP",
     "submission": "Porta in uscita",
     "copy": "Copia",
+    "covered": "Nomi coperti dal certificato: {{names}}",
+    "coveredNone": "ancora nessun nome",
+    "coveredLabel": "Coperto dal certificato",
     "hostnamePending": "Non è ancora possibile indicare un nome host, perché nessun certificato ne copre uno. Le porte sono già corrette; il nome arriva quando il certificato viene emesso."
   },
   "autoresponder": {
@@ -122,6 +125,7 @@
     "timedOut": "La copia è durata più del consentito ed è stata interrotta.",
     "interrupted": "Il pannello è stato riavviato durante la copia.",
     "alreadyRunning": "Per questa casella è già in corso una copia.",
+    "tooManyMigrations": "Ci sono già troppe copie in attesa su questo server. Riprova tra poco.",
     "unknown": "Il server ha segnalato: {{code}}"
   },
   "errors": {

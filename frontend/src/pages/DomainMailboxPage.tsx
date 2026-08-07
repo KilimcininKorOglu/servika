@@ -15,6 +15,10 @@ type Mailbox = {
 type Connection = {
   hostname?: string; imap_port?: number; submission_port?: number
   security?: string; username: string; reason?: string
+  // Every name the domain's mail certificate carries. The announced hostname is
+  // one of them, so showing the list is what makes it checkable rather than
+  // taken on trust.
+  covered?: string[]
 }
 type Autoresponder = {
   mailbox_id: number; email: string; enabled: boolean
@@ -55,6 +59,7 @@ const MIGRATION_REASONS: Record<string, string> = {
   timed_out: 'reasons.timedOut',
   interrupted: 'reasons.interrupted',
   migration_already_running: 'reasons.alreadyRunning',
+  too_many_migrations: 'reasons.tooManyMigrations',
 }
 
 // The draft outlives a page reload so a long discovery is not repeated, and it
@@ -265,7 +270,15 @@ export default function DomainMailboxPage() {
       setRemotePassword('')
       fetchJob()
     } catch (cause) {
-      await notify({ message: apiError(cause, t('errors.startFailed')), tone: 'error' })
+      // A refusal carries a reason code, and the panel ships twelve languages
+      // while the API is English. Preferring the code keeps the refusal readable
+      // in the language the screen is drawn in; apiError is the fallback for
+      // anything that arrives without one.
+      const refused = (cause as { response?: { data?: { reason?: string } } })?.response?.data?.reason
+      await notify({
+        message: refused ? reasonText(refused) : apiError(cause, t('errors.startFailed')),
+        tone: 'error',
+      })
     } finally {
       setIsStarting(false)
     }
@@ -443,7 +456,19 @@ export default function DomainMailboxPage() {
                 <h3 className="mb-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{t('connection.title')}</h3>
                 <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{t('connection.description')}</p>
                 {connection?.reason === 'no_mail_hostname' ? (
-                  <p className="text-sm text-amber-700 dark:text-amber-300">{t('connection.hostnamePending')}</p>
+                  <>
+                    <p className="text-sm text-amber-700 dark:text-amber-300">{t('connection.hostnamePending')}</p>
+                    {/* Which names the certificate does carry separates the two ways of
+                        being pending: names present but none usable is a DNS problem,
+                        an empty list means nothing was ever issued. */}
+                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                      {t('connection.covered', {
+                        names: connection.covered?.length
+                          ? connection.covered.join(', ')
+                          : t('connection.coveredNone'),
+                      })}
+                    </p>
+                  </>
                 ) : (
                   <dl className="space-y-2 text-sm">
                     {[
@@ -451,6 +476,9 @@ export default function DomainMailboxPage() {
                       { label: t('connection.username'), value: connection?.username || '' },
                       { label: t('connection.imap'), value: `${connection?.imap_port} (${connection?.security})` },
                       { label: t('connection.submission'), value: `${connection?.submission_port} (${connection?.security})` },
+                      ...(connection?.covered?.length
+                        ? [{ label: t('connection.coveredLabel'), value: connection.covered.join(', ') }]
+                        : []),
                     ].map(row => (
                       <div key={row.label} className="flex items-center justify-between gap-3">
                         <dt className="text-slate-500 dark:text-slate-400">{row.label}</dt>

@@ -36,6 +36,9 @@
     "imap": "IMAP port",
     "submission": "Outgoing port",
     "copy": "Copy",
+    "covered": "Certificate covers: {{names}}",
+    "coveredNone": "no names yet",
+    "coveredLabel": "Certificate covers",
     "hostnamePending": "No hostname can be given out yet, because no certificate covers one. The ports are already correct; the name follows once the certificate is issued."
   },
   "autoresponder": {
@@ -122,6 +125,7 @@
     "timedOut": "The copy ran longer than allowed and was stopped.",
     "interrupted": "The panel restarted while the copy was running.",
     "alreadyRunning": "A copy is already running for this mailbox.",
+    "tooManyMigrations": "Too many copies are already waiting on this server. Try again shortly.",
     "unknown": "The server reported: {{code}}"
   },
   "errors": {

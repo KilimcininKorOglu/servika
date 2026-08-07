@@ -36,6 +36,9 @@
     "imap": "Port IMAP",
     "submission": "Port pro odchozí poštu",
     "copy": "Kopírovat",
+    "covered": "Názvy pokryté certifikátem: {{names}}",
+    "coveredNone": "zatím žádné názvy",
+    "coveredLabel": "Pokryto certifikátem",
     "hostnamePending": "Zatím nelze uvést název serveru, protože žádný certifikát jej nepokrývá. Porty už jsou správné; název přijde, jakmile bude certifikát vydán."
   },
   "autoresponder": {
@@ -122,6 +125,7 @@
     "timedOut": "Kopírování trvalo déle, než je povoleno, a bylo ukončeno.",
     "interrupted": "Během kopírování byl panel restartován.",
     "alreadyRunning": "Pro tuto schránku už jedno kopírování běží.",
+    "tooManyMigrations": "Na tomto serveru už čeká příliš mnoho kopií. Zkuste to prosím za chvíli znovu.",
     "unknown": "Server ohlásil: {{code}}"
   },
   "errors": {

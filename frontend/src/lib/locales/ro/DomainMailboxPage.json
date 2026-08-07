@@ -36,6 +36,9 @@
     "imap": "Port IMAP",
     "submission": "Port pentru trimitere",
     "copy": "Copiază",
+    "covered": "Nume acoperite de certificat: {{names}}",
+    "coveredNone": "încă niciun nume",
+    "coveredLabel": "Acoperit de certificat",
     "hostnamePending": "Încă nu se poate indica un nume de server, pentru că niciun certificat nu acoperă unul. Porturile sunt deja corecte; numele vine după emiterea certificatului."
   },
   "autoresponder": {
@@ -122,6 +125,7 @@
     "timedOut": "Copierea a durat mai mult decât este permis și a fost oprită.",
     "interrupted": "Panoul a repornit în timpul copierii.",
     "alreadyRunning": "Pentru această căsuță este deja o copiere în curs.",
+    "tooManyMigrations": "Pe acest server așteaptă deja prea multe copieri. Încercați din nou în scurt timp.",
     "unknown": "Serverul a raportat: {{code}}"
   },
   "errors": {

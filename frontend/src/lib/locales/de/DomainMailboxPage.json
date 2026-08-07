@@ -36,6 +36,9 @@
     "imap": "IMAP-Port",
     "submission": "Port für ausgehende Mail",
     "copy": "Kopieren",
+    "covered": "Vom Zertifikat abgedeckt: {{names}}",
+    "coveredNone": "noch keine Namen",
+    "coveredLabel": "Zertifikat deckt ab",
     "hostnamePending": "Es kann noch kein Hostname genannt werden, weil kein Zertifikat einen abdeckt. Die Ports stimmen bereits; der Name folgt, sobald das Zertifikat ausgestellt ist."
   },
   "autoresponder": {
@@ -122,6 +125,7 @@
     "timedOut": "Das Kopieren lief länger als erlaubt und wurde beendet.",
     "interrupted": "Das Panel wurde während des Kopierens neu gestartet.",
     "alreadyRunning": "Für dieses Postfach läuft bereits ein Kopiervorgang.",
+    "tooManyMigrations": "Auf diesem Server warten bereits zu viele Kopiervorgänge. Versuchen Sie es in Kürze erneut.",
     "unknown": "Der Server meldete: {{code}}"
   },
   "errors": {
