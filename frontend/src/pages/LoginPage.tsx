@@ -48,11 +48,13 @@ export default function LoginPage() {
       .catch(() => { /* the footer is decorative; a failed probe just hides it */ })
   }, [])
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault()
+  // The code is passed in rather than read from state so the auto-submit below
+  // can send the digit the visitor just typed instead of waiting a render for
+  // the state to catch up.
+  async function signIn(submittedCode: string) {
     setError(null); setLoading(true)
     try {
-      const { data } = await api.post<LoginResponse>('/auth/login', { username, password, code })
+      const { data } = await api.post<LoginResponse>('/auth/login', { username, password, code: submittedCode })
       if (data.two_factor_required) {
         setRequiresTwoFactor(true); setLoading(false)
         return
@@ -64,6 +66,26 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  function onSubmit(event: React.FormEvent) {
+    event.preventDefault()
+    void signIn(code)
+  }
+
+  // A TOTP code is exactly six digits, so the last one is also the visitor's
+  // way of saying "go" and pressing the button afterwards adds nothing.
+  //
+  // This fires from the change handler and NOT from an effect watching the
+  // code. An effect would run twice per commit under StrictMode and send the
+  // same code twice, and the server accepts a code once: it records the
+  // accepted step for replay protection, so the second request comes back as
+  // "invalid or reused 2FA code" and a visitor who typed the right code is
+  // told it was wrong.
+  function onCodeChange(raw: string) {
+    const next = raw.replace(/\D/g, '').slice(0, 6)
+    setCode(next)
+    if (next.length === 6 && !loading) void signIn(next)
   }
 
   return (
@@ -119,7 +141,7 @@ export default function LoginPage() {
                   type="text"
                   inputMode="numeric"
                   value={code}
-                  onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(event) => onCodeChange(event.target.value)}
                   autoFocus
                   placeholder="000000"
                   className="w-full px-3.5 py-2.5 text-center text-lg font-mono tracking-[0.4em] border border-slate-300 dark:border-slate-600 rounded-lg focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition"
