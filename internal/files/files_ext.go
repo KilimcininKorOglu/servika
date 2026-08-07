@@ -474,13 +474,18 @@ func (h *Handlers) Archive(w http.ResponseWriter, r *http.Request) {
 	// cannot be redirected by one.
 	_, _ = newFileCommand(r.Context(), "restorecon", outputAbs).CombinedOutput()
 
-	var size int64
-	if info, err := statBeneath(home, outputRel); err == nil {
-		size = info.Size()
+	// The archive exists either way, so a failure here is not the request's.
+	// But size is OMITTED rather than sent as 0: an archive that was written and
+	// one whose size could not be read are different facts, and zero reads as
+	// the first. The failure is logged because nothing else would record it.
+	response := map[string]any{"ok": true, "output_path": req.OutputPath}
+	if info, err := statBeneath(home, outputRel); err != nil {
+		// #nosec G706 -- the logged path is relClean-normalised and the error is the kernel's; no raw tenant string with CR/LF reaches the log.
+		log.Printf("archive: created %q but could not read its size: %v", outputRel, err)
+	} else {
+		response["size"] = info.Size()
 	}
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{
-		"ok": true, "output_path": req.OutputPath, "size": size,
-	})
+	httpx.WriteJSON(w, http.StatusOK, response)
 }
 
 // ----- New empty file -----
