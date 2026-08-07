@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import DomainResourceCard from '@/components/DomainResourceCard'
@@ -35,6 +36,7 @@ const ICONS = {
 
 export default function SubscriptionDetailPage() {
   const { t } = useTranslation('SubscriptionDetailPage')
+  const { confirm } = useDialog()
   const report = useReportError()
   const { id } = useParams()
   const navigate = useNavigate()
@@ -65,7 +67,7 @@ export default function SubscriptionDetailPage() {
   async function toggleSuspension() {
     if (!id || !domain) return
     const suspend = !domain.suspended
-    if (suspend && !window.confirm(t('confirmSuspend', { domain: domain.domain_name }))) return
+    if (suspend && !(await confirm({ message: t('confirmSuspend', { domain: domain.domain_name }), dangerous: true }))) return
 
     setMenuOpen(false)
     setProcessing(true)

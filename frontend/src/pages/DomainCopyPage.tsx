@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type Copy = { name: string; size_mb: number; date: string }
 
 export default function DomainCopyPage() {
   const { t } = useTranslation('DomainCopyPage')
+  const { confirm } = useDialog()
   const { id } = useParams()
   const [list, setCopies] = useState<Copy[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,7 +34,7 @@ export default function DomainCopyPage() {
   }
 
   async function remove(k: Copy) {
-    if (!confirm(t('confirmDelete', { name: k.name, size: k.size_mb }))) return
+    if (!(await confirm({ message: t('confirmDelete', { name: k.name, size: k.size_mb }), dangerous: true }))) return
     setError(null); setOk(null)
     try { await api.delete(`/domains/${id}/copy/${k.name}`); load() }
     catch (e) { setError(apiError(e, t('errors.deleteFailed'))) }

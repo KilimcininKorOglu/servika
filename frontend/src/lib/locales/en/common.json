@@ -29,5 +29,6 @@
   "error": "Error",
   "notice": "Notice",
   "areYouSure": "Are you sure?",
-  "enterValue": "Enter a value"
+  "enterValue": "Enter a value",
+  "copyManually": "Automatic copying failed. Copy the text below manually."
 }

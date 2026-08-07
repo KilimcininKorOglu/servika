@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 
 type HotlinkSettings = {
@@ -30,6 +31,7 @@ const MODE_BADGE: Record<IPAccessMode, string> = {
 
 export default function DomainAccessControlPage() {
   const { t } = useTranslation('DomainAccessControlPage')
+  const { confirm } = useDialog()
   const { id } = useParams()
   const [hotlink, setHotlink] = useState<HotlinkSettings>({ active: false, allowed: [] })
   const [allowedInput, setAllowedInput] = useState('')
@@ -109,7 +111,7 @@ export default function DomainAccessControlPage() {
   }
 
   async function deleteRule(rule: IPRule) {
-    if (!confirm(t('confirmDelete', { ip: rule.ip_cidr }))) return
+    if (!(await confirm({ message: t('confirmDelete', { ip: rule.ip_cidr }), dangerous: true }))) return
     setError(null); setSuccess(null); setBusy(true)
     try {
       await api.delete(`/domains/${id}/ip-rules/${rule.id}`)

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useResourceScope } from '@/lib/scope'
 
@@ -9,6 +10,7 @@ type Protection = { id: number; path: string; username: string; created_at: stri
 
 export default function DomainPasswordProtectPage() {
   const { t } = useTranslation('DomainPasswordProtectPage')
+  const { confirm } = useDialog()
   const { id, base, backHref, backLabel } = useResourceScope()
   const [protections, setProtections] = useState<Protection[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,7 +51,7 @@ export default function DomainPasswordProtectPage() {
   }
 
   async function remove(k: Protection) {
-    if (!confirm(t('confirmRemove', { username: k.username, path: k.path }))) return
+    if (!(await confirm({ message: t('confirmRemove', { username: k.username, path: k.path }), dangerous: true }))) return
     setError(null); setSuccess(null)
     try {
       await api.delete(`${base}/protection/${k.id}`)

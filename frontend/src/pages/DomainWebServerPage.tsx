@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useAuth } from '@/store/auth'
 import { useResourceScope } from '@/lib/scope'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -66,6 +67,7 @@ const HEADERS = [
 
 export default function DomainWebServerPage() {
   const { t } = useTranslation('DomainWebServerPage')
+  const { confirm } = useDialog()
   const { id, base, isSubdomain, backHref } = useResourceScope()
   const user = useAuth(state => state.username)
   const isAdmin = user?.role === 'admin'
@@ -197,7 +199,7 @@ export default function DomainWebServerPage() {
   // and the managed vhost is re-rendered from the settings above.
   async function returnToManagedVhost() {
     if (!isAdmin || !customVhost) return
-    if (!confirm(t('vhost.confirmReturn'))) return
+    if (!(await confirm({ message: t('vhost.confirmReturn'), dangerous: true }))) return
     setCustomVhostChanging(true); setError(null); setSuccess(null)
     try {
       await api.put<CustomVhostResponse>(`/domains/${id}/custom-vhost`, {

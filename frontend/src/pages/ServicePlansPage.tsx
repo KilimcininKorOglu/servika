@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useReportError } from '@/lib/errors'
 import { useAuth } from '@/store/auth'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -37,6 +38,7 @@ type Version = { version: string; description?: string }
 
 export default function ServicePlansPage() {
   const { t } = useTranslation('ServicePlansPage')
+  const { notify } = useDialog()
   const report = useReportError()
   const isAdmin = useAuth((s) => s.username?.role) === 'admin'
   const [items, setItems] = useState<Plan[]>([])
@@ -73,7 +75,7 @@ export default function ServicePlansPage() {
       await api.delete(`/plans/${planToDelete.id}`)
       setPlanToDelete(null); load()
     } catch (e) {
-      alert(apiError(e, t('errors.deleteFailed')))
+      await notify({ message: apiError(e, t('errors.deleteFailed')), tone: 'error' })
     }
   }
 

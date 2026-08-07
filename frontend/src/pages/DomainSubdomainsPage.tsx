@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { sslState } from '@/lib/ssl'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -13,6 +14,7 @@ type Sub = {
 
 export default function DomainSubdomainsPage() {
   const { t } = useTranslation('DomainSubdomainsPage')
+  const { confirm } = useDialog()
   const { id } = useParams()
   const [subdomains, setSubdomains] = useState<Sub[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,7 +52,7 @@ export default function DomainSubdomainsPage() {
   }
 
   async function remove(subdomain: Sub) {
-    if (!confirm(t('confirmDelete', { fqdn: subdomain.fqdn }))) return
+    if (!(await confirm({ message: t('confirmDelete', { fqdn: subdomain.fqdn }), dangerous: true }))) return
     setError(null); setSuccess(null)
     try { await api.delete(`/domains/${id}/subdomain/${subdomain.id}`); load() }
     catch (error) { setError(apiError(error, t('toast.deleteFailed'))) }

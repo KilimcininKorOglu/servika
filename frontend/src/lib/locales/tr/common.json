@@ -29,5 +29,6 @@
   "error": "Hata",
   "notice": "Bildirim",
   "areYouSure": "Emin misiniz?",
-  "enterValue": "Bir değer girin"
+  "enterValue": "Bir değer girin",
+  "copyManually": "Otomatik kopyalama başarısız oldu. Aşağıdaki metni elle kopyalayın."
 }

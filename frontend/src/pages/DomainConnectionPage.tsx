@@ -2,43 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useCopyOrOffer } from '@/lib/useCopyOrOffer'
 import Breadcrumb from '@/components/Breadcrumb'
-
-function writeToClipboard(text: string, promptMsg: string): boolean {
-  // 1) Modern API (HTTPS or localhost only), works asynchronously when called from a user gesture
-  if (navigator.clipboard && window.isSecureContext) {
-    // Silent on purpose: the caller falls back to a manual copy prompt when
-    // this returns false, so a rejected clipboard write is already handled.
-    navigator.clipboard.writeText(text).catch(() => {})
-    return true
-  }
-  // 2) Fallback: textarea + execCommand
-  try {
-    const ta = document.createElement('textarea')
-    ta.value = text
-    ta.setAttribute('readonly', '')
-    ta.style.position = 'fixed'
-    ta.style.top = '0'
-    ta.style.left = '0'
-    ta.style.opacity = '0'
-    document.body.appendChild(ta)
-    ta.focus()
-    ta.select()
-    ta.setSelectionRange(0, text.length)
-    const ok = document.execCommand('copy')
-    document.body.removeChild(ta)
-    if (ok) return true
-  } catch {
-    // execCommand is unavailable or blocked; fall through to the manual prompt.
-  }
-  // 3) Last resort: prompt the user to copy manually with Ctrl+C.
-  try {
-    window.prompt(promptMsg, text)
-    return true
-  } catch {
-    return false
-  }
-}
 
 
 
@@ -55,6 +20,7 @@ type Nameservers = { ns1: string; ns2: string; source?: string }
 
 export default function DomainConnectionPage() {
   const { t } = useTranslation('DomainConnectionPage')
+  const copyOrOffer = useCopyOrOffer()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -70,8 +36,8 @@ export default function DomainConnectionPage() {
     api.get<Nameservers>(`/domains/${id}/nameservers`).then(r => setNameservers(r.data)).catch(() => { /* the card stays hidden */ })
   }, [id])
 
-  function copy(value: string) {
-    writeToClipboard(value, t('clipboardPrompt'))
+  async function copy(value: string) {
+    if (!(await copyOrOffer(value))) return
     setCopiedValue(value)
     setTimeout(() => setCopiedValue(null), 1800)
   }
@@ -327,6 +293,7 @@ function PasswordResetModal({ type, domainId, ftpUser, dbUser, onClose }:
 
 function CopyButton({ text, color }: { text: string; color: 'amber' | 'emerald' }) {
   const { t } = useTranslation('DomainConnectionPage')
+  const copyOrOffer = useCopyOrOffer()
   const [k, setK] = useState(false)
   const bg: Record<string, string> = {
     amber: 'bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 text-amber-800 dark:text-amber-200',
@@ -334,12 +301,10 @@ function CopyButton({ text, color }: { text: string; color: 'amber' | 'emerald' 
   }
   return (
     <button
-      onClick={() => {
-        const ok = writeToClipboard(text, t('clipboardPrompt'))
-        if (ok) {
-          setK(true)
-          setTimeout(() => setK(false), 1500)
-        }
+      onClick={async () => {
+        if (!(await copyOrOffer(text))) return
+        setK(true)
+        setTimeout(() => setK(false), 1500)
       }}
       className={`text-[10px] px-2 py-1 rounded font-medium transition ${bg[color]} ${k ? 'ring-2 ring-emerald-400' : ''}`}
     >

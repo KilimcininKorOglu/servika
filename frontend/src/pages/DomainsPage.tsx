@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useCopyOrOffer } from '@/lib/useCopyOrOffer'
 import { useAuth } from '@/store/auth'
 import { sslState } from '@/lib/ssl'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -74,6 +75,7 @@ function fmtKB(kb: number) {
 
 export default function DomainsPage() {
   const { t } = useTranslation('DomainsPage')
+  const copyOrOffer = useCopyOrOffer()
   const [items, setItems] = useState<Domain[]>([])
   const [subdomains, setSubdomains] = useState<Subdomain[]>([])
   const [loading, setLoading] = useState(true)
@@ -278,30 +280,6 @@ export default function DomainsPage() {
     } finally {
       setCreating(false)
     }
-  }
-
-  async function copyToClipboard(text: string) {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text); return true
-      }
-    } catch {
-      // Clipboard API denied or unavailable; fall through to the textarea trick.
-    }
-    try {
-      const ta = document.createElement('textarea')
-      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'
-      document.body.appendChild(ta); ta.select(); document.execCommand('copy')
-      document.body.removeChild(ta); return true
-    } catch {
-      // execCommand is unavailable or blocked; fall through to the manual prompt.
-    }
-    try {
-      window.prompt('Press Ctrl+C to copy, then press Enter:', text); return true
-    } catch {
-      // Prompts are blocked too, so there is no way left to hand over the text.
-    }
-    return false
   }
 
   // The passwords in this modal are shown once and never again, so the whole set
@@ -890,9 +868,9 @@ export default function DomainsPage() {
             <div className="space-y-3">
               <div className="border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-slate-50 dark:bg-slate-900">
                 <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold mb-2">{t('resultModal.ftp')}</div>
-                <CopyRow label={t('resultModal.host')} value={creationResult.ftp_host || '-'} copy={copyToClipboard} />
-                <CopyRow label={t('resultModal.username')} value={creationResult.ftp_user} copy={copyToClipboard} />
-                <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.ftp} copy={copyToClipboard} password />
+                <CopyRow label={t('resultModal.host')} value={creationResult.ftp_host || '-'} copy={copyOrOffer} />
+                <CopyRow label={t('resultModal.username')} value={creationResult.ftp_user} copy={copyOrOffer} />
+                <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.ftp} copy={copyOrOffer} password />
               </div>
 
               {/* A static site was given no database, so there is nothing to show.
@@ -900,10 +878,10 @@ export default function DomainsPage() {
               {creationResult.site_type !== 'static' && (
                 <div className="border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-slate-50 dark:bg-slate-900">
                   <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold mb-2">{t('resultModal.mysql')}</div>
-                  <CopyRow label={t('resultModal.host')} value={creationResult.db_host || 'localhost'} copy={copyToClipboard} />
-                  <CopyRow label={t('resultModal.database')} value={creationResult.db_name} copy={copyToClipboard} />
-                  <CopyRow label={t('resultModal.username')} value={creationResult.db_user} copy={copyToClipboard} />
-                  <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.db} copy={copyToClipboard} password />
+                  <CopyRow label={t('resultModal.host')} value={creationResult.db_host || 'localhost'} copy={copyOrOffer} />
+                  <CopyRow label={t('resultModal.database')} value={creationResult.db_name} copy={copyOrOffer} />
+                  <CopyRow label={t('resultModal.username')} value={creationResult.db_user} copy={copyOrOffer} />
+                  <CopyRow label={t('resultModal.password')} value={creationResult.created_passwords.db} copy={copyOrOffer} password />
                 </div>
               )}
 
@@ -943,8 +921,8 @@ export default function DomainsPage() {
               {creationResult.nameservers && (
                 <div className="border border-emerald-200 dark:border-emerald-800 rounded-md p-3 bg-emerald-50 dark:bg-emerald-900/20">
                   <div className="text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300 font-semibold mb-2">{t('resultModal.nameservers')}</div>
-                  <CopyRow label="NS1" value={creationResult.nameservers.ns1} copy={copyToClipboard} />
-                  <CopyRow label="NS2" value={creationResult.nameservers.ns2} copy={copyToClipboard} />
+                  <CopyRow label="NS1" value={creationResult.nameservers.ns1} copy={copyOrOffer} />
+                  <CopyRow label="NS2" value={creationResult.nameservers.ns2} copy={copyOrOffer} />
                   <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-2">{t('resultModal.nameserversNote')}</p>
                 </div>
               )}
@@ -956,7 +934,7 @@ export default function DomainsPage() {
 
             <div className="flex justify-end gap-2 mt-5">
               <button onClick={async () => {
-                  if (await copyToClipboard(resultText(creationResult))) {
+                  if (await copyOrOffer(resultText(creationResult))) {
                     setResultCopied(true)
                     setTimeout(() => setResultCopied(false), 1500)
                   }

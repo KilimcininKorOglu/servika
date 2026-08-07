@@ -29,5 +29,6 @@
   "error": "错误",
   "notice": "提示",
   "areYouSure": "确定吗？",
-  "enterValue": "请输入值"
+  "enterValue": "请输入值",
+  "copyManually": "自动复制失败。请手动复制下方文本。"
 }

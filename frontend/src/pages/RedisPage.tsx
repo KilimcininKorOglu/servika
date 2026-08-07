@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 import ResourceNotice from '@/components/ResourceNotice'
 
@@ -18,6 +19,7 @@ type Status = {
 
 export default function RedisPage() {
   const { t } = useTranslation('RedisPage')
+  const { confirm } = useDialog()
   const { id } = useParams()
   const [status, setStatus] = useState<Status | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,7 +57,7 @@ export default function RedisPage() {
     finally { setBusy(false) }
   }
   async function disable() {
-    if (!confirm(t('confirm.disable'))) return
+    if (!(await confirm({ message: t('confirm.disable'), dangerous: true }))) return
     setError(null); setSuccess(null); setBusy(true)
     try {
       await api.delete(`/domains/${id}/redis`)

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 
 // Dashboard CVE (security vulnerability) widget.
 // Backend: GET /system/cve (cached dnf updateinfo summary), POST /system/cve/update
@@ -43,6 +44,7 @@ const SEV: Record<string, { dot: string; text: string }> = {
 
 export default function CveWidget() {
   const { t } = useTranslation('CveWidget')
+  const { confirm } = useDialog()
   const [data, setData] = useState<CveSummary | null>(null)
   const [error, setError] = useState('')
   const [scanning, setScanning] = useState(false)
@@ -100,7 +102,7 @@ export default function CveWidget() {
   }
 
   async function update() {
-    if (!window.confirm(t('confirmUpdate'))) return
+    if (!(await confirm({ message: t('confirmUpdate') }))) return
     setError('')
     setMessage('')
     try {

@@ -29,5 +29,6 @@
   "error": "Chyba",
   "notice": "Upozornění",
   "areYouSure": "Jste si jisti?",
-  "enterValue": "Zadejte hodnotu"
+  "enterValue": "Zadejte hodnotu",
+  "copyManually": "Automatické kopírování selhalo. Zkopírujte text níže ručně."
 }

@@ -29,5 +29,6 @@
   "error": "Fehler",
   "notice": "Hinweis",
   "areYouSure": "Sind Sie sicher?",
-  "enterValue": "Wert eingeben"
+  "enterValue": "Wert eingeben",
+  "copyManually": "Automatisches Kopieren fehlgeschlagen. Kopieren Sie den Text unten manuell."
 }

@@ -29,5 +29,6 @@
   "error": "Eroare",
   "notice": "Notificare",
   "areYouSure": "Sigur doriți?",
-  "enterValue": "Introduceți o valoare"
+  "enterValue": "Introduceți o valoare",
+  "copyManually": "Copierea automată a eșuat. Copiați manual textul de mai jos."
 }

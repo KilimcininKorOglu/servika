@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 import ResourceNotice from '@/components/ResourceNotice'
 import {
@@ -21,6 +22,7 @@ type Status = { clamav: boolean; signature_date: string; username: string; last_
 
 export default function DomainAntivirusPage() {
   const { t } = useTranslation('DomainAntivirusPage')
+  const { confirm } = useDialog()
   const { id } = useParams()
   const [d, setD] = useState<Status | null>(null)
   const [loading, setLoading] = useState(true)
@@ -70,7 +72,7 @@ export default function DomainAntivirusPage() {
   }
 
   async function quarantineFinding(b: Finding) {
-    if (!confirm(t('confirmQuarantine', { file: b.file }))) return
+    if (!(await confirm({ message: t('confirmQuarantine', { file: b.file }), dangerous: true }))) return
     setError(null)
     try { await api.post(`/domains/${id}/antivirus/quarantine`, { file: b.file }); load() }
     catch (e) { setError(apiError(e, t('toast.quarantineFailed'))) }

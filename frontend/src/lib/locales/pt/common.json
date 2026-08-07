@@ -29,5 +29,6 @@
   "error": "Erro",
   "notice": "Aviso",
   "areYouSure": "Tem a certeza?",
-  "enterValue": "Introduza um valor"
+  "enterValue": "Introduza um valor",
+  "copyManually": "A cópia automática falhou. Copie o texto abaixo manualmente."
 }

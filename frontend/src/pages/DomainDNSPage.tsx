@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError as apiError } from '@/lib/api'
+import { useDialog } from '@/lib/dialog'
 import { useReportError } from '@/lib/errors'
 import Breadcrumb from '@/components/Breadcrumb'
 import Modal from '@/components/Modal'
@@ -74,6 +75,7 @@ const VALUE_HINT: Record<string, string> = {
 
 export default function DomainDNSPage() {
   const { t } = useTranslation('DomainDNSPage')
+  const { notify } = useDialog()
   const report = useReportError()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
@@ -248,7 +250,7 @@ export default function DomainDNSPage() {
       await api.delete(`/domains/${id}/dns/${recordToDelete.id}`)
       setRecordToDelete(null); load()
     } catch (e) {
-      alert(apiError(e, t('delete.failed')))
+      await notify({ message: apiError(e, t('delete.failed')), tone: 'error' })
     }
   }
 
