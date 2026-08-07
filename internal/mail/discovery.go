@@ -50,9 +50,20 @@ const autoconfigLimit = 256 << 10
 // discoveryClient fetches autoconfig documents.
 //
 // The hostnames are derived from an address the customer typed, so the dialler
-// carries the SSRF guard; it runs per connection, which also covers redirects.
+// carries the SSRF guard, and it runs per connection, so a redirect could not
+// reach a private address either.
+//
+// Redirects are nonetheless refused. This document decides which server the
+// customer will be asked to type their old password into, and only the domain
+// itself has any standing to answer for it; following a redirect would let some
+// other host supply that answer under the domain's name. fetchClientConfig
+// already discards anything that is not a 200, so a returned 3xx becomes "no
+// settings here" with nothing further to do.
 var discoveryClient = &http.Client{
 	Timeout: 8 * time.Second,
+	CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
 	Transport: &http.Transport{
 		DialContext:         (&net.Dialer{Timeout: 5 * time.Second, Control: netguard.DialControl}).DialContext,
 		TLSHandshakeTimeout: 5 * time.Second,

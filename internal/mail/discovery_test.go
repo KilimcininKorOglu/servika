@@ -126,6 +126,39 @@ func TestAutoconfigParsingTakesOnlyUsableImapEntries(t *testing.T) {
 	}
 }
 
+// Only the domain being asked about has any standing to say which server holds
+// its mail, because the answer decides where the customer will type their old
+// password. A redirect would let another host supply that answer under the
+// domain's name.
+func TestAutoconfigWillNotTakeSettingsFromARedirect(t *testing.T) {
+	t.Setenv("SERVIKA_ALLOW_PRIVATE_TARGETS", "1")
+
+	const document = `<clientConfig><emailProvider id="example.com">
+      <incomingServer type="imap">
+        <hostname>imap.example.com</hostname><port>993</port><socketType>SSL</socketType>
+      </incomingServer>
+    </emailProvider></clientConfig>`
+
+	elsewhere := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(document))
+	}))
+	defer elsewhere.Close()
+
+	redirector := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, elsewhere.URL, http.StatusFound)
+	}))
+	defer redirector.Close()
+
+	if list := fetchClientConfig(context.Background(), redirector.URL, SourceAutoconfig); len(list) != 0 {
+		t.Errorf("a redirect supplied %d candidate(s): %+v", len(list), list)
+	}
+	// The same document served directly still counts, or the refusal above would
+	// be free and the whole fetch would be dead.
+	if list := fetchClientConfig(context.Background(), elsewhere.URL, SourceAutoconfig); len(list) != 1 {
+		t.Errorf("the document served directly produced %d candidates, want 1", len(list))
+	}
+}
+
 // A document that is not XML at all, or is enormous, must produce nothing rather
 // than an error the customer cannot act on.
 func TestAutoconfigParsingSurvivesRubbish(t *testing.T) {
