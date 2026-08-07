@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { api, apiError } from '@/lib/api'
 import { useReportError } from '@/lib/errors'
+import { useDialog } from '@/lib/dialog'
 import Breadcrumb from '@/components/Breadcrumb'
 import ResourceNotice from '@/components/ResourceNotice'
 
@@ -34,6 +35,7 @@ function deliveryBadge(status: string): string {
 export default function DomainMailPage() {
   const { t } = useTranslation('DomainMailPage')
   const report = useReportError()
+  const { confirm, notify } = useDialog()
   const { id } = useParams()
   const [domain, setDomain] = useState<Domain | null>(null)
   const [status, setStatus] = useState<MailStatus | null>(null)
@@ -198,7 +200,7 @@ export default function DomainMailPage() {
   // both Dovecot queries require status='active', so delivery stops and nobody
   // can sign in. The confirmation has to state both halves.
   async function disableMail() {
-    if (!confirm(t('confirm.disableMail', { domain: domain?.domain_name }))) return
+    if (!(await confirm({ message: t('confirm.disableMail', { domain: domain?.domain_name }), dangerous: true }))) return
     setIsSaving(true)
     setError(null)
     setSuccess(null)
@@ -277,7 +279,7 @@ export default function DomainMailPage() {
   }
 
   async function removeMailbox(mailbox: Mailbox) {
-    if (!confirm(t('confirm.deleteMailbox', { email: mailbox.email }))) return
+    if (!(await confirm({ message: t('confirm.deleteMailbox', { email: mailbox.email }), dangerous: true }))) return
     setError(null)
     setSuccess(null)
     try {
@@ -289,7 +291,7 @@ export default function DomainMailPage() {
   }
 
   async function removeAlias(alias: Alias) {
-    if (!confirm(t('confirm.deleteForwarder', { source: alias.source }))) return
+    if (!(await confirm({ message: t('confirm.deleteForwarder', { source: alias.source }), dangerous: true }))) return
     setError(null)
     setSuccess(null)
     try {
@@ -349,7 +351,7 @@ export default function DomainMailPage() {
       form.submit()
       form.remove()
     } catch (e) {
-      alert(apiError(e, t('errors.webmail')))
+      await notify({ message: apiError(e, t('errors.webmail')), tone: 'error' })
     }
   }
 
@@ -428,7 +430,7 @@ export default function DomainMailPage() {
   }
 
   async function deleteFilter(item: MailFilter) {
-    if (!confirm(t('confirm.deleteFilter', { name: item.name }))) return
+    if (!(await confirm({ message: t('confirm.deleteFilter', { name: item.name }), dangerous: true }))) return
     setError(null)
     try {
       await api.delete(`/domains/${id}/mail/filters/${item.id}`)
@@ -911,7 +913,7 @@ export default function DomainMailPage() {
           </>
         )}
 
-        {/* A single confirm() is not enough for something this final, so the
+        {/* A single confirmation is not enough for something this final, so the
             domain name has to be typed, the same bar the panel already sets for
             deleting a subscription. */}
         {purgeConfirmOpen && (() => {

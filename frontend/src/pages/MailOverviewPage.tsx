@@ -8,6 +8,7 @@ import { Link } from 'react-router'
 import OverviewList, { type Column, type Badge } from '@/components/OverviewList'
 import { api, apiError } from '@/lib/api'
 import { useReportError } from '@/lib/errors'
+import { useDialog } from '@/lib/dialog'
 
 type FilterEntry = {
   id: number
@@ -89,6 +90,7 @@ function formatSize(bytes: number) {
 export default function MailOverviewPage() {
   const { t } = useTranslation('MailOverviewPage')
   const report = useReportError()
+  const { confirm } = useDialog()
   const columns = buildColumns(t)
   const [queue, setQueue] = useState<QueueMessage[]>([])
   const [queueError, setQueueError] = useState<string | null>(null)
@@ -181,7 +183,7 @@ export default function MailOverviewPage() {
   async function removePoolAddress(address: PoolAddress) {
     // The domains sending from it are moved back to the server default, which
     // changes where their mail comes from; that is worth confirming.
-    if (!confirm(t('pool.confirmDelete', { ip: address.ip, count: address.domains }))) return
+    if (!(await confirm({ message: t('pool.confirmDelete', { ip: address.ip, count: address.domains }), dangerous: true }))) return
     setPoolError(null)
     try {
       await api.delete(`/admin/mail/ip-pool/${address.id}`)
@@ -210,7 +212,7 @@ export default function MailOverviewPage() {
   }
 
   async function removeFilter(entry: FilterEntry) {
-    if (!confirm(t('filters.confirmDelete', { value: entry.value }))) return
+    if (!(await confirm({ message: t('filters.confirmDelete', { value: entry.value }), dangerous: true }))) return
     setFilterError(null)
     try {
       await api.delete(`/admin/mail/filters/${entry.id}`)
@@ -241,7 +243,7 @@ export default function MailOverviewPage() {
   }
 
   async function queueAction(action: 'flush' | 'delete' | 'hold' | 'release' | 'requeue', queueID = '') {
-    if (action === 'delete' && !confirm(t('confirmDelete', { queueID }))) return
+    if (action === 'delete' && !(await confirm({ message: t('confirmDelete', { queueID }), dangerous: true }))) return
     setQueueBusy(action + queueID)
     setQueueError(null)
     try {
