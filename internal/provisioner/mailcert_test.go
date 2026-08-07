@@ -160,3 +160,43 @@ func TestMailCertificateStatusFollowsTheFile(t *testing.T) {
 		t.Errorf("status = (%v, %q), want the installed certificate", hosts, expiry)
 	}
 }
+
+// A hostname is only worth announcing when the mail stack will actually present
+// a matching certificate for it, and the SNI map is built from the installed
+// mail chains alone. Anything else is served the server-wide default, which is a
+// mismatch warning at the client.
+func TestMailSNICoversOnlyNamesTheInstalledChainsCarry(t *testing.T) {
+	root := certRoot(t)
+	writeCertificate(t, root, "example.com", time.Now().Add(48*time.Hour),
+		"mail.example.com", "imap.example.com")
+
+	for _, host := range []string{"mail.example.com", "IMAP.Example.COM ", "imap.example.com"} {
+		if !MailSNICovers(host) {
+			t.Errorf("MailSNICovers(%q) = false, want true", host)
+		}
+	}
+	// The other direction: a name no chain carries must be refused, or the check
+	// would pass everything and announce a hostname the client warns about.
+	for _, host := range []string{"", "smtp.example.com", "panel.hoster.test", "example.com"} {
+		if MailSNICovers(host) {
+			t.Errorf("MailSNICovers(%q) = true, want false", host)
+		}
+	}
+}
+
+// A certificate without its chain file never reaches the SNI map, so it must not
+// make a name look covered either.
+func TestMailSNIIgnoresACertificateWithNoChain(t *testing.T) {
+	root := certRoot(t)
+	writeCertificate(t, root, "example.com", time.Now().Add(48*time.Hour), "mail.example.com")
+	if MailSNICovers("mail.example.com") != true {
+		t.Fatalf("the fixture did not install a usable chain")
+	}
+	_, _, chainPath := MailCertificatePaths("example.com")
+	if err := os.Remove(chainPath); err != nil {
+		t.Fatalf("remove the chain: %v", err)
+	}
+	if MailSNICovers("mail.example.com") {
+		t.Error("a certificate with no chain was reported as covered")
+	}
+}

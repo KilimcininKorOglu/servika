@@ -24,7 +24,7 @@ func TestSettingsForMatchesWhatThunderbirdIsTold(t *testing.T) {
 
 	// The XML the client actually receives, built the same way the handler builds
 	// it, so this comparison breaks if either side is edited alone.
-	host, err := announceableHost(context.Background(), h.DB, "example.com")
+	host, _, err := announceableHost(context.Background(), h.DB, "example.com")
 	if err != nil {
 		t.Fatalf("announceableHost: %v", err)
 	}

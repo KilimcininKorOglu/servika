@@ -45,10 +45,13 @@ func (h *Handlers) ConnectionSettings(w http.ResponseWriter, r *http.Request) {
 	if errors.Is(err, autoconfig.ErrNoMailHost) {
 		// Not a failure to log. The certificate simply is not issued yet, and
 		// saying which part is missing is more useful than an error: the ports are
-		// already correct and only the name is pending.
+		// already correct and only the name is pending. The covered list separates
+		// the two ways of being pending: names present but none usable means DNS,
+		// an empty list means the certificate was never issued.
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{
 			"username": email,
 			"reason":   "no_mail_hostname",
+			"covered":  settings.Covered,
 		})
 		return
 	}
@@ -67,5 +70,8 @@ func (h *Handlers) ConnectionSettings(w http.ResponseWriter, r *http.Request) {
 		// Dovecot's userdb matches on the full address, so a bare local part
 		// cannot sign in and printing one would produce a failing account.
 		"username": email,
+		// Which names the certificate carries, so the announced hostname can be
+		// seen to be one of them rather than taken on trust.
+		"covered": settings.Covered,
 	})
 }

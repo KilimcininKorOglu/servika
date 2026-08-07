@@ -75,6 +75,12 @@ type ClientSettings struct {
 	// Security is what both ports negotiate. Implicit TLS is not offered because
 	// neither 993 nor 465 is opened by servika-mail-setup.
 	Security string `json:"security"`
+	// Covered is every name the domain's installed mail certificate carries. It
+	// is reported so a screen can explain a hostname that is still pending
+	// instead of only stating that there is none: a certificate covering smtp.
+	// and imap. but not mail. is a DNS problem, and an empty list is an issuance
+	// problem.
+	Covered []string `json:"covered,omitempty"`
 }
 
 // SettingsFor returns the settings announced for a domain.
@@ -85,15 +91,19 @@ type ClientSettings struct {
 // it returns ErrNoMailHost, which is a state the caller can report rather than
 // an error to log.
 func SettingsFor(ctx context.Context, db *sql.DB, domain string) (ClientSettings, error) {
-	host, err := announceableHost(ctx, db, domain)
+	host, covered, err := announceableHost(ctx, db, domain)
 	if err != nil {
-		return ClientSettings{}, err
+		// Covered is carried out with the error on purpose: the caller reports
+		// ErrNoMailHost as a state rather than a failure, and the list is what
+		// tells the reader whether the certificate exists at all.
+		return ClientSettings{Covered: covered}, err
 	}
 	return ClientSettings{
 		Hostname:       host,
 		IMAPPort:       imapPort,
 		SubmissionPort: submissionPort,
 		Security:       socketTypeSTARTTLS,
+		Covered:        covered,
 	}, nil
 }
 
@@ -211,7 +221,7 @@ func (h *Handlers) resolve(w http.ResponseWriter, r *http.Request) (domain, mail
 		httpx.WriteError(w, http.StatusNotFound, "this host does not serve mail")
 		return "", "", false
 	}
-	mailHost, err = announceableHost(r.Context(), h.DB, domain)
+	mailHost, _, err = announceableHost(r.Context(), h.DB, domain)
 	if err != nil {
 		// Not an error the client can act on, and not one worth a 500: there is
 		// simply no name that would survive the client's certificate check yet.
@@ -269,19 +279,34 @@ func (h *Handlers) hostsMail(r *http.Request, domain string) (bool, error) {
 	return count > 0, nil
 }
 
-// announceableHost returns the hostname to put in the settings.
+// mailHostPreference is the order in which a covered name is announced.
 //
-// It is MEASURED, never assumed. mail.<domain> is announced only when the
-// domain's own mail certificate covers it; otherwise the panel's custom domain
-// is used, and only while its certificate is active. Announcing a name no
-// certificate covers would walk the client straight into a warning on its first
-// connection, which is the failure this whole endpoint exists to avoid.
-func announceableHost(ctx context.Context, db *sql.DB, domain string) (string, error) {
-	want := "mail." + domain
+// One hostname is announced for both IMAP and submission, and all three names
+// sit in the same certificate, so the order only has to be deterministic and
+// defensible: mail. is the MX target, and imap. is the server a client is
+// configured with first.
+var mailHostPreference = []string{"mail.", "imap.", "smtp."}
+
+// announceableHost returns the hostname to put in the settings, along with every
+// name the domain's certificate covers.
+//
+// It is MEASURED, never assumed. The ACME pre-flight DROPS a name that cannot
+// answer a challenge (provisioner.validatedSANHosts), so a domain whose mail.
+// label has no A record is issued a certificate covering smtp. and imap. and
+// nothing else. Testing only mail. would throw that working certificate away and
+// fall through to the panel, so every candidate is measured in turn.
+//
+// The covered list is returned even alongside an error: a screen explaining why
+// no hostname is ready needs to say whether the certificate carries other names
+// or none at all, and reading the certificate twice for that would be waste.
+func announceableHost(ctx context.Context, db *sql.DB, domain string) (string, []string, error) {
 	covered, _ := provisioner.MailCertificateStatus(domain)
-	for _, name := range covered {
-		if strings.EqualFold(name, want) {
-			return want, nil
+	for _, prefix := range mailHostPreference {
+		want := prefix + domain
+		for _, name := range covered {
+			if strings.EqualFold(name, want) {
+				return want, covered, nil
+			}
 		}
 	}
 
@@ -290,12 +315,18 @@ func announceableHost(ctx context.Context, db *sql.DB, domain string) (string, e
 	err := db.QueryRowContext(ctx,
 		`SELECT custom_domain, ssl_status FROM panel_settings WHERE id = 1`).Scan(&panelDomain, &sslStatus)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return "", err
+		return "", covered, err
 	}
-	if host := strings.TrimSpace(panelDomain.String); host != "" && sslStatus == "active" {
-		return strings.ToLower(host), nil
+	// An active web certificate is not enough for the panel's own name to be an
+	// answer here. The mail SNI map is built from the per-domain mail chains
+	// alone, so a panel domain carrying only a web certificate would send the
+	// client to a port that answers with the server-wide default certificate:
+	// the exact warning this function exists to prevent.
+	host := strings.ToLower(strings.TrimSpace(panelDomain.String))
+	if host != "" && sslStatus == "active" && provisioner.MailSNICovers(host) {
+		return host, covered, nil
 	}
-	return "", ErrNoMailHost
+	return "", covered, ErrNoMailHost
 }
 
 // normalizeHost turns the Host header into the domain the vhost serves: no port,
@@ -327,7 +358,7 @@ func isHostname(host string) bool {
 	if host == "" || len(host) > 253 || !strings.Contains(host, ".") {
 		return false
 	}
-	for _, label := range strings.Split(host, ".") {
+	for label := range strings.SplitSeq(host, ".") {
 		if label == "" || len(label) > 63 {
 			return false
 		}

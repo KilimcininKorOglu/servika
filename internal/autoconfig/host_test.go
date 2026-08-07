@@ -76,12 +76,71 @@ func TestAnnouncesTheMailHostWhenTheCertificateCoversIt(t *testing.T) {
 		"mail.example.com", "smtp.example.com", "imap.example.com")
 
 	h := &Handlers{DB: failingDB(t)}
-	host, err := announceableHost(context.Background(), h.DB, "example.com")
+	host, covered, err := announceableHost(context.Background(), h.DB, "example.com")
 	if err != nil {
 		t.Fatalf("announceableHost: %v", err)
 	}
 	if host != "mail.example.com" {
 		t.Errorf("announceableHost = %q, want mail.example.com", host)
+	}
+	if len(covered) != 3 {
+		t.Errorf("covered = %v, want all three names the certificate carries", covered)
+	}
+}
+
+// The ACME pre-flight DROPS a name that cannot answer a challenge, so a domain
+// whose mail. label has no A record is issued a certificate covering the other
+// two. Testing only mail. would throw that working certificate away and announce
+// something else entirely.
+func TestACoveredNameIsAnnouncedWhenMailIsNotInTheCertificate(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("SERVIKA_CERT_ROOT", root)
+	writeMailCertificate(t, root, "example.com", time.Now().Add(30*24*time.Hour),
+		"smtp.example.com", "imap.example.com")
+
+	// The database is unreachable on purpose: reaching a covered name must not
+	// depend on it, and the panel fallback would need one.
+	h := &Handlers{DB: failingDB(t)}
+	host, covered, err := announceableHost(context.Background(), h.DB, "example.com")
+	if err != nil {
+		t.Fatalf("announceableHost: %v", err)
+	}
+	if host != "imap.example.com" {
+		t.Errorf("announceableHost = %q, want imap.example.com", host)
+	}
+	if len(covered) != 2 {
+		t.Errorf("covered = %v, want the two names the certificate carries", covered)
+	}
+}
+
+// The preference order only matters when more than one name is covered, so the
+// last one has to be reachable on its own or the ladder would be two entries
+// long in practice.
+func TestTheLastPreferenceIsStillAnnouncedWhenItIsTheOnlyCoveredName(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("SERVIKA_CERT_ROOT", root)
+	writeMailCertificate(t, root, "example.com", time.Now().Add(30*24*time.Hour), "smtp.example.com")
+
+	host, _, err := announceableHost(context.Background(), (&Handlers{DB: failingDB(t)}).DB, "example.com")
+	if err != nil {
+		t.Fatalf("announceableHost: %v", err)
+	}
+	if host != "smtp.example.com" {
+		t.Errorf("announceableHost = %q, want smtp.example.com", host)
+	}
+}
+
+// The ladder must not reach for a name from somebody else's certificate: the
+// covered list belongs to one domain and the prefix is joined to the domain
+// being asked about.
+func TestAnotherDomainsCertificateIsNeverAnnounced(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("SERVIKA_CERT_ROOT", root)
+	writeMailCertificate(t, root, "other.test", time.Now().Add(30*24*time.Hour), "mail.other.test")
+
+	if host, _, err := announceableHost(context.Background(),
+		(&Handlers{DB: failingDB(t)}).DB, "example.com"); err == nil {
+		t.Errorf("announceableHost returned %q from another domain's certificate", host)
 	}
 }
 
@@ -93,7 +152,7 @@ func TestExpiredCertificateDoesNotKeepAnnouncingTheMailHost(t *testing.T) {
 	writeMailCertificate(t, root, "example.com", time.Now().Add(-time.Hour), "mail.example.com")
 
 	h := &Handlers{DB: failingDB(t)}
-	if host, err := announceableHost(context.Background(), h.DB, "example.com"); err == nil {
+	if host, _, err := announceableHost(context.Background(), h.DB, "example.com"); err == nil {
 		t.Errorf("announceableHost returned %q for an expired certificate", host)
 	}
 }
@@ -106,7 +165,7 @@ func TestNoHostIsInventedWhenNothingCanBeMeasured(t *testing.T) {
 	t.Setenv("SERVIKA_CERT_ROOT", t.TempDir())
 
 	h := &Handlers{DB: failingDB(t)}
-	host, err := announceableHost(context.Background(), h.DB, "example.com")
+	host, _, err := announceableHost(context.Background(), h.DB, "example.com")
 	if err == nil {
 		t.Fatalf("announceableHost returned %q with no certificate and no database", host)
 	}

@@ -240,6 +240,29 @@ func InstalledMailCertificates() map[string][]string {
 	return covered
 }
 
+// MailSNICovers reports whether the mail stack will present a matching
+// certificate for a hostname.
+//
+// The SNI map Postfix and Dovecot read is generated from the installed mail
+// chains and nothing else (internal/mail.ApplySNI), so this is the only honest
+// way to ask the question. A name that is absent here is served the server-wide
+// default certificate instead, which is a mismatch warning at the client at the
+// moment it is about to send a password.
+func MailSNICovers(host string) bool {
+	host = strings.ToLower(strings.TrimSpace(host))
+	if host == "" {
+		return false
+	}
+	for _, names := range InstalledMailCertificates() {
+		for _, name := range names {
+			if strings.EqualFold(name, host) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // mailChainBytes assembles the chain Postfix expects. The ORDER is the contract:
 // the private key first, then the certificate chain starting with the leaf.
 // Reversed, Postfix rejects the entry and the domain silently falls back to the
