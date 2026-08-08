@@ -192,6 +192,12 @@ The installer writes every persistent production setting it owns into `/etc/serv
 | `SERVIKA_PHPOP_LOG`             | `/opt/servika/logs/php-op.log`                     | PHP version install and removal log path.               |
 | `SERVIKA_PHPOP_STATE`           | `/opt/servika/php-op.json`                         | Descriptor of the PHP version operation in progress.    |
 | `SERVIKA_PHPOP_WRAPPER`         | `/opt/servika/php-op.sh`                           | PHP version operation systemd wrapper path.             |
+| `SERVIKA_RUNTIMEOP_LOG`         | `/opt/servika/logs/runtime-op.log`                 | Node.js and Python runtime install and removal log path. |
+| `SERVIKA_RUNTIMEOP_STATE`       | `/opt/servika/runtime-op.json`                     | Descriptor of the runtime operation in progress.        |
+| `SERVIKA_RUNTIMEOP_WRAPPER`     | `/opt/servika/runtime-op.sh`                       | Runtime operation systemd wrapper path.                 |
+| `SERVIKA_NODE_ROOT`             | `/usr/local/n/versions/node`                       | Root the `n` version manager keeps Node.js installs in. |
+| `SERVIKA_APP_LOG_DIR`           | `/var/log/servika-apps`                            | Root-owned directory holding one log per application.   |
+| `SERVIKA_APP_ENV_DIR`           | `/etc/servika/apps`                                | Directory of per-application 0600 `EnvironmentFile`s.   |
 | `SERVIKA_INSTALLATION_ID`       | `/etc/servika/installation-id`                     | Random installation ID storage path for version checks. |
 | `SERVIKA_VERSION_CACHE`         | `/opt/servika/version-cache.json`                  | Cached version manifest path.                           |
 | `SERVIKA_PMA_TOKEN`             | `/etc/servika/pma-internal.token`                  | Internal phpMyAdmin signon token path.                  |
@@ -203,6 +209,7 @@ The installer writes every persistent production setting it owns into `/etc/serv
 | `SERVIKA_NGINX_CACHE_CONF`      | `/etc/nginx/conf.d/servikacache.conf`              | nginx FastCGI cache zone config path.                   |
 | `SERVIKA_NGINX_CACHE_TEMP_CONF` | `/etc/nginx/conf.d/00-servikacache-temporary.conf` | Temporary nginx cache bypass config path.               |
 | `SERVIKA_NGINX_CACHE_LOG_CONF`  | `/etc/nginx/conf.d/00-servika-cache-log.conf`      | nginx cache log format config path.                     |
+| `SERVIKA_NGINX_UPGRADE_MAP_CONF` | `/etc/nginx/conf.d/00-servika-upgrade-map.conf`   | nginx WebSocket upgrade map config path.                |
 | `SERVIKA_MAIL_LOG`              | `/var/log/maillog`                                 | Postfix and Dovecot log file read by the delivery log.  |
 | `SERVIKA_ROUNDCUBE_CONFIG`      | `/opt/roundcube/config/config.inc.php`             | Roundcube webmail config file path.                     |
 | `SERVIKA_ROUNDCUBE_PLUGINS`     | `/opt/roundcube/plugins`                           | Roundcube plugin directory, used by the sign-on bridge. |
