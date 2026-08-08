@@ -1,12 +1,20 @@
 package apps
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"servika/internal/provisioner"
-	"servika/internal/subdomain"
 )
+
+// RenderSubdomain rewrites a subdomain's own server block. It is a hook rather
+// than a direct call because internal/subdomain reads domain records and so
+// imports internal/domains, which in turn tears down applications: calling it
+// from here would close that ring into an import cycle. `main` wires it to
+// subdomain.ReRender.
+var RenderSubdomain func(db *sql.DB, subdomainID int64) error
 
 // apply publishes an application to the host: its environment file, its unit,
 // its systemd state and the vhost that proxies to it.
@@ -45,7 +53,10 @@ func (h *Handlers) apply(r *http.Request, s scope, app App, appDir string, argv 
 // block: the subdomain's own server block, or the parent domain's.
 func (h *Handlers) render(s scope, subdomainID int64) error {
 	if subdomainID > 0 {
-		return subdomain.ReRender(h.DB, subdomainID)
+		if RenderSubdomain == nil {
+			return errors.New("the subdomain renderer is not wired")
+		}
+		return RenderSubdomain(h.DB, subdomainID)
 	}
 	socket, err := provisioner.PHPSocketFor(s.SystemUser, s.PHPVersion)
 	if err != nil {

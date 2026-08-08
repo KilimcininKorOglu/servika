@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"servika/internal/addondomains"
+	"servika/internal/apps"
 	"servika/internal/credentials"
 	"servika/internal/dns"
 	"servika/internal/httpx"
@@ -662,6 +663,11 @@ func (h *Handlers) Delete(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
+	// Applications go before the row does: the foreign key removes their records
+	// but not their units, environment files or logs, and a unit left behind
+	// holds its port out of the allocator's reach for good.
+	apps.TeardownForDomain(r.Context(), h.DB, id)
 
 	if isDemo == 0 {
 		// Remove the real DBs in MariaDB (CASCADE FK only deletes the panel DB metadata)

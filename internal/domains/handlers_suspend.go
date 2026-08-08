@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"servika/internal/apps"
 	"servika/internal/httpx"
 	"servika/internal/provisioner"
 
@@ -116,6 +117,12 @@ func ApplyDomainSuspend(ctx context.Context, db *sql.DB, id int64, suspended boo
 	}
 	if systemUser != "" {
 		provisioner.SuspendUserRuntime(systemUser, suspended)
+		// Separate from the pkill above: an application unit carries
+		// Restart=always, so a killed process is back within seconds and the
+		// suspended account keeps serving until systemd is told to stop it.
+		if err := apps.SuspendForUser(ctx, db, systemUser, suspended); err != nil {
+			log.Printf("apply application suspension state for domain %d: %v", id, err)
+		}
 	}
 	return domainName, nil
 }

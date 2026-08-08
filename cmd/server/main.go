@@ -290,6 +290,7 @@ func main() {
 	phpVersionH := &phpversion.Handlers{DB: d}
 	appRuntimeH := &appruntime.Handlers{DB: d}
 	appsH := &apps.Handlers{DB: d}
+	apps.RenderSubdomain = subdomain.ReRender
 	apps.HealOnStartup(d)
 	// PERF: move PHP availability discovery (dnf) to a background sweeper so request-path
 	// callers like /php/versions never block on a slow or locked dnf.
