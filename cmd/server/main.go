@@ -19,6 +19,7 @@ import (
 	"servika/internal/accounts"
 	"servika/internal/addondomains"
 	"servika/internal/antivirus"
+	"servika/internal/appruntime"
 	"servika/internal/auth"
 	"servika/internal/autoconfig"
 	"servika/internal/backups"
@@ -286,6 +287,7 @@ func main() {
 	packagesH := &packages.Handlers{DB: d}
 	panelSettingsH := &panelsettings.Handlers{DB: d, ServerIPv4: ipv4}
 	phpVersionH := &phpversion.Handlers{DB: d}
+	appRuntimeH := &appruntime.Handlers{DB: d}
 	// PERF: move PHP availability discovery (dnf) to a background sweeper so request-path
 	// callers like /php/versions never block on a slow or locked dnf.
 	phpversion.StartAvailabilitySweeper()
@@ -830,6 +832,14 @@ func main() {
 				// load and follows it here rather than holding the request open.
 				r.With(middleware.AdminOnly).Get("/php-versions/status", phpVersionH.Status)
 				r.With(middleware.AdminOnly).Get("/php-versions/log", phpVersionH.LogTail)
+				// Node and Python interpreters. The list is readable by a reseller
+				// because the application form offers it as a choice; installing
+				// one changes the host, so that stays with the administrator.
+				r.With(middleware.ResellerOrAbove).Get("/app-runtimes", appRuntimeH.List)
+				r.With(middleware.AdminOnly).Post("/app-runtimes/install", appRuntimeH.Install)
+				r.With(middleware.AdminOnly).Post("/app-runtimes/remove", appRuntimeH.Remove)
+				r.With(middleware.AdminOnly).Get("/app-runtimes/status", appRuntimeH.Status)
+				r.With(middleware.AdminOnly).Get("/app-runtimes/log", appRuntimeH.LogTail)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/git", gitH.Delete)
 			})
 		})

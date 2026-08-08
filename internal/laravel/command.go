@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 
+	"servika/internal/appruntime"
 	"servika/internal/httpx"
 )
 
@@ -128,53 +128,19 @@ func (h *Handlers) Composer(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": commandOK, "command": "composer " + req.Command, "output": out})
 }
 
-const nodeRoot = "/usr/local/n/versions/node"
-
+// Which interpreters exist is answered in one place, internal/appruntime, so the
+// toolkit here and the application manager cannot disagree about what "22" means
+// on a given host.
 func installedNodeVersions() []string {
-	majors := map[string]bool{}
-	if ents, err := os.ReadDir(nodeRoot); err == nil {
-		for _, entry := range ents {
-			if entry.IsDir() {
-				major, _, _ := strings.Cut(entry.Name(), ".")
-				majors[major] = true
-			}
-		}
+	runtimes := appruntime.Installed(appruntime.Node)
+	out := make([]string, 0, len(runtimes))
+	for _, runtime := range runtimes {
+		out = append(out, runtime.Version)
 	}
-	if len(majors) == 0 {
-		if _, err := os.Stat("/usr/bin/npm"); err == nil {
-			return []string{"system"}
-		}
-		return []string{}
-	}
-	out := make([]string, 0, len(majors))
-	for major := range majors {
-		out = append(out, major)
-	}
-	sort.Sort(sort.Reverse(sort.StringSlice(out)))
 	return out
 }
 
-func nodeBinDir(version string) string {
-	version = strings.TrimSpace(version)
-	if version != "" && version != "system" {
-		if ents, err := os.ReadDir(nodeRoot); err == nil {
-			var matches []string
-			for _, entry := range ents {
-				if entry.IsDir() && (entry.Name() == version || strings.HasPrefix(entry.Name(), version+".")) {
-					matches = append(matches, entry.Name())
-				}
-			}
-			if len(matches) > 0 {
-				sort.Sort(sort.Reverse(sort.StringSlice(matches)))
-				candidate := filepath.Join(nodeRoot, matches[0], "bin")
-				if _, err := os.Stat(filepath.Join(candidate, "npm")); err == nil {
-					return candidate
-				}
-			}
-		}
-	}
-	return "/usr/bin"
-}
+func nodeBinDir(version string) string { return appruntime.NodeBinDir(version) }
 
 var npmAllowed = map[string]bool{"install": true, "ci": true, "run": true, "prune": true, "ls": true, "outdated": true, "audit": true, "--version": true}
 var reNpmScript = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9:_-]*$`)

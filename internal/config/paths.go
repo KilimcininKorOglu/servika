@@ -18,21 +18,34 @@ const (
 	// DefaultReadPSTBin converts an Outlook .pst export into Maildir folders. It
 	// comes from libpst, which EL10 may not package, so callers report its absence
 	// as a supported-format answer rather than failing an upload with it.
-	DefaultReadPSTBin         = "/usr/bin/readpst"
-	DefaultRemiPECLRoot       = "/opt/remi"
-	DefaultACMEHome           = "/root/.acme.sh"
-	DefaultACMEBin            = "/root/.acme.sh/acme.sh"
-	DefaultBackupRoot         = "/var/backups/servika"
-	DefaultLaravelLogDir      = "/var/log/servika-laravel"
-	DefaultPluginRoot         = "/opt/servika/plugins"
-	DefaultLogDir             = "/opt/servika/logs"
-	DefaultUpdateLog          = "/opt/servika/logs/update.log"
-	DefaultKernelCareLog      = "/opt/servika/logs/kernelcare-update.log"
-	DefaultKernelCareWrapper  = "/opt/servika/kernelcare-update.sh"
-	DefaultCVELog             = "/opt/servika/logs/cve-update.log"
-	DefaultPHPOpLog           = "/opt/servika/logs/php-op.log"
-	DefaultPHPOpState         = "/opt/servika/php-op.json"
-	DefaultPHPOpWrapper       = "/opt/servika/php-op.sh" // #nosec G101 -- filesystem path, not a credential
+	DefaultReadPSTBin        = "/usr/bin/readpst"
+	DefaultRemiPECLRoot      = "/opt/remi"
+	DefaultACMEHome          = "/root/.acme.sh"
+	DefaultACMEBin           = "/root/.acme.sh/acme.sh"
+	DefaultBackupRoot        = "/var/backups/servika"
+	DefaultLaravelLogDir     = "/var/log/servika-laravel"
+	DefaultPluginRoot        = "/opt/servika/plugins"
+	DefaultLogDir            = "/opt/servika/logs"
+	DefaultUpdateLog         = "/opt/servika/logs/update.log"
+	DefaultKernelCareLog     = "/opt/servika/logs/kernelcare-update.log"
+	DefaultKernelCareWrapper = "/opt/servika/kernelcare-update.sh"
+	DefaultCVELog            = "/opt/servika/logs/cve-update.log"
+	DefaultPHPOpLog          = "/opt/servika/logs/php-op.log"
+	DefaultPHPOpState        = "/opt/servika/php-op.json"
+	DefaultPHPOpWrapper      = "/opt/servika/php-op.sh" // #nosec G101 -- filesystem path, not a credential
+	// Node and Python runtime installation, mirroring the PHP operation above.
+	DefaultRuntimeOpLog     = "/opt/servika/logs/runtime-op.log"
+	DefaultRuntimeOpState   = "/opt/servika/runtime-op.json"
+	DefaultRuntimeOpWrapper = "/opt/servika/runtime-op.sh"
+	// DefaultNodeRoot is where the `n` version manager keeps its installations.
+	DefaultNodeRoot = "/usr/local/n/versions/node"
+	// DefaultAppLogDir holds one log per application. It is root-owned on
+	// purpose: systemd's StandardOutput=append: follows a symlink, so a tenant
+	// who could write the directory could redirect a root-opened descriptor.
+	DefaultAppLogDir = "/var/log/servika-apps"
+	// DefaultAppEnvDir holds one EnvironmentFile per application, each
+	// root-owned and readable only by the tenant's own group.
+	DefaultAppEnvDir          = "/etc/servika/apps"
 	DefaultMailLog            = "/var/log/maillog"
 	DefaultInstallationID     = "/etc/servika/installation-id"
 	DefaultVersionCache       = "/opt/servika/version-cache.json"
@@ -134,6 +147,15 @@ func PHPOpLog() string     { return mustAbsPath("SERVIKA_PHPOP_LOG", DefaultPHPO
 func PHPOpState() string   { return mustAbsPath("SERVIKA_PHPOP_STATE", DefaultPHPOpState) }
 func PHPOpWrapper() string { return mustAbsPath("SERVIKA_PHPOP_WRAPPER", DefaultPHPOpWrapper) }
 
+func RuntimeOpLog() string   { return mustAbsPath("SERVIKA_RUNTIMEOP_LOG", DefaultRuntimeOpLog) }
+func RuntimeOpState() string { return mustAbsPath("SERVIKA_RUNTIMEOP_STATE", DefaultRuntimeOpState) }
+func RuntimeOpWrapper() string {
+	return mustAbsPath("SERVIKA_RUNTIMEOP_WRAPPER", DefaultRuntimeOpWrapper)
+}
+func NodeRoot() string  { return mustAbsPath("SERVIKA_NODE_ROOT", DefaultNodeRoot) }
+func AppLogDir() string { return mustAbsPath("SERVIKA_APP_LOG_DIR", DefaultAppLogDir) }
+func AppEnvDir() string { return mustAbsPath("SERVIKA_APP_ENV_DIR", DefaultAppEnvDir) }
+
 // MailLog is where Postfix and Dovecot write. AlmaLinux keeps it at
 // /var/log/maillog; a host that sends mail logging elsewhere overrides it.
 func MailLog() string { return mustAbsPath("SERVIKA_MAIL_LOG", DefaultMailLog) }
@@ -220,6 +242,12 @@ func ValidateRuntimePaths() error {
 		{"SERVIKA_PHPOP_LOG", DefaultPHPOpLog, false},
 		{"SERVIKA_PHPOP_STATE", DefaultPHPOpState, false},
 		{"SERVIKA_PHPOP_WRAPPER", DefaultPHPOpWrapper, false},
+		{"SERVIKA_RUNTIMEOP_LOG", DefaultRuntimeOpLog, false},
+		{"SERVIKA_RUNTIMEOP_STATE", DefaultRuntimeOpState, false},
+		{"SERVIKA_RUNTIMEOP_WRAPPER", DefaultRuntimeOpWrapper, false},
+		{"SERVIKA_NODE_ROOT", DefaultNodeRoot, false},
+		{"SERVIKA_APP_LOG_DIR", DefaultAppLogDir, false},
+		{"SERVIKA_APP_ENV_DIR", DefaultAppEnvDir, false},
 		{"SERVIKA_MAIL_LOG", DefaultMailLog, false},
 		{"SERVIKA_INSTALLATION_ID", DefaultInstallationID, false},
 		{"SERVIKA_VERSION_CACHE", DefaultVersionCache, false},
