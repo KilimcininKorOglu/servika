@@ -4,6 +4,44 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-08
+
+### Added
+- A complete email stack for every domain: mailboxes, aliases, forwarders with a keep-a-copy choice, per-mailbox usage measured against the plan's quota, an operator ceiling above the per-mailbox limits, and a per-sender spam-score override.
+- Live mailbox migration from another provider over IMAP, with discovery of the old server, a password check before anything is copied, live progress, and a job that resumes after a panel restart instead of being lost.
+- Mailbox import and export: Maildir, mbox and Outlook `.pst` in, a tar.gz archive out, and a converter installed with the panel where the distribution ships one.
+- Mail clients now configure themselves: the panel answers the autoconfiguration and autodiscover hostnames, serves and certifies them, publishes the DNS records a client looks for, and reports which names the installed certificate actually covers.
+- Each domain gets its own mail certificate served by SNI, its own webmail address, and a panel-initiated webmail sign-on that never replays the mailbox password.
+- A domain's mail can now be turned off without deleting anything, told apart from purging it for good, and its old mail can be reclaimed as disk.
+- Subdomains became first-class: their own PHP and web-server settings, their own certificate, their own PHP-FPM pool inside the parent tenant's unit, bulk selection and deletion from the domain list, and inclusion in the global search.
+- Site import: move a site onto a domain that already exists from any panel, with archive inventory that skips a container directory.
+- A shared nameserver pair replaces vanity nameservers, published as every zone's apex NS records, manageable from the panel, and shown when a domain is created.
+- DNS verification checks a domain's published records, including the two that decide whether sent mail is accepted.
+- One hostname can now be made canonical, with the other 301'd to it, chosen while creating a domain or on the addon domains page.
+- A domain can be handed to a reseller as it is created, moved between a reseller's own customers, and transferred from the screen that lists domains.
+- The server-wide database list gained the row actions the domain page already had: open phpMyAdmin, reveal and copy the password, reset it, delete the database.
+- The panel replaced every browser dialog with one the browser cannot silence, and a new release is now announced on the dashboard.
+- The sign-in screens let the visitor pick a language, and sign-in completes as soon as the six-digit second factor is typed.
+
+### Changed
+- Twenty-seven security fixes. The tenant file jail no longer has a path-string resolver anywhere in it: listing, search, size, archiving, document-root removal, WordPress and subdomain deletion all resolve through pinned directory descriptors, so a planted symlink can no longer redirect a root-run operation out of the tenant's tree. SQL dumps are applied as a temporary account granted on one schema instead of the panel's root connection. Backup destinations verify an SFTP host key, refuse an S3 endpoint pointing at the internal network, and keep their credentials out of `lftp`, `sshpass` and `curl` argv, as do the directory-protection and database passwords. Failed logins are counted per account as well as per address, server socket timeouts are bounded, a `du` scan a customer triggers has a ceiling, credentials left in the clear by older installs are encrypted at startup, the database DSN is required rather than defaulted, and the panel policy forbids plugin objects.
+- Panel translations are fetched when a component asks for them instead of being compiled into the entry chunk. All twelve languages used to ship to every visitor; the first load dropped from 918 KB to about 149 KB gzipped.
+- Every subprocess that reaches the network is bounded by a deadline: acme.sh, wp-cli, composer, git clone and fetch, the PECL and dnf extension installs, the MariaDB client, and the slow-query scan.
+- Installing or removing a PHP version now runs as detached work with a status and log endpoint instead of holding the request open, and certificate issuance answers immediately with a job to poll.
+- The panel now detects the port sshd actually serves and protects that one, warning while it is still the default.
+
+### Fixed
+- A failed Let's Encrypt issuance reported success and installed a self-signed certificate silently; it now says why it failed, returns a code rather than the CA's prose, and an imported or self-signed certificate is no longer described as one a browser trusts.
+- The panel announced a mail hostname the installed certificate did not cover, and advertised mail ports the server does not serve.
+- Webmail could not send mail, forced Turkish on every user, and signed in on an address other than the one the page advertised.
+- A failed mailbox import left behind what it had already written; it is now rolled back.
+- One pass of the mail delivery log could read an unbounded amount into memory, and all mailbox migrations ran at once instead of four at a time.
+- An update could destroy a hand-edited panel vhost, and a tampered release bundle was treated as a network failure and retried against the mutable branch tarball.
+- A re-run of the installer wiped secrets other tools had written, and the FTP password column was too narrow for an account to be created at all.
+- Sessions dropped during a brief database outage, a plugin restart answered an error instead of being ridden out, and four domain handlers acted on a row they had failed to read.
+- The file manager's errors disappeared, an archive of unknown size was reported as empty, and a server fault was reported as a path the tenant had got wrong.
+- A domain could be created with a name already serving as a subdomain, and a PHP version the server cannot serve could be selected.
+
 ## [1.1.5] - 2026-08-04
 
 ### Changed
