@@ -40,6 +40,10 @@
       "title": "Servicii",
       "description": "Stare și repornire Nginx / Apache / MariaDB / DNS / PHP-FPM."
     },
+    "appRuntimes": {
+      "title": "Runtime-uri de aplicație",
+      "description": "Interpretoare Node.js și Python. Instalați sau eliminați versiuni pentru aplicațiile domeniilor."
+    },
     "servicePlans": {
       "title": "Planuri de servicii",
       "description": "Pachete de găzduire cu cote de disc, bază de date și FTP."

@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "tools": "Araçlar ve Ayarlar",
+    "current": "Uygulama Runtime'ları"
+  },
+  "title": "Uygulama Runtime'ları",
+  "subtitle": "Alan adı uygulamalarının üzerinde çalışabileceği Node.js ve Python yorumlayıcıları.",
+  "loading": "Yükleniyor...",
+  "empty": "Bu türde kurulu yorumlayıcı yok.",
+  "systemVersion": "Sistem sürümü",
+  "badges": {
+    "system": "Sistem"
+  },
+  "actions": {
+    "install": "Kur",
+    "remove": "Kaldır"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "Tek başına ana sürüm, örneğin 22. n sürüm yöneticisiyle kurulur, internet erişimi gerekir.",
+    "python": "Paketlerin adlandırıldığı ara sürüm biçimi, örneğin 3.12."
+  },
+  "confirm": {
+    "install": "{{version}} sürümü kurulsun mu? Arka planda çalışır ve birkaç dakika sürebilir.",
+    "remove": "{{version}} sürümü kaldırılsın mı? Onu kullanan uygulamalar önce taşınmalıdır."
+  },
+  "alerts": {
+    "opInProgress": "Başka bir runtime işlemi çalışıyor. Bitmesini bekleyin."
+  },
+  "log": {
+    "installStarted": "{{version}} kurulumu başladı...",
+    "removeStarted": "{{version}} kaldırma işlemi başladı...",
+    "installInProgress": "{{version}} kuruluyor",
+    "removeInProgress": "{{version}} kaldırılıyor",
+    "waiting": "Çıktı bekleniyor..."
+  },
+  "success": {
+    "installed": "{{version}} sürümü kuruldu.",
+    "removed": "{{version}} sürümü kaldırıldı."
+  },
+  "errors": {
+    "startInstallFailed": "Kurulum başlatılamadı.",
+    "startRemoveFailed": "Kaldırma işlemi başlatılamadı."
+  }
+}

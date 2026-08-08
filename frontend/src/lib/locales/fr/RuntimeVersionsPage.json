@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "tools": "Outils et paramètres",
+    "current": "Runtimes d'application"
+  },
+  "title": "Runtimes d'application",
+  "subtitle": "Interpréteurs Node.js et Python sur lesquels les applications de domaine peuvent s'exécuter.",
+  "loading": "Chargement...",
+  "empty": "Aucun interpréteur de ce type n'est installé.",
+  "systemVersion": "Version système",
+  "badges": {
+    "system": "Système"
+  },
+  "actions": {
+    "install": "Installer",
+    "remove": "Retirer"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "Une version majeure seule, par exemple 22. Installée avec le gestionnaire de versions n, qui nécessite un accès internet.",
+    "python": "La forme mineure d'après laquelle les paquets sont nommés, par exemple 3.12."
+  },
+  "confirm": {
+    "install": "Installer la version {{version}} ? L'opération s'exécute en arrière-plan et peut prendre plusieurs minutes.",
+    "remove": "Retirer la version {{version}} ? Les applications qui l'utilisent encore doivent être déplacées d'abord."
+  },
+  "alerts": {
+    "opInProgress": "Une autre opération de runtime est en cours. Attendez qu'elle se termine."
+  },
+  "log": {
+    "installStarted": "Installation de {{version}} démarrée...",
+    "removeStarted": "Retrait de {{version}} démarré...",
+    "installInProgress": "Installation de {{version}}",
+    "removeInProgress": "Retrait de {{version}}",
+    "waiting": "En attente de sortie..."
+  },
+  "success": {
+    "installed": "La version {{version}} a été installée.",
+    "removed": "La version {{version}} a été retirée."
+  },
+  "errors": {
+    "startInstallFailed": "L'installation n'a pas pu démarrer.",
+    "startRemoveFailed": "Le retrait n'a pas pu démarrer."
+  }
+}

@@ -39,6 +39,10 @@
       "title": "Serviços",
       "description": "Estado e reinício de nginx / Apache / MariaDB / DNS / PHP-FPM."
     },
+    "appRuntimes": {
+      "title": "Runtimes de aplicação",
+      "description": "Interpretadores Node.js e Python. Instale ou remova versões para as aplicações de domínio."
+    },
     "servicePlans": {
       "title": "Planos de Serviço",
       "description": "Pacotes de alojamento com quotas de disco, base de dados e FTP."

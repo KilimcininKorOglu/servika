@@ -38,6 +38,10 @@
       "title": "服务",
       "description": "Nginx / Apache / MariaDB / DNS / PHP-FPM 状态和重启。"
     },
+    "appRuntimes": {
+      "title": "应用 runtime",
+      "description": "Node.js 和 Python 解释器。为域名应用安装或移除版本。"
+    },
     "servicePlans": {
       "title": "服务套餐",
       "description": "带磁盘、数据库和 FTP 配额的主机套餐。"

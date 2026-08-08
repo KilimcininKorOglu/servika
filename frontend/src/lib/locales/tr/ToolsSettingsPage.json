@@ -38,6 +38,10 @@
       "title": "Servisler",
       "description": "Nginx / Apache / MariaDB / DNS / PHP-FPM durumu ve yeniden başlatma."
     },
+    "appRuntimes": {
+      "title": "Uygulama Runtime'ları",
+      "description": "Node.js ve Python yorumlayıcıları. Alan adı uygulamaları için sürüm kurun ya da kaldırın."
+    },
     "servicePlans": {
       "title": "Servis Planları",
       "description": "Disk, veritabanı ve FTP kotalı hosting paketleri."

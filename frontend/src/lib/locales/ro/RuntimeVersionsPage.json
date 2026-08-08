@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "tools": "Instrumente și setări",
+    "current": "Runtime-uri de aplicație"
+  },
+  "title": "Runtime-uri de aplicație",
+  "subtitle": "Interpretoare Node.js și Python pe care pot rula aplicațiile domeniilor.",
+  "loading": "Se încarcă...",
+  "empty": "Nu este instalat niciun interpretor de acest tip.",
+  "systemVersion": "Versiunea sistemului",
+  "badges": {
+    "system": "Sistem"
+  },
+  "actions": {
+    "install": "Instalează",
+    "remove": "Elimină"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "Doar versiunea majoră, de exemplu 22. Se instalează cu managerul de versiuni n, care are nevoie de acces la internet.",
+    "python": "Forma minoră după care sunt denumite pachetele, de exemplu 3.12."
+  },
+  "confirm": {
+    "install": "Instalați versiunea {{version}}? Rulează în fundal și poate dura câteva minute.",
+    "remove": "Eliminați versiunea {{version}}? Aplicațiile care o folosesc încă trebuie mutate mai întâi."
+  },
+  "alerts": {
+    "opInProgress": "Rulează deja altă operațiune de runtime. Așteptați să se termine."
+  },
+  "log": {
+    "installStarted": "Instalarea versiunii {{version}} a început...",
+    "removeStarted": "Eliminarea versiunii {{version}} a început...",
+    "installInProgress": "Se instalează {{version}}",
+    "removeInProgress": "Se elimină {{version}}",
+    "waiting": "Se așteaptă rezultatul..."
+  },
+  "success": {
+    "installed": "Versiunea {{version}} a fost instalată.",
+    "removed": "Versiunea {{version}} a fost eliminată."
+  },
+  "errors": {
+    "startInstallFailed": "Instalarea nu a putut fi pornită.",
+    "startRemoveFailed": "Eliminarea nu a putut fi pornită."
+  }
+}

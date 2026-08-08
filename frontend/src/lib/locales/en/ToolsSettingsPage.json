@@ -39,6 +39,10 @@
       "title": "Services",
       "description": "Nginx / Apache / MariaDB / DNS / PHP-FPM status and restart."
     },
+    "appRuntimes": {
+      "title": "Application Runtimes",
+      "description": "Node.js and Python interpreters. Install or remove versions for domain applications."
+    },
     "servicePlans": {
       "title": "Service Plans",
       "description": "Hosting packages with disk, database, and FTP quotas."

@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "tools": "Tools and Settings",
+    "current": "Application Runtimes"
+  },
+  "title": "Application Runtimes",
+  "subtitle": "Node.js and Python interpreters that domain applications can run on.",
+  "loading": "Loading...",
+  "empty": "No interpreter of this kind is installed.",
+  "systemVersion": "System version",
+  "badges": {
+    "system": "System"
+  },
+  "actions": {
+    "install": "Install",
+    "remove": "Remove"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "A major on its own, for example 22. Installed with the n version manager, which needs internet access.",
+    "python": "The minor form the packages are named after, for example 3.12."
+  },
+  "confirm": {
+    "install": "Install version {{version}}? This runs in the background and can take several minutes.",
+    "remove": "Remove version {{version}}? Applications still using it must be moved first."
+  },
+  "alerts": {
+    "opInProgress": "Another runtime operation is running. Wait for it to finish."
+  },
+  "log": {
+    "installStarted": "Installation of {{version}} started...",
+    "removeStarted": "Removal of {{version}} started...",
+    "installInProgress": "Installing {{version}}",
+    "removeInProgress": "Removing {{version}}",
+    "waiting": "Waiting for output..."
+  },
+  "success": {
+    "installed": "Version {{version}} was installed.",
+    "removed": "Version {{version}} was removed."
+  },
+  "errors": {
+    "startInstallFailed": "The installation could not be started.",
+    "startRemoveFailed": "The removal could not be started."
+  }
+}

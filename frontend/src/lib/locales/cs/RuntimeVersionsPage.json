@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "tools": "Nástroje a nastavení",
+    "current": "Běhová prostředí aplikací"
+  },
+  "title": "Běhová prostředí aplikací",
+  "subtitle": "Interpretery Node.js a Python, na kterých mohou běžet aplikace domén.",
+  "loading": "Načítání...",
+  "empty": "Není nainstalován žádný interpreter tohoto typu.",
+  "systemVersion": "Systémová verze",
+  "badges": {
+    "system": "Systém"
+  },
+  "actions": {
+    "install": "Nainstalovat",
+    "remove": "Odebrat"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "Samotná hlavní verze, například 22. Instaluje se správcem verzí n, který potřebuje přístup k internetu.",
+    "python": "Vedlejší verze, podle které jsou pojmenovány balíčky, například 3.12."
+  },
+  "confirm": {
+    "install": "Nainstalovat verzi {{version}}? Běží na pozadí a může trvat několik minut.",
+    "remove": "Odebrat verzi {{version}}? Aplikace, které ji stále používají, je nutné nejdříve přesunout."
+  },
+  "alerts": {
+    "opInProgress": "Právě běží jiná operace s běhovým prostředím. Počkejte, až skončí."
+  },
+  "log": {
+    "installStarted": "Instalace verze {{version}} byla zahájena...",
+    "removeStarted": "Odebírání verze {{version}} bylo zahájeno...",
+    "installInProgress": "Instaluje se {{version}}",
+    "removeInProgress": "Odebírá se {{version}}",
+    "waiting": "Čeká se na výstup..."
+  },
+  "success": {
+    "installed": "Verze {{version}} byla nainstalována.",
+    "removed": "Verze {{version}} byla odebrána."
+  },
+  "errors": {
+    "startInstallFailed": "Instalaci se nepodařilo spustit.",
+    "startRemoveFailed": "Odebírání se nepodařilo spustit."
+  }
+}

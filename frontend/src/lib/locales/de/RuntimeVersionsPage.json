@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "tools": "Werkzeuge und Einstellungen",
+    "current": "Anwendungslaufzeitumgebungen"
+  },
+  "title": "Anwendungslaufzeitumgebungen",
+  "subtitle": "Node.js- und Python-Interpreter, auf denen Domain-Anwendungen laufen können.",
+  "loading": "Wird geladen...",
+  "empty": "Von dieser Art ist kein Interpreter installiert.",
+  "systemVersion": "Systemversion",
+  "badges": {
+    "system": "System"
+  },
+  "actions": {
+    "install": "Installieren",
+    "remove": "Entfernen"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "Eine Hauptversion allein, zum Beispiel 22. Wird mit dem Versionsmanager n installiert und benötigt Internetzugang.",
+    "python": "Die Nebenversionsform, nach der die Pakete benannt sind, zum Beispiel 3.12."
+  },
+  "confirm": {
+    "install": "Version {{version}} installieren? Das läuft im Hintergrund und kann einige Minuten dauern.",
+    "remove": "Version {{version}} entfernen? Anwendungen, die sie noch nutzen, müssen zuerst umgestellt werden."
+  },
+  "alerts": {
+    "opInProgress": "Eine andere Laufzeitoperation läuft. Warten Sie, bis sie beendet ist."
+  },
+  "log": {
+    "installStarted": "Installation von {{version}} gestartet...",
+    "removeStarted": "Entfernen von {{version}} gestartet...",
+    "installInProgress": "{{version}} wird installiert",
+    "removeInProgress": "{{version}} wird entfernt",
+    "waiting": "Warten auf Ausgabe..."
+  },
+  "success": {
+    "installed": "Version {{version}} wurde installiert.",
+    "removed": "Version {{version}} wurde entfernt."
+  },
+  "errors": {
+    "startInstallFailed": "Die Installation konnte nicht gestartet werden.",
+    "startRemoveFailed": "Das Entfernen konnte nicht gestartet werden."
+  }
+}

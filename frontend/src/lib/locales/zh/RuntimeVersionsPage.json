@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "tools": "工具与设置",
+    "current": "应用 runtime"
+  },
+  "title": "应用 runtime",
+  "subtitle": "域名应用可以运行其上的 Node.js 和 Python 解释器。",
+  "loading": "加载中...",
+  "empty": "尚未安装此类解释器。",
+  "systemVersion": "系统版本",
+  "badges": {
+    "system": "系统"
+  },
+  "actions": {
+    "install": "安装",
+    "remove": "移除"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "只填主版本号，例如 22。通过版本管理器 n 安装，需要联网。",
+    "python": "软件包命名所用的次版本形式，例如 3.12。"
+  },
+  "confirm": {
+    "install": "安装版本 {{version}} 吗？该操作在后台运行，可能需要几分钟。",
+    "remove": "移除版本 {{version}} 吗？仍在使用它的应用需要先迁移。"
+  },
+  "alerts": {
+    "opInProgress": "另一个 runtime 操作正在运行，请等待其完成。"
+  },
+  "log": {
+    "installStarted": "已开始安装 {{version}}...",
+    "removeStarted": "已开始移除 {{version}}...",
+    "installInProgress": "正在安装 {{version}}",
+    "removeInProgress": "正在移除 {{version}}",
+    "waiting": "正在等待输出..."
+  },
+  "success": {
+    "installed": "版本 {{version}} 已安装。",
+    "removed": "版本 {{version}} 已移除。"
+  },
+  "errors": {
+    "startInstallFailed": "无法启动安装。",
+    "startRemoveFailed": "无法启动移除。"
+  }
+}

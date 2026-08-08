@@ -45,6 +45,7 @@ const PHPExtensionsPage = lazy(() => import('@/pages/PHPExtensionsPage'))
 const PackagesPage = lazy(() => import('@/pages/PackagesPage'))
 const PackageDetailPage = lazy(() => import('@/pages/PackageDetailPage'))
 const PHPVersionsPage = lazy(() => import('@/pages/PHPVersionsPage'))
+const RuntimeVersionsPage = lazy(() => import('@/pages/RuntimeVersionsPage'))
 const ToolsSettingsPage = lazy(() => import('@/pages/ToolsSettingsPage'))
 const PanelUpdatePage = lazy(() => import('@/pages/PanelUpdatePage'))
 const ServerOptimizePage = lazy(() => import('@/pages/ServerOptimizePage'))
@@ -153,6 +154,7 @@ export default function App() {
         <Route path="tools/packages"               element={<PackagesPage />} />
         <Route path="tools/packages/:id"           element={<PackageDetailPage />} />
         <Route path="tools/php-versions"           element={<PHPVersionsPage />} />
+        <Route path="tools/app-runtimes"           element={<RuntimeVersionsPage />} />
         <Route path="tools/services"               element={<ServicesPage />} />
         <Route path="tools/dns-template"           element={<DNSTemplatePage />} />
         <Route path="subscriptions/:id/:slug" element={<ToolPage />} />

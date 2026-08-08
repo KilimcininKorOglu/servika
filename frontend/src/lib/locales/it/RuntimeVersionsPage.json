@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "tools": "Strumenti e impostazioni",
+    "current": "Runtime delle applicazioni"
+  },
+  "title": "Runtime delle applicazioni",
+  "subtitle": "Interpreti Node.js e Python su cui possono girare le applicazioni dei domini.",
+  "loading": "Caricamento...",
+  "empty": "Non è installato alcun interprete di questo tipo.",
+  "systemVersion": "Versione di sistema",
+  "badges": {
+    "system": "Sistema"
+  },
+  "actions": {
+    "install": "Installa",
+    "remove": "Rimuovi"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "Solo la versione maggiore, ad esempio 22. Installata con il gestore di versioni n, che richiede accesso a internet.",
+    "python": "La forma minore con cui sono nominati i pacchetti, ad esempio 3.12."
+  },
+  "confirm": {
+    "install": "Installare la versione {{version}}? L'operazione gira in background e può richiedere diversi minuti.",
+    "remove": "Rimuovere la versione {{version}}? Le applicazioni che la usano vanno spostate prima."
+  },
+  "alerts": {
+    "opInProgress": "È in corso un'altra operazione sui runtime. Attendi che finisca."
+  },
+  "log": {
+    "installStarted": "Installazione di {{version}} avviata...",
+    "removeStarted": "Rimozione di {{version}} avviata...",
+    "installInProgress": "Installazione di {{version}}",
+    "removeInProgress": "Rimozione di {{version}}",
+    "waiting": "In attesa di output..."
+  },
+  "success": {
+    "installed": "La versione {{version}} è stata installata.",
+    "removed": "La versione {{version}} è stata rimossa."
+  },
+  "errors": {
+    "startInstallFailed": "L'installazione non è stata avviata.",
+    "startRemoveFailed": "La rimozione non è stata avviata."
+  }
+}

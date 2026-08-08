@@ -59,6 +59,8 @@ const GROUPS: Group[] = [
         key: 'dnf gcc python node go podman compiler' },
       { id: 'services', href: '/tools/services', icon: ICONS.refresh,
         key: 'nginx apache mariadb dns php-fpm restart' },
+      { id: 'appRuntimes', href: '/tools/app-runtimes', icon: ICONS.chip,
+        key: 'node nodejs python runtime interpreter n venv' },
       { id: 'servicePlans', href: '/service-plans', icon: ICONS.clipboard,
         key: 'package plan quota disk ftp database' },
     ],

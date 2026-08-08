@@ -1,0 +1,49 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "tools": "ツールと設定",
+    "current": "アプリケーションの runtime"
+  },
+  "title": "アプリケーションの runtime",
+  "subtitle": "ドメインのアプリケーションが動作できる Node.js と Python のインタープリターです。",
+  "loading": "読み込み中...",
+  "empty": "この種類のインタープリターはインストールされていません。",
+  "systemVersion": "システムのバージョン",
+  "badges": {
+    "system": "システム"
+  },
+  "actions": {
+    "install": "インストール",
+    "remove": "削除"
+  },
+  "placeholders": {
+    "node": "22",
+    "python": "3.12"
+  },
+  "hints": {
+    "node": "メジャーバージョンのみです。例: 22。バージョン管理ツール n でインストールするため、インターネット接続が必要です。",
+    "python": "パッケージ名に使われるマイナーバージョンの形式です。例: 3.12。"
+  },
+  "confirm": {
+    "install": "バージョン {{version}} をインストールしますか。バックグラウンドで実行され、数分かかることがあります。",
+    "remove": "バージョン {{version}} を削除しますか。まだ使用しているアプリケーションは先に移動してください。"
+  },
+  "alerts": {
+    "opInProgress": "別の runtime 操作が実行中です。終わるまでお待ちください。"
+  },
+  "log": {
+    "installStarted": "{{version}} のインストールを開始しました...",
+    "removeStarted": "{{version}} の削除を開始しました...",
+    "installInProgress": "{{version}} をインストール中",
+    "removeInProgress": "{{version}} を削除中",
+    "waiting": "出力を待っています..."
+  },
+  "success": {
+    "installed": "バージョン {{version}} をインストールしました。",
+    "removed": "バージョン {{version}} を削除しました。"
+  },
+  "errors": {
+    "startInstallFailed": "インストールを開始できませんでした。",
+    "startRemoveFailed": "削除を開始できませんでした。"
+  }
+}
