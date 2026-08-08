@@ -36,7 +36,7 @@ const (
 	// Node and Python runtime installation, mirroring the PHP operation above.
 	DefaultRuntimeOpLog     = "/opt/servika/logs/runtime-op.log"
 	DefaultRuntimeOpState   = "/opt/servika/runtime-op.json"
-	DefaultRuntimeOpWrapper = "/opt/servika/runtime-op.sh"
+	DefaultRuntimeOpWrapper = "/opt/servika/runtime-op.sh" // #nosec G101 -- filesystem path, not a credential
 	// DefaultNodeRoot is where the `n` version manager keeps its installations.
 	DefaultNodeRoot = "/usr/local/n/versions/node"
 	// DefaultAppLogDir holds one log per application. It is root-owned on

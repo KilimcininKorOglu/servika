@@ -20,6 +20,7 @@ import (
 	"servika/internal/addondomains"
 	"servika/internal/antivirus"
 	"servika/internal/appruntime"
+	"servika/internal/apps"
 	"servika/internal/auth"
 	"servika/internal/autoconfig"
 	"servika/internal/backups"
@@ -288,6 +289,8 @@ func main() {
 	panelSettingsH := &panelsettings.Handlers{DB: d, ServerIPv4: ipv4}
 	phpVersionH := &phpversion.Handlers{DB: d}
 	appRuntimeH := &appruntime.Handlers{DB: d}
+	appsH := &apps.Handlers{DB: d}
+	apps.HealOnStartup(d)
 	// PERF: move PHP availability discovery (dnf) to a background sweeper so request-path
 	// callers like /php/versions never block on a slow or locked dnf.
 	phpversion.StartAvailabilitySweeper()
@@ -840,6 +843,19 @@ func main() {
 				r.With(middleware.AdminOnly).Post("/app-runtimes/remove", appRuntimeH.Remove)
 				r.With(middleware.AdminOnly).Get("/app-runtimes/status", appRuntimeH.Status)
 				r.With(middleware.AdminOnly).Get("/app-runtimes/log", appRuntimeH.LogTail)
+				// Per-domain applications. CustomerScope settles the domain; the
+				// {aid} lookup carries the domain in its own WHERE clause, so an
+				// application on another domain is simply not found.
+				r.With(middleware.CustomerScope).Get("/domains/{id}/apps", appsH.List)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/apps", appsH.Create)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/apps/{aid}", appsH.Update)
+				r.With(middleware.CustomerScope).Delete("/domains/{id}/apps/{aid}", appsH.Delete)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/apps/{aid}/action", appsH.Action)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/apps/{aid}/status", appsH.StatusOf)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/apps/{aid}/log", appsH.Log)
+				r.With(middleware.CustomerScope).Get("/domains/{id}/apps/{aid}/env", appsH.EnvRead)
+				r.With(middleware.CustomerScope).Put("/domains/{id}/apps/{aid}/env", appsH.EnvWrite)
+				r.With(middleware.CustomerScope).Post("/domains/{id}/apps/{aid}/install", appsH.Install)
 				r.With(middleware.CustomerScope).Delete("/domains/{id}/git", gitH.Delete)
 			})
 		})
