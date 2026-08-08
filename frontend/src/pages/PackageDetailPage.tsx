@@ -18,7 +18,7 @@ import {
 type Plan = {
   id: number; name: string; description: string
   disk_quota_mb: number; traffic_quota_mb: number
-  max_domain: number; max_db: number; max_email: number; max_ftp: number
+  max_domain: number; max_db: number; max_email: number; max_ftp: number; max_app: number
   cpu_percent: number; ram_mb: number; max_process: number
   inode_quota: number; io_weight: number; mysql_max_connections: number
   pm_max_children: number
@@ -248,6 +248,9 @@ export default function PackageDetailPage() {
             </Field>
             <Field label={t('numeric.ftpAccounts')}>
               <input type="number" min={0} value={plan.max_ftp} onChange={e => updatePlan('max_ftp', Number(e.target.value) || 0)} className={numberInputClass} />
+            </Field>
+            <Field label={t('numeric.applications')}>
+              <input type="number" min={0} value={plan.max_app} onChange={e => updatePlan('max_app', Number(e.target.value) || 0)} className={numberInputClass} />
             </Field>
           </div>
         </Card>

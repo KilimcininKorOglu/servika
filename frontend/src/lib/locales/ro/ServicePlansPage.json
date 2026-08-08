@@ -19,7 +19,8 @@
     "traffic": "Trafic",
     "domains": "Domenii",
     "databases": "Baze de date",
-    "ftp": "FTP"
+    "ftp": "FTP",
+    "apps": "Aplicații"
   },
   "detailsButton": "Detalii și limite de resurse",
   "delete": "Ștergere",
@@ -53,6 +54,7 @@
     "maxDomains": "Domenii maxime",
     "maxDatabases": "Baze de date maxime",
     "maxFtp": "Conturi FTP maxime",
+    "maxApp": "Aplicații max.",
     "maxEmail": "Număr maxim de căsuțe poștale",
     "mailboxQuotaMb": "Cotă căsuță poștală (MB)",
     "mailSendLimitHour": "Limită de trimitere per căsuță / oră",

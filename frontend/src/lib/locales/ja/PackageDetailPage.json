@@ -73,7 +73,8 @@
     "subtitle": "このプランに関連付けられたアカウントで作成できるリソースの数。0 = 無制限。",
     "domains": "ドメイン",
     "databases": "データベース",
-    "ftpAccounts": "FTP アカウント"
+    "ftpAccounts": "FTP アカウント",
+    "applications": "アプリケーション"
   },
   "nginx": {
     "title": "Web サーバー (nginx)",

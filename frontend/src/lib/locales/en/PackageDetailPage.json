@@ -73,7 +73,8 @@
     "subtitle": "Number of resources that can be created under the account associated with this plan. 0 = unlimited.",
     "domains": "Domains",
     "databases": "Databases",
-    "ftpAccounts": "FTP Accounts"
+    "ftpAccounts": "FTP Accounts",
+    "applications": "Applications"
   },
   "nginx": {
     "title": "Web Server (nginx)",

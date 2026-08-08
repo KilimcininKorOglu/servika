@@ -19,7 +19,8 @@
     "traffic": "Trafic",
     "domains": "Domaines",
     "databases": "Bases de données",
-    "ftp": "FTP"
+    "ftp": "FTP",
+    "apps": "Applications"
   },
   "detailsButton": "Détails et limites de ressources",
   "delete": "Supprimer",
@@ -53,6 +54,7 @@
     "maxDomains": "Domaines max",
     "maxDatabases": "Bases de données max",
     "maxFtp": "Comptes FTP max",
+    "maxApp": "Applications max.",
     "maxEmail": "Boîtes aux lettres max.",
     "mailboxQuotaMb": "Quota de boîte aux lettres (Mo)",
     "mailSendLimitHour": "Limite d'envoi par boîte / heure",

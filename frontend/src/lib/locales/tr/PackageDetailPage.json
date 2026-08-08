@@ -73,7 +73,8 @@
     "subtitle": "Bu planla ilişkili hesap altında oluşturulabilecek kaynak sayısı. 0 = sınırsız.",
     "domains": "Alan Adları",
     "databases": "Veritabanları",
-    "ftpAccounts": "FTP Hesapları"
+    "ftpAccounts": "FTP Hesapları",
+    "applications": "Uygulamalar"
   },
   "nginx": {
     "title": "Web Sunucusu (nginx)",

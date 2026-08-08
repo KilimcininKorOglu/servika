@@ -73,7 +73,8 @@
     "subtitle": "Anzahl der Ressourcen, die unter dem mit diesem Plan verknüpften Konto erstellt werden können. 0 = unbegrenzt.",
     "domains": "Domains",
     "databases": "Datenbanken",
-    "ftpAccounts": "FTP-Konten"
+    "ftpAccounts": "FTP-Konten",
+    "applications": "Anwendungen"
   },
   "nginx": {
     "title": "Webserver (nginx)",

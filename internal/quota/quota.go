@@ -209,6 +209,46 @@ func CheckDatabaseAllowed(ctx context.Context, db *sql.DB, domainID int64) error
 	return nil
 }
 
+// CheckAppAllowed checks the domain customer's plan.max_app limit.
+//
+// The count spans every domain the customer owns, not just this one, so the plan
+// caps the account rather than each domain separately. That matches how max_db
+// and max_email are counted; an app is a long-running process on the host, so a
+// per-domain reading would let one customer multiply them by adding domains.
+func CheckAppAllowed(ctx context.Context, db *sql.DB, domainID int64) error {
+	var customerID *int64
+	if err := db.QueryRowContext(ctx, `SELECT customer_id FROM domains WHERE id=?`, domainID).Scan(&customerID); err != nil {
+		return err
+	}
+	if customerID == nil {
+		return nil
+	}
+	var planID *int64
+	if err := db.QueryRowContext(ctx, `SELECT plan_id FROM customers WHERE id=?`, *customerID).Scan(&planID); err != nil {
+		return err
+	}
+	if planID == nil {
+		return nil
+	}
+	var maximum int
+	if err := db.QueryRowContext(ctx, `SELECT COALESCE(max_app,0) FROM service_plans WHERE id=?`, *planID).Scan(&maximum); err != nil {
+		return err
+	}
+	if maximum <= 0 {
+		return nil
+	}
+	var current int
+	if err := db.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM apps a JOIN domains d ON d.id=a.domain_id WHERE d.customer_id=?`,
+		*customerID).Scan(&current); err != nil {
+		return err // FAIL-CLOSED: never bypass the limit gate on a count error.
+	}
+	if current >= maximum {
+		return &LimitError{Message: fmt.Sprintf("plan limit exceeded: maximum %d applications", maximum)}
+	}
+	return nil
+}
+
 // CheckMailboxAllowed checks the domain customer's plan.max_email limit.
 func CheckMailboxAllowed(ctx context.Context, db *sql.DB, domainID int64) error {
 	var customerID *int64

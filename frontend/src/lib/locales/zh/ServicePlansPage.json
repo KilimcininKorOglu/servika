@@ -19,7 +19,8 @@
     "traffic": "流量",
     "domains": "域名",
     "databases": "数据库",
-    "ftp": "FTP"
+    "ftp": "FTP",
+    "apps": "应用"
   },
   "detailsButton": "详情与资源限制",
   "delete": "删除",
@@ -53,6 +54,7 @@
     "maxDomains": "最大域名数",
     "maxDatabases": "最大数据库数",
     "maxFtp": "最大 FTP 账户数",
+    "maxApp": "最大应用数",
     "maxEmail": "最大邮箱数",
     "mailboxQuotaMb": "邮箱配额 (MB)",
     "mailSendLimitHour": "每个邮箱发送上限 / 小时",

@@ -36,7 +36,7 @@
     "queryTime": "Tiempo de consulta (segundos)", "queryTimeHint": "Las consultas que superen esta duración se terminan. 0 = desactivado",
     "disabled": "0 = desactivado"
   },
-  "numeric": { "title": "Límites numéricos", "subtitle": "Número de recursos que se pueden crear bajo la cuenta asociada con este plan. 0 = ilimitado.", "domains": "Dominios", "databases": "Bases de datos", "ftpAccounts": "Cuentas FTP" },
+  "numeric": { "title": "Límites numéricos", "subtitle": "Número de recursos que se pueden crear bajo la cuenta asociada con este plan. 0 = ilimitado.", "domains": "Dominios", "databases": "Bases de datos", "ftpAccounts": "Cuentas FTP", "applications": "Aplicaciones" },
   "nginx": {
     "title": "Servidor web (nginx)",
     "subtitle": "Los nuevos dominios de este plan se aprovisionan con estos ajustes de nginx. Las directivas adicionales se validan con «nginx -t» al guardar.",

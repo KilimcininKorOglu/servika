@@ -73,7 +73,8 @@
     "subtitle": "Numărul de resurse care pot fi create sub contul asociat cu acest plan. 0 = nelimitat.",
     "domains": "Domenii",
     "databases": "Baze de date",
-    "ftpAccounts": "Conturi FTP"
+    "ftpAccounts": "Conturi FTP",
+    "applications": "Aplicații"
   },
   "nginx": {
     "title": "Server web (nginx)",

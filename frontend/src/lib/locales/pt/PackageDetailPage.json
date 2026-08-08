@@ -73,7 +73,8 @@
     "subtitle": "Número de recursos que podem ser criados na conta associada a este plano. 0 = ilimitado.",
     "domains": "Domínios",
     "databases": "Bases de dados",
-    "ftpAccounts": "Contas FTP"
+    "ftpAccounts": "Contas FTP",
+    "applications": "Aplicações"
   },
   "nginx": {
     "title": "Servidor Web (nginx)",

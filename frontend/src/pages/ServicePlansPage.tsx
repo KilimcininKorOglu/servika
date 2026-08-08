@@ -24,6 +24,7 @@ type Plan = {
   mail_send_limit_hour: number
   mail_send_limit_day: number
   max_ftp: number
+  max_app: number
   php_version: string
   fastcgi_cache: boolean
   client_max_body_mb: number
@@ -123,6 +124,7 @@ export default function ServicePlansPage() {
                 <Row label={t('rows.domains')} value={formatLimit(plan.max_domain, t('units.domains'), t('limit.unlimited'))} />
                 <Row label={t('rows.databases')} value={formatLimit(plan.max_db, t('units.databases'), t('limit.unlimited'))} />
                 <Row label={t('rows.ftp')} value={formatLimit(plan.max_ftp, t('units.accounts'), t('limit.unlimited'))} />
+                <Row label={t('rows.apps')} value={formatLimit(plan.max_app, t('units.apps'), t('limit.unlimited'))} />
               </dl>
 
               {/* Plan definition is the administrator's product; a reseller only
@@ -192,6 +194,7 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
     mail_send_limit_hour: plan.mail_send_limit_hour || 0,
     mail_send_limit_day: plan.mail_send_limit_day || 0,
     max_ftp: plan.max_ftp || 2,
+    max_app: plan.max_app || 0,
     php_version: plan.php_version || '8.3',
     fastcgi_cache: plan.fastcgi_cache || false,
     client_max_body_mb: plan.client_max_body_mb || 64,
@@ -246,6 +249,7 @@ function PlanModal({ plan, versions, onClose, onSave }: { plan: Plan; versions: 
           <Count label={t('modal.maxDomains')} value={form.max_domain} setValue={value => setForm({ ...form, max_domain: value })} />
           <Count label={t('modal.maxDatabases')} value={form.max_db} setValue={value => setForm({ ...form, max_db: value })} />
           <Count label={t('modal.maxFtp')} value={form.max_ftp} setValue={value => setForm({ ...form, max_ftp: value })} />
+          <Count label={t('modal.maxApp')} value={form.max_app} setValue={value => setForm({ ...form, max_app: value })} />
           <Count label={t('modal.maxEmail')} value={form.max_email} setValue={value => setForm({ ...form, max_email: value })} />
           {/* Enforced by Dovecot through the mailbox row, not just displayed. */}
           <Count label={t('modal.mailboxQuotaMb')} value={form.mailbox_quota_mb} setValue={value => setForm({ ...form, mailbox_quota_mb: value })} />

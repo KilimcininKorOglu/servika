@@ -34,6 +34,7 @@ type Plan struct {
 	MailSendLimitHour    int    `json:"mail_send_limit_hour"` // 0 keeps the built-in per-mailbox default
 	MailSendLimitDay     int    `json:"mail_send_limit_day"`  // 0 keeps the built-in per-mailbox default
 	MaxFTP               int    `json:"max_ftp"`
+	MaxApp               int    `json:"max_app"`     // Node/Python applications, 0 = unlimited.
 	CPUPercent           int    `json:"cpu_percent"` // 100 equals one CPU core.
 	RAMMB                int    `json:"ram_mb"`      // Hard limit in MB.
 	MaxProcess           int    `json:"max_process"` // systemd TasksMax.
@@ -68,6 +69,7 @@ type Handlers struct {
 const selectAll = `SELECT id, name, description, disk_quota_mb, traffic_quota_mb,
   max_domain, max_db, max_email, COALESCE(mailbox_quota_mb,0),
   COALESCE(mail_send_limit_hour,0), COALESCE(mail_send_limit_day,0), max_ftp,
+  COALESCE(max_app,0),
   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
   COALESCE(pm_max_children,0),
   COALESCE(io_read_mbps,0), COALESCE(io_write_mbps,0),
@@ -90,7 +92,7 @@ func scan(rs interface{ Scan(...any) error }) (Plan, error) {
 	var vars, fc, wafEn int
 	err := rs.Scan(&p.ID, &p.Name, &p.Description, &p.DiskQuotaMB, &p.TrafficQuotaMB,
 		&p.MaxDomain, &p.MaxDB, &p.MaxEmail, &p.MailboxQuotaMB,
-		&p.MailSendLimitHour, &p.MailSendLimitDay, &p.MaxFTP,
+		&p.MailSendLimitHour, &p.MailSendLimitDay, &p.MaxFTP, &p.MaxApp,
 		&p.CPUPercent, &p.RAMMB, &p.MaxProcess, &p.InodeQuota, &p.IOWeight, &p.MySQLMaxConnections,
 		&p.PMMaxChildren,
 		&p.IOReadMBps, &p.IOWriteMBps, &p.IOReadIOPS, &p.IOWriteIOPS,
@@ -213,14 +215,16 @@ func (h *Handlers) Create(w http.ResponseWriter, r *http.Request) {
 	res, err := h.DB.ExecContext(r.Context(),
 		`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
 		   max_domain, max_db, max_email, mailbox_quota_mb, mail_send_limit_hour, mail_send_limit_day, max_ftp,
+		   max_app,
 		   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
 		   pm_max_children, io_read_mbps, io_write_mbps, io_read_iops, io_write_iops,
 		   db_max_queries_per_hour, db_max_updates_per_hour, db_max_query_seconds,
 		   php_version, fastcgi_cache, client_max_body_mb, nginx_extra_directives,
 		   waf_enabled, waf_mode, waf_paranoia, is_default)
-		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MailboxQuotaMB, p.MailSendLimitHour, p.MailSendLimitDay, p.MaxFTP,
+		p.MaxApp,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
 		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
 		p.DBMaxQueriesPerHour, p.DBMaxUpdatesPerHour, p.DBMaxQuerySeconds,
@@ -270,7 +274,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 	if _, err := h.DB.ExecContext(r.Context(),
 		`UPDATE service_plans SET name=?, description=?, disk_quota_mb=?, traffic_quota_mb=?,
 		   max_domain=?, max_db=?, max_email=?, mailbox_quota_mb=?,
-		   mail_send_limit_hour=?, mail_send_limit_day=?, max_ftp=?,
+		   mail_send_limit_hour=?, mail_send_limit_day=?, max_ftp=?, max_app=?,
 		   cpu_percent=?, ram_mb=?, max_process=?, inode_quota=?, io_weight=?, mysql_max_connections=?,
 		   pm_max_children=?, io_read_mbps=?, io_write_mbps=?, io_read_iops=?, io_write_iops=?,
 		   db_max_queries_per_hour=?, db_max_updates_per_hour=?, db_max_query_seconds=?,
@@ -278,6 +282,7 @@ func (h *Handlers) Update(w http.ResponseWriter, r *http.Request) {
 		 WHERE id=?`,
 		p.Name, p.Description, p.DiskQuotaMB, p.TrafficQuotaMB,
 		p.MaxDomain, p.MaxDB, p.MaxEmail, p.MailboxQuotaMB, p.MailSendLimitHour, p.MailSendLimitDay, p.MaxFTP,
+		p.MaxApp,
 		p.CPUPercent, p.RAMMB, p.MaxProcess, p.InodeQuota, p.IOWeight, p.MySQLMaxConnections,
 		p.PMMaxChildren, p.IOReadMBps, p.IOWriteMBps, p.IOReadIOPS, p.IOWriteIOPS,
 		p.DBMaxQueriesPerHour, p.DBMaxUpdatesPerHour, p.DBMaxQuerySeconds,
@@ -388,10 +393,10 @@ func (h *Handlers) SearchDomains(w http.ResponseWriter, r *http.Request) {
 }
 
 type seedTier struct {
-	Name, Description                                string
-	Disk, Traffic, MaxDomain, MaxDB, MaxMail, MaxFTP int
-	CPU, RAM, Process, Inode, IO, MySQL, PMMax       int
-	Default                                          int
+	Name, Description                                        string
+	Disk, Traffic, MaxDomain, MaxDB, MaxMail, MaxFTP, MaxApp int
+	CPU, RAM, Process, Inode, IO, MySQL, PMMax               int
+	Default                                                  int
 }
 
 // panelLang reads panel_settings.default_lang, which decides the language of the
@@ -430,12 +435,16 @@ func seedPlans(lang string) []seedTier {
 	if !ok {
 		tx = planTexts["en"]
 	}
+	// The application counts are deliberate rather than left at the column's
+	// "0 = unlimited" default: an app is a process that stays resident, so a tier
+	// capped at one domain and two FTP accounts must not also allow an unbounded
+	// number of them.
 	return []seedTier{
-		{tx.starterName, tx.starterDesc, 1024, 5120, 1, 1, 5, 2,
+		{tx.starterName, tx.starterDesc, 1024, 5120, 1, 1, 5, 2, 1,
 			50, 256, 30, 25000, 100, 15, 4, 1},
-		{tx.standardName, tx.standardDesc, 10240, 51200, 5, 10, 25, 10,
+		{tx.standardName, tx.standardDesc, 10240, 51200, 5, 10, 25, 10, 5,
 			100, 512, 60, 100000, 100, 30, 8, 0},
-		{tx.proName, tx.proDesc, 51200, 204800, 25, 50, 100, 50,
+		{tx.proName, tx.proDesc, 51200, 204800, 25, 50, 100, 50, 25,
 			200, 2048, 150, 500000, 200, 100, 32, 0},
 	}
 }
@@ -453,11 +462,11 @@ func SeedIfEmpty(ctx context.Context, db *sql.DB) error {
 	for _, p := range seedPlans(panelLang(ctx, db)) {
 		_, err := db.ExecContext(ctx,
 			`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
-			   max_domain, max_db, max_email, max_ftp,
+			   max_domain, max_db, max_email, max_ftp, max_app,
 			   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
 			   pm_max_children, is_default)
-			 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-			p.Name, p.Description, p.Disk, p.Traffic, p.MaxDomain, p.MaxDB, p.MaxMail, p.MaxFTP,
+			 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+			p.Name, p.Description, p.Disk, p.Traffic, p.MaxDomain, p.MaxDB, p.MaxMail, p.MaxFTP, p.MaxApp,
 			p.CPU, p.RAM, p.Process, p.Inode, p.IO, p.MySQL, p.PMMax, p.Default)
 		if err != nil {
 			log.Printf("seed plan %s: %v", p.Name, err)
@@ -471,13 +480,13 @@ func SeedSync(ctx context.Context, db *sql.DB) error {
 	for _, p := range seedPlans(panelLang(ctx, db)) {
 		_, err := db.ExecContext(ctx,
 			`INSERT INTO service_plans(name, description, disk_quota_mb, traffic_quota_mb,
-			   max_domain, max_db, max_email, max_ftp,
+			   max_domain, max_db, max_email, max_ftp, max_app,
 			   cpu_percent, ram_mb, max_process, inode_quota, io_weight, mysql_max_connections,
 			   pm_max_children, is_default)
-			 SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0
+			 SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0
 			 FROM DUAL
 			 WHERE NOT EXISTS (SELECT 1 FROM service_plans WHERE name=?)`,
-			p.Name, p.Description, p.Disk, p.Traffic, p.MaxDomain, p.MaxDB, p.MaxMail, p.MaxFTP,
+			p.Name, p.Description, p.Disk, p.Traffic, p.MaxDomain, p.MaxDB, p.MaxMail, p.MaxFTP, p.MaxApp,
 			p.CPU, p.RAM, p.Process, p.Inode, p.IO, p.MySQL, p.PMMax, p.Name)
 		if err != nil {
 			log.Printf("seed sync plan %s: %v", p.Name, err)

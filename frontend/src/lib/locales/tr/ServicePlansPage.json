@@ -19,7 +19,8 @@
     "traffic": "Trafik",
     "domains": "Alan Adları",
     "databases": "Veritabanları",
-    "ftp": "FTP"
+    "ftp": "FTP",
+    "apps": "Uygulamalar"
   },
   "detailsButton": "Ayrıntılar ve Kaynak Limitleri",
   "delete": "Sil",
@@ -53,6 +54,7 @@
     "maxDomains": "Maksimum Alan Adı",
     "maxDatabases": "Maksimum Veritabanı",
     "maxFtp": "Maksimum FTP Hesabı",
+    "maxApp": "Maksimum Uygulama",
     "maxEmail": "Azami Posta Kutusu",
     "mailboxQuotaMb": "Posta Kutusu Kotası (MB)",
     "mailSendLimitHour": "Posta Kutusu Gönderim Limiti / Saat",

@@ -73,7 +73,8 @@
     "subtitle": "Počet zdrojů, které lze vytvořit pod účtem přidruženým k tomuto tarifu. 0 = neomezeno.",
     "domains": "Domény",
     "databases": "Databáze",
-    "ftpAccounts": "Účty FTP"
+    "ftpAccounts": "Účty FTP",
+    "applications": "Aplikace"
   },
   "nginx": {
     "title": "Webový server (nginx)",

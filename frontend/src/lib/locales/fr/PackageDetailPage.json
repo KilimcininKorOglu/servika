@@ -73,7 +73,8 @@
     "subtitle": "Nombre de ressources qui peuvent être créées sous le compte associé à ce forfait. 0 = illimité.",
     "domains": "Domaines",
     "databases": "Bases de données",
-    "ftpAccounts": "Comptes FTP"
+    "ftpAccounts": "Comptes FTP",
+    "applications": "Applications"
   },
   "nginx": {
     "title": "Serveur web (nginx)",

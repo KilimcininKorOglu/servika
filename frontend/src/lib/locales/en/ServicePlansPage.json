@@ -19,7 +19,8 @@
     "traffic": "Traffic",
     "domains": "Domains",
     "databases": "Databases",
-    "ftp": "FTP"
+    "ftp": "FTP",
+    "apps": "Applications"
   },
   "detailsButton": "Details & Resource Limits",
   "delete": "Delete",
@@ -53,6 +54,7 @@
     "maxDomains": "Max Domains",
     "maxDatabases": "Max Databases",
     "maxFtp": "Max FTP Accounts",
+    "maxApp": "Max Applications",
     "maxEmail": "Max Mailboxes",
     "mailboxQuotaMb": "Mailbox Quota (MB)",
     "mailSendLimitHour": "Mailbox Send Limit / Hour",

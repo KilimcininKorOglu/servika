@@ -19,7 +19,8 @@
     "traffic": "トラフィック",
     "domains": "ドメイン",
     "databases": "データベース",
-    "ftp": "FTP"
+    "ftp": "FTP",
+    "apps": "アプリケーション"
   },
   "detailsButton": "詳細とリソース制限",
   "delete": "削除",
@@ -53,6 +54,7 @@
     "maxDomains": "最大ドメイン数",
     "maxDatabases": "最大データベース数",
     "maxFtp": "最大 FTP アカウント数",
+    "maxApp": "最大アプリケーション数",
     "maxEmail": "最大メールボックス数",
     "mailboxQuotaMb": "メールボックス容量 (MB)",
     "mailSendLimitHour": "メールボックス送信上限 / 時間",

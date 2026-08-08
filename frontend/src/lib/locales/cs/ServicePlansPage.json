@@ -19,7 +19,8 @@
     "traffic": "Provoz",
     "domains": "Domény",
     "databases": "Databáze",
-    "ftp": "FTP"
+    "ftp": "FTP",
+    "apps": "Aplikace"
   },
   "detailsButton": "Podrobnosti a limity zdrojů",
   "delete": "Smazat",
@@ -53,6 +54,7 @@
     "maxDomains": "Max. domén",
     "maxDatabases": "Max. databází",
     "maxFtp": "Max. účtů FTP",
+    "maxApp": "Max. aplikací",
     "maxEmail": "Maximum poštovních schránek",
     "mailboxQuotaMb": "Kvóta poštovní schránky (MB)",
     "mailSendLimitHour": "Limit odesílání na schránku / hodina",

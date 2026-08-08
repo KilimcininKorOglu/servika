@@ -73,7 +73,8 @@
     "subtitle": "在与此套餐关联的账户下可创建的资源数量。0 = 无限制。",
     "domains": "域名",
     "databases": "数据库",
-    "ftpAccounts": "FTP 账户"
+    "ftpAccounts": "FTP 账户",
+    "applications": "应用"
   },
   "nginx": {
     "title": "Web 服务器 (nginx)",
