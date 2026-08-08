@@ -101,7 +101,7 @@ The manifest format is:
 
 ```json
 {
-  "latest": "1.2.0",
+  "latest": "1.2.1",
   "announcement": {
     "en": "",
     "tr": ""

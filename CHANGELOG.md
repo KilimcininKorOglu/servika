@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-08-08
+## [1.2.1] - 2026-08-08
 
 ### Added
 - A complete email stack for every domain: mailboxes, aliases, forwarders with a keep-a-copy choice, per-mailbox usage measured against the plan's quota, an operator ceiling above the per-mailbox limits, and a per-sender spam-score override.
@@ -41,6 +41,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Sessions dropped during a brief database outage, a plugin restart answered an error instead of being ridden out, and four domain handlers acted on a row they had failed to read.
 - The file manager's errors disappeared, an archive of unknown size was reported as empty, and a server fault was reported as a path the tenant had got wrong.
 - A domain could be created with a name already serving as a subdomain, and a PHP version the server cannot serve could be selected.
+- The CI gate that validates the shipped nginx configuration failed on every commit because the runner may not bind port 80, reporting the sandbox rather than the files and blocking the release job behind it.
 
 ## [1.1.5] - 2026-08-04
 
