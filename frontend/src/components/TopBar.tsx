@@ -80,6 +80,7 @@ const DOMAIN_PAGES: ReadonlyArray<readonly [string, string]> = [
   ['/git', 'git'],
   ['/laravel', 'laravel'],
   ['/cron', 'cron'],
+  ['/apps', 'apps'],
   ['/ssh-access', 'ssh'],
   ['/logs', 'logs'],
   ['/waf', 'waf'],

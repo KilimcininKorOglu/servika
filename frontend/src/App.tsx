@@ -26,6 +26,7 @@ const DomainAntivirusPage = lazy(() => import('@/pages/DomainAntivirusPage'))
 const DomainCopyPage = lazy(() => import('@/pages/DomainCopyPage'))
 const DomainImportPage = lazy(() => import('@/pages/DomainImportPage'))
 const DomainCronPage = lazy(() => import('@/pages/DomainCronPage'))
+const DomainAppsPage = lazy(() => import('@/pages/DomainAppsPage'))
 const DomainLogsPage = lazy(() => import('@/pages/DomainLogsPage'))
 const DomainDNSPage = lazy(() => import('@/pages/DomainDNSPage'))
 const RedisPage = lazy(() => import('@/pages/RedisPage'))
@@ -137,6 +138,7 @@ export default function App() {
         <Route path="domains/:id/subdomain/:sid/web-server"   element={<DomainWebServerPage />} />
         <Route path="subscriptions/:id/access-control" element={<DomainAccessControlPage />} />
         <Route path="subscriptions/:id/cron"          element={<DomainCronPage />} />
+        <Route path="subscriptions/:id/apps"          element={<DomainAppsPage />} />
         <Route path="subscriptions/:id/logs"     element={<DomainLogsPage />} />
         <Route path="subscriptions/:id/dns"           element={<DomainDNSPage />} />
         <Route path="subscriptions/:id/redis"         element={<RedisPage />} />

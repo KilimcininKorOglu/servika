@@ -60,6 +60,7 @@
     "git": { "title": "Git 部署", "subtitle": "Git 部署" },
     "laravel": { "title": "Laravel 工具包", "subtitle": "Laravel 工具" },
     "cron": { "title": "计划任务", "subtitle": "cron 任务" },
+    "apps": { "title": "应用", "subtitle": "Node.js 和 Python 进程" },
     "ssh": { "title": "SSH 访问", "subtitle": "终端访问" },
     "logs": { "title": "日志", "subtitle": "访问和错误日志" },
     "waf": { "title": "WAF", "subtitle": "Web 应用防火墙" },

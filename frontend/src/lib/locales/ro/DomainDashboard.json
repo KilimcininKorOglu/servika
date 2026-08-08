@@ -22,6 +22,7 @@
   "php": { "label": "PHP", "desc": "Versiunea {{version}}" },
   "logs": { "label": "Jurnale", "desc": "access, error" },
   "cron": { "label": "Sarcini programate", "desc": "Cron" },
+  "apps": { "label": "Aplicații", "desc": "Procese Node.js și Python" },
   "git": { "label": "Git", "desc": "Integrare depozit" },
   "composer": { "label": "PHP Composer", "desc": "Manager de pachete" },
   "performance": { "label": "Performanță", "desc": "Acceleratoare" },

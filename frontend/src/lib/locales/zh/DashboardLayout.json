@@ -44,6 +44,7 @@
     "sslTls": "SSL/TLS",
     "email": "电子邮件",
     "scheduledTasks": "计划任务",
+    "applications": "应用",
     "gitDeploy": "Git 部署",
     "laravel": "Laravel 工具包",
     "logs": "日志",

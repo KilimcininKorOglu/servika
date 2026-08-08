@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "ホーム",
+    "domains": "ドメイン",
+    "current": "アプリケーション"
+  },
+  "title": "アプリケーション",
+  "subtitle": "パネルが監視し、パスの下に公開する Node.js と Python のプロセスです。",
+  "loading": "読み込み中...",
+  "empty": "このドメインにはまだアプリケーションが作成されていません。",
+  "count": "{{count}} 件のアプリケーション",
+  "badges": {
+    "running": "実行中",
+    "stopped": "停止中"
+  },
+  "card": {
+    "directory": "ディレクトリ",
+    "command": "コマンド",
+    "state": "状態",
+    "unknown": "不明",
+    "restarts": "（再起動 {{count}} 回）"
+  },
+  "actions": {
+    "add": "新しいアプリケーション",
+    "refresh": "更新",
+    "start": "開始",
+    "stop": "停止",
+    "restart": "再起動",
+    "log": "ログ",
+    "env": "環境変数",
+    "installDeps": "依存関係をインストール",
+    "edit": "編集",
+    "delete": "削除"
+  },
+  "confirm": {
+    "delete": "アプリケーション {{name}} を削除しますか。ファイルはそのまま残りますが、プロセスとその proxy は削除されます。",
+    "install": "{{name}} の依存関係をインストールしますか。数分かかることがあります。"
+  },
+  "install": {
+    "noOutput": "インストールは出力を生成しませんでした。"
+  },
+  "modal": {
+    "createTitle": "新しいアプリケーション",
+    "editTitle": "アプリケーションを編集",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "saving": "保存中...",
+    "noRuntime": "インストール済みの runtime がありません",
+    "systemRuntime": "システムのバージョン",
+    "scopeDomain": "ドメイン自体",
+    "rootWarning": "/ にマウントすると、サイト全体がこのアプリケーションに渡されます。パスを変更するまで PHP サイトは応答しなくなります。",
+    "fields": {
+      "name": "名前",
+      "runtime": "Runtime",
+      "version": "バージョン",
+      "appRoot": "アプリケーションディレクトリ",
+      "startCommand": "起動コマンド",
+      "mount": "パス",
+      "scope": "公開先"
+    },
+    "hints": {
+      "appRoot": "ホームディレクトリからの相対パスです。例: apps/api。",
+      "startCommand": "shell を使わずに実行します。例: node server.js または gunicorn app:app。",
+      "mount": "例: /api/。このパスの下のリクエストがアプリケーションに送られます。",
+      "scope": "スコープはアプリケーションの作成時に決まります。"
+    }
+  },
+  "env": {
+    "title": "{{name}} の環境変数",
+    "hint": "PORT はパネルが {{port}} に設定します。次の名前は予約されています: {{reserved}}。",
+    "namePlaceholder": "名前",
+    "valuePlaceholder": "値",
+    "addRow": "変数を追加",
+    "removeRow": "削除",
+    "save": "保存して再起動",
+    "saving": "保存中..."
+  },
+  "log": {
+    "title": "{{name}} のログ",
+    "empty": "ログは空です。"
+  },
+  "errors": {
+    "actionFailed": "アプリケーションが要求に応答しませんでした。",
+    "deleteFailed": "アプリケーションを削除できませんでした。",
+    "installFailed": "依存関係のインストールを開始できませんでした。",
+    "saveFailed": "アプリケーションを保存できませんでした。",
+    "envSaveFailed": "環境変数を保存できませんでした。"
+  }
+}

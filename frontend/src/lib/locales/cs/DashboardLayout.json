@@ -44,6 +44,7 @@
     "sslTls": "SSL/TLS",
     "email": "E-mail",
     "scheduledTasks": "Naplánované úlohy",
+    "applications": "Aplikace",
     "gitDeploy": "Nasazení Git",
     "laravel": "Sada nástrojů Laravel",
     "logs": "Protokoly",

@@ -27,6 +27,8 @@
     "deliveryLog": "cronologia delle consegne",
     "mailServerSettings": "impostazioni di posta del server",
     "mailFilterLists": "elenchi di filtro dei mittenti",
-    "mailAddressPool": "pool di indirizzi di uscita"
+    "mailAddressPool": "pool di indirizzi di uscita",
+    "appRuntimes": "runtime delle applicazioni",
+    "subdomains": "sottodomini"
   }
 }

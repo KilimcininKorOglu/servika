@@ -60,6 +60,7 @@
     "git": { "title": "Git Deploy", "subtitle": "Git deploy" },
     "laravel": { "title": "Set de instrumente Laravel", "subtitle": "Instrumente Laravel" },
     "cron": { "title": "Sarcini programate", "subtitle": "Sarcini cron" },
+    "apps": { "title": "Aplicații", "subtitle": "Procese Node.js și Python" },
     "ssh": { "title": "Acces SSH", "subtitle": "Acces terminal" },
     "logs": { "title": "Jurnale", "subtitle": "Jurnale de acces și de erori" },
     "waf": { "title": "WAF", "subtitle": "Web application firewall" },

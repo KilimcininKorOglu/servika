@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domini",
+    "current": "Applicazioni"
+  },
+  "title": "Applicazioni",
+  "subtitle": "Processi Node.js e Python supervisionati dal pannello e pubblicati sotto un percorso.",
+  "loading": "Caricamento...",
+  "empty": "Per questo dominio non è ancora stata creata alcuna applicazione.",
+  "count": "{{count}} applicazioni",
+  "badges": {
+    "running": "In esecuzione",
+    "stopped": "Ferma"
+  },
+  "card": {
+    "directory": "Cartella",
+    "command": "Comando",
+    "state": "Stato",
+    "unknown": "sconosciuto",
+    "restarts": "({{count}} riavvii)"
+  },
+  "actions": {
+    "add": "Nuova applicazione",
+    "refresh": "Aggiorna",
+    "start": "Avvia",
+    "stop": "Ferma",
+    "restart": "Riavvia",
+    "log": "Registro",
+    "env": "Ambiente",
+    "installDeps": "Installa dipendenze",
+    "edit": "Modifica",
+    "delete": "Elimina"
+  },
+  "confirm": {
+    "delete": "Eliminare l'applicazione {{name}}? I suoi file restano al loro posto, ma il processo e il suo proxy vengono rimossi.",
+    "install": "Installare le dipendenze di {{name}}? L'operazione può richiedere diversi minuti."
+  },
+  "install": {
+    "noOutput": "L'installazione non ha prodotto alcun output."
+  },
+  "modal": {
+    "createTitle": "Nuova applicazione",
+    "editTitle": "Modifica applicazione",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "noRuntime": "Nessun runtime installato",
+    "systemRuntime": "Versione di sistema",
+    "scopeDomain": "Il dominio stesso",
+    "rootWarning": "Un mount su / affida l'intero sito a questa applicazione. Il sito PHP smette di rispondere finché il percorso non cambia.",
+    "fields": {
+      "name": "Nome",
+      "runtime": "Runtime",
+      "version": "Versione",
+      "appRoot": "Cartella dell'applicazione",
+      "startCommand": "Comando di avvio",
+      "mount": "Percorso",
+      "scope": "Pubblicata su"
+    },
+    "hints": {
+      "appRoot": "Relativa alla cartella home, ad esempio apps/api.",
+      "startCommand": "Eseguito senza shell, ad esempio node server.js o gunicorn app:app.",
+      "mount": "Ad esempio /api/. Le richieste sotto questo percorso vanno all'applicazione.",
+      "scope": "L'ambito viene fissato alla creazione dell'applicazione."
+    }
+  },
+  "env": {
+    "title": "Ambiente di {{name}}",
+    "hint": "PORT viene impostata dal pannello a {{port}}. Questi nomi sono riservati: {{reserved}}.",
+    "namePlaceholder": "NOME",
+    "valuePlaceholder": "valore",
+    "addRow": "Aggiungi variabile",
+    "removeRow": "Rimuovi",
+    "save": "Salva e riavvia",
+    "saving": "Salvataggio..."
+  },
+  "log": {
+    "title": "Registro di {{name}}",
+    "empty": "Il registro è vuoto."
+  },
+  "errors": {
+    "actionFailed": "L'applicazione non ha risposto alla richiesta.",
+    "deleteFailed": "L'applicazione non è stata rimossa.",
+    "installFailed": "L'installazione delle dipendenze non è stata avviata.",
+    "saveFailed": "L'applicazione non è stata salvata.",
+    "envSaveFailed": "L'ambiente non è stato salvato."
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "Acasă",
+    "domains": "Domenii",
+    "current": "Aplicații"
+  },
+  "title": "Aplicații",
+  "subtitle": "Procese Node.js și Python supravegheate de panou și publicate sub o cale.",
+  "loading": "Se încarcă...",
+  "empty": "Pentru acest domeniu nu a fost creată încă nicio aplicație.",
+  "count": "{{count}} aplicații",
+  "badges": {
+    "running": "În execuție",
+    "stopped": "Oprită"
+  },
+  "card": {
+    "directory": "Director",
+    "command": "Comandă",
+    "state": "Stare",
+    "unknown": "necunoscut",
+    "restarts": "({{count}} reporniri)"
+  },
+  "actions": {
+    "add": "Aplicație nouă",
+    "refresh": "Reîmprospătează",
+    "start": "Pornește",
+    "stop": "Oprește",
+    "restart": "Repornește",
+    "log": "Jurnal",
+    "env": "Mediu",
+    "installDeps": "Instalează dependențele",
+    "edit": "Editează",
+    "delete": "Șterge"
+  },
+  "confirm": {
+    "delete": "Ștergeți aplicația {{name}}? Fișierele rămân pe loc, dar procesul și proxy-ul său sunt eliminate.",
+    "install": "Instalați dependențele aplicației {{name}}? Poate dura câteva minute."
+  },
+  "install": {
+    "noOutput": "Instalarea nu a produs niciun rezultat."
+  },
+  "modal": {
+    "createTitle": "Aplicație nouă",
+    "editTitle": "Editează aplicația",
+    "cancel": "Anulează",
+    "save": "Salvează",
+    "saving": "Se salvează...",
+    "noRuntime": "Niciun runtime instalat",
+    "systemRuntime": "Versiunea sistemului",
+    "scopeDomain": "Domeniul în sine",
+    "rootWarning": "O montare pe / predă întregul site acestei aplicații. Site-ul PHP nu mai răspunde până când calea nu este schimbată.",
+    "fields": {
+      "name": "Nume",
+      "runtime": "Runtime",
+      "version": "Versiune",
+      "appRoot": "Directorul aplicației",
+      "startCommand": "Comandă de pornire",
+      "mount": "Cale",
+      "scope": "Publicată pe"
+    },
+    "hints": {
+      "appRoot": "Relativ la directorul personal, de exemplu apps/api.",
+      "startCommand": "Rulează fără shell, de exemplu node server.js sau gunicorn app:app.",
+      "mount": "De exemplu /api/. Cererile sub această cale merg la aplicație.",
+      "scope": "Domeniul de aplicare este fixat la crearea aplicației."
+    }
+  },
+  "env": {
+    "title": "Mediul aplicației {{name}}",
+    "hint": "PORT este setat de panou la {{port}}. Aceste nume sunt rezervate: {{reserved}}.",
+    "namePlaceholder": "NUME",
+    "valuePlaceholder": "valoare",
+    "addRow": "Adaugă variabilă",
+    "removeRow": "Elimină",
+    "save": "Salvează și repornește",
+    "saving": "Se salvează..."
+  },
+  "log": {
+    "title": "Jurnalul aplicației {{name}}",
+    "empty": "Jurnalul este gol."
+  },
+  "errors": {
+    "actionFailed": "Aplicația nu a răspuns la cerere.",
+    "deleteFailed": "Aplicația nu a putut fi eliminată.",
+    "installFailed": "Instalarea dependențelor nu a putut fi pornită.",
+    "saveFailed": "Aplicația nu a putut fi salvată.",
+    "envSaveFailed": "Mediul nu a putut fi salvat."
+  }
+}

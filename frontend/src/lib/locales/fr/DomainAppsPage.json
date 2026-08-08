@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "Accueil",
+    "domains": "Domaines",
+    "current": "Applications"
+  },
+  "title": "Applications",
+  "subtitle": "Processus Node.js et Python supervisés par le panneau et publiés sous un chemin.",
+  "loading": "Chargement...",
+  "empty": "Aucune application n'a encore été créée pour ce domaine.",
+  "count": "{{count}} applications",
+  "badges": {
+    "running": "En cours",
+    "stopped": "Arrêtée"
+  },
+  "card": {
+    "directory": "Répertoire",
+    "command": "Commande",
+    "state": "État",
+    "unknown": "inconnu",
+    "restarts": "({{count}} redémarrages)"
+  },
+  "actions": {
+    "add": "Nouvelle application",
+    "refresh": "Actualiser",
+    "start": "Démarrer",
+    "stop": "Arrêter",
+    "restart": "Redémarrer",
+    "log": "Journal",
+    "env": "Environnement",
+    "installDeps": "Installer les dépendances",
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  },
+  "confirm": {
+    "delete": "Supprimer l'application {{name}} ? Ses fichiers restent en place, mais le processus et son proxy sont retirés.",
+    "install": "Installer les dépendances de {{name}} ? Cela peut prendre plusieurs minutes."
+  },
+  "install": {
+    "noOutput": "L'installation n'a produit aucune sortie."
+  },
+  "modal": {
+    "createTitle": "Nouvelle application",
+    "editTitle": "Modifier l'application",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "noRuntime": "Aucun runtime installé",
+    "systemRuntime": "Version système",
+    "scopeDomain": "Le domaine lui-même",
+    "rootWarning": "Un montage sur / confie tout le site à cette application. Le site PHP cesse de répondre jusqu'à ce que le chemin change.",
+    "fields": {
+      "name": "Nom",
+      "runtime": "Runtime",
+      "version": "Version",
+      "appRoot": "Répertoire de l'application",
+      "startCommand": "Commande de démarrage",
+      "mount": "Chemin",
+      "scope": "Publiée sur"
+    },
+    "hints": {
+      "appRoot": "Relatif au répertoire personnel, par exemple apps/api.",
+      "startCommand": "Exécutée sans shell, par exemple node server.js ou gunicorn app:app.",
+      "mount": "Par exemple /api/. Les requêtes sous ce chemin vont à l'application.",
+      "scope": "La portée est fixée à la création de l'application."
+    }
+  },
+  "env": {
+    "title": "Environnement de {{name}}",
+    "hint": "PORT est défini à {{port}} par le panneau. Ces noms sont réservés : {{reserved}}.",
+    "namePlaceholder": "NOM",
+    "valuePlaceholder": "valeur",
+    "addRow": "Ajouter une variable",
+    "removeRow": "Retirer",
+    "save": "Enregistrer et redémarrer",
+    "saving": "Enregistrement..."
+  },
+  "log": {
+    "title": "Journal de {{name}}",
+    "empty": "Le journal est vide."
+  },
+  "errors": {
+    "actionFailed": "L'application n'a pas répondu à la requête.",
+    "deleteFailed": "L'application n'a pas pu être retirée.",
+    "installFailed": "L'installation des dépendances n'a pas pu démarrer.",
+    "saveFailed": "L'application n'a pas pu être enregistrée.",
+    "envSaveFailed": "L'environnement n'a pas pu être enregistré."
+  }
+}

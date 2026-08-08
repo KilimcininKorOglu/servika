@@ -27,6 +27,8 @@
     "deliveryLog": "histórico de entrega",
     "mailServerSettings": "definições de correio do servidor",
     "mailFilterLists": "listas de filtro de remetentes",
-    "mailAddressPool": "conjunto de endereços de saída"
+    "mailAddressPool": "conjunto de endereços de saída",
+    "appRuntimes": "runtimes de aplicação",
+    "subdomains": "subdomínios"
   }
 }

@@ -44,6 +44,7 @@
     "sslTls": "SSL/TLS",
     "email": "E-mail",
     "scheduledTasks": "Sarcini programate",
+    "applications": "Aplicații",
     "gitDeploy": "Deploy Git",
     "laravel": "Toolkit Laravel",
     "logs": "Jurnale",

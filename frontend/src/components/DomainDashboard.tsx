@@ -14,6 +14,7 @@ const ICONS = {
   php:       'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
   log:       'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
   cron:      'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+  apps:      'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2',
   navigateTo:       'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1',
   composer:  'M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3v6M9 12h6',
   service:   'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4',
@@ -75,6 +76,7 @@ export default function DomainDashboard({ domain }: { domain: Domain }) {
         <ToolCard label={t('php.label')}                   description={t('php.desc', { version: domain.php_version })} icon={ICONS.php}      color="indigo" phase="F3" onClick={navigateTo('php')} />
         <ToolCard label={t('logs.label')}             description={t('logs.desc')}  icon={ICONS.log}      color="slate"  phase="F10" onClick={navigateTo('logs')} />
         <ToolCard label={t('cron.label')}  description={t('cron.desc')}            icon={ICONS.cron}     color="teal"   phase="F8"  onClick={navigateTo('cron')} />
+        <ToolCard label={t('apps.label')}  description={t('apps.desc')}            icon={ICONS.apps}     color="violet" onClick={navigateTo('apps')} />
         <ToolCard label={t('git.label')}                   description={t('git.desc')} icon={ICONS.navigateTo}    color="orange" phase="F9"  onClick={navigateTo('git')} />
         <ToolCard label={t('composer.label')}          description={t('composer.desc')}  icon={ICONS.composer} color="amber" phase="F3"  onClick={navigateTo('composer')} />
         <ToolCard label={t('performance.label')}            description={t('performance.desc')}   icon={ICONS.service} color="emerald" onClick={navigateTo('performance')} />

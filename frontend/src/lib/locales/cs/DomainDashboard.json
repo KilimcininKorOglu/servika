@@ -22,6 +22,7 @@
   "php": { "label": "PHP", "desc": "Verze {{version}}" },
   "logs": { "label": "Protokoly", "desc": "access, error" },
   "cron": { "label": "Naplánované úlohy", "desc": "Cron" },
+  "apps": { "label": "Aplikace", "desc": "Procesy Node.js a Python" },
   "git": { "label": "Git", "desc": "Integrace repozitáře" },
   "composer": { "label": "PHP Composer", "desc": "Správce balíčků" },
   "performance": { "label": "Výkon", "desc": "Akcelerátory" },

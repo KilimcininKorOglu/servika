@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "首页",
+    "domains": "域名",
+    "current": "应用"
+  },
+  "title": "应用",
+  "subtitle": "由面板监管并发布在某个路径下的 Node.js 和 Python 进程。",
+  "loading": "加载中...",
+  "empty": "该域名下还没有创建任何应用。",
+  "count": "{{count}} 个应用",
+  "badges": {
+    "running": "运行中",
+    "stopped": "已停止"
+  },
+  "card": {
+    "directory": "目录",
+    "command": "命令",
+    "state": "状态",
+    "unknown": "未知",
+    "restarts": "（重启 {{count}} 次）"
+  },
+  "actions": {
+    "add": "新建应用",
+    "refresh": "刷新",
+    "start": "启动",
+    "stop": "停止",
+    "restart": "重启",
+    "log": "日志",
+    "env": "环境变量",
+    "installDeps": "安装依赖",
+    "edit": "编辑",
+    "delete": "删除"
+  },
+  "confirm": {
+    "delete": "删除应用 {{name}} 吗？其文件会保留，但进程及其 proxy 会被移除。",
+    "install": "安装 {{name}} 的依赖吗？这可能需要几分钟。"
+  },
+  "install": {
+    "noOutput": "安装没有产生任何输出。"
+  },
+  "modal": {
+    "createTitle": "新建应用",
+    "editTitle": "编辑应用",
+    "cancel": "取消",
+    "save": "保存",
+    "saving": "保存中...",
+    "noRuntime": "没有已安装的 runtime",
+    "systemRuntime": "系统版本",
+    "scopeDomain": "域名本身",
+    "rootWarning": "挂载到 / 会把整个站点交给该应用。在更改路径之前，PHP 站点将不再响应。",
+    "fields": {
+      "name": "名称",
+      "runtime": "Runtime",
+      "version": "版本",
+      "appRoot": "应用目录",
+      "startCommand": "启动命令",
+      "mount": "路径",
+      "scope": "发布位置"
+    },
+    "hints": {
+      "appRoot": "相对于主目录，例如 apps/api。",
+      "startCommand": "不经过 shell 运行，例如 node server.js 或 gunicorn app:app。",
+      "mount": "例如 /api/。该路径下的请求会转到应用。",
+      "scope": "作用范围在创建应用时确定。"
+    }
+  },
+  "env": {
+    "title": "{{name}} 的环境变量",
+    "hint": "PORT 由面板设置为 {{port}}。以下名称已保留：{{reserved}}。",
+    "namePlaceholder": "名称",
+    "valuePlaceholder": "值",
+    "addRow": "添加变量",
+    "removeRow": "移除",
+    "save": "保存并重启",
+    "saving": "保存中..."
+  },
+  "log": {
+    "title": "{{name}} 的日志",
+    "empty": "日志为空。"
+  },
+  "errors": {
+    "actionFailed": "应用未响应该请求。",
+    "deleteFailed": "无法移除该应用。",
+    "installFailed": "无法启动依赖安装。",
+    "saveFailed": "无法保存该应用。",
+    "envSaveFailed": "无法保存环境变量。"
+  }
+}

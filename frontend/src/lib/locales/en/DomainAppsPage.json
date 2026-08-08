@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "domains": "Domains",
+    "current": "Applications"
+  },
+  "title": "Applications",
+  "subtitle": "Node.js and Python processes supervised by the panel and published under a path.",
+  "loading": "Loading...",
+  "empty": "No application has been created for this domain yet.",
+  "count": "{{count}} applications",
+  "badges": {
+    "running": "Running",
+    "stopped": "Stopped"
+  },
+  "card": {
+    "directory": "Directory",
+    "command": "Command",
+    "state": "State",
+    "unknown": "unknown",
+    "restarts": "({{count}} restarts)"
+  },
+  "actions": {
+    "add": "New application",
+    "refresh": "Refresh",
+    "start": "Start",
+    "stop": "Stop",
+    "restart": "Restart",
+    "log": "Log",
+    "env": "Environment",
+    "installDeps": "Install dependencies",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "confirm": {
+    "delete": "Delete the application {{name}}? Its files stay in place, but the process and its proxy are removed.",
+    "install": "Install the dependencies of {{name}}? This can take several minutes."
+  },
+  "install": {
+    "noOutput": "The installer produced no output."
+  },
+  "modal": {
+    "createTitle": "New application",
+    "editTitle": "Edit application",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "noRuntime": "No runtime installed",
+    "systemRuntime": "System version",
+    "scopeDomain": "The domain itself",
+    "rootWarning": "A mount of / hands the whole site to this application. The PHP site stops answering until the mount is changed.",
+    "fields": {
+      "name": "Name",
+      "runtime": "Runtime",
+      "version": "Version",
+      "appRoot": "Application directory",
+      "startCommand": "Start command",
+      "mount": "Path",
+      "scope": "Published on"
+    },
+    "hints": {
+      "appRoot": "Relative to the home directory, for example apps/api.",
+      "startCommand": "Run without a shell, for example node server.js or gunicorn app:app.",
+      "mount": "For example /api/. Requests under this path go to the application.",
+      "scope": "The scope is fixed when the application is created."
+    }
+  },
+  "env": {
+    "title": "Environment of {{name}}",
+    "hint": "PORT is set to {{port}} by the panel. These names are reserved: {{reserved}}.",
+    "namePlaceholder": "NAME",
+    "valuePlaceholder": "value",
+    "addRow": "Add variable",
+    "removeRow": "Remove",
+    "save": "Save and restart",
+    "saving": "Saving..."
+  },
+  "log": {
+    "title": "Log of {{name}}",
+    "empty": "The log is empty."
+  },
+  "errors": {
+    "actionFailed": "The application did not answer the request.",
+    "deleteFailed": "The application could not be removed.",
+    "installFailed": "The dependency install could not be started.",
+    "saveFailed": "The application could not be saved.",
+    "envSaveFailed": "The environment could not be saved."
+  }
+}

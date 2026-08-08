@@ -60,6 +60,7 @@
     "git": { "title": "Déploiement Git", "subtitle": "Déploiement Git" },
     "laravel": { "title": "Boîte à outils Laravel", "subtitle": "Outils Laravel" },
     "cron": { "title": "Tâches planifiées", "subtitle": "Tâches cron" },
+    "apps": { "title": "Applications", "subtitle": "Processus Node.js et Python" },
     "ssh": { "title": "Accès SSH", "subtitle": "Accès au terminal" },
     "logs": { "title": "Journaux", "subtitle": "Journaux d'accès et d'erreurs" },
     "waf": { "title": "WAF", "subtitle": "Pare-feu applicatif web" },

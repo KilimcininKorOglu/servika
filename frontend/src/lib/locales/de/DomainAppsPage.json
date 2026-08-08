@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "Startseite",
+    "domains": "Domains",
+    "current": "Anwendungen"
+  },
+  "title": "Anwendungen",
+  "subtitle": "Node.js- und Python-Prozesse, die das Panel überwacht und unter einem Pfad veröffentlicht.",
+  "loading": "Wird geladen...",
+  "empty": "Für diese Domain wurde noch keine Anwendung angelegt.",
+  "count": "{{count}} Anwendungen",
+  "badges": {
+    "running": "Läuft",
+    "stopped": "Gestoppt"
+  },
+  "card": {
+    "directory": "Verzeichnis",
+    "command": "Befehl",
+    "state": "Zustand",
+    "unknown": "unbekannt",
+    "restarts": "({{count}} Neustarts)"
+  },
+  "actions": {
+    "add": "Neue Anwendung",
+    "refresh": "Aktualisieren",
+    "start": "Starten",
+    "stop": "Stoppen",
+    "restart": "Neu starten",
+    "log": "Protokoll",
+    "env": "Umgebung",
+    "installDeps": "Abhängigkeiten installieren",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "confirm": {
+    "delete": "Die Anwendung {{name}} löschen? Die Dateien bleiben bestehen, aber der Prozess und sein Proxy werden entfernt.",
+    "install": "Die Abhängigkeiten von {{name}} installieren? Das kann einige Minuten dauern."
+  },
+  "install": {
+    "noOutput": "Die Installation hat keine Ausgabe erzeugt."
+  },
+  "modal": {
+    "createTitle": "Neue Anwendung",
+    "editTitle": "Anwendung bearbeiten",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "noRuntime": "Keine Laufzeitumgebung installiert",
+    "systemRuntime": "Systemversion",
+    "scopeDomain": "Die Domain selbst",
+    "rootWarning": "Ein Mount auf / übergibt die gesamte Website an diese Anwendung. Die PHP-Website antwortet nicht mehr, bis der Mount geändert wird.",
+    "fields": {
+      "name": "Name",
+      "runtime": "Laufzeitumgebung",
+      "version": "Version",
+      "appRoot": "Anwendungsverzeichnis",
+      "startCommand": "Startbefehl",
+      "mount": "Pfad",
+      "scope": "Veröffentlicht auf"
+    },
+    "hints": {
+      "appRoot": "Relativ zum Home-Verzeichnis, zum Beispiel apps/api.",
+      "startCommand": "Läuft ohne Shell, zum Beispiel node server.js oder gunicorn app:app.",
+      "mount": "Zum Beispiel /api/. Anfragen unter diesem Pfad gehen an die Anwendung.",
+      "scope": "Der Geltungsbereich wird beim Anlegen der Anwendung festgelegt."
+    }
+  },
+  "env": {
+    "title": "Umgebung von {{name}}",
+    "hint": "PORT wird vom Panel auf {{port}} gesetzt. Diese Namen sind reserviert: {{reserved}}.",
+    "namePlaceholder": "NAME",
+    "valuePlaceholder": "Wert",
+    "addRow": "Variable hinzufügen",
+    "removeRow": "Entfernen",
+    "save": "Speichern und neu starten",
+    "saving": "Wird gespeichert..."
+  },
+  "log": {
+    "title": "Protokoll von {{name}}",
+    "empty": "Das Protokoll ist leer."
+  },
+  "errors": {
+    "actionFailed": "Die Anwendung hat auf die Anfrage nicht geantwortet.",
+    "deleteFailed": "Die Anwendung konnte nicht entfernt werden.",
+    "installFailed": "Die Installation der Abhängigkeiten konnte nicht gestartet werden.",
+    "saveFailed": "Die Anwendung konnte nicht gespeichert werden.",
+    "envSaveFailed": "Die Umgebung konnte nicht gespeichert werden."
+  }
+}

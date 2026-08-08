@@ -27,6 +27,8 @@
     "deliveryLog": "istoricul livrărilor",
     "mailServerSettings": "setările de e-mail ale serverului",
     "mailFilterLists": "listele de filtrare a expeditorilor",
-    "mailAddressPool": "grupul de adrese de trimitere"
+    "mailAddressPool": "grupul de adrese de trimitere",
+    "appRuntimes": "runtime-uri de aplicație",
+    "subdomains": "subdomenii"
   }
 }

@@ -44,6 +44,7 @@
     "sslTls": "SSL/TLS",
     "email": "メール",
     "scheduledTasks": "スケジュールされたタスク",
+    "applications": "アプリケーション",
     "gitDeploy": "Git デプロイ",
     "laravel": "Laravel ツールキット",
     "logs": "ログ",

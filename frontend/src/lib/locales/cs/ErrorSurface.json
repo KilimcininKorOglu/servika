@@ -27,6 +27,8 @@
     "deliveryLog": "historie doručení",
     "mailServerSettings": "nastavení pošty serveru",
     "mailFilterLists": "seznamy filtrů odesílatelů",
-    "mailAddressPool": "fond odchozích adres"
+    "mailAddressPool": "fond odchozích adres",
+    "appRuntimes": "běhová prostředí aplikací",
+    "subdomains": "subdomény"
   }
 }

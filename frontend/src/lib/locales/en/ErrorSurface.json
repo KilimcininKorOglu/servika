@@ -27,6 +27,8 @@
     "deliveryLog": "delivery history",
     "mailServerSettings": "server mail settings",
     "mailFilterLists": "sender filter lists",
-    "mailAddressPool": "outbound address pool"
+    "mailAddressPool": "outbound address pool",
+    "appRuntimes": "application runtimes",
+    "subdomains": "subdomains"
   }
 }

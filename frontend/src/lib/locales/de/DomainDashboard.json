@@ -22,6 +22,7 @@
   "php": { "label": "PHP", "desc": "Version {{version}}" },
   "logs": { "label": "Protokolle", "desc": "access, error" },
   "cron": { "label": "Geplante Aufgaben", "desc": "Cron" },
+  "apps": { "label": "Anwendungen", "desc": "Node.js- und Python-Prozesse" },
   "git": { "label": "Git", "desc": "Repository-Integration" },
   "composer": { "label": "PHP Composer", "desc": "Paketmanager" },
   "performance": { "label": "Leistung", "desc": "Beschleuniger" },

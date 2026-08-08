@@ -27,6 +27,8 @@
     "deliveryLog": "配信履歴",
     "mailServerSettings": "サーバーのメール設定",
     "mailFilterLists": "送信者フィルターリスト",
-    "mailAddressPool": "送信元アドレスのプール"
+    "mailAddressPool": "送信元アドレスのプール",
+    "appRuntimes": "アプリケーションの runtime",
+    "subdomains": "サブドメイン"
   }
 }

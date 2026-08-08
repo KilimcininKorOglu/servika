@@ -22,6 +22,7 @@
   "php": { "label": "PHP", "desc": "Sürüm {{version}}" },
   "logs": { "label": "Günlükler", "desc": "erişim, hata" },
   "cron": { "label": "Zamanlanmış Görevler", "desc": "Cron" },
+  "apps": { "label": "Uygulamalar", "desc": "Node.js ve Python süreçleri" },
   "git": { "label": "Git", "desc": "Depo entegrasyonu" },
   "composer": { "label": "PHP Composer", "desc": "Paket yöneticisi" },
   "performance": { "label": "Performans", "desc": "Hızlandırıcılar" },

@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "Domů",
+    "domains": "Domény",
+    "current": "Aplikace"
+  },
+  "title": "Aplikace",
+  "subtitle": "Procesy Node.js a Python, na které dohlíží panel a publikuje je pod cestou.",
+  "loading": "Načítání...",
+  "empty": "Pro tuto doménu zatím nebyla vytvořena žádná aplikace.",
+  "count": "{{count}} aplikací",
+  "badges": {
+    "running": "Běží",
+    "stopped": "Zastaveno"
+  },
+  "card": {
+    "directory": "Adresář",
+    "command": "Příkaz",
+    "state": "Stav",
+    "unknown": "neznámý",
+    "restarts": "({{count}} restartů)"
+  },
+  "actions": {
+    "add": "Nová aplikace",
+    "refresh": "Obnovit",
+    "start": "Spustit",
+    "stop": "Zastavit",
+    "restart": "Restartovat",
+    "log": "Protokol",
+    "env": "Prostředí",
+    "installDeps": "Nainstalovat závislosti",
+    "edit": "Upravit",
+    "delete": "Smazat"
+  },
+  "confirm": {
+    "delete": "Smazat aplikaci {{name}}? Její soubory zůstanou na místě, ale proces i jeho proxy budou odstraněny.",
+    "install": "Nainstalovat závislosti aplikace {{name}}? Může to trvat několik minut."
+  },
+  "install": {
+    "noOutput": "Instalace nevytvořila žádný výstup."
+  },
+  "modal": {
+    "createTitle": "Nová aplikace",
+    "editTitle": "Upravit aplikaci",
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "saving": "Ukládání...",
+    "noRuntime": "Není nainstalováno žádné běhové prostředí",
+    "systemRuntime": "Systémová verze",
+    "scopeDomain": "Samotná doména",
+    "rootWarning": "Připojení na / předá celý web této aplikaci. Web s PHP přestane odpovídat, dokud se cesta nezmění.",
+    "fields": {
+      "name": "Název",
+      "runtime": "Běhové prostředí",
+      "version": "Verze",
+      "appRoot": "Adresář aplikace",
+      "startCommand": "Spouštěcí příkaz",
+      "mount": "Cesta",
+      "scope": "Publikováno na"
+    },
+    "hints": {
+      "appRoot": "Relativně k domovskému adresáři, například apps/api.",
+      "startCommand": "Spouští se bez shellu, například node server.js nebo gunicorn app:app.",
+      "mount": "Například /api/. Požadavky pod touto cestou jdou do aplikace.",
+      "scope": "Rozsah se určuje při vytvoření aplikace."
+    }
+  },
+  "env": {
+    "title": "Prostředí aplikace {{name}}",
+    "hint": "PORT nastavuje panel na {{port}}. Tyto názvy jsou vyhrazené: {{reserved}}.",
+    "namePlaceholder": "NÁZEV",
+    "valuePlaceholder": "hodnota",
+    "addRow": "Přidat proměnnou",
+    "removeRow": "Odebrat",
+    "save": "Uložit a restartovat",
+    "saving": "Ukládání..."
+  },
+  "log": {
+    "title": "Protokol aplikace {{name}}",
+    "empty": "Protokol je prázdný."
+  },
+  "errors": {
+    "actionFailed": "Aplikace na požadavek neodpověděla.",
+    "deleteFailed": "Aplikaci se nepodařilo odstranit.",
+    "installFailed": "Instalaci závislostí se nepodařilo spustit.",
+    "saveFailed": "Aplikaci se nepodařilo uložit.",
+    "envSaveFailed": "Prostředí se nepodařilo uložit."
+  }
+}

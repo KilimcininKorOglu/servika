@@ -44,6 +44,7 @@
     "sslTls": "SSL/TLS",
     "email": "E-posta",
     "scheduledTasks": "Zamanlanmış Görevler",
+    "applications": "Uygulamalar",
     "gitDeploy": "Git Deploy",
     "laravel": "Laravel Araçları",
     "logs": "Günlükler",

@@ -27,6 +27,8 @@
     "deliveryLog": "Zustellverlauf",
     "mailServerSettings": "serverweite Mail-Einstellungen",
     "mailFilterLists": "Absender-Filterlisten",
-    "mailAddressPool": "Pool ausgehender Adressen"
+    "mailAddressPool": "Pool ausgehender Adressen",
+    "appRuntimes": "Anwendungslaufzeitumgebungen",
+    "subdomains": "Subdomains"
   }
 }

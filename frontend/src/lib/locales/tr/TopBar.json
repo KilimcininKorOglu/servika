@@ -60,6 +60,7 @@
     "git": { "title": "Git Deploy", "subtitle": "Git dağıtımı" },
     "laravel": { "title": "Laravel Araçları", "subtitle": "Laravel araçları" },
     "cron": { "title": "Zamanlanmış Görevler", "subtitle": "Cron işleri" },
+    "apps": { "title": "Uygulamalar", "subtitle": "Node.js ve Python süreçleri" },
     "ssh": { "title": "SSH Erişimi", "subtitle": "Terminal erişimi" },
     "logs": { "title": "Günlükler", "subtitle": "Erişim ve hata günlükleri" },
     "waf": { "title": "WAF", "subtitle": "Web uygulaması güvenlik duvarı" },

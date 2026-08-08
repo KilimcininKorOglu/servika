@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "Início",
+    "domains": "Domínios",
+    "current": "Aplicações"
+  },
+  "title": "Aplicações",
+  "subtitle": "Processos Node.js e Python supervisionados pelo painel e publicados sob um caminho.",
+  "loading": "Carregando...",
+  "empty": "Ainda não foi criada nenhuma aplicação para este domínio.",
+  "count": "{{count}} aplicações",
+  "badges": {
+    "running": "Em execução",
+    "stopped": "Parada"
+  },
+  "card": {
+    "directory": "Diretório",
+    "command": "Comando",
+    "state": "Estado",
+    "unknown": "desconhecido",
+    "restarts": "({{count}} reinícios)"
+  },
+  "actions": {
+    "add": "Nova aplicação",
+    "refresh": "Atualizar",
+    "start": "Iniciar",
+    "stop": "Parar",
+    "restart": "Reiniciar",
+    "log": "Log",
+    "env": "Ambiente",
+    "installDeps": "Instalar dependências",
+    "edit": "Editar",
+    "delete": "Excluir"
+  },
+  "confirm": {
+    "delete": "Excluir a aplicação {{name}}? Os arquivos permanecem no lugar, mas o processo e o proxy dele são removidos.",
+    "install": "Instalar as dependências de {{name}}? Isso pode levar vários minutos."
+  },
+  "install": {
+    "noOutput": "A instalação não produziu nenhuma saída."
+  },
+  "modal": {
+    "createTitle": "Nova aplicação",
+    "editTitle": "Editar aplicação",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "noRuntime": "Nenhum runtime instalado",
+    "systemRuntime": "Versão do sistema",
+    "scopeDomain": "O próprio domínio",
+    "rootWarning": "Um mount em / entrega o site inteiro a esta aplicação. O site PHP para de responder até o caminho ser alterado.",
+    "fields": {
+      "name": "Nome",
+      "runtime": "Runtime",
+      "version": "Versão",
+      "appRoot": "Diretório da aplicação",
+      "startCommand": "Comando de inicialização",
+      "mount": "Caminho",
+      "scope": "Publicada em"
+    },
+    "hints": {
+      "appRoot": "Relativo ao diretório home, por exemplo apps/api.",
+      "startCommand": "Executado sem shell, por exemplo node server.js ou gunicorn app:app.",
+      "mount": "Por exemplo /api/. As requisições sob este caminho vão para a aplicação.",
+      "scope": "O escopo é fixado na criação da aplicação."
+    }
+  },
+  "env": {
+    "title": "Ambiente de {{name}}",
+    "hint": "PORT é definido pelo painel como {{port}}. Estes nomes são reservados: {{reserved}}.",
+    "namePlaceholder": "NOME",
+    "valuePlaceholder": "valor",
+    "addRow": "Adicionar variável",
+    "removeRow": "Remover",
+    "save": "Salvar e reiniciar",
+    "saving": "Salvando..."
+  },
+  "log": {
+    "title": "Log de {{name}}",
+    "empty": "O log está vazio."
+  },
+  "errors": {
+    "actionFailed": "A aplicação não respondeu à requisição.",
+    "deleteFailed": "Não foi possível remover a aplicação.",
+    "installFailed": "Não foi possível iniciar a instalação das dependências.",
+    "saveFailed": "Não foi possível salvar a aplicação.",
+    "envSaveFailed": "Não foi possível salvar o ambiente."
+  }
+}

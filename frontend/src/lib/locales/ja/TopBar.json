@@ -60,6 +60,7 @@
     "git": { "title": "Git デプロイ", "subtitle": "Git デプロイ" },
     "laravel": { "title": "Laravel ツールキット", "subtitle": "Laravel ツール" },
     "cron": { "title": "スケジュールされたタスク", "subtitle": "cron ジョブ" },
+    "apps": { "title": "アプリケーション", "subtitle": "Node.js と Python のプロセス" },
     "ssh": { "title": "SSH アクセス", "subtitle": "ターミナルアクセス" },
     "logs": { "title": "ログ", "subtitle": "アクセスログとエラーログ" },
     "waf": { "title": "WAF", "subtitle": "Web アプリケーションファイアウォール" },

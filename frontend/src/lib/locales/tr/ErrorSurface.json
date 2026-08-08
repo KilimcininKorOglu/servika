@@ -27,6 +27,8 @@
     "deliveryLog": "teslimat geçmişi",
     "mailServerSettings": "sunucu posta ayarları",
     "mailFilterLists": "gönderen filtre listeleri",
-    "mailAddressPool": "giden adres havuzu"
+    "mailAddressPool": "giden adres havuzu",
+    "appRuntimes": "uygulama runtime'ları",
+    "subdomains": "alt alan adları"
   }
 }

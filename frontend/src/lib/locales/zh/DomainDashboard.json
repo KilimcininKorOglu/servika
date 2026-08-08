@@ -22,6 +22,7 @@
   "php": { "label": "PHP", "desc": "版本 {{version}}" },
   "logs": { "label": "日志", "desc": "访问、错误" },
   "cron": { "label": "计划任务", "desc": "Cron" },
+  "apps": { "label": "应用", "desc": "Node.js 和 Python 进程" },
   "git": { "label": "Git", "desc": "仓库集成" },
   "composer": { "label": "PHP Composer", "desc": "包管理器" },
   "performance": { "label": "性能", "desc": "加速器" },

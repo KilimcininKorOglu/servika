@@ -44,6 +44,7 @@
     "sslTls": "SSL/TLS",
     "email": "E-mail",
     "scheduledTasks": "Tarefas Agendadas",
+    "applications": "Aplicações",
     "gitDeploy": "Deploy Git",
     "laravel": "Toolkit Laravel",
     "logs": "Registos",

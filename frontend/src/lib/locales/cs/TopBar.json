@@ -60,6 +60,7 @@
     "git": { "title": "Nasazení Git", "subtitle": "Nasazení Git" },
     "laravel": { "title": "Sada nástrojů Laravel", "subtitle": "Nástroje Laravel" },
     "cron": { "title": "Naplánované úlohy", "subtitle": "Úlohy cron" },
+    "apps": { "title": "Aplikace", "subtitle": "Procesy Node.js a Python" },
     "ssh": { "title": "Přístup SSH", "subtitle": "Přístup k terminálu" },
     "logs": { "title": "Protokoly", "subtitle": "Přístupové a chybové protokoly" },
     "waf": { "title": "WAF", "subtitle": "Firewall webových aplikací" },

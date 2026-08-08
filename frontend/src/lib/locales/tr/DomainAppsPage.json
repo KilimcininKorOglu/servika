@@ -1,0 +1,89 @@
+{
+  "breadcrumb": {
+    "home": "Ana Sayfa",
+    "domains": "Alan Adları",
+    "current": "Uygulamalar"
+  },
+  "title": "Uygulamalar",
+  "subtitle": "Panelin denetlediği ve bir yol altında yayınladığı Node.js ve Python süreçleri.",
+  "loading": "Yükleniyor...",
+  "empty": "Bu alan adı için henüz uygulama oluşturulmadı.",
+  "count": "{{count}} uygulama",
+  "badges": {
+    "running": "Çalışıyor",
+    "stopped": "Durdu"
+  },
+  "card": {
+    "directory": "Dizin",
+    "command": "Komut",
+    "state": "Durum",
+    "unknown": "bilinmiyor",
+    "restarts": "({{count}} yeniden başlatma)"
+  },
+  "actions": {
+    "add": "Yeni uygulama",
+    "refresh": "Yenile",
+    "start": "Başlat",
+    "stop": "Durdur",
+    "restart": "Yeniden başlat",
+    "log": "Günlük",
+    "env": "Ortam",
+    "installDeps": "Bağımlılıkları kur",
+    "edit": "Düzenle",
+    "delete": "Sil"
+  },
+  "confirm": {
+    "delete": "{{name}} uygulaması silinsin mi? Dosyaları yerinde kalır, ama süreç ve ters vekili kaldırılır.",
+    "install": "{{name}} uygulamasının bağımlılıkları kurulsun mu? Bu birkaç dakika sürebilir."
+  },
+  "install": {
+    "noOutput": "Kurulum hiçbir çıktı üretmedi."
+  },
+  "modal": {
+    "createTitle": "Yeni uygulama",
+    "editTitle": "Uygulamayı düzenle",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "noRuntime": "Kurulu runtime yok",
+    "systemRuntime": "Sistem sürümü",
+    "scopeDomain": "Alan adının kendisi",
+    "rootWarning": "/ mount'u bütün siteyi bu uygulamaya devreder. Mount değişene kadar PHP sitesi yanıt vermez.",
+    "fields": {
+      "name": "Ad",
+      "runtime": "Runtime",
+      "version": "Sürüm",
+      "appRoot": "Uygulama dizini",
+      "startCommand": "Başlatma komutu",
+      "mount": "Yol",
+      "scope": "Yayınlandığı yer"
+    },
+    "hints": {
+      "appRoot": "Ev dizinine göre, örneğin apps/api.",
+      "startCommand": "Kabuk olmadan çalışır, örneğin node server.js ya da gunicorn app:app.",
+      "mount": "Örneğin /api/. Bu yolun altındaki istekler uygulamaya gider.",
+      "scope": "Kapsam uygulama oluşturulurken belirlenir."
+    }
+  },
+  "env": {
+    "title": "{{name}} ortamı",
+    "hint": "PORT değerini panel {{port}} olarak verir. Şu adlar ayrılmıştır: {{reserved}}.",
+    "namePlaceholder": "AD",
+    "valuePlaceholder": "değer",
+    "addRow": "Değişken ekle",
+    "removeRow": "Kaldır",
+    "save": "Kaydet ve yeniden başlat",
+    "saving": "Kaydediliyor..."
+  },
+  "log": {
+    "title": "{{name}} günlüğü",
+    "empty": "Günlük boş."
+  },
+  "errors": {
+    "actionFailed": "Uygulama isteği yanıtlamadı.",
+    "deleteFailed": "Uygulama kaldırılamadı.",
+    "installFailed": "Bağımlılık kurulumu başlatılamadı.",
+    "saveFailed": "Uygulama kaydedilemedi.",
+    "envSaveFailed": "Ortam kaydedilemedi."
+  }
+}
