@@ -43,8 +43,9 @@ const (
 	// purpose: systemd's StandardOutput=append: follows a symlink, so a tenant
 	// who could write the directory could redirect a root-opened descriptor.
 	DefaultAppLogDir = "/var/log/servika-apps"
-	// DefaultAppEnvDir holds one EnvironmentFile per application, each
-	// root-owned and readable only by the tenant's own group.
+	// DefaultAppEnvDir holds one EnvironmentFile per application, each 0600
+	// root-owned: systemd parses the file in the manager process as root, so
+	// the service's own user never opens it and needs no access.
 	DefaultAppEnvDir          = "/etc/servika/apps"
 	DefaultMailLog            = "/var/log/maillog"
 	DefaultInstallationID     = "/etc/servika/installation-id"
@@ -60,7 +61,10 @@ const (
 	DefaultNginxCacheConf     = "/etc/nginx/conf.d/servikacache.conf"
 	DefaultNginxCacheTempConf = "/etc/nginx/conf.d/00-servikacache-temporary.conf"
 	DefaultNginxCacheLogConf  = "/etc/nginx/conf.d/00-servika-cache-log.conf"
-	DefaultGitHubAPI          = "https://api.github.com"
+	// The 00- prefix loads this before any domain vhost, so the variable an
+	// application proxy references is defined by the time it is used.
+	DefaultNginxUpgradeMapConf = "/etc/nginx/conf.d/00-servika-upgrade-map.conf"
+	DefaultGitHubAPI           = "https://api.github.com"
 	// DefaultDNSVerifyResolver is the recursive resolver the DNS verification
 	// screen queries. It is deliberately NOT the system resolver: the panel host
 	// runs an authoritative BIND for the domains it hosts, so /etc/resolv.conf
@@ -184,6 +188,9 @@ func NginxCacheTempConf() string {
 func NginxCacheLogConf() string {
 	return mustAbsPath("SERVIKA_NGINX_CACHE_LOG_CONF", DefaultNginxCacheLogConf)
 }
+func NginxUpgradeMapConf() string {
+	return mustAbsPath("SERVIKA_NGINX_UPGRADE_MAP_CONF", DefaultNginxUpgradeMapConf)
+}
 
 // DNSVerifyResolver returns the host:port of the recursive resolver used by the
 // DNS verification screen. An override without a port gets the default one, and
@@ -261,6 +268,7 @@ func ValidateRuntimePaths() error {
 		{"SERVIKA_NGINX_CACHE_CONF", DefaultNginxCacheConf, false},
 		{"SERVIKA_NGINX_CACHE_TEMP_CONF", DefaultNginxCacheTempConf, false},
 		{"SERVIKA_NGINX_CACHE_LOG_CONF", DefaultNginxCacheLogConf, false},
+		{"SERVIKA_NGINX_UPGRADE_MAP_CONF", DefaultNginxUpgradeMapConf, false},
 		{"SERVIKA_OPSBIN", "/usr/local/bin", false},
 		{"SERVIKA_GITHUB_API", DefaultGitHubAPI, true},
 		{"SERVIKA_IONCUBE_URL", DefaultIonCubeURL, true},

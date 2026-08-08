@@ -407,15 +407,23 @@ func vhost(fqdn, docroot, socket, protected string, web webRender) string {
 // gets no fastcgi_pass at all, so it cannot keep pointing at a pool that may no
 // longer exist; the PHP backend mirrors the domain vhost's own structure.
 func backendBlock(socket string, web webRender, https bool) string {
+	// An application mounted at "/" replaces the scope's own root location, so
+	// the two cannot both be emitted: nginx refuses a duplicate prefix.
+	rootLocation := ""
 	if web.Static {
-		return "    # ---- Backend: static files only ----\n    location / { try_files $uri $uri/ =404; }\n"
+		if !web.AppOwnsRoot {
+			rootLocation = "    location / { try_files $uri $uri/ =404; }\n"
+		}
+		return web.AppBlocks + "    # ---- Backend: static files only ----\n" + rootLocation
 	}
 	httpsParam := ""
 	if https {
 		httpsParam = "        fastcgi_param HTTPS on;\n"
 	}
-	return fmt.Sprintf(`    location / { try_files $uri $uri/ /index.php?$query_string; }
-
+	if !web.AppOwnsRoot {
+		rootLocation = "    location / { try_files $uri $uri/ /index.php?$query_string; }\n"
+	}
+	return web.AppBlocks + fmt.Sprintf(`%[6]s
 %[2]s    location ~ \.php$ {
         try_files $uri =404;
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
@@ -426,5 +434,5 @@ func backendBlock(socket string, web webRender, https bool) string {
 %[5]s        fastcgi_read_timeout 60s;
         # Repeat headers because this location may define add_header below.
 %[3]s%[4]s    }
-`, socket, web.SkipCacheMap, web.Headers, web.FastCgiCache, httpsParam)
+`, socket, web.SkipCacheMap, web.Headers, web.FastCgiCache, httpsParam, rootLocation)
 }

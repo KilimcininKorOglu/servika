@@ -33,6 +33,11 @@ import (
 const (
 	tableName = "servika_fw"
 	rulesFile = "/etc/nftables/servika_fw.nft"
+	// The range internal/apps allocates tenant application ports from. It is
+	// repeated here rather than imported so the firewall does not depend on the
+	// application package; internal/apps.PortMin/PortMax must match.
+	appPortMin = 30000
+	appPortMax = 30999
 )
 
 // Protected ports cannot be closed without disrupting the server, panel, or hosted sites.
@@ -335,6 +340,30 @@ func (h *Handlers) rebuild() error {
 		}
 	}
 
+	ruleset := buildRuleset(allowlisted, restricted, closed, banned)
+
+	// 1. Validate so an invalid ruleset is never applied.
+	if out, err := nftCheck(ruleset); err != nil {
+		return fmt.Errorf("nft validation failed: %s", strings.TrimSpace(out))
+	}
+	// 2. Apply the ruleset.
+	if out, err := nftApply(ruleset); err != nil {
+		return fmt.Errorf("nft apply failed: %s", strings.TrimSpace(out))
+	}
+	// 3. Persist the ruleset so panel startup can reload it after reboot.
+	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
+	_ = os.MkdirAll("/etc/nftables", 0o755)
+	_ = os.WriteFile(rulesFile, ruleset, 0o600)
+	return nil
+}
+
+// buildRuleset renders the nft ruleset text.
+//
+// It is a pure function so the ORDER of the base rules can be asserted: the
+// chain is `policy accept`, so every restriction here is an explicit drop, and a
+// drop placed before the loopback accept above it would cut nginx off from the
+// service it is meant to reach.
+func buildRuleset(allowlisted, restricted, closed, banned []string) []byte {
 	var b bytes.Buffer
 	// Replace atomically and idempotently by ensuring, deleting, and rebuilding the table.
 	fmt.Fprintf(&b, "table inet %s {}\n", tableName)
@@ -344,6 +373,13 @@ func (h *Handlers) rebuild() error {
 	b.WriteString("\t\ttype filter hook input priority filter; policy accept;\n")
 	b.WriteString("\t\tct state established,related accept\n")
 	b.WriteString("\t\tiif \"lo\" accept\n")
+	// Tenant applications listen on a loopback port, but nothing FORCES them to:
+	// the address a Node or Python process binds is the application's own choice.
+	// This chain is policy accept, so an application binding 0.0.0.0 would be
+	// reachable straight from the internet, past nginx, TLS, the WAF and the
+	// per-domain IP rules. The drop comes after the loopback accept above, so
+	// nginx still reaches the application.
+	fmt.Fprintf(&b, "\t\ttcp dport %d-%d drop\n", appPortMin, appPortMax)
 	// Ordering matters: whitelist accepts, allowlist drops, closed-port drops, then banned drops.
 	for _, r := range allowlisted {
 		fmt.Fprintf(&b, "%s\n", r)
@@ -358,21 +394,7 @@ func (h *Handlers) rebuild() error {
 		fmt.Fprintf(&b, "%s\n", r)
 	}
 	b.WriteString("\t}\n}\n")
-
-	ruleset := b.Bytes()
-	// 1. Validate so an invalid ruleset is never applied.
-	if out, err := nftCheck(ruleset); err != nil {
-		return fmt.Errorf("nft validation failed: %s", strings.TrimSpace(out))
-	}
-	// 2. Apply the ruleset.
-	if out, err := nftApply(ruleset); err != nil {
-		return fmt.Errorf("nft apply failed: %s", strings.TrimSpace(out))
-	}
-	// 3. Persist the ruleset so panel startup can reload it after reboot.
-	// #nosec G301 -- root-owned system directory whose daemon (nginx/php-fpm/named) must traverse it; contains no secret material.
-	_ = os.MkdirAll("/etc/nftables", 0o755)
-	_ = os.WriteFile(rulesFile, ruleset, 0o600)
-	return nil
+	return b.Bytes()
 }
 
 // Reapply restores rules from the database when the panel starts after a reboot.

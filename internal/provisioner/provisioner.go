@@ -685,8 +685,9 @@ server {
     error_log  /var/log/nginx/{{.DomainName}}.error.log warn;
 
 {{.ErrorPageBlock}}
+{{.AppBlocks}}
 {{if eq .Backend "apache"}}    # ---- Backend: Apache (127.0.0.1:10080 proxy) ----
-    location / {
+{{if not .AppOwnsRoot}}    location / {
         proxy_pass http://127.0.0.1:10080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -695,11 +696,12 @@ server {
         proxy_set_header X-Forwarded-Host $host;
         proxy_read_timeout 60s;
     }
-{{else if eq .Backend "static"}}    # ---- Backend: Static files (no PHP), PHP source-exposure guard ----
+{{end}}{{else if eq .Backend "static"}}    # ---- Backend: Static files (no PHP), PHP source-exposure guard ----
     location ~* \.(php|phtml|php3|php4|php5|phps)(/|$) { return 404; }
-    location / { try_files $uri $uri/ =404; }
-{{else}}    # ---- Backend: nginx + PHP-FPM (default) ----
-    location / { try_files $uri $uri/ /index.php?$query_string; }
+{{if not .AppOwnsRoot}}    location / { try_files $uri $uri/ =404; }
+{{end}}{{else}}    # ---- Backend: nginx + PHP-FPM (default) ----
+{{if not .AppOwnsRoot}}    location / { try_files $uri $uri/ /index.php?$query_string; }
+{{end}}
 
 {{if .FastCgiCache}}    set $skip_cache 0;
     if ($request_method = POST) { set $skip_cache 1; }
@@ -769,8 +771,9 @@ server {
 {{.IPRules}}{{.DenyBlocks}}{{.HotlinkLocation}}
 
 {{.ErrorPageBlock}}
+{{.AppBlocks}}
 {{if eq .Backend "apache"}}    # ---- Backend: Apache (127.0.0.1:10080 proxy) ----
-    location / {
+{{if not .AppOwnsRoot}}    location / {
         proxy_pass http://127.0.0.1:10080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -779,11 +782,12 @@ server {
         proxy_set_header X-Forwarded-Host $host;
         proxy_read_timeout 60s;
     }
-{{else if eq .Backend "static"}}    # ---- Backend: Static files (no PHP), PHP source-exposure guard ----
+{{end}}{{else if eq .Backend "static"}}    # ---- Backend: Static files (no PHP), PHP source-exposure guard ----
     location ~* \.(php|phtml|php3|php4|php5|phps)(/|$) { return 404; }
-    location / { try_files $uri $uri/ =404; }
-{{else}}    # ---- Backend: nginx + PHP-FPM (default) ----
-    location / { try_files $uri $uri/ /index.php?$query_string; }
+{{if not .AppOwnsRoot}}    location / { try_files $uri $uri/ =404; }
+{{end}}{{else}}    # ---- Backend: nginx + PHP-FPM (default) ----
+{{if not .AppOwnsRoot}}    location / { try_files $uri $uri/ /index.php?$query_string; }
+{{end}}
 
 {{if .FastCgiCache}}    set $skip_cache 0;
     if ($request_method = POST) { set $skip_cache 1; }
@@ -1079,6 +1083,13 @@ type VhostOpts struct {
 	// paths to the panel. Empty on a vhost without TLS, where those endpoints
 	// would be handing out a password destination over plain HTTP.
 	AutoconfigBlock string
+	// AppBlocks are the `location ^~` proxies for this domain's applications,
+	// computed on every render from the apps table rather than stored.
+	AppBlocks string
+	// AppOwnsRoot is set when an application is mounted at "/". The vhost then
+	// omits its own `location /`, because two blocks for the same prefix are a
+	// duplicate nginx refuses.
+	AppOwnsRoot bool
 }
 
 func (o VhostOpts) SSL() bool {
@@ -1408,6 +1419,16 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 			opts.WebmailBlock = webmailBlock()
 			opts.AutoconfigBlock = autoconfigBlock()
 		}
+		// Applications are computed on every render for the same reason the WAF
+		// and IP rules are: the vhost is rewritten by ~30 unrelated call sites,
+		// none of which know an application exists.
+		if packageDB != nil {
+			var domainID int64
+			if err := packageDB.QueryRow(
+				`SELECT id FROM domains WHERE domain_name=? LIMIT 1`, opts.DomainName).Scan(&domainID); err == nil {
+				opts.AppBlocks, opts.AppOwnsRoot = AppProxyBlocks(packageDB, domainID, 0)
+			}
+		}
 	}
 
 	if !opts.Suspended && opts.CustomVhostContent == "" && packageDB != nil {
@@ -1480,6 +1501,14 @@ func renderAndReload(opts VhostOpts, systemUser string) error {
 	}
 	if _, err := ensureCacheZone(); err != nil {
 		return err
+	}
+	// The map must exist before a vhost references $connection_upgrade, or nginx
+	// rejects the whole configuration and the rollback below fires on a defect
+	// that is not in the vhost.
+	if opts.AppBlocks != "" {
+		if err := ensureUpgradeMap(); err != nil {
+			return err
+		}
 	}
 	if out, err := exec.Command("nginx", "-t").CombinedOutput(); err != nil {
 		if hadPreviousConfig {

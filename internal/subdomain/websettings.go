@@ -30,6 +30,12 @@ type webRender struct {
 	// Static reports that the subdomain serves files only, so the vhost must not
 	// pass anything to PHP-FPM.
 	Static bool
+	// AppBlocks are the `location ^~` proxies for applications attached to this
+	// subdomain, and AppOwnsRoot is set when one of them holds "/". They ride on
+	// webRender rather than on the renderers' signatures because this struct is
+	// already computed once and threaded through every call site.
+	AppBlocks   string
+	AppOwnsRoot bool
 }
 
 // loadWebRender reads the subdomain's nginx settings and renders them. Defaults apply
@@ -50,6 +56,9 @@ func loadWebRender(ctx context.Context, db *sql.DB, domainID, subdomainID int64,
 	}
 	out := renderWebSettings(settings, fqdn, https)
 	out.Static = backend == "static"
+	if db != nil && subdomainID > 0 {
+		out.AppBlocks, out.AppOwnsRoot = provisioner.AppProxyBlocks(db, domainID, subdomainID)
+	}
 	return out
 }
 
